@@ -18,7 +18,7 @@ caveats below).
 - v1: the independent audit found three renderer defects in about 1.5-2% of its crops.
 - v2: fixed those; its own label audit then showed two more label-noise sources, a shifted font table and GRAD
   boxes cut through glyphs, about 0.5% of its PSP crops. v2 was never used and is not pinned.
-- v3: fixes both (see "The shard sets"). The generator is `synth/synth6.py`
+- v3: fixes both, apart from the few residual crops its audits counted (see "The shard sets"). The generator is `synth/synth6.py`
 (with `synth6_fonts.py`, `synth6_assets.py` and `synth6_text.py`). The font inventory with every exclusion and check
 is `data/manifests/synth6_fonts.json`, and the measured styles are `data/manifests/synth6_styles.json`. Nothing of
 the corpus (pages, fonts, text) is committed, and no shard is either.
@@ -85,25 +85,41 @@ second. Labels are `teacher/vote.canon` of the drawn text, the hooked pool's lab
 | **failed the OCR check** (the 10 px and 15 px strikes of PCSG00216's `textfont_2`, whose strokes break at that size) | 2 |
 | **drawn** | **293** |
 
-**CLANNAD's glyph raster is still drawn, through 24 LUCA fonts** (measured by the second audit round). The
-`gothic32`, `mincho32`, `modern32` and `marugothic32` of six Prototype titles (PCSG00183, PCSG00206, PCSG00620
-Grisaia Spinout, PCSG00785, PCSG00988, PCSG01000) hold CLANNAD's 32 px raster, re-quantised through another
-palette. None of their glyphs is byte-identical, so the rule above does not catch them, but for 92-98% of the
-characters they share with CLANNAD's matching font the glyph has the same ink box and differs by at most one of 16
-grey levels per pixel. They are drawn in 19,106 v3 Vita crops (3.8%), 0 PSP; 10,837 of those are PCSG00620's own
-fonts, whose `gothic32` is its verified dialogue font. v1 drew them in 17,705 Vita crops, besides the 14 Key-port
-copies (77k crops).
+**CLANNAD's glyph raster is still drawn, through 27 LUCA fonts** (measured by the second and third audit rounds,
+and by `synth6_fonts.raster_share`; flagged `clannad_raster` in `synth6_fonts.json`):
+- the `gothic32`, `mincho32`, `modern32` and `marugothic32` of six Prototype titles: PCSG00183, PCSG00206, PCSG00620
+  Grisaia Spinout, PCSG00785, PCSG00988, PCSG01000;
+- Little Busters' (PCSG00007) `gothic32`, `modern32` and `marugothic32`. Its `mincho32` is another raster.
 
-**They are kept, and disclosed.** Grisaia Spinout (PCSG00620) is a hooked train title. Its 1,696 real train lines
-are drawn in that same raster, so every VOCR6 model trained on the hooked lines sees it whatever synth6 does, and
-removing the fonts from synth6 would not make CLANNAD's raster unseen. It would also take away a train title's
-matched font. So: a CLANNAD score of a model trained on synth6 v3 (or on the hooked lines) has seen CLANNAD's glyph
-raster, though not its font files, text or pages, and VOCR6's CLANNAD reports must say so. Little Busters' LUCA
-fonts are close but not the same (within two grey levels for 64-83% of the glyphs of three of them, by the audit's
-measure).
+They hold CLANNAD's 32 px raster re-quantised through other palettes (a near-linear one in the six titles, a
+gamma-like one in Little Busters'). None of their glyphs is byte-identical, so the rule above does not catch them.
+Mapped through each font's tone curve, 98.3-98.8% of their pixels lie within one grey level of CLANNAD's, and 71-96%
+of their glyphs match CLANNAD's in every pixel to within one level (the third round's measure; `raster_share` gives
+0.77-0.96). Fonts of another face score 0.
+
+| | v3 | v1 (the proof's set) |
+|---|---:|---:|
+| crops in the 27 fonts | 20,295 Vita (4.06%), 0 PSP | 18,716 Vita (3.74%), besides the 14 Key-port copies' 76,982 crops |
+| glyphs drawn in them | 284,012, of 4,701 distinct characters | 264,493, of 4,614 |
+| of those characters, not in the two titles' real lines | 3,509 | |
+
+**They are kept, and disclosed.** Grisaia Spinout (PCSG00620) and Little Busters (PCSG00007) are hooked train titles
+whose dialogue is drawn in these rasters. PCSG00620's verified dialogue font is the LUCA `gothic32`. Their 2,574
+real train lines (1,696 + 878) show CLANNAD's raster in 39,447 glyphs of 1,201 distinct characters. So every VOCR6
+model trained on the hooked lines has seen the raster, whatever synth6 does. Removing the 27 fonts would not make
+it unseen; it would take away PCSG00620's matched font and 27 fonts of cross-mode variety (Little Busters has no
+verified matched font).
+
+What synth6 adds is breadth: it draws the raster for 7.2 times as many glyphs and 3.9 times as many characters
+(3,509 the real lines never show in it). A CLANNAD score of a model trained on synth6 v3, or on the hooked lines, has
+therefore seen CLANNAD's glyph raster for most of its vocabulary, though not its font files, text or pages. VOCR6's
+CLANNAD reports and release notes must say so.
 
 Dance with Devils' FOT-ModeMinA Std B has no near copy in the pack, even by ink-box alignment (the audit's measure).
 The same typeface is drawn from the Otomate titles' FFU atlases.
+
+(The font pack's own fidelity check, the farm's tool, scored 20 real lines per title, among them 2 guard pages of
+PCSG00620. No content of those pages reaches synth6.)
 
 Four checks guard what a glyph shows, since a wrong glyph teaches a wrong label. The renderer never draws a
 character that any of them denies in that font.
@@ -146,10 +162,14 @@ character that any of them denies in that font.
   - The shift counts assigned codes only, as a decoder's table does: ◯ (0x81FC) follows four unassigned codes, and
     the first version of the rule, which counted raw codes, missed it. v3 rendered with that version, so 6 of its
     PSP crops show ◯ as ¶; main's rule denies ◯ too.
-- **Single wrong glyphs** at rarely used codes are not checked automatically outside a shifted run. The second audit
-  round's per-symbol screen found 5, confirmed by eye: ┐ drawn as a wave in PCSG00617's and PCSG00838's `font24`, "
-  as a box icon in PCSG00838's, ≪ as a long dash in NPJH50621's `font16`, and 〒 as 」 in PCSG01083's. They are listed
-  by hand (`synth6.MANUAL_DENY`) and denied on main. v3, rendered before, holds 21 crops of them.
+- **Single wrong glyphs** at rarely used codes are not checked automatically outside a shifted run. The second and
+  third audit rounds' per-symbol screens found 13 pairs, confirmed by eye:
+  - ┐ and └ drawn as a wave in PCSG00617's and PCSG00838's `font24`, and " as a box icon in PCSG00838's;
+  - ≪ and ≫ as long dashes, and ①②③ as fragments, in NPJH50621's `font16`;
+  - 〒 as 」, △ as a short dash and ▲ as two bars in PCSG01083's `font_system`.
+
+  They are listed by hand (`synth6.MANUAL_DENY`, with ─ in the two `font24` fonts and NPJH50621's ④⑤, which no text
+  draws today) and denied on main. v3, rendered before, holds 24 crops of them.
 
 Per drawn font, the median is 5 denied characters and the p90 is 23 (before the shifted-table check).
 
@@ -200,10 +220,11 @@ are not affected. Examples (`synth6_styles.json`):
 - **v2's own label audit** (the same measure as v1's; its worst-crop sheets read by eye) found what B1-B4 had
   hidden: lt18's shifted symbol table (□□□ for ■■■, ♀ for °) and GRAD boxes cut through the glyphs (a 15 px band
   across a 30 px line). Both are fixed in v3, with tests.
-- **The second audit round** (on v3) reproduced the pins, the re-render, the label audit and the proof. It found:
-  - B5: CLANNAD's raster in 24 LUCA fonts, kept and disclosed (above);
-  - 38 residual crops: F7, a GRAD box holding only part of a line at the region edge; F8, ◯ in lt18 and 5 single
-    wrong symbols. These are fixed on main with tests, and v3 keeps them.
+- **The second and third audit rounds** (on v3) reproduced the pins, the re-render, the label audit and the proof.
+  They found:
+  - B5 and F10: CLANNAD's raster in 27 LUCA fonts and two titles' real lines, kept and disclosed (above);
+  - residual crops: F7, a GRAD box holding only part of a line at the region edge; F8 and F11, ◯ in lt18 and 13
+    single wrong symbols. These are fixed on main with tests, and v3 keeps them.
 - **Unit tests** (`tests/test_synth6.py`, CI fixtures only):
   - drawing: atlas drawing at scale 1 is exact; scale and spacing move the pen; the wrap and its one-mark overhang;
   - fonts: every inventory exclusion, including near-identical copies; the misplaced-glyph rule;
@@ -212,7 +233,9 @@ are not affected. Examples (`synth6_styles.json`):
   - text: the test-text filter; the marker filter on word carriers;
   - compositing: legibility, per character too;
   - crops: lines off the frame or stacked are not cropped; a GRAD box must cover its line;
-  - shifted tables: a run is found, a single odd glyph is not;
+  - shifted tables: a run is found, a single odd glyph is not; the shift counts assigned codes only;
+  - GRAD boxes must hold the line at the region's left and right edges;
+  - manual denials reach the renderer; `raster_share` sees one raster through two palettes;
   - output: a region, a shard's format and its byte-for-byte determinism; the 2× view.
 
 ## The shard sets
@@ -239,14 +262,14 @@ of 6 pinned shards (vita 0 and 31, psp2x 0 and 12, psp 0 and 20), re-rendered in
 | ink beyond the frame (B2) | 1,183 / 5,459 / 5,432 crops (vita / psp2x / psp) | 0 |
 | ・：； in a font that draws them outside their cell (B3) | 0.19% | 0 |
 | a GRAD box holding less than 80% of its line's ink height | (v2: 0.12 / 0.31 / 0.01%) | 0 |
-| a GRAD box holding only part of its line's width (the line at the region edge; F7) | | 11 psp crops (NPJH50279) |
+| a GRAD box holding only part of its line's width (the line at the region edge; F7) | | 11 psp crops (NPJH50279) under 95% of the width; 18 (12 psp, 6 psp2x) by the renderer's own rule, a box missing 2 px or more at either side |
 | a symbol of lt18's shifted table | (v2: 0.035 / 0.39 / 0.38%) | 6 crops (◯; F8) |
-| a single wrong symbol glyph (F8) | | 21 crops |
+| a single wrong symbol glyph (F8, F11) | | 24 crops |
 
 The 0.006-0.010% of v3 crops that hold ・：； in PCSG01083's font are drawn inside that font's narrow advance; in
 cross mode a negative spacing can still press the dot into the next glyph (1 of 4 such crops the audit viewed, 80
-crops in all). The 38 residual crops (F7, F8) are fixed in main's renderer, not in v3: 38 in 1,000,000 did not
-justify another render. Also in v3, measured by the audit:
+crops in all). The residual crops (F7, F8, F11: 41 by the table's first criterion, 48 by the rule's) are fixed in
+main's renderer, not in v3: 48 in 1,000,000 did not justify another render. Also in v3, measured by the audit:
 - a page-UI triangle (▶) over the first glyph in 2 of 126 random crops, with the label right;
 - in tall-cell cross fonts, a cell crop holding part of the next drawn line (625 / 1,045 / 676 crops at 25% or more of
   its height);
@@ -325,10 +348,12 @@ share is within 2.5 points of v3's. The first 1,000 crops of 6 shards re-render 
 - 2 crops showing 有紀寧, a CLANNAD character's given name, from a Jiten word carrier for 寧. The carrier filter
   came later.
 
+### Versions and code
+
 v2 (code `5483ee8`, tag `synth6-v2-render-5483ee8`, seed 20261027) was rendered, measured and replaced by v3
 without being used; it is not pinned.
 v3 was rendered at `17e3365` (tag `synth6-v3-render-17e3365`) with the asset files whose sha256 its recipes record.
-Main's renderer adds F7 and F8 (the GRAD width rule, the assigned-code shift, the manual denials), so a shard
+Main's renderer adds F7, F8 and F11 (the GRAD width rule, the assigned-code shift, the manual denials), so a shard
 re-rendered with main can differ from v3 where those apply. v3 has 3 crops whose label holds ことみ inside
 ということみたい (hook text), no CLANNAD name.
 
@@ -378,13 +403,15 @@ Reported, not decided:
 
 **Caveats.**
 - The proof trained on **v1**: about 1.5-2% of its crops carry the defects v2 and v3 fix. It also drew CLANNAD's
-  glyph raster: the 14 Key-port copies (77k crops) and the 24 LUCA re-quantised copies (17,705 Vita crops). No
+  glyph raster: the 14 Key-port copies (76,982 crops) and the 27 LUCA re-quantised copies (18,716 Vita crops). No
   CLANNAD score was taken.
 - The measured gain is for v1 against synth4 at 8,000 steps, at one tier (N). v3's cleaner labels are not measured.
   Stage 2's S2s6 measures synth6 v3 on/off in the stage's own recipe.
 
 ## Limits
 
+- **CLANNAD's glyph raster is seen**, through 27 drawn LUCA fonts (4.06% of v3's Vita crops) and the real train
+  lines of two hooked titles (PCSG00620, PCSG00007); see the fonts section. Its font files, text and pages are not.
 - **46 titles.** synth6 teaches these titles' looks (and 128 faces' glyphs) with any text. It does not show a box
   style no train title has. The cross mode and the unseen-game dev score are the guard against overfitting to them.
 - **Styles are measured, not hand-checked per title.** The halo, shadow and box detectors are simple. Eye checks on

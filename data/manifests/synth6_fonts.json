@@ -50,13 +50,91 @@
   ]
  },
  "glyph_geometry": {
-  "rule": "synth6_fonts.misplaced"
+  "rule": "synth6_fonts.misplaced, synth6_fonts.swapped, synth6.MANUAL_DENY"
+ },
+ "clannad_raster": {
+  "rule": "synth6_fonts.raster_share against CLANNAD's (PCSG00415) four fonts, bitmap fonts of 28-36 px; flagged at RASTER_SHARE or above (the font holds CLANNAD's glyph raster, re-quantised or not)",
+  "threshold": 0.5,
+  "flagged": [
+   "PCSG00007/gothic32",
+   "PCSG00007/marugothic32",
+   "PCSG00007/modern32",
+   "PCSG00183/gothic32",
+   "PCSG00183/marugothic32",
+   "PCSG00183/mincho32",
+   "PCSG00183/modern32",
+   "PCSG00206/gothic32",
+   "PCSG00206/marugothic32",
+   "PCSG00206/mincho32",
+   "PCSG00206/modern32",
+   "PCSG00414/gothp32",
+   "PCSG00414/mdnp32",
+   "PCSG00414/mgothp32",
+   "PCSG00414/minp32",
+   "PCSG00620/gothic32",
+   "PCSG00620/marugothic32",
+   "PCSG00620/mincho32",
+   "PCSG00620/modern32",
+   "PCSG00638/gothp32",
+   "PCSG00638/mdnp32",
+   "PCSG00638/mgothp32",
+   "PCSG00638/minp32",
+   "PCSG00768/gothp32",
+   "PCSG00768/mdnp32",
+   "PCSG00768/mgothp32",
+   "PCSG00768/minp32",
+   "PCSG00785/gothic32",
+   "PCSG00785/marugothic32",
+   "PCSG00785/mincho32",
+   "PCSG00785/modern32",
+   "PCSG00926/gothp32",
+   "PCSG00926/mdnp32",
+   "PCSG00926/mgothp32",
+   "PCSG00926/minp32",
+   "PCSG00988/gothic32",
+   "PCSG00988/marugothic32",
+   "PCSG00988/mincho32",
+   "PCSG00988/modern32",
+   "PCSG01000/gothic32",
+   "PCSG01000/marugothic32",
+   "PCSG01000/mincho32",
+   "PCSG01000/modern32"
+  ],
+  "drawn_flagged": [
+   "PCSG00007/gothic32",
+   "PCSG00007/marugothic32",
+   "PCSG00007/modern32",
+   "PCSG00183/gothic32",
+   "PCSG00183/marugothic32",
+   "PCSG00183/mincho32",
+   "PCSG00183/modern32",
+   "PCSG00206/gothic32",
+   "PCSG00206/marugothic32",
+   "PCSG00206/mincho32",
+   "PCSG00206/modern32",
+   "PCSG00620/gothic32",
+   "PCSG00620/marugothic32",
+   "PCSG00620/mincho32",
+   "PCSG00620/modern32",
+   "PCSG00785/gothic32",
+   "PCSG00785/marugothic32",
+   "PCSG00785/mincho32",
+   "PCSG00785/modern32",
+   "PCSG00988/gothic32",
+   "PCSG00988/marugothic32",
+   "PCSG00988/mincho32",
+   "PCSG00988/modern32",
+   "PCSG01000/gothic32",
+   "PCSG01000/marugothic32",
+   "PCSG01000/mincho32",
+   "PCSG01000/modern32"
+  ]
  },
  "assets_sha256": {
   "fonts_inventory.json": "921dcf4d03075b587bfde60007ae3dc97d2e33bb3c2d96e7baf8e852ea1fdf22",
   "font_check.json": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
   "glyph_check.json": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
-  "glyph_geometry.json": "ef10e3af158e2c7fa31206563aa9faf315174cfbfd1ccdf52b7173ab7d8c0cc2"
+  "glyph_geometry.json": "ff7d5251fb9dc3c68d7650fa9a04cf8cab5733dff230eb3728c0b242ae545fa1"
  },
  "rows": [
   {
@@ -99,6 +177,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -129,6 +208,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -168,8 +248,9 @@
    },
    "misplaced": "",
    "swapped": "",
-   "manual_deny": "≪",
+   "manual_deny": "≪≫①②③④⑤",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -211,6 +292,7 @@
    "swapped": "」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓∧⇒⇔∀≒≪≫‰♯♭♪†◯",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -250,6 +332,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -287,6 +370,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -315,6 +399,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -352,6 +437,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -378,6 +464,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -415,6 +502,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -443,6 +531,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -480,6 +569,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -517,6 +607,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -554,6 +645,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -591,6 +683,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -628,6 +721,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.965
+   },
    "drawn": true
   },
   {
@@ -665,6 +762,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -693,6 +791,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -730,6 +829,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -767,6 +867,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -804,6 +905,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -841,6 +943,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -878,6 +981,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.847
+   },
    "drawn": true
   },
   {
@@ -915,6 +1022,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -943,6 +1051,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -980,6 +1089,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1017,6 +1127,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1054,6 +1165,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1091,6 +1203,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1128,6 +1241,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1165,6 +1279,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1193,6 +1308,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -1230,6 +1346,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1267,6 +1384,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1304,6 +1422,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1341,6 +1460,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1378,6 +1498,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.77
+   },
    "drawn": true
   },
   {
@@ -1415,6 +1539,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1443,6 +1568,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -1484,6 +1610,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1525,6 +1652,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1553,6 +1681,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -1590,6 +1719,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1627,6 +1757,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1664,6 +1795,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1701,6 +1833,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -1738,6 +1874,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1775,6 +1912,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1812,6 +1950,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1849,6 +1988,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1886,6 +2026,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -1923,6 +2067,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1960,6 +2105,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -1997,6 +2143,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2034,6 +2181,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2071,6 +2219,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -2108,6 +2260,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2145,6 +2298,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2182,6 +2336,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2219,6 +2374,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2256,6 +2412,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -2293,6 +2453,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2332,6 +2493,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2362,6 +2524,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -2401,6 +2564,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2440,6 +2604,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2479,6 +2644,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2518,6 +2684,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -2557,6 +2727,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2587,6 +2758,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -2626,6 +2798,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2665,6 +2838,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2704,6 +2878,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2743,6 +2918,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2782,6 +2958,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -2821,6 +3001,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2851,6 +3032,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -2890,6 +3072,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2929,6 +3112,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -2968,6 +3152,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3007,6 +3192,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3046,6 +3232,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -3085,6 +3275,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3115,6 +3306,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -3154,6 +3346,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3193,6 +3386,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3232,6 +3426,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3271,6 +3466,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3310,6 +3506,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.962
+   },
    "drawn": true
   },
   {
@@ -3349,6 +3549,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3379,6 +3580,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -3416,6 +3618,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3453,6 +3656,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -3490,6 +3694,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3527,6 +3732,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -3564,6 +3770,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3601,6 +3808,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3638,6 +3846,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3675,6 +3884,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3712,6 +3922,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3749,6 +3960,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3777,6 +3989,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -3818,6 +4031,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3859,6 +4073,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3899,6 +4114,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3940,6 +4156,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -3968,6 +4185,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -4005,6 +4223,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4046,6 +4265,10 @@
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.9994
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 1.0
    },
    "drawn": false
   },
@@ -4089,6 +4312,10 @@
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9994
    },
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 1.0
+   },
    "drawn": false
   },
   {
@@ -4130,6 +4357,10 @@
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9994
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 1.0
    },
    "drawn": false
   },
@@ -4173,6 +4404,10 @@
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.9994
    },
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 1.0
+   },
    "drawn": false
   },
   {
@@ -4201,6 +4436,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -4229,6 +4465,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -4257,6 +4494,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -4285,6 +4523,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -4322,6 +4561,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4359,6 +4599,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4396,6 +4637,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4433,6 +4675,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4470,6 +4713,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4507,6 +4751,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4544,6 +4789,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4581,6 +4827,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4618,6 +4865,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4655,6 +4903,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4692,6 +4941,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4729,6 +4979,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4766,6 +5017,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4803,6 +5055,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4840,6 +5093,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4877,6 +5131,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4914,6 +5169,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4953,6 +5209,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -4990,6 +5247,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5031,6 +5289,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5072,6 +5331,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5113,6 +5373,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5150,6 +5411,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5178,6 +5440,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -5215,6 +5478,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5258,6 +5522,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5299,6 +5564,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5340,6 +5606,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5377,6 +5644,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5414,6 +5682,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5449,8 +5718,9 @@
    },
    "misplaced": "",
    "swapped": "",
-   "manual_deny": "┐",
+   "manual_deny": "┐└─",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5492,6 +5762,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5522,6 +5793,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -5563,6 +5835,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5604,6 +5877,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5645,6 +5919,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5686,6 +5961,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.963
+   },
    "drawn": true
   },
   {
@@ -5727,6 +6006,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5768,6 +6048,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5809,6 +6090,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5850,6 +6132,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5891,6 +6174,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -5932,6 +6216,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.965
+   },
    "drawn": true
   },
   {
@@ -5973,6 +6261,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6014,6 +6303,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6055,6 +6345,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6096,6 +6387,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6137,6 +6429,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6178,6 +6471,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.965
+   },
    "drawn": true
   },
   {
@@ -6219,6 +6516,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6260,6 +6558,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6301,6 +6600,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6342,6 +6642,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6383,6 +6684,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6424,6 +6726,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.965
+   },
    "drawn": true
   },
   {
@@ -6465,6 +6771,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6495,6 +6802,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6525,6 +6833,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6555,6 +6864,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6585,6 +6895,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6622,6 +6933,7 @@
    "swapped": "!\"#$%&'()*+,-./0",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6650,6 +6962,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6687,6 +7000,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6715,6 +7029,10 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 1.0
+   },
    "drawn": false
   },
   {
@@ -6756,6 +7074,10 @@
    "near_test_font": {
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9999
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 1.0
    },
    "drawn": false
   },
@@ -6799,6 +7121,10 @@
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9999
    },
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 1.0
+   },
    "drawn": false
   },
   {
@@ -6827,6 +7153,10 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 1.0
+   },
    "drawn": false
   },
   {
@@ -6859,6 +7189,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -6900,6 +7231,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6940,6 +7272,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -6977,6 +7310,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7018,6 +7352,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7059,6 +7394,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7100,6 +7436,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7141,6 +7478,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7180,6 +7518,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7221,6 +7560,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7258,6 +7598,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7295,6 +7636,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7336,6 +7678,10 @@
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.9992
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.997
    },
    "drawn": false
   },
@@ -7379,6 +7725,10 @@
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9992
    },
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.997
+   },
    "drawn": false
   },
   {
@@ -7420,6 +7770,10 @@
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9992
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.997
    },
    "drawn": false
   },
@@ -7463,6 +7817,10 @@
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.9992
    },
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.997
+   },
    "drawn": false
   },
   {
@@ -7500,6 +7858,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7537,6 +7896,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7574,6 +7934,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7611,6 +7972,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7648,6 +8010,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7676,6 +8039,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -7713,6 +8077,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7750,6 +8115,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7787,6 +8153,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7824,6 +8191,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.957
+   },
    "drawn": true
   },
   {
@@ -7861,6 +8232,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7898,6 +8270,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7935,6 +8308,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -7972,6 +8346,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8009,6 +8384,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8046,6 +8422,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.957
+   },
    "drawn": true
   },
   {
@@ -8083,6 +8463,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8120,6 +8501,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8157,6 +8539,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8194,6 +8577,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8231,6 +8615,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8268,6 +8653,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.957
+   },
    "drawn": true
   },
   {
@@ -8305,6 +8694,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8342,6 +8732,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8379,6 +8770,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8416,6 +8808,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8453,6 +8846,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8490,6 +8884,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.957
+   },
    "drawn": true
   },
   {
@@ -8527,6 +8925,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8564,6 +8963,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8603,6 +9003,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8642,6 +9043,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8681,6 +9083,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8720,6 +9123,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8750,6 +9154,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -8791,6 +9196,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8832,6 +9238,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8873,6 +9280,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8903,6 +9311,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -8940,6 +9349,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -8977,6 +9387,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9014,6 +9425,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9051,6 +9463,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9079,6 +9492,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -9116,6 +9530,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9151,8 +9566,9 @@
    },
    "misplaced": "",
    "swapped": "",
-   "manual_deny": "┐\"",
+   "manual_deny": "┐\"└─",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9190,6 +9606,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9227,6 +9644,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9264,6 +9682,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9290,6 +9709,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -9316,6 +9736,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -9353,6 +9774,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9390,6 +9812,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9427,6 +9850,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9464,6 +9888,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9501,6 +9926,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9538,6 +9964,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9568,6 +9995,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -9598,6 +10026,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -9639,6 +10068,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9680,6 +10110,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9721,6 +10152,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9758,6 +10190,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9799,6 +10232,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9840,6 +10274,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9881,6 +10316,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9921,6 +10357,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -9961,6 +10398,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10002,6 +10440,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10039,6 +10478,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10080,6 +10520,10 @@
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.999
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.997
    },
    "drawn": false
   },
@@ -10123,6 +10567,10 @@
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.999
    },
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.997
+   },
    "drawn": false
   },
   {
@@ -10164,6 +10612,10 @@
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.999
+   },
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.997
    },
    "drawn": false
   },
@@ -10207,6 +10659,10 @@
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.999
    },
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.997
+   },
    "drawn": false
   },
   {
@@ -10244,6 +10700,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10281,6 +10738,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10318,6 +10776,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10355,6 +10814,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10392,6 +10852,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10420,6 +10881,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -10457,6 +10919,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10494,6 +10957,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10531,6 +10995,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10568,6 +11033,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10605,6 +11071,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.963
+   },
    "drawn": true
   },
   {
@@ -10642,6 +11112,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10679,6 +11150,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10716,6 +11188,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10753,6 +11226,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10790,6 +11264,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10827,6 +11302,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.942
+   },
    "drawn": true
   },
   {
@@ -10864,6 +11343,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10901,6 +11381,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10938,6 +11419,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -10975,6 +11457,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11012,6 +11495,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11049,6 +11533,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.963
+   },
    "drawn": true
   },
   {
@@ -11086,6 +11574,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11123,6 +11612,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11160,6 +11650,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11197,6 +11688,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11234,6 +11726,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11271,6 +11764,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.963
+   },
    "drawn": true
   },
   {
@@ -11308,6 +11805,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11336,6 +11834,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -11373,6 +11872,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11410,6 +11910,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11447,6 +11948,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11484,6 +11986,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11521,6 +12024,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/gothp32",
+    "share": 0.958
+   },
    "drawn": true
   },
   {
@@ -11558,6 +12065,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11595,6 +12103,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11632,6 +12141,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11669,6 +12179,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11706,6 +12217,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11743,6 +12255,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mgothp32",
+    "share": 0.94
+   },
    "drawn": true
   },
   {
@@ -11780,6 +12296,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11817,6 +12334,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11854,6 +12372,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11891,6 +12410,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11928,6 +12448,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -11965,6 +12486,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/minp32",
+    "share": 0.958
+   },
    "drawn": true
   },
   {
@@ -12002,6 +12527,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12039,6 +12565,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12076,6 +12603,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12113,6 +12641,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12150,6 +12679,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12187,6 +12717,10 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": {
+    "font": "PCSG00415/mdnp32",
+    "share": 0.958
+   },
    "drawn": true
   },
   {
@@ -12224,6 +12758,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12261,6 +12796,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12298,6 +12834,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12335,6 +12872,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12372,6 +12910,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12409,6 +12948,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12446,6 +12986,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12483,6 +13024,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12520,6 +13062,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12557,6 +13100,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12594,6 +13138,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12631,6 +13176,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12668,6 +13214,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12703,8 +13250,9 @@
    },
    "misplaced": ",.",
    "swapped": "",
-   "manual_deny": "〒",
+   "manual_deny": "〒△▲",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12742,6 +13290,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12779,6 +13328,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12816,6 +13366,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12844,6 +13395,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -12886,6 +13438,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -12912,6 +13465,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -12938,6 +13492,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -12964,6 +13519,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -12990,6 +13546,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13016,6 +13573,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13042,6 +13600,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13068,6 +13627,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13094,6 +13654,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13120,6 +13681,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13146,6 +13708,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13172,6 +13735,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13198,6 +13762,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13224,6 +13789,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13250,6 +13816,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13276,6 +13843,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13302,6 +13870,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13333,6 +13902,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13359,6 +13929,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13385,6 +13956,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13411,6 +13983,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13437,6 +14010,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13463,6 +14037,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13489,6 +14064,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13515,6 +14091,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13541,6 +14118,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13567,6 +14145,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13593,6 +14172,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13619,6 +14199,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13645,6 +14226,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13671,6 +14253,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13697,6 +14280,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13723,6 +14307,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13749,6 +14334,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13792,6 +14378,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -13833,6 +14420,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -13874,6 +14462,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -13915,6 +14504,7 @@
    "swapped": "",
    "manual_deny": "",
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": true
   },
   {
@@ -13940,6 +14530,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13965,6 +14556,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -13990,6 +14582,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14015,6 +14608,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14040,6 +14634,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14065,6 +14660,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14090,6 +14686,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14115,6 +14712,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14142,6 +14740,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14169,6 +14768,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   },
   {
@@ -14199,6 +14799,7 @@
    "swapped": null,
    "manual_deny": null,
    "near_test_font": null,
+   "clannad_raster": null,
    "drawn": false
   }
  ]

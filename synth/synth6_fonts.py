@@ -388,6 +388,78 @@ def glyph_digests(font_dir):
     return out
 
 
+def _levels(font):
+    """A bitmap font's atlas as level indices: each grey value's rank among the atlas's distinct values (a 4-bit
+    font has 16), or 16 rank bins when it has more distinct values (an anti-aliased 8-bit atlas)."""
+    a = font.atlas
+    vals = np.unique(a)
+    if len(vals) <= 32:
+        lut = np.zeros(256, np.int16)
+        lut[vals] = np.arange(len(vals))
+        return lut[a]
+    q = np.quantile(a[a > 0], np.linspace(0, 1, 17)[1:-1]) if (a > 0).any() else np.zeros(15)
+    out = np.searchsorted(q, a, side="right").astype(np.int16) + 1
+    out[a == 0] = 0
+    return out
+
+
+def raster_share(font, ref, n=600, seed=0):
+    """The share of `ref`'s glyphs that `font` holds as the same raster, whatever the palette.
+
+    For up to `n` common characters, both glyphs are taken as level indices (_levels) and placed at their pen offsets
+    (ox, oy) on one canvas; one global shift of `font`'s glyphs (dx, dy in -1..1) is chosen where their inked pixels
+    overlap `ref`'s most. The tone map from `ref`'s levels to `font`'s is the modal font level of each ref level over
+    pixels inked in both. A glyph counts when every pixel inked in either, with `ref`'s levels mapped, lies within
+    one level of `font`'s. The same raster re-quantised through another palette (NEAR_SHARE's byte check misses it)
+    scores near 1; another raster of the same typeface near 0."""
+    if font.kind != "bitmap" or ref.kind != "bitmap":
+        return 0.0
+    la, lb = _levels(font), _levels(ref)
+    common = sorted(c for c in font.chars.keys() & ref.chars.keys() if c not in SPACES)
+    if not common:
+        return 0.0
+    rng = np.random.default_rng(seed)
+    pick = [common[i] for i in rng.choice(len(common), size=min(n, len(common)), replace=False)]
+
+    def placed(f, lv, c, H, W, dx=0, dy=0):
+        x, y, w, h, ox, oy, _ = f.chars[c]
+        out = np.zeros((H, W), np.int16)
+        px, py = int(round(ox)) + 2 + dx, int(round(oy)) + 2 + dy
+        g = lv[y:y + h, x:x + w]
+        ys, xs = max(0, py), max(0, px)
+        ye, xe = min(H, py + h), min(W, px + w)
+        if ye > ys and xe > xs:
+            out[ys:ye, xs:xe] = g[ys - py:ye - py, xs - px:xe - px]
+        return out
+    H = int(max(max(f.chars[c][3] + abs(f.chars[c][5]) for c in pick) for f in (font, ref))) + 6
+    W = int(max(max(f.chars[c][2] + abs(f.chars[c][4]) for c in pick) for f in (font, ref))) + 6
+    refs = [placed(ref, lb, c, H, W) for c in pick]
+    best = None
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            ov = sum(int(((placed(font, la, c, H, W, dx, dy) > 0) & (r > 0)).sum()) for c, r in zip(pick[:80], refs))
+            if best is None or ov > best[0]:
+                best = (ov, dx, dy)
+    fonts = [placed(font, la, c, H, W, best[1], best[2]) for c in pick]
+    nb = int(max(int(r.max()) for r in refs)) + 1
+    na = int(max(int(g.max()) for g in fonts)) + 1
+    joint = np.zeros((nb, na), np.int64)
+    for g, r in zip(fonts, refs):
+        m = (g > 0) | (r > 0)           # zeros count: a re-quantisation may drop the faintest levels to 0
+        np.add.at(joint, (r[m], g[m]), 1)
+    tone = np.where(joint.sum(axis=1) > 0, joint.argmax(axis=1), 0)
+    tone[0] = 0
+    ok = 0
+    for g, r in zip(fonts, refs):
+        m = (g > 0) | (r > 0)
+        if m.any() and int(np.abs(tone[r[m]] - g[m]).max()) <= 1:
+            ok += 1
+    return ok / len(pick)
+
+
+RASTER_SHARE = 0.5      # raster_share at or above this marks a font as holding a test-title font's raster
+
+
 NEAR_SHARE = 0.95       # a font whose glyphs are this identical to a test-title font's is excluded too
 NEAR_MIN_COMMON = 500
 

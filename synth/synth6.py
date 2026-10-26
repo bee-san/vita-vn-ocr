@@ -1048,6 +1048,21 @@ def cmd_compare(args):
 
 # ----------------------------------------------------------------------------- fonts, assets, font check
 
+def clannad_raster(inv, harvest):
+    """{font id: {"font": CLANNAD font, "share": raster_share}} of every bitmap font of 28-36 px (CLANNAD's fonts are
+    32 px) that holds one of CLANNAD's four fonts' raster (synth6_fonts.raster_share >= RASTER_SHARE)."""
+    refs = {r["font"]: F6.open_font(harvest / r["font"]) for r in inv if r["title"] == "PCSG00415"}
+    out = {}
+    for r in inv:
+        if r["title"] == "PCSG00415" or r["kind"] != "bitmap" or not 28 <= float(r["pixel_size"] or 0) <= 36:
+            continue
+        font = F6.open_font(harvest / r["font"])
+        best = max(((F6.raster_share(font, ref), k) for k, ref in refs.items()), default=(0.0, None))
+        if best[0] >= F6.RASTER_SHARE:
+            out[r["font"]] = {"font": best[1], "share": round(best[0], 3)}
+    return out
+
+
 def cmd_manifests(args):
     """The committed records of a built asset set: data/manifests/synth6_fonts.json (every harvested font: ids,
     sha256s, fidelity verdicts, why excluded, the OCR check and the glyph check's denials) and
@@ -1055,10 +1070,12 @@ def cmd_manifests(args):
     and line counts it was measured on). Numbers and hashes only: no font, page or text."""
     A = Path(args.assets)
     inv = json.loads((A / "fonts_inventory.json").read_text(encoding="utf-8"))
+    inv_by = {r["font"]: r for r in inv}
     fc = json.loads((A / "font_check.json").read_text(encoding="utf-8"))
     gc = json.loads((A / "glyph_check.json").read_text(encoding="utf-8"))
     gg = json.loads((A / "glyph_geometry.json").read_text(encoding="utf-8"))["fonts"] \
         if (A / "glyph_geometry.json").exists() else {}
+    raster = clannad_raster(inv, Path(args.harvest))
     rows = []
     for r in inv:
         c, g = fc["fonts"].get(r["font"]), gc["fonts"].get(r["font"])
@@ -1075,6 +1092,7 @@ def cmd_manifests(args):
         row["swapped"] = (gg.get(r["font"]) or {}).get("swapped")
         row["manual_deny"] = (gg.get(r["font"]) or {}).get("manual")
         row["near_test_font"] = r.get("near_test_font")
+        row["clannad_raster"] = raster.get(r["font"])
         row["drawn"] = not r["excluded"] and (r["glyphs"] or 0) >= 2000 and bool(c and c.get("pass"))
         rows.append(row)
     doc = {"kind": "synth6-fonts", "schema": 1,
@@ -1085,7 +1103,12 @@ def cmd_manifests(args):
            "ocr_check": {"ckpt_sha256": fc["ckpt_sha256"], "max_cer": fc["max_cer"],
                          "text": FONT_CHECK_TEXT},
            "glyph_check": {"ckpt_sha256": gc["ckpt_sha256"], "references": gc["references"]},
-           "glyph_geometry": {"rule": "synth6_fonts.misplaced"},
+           "glyph_geometry": {"rule": "synth6_fonts.misplaced, synth6_fonts.swapped, synth6.MANUAL_DENY"},
+           "clannad_raster": {"rule": "synth6_fonts.raster_share against CLANNAD's (PCSG00415) four fonts, bitmap "
+                                      "fonts of 28-36 px; flagged at RASTER_SHARE or above (the font holds CLANNAD's "
+                                      "glyph raster, re-quantised or not)", "threshold": F6.RASTER_SHARE,
+                              "flagged": sorted(raster), "drawn_flagged": sorted(
+                                  f for f in raster if not inv_by[f]["excluded"])},
            "assets_sha256": {n: sha256(A / n) for n in ("fonts_inventory.json", "font_check.json",
                                                         "glyph_check.json", "glyph_geometry.json")
                              if (A / n).exists()},
@@ -1125,8 +1148,10 @@ def cmd_inventory(args):
 # Single wrong glyphs at rarely used codes, found by the second audit round's per-symbol screen (shape cosine against
 # the reference fonts) and confirmed by eye (reports/audit-vocr6-synth6-b.md, F8). No automatic check covers a
 # single wrong symbol outside a shifted run, so these are listed by hand.
-MANUAL_DENY = {"PCSG00617/font24": "┐", "PCSG00838/font24": "┐\"", "NPJH50621/font16": "≪",
-               "PCSG01083/font_system": "〒"}
+# Round 3 added the 8 more its screen found over every drawable pair (reports/audit-vocr6-synth6-c.md, F11), plus ─
+# in the two font24 fonts and NPJH50621's ④⑤ (outside the vocab today).
+MANUAL_DENY = {"PCSG00617/font24": "┐└─", "PCSG00838/font24": "┐\"└─", "NPJH50621/font16": "≪≫①②③④⑤",
+               "PCSG01083/font_system": "〒△▲"}
 
 
 def cmd_glyph_geometry(args):

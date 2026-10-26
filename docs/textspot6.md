@@ -261,6 +261,10 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
     - vita-test + psp-test: textspot3's way, against textspot3's stored units and textspot's stored arms; plus the
       tagged dialogue CER and presence on text-free frames.
     - The script runs first on non-protected stand-ins (`--dry-run`) with a stage-1 run as the weights.
+14. **Scheduling** (no rule change): stage 2's three distilled seeds run before the nohook control's two. The
+    teacher by amendment 5's rule is `base_qS4` seed 2 (the best representative decode: crop, 1.3868% unseen-dev
+    CER, against `base_qL5`'s 1.4418%), so stage 2 distils from `base_qS4_seed2/final.pt`
+    (`eval/textspot6_teacher_20261026.json`).
 
 ## Results
 

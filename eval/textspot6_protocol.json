@@ -382,6 +382,16 @@
     "vita-test + psp-test: textspot3's way, the final weights in det and det+refine against textspot3's stored units (checked against its record, and re-read here) and textspot's stored arms, VOCR5-N; plus the tagged dialogue CER and presence on text-free frames.",
     "Before the read, the script runs on non-protected stand-ins (--dry-run: two hval titles, textspot's development frames, a CLANNAD-shaped directory of hval pages) with a stage-1 run as the weights."
    ]
+  },
+  {
+   "id": 14,
+   "utc": "2026-10-26T22:19:29Z",
+   "before": "every stage-2 run (the teacher was just taken by amendment 5's rule: eval/textspot6_teacher_20261026.json)",
+   "what": [
+    "Scheduling only, no rule change: stage 2's three kd_t64n8c16 seeds run before the nohook control's two (a report-only control, amendment 8), so that the selection is not held by the control; the scheduler reads a live plan (runs/plan.jsonl; stage2_plan.jsonl is its snapshot).",
+    "The teacher by amendment 5: base_qS4 (its representative's best decode, crop, seed 2, 1.3868% unseen-dev CER) against base_qL5 (crop, seed 1, 1.4418%); the teacher model is base_qS4_seed2/final.pt.",
+    "vocr6-lead lends 2 heavy slots from 23:45Z to 06:25Z (vocr6-spotter = 5 in that window, 3 otherwise)."
+   ]
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

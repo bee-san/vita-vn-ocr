@@ -305,6 +305,28 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   under qemu) checks the trailer's validation and the runs against its own reference. CLI: `vocr_cli --two-level`;
   Python: `Vocr(blob, mode="w8i", two_level=1)`, `run_topk(..., esc=True)`.
 
+### The attention op (VOCR6 stage 3)
+
+[docs/vocr6-attn.md](../docs/vocr6-attn.md) (#125): a blob from a `train2.py --attn 1` model carries one light global
+self-attention layer (op type 5) between the bottleneck and the head: z' = z + O(concat_h softmax(Q_h K_h^T) V_h)
+over the line's frames. Nothing changes for the caller: `vocr_load` parses it (`vocr_model.attn.dim != 0`),
+`vocr_arena_bytes` plans for it and `vocr_run` runs it.
+
+- The line is streamed in tiles up to the bottleneck, as before, but every frame's bottleneck output is kept (the
+  arena grows by `max_width / stride × 96 × 4` B: +49,152 B at 1,024 px); then the attention runs over the whole line,
+  its projections in the blob's mode (f32, W8F, W8I) and its scores, softmax (the runtime's own `exp_neg`) and weighted
+  sums in float32; then the head streams over z' with the gate and the two-level head as usual (their input is z').
+- K, V and a head batch's queries overlay the rings and the head's buffers, idle at that point. The output is the
+  same for every tile and head batch size, scalar and NEON. The cancel callback is also polled per chunk of the
+  attention and per tile of the head after it.
+- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`).
+- Cost (estimates, VitaSDK gcc `-O2`, NEON, docs/vocr6-attn.md): about 0.066 ms a frame for the projections plus
+  0.0010 ms × T for the scores on a line of T frames at 333 MHz (+35 ms per nominal 3-line box for VOCR5-N's shape);
+  `vocr.o` grows from 23,267 to 25,979 B (scalar 18,295 to 21,079 B; psp-gcc 28,091 to 32,603 B); no malloc.
+- Twin and tests: `runtime/tests/vocr_ref.py attn_exact` is bit-exact; `parity.py --fixture --attn 1` (run by
+  `make check` through the sanitized CLI, and by `make parity-arm`), `tests/test_vocr6_attn.py` and
+  `tests/test_vocr.c` check it.
+
 ### Counters and cut lines (`vocr_post.h`, `vocr_lines_widen.h`)
 
 Three optional steps for counter contexts and for lines a tight region cuts (issue #109; [docs/counters.md](../docs/counters.md) has the corpus counts and the development measurements). None runs unless its caller calls it, so a pipeline without them is bit for bit as before.
@@ -399,7 +421,7 @@ python train/export.py --ckpt models/v1/ckpt_best.pt --out v1_w8.vocr --int8
 python train/export.py --info v1_w8.vocr          # sizes and arena bytes at 256/640/1024
 ```
 
-It folds BatchNorm into the convolutions (in float64) and maps the model to five op types: one-input-channel conv (the stem), depthwise conv, pointwise conv (including the 2×1 height collapse as a pointwise over two rows), and the head. With `--int8`, every pointwise and head matrix becomes symmetric per-channel int8.
+It folds BatchNorm into the convolutions (in float64) and maps the model to five op types: one-input-channel conv (the stem), depthwise conv, pointwise conv (including the 2×1 height collapse as a pointwise over two rows), and the head. With `--int8`, every pointwise and head matrix becomes symmetric per-channel int8. A `train2.py --attn 1` model adds a sixth, the attention op before the head (its Q, K, V and O matrices int8 too; "The attention op" above).
 
 The blob is version 1:
 - a 64-byte header: magic `VOCR`, version, sizes, a CRC-32 and the checkpoint's SHA-256 prefix;

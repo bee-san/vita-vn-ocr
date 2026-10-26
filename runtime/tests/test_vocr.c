@@ -1216,7 +1216,8 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
         oo.mode = VOCR_MODE_W8F;
         CHECK(vocr_arena_bytes(&mg, &oo) == 0);
         oo.mode = VOCR_MODE_W8I;
-        CHECK(vocr_arena_bytes(&mg, &oo) > base_w8i); /* the frame indices */
+        /* the frame indices (with an attention op they may fit in the working set's overlay: docs/vocr6-attn.md) */
+        CHECK(mg.attn.dim ? vocr_arena_bytes(&mg, &oo) >= base_w8i : vocr_arena_bytes(&mg, &oo) > base_w8i);
     }
     CHECK(gate_run(gn, VOCR_HEAD_GATE_OFF, 0, 0, w, hgt, 3, 1, text, sizeof text, &ex) == VOCR_OK);
     CHECK(strcmp(text, ref) == 0 && ex.gated == 0 && memcmp(g_logits, logits0, sizeof logits0) == 0);
@@ -1774,6 +1775,422 @@ static void test_two_gate(void)
     CHECK(ex.gated == skipped && skipped > 0 && skipped < ex.frames);
 }
 
+/* ------------------------------------------------------------ the attention op (docs/vocr6-attn.md) */
+
+static unsigned rd16t(const unsigned char *p) { return (unsigned)p[0] | (unsigned)p[1] << 8; }
+static uint32_t rd32t(const unsigned char *p)
+{
+    return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
+}
+
+/* random int8 rows x k into blob_buf, then rows positive scales times gain; returns the weights' offset */
+static uint32_t put_i8(unsigned n)
+{
+    const uint32_t off = (uint32_t)blob_pos;
+    unsigned j;
+    room(n);
+    for (j = 0; j < n; j++) blob_buf[blob_pos + j] = (unsigned char)(signed char)(int)(frand() * 127.0f);
+    blob_pos = (blob_pos + n + 15u) & ~(size_t)15u;
+    return off;
+}
+
+static uint32_t put_scales(unsigned rows, float gain)
+{
+    const uint32_t off = (uint32_t)blob_pos;
+    unsigned j;
+    room(4u * (size_t)rows);
+    for (j = 0; j < rows; j++) {
+        const float sc = (0.01f + 0.004f * (float)(j % 5)) * gain;
+        memcpy(blob_buf + blob_pos + 4u * j, &sc, 4);
+    }
+    blob_pos = (blob_pos + 4u * rows + 15u) & ~(size_t)15u;
+    return off;
+}
+
+/* Inserts an attention op of `heads` heads and `dim` channels before the head of the blob of n bytes in blob_buf (a
+ * builder's, without a gate or trailer): the op table grows by one record, so every array moves up 64 bytes, and so
+ * does every offset. QKV and O are random from the seed, O times o_gain (0: O = 0, so z' = z exactly). The base's
+ * arrays keep their values, so its logits are the reference of o_gain 0. Returns the new blob's bytes. */
+static size_t insert_attn(size_t n, unsigned heads, unsigned dim, float o_gain, uint32_t seed)
+{
+    unsigned char *b = blob_buf;
+    const unsigned n_ops = rd16t(b + 22), int8 = rd32t(b + 12) & 1u, rows = 3u * dim;
+    const size_t data0 = 64u + 64u * n_ops;
+    unsigned char *r;
+    unsigned d, i, f, j;
+    uint32_t qw, qs = 0, qb, ow, os = 0, ob;
+    room(64u + 4096u);
+    memmove(b + data0 + 64u, b + data0, n - data0);
+    for (i = 0; i < n_ops; i++) {
+        unsigned char *ri = b + 64 + 64 * i;
+        for (f = 16; f <= (ri[0] == 5 ? 52u : 28u); f += 4) /* w, b, s offsets; an attention record's O ones too */
+            if (f != 20 && f != 32 && f != 36 && f != 44 && rd32t(ri + f)) wr32(ri + f, rd32t(ri + f) + 64u);
+    }
+    memcpy(b + 64 + 64 * n_ops, b + 64 + 64 * (n_ops - 1), 64); /* the head to the new last slot */
+    d = rd16t(b + 64 + 64 * n_ops + 8);                         /* the head's input width */
+    wr32(b + 32, rd32t(b + 32) + 64u);                          /* the vocab */
+    wr16(b + 22, n_ops + 1u);
+    blob_pos = (n + 64u + 15u) & ~(size_t)15u;
+    lcg = seed;
+    if (int8) {
+        qw = put_i8(rows * d);
+        qs = put_scales(rows, 1.0f);
+    } else {
+        qw = put_floats(rows * d, 0.5f);
+    }
+    qb = put_floats(rows, 0.2f);
+    for (j = 0; j < dim; j++) memset(blob_buf + qb + 4u * (dim + j), 0, 4); /* K has no bias (export.py) */
+    if (int8) {
+        ow = put_i8(d * dim);
+        os = put_scales(d, o_gain);
+    } else {
+        ow = put_floats(d * dim, 0.5f);
+        for (j = 0; j < d * dim; j++) {
+            float v;
+            memcpy(&v, blob_buf + ow + 4u * j, 4);
+            v *= o_gain;
+            memcpy(blob_buf + ow + 4u * j, &v, 4);
+        }
+    }
+    ob = put_floats(d, 0.1f * o_gain);
+    op_rec(n_ops - 1, 5, 4 | (int8 ? 8 : 0), 1, 1, 1, 1, 0, 0, d, d, 1, 1, qw, rows * d * (int8 ? 1u : 4u), qb, qs, d,
+           rows);
+    r = b + 64 + 64 * (n_ops - 1);
+    wr16(r + 36, heads);
+    wr16(r + 38, dim);
+    wr32(r + 40, ow);
+    wr32(r + 44, d * dim * (int8 ? 1u : 4u));
+    wr32(r + 48, ob);
+    wr32(r + 52, os);
+    wr32(b + 8, (uint32_t)blob_pos);
+    wr32(b + 40, crc32_ref(b + 64, blob_pos - 64));
+    return blob_pos;
+}
+
+static void test_attn_load(void)
+{
+    vocr_model m;
+    const size_t n = insert_attn(build_blob(1), 2, 16, 1.0f, 5u);
+    unsigned char *r = blob_buf + 64 + 64 * 6;
+    /* record byte, value: heads 0 / 3 / 4 (4 per head, not x8), dim 0 / 12, QKV rows, flags ReLU / residual /
+     * collapse / no bias, O weight bytes, O offset misaligned, O bias outside, reserved bytes 56 and 63, cin */
+    static const unsigned edits[][3] = {{36, 0, 2}, {36, 3, 2}, {36, 4, 2}, {38, 0, 2}, {38, 12, 2}, {34, 40, 2},
+                                        {1, 1 | 4 | 8, 1}, {1, 2 | 4 | 8, 1}, {1, 16 | 4 | 8, 1}, {1, 8, 1},
+                                        {44, 255, 2}, {40, 8, 1}, {50, 255, 1}, {56, 1, 1}, {63, 1, 1}, {8, 24, 2}};
+    unsigned i;
+    CHECK(vocr_check_crc(blob_buf, n) == VOCR_OK && vocr_load(&m, blob_buf, n) == VOCR_OK);
+    CHECK(m.n_ops == 8 && m.attn.heads == 2 && m.attn.dim == 16 && m.attn.o_q && !m.attn.o_w && m.attn.o_scale);
+    CHECK(m.op[6].type == 5 && m.op[6].cout_pad == 48 && m.op[7].type == 4 && m.op[7].k == 16);
+    for (i = 0; i < sizeof edits / sizeof edits[0]; i++) {
+        unsigned char save[2];
+        const unsigned at_ = edits[i][0];
+        memcpy(save, r + at_, 2);
+        if (edits[i][2] == 2) wr16(r + at_, edits[i][1]);
+        else r[at_] = (unsigned char)(at_ == 40 ? r[at_] + edits[i][1] : edits[i][1]);
+        CHECK(vocr_load(&m, blob_buf, n) == VOCR_E_FORMAT);
+        if (vocr_load(&m, blob_buf, n) != VOCR_E_FORMAT) fprintf(stderr, "  attention edit %u not refused\n", i);
+        memcpy(r + at_, save, 2);
+    }
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+    wr16(blob_buf + 22, 7); /* the attention op last, without its head */
+    CHECK(vocr_load(&m, blob_buf, n) == VOCR_E_FORMAT);
+    wr16(blob_buf + 22, 8);
+    {   /* two attention ops; and an f32 blob with an int8 attention op */
+        const size_t n2 = insert_attn(insert_attn(build_blob(1), 2, 16, 1.0f, 5u), 2, 16, 1.0f, 6u);
+        CHECK(vocr_check_crc(blob_buf, n2) == VOCR_OK && vocr_load(&m, blob_buf, n2) == VOCR_E_FORMAT);
+    }
+    {
+        const size_t nf = insert_attn(build_blob(0), 2, 16, 1.0f, 5u);
+        CHECK(vocr_load(&m, blob_buf, nf) == VOCR_OK && m.attn.o_w && !m.attn.o_q);
+        blob_buf[64 + 64 * 6 + 1] |= 8u;
+        CHECK(vocr_load(&m, blob_buf, nf) == VOCR_E_FORMAT);
+    }
+    /* a blob without the op has none */
+    CHECK(vocr_load(&m, blob_buf, build_blob(1)) == VOCR_OK && m.attn.dim == 0 && m.attn.heads == 0);
+}
+
+typedef struct {
+    unsigned calls, stop_at;
+} poll_t;
+
+static int stop_at(void *user)
+{
+    poll_t *p = (poll_t *)user;
+    return ++p->calls >= p->stop_at;
+}
+
+static int attn_run(size_t n, vocr_opts o, unsigned w, unsigned h, int fmt, char *text, size_t cap, float *logits,
+                    vocr_extra *out, poll_t *poll)
+{
+    vocr_model m;
+    vocr_ctx c;
+    vocr_image im;
+    vocr_extra ex;
+    size_t need;
+    int rc = vocr_load(&m, blob_buf, n);
+    if (rc) return rc;
+    need = vocr_arena_bytes(&m, &o);
+    if (!need) return VOCR_E_MODE;
+    rc = vocr_init(&c, &m, &o, arena_b, need);
+    if (rc) return rc;
+    im.pixels = img_px;
+    im.width = w;
+    im.height = h;
+    im.stride = (size_t)w * (fmt == VOCR_RGBA8 ? 4u : 1u);
+    im.format = fmt;
+    memset(&ex, 0, sizeof ex);
+    ex.logits = logits;
+    ex.cap_frames = 80;
+    if (poll) {
+        ex.cancel = stop_at;
+        ex.user = poll;
+    }
+    rc = vocr_run(&c, &im, text, cap, &ex);
+    if (out) *out = ex;
+    return rc;
+}
+
+/* The attention op on build's model, every mode and format: O = 0 gives the model without the op bit for bit; with
+ * O the logits move, are the same at every tiling and head batch (the attention's query chunk) and with a smaller
+ * max_width, W8I stays close to W8F, a cancel at any poll stops the run; `want` is the known answer, the FNV-1a 64 of
+ * every run's logits and text as main's scalar code computes them (any build gives the same bits; 0: printed). */
+static void test_attn_run_on(size_t (*build)(int), unsigned heads, unsigned dim, uint64_t want)
+{
+    static float lbase[80 * CLASSES], lref[80 * CLASSES], lcur[80 * CLASSES], lw8f[80 * CLASSES];
+    const unsigned tiles[6][2] = {{1, 1}, {2, 3}, {3, 1}, {5, 7}, {16, 2}, {64, 64}};
+    const int modes_i8[2] = {VOCR_MODE_W8F, VOCR_MODE_W8I};
+    uint64_t kh = 0xcbf29ce484222325ull;
+    char tbase[256], tref[256], text[256];
+    int int8, fmt, mi;
+    for (int8 = 0; int8 <= 1; int8++)
+        for (fmt = VOCR_GREY8; fmt <= VOCR_RGBA8; fmt += 3)
+            for (mi = 0; mi < (int8 ? 2 : 1); mi++) {
+                const unsigned w = fmt == VOCR_GREY8 ? 257u : 93u, h = fmt == VOCR_GREY8 ? 19u : 9u;
+                vocr_opts o;
+                vocr_extra ex;
+                size_t n, base_arena, t;
+                vocr_model m;
+                unsigned i, frames;
+                make_image(w, h, fmt == VOCR_RGBA8);
+                memset(&o, 0, sizeof o);
+                o.mode = int8 ? modes_i8[mi] : VOCR_MODE_F32;
+                n = build(int8);
+                memset(lbase, 0, sizeof lbase);
+                CHECK(attn_run(n, o, w, h, fmt, tbase, sizeof tbase, lbase, &ex, NULL) == VOCR_OK);
+                frames = ex.frames;
+                CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK);
+                base_arena = vocr_arena_bytes(&m, &o);
+                n = insert_attn(build(int8), heads, dim, 0.0f, 77u); /* O = 0: the base exactly */
+                memset(lcur, 0, sizeof lcur);
+                CHECK(attn_run(n, o, w, h, fmt, text, sizeof text, lcur, &ex, NULL) == VOCR_OK);
+                CHECK(ex.frames == frames && !strcmp(text, tbase) && !memcmp(lcur, lbase, sizeof lcur));
+                n = insert_attn(build(int8), heads, dim, 1.0f, 77u);
+                CHECK(vocr_load(&m, blob_buf, n) == VOCR_OK && vocr_arena_bytes(&m, &o) > base_arena);
+                memset(lref, 0, sizeof lref);
+                CHECK(attn_run(n, o, w, h, fmt, tref, sizeof tref, lref, &ex, NULL) == VOCR_OK);
+                CHECK(ex.frames == frames && memcmp(lref, lbase, (size_t)frames * CLASSES * 4));
+                for (t = 0; t < (size_t)frames * CLASSES; t++) CHECK(isfinite(lref[t]));
+                kh = fnv64(kh, lref, (size_t)frames * CLASSES * sizeof(float));
+                kh = fnv64(kh, tref, strlen(tref) + 1);
+                if (o.mode == VOCR_MODE_W8F) memcpy(lw8f, lref, sizeof lw8f);
+                if (o.mode == VOCR_MODE_W8I) { /* int16 activations stay close to float ones */
+                    float mx = 0.0f, dd = 0.0f;
+                    for (t = 0; t < (size_t)frames * CLASSES; t++) {
+                        const float a = fabsf(lw8f[t]), e = fabsf(lref[t] - lw8f[t]);
+                        if (a > mx) mx = a;
+                        if (e > dd) dd = e;
+                    }
+                    CHECK(mx > 0.1f && dd <= 2e-3f * (mx > 1.0f ? mx : 1.0f));
+                }
+                for (i = 0; i < 6; i++) {
+                    vocr_opts ot = o;
+                    ot.tile_frames = tiles[i][0];
+                    ot.head_frames = tiles[i][1];
+                    memset(lcur, 0, sizeof lcur);
+                    CHECK(attn_run(n, ot, w, h, fmt, text, sizeof text, lcur, NULL, NULL) == VOCR_OK);
+                    CHECK(!strcmp(text, tref) && !memcmp(lcur, lref, sizeof lcur));
+                }
+                {   /* a plan for narrower lines: the same logits for a line that fits, VOCR_E_WIDTH for one that does not */
+                    vocr_opts ot = o;
+                    ot.max_width = vocr_resized_width(&m, w, h) + 4u;
+                    memset(lcur, 0, sizeof lcur);
+                    CHECK(attn_run(n, ot, w, h, fmt, text, sizeof text, lcur, NULL, NULL) == VOCR_OK);
+                    CHECK(!strcmp(text, tref) && !memcmp(lcur, lref, sizeof lcur));
+                    ot.max_width = vocr_resized_width(&m, w, h) / 2u;
+                    CHECK(attn_run(n, ot, w, h, fmt, text, sizeof text, lcur, NULL, NULL) == VOCR_E_WIDTH);
+                }
+                {   /* the arena one byte short */
+                    vocr_ctx c;
+                    const size_t need = vocr_arena_bytes(&m, &o);
+                    CHECK(need > 0 && vocr_init(&c, &m, &o, arena_a, need - 1) == VOCR_E_ARENA);
+                }
+                if (fmt == VOCR_GREY8) { /* cancel at every poll (the tiles', the attention's, the head's) */
+                    poll_t poll = {0, 1u << 30};
+                    unsigned polls, s;
+                    CHECK(attn_run(n, o, w, h, fmt, text, sizeof text, NULL, NULL, &poll) == VOCR_OK);
+                    polls = poll.calls;
+                    CHECK(polls > 2);
+                    for (s = 1; s <= polls + 1; s++) {
+                        poll_t ps = {0, s};
+                        const int rc = attn_run(n, o, w, h, fmt, text, sizeof text, NULL, NULL, &ps);
+                        CHECK(s <= polls ? rc == VOCR_E_CANCELLED && text[0] == 0 : rc == VOCR_OK && !strcmp(text, tref));
+                    }
+                }
+            }
+    if (kh != want) {
+        fprintf(stderr, "test_attn_run_on(%u, %u): logits hash %016llx, want %016llx\n", heads, dim,
+                (unsigned long long)kh, (unsigned long long)want);
+        failures++;
+    }
+}
+
+/* plan() keeps 32-bit offsets: an arena over 4 GiB must be refused (vocr_arena_bytes 0), with or without the
+ * attention op, and never wrapped into a small one (the attention's line was placed from a truncated offset before
+ * this was checked first; audit-vocr6-s3-attn). The shapes: height 64, stride 1, max width 8,192 px; a 1 -> 8 stem,
+ * an 8 -> 1,024 pointwise layer on 64 rows, two depthwise 3x3 on 64 rows and five of stride 2 x 1 down to 2 rows, a
+ * 2x1 collapse to 16 channels, [the attention op: 16, 2 heads,] a 6-class head. With 8,192-frame tiles the
+ * depthwise layers' rings alone are over 6 GiB. Zero weights: it is only planned. 64-bit hosts only (on a 32-bit
+ * host these sizes do not fit size_t). */
+static unsigned char big_buf[512u << 10] __attribute__((aligned(16)));
+static size_t big_pos;
+
+static uint32_t big_put(size_t n)
+{
+    const uint32_t off = (uint32_t)big_pos;
+    if (big_pos + n > sizeof big_buf) {
+        fprintf(stderr, "big test blob too large\n");
+        exit(2);
+    }
+    big_pos = (big_pos + n + 15u) & ~(size_t)15u;
+    return off;
+}
+
+/* op record i of big_buf, its zero weights, bias and (int8) scales placed after the table */
+static void big_rec(unsigned i, unsigned type, unsigned flags, unsigned kh, unsigned kw, unsigned sh, unsigned ph,
+                    unsigned pw, unsigned cin, unsigned cout, unsigned hin, unsigned hout, unsigned k, unsigned cout_pad)
+{
+    unsigned char *r = big_buf + 64 + 64 * i;
+    const int mat = type >= 3;
+    const uint32_t wb = (uint32_t)cout_pad * k * (mat ? 1u : 4u);
+    const uint32_t w = big_put(wb), b = big_put(4u * cout_pad), s = mat ? big_put(4u * cout_pad) : 0;
+    memset(r, 0, 64);
+    r[0] = (unsigned char)type;
+    r[1] = (unsigned char)(flags | 4 | (mat ? 8 : 0));
+    r[2] = (unsigned char)kh;
+    r[3] = (unsigned char)kw;
+    r[4] = (unsigned char)sh;
+    r[5] = 1;
+    r[6] = (unsigned char)ph;
+    r[7] = (unsigned char)pw;
+    wr16(r + 8, cin);
+    wr16(r + 10, cout);
+    wr16(r + 12, hin);
+    wr16(r + 14, hout);
+    wr32(r + 16, w);
+    wr32(r + 20, wb);
+    wr32(r + 24, b);
+    wr32(r + 28, s);
+    wr16(r + 32, k);
+    wr16(r + 34, cout_pad);
+}
+
+static size_t build_big_blob(int attn)
+{
+    unsigned char vocab[2 * 7 + 5];
+    const unsigned n_ops = attn ? 13u : 12u;
+    unsigned i, h = 64, op = 0;
+    uint32_t v;
+    memset(big_buf, 0, sizeof big_buf);
+    big_pos = 64 + 64 * n_ops;
+    big_rec(op++, 1, 1, 3, 3, 1, 1, 1, 1, 8, 64, 64, 9, 8);               /* stem 1 -> 8 */
+    big_rec(op++, 3, 1, 1, 1, 1, 0, 0, 8, 1024, 64, 64, 8, 1024);         /* pw 8 -> 1,024 */
+    for (i = 0; i < 2; i++) big_rec(op++, 2, 1, 3, 3, 1, 1, 1, 1024, 1024, 64, 64, 9, 1024);
+    for (i = 0; i < 5; i++, h /= 2) big_rec(op++, 2, 1, 3, 3, 2, 1, 1, 1024, 1024, h, h / 2, 9, 1024);
+    big_rec(op++, 3, 16, 2, 1, 1, 0, 0, 1024, 16, 2, 1, 2048, 16);        /* collapse 2x1 -> 16 */
+    big_rec(op++, 3, 1 | 2, 1, 1, 1, 0, 0, 16, 16, 1, 1, 16, 16);        /* a residual pw (no dw before: fixed below) */
+    big_buf[64 + 64 * (op - 1) + 1] &= (unsigned char)~2u;
+    if (attn) {
+        unsigned char *r = big_buf + 64 + 64 * op;
+        big_rec(op++, 5, 0, 1, 1, 1, 0, 0, 16, 16, 1, 1, 16, 48);
+        r[1] = 4 | 8;
+        wr16(r + 36, 2);
+        wr16(r + 38, 16);
+        wr32(r + 40, big_put(16 * 16));
+        wr32(r + 44, 16 * 16);
+        wr32(r + 48, big_put(4 * 16));
+        wr32(r + 52, big_put(4 * 16));
+    }
+    big_rec(op++, 4, 0, 1, 1, 1, 0, 0, 16, 6, 1, 1, 16, 8);               /* head 16 -> 6 */
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 1; i < 6; i++) {
+        vocab[14 + i - 1] = (unsigned char)('a' + i - 1);
+        wr16(vocab + 2 * (i + 1), i);
+    }
+    v = big_put(sizeof vocab);
+    memcpy(big_buf + v, vocab, sizeof vocab);
+    memcpy(big_buf, "VOCR", 4);
+    wr16(big_buf + 4, 1);
+    wr16(big_buf + 6, 64);
+    wr32(big_buf + 8, (uint32_t)big_pos);
+    wr32(big_buf + 12, 1u);
+    wr16(big_buf + 16, 64);
+    wr16(big_buf + 18, 8192);
+    wr16(big_buf + 20, 1);
+    wr16(big_buf + 22, op);
+    wr32(big_buf + 24, 6);
+    wr32(big_buf + 28, 64);
+    wr32(big_buf + 32, v);
+    wr32(big_buf + 36, 5);
+    wr32(big_buf + 40, crc32_ref(big_buf + 64, big_pos - 64));
+    return big_pos;
+}
+
+static void test_attn_plan_limit(void)
+{
+    vocr_model m;
+    vocr_opts o;
+    size_t base_default = 0, attn_default = 0;
+    int attn;
+    if (sizeof(size_t) < 8) return;
+    for (attn = 0; attn <= 1; attn++) {
+        const size_t n = build_big_blob(attn);
+        CHECK(vocr_load(&m, big_buf, n) == VOCR_OK && (m.attn.dim != 0) == (attn != 0));
+        memset(&o, 0, sizeof o);
+        o.mode = VOCR_MODE_W8I;
+        CHECK(vocr_arena_bytes(&m, &o) > 0); /* the default tile: a sane arena */
+        if (attn) attn_default = vocr_arena_bytes(&m, &o);
+        else base_default = vocr_arena_bytes(&m, &o);
+        o.tile_frames = 8192;
+        CHECK(vocr_arena_bytes(&m, &o) == 0); /* over 4 GiB: refused, not wrapped */
+        o.mode = VOCR_MODE_W8F;              /* W8F too */
+        CHECK(vocr_arena_bytes(&m, &o) == 0);
+    }
+    /* the attention adds its line (8,192 frames x 16 floats) and K, V beyond the small rings of the default tile */
+    CHECK(attn_default >= base_default + 8192u * 16u * 4u);
+}
+
+static size_t build_blob_wide(int int8) { return build_blob_c1(int8, 272); }
+static size_t build_attn_gate_blob(int int8) { return insert_attn(build_blob(int8), 2, 16, 1.0f, 31u); }
+static size_t build_attn_2l_blob(void) { return insert_attn(build_blob_2l(), 2, 16, 1.0f, 37u); }
+static size_t build_stem_head_attn_2l_blob(void) { return insert_attn(build_stem_head_blob_2l(), 1, 16, 1.0f, 41u); }
+
+static void test_attn(void)
+{
+    test_attn_load();
+    test_attn_plan_limit();
+    /* known answers: this branch's scalar code (host gcc and clang, Cortex-A9 NEON and scalar agree) */
+    test_attn_run_on(build_blob, 2, 16, 0xfbb022317fc251fbull);
+    test_attn_run_on(build_blob, 1, 32, 0xb53ea1e650e1fa57ull);         /* dim > d: the projections' scratch is sized for dim */
+    test_attn_run_on(build_blob_wide, 2, 16, 0x371180f764b99a89ull);    /* the collapse's K = 544 > 512 before it */
+    test_attn_run_on(build_stem_head_blob, 2, 16, 0x754848ffe973647bull); /* the line filled by the front's last op */
+    /* the head gate and the two-level head read z', the head's input: the gate's and the escape's scores equal their
+     * references on vocr_extra.head_in, every skip and level as on any blob */
+    test_gate_run_on(build_attn_gate_blob, 0);
+    test_two_run_on(build_attn_2l_blob, 260, 21);
+    test_two_run_on(build_stem_head_attn_2l_blob, 257, 10);
+}
+
 int main(void)
 {
     test_load(0);
@@ -1799,6 +2216,7 @@ int main(void)
     test_two_run();
     test_two_gate();
     test_two_stem_head();
+    test_attn();
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

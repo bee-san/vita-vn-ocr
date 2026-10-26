@@ -56,6 +56,10 @@ width and the width clamp (1,020 px at 12, a multiple of the stride) follow it; 
 "stride" and "max_width". Teacher frame targets (kd=) are stride-8 only.
 --guide nrtr adds a training-only Transformer-decoder guidance loss (GTC; train/guide.py) on the
 frame-row features; the decoder is saved as "guide" and never exported.
+--attn 1 adds the light global-attention block between the bottleneck and the head (train/model.py GlobalAttn,
+--attn-dim channels in --attn-heads heads; docs/vocr6-attn.md); the batch's right padding is masked out of its keys.
+Checkpoints then record "attn", "attn_dim" and "attn_heads". With --init from a checkpoint without the block it
+starts at gate 0, i.e. as exactly that checkpoint's model. --attn 0 (the default) is the model and run without it.
 
 Checkpoints are train.py's format (eval/run.py, train/export.py, sweep_eval.py read them).
 A run resumes from <out>/<run>/ckpt_last.pt. Threads: $TORCH_NUM_THREADS (heavy.sh).
@@ -90,7 +94,7 @@ from metrics import lev, norm, score_hiragana  # noqa: E402
 import hostinfo  # noqa: E402
 from common import DATA, load_vocab  # noqa: E402
 from finder_aug import finder_aug  # noqa: E402
-from model import TinyVNOCR, fuse_rep, load_plain_into_rep, set_weight_quant  # noqa: E402
+from model import TinyVNOCR, attn_arch, fuse_rep, load_plain_into_rep, load_state, set_weight_quant  # noqa: E402
 from source_policy import (  # noqa: E402
     CAPS,
     ExposureJournal,
@@ -751,6 +755,11 @@ def main(argv=None, *, execution_context=None):
     ap.add_argument("--guide-weight", type=float, default=1.0)
     ap.add_argument("--guide-dim", type=int, default=256)
     ap.add_argument("--guide-layers", type=int, default=2)
+    ap.add_argument("--attn", type=int, default=0, choices=(0, 1),
+                    help="1: one light global-attention layer between the bottleneck and the head (train/model.py "
+                         "GlobalAttn; gate 0 at the start, so --init from a model without it starts as that model)")
+    ap.add_argument("--attn-dim", type=int, default=96, help="the attention's Q/K/V width (split into the heads)")
+    ap.add_argument("--attn-heads", type=int, default=2)
     ap.add_argument("--vocab", type=Path, default=DATA / "vocab.txt")
     ap.add_argument("--kd-weight", type=float, default=1.0)
     ap.add_argument("--kd-tau", type=float, default=1.0)
@@ -773,6 +782,8 @@ def main(argv=None, *, execution_context=None):
         raise ValueError("--source-policy does not accept --val/--select; evaluate retained checkpoints with the "
                          "separately frozen general-VN selector")
     args.freeze_bn_stats |= args.train_scope == "head"
+    if args.attn and args.train_scope == "head":   # the head scope would freeze the block at gate 0: a silent no-op
+        raise SystemExit("--attn 1 trains the attention block; --train-scope head would leave it frozen at gate 0")
     set_geometry(args.stride)
     if args.stride != 8 and any(parse_opts(s.split(":", 3)[3] if s.count(":") >= 3 else "").get(key, "0") != "0"
                                 for s in args.src for key in ("kd", "kdonly")):
@@ -832,12 +843,16 @@ def main(argv=None, *, execution_context=None):
     chans = tuple(int(c) for c in args.chans.split(",")) if args.chans else None
     arch = dict(width=args.width, bottleneck=args.bottleneck, depth=args.depth, ctx=args.ctx,
                 ctx_k=args.ctx_k, chans=chans, stride=args.stride)
+    attn = attn_arch(dict(attn=args.attn, attn_dim=args.attn_dim, attn_heads=args.attn_heads))
+    arch.update(attn)                      # {} with --attn 0: the model and checkpoints without the block
     model = TinyVNOCR(len(vocab) + 1, **arch, rep=args.rep)
     model = model.to(memory_format=torch.channels_last)
     train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
           f"threads {args.threads}, stride {STRIDE} (width clamp {MAX_W})"
-          + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
+          + (f", rep {args.rep} (trained form)" if args.rep else "")
+          + (f", attention {attn['attn_dim']} x {attn['attn_heads']} heads "
+             f"({sum(p.numel() for p in model.attn.parameters()):,} params)" if attn else ""), flush=True)
     guide = None
     if args.guide == "nrtr":
         if args.train_scope != "all":
@@ -886,6 +901,8 @@ def main(argv=None, *, execution_context=None):
             raise ValueError("resume --rep/--chans differ from checkpoint")
         if int(ck.get("stride") or 8) != args.stride:
             raise ValueError("resume --stride differs from checkpoint")
+        if attn_arch(ck) != attn:
+            raise ValueError("resume --attn/--attn-dim/--attn-heads differ from checkpoint")
         if (guide is not None) != ("guide" in ck):
             raise ValueError("resume cannot add or remove --guide")
         if guide is not None:
@@ -916,13 +933,18 @@ def main(argv=None, *, execution_context=None):
                   flush=True)
         if guide is not None and "guide" in ck:
             guide.load_state_dict(ck["guide"])              # continue a guided pretrain's decoder
+        if attn_arch(ck) and attn_arch(ck) != attn:
+            raise ValueError(f"init checkpoint has attention {attn_arch(ck)}, the run {attn or 'none'}")
         if args.rep and int(ck.get("rep") or 0) == args.rep and "model_rep" in ck:
-            model.load_state_dict(ck["model_rep"])          # a rep pretrain: keep its branches
+            how = load_state(model, ck["model_rep"])        # a rep pretrain: keep its branches
         elif args.rep:
             load_plain_into_rep(model, ck["model"])        # plain weights, extra branches start at 0
+            how = "fresh-attn" if attn and not attn_arch(ck) else "loaded"
         else:
-            model.load_state_dict(ck["model"])
-        print(f"initialised from {args.init} (step {ck.get('step')})", flush=True)
+            how = load_state(model, ck["model"])
+        print(f"initialised from {args.init} (step {ck.get('step')})"
+              + (": the attention block starts at gate 0, so the model is the checkpoint's"
+                 if how == "fresh-attn" else ""), flush=True)
     if policy and "initial_model" not in execution:
         execution["initial_model"] = {"kind": "seeded_random", "seed": args.seed,
                                       "state_sha256": model_state_sha256(model)}
@@ -971,10 +993,11 @@ def main(argv=None, *, execution_context=None):
         x, in_len, lab, tgt, tgt_len, kd = make_batch(items, rng, src_opts)
         if policy:
             journal.append("intent", mixer.ledger)
+        fwd = {"lengths": in_len} if attn else {}           # the attention masks the batch's right padding
         if guide is not None:
-            logits, feats = model(x, return_features=True)  # T x N x C, N x C192 x 1 x T
+            logits, feats = model(x, return_features=True, **fwd)  # T x N x C, N x C192 x 1 x T
         else:
-            logits = model(x)                                # T x N x C
+            logits = model(x, **fwd)                         # T x N x C
         if policy:
             mixer.record_forward(items)
             journal.append("forward", mixer.ledger)
@@ -1055,7 +1078,7 @@ def main(argv=None, *, execution_context=None):
                   "vocab": vocab, "width": args.width, "bottleneck": args.bottleneck,
                   "depth": args.depth, "ctx": args.ctx, "ctx_k": args.ctx_k, "height": H, "unk": unk,
                   "chans": list(chans) if chans else None, "rep": args.rep,
-                  "stride": STRIDE, "max_width": MAX_W,
+                  "stride": STRIDE, "max_width": MAX_W, **attn,
                   "freeze_bn_stats": args.freeze_bn_stats,
                   "qat": {"bits": 8, "from_step": qat_from} if qat_from is not None else None,
                   "args": cfg, "val": {k: list(v) for k, v in res.items()}}

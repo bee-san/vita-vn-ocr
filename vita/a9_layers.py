@@ -8,7 +8,8 @@
 
 measure: compiles runtime/vocr.c (or --runtime DIR/vocr.c) with VitaSDK's arm-vita-eabi-gcc and the Vita
   flags (vita/a9_cycles.py), plus -DVOCR_PROF=vocr_prof_mark, which makes vocr_run() call the marker of
-  vita/qemu/prof_mark.c as each phase starts (an op's step, the head, the input columns, the rest), and runs
+  vita/qemu/prof_mark.c as each phase starts (an op's step, the head, the input columns, the rest; with an attention
+  op its projections under its op index and its scores, softmax and weighted sums as phase 103), and runs
   it under qemu-arm with vita/qemu/insn_mix.c's per-phase counts (marker=, layers=) and its data cache model
   (l1d=on: 32 KiB 4-way L1, 2 MiB 8-way L2, 32-byte lines, LRU). --plain also builds and runs the same code
   without the markers, to check that they do not change the runtime's own instruction count; --no-pld leaves
@@ -44,8 +45,8 @@ ROOT = HERE.parent
 sys.path[:0] = [str(HERE), str(ROOT / "train")]
 import a9_cycles as A9  # noqa: E402
 
-PROF_RUN, PROF_SRC, PROF_GATE = 100, 101, 102
-NAMES = {1: "CONV", 2: "DW", 3: "PW", 4: "HEAD"}
+PROF_RUN, PROF_SRC, PROF_GATE, PROF_ATTN = 100, 101, 102, 103
+NAMES = {1: "CONV", 2: "DW", 3: "PW", 4: "HEAD", 5: "ATTN"}
 
 
 def plugin_dir(qemu_root):
@@ -240,11 +241,17 @@ def describe(blob_path):
         cols = S // s
         if op["type"] in (1, 2):
             macs = cols * op["h_out"] * op["cout"] * op["kh"] * op["kw"]
+        elif op["type"] == 5:            # the attention's projections (QKV, O); its scores are PROF_ATTN's
+            macs = cols * (op["k"] * op["cout_pad"] + op["attn_dim"] * op["cout"])
         else:
             macs = cols * (1 if op["collapse"] else op["h_in"]) * op["k"] * op["cout"]
         shape = (f"{NAMES[op['type']]} {op['kh']}x{op['kw']}/{op['sh']}x{op['sw']} {op['cin']}->{op['cout']} "
-                 f"h{op['h_in']}" + (" +res" if op["res"] else "") + (" collapse" if op["collapse"] else ""))
+                 f"h{op['h_in']}" + (" +res" if op["res"] else "") + (" collapse" if op["collapse"] else "")
+                 + (f" projections, {op['heads']} heads of {op['attn_dim'] // op['heads']}" if op["type"] == 5 else ""))
         rows[i] = {"shape": shape, "macs_per_frame": macs}
+        if op["type"] == 5:
+            rows[PROF_ATTN] = {"shape": f"attention scores, softmax, weighted sums (2 T x {op['attn_dim']} MACs a "
+                                        "frame on a line of T frames)", "macs_per_frame": 0}
     rows[PROF_SRC] = {"shape": "input columns (resize, normalise)", "macs_per_frame": 0}
     rows[PROF_RUN] = {"shape": "vocr_run setup, tile loop, cancel", "macs_per_frame": 0}
     if b.get("gate"):                    # docs/headgate.md: the per-tile gate step (skipped frames' blank logit too)

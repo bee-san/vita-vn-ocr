@@ -13,7 +13,9 @@
  * The line is processed in tiles of `tile_frames` CTC frames (`stride` input columns each:
  * 8, or 12 / 16 for the coarser-frame models of train2.py --stride),
  * carrying each layer's left context between tiles, so the arena does not grow with
- * the line width and the output is bit-identical for every tile size.
+ * the line width and the output is bit-identical for every tile size. A blob with an attention op (VOCR6,
+ * vocr_attn below) keeps every frame's bottleneck output for the attention over the whole line, which the head
+ * then reads: its arena grows with max_width by that line (still independent of the tile and batch sizes' output).
  *
  * Preprocessing matches train/train.py exactly: grey = (77 R + 150 G + 29 B) >> 8
  * (then 255 - grey with VOCR_INVERT, as synth/common.line_crops does for dark text),
@@ -111,6 +113,21 @@ typedef struct {
     const float *e_scale, *e_bias, *e_wl1, *e_wb0, *e_w2;   /* [hidden] each */
 } vocr_2level;
 
+/* The attention op (VOCR6 stage 3, docs/vocr6-attn.md; train/export.py "ATTN"): one light global self-attention layer
+ * over the line's frames, op[n_ops - 2], right before the head, on the d = op.cin values of each frame:
+ *   z' = z + O(concat_h softmax(Q_h K_h^T) V_h)
+ * The op's own matrix (w or q, scale, bias; cout_pad = 3 dim rows) is QKV, with 1 / sqrt(dim / heads) folded into Q;
+ * O carries the trained residual gate. The runtime keeps the bottleneck's output of every frame of the line (so the
+ * arena grows with max_width by max_width / stride x d floats), runs QKV and O in the blob's mode and the scores,
+ * softmax and weighted sums in float32, then the head on z'. Absent: dim == 0 (every blob before VOCR6). */
+typedef struct {
+    unsigned heads, dim;     /* heads and the Q / K / V width; dim / heads is a multiple of 8 */
+    const float *o_w;        /* O: float weights [d / 8][dim][8], or NULL */
+    const int8_t *o_q;       /* O: int8 weights, or NULL */
+    const float *o_scale;    /* O: per-output scales of o_q */
+    const float *o_bias;     /* O: bias [d] */
+} vocr_attn;
+
 typedef struct {             /* a parsed blob; points into it, so keep the blob alive */
     const unsigned char *blob;
     size_t bytes;            /* the version-1 blob's bytes (without a gate section) */
@@ -120,6 +137,7 @@ typedef struct {             /* a parsed blob; points into it, so keep the blob 
     vocr_op op[VOCR_MAX_OPS];
     vocr_gate gate;              /* the head gate, if the blob has one (gate.hidden != 0) */
     vocr_2level two;             /* the 'VOC2' trailer's two-level head, if the blob has one */
+    vocr_attn attn;              /* the attention op, if the blob has one (attn.dim != 0) */
 } vocr_model;
 
 /* vocr_opts.head_gate */
@@ -133,7 +151,8 @@ typedef struct {
     unsigned tile_frames;    /* CTC frames per tile (0: default 4; for a stride over 8 the
                                 frames nearest 32 input columns: 3 at 12, 2 at 16);
                                 >= max_width / stride runs the whole line as one tile */
-    unsigned head_frames;    /* frames per output-head batch (0: default 16) */
+    unsigned head_frames;    /* frames per output-head batch (0: default 16); with an attention op also its
+                                query chunk */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
     unsigned head_gate;      /* VOCR_HEAD_GATE_*: ON and SCORE need VOCR_MODE_W8I and a blob with a gate
@@ -159,7 +178,8 @@ typedef struct {             /* optional per-line extras for vocr_run() */
     float *logits;           /* in: frames x n_classes floats, or NULL */
     uint16_t *best;          /* in: argmax class per frame, or NULL */
     unsigned cap_frames;     /* in: capacity of logits / best / topk_* / blank_logit in frames */
-    int (*cancel)(void *user);   /* in: polled once per tile; nonzero stops */
+    int (*cancel)(void *user);   /* in: polled once per tile (with an attention op also once per chunk of its
+                                    frames and of the head's after it); nonzero stops */
     void *user;
     unsigned width;          /* out: resized width before padding */
     unsigned frames;         /* out: CTC frames */
@@ -210,6 +230,9 @@ typedef struct {             /* a planned arena; private apart from the first fi
     uint32_t fidx_off;       /* head_gate ON: each accumulated frame's index in the line (uint16) */
     unsigned two_level;      /* the two-level head is on (vocr_opts.two_level) */
     uint32_t nbv_off, b0_off, hid_off, fmap_off;   /* its arena (two_level only) */
+    unsigned attn;           /* the attention op's index (n_ops - 2), or 0: the blob has none */
+    uint32_t line_off;       /* attention: every frame's bottleneck output (max_width / stride x d floats) */
+    uint32_t kp_off, vp_off, qc_off, ac_off, sc_off, as_off, att_tp;   /* its working set; att_tp: frames, x8 */
     vocr_plan_op op[VOCR_MAX_OPS];
 } vocr_ctx;
 

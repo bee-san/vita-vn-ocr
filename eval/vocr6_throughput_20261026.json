@@ -1,0 +1,324 @@
+{
+ "kind": "vocr6-train-throughput",
+ "measured": "2026-10-26T09:39-09:56Z",
+ "host": "64-core AMD EPYC 9R14 host (one socket, 64 cores, 1 thread per core, 246 GB RAM); no GPU (torch 2.5.1+cpu, cuda unavailable)",
+ "method": "train/bench_train2.py: train2's step exactly (sources, Mixer.next, make_batch with augmentation and finder augmentation, forward, CTC, backward, clip, AdamW, EMA 0.999), batch 96, 5 threads (one heavy.sh slot), 30 warm-up steps then 300 measured; data = Mixer.next + make_batch in the main thread; the stream sources' loader thread runs alongside. Run while the box carried other agents' jobs (load average 31-41 of 64 cores): shared-box conditions, as real runs see them.",
+ "load_average_at_start": [
+  "09:39:17 up 8 days, 14:26,  1 user,  load average: 40.18, 35.08, 26.44",
+  "09:48:54 up 8 days, 14:36,  1 user,  load average: 30.79, 35.47, 31.28"
+ ],
+ "runs": {
+  "l_finetune_mix": {
+   "kind": "train2-throughput",
+   "label": "L fine-tune: VOCR5 arm F synthetic half + hooked half",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 2.0,
+   "chans": "64,128,256,480,576",
+   "classes": 5631,
+   "params_m": 2.324,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "nv: 597 shards streamed, pool 3",
+    "s2: 39 shards streamed, pool 3",
+    "s3v3: 100 shards streamed, pool 3",
+    "s4: 100 shards streamed, pool 3",
+    "hk: 74274 lines in RAM {'kept': 74274, 'dropped': 0, 'kd': 0, 'kdonly': 0}"
+   ],
+   "startup_s": 18.5,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 1.2028,
+   "lines_per_s": 115.5,
+   "s_per_step": {
+    "mean": 0.8314,
+    "p50": 0.7233,
+    "p90": 1.5894
+   },
+   "data_s_per_step": 0.0228,
+   "compute_s_per_step": 0.8086,
+   "data_share": 0.0274,
+   "batch_width_px": {
+    "mean": 409.9,
+    "p90": 696.0
+   },
+   "hours_per_10k_steps_one_slot": 2.309,
+   "max_rss_gb": 9.22
+  },
+  "n_finetune_mix": {
+   "kind": "train2-throughput",
+   "label": "N fine-tune: VOCR5 arm F synthetic half + hooked line pool half",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 1.5,
+   "chans": null,
+   "classes": 5631,
+   "params_m": 1.069,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "nv: 597 shards streamed, pool 3",
+    "s2: 39 shards streamed, pool 3",
+    "s3v3: 100 shards streamed, pool 3",
+    "s4: 100 shards streamed, pool 3",
+    "hk: 74274 lines in RAM {'kept': 74274, 'dropped': 0, 'kd': 0, 'kdonly': 0}"
+   ],
+   "startup_s": 17.8,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 1.7619,
+   "lines_per_s": 169.1,
+   "s_per_step": {
+    "mean": 0.5676,
+    "p50": 0.5029,
+    "p90": 1.0621
+   },
+   "data_s_per_step": 0.0233,
+   "compute_s_per_step": 0.5443,
+   "data_share": 0.041,
+   "batch_width_px": {
+    "mean": 409.9,
+    "p90": 696.0
+   },
+   "hours_per_10k_steps_one_slot": 1.577,
+   "max_rss_gb": 8.21
+  },
+  "n_hooked_only": {
+   "kind": "train2-throughput",
+   "label": "N fine-tune: hooked line pool alone (RAM)",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 1.5,
+   "chans": null,
+   "classes": 5631,
+   "params_m": 1.069,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "hk: 74274 lines in RAM {'kept': 74274, 'dropped': 0, 'kd': 0, 'kdonly': 0}"
+   ],
+   "startup_s": 5.6,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 1.4881,
+   "lines_per_s": 142.9,
+   "s_per_step": {
+    "mean": 0.672,
+    "p50": 0.5954,
+    "p90": 1.1415
+   },
+   "data_s_per_step": 0.0109,
+   "compute_s_per_step": 0.6611,
+   "data_share": 0.0162,
+   "batch_width_px": {
+    "mean": 451.9,
+    "p90": 720.0
+   },
+   "hours_per_10k_steps_one_slot": 1.867,
+   "max_rss_gb": 5.21
+  },
+  "n_pretrain_mix": {
+   "kind": "train2-throughput",
+   "label": "N pretrain: VOCR5 recipe M (synthetic, streamed)",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 1.5,
+   "chans": null,
+   "classes": 5631,
+   "params_m": 1.069,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "nv: 597 shards streamed, pool 3",
+    "s2: 39 shards streamed, pool 3",
+    "s3v3: 100 shards streamed, pool 3",
+    "s4: 100 shards streamed, pool 3"
+   ],
+   "startup_s": 12.0,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 2.0783,
+   "lines_per_s": 199.5,
+   "s_per_step": {
+    "mean": 0.4812,
+    "p50": 0.3762,
+    "p90": 0.9966
+   },
+   "data_s_per_step": 0.0096,
+   "compute_s_per_step": 0.4715,
+   "data_share": 0.02,
+   "batch_width_px": {
+    "mean": 347.6,
+    "p90": 688.8000000000002
+   },
+   "hours_per_10k_steps_one_slot": 1.337,
+   "max_rss_gb": 7.17
+  },
+  "s_finetune_mix": {
+   "kind": "train2-throughput",
+   "label": "S fine-tune: VOCR5 arm F synthetic half (recipe C) + hooked half",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 1.0,
+   "chans": null,
+   "classes": 4987,
+   "params_m": 0.726,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "nv: 597 shards streamed, pool 3",
+    "s2: 39 shards streamed, pool 3",
+    "s3: 100 shards streamed, pool 3",
+    "hk: 74274 lines in RAM {'kept': 74274, 'dropped': 0, 'kd': 0, 'kdonly': 0}"
+   ],
+   "startup_s": 17.2,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 2.2668,
+   "lines_per_s": 217.6,
+   "s_per_step": {
+    "mean": 0.4411,
+    "p50": 0.3806,
+    "p90": 0.8223
+   },
+   "data_s_per_step": 0.0233,
+   "compute_s_per_step": 0.4179,
+   "data_share": 0.0528,
+   "batch_width_px": {
+    "mean": 414.5,
+    "p90": 712.0
+   },
+   "hours_per_10k_steps_one_slot": 1.225,
+   "max_rss_gb": 6.88
+  },
+  "n_finetune_mix_loaded": {
+   "kind": "train2-throughput",
+   "label": "N fine-tune: VOCR5 arm F synthetic half + hooked line pool half (rerun, loaded box)",
+   "host": "64-core AMD EPYC 9R14 host",
+   "threads": 5,
+   "torch": "2.5.1+cpu",
+   "gpu": false,
+   "width": 1.5,
+   "chans": null,
+   "classes": 5631,
+   "params_m": 1.069,
+   "batch": 96,
+   "ema": 0.999,
+   "sources": [
+    "nv: 597 shards streamed, pool 3",
+    "s2: 39 shards streamed, pool 3",
+    "s3v3: 100 shards streamed, pool 3",
+    "s4: 100 shards streamed, pool 3",
+    "hk: 74274 lines in RAM {'kept': 74274, 'dropped': 0, 'kd': 0, 'kdonly': 0}"
+   ],
+   "startup_s": 26.2,
+   "warmup_steps": 30,
+   "measured_steps": 300,
+   "steps_per_s": 0.8963,
+   "lines_per_s": 86.0,
+   "s_per_step": {
+    "mean": 1.1157,
+    "p50": 0.9307,
+    "p90": 1.9854
+   },
+   "data_s_per_step": 0.0265,
+   "compute_s_per_step": 1.0892,
+   "data_share": 0.0237,
+   "batch_width_px": {
+    "mean": 409.9,
+    "p90": 696.0
+   },
+   "hours_per_10k_steps_one_slot": 3.099,
+   "max_rss_gb": 8.05
+  }
+ },
+ "vocr5_runs_on_this_host": {
+  "pre5_S_seed2": {
+   "steps": [
+    4000,
+    216000
+   ],
+   "wall_hours": 23.68,
+   "steps_per_s_incl_evals": 2.487,
+   "hours_per_10k_steps": 1.117
+  },
+  "v5f_S_seed2": {
+   "steps": [
+    2500,
+    15000
+   ],
+   "wall_hours": 1.47,
+   "steps_per_s_incl_evals": 2.366,
+   "hours_per_10k_steps": 1.174
+  },
+  "pre5_N_seed3": {
+   "steps": [
+    4000,
+    150000
+   ],
+   "wall_hours": 23.14,
+   "steps_per_s_incl_evals": 1.752,
+   "hours_per_10k_steps": 1.585
+  },
+  "v5f_N_seed3": {
+   "steps": [
+    2500,
+    15000
+   ],
+   "wall_hours": 1.98,
+   "steps_per_s_incl_evals": 1.751,
+   "hours_per_10k_steps": 1.586
+  },
+  "pre5_L_seed2": {
+   "steps": [
+    4000,
+    108000
+   ],
+   "wall_hours": 22.04,
+   "steps_per_s_incl_evals": 1.311,
+   "hours_per_10k_steps": 2.12
+  },
+  "v5f_L_seed2": {
+   "steps": [
+    2500,
+    15000
+   ],
+   "wall_hours": 2.78,
+   "steps_per_s_incl_evals": 1.251,
+   "hours_per_10k_steps": 2.221
+  }
+ },
+ "load_average_loaded_rerun": [
+  "12:35:10 up 8 days, 17:22,  1 user,  load average: 86.85, 83.78, 81.35",
+  "12:55:55 up 8 days, 17:43,  0 users,  load average: 78.59, 79.14, 78.81"
+ ],
+ "audit_rerun": {
+  "by": "audit-vocr6-ingest",
+  "when": "2026-10-26T11:26-11:30Z",
+  "load_average": "58-65",
+  "steps_per_s": 1.397,
+  "hours_per_10k_steps_one_slot": 1.99,
+  "data_share": 0.037,
+  "same_losses_as_the_first_run": true
+ },
+ "contention": "The same Normal fine-tune bench, the same losses at every logged step: 1.76 steps/s at load 31-41 (09:39Z), 1.40 at load 58-65 (the audit's rerun, 11:26Z), 0.90 at load 79-87 (12:35Z, 15 heavy slots in use). Per-slot speed falls as the box fills: budget with the loaded rates.",
+ "commands": {
+  "n_finetune_mix": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 1.5 --src 'nv:0.225:$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$HERD/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's2:0.1125:$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz+$HERD/shared/artifacts/synth2/shards/synth_0003[0-8].npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's3v3:0.1125:$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz:stream=1,pool=3,inv=0.2' --src 's4:0.05:$HERD/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz:stream=1,pool=3,inv=0.2' --src 'hk:0.5:$HERD/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz:inv=0.5,fa=0.3' --out OUT.json",
+  "n_finetune_mix_loaded": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 1.5 --src 'nv:0.225:$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$HERD/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's2:0.1125:$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz+$HERD/shared/artifacts/synth2/shards/synth_0003[0-8].npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's3v3:0.1125:$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz:stream=1,pool=3,inv=0.2' --src 's4:0.05:$HERD/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz:stream=1,pool=3,inv=0.2' --src 'hk:0.5:$HERD/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz:inv=0.5,fa=0.3' --out OUT.json",
+  "n_pretrain_mix": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 1.5 --lr 2e-3 --src 'nv:0.45:$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$HERD/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz:stream=1,pool=3,inv=0.2' --src 's2:0.225:$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz+$HERD/shared/artifacts/synth2/shards/synth_0003[0-8].npz:stream=1,pool=3,inv=0.2' --src 's3v3:0.225:$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz:stream=1,pool=3,inv=0.2' --src 's4:0.1:$HERD/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz:stream=1,pool=3,inv=0.2' --out OUT.json",
+  "n_hooked_only": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 1.5 --src 'hk:1:$HERD/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz:inv=0.5' --out OUT.json",
+  "l_finetune_mix": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 2.0 --chans 64,128,256,480,576 --src 'nv:0.225:$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$HERD/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's2:0.1125:$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz+$HERD/shared/artifacts/synth2/shards/synth_0003[0-8].npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's3v3:0.1125:$HERD/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz:stream=1,pool=3,inv=0.2' --src 's4:0.05:$HERD/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz:stream=1,pool=3,inv=0.2' --src 'hk:0.5:$HERD/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz:inv=0.5,fa=0.3' --out OUT.json",
+  "s_finetune_mix": "HEAVY_SLOTS=15 $HERD/heavy.sh .venv/bin/python train/bench_train2.py --width 1.0 --vocab data/vocab_4987_proof.txt --src 'nv:0.25:$HERD/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz+$HERD/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's2:0.125:$HERD/shared/artifacts/synth2/shards/synth_000[0-2]?.npz+$HERD/shared/artifacts/synth2/shards/synth_0003[0-8].npz:stream=1,pool=3,inv=0.2,fa=0.15' --src 's3:0.125:$HERD/shared/artifacts/synth3/shards/train_v2/synth3_000??.npz:stream=1,pool=3,inv=0.2' --src 'hk:0.5:$HERD/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz:inv=0.5,fa=0.3' --out OUT.json"
+ }
+}

@@ -25,7 +25,7 @@ Under the PSP's time budget, no recognizer reached VOCR5-S's accuracy on PSP gam
 - **The PSP test app's new modes.** Head gate and two-level options, a page path (the line finder, its refinement, then every line), a memory-partition probe and a 64 MB build.
 - **The tools.** The native-PSP pools and scorer, the PPSSPP sweep, verification and budget tools, and a console test bundle that holds no game data.
 - **The measurements**, below.
-- **A console-test pre-release** with two candidate blobs (S32 and B24, gated) and the bundle, so a PSP can measure what PPSSPP cannot. It is not a model release. RESULTS_TBD (issue link)
+- **A console-test pre-release, `v0.3.7-modelb-test.1`.** It holds two candidate blobs (S32 and B24, each with its gate and two-level head), the test bundle, `ATTRIBUTION.md` and `SHA256SUMS`, so a PSP can measure what PPSSPP cannot. It is not a model release. The console steps are in an issue assigned to bee-san, linked from #126.
 
 ## Budget and rule (pre-registered: `eval/vocr6_psp_protocol.json`)
 
@@ -90,12 +90,12 @@ With the head gate and the two-level head (W8F, scalar, tile 16, head batch 64),
 | arm shape | backbone + gate | + level 1 and escape (per kept frame) | + rare rows (per fired frame) | est. console s per nominal box |
 |---|---:|---:|---:|---:|
 | S32 (VOCR5-S shape) | 5.76 | 0.56 | 4.48 | 1.90 (VFPU: 0.86 s emulated) |
-| B32 (depth 0, height 32) | 3.66 | 0.56 | 4.48 | 1.30 |
+| B32 (depth 0, height 32) | 3.66 | 0.56 | 4.48 | 1.28 |
 | B24 (depth 0, height 24) | 3.32 | 0.57 | 4.73 | 0.93 |
-| B24c1 (B24, one temporal block) | 2.86 | 0.57 | 4.74 | 0.81 |
-| B20 (depth 0, height 20) | 3.18 | 0.58 | 4.78 | 0.75 |
-| S18 (VOCR5-S at height 18) | 4.82 | 0.56 | 4.59 | 0.95 |
-| S18c1 | 4.38 | 0.56 | 4.59 | 0.88 |
+| B24c1 (B24, one temporal block) | 2.86 | 0.57 | 4.74 | 0.83 |
+| B20 (depth 0, height 20) | 3.18 | 0.58 | 4.78 | 0.79 |
+| S18 (VOCR5-S at height 18) | 4.82 | 0.56 | 4.59 | 0.97 |
+| S18c1 | 4.38 | 0.56 | 4.59 | 0.91 |
 
 The estimate column is protocol's feasibility rule: the gate skips 0.9 × the arm's development blank share, the escape fires on 20% of the kept frames, the finder costs 0.562 emulated µs per pixel, and the console factor is 1.45×.
 
@@ -114,14 +114,14 @@ W8F int8 through the C runtime, greedy, no gate. Each arm is one fine-tune of 10
 
 | arm | est. s / box (feasibility rule) | SC | dev whole dialogue (GRAD + refine) | dev fixed lines | hval page path | hval lines |
 |---|---:|---:|---:|---:|---:|---:|
-| VOCR5-S (comparator) | about 3.3 (plain) | 5.73 | 6.49% | 1.17% | 7.64% | 1.26% |
+| VOCR5-S (comparator) | 3.24 (plain W8F) | 5.73 | 6.49% | 1.17% | 7.64% | 1.26% |
 | S32 (control, VOCR5-S's shape) | 1.90 (gated) | 5.37 | 6.52% | 1.15% | 6.91% | 0.52% |
-| B32 (depth 0, height 32) | 1.30 | 6.69 | 8.36% | 2.65% | 7.89% | 1.01% |
+| B32 (depth 0, height 32) | 1.28 | 6.69 | 8.36% | 2.65% | 7.89% | 1.01% |
 | **B24** (depth 0, height 24) | **0.93** | 8.69 | 10.42% | 4.58% | 9.88% | 1.73% |
-| B24c1 | 0.81 | 9.77 | 11.83% | 6.06% | 10.59% | 2.51% |
-| B20 | 0.75 | 11.26 | 12.94% | 7.35% | 12.37% | 3.50% |
-| S18 | 0.95 | 11.23 | 12.99% | 7.22% | 12.36% | 3.50% |
-| S18c1 | 0.88 | 11.74 | 13.23% | 8.13% | 12.81% | — |
+| B24c1 | 0.83 | 9.77 | 11.83% | 6.06% | 10.59% | 2.51% |
+| B20 | 0.79 | 11.26 | 12.94% | 7.35% | 12.37% | 3.50% |
+| S18 | 0.97 | 11.23 | 12.99% | 7.22% | 12.36% | 3.50% |
+| S18c1 | 0.91 | 11.74 | 13.23% | 8.13% | 12.81% | 4.11% |
 
 Arm − VOCR5-S, paired 95% intervals (VN clusters on development, title clusters on hval):
 

@@ -111,9 +111,11 @@ it unseen; it would take away PCSG00620's matched font and 27 fonts of cross-mod
 verified matched font).
 
 What synth6 adds is breadth: it draws the raster for 7.2 times as many glyphs and 3.9 times as many characters
-(3,509 the real lines never show in it). A CLANNAD score of a model trained on synth6 v3, or on the hooked lines, has
-therefore seen CLANNAD's glyph raster for most of its vocabulary, though not its font files, text or pages. VOCR6's
-CLANNAD reports and release notes must say so.
+(3,509 the real lines never show in it). So a CLANNAD score of a model trained on the hooked lines has seen CLANNAD's
+glyph raster for 1,201 characters (21% of the vocab), and one trained on synth6 v3 as well for 4,701 (83%), though
+not its font files, text or pages. VOCR6's CLANNAD reports and release notes must say so. The counts above are for
+train pages; a final model trained with hval (and guard) pages folded back in sees the two titles' raster in 2,681
+lines, 41,309 glyphs and 1,226 characters (2,779, 42,784 and 1,234 with guard pages).
 
 Dance with Devils' FOT-ModeMinA Std B has no near copy in the pack, even by ink-box alignment (the audit's measure).
 The same typeface is drawn from the Otomate titles' FFU atlases.
@@ -419,8 +421,8 @@ Reported, not decided:
   sits on the scene.
 - **The glyph checks are filters, not a proof.** For kana and kanji they catch a glyph read as another character by
   two independent measures. They also catch placeholders, glyphs outside their cell and shifted symbol tables. A
-  single wrong symbol outside a shifted run is not checked automatically: the 5 the audit found are denied by hand,
-  and others may remain.
+  single wrong symbol outside a shifted run is not checked automatically: the 13 pairs the audits found (17 entries
+  of `MANUAL_DENY`) are denied by hand, and others may remain.
 - **Real text under a drawn line**, where a page shows text its boxes miss (old speech bubbles, earlier NVL lines):
   about 0.2-0.3% of crops in v1's label audits, more on bubble and NVL titles; v3 has not changed it. A later
   version could draw such titles only in `scene_box` (its own box hides what lies below).

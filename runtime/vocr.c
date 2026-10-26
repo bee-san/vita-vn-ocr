@@ -485,7 +485,13 @@ static size_t op_scratch(const vocr_ctx *c, const vocr_op *op, unsigned n_tile)
     if (op->type < T_PW || op->type == T_ATTN) return 0; /* the attention's own scratch: plan(), after the tiles */
     pos = op->type == T_HEAD ? c->acc_frames
                              : (size_t)n_tile * (op->flags & F_COLLAPSE ? 1u : op->h_in);
-    if (c->mode == VOCR_MODE_W8F) return al16((size_t)op->k * 8u * sizeof(float));
+    if (c->mode == VOCR_MODE_W8F) {
+        /* the two-level head's escape reads the head input in int16 in every mode (run_head2), then a
+         * block's dequantised weights */
+        if (op->type == T_HEAD && c->two_level)
+            return al16(pos * op->k * 2u) + al16(pos * sizeof(float)) + al16((size_t)op->k * 8u * sizeof(float));
+        return al16((size_t)op->k * 8u * sizeof(float));
+    }
     if (c->mode == VOCR_MODE_W8I) return al16(pos * op->k * 2u) + al16(pos * sizeof(float));
     return 0;
 }
@@ -504,8 +510,9 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     mode = resolve_mode(m, o->mode);
     if (mode < 0) return mode;
     if (o->head_gate > VOCR_HEAD_GATE_SCORE) return VOCR_E_ARG;
-    if (o->head_gate && (mode != VOCR_MODE_W8I || !m->gate.hidden)) return VOCR_E_MODE;
-    if (o->two_level && (mode != VOCR_MODE_W8I || !m->two.l1_blocks)) return VOCR_E_MODE;
+    /* the gate runs in every mode, the two-level head in W8I and W8F (it needs an int8 blob: parse_two) */
+    if (o->head_gate && !m->gate.hidden) return VOCR_E_MODE;
+    if (o->two_level && (mode == VOCR_MODE_F32 || !m->two.l1_blocks)) return VOCR_E_MODE;
     c->two_level = o->two_level ? 1u : 0u;
     c->attn = m->attn.dim ? m->n_ops - 2u : 0u;
     c->model = m;
@@ -601,10 +608,12 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         if (sum > R) R = sum;
     }
     /* the gate runs between a tile's last layer and the head, in the head's scratch (at base): a tile's
-     * new frames as int16 with their scales, and their hidden units */
+     * new frames as int16 with their scales, and their hidden units; in W8F also the head's first block,
+     * dequantised, for a skipped frame's blank logit */
     if (c->gate) {
-        const size_t g = al16((size_t)F * m->op[L - 1].k * 2u) + al16((size_t)F * sizeof(float)) +
-                         al16((size_t)F * m->gate.hidden * sizeof(float));
+        size_t g = al16((size_t)F * m->op[L - 1].k * 2u) + al16((size_t)F * sizeof(float)) +
+                   al16((size_t)F * m->gate.hidden * sizeof(float));
+        if (mode == VOCR_MODE_W8F) g += al16((size_t)m->op[L - 1].k * 8u * sizeof(float));
         if (g > R) R = g;
     }
     /* transients alternate between the bottom and the top of the region, scratch
@@ -1940,10 +1949,13 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
 /* The head gate's step, after a tile's last layer appended frames [s0, s1) to the accumulator, the line's
  * frames a0, a0 + 1, ...: their head input to ex->head_in, and with the gate planned, their scores (to
  * ex->gate_score). When the run skips (o->fidx), a frame scoring above t leaves the accumulator and reads
- * as the blank: best 0, its blank logit as the head computes class 0 (its first block, mm_i16 on the same
- * int16 input), its top-K [blank logit, -inf, ...] with classes 0. The frames that stay move down in order,
- * their line indices in fidx. Returns the accumulator's new fill. The scratch is the head's (free between
- * a tile's layers and the head), sized for a tile of frames in plan(). */
+ * as the blank: best 0, its blank logit as the head computes class 0 (its first block on the same input:
+ * mm_i16 on the int16 input in W8I, mm_f32 on the float input with the block's float weights in W8F and
+ * F32; computed only when the caller keeps the top-K, the one place it is read outside W8I), its top-K
+ * [blank logit, -inf, ...] with classes 0. The gate itself computes the same in every mode: layer 1 on the
+ * head input quantised to int16, exactly as a W8I pointwise layer. The frames that stay move down in
+ * order, their line indices in fidx. Returns the accumulator's new fill. The scratch is the head's (free
+ * between a tile's layers and the head), sized for a tile of frames in plan(). */
 static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1, unsigned a0)
 {
     const vocr_model *m = c->model;
@@ -1956,6 +1968,10 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
     int16_t *qx = (int16_t *)(void *)scr;
     float *sx = (float *)(void *)(scr + al16((size_t)c->tile * K * 2u));
     float *hid = (float *)(void *)(scr + al16((size_t)c->tile * K * 2u) + al16((size_t)c->tile * sizeof(float)));
+    /* W8F: the head's first block, dequantised once per tile on the first skipped frame that needs it */
+    float *wf0 = (float *)(void *)(scr + al16((size_t)c->tile * K * 2u) + al16((size_t)c->tile * sizeof(float)) +
+                                   al16((size_t)c->tile * H * sizeof(float)));
+    const float *w0 = c->mode == VOCR_MODE_F32 ? head->w : NULL;
     uint16_t *fidx = (uint16_t *)(void *)(c->arena + c->fidx_off);
     unsigned i, j, nb, w = s0;
     if (ex && ex->head_in)
@@ -1976,7 +1992,15 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
         if (!o->fidx) continue;
         if (s > g->t) {
             float b8[8];
-            mm_i16(head->q, head->scale, head->bias, qx + (size_t)i * K, sx + i, K, 1, b8, 8, NULL, 0, 0);
+            if (c->mode == VOCR_MODE_W8I) {
+                mm_i16(head->q, head->scale, head->bias, qx + (size_t)i * K, sx + i, K, 1, b8, 8, NULL, 0, 0);
+            } else if (TK) {
+                if (!w0) {
+                    dequant8(head->q, head->scale, K, wf0);
+                    w0 = wf0;
+                }
+                mm_f32(w0, head->bias, acc + (size_t)(s0 + i) * K, K, K, 1, b8, 8, NULL, 0, 0);
+            }
             if (ex && ex->best && a < ex->cap_frames) ex->best[a] = 0;
             if (TK) { /* the caller's buffers hold every frame of the line (checked in vocr_run) */
                 float *tv = ex->topk_logit + (size_t)a * TK;
@@ -2000,10 +2024,12 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
 
 /* ---------------------------------------------------------------- the two-level head (VOC2 trailer)
  *
- * W8I only (vocr_opts.two_level). Level 1, the head's blocks [0, l1_blocks), runs on every frame: the blank and
- * the most frequent classes. The escape (a small MLP on the head's quantised input, level 1's largest non-blank
- * logit and its blank logit) then says which frames also need level 2, the head's other blocks. Those frames'
- * quantised inputs are packed to the front and level 2 runs on them as one batch. A frame's state (first
+ * W8I and W8F (vocr_opts.two_level; an int8 blob). Level 1, the head's blocks [0, l1_blocks), runs on every frame:
+ * the blank and the most frequent classes. The escape (a small MLP on the head's input quantised to int16 as W8I
+ * does, in either mode, level 1's largest non-blank logit and its blank logit) then says which frames also need
+ * level 2, the head's other blocks. Those frames' inputs (quantised in W8I, float in W8F) are packed to the front
+ * and level 2 runs on them as one batch. Each block's logits are the mode's head arithmetic (mm_i16 in W8I,
+ * dequant8 + mm_f32 in W8F, as run_head). A frame's state (first
  * maximum, top-K, the blank's logit) is updated block by block in class order, so a fired frame gets today's
  * argmax and top-K bit for bit and the others
  * the same over the level-1 classes. A block whose 8 logits are none above the frame's threshold (below which no
@@ -2067,7 +2093,11 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
     const unsigned L = m->n_ops, N = m->n_classes;
     const vocr_op *op = &m->op[L - 1];
     const unsigned K = op->k, B1 = tw->l1_blocks, NB = op->cout_pad / 8u, H = tw->hidden;
-    const float *x = at(c, c->acc_off);
+    /* W8F: level 1 and level 2 are W8F's head rows (dequant8 + mm_f32 on the float input, as run_head), the
+     * escape the same as in W8I (layer 1 on the int16 input); the fired frames' float inputs are packed to
+     * the front of the accumulator, which nothing reads after the head */
+    const int fl = c->mode == VOCR_MODE_W8F;
+    float *x = at(c, c->acc_off);
     float *bestv = at(c, c->bestv_off), *nbv = at(c, c->nbv_off), *b0v = at(c, c->b0_off);
     float *hid = at(c, c->hid_off);
     uint32_t *besti = (uint32_t *)(void *)(c->arena + c->besti_off);
@@ -2075,6 +2105,7 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
     unsigned char *scr = c->arena + c->op[L - 1].scr_off;
     int16_t *qx = (int16_t *)(void *)scr;
     float *sx = (float *)(void *)(scr + al16((size_t)nf * K * 2u));
+    float *wf = (float *)(void *)(scr + al16((size_t)c->acc_frames * K * 2u) + al16((size_t)c->acc_frames * sizeof(float)));
     vocr_extra *ex = o->ex;
     const unsigned TK = o->topk;
     const uint16_t *fx = o->fidx;
@@ -2100,10 +2131,14 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
     /* level 1: every frame */
     for (nb = 0; nb < B1; nb++) {
         const float *b = op->bias ? op->bias + nb * 8 : NULL;
+        if (fl) dequant8(op->q + (size_t)nb * K * 8, op->scale + nb * 8, K, wf);
         for (f0 = 0; f0 < nf; f0 += H2_STEP) {
             const unsigned pn = umin(H2_STEP, nf - f0);
-            mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp, 8,
-                   NULL, 0, 0);
+            if (fl)
+                mm_f32(wf, b, x + (size_t)f0 * K, K, K, pn, tmp, 8, NULL, 0, 0);
+            else
+                mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn, tmp, 8,
+                       NULL, 0, 0);
             for (q = 0; q < pn; q++) {
                 const unsigned fr = f0 + q, frame = H2_FRAME(fr);
                 float *tv = TK ? ex->topk_logit + (size_t)frame * TK : NULL;
@@ -2133,19 +2168,28 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
         if (s > tw->t) fm[nfire++] = f;
     }
     o->escaped += nfire;
-    /* level 2: the fired frames, packed to the front of the quantised input (forwards: fm[j] >= j) */
+    /* level 2: the fired frames, packed to the front of the quantised input (forwards: fm[j] >= j), or in W8F
+     * of the float input */
     if (nfire) {
         for (j = 0; j < nfire; j++)
             if (fm[j] != j) {
-                memcpy(qx + (size_t)j * K, qx + (size_t)fm[j] * K, K * sizeof(int16_t));
-                sx[j] = sx[fm[j]];
+                if (fl) {
+                    memcpy(x + (size_t)j * K, x + (size_t)fm[j] * K, K * sizeof(float));
+                } else {
+                    memcpy(qx + (size_t)j * K, qx + (size_t)fm[j] * K, K * sizeof(int16_t));
+                    sx[j] = sx[fm[j]];
+                }
             }
         for (nb = B1; nb < NB; nb++) {
             const float *b = op->bias ? op->bias + nb * 8 : NULL;
+            if (fl) dequant8(op->q + (size_t)nb * K * 8, op->scale + nb * 8, K, wf);
             for (f0 = 0; f0 < nfire; f0 += H2_STEP) {
                 const unsigned pn = umin(H2_STEP, nfire - f0);
-                mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn,
-                       tmp, 8, NULL, 0, 0);
+                if (fl)
+                    mm_f32(wf, b, x + (size_t)f0 * K, K, K, pn, tmp, 8, NULL, 0, 0);
+                else
+                    mm_i16(op->q + (size_t)nb * K * 8, op->scale + nb * 8, b, qx + (size_t)f0 * K, sx + f0, K, pn,
+                           tmp, 8, NULL, 0, 0);
                 for (q = 0; q < pn; q++) {
                     const unsigned fr = fm[f0 + q], frame = H2_FRAME(fr);
                     h2_update(tmp + q * 8, nb * 8, N, bestv + fr, besti + fr, NULL,

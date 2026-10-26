@@ -446,9 +446,9 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
     """Exact arena bytes vocr_arena_bytes() returns. tile/head in frames (0 = defaults
     default_tile(stride) and 16; tile >= max_width / stride = whole line); mode 0 = the blob's
     default (f32 for float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on,
-    2 score: w8i and a blob with a gate); two_level: None, or the blob's VOC2 trailer as
-    train/head2level.read_trailer returns it (vocr_opts.two_level = 1, W8I). A blob with an attention op adds the
-    line of z (t_max x d floats) and, where it outgrows the idle rings, accumulator and transients it overlays, the
+    2 score: a blob with a gate, any mode); two_level: None, or the blob's VOC2 trailer as
+    train/head2level.read_trailer returns it (vocr_opts.two_level = 1, W8I or W8F). A blob with an attention op adds
+    the line of z (t_max x d floats) and, where it outgrows the idle rings, accumulator and transients it overlays, the
     attention's working set (K and V of t_max frames, a head batch of queries: docs/vocr6-attn.md)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
     if any(op["kw"] < op["sw"] for op in ops):     # vocr_load refuses such a blob (kw >= sw)
@@ -461,8 +461,8 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
         raise ValueError("an int8 blob has no float32 weights")
     if head_gate not in (0, 1, 2):
         raise ValueError("head_gate: 0, 1 or 2")
-    if head_gate and (mode != MODE_W8I or not blob.get("gate")):
-        raise ValueError("the head gate needs w8i and a blob with a gate")
+    if head_gate and not blob.get("gate"):
+        raise ValueError("the head gate needs a blob with a gate")
     if not max_width or max_width > blob["max_width"]:
         max_width = blob["max_width"]
     max_width = _align(max_width, S)
@@ -505,8 +505,8 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
     if head_gate == 1:                       # the accumulated frames' line indices (uint16)
         persistent += _align(acc_frames * 2)
     if two_level is not None:                # runtime/vocr.c plan(): nbv, b0, hidden units, fired frames
-        if mode != MODE_W8I:
-            raise ValueError("the two-level head runs in W8I only")
+        if mode == MODE_F32:
+            raise ValueError("the two-level head runs in W8I or W8F (an int8 blob)")
         if two_level["rare_k"]:
             raise ValueError("the runtime reads no rare block (rare_k must be 0; docs/head2level.md)")
         persistent += _align(acc_frames * 4) * 3 + _align(acc_frames * two_level["hidden"] * 4)
@@ -522,11 +522,16 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
                 n_tile[i] * (1 if op["collapse"] else op["h_in"])
             if mode == MODE_W8F:
                 scratch = op["k"] * 8 * 4
+                if op["type"] == T_HEAD and two_level is not None:   # the escape's int16 input, then a block
+                    scratch = _align(pos * op["k"] * 2) + _align(pos * 4) + _align(op["k"] * 8 * 4)
             elif mode == MODE_W8I:
                 scratch = _align(pos * op["k"] * 2) + _align(pos * 4)
         trans.append(_align(tin) + _align(tout) + _align(scratch))
     if head_gate:                            # the gate's scratch: a tile's frames in int16, scales, hidden units
-        trans.append(_align(F * k_head * 2) + _align(F * 4) + _align(F * blob["gate"]["hidden"] * 4))
+        g = _align(F * k_head * 2) + _align(F * 4) + _align(F * blob["gate"]["hidden"] * 4)
+        if mode == MODE_W8F:                 # and the head's first block, dequantised (a skipped frame's blank)
+            g += _align(k_head * 8 * 4)
+        trans.append(g)
     total = persistent + max(trans)
     attn = [op for op in ops if op["type"] == T_ATTN]
     if attn:                                 # runtime/vocr.c plan(): docs/vocr6-attn.md "Arena"

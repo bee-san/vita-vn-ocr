@@ -63,12 +63,17 @@ def arm_spec(proto, stage, arm):
     spec.update(st["arms"][arm])
     spec["tier"] = spec.get("tier", st.get("tier", "N"))
     base = st.get("base") or {}
-    if spec.get("init") and spec["init"] == base.get("arm"):
-        # the stage's base arm (e.g. W15, chosen by the previous stage's rule): its init per seed, once filled
+    uses_base = [k for k in ("init", "mix") if spec.get(k) and spec[k] == base.get("arm")]
+    if uses_base:
+        # the stage's base arm (e.g. W15 or R2, chosen by the previous stage's rule): its init per seed and/or its
+        # mix, once the protocol records them
         filled = base.get("filled")
         if not filled:
             raise SystemExit(f"stage {stage}'s base {base['arm']} is not filled yet (protocol stages.{stage}.base)")
-        spec["init"], spec["init_sha256"] = filled["init"], filled["init_sha256"]
+        if "init" in uses_base:
+            spec["init"], spec["init_sha256"] = filled["init"], filled["init_sha256"]
+        if "mix" in uses_base:
+            spec["mix"] = filled["mix"]
         spec["base"] = filled.get("arm")
     return st, spec
 

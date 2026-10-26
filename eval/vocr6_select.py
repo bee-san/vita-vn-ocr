@@ -14,12 +14,14 @@ an arm), over the component's reference characters, in CER points:
               duplicate cluster has a train copy (SEEN_UNITS; stage 1 amendment 3): the decision metric; clusters
               = titles
   hval_page_seen  the junk-free units with the train-seen ones kept (report)
+  hval_page_nomerge  hval_page without the units where the finder merged two lines into one box (report)
   hval_page_all  every unit, junk boxes included (report)
   hval_clean  hval dialogue lines as clean crops (report); clusters = titles
   dev         0.25 tv + 0.25 dn + 0.5 wd (VOCR5's development score, console view, without the hooked titles' VNs);
               tv, dn and wd resampled independently over VNs; a replicate is the weighted sum
 
-10,000 resamples; numpy seeds hval_page 10, hval_page_seen 13, hval_page_all 12, hval_clean 11, tv 0, dn 1, wd 2.
+10,000 resamples; numpy seeds hval_page 10, hval_page_seen 13, hval_page_nomerge 14, hval_page_all 12, hval_clean 11,
+tv 0, dn 1, wd 2.
 Y is adopted over X iff hval_page's interval lies entirely below 0 and every pair's hval_page point difference is
 below 0 ("better on hval page-path dialogue CER, across seeds") and the dev score's interval does not lie entirely
 above 0 ("not worse on the unseen-game dev sets").
@@ -34,7 +36,8 @@ from pathlib import Path
 import numpy as np
 
 N_BOOT = 10000
-SEEDS = {"hval_page": 10, "hval_page_seen": 13, "hval_page_all": 12, "hval_clean": 11, "tv": 0, "dn": 1, "wd": 2}
+SEEDS = {"hval_page": 10, "hval_page_seen": 13, "hval_page_nomerge": 14, "hval_page_all": 12, "hval_clean": 11,
+         "tv": 0, "dn": 1, "wd": 2}
 DEV_WEIGHTS = {"tv": 0.25, "dn": 0.25, "wd": 0.5}
 # hval units (page region variants) holding a line whose duplicate cluster has a train copy (vocr6-ingest decisions
 # pools.line.seen_train; audit-vocr6-ingest F3): out of the decision metric (stage 1 amendment 3), reported apart
@@ -72,15 +75,17 @@ def component(doc, name, path):
     swamps every recognizer difference (eval/vocr6_protocol.json decision.page_metric_evidence); hval_page_all
     keeps every unit (report)."""
     r = doc["rows"]
-    if name in ("hval_page", "hval_page_all", "hval_page_seen"):
+    if name in ("hval_page", "hval_page_all", "hval_page_seen", "hval_page_nomerge"):
         x = r["hval_page"]
         if name == "hval_page_all":
             keep = np.ones(len(x["chars"]), bool)
         else:
             keep = np.asarray(x["junk"]) == 0
-            if name == "hval_page":
+            if name in ("hval_page", "hval_page_nomerge"):
                 seen = seen_units()
                 keep &= np.asarray([u not in seen for u in x["unit"]], bool)
+            if name == "hval_page_nomerge":
+                keep &= np.asarray(x["merged"]) == 0
         cl, keys = np.asarray(x["title"]), x["unit"]
     elif name == "hval_clean":
         x = r["hval_clean"]
@@ -103,11 +108,13 @@ def component(doc, name, path):
 
 def platform_mask(doc, name, platform):
     x = doc["rows"]["hval_page" if name.startswith("hval_page") else name]
-    if name in ("hval_page", "hval_page_seen"):
+    if name in ("hval_page", "hval_page_seen", "hval_page_nomerge"):
         m = np.asarray(x["junk"]) == 0
-        if name == "hval_page":
+        if name in ("hval_page", "hval_page_nomerge"):
             seen = seen_units()
             m &= np.asarray([u not in seen for u in x["unit"]], bool)
+        if name == "hval_page_nomerge":
+            m &= np.asarray(x["merged"]) == 0
     elif name == "hval_page_all":
         m = np.ones(len(x["chars"]), bool)
     else:
@@ -150,7 +157,7 @@ def ci(reps):
 
 def compare(xdocs, ydocs, path="rubi", n_boot=N_BOOT):
     out = {}
-    for name in ("hval_page", "hval_page_seen", "hval_page_all", "hval_clean"):
+    for name in ("hval_page", "hval_page_seen", "hval_page_nomerge", "hval_page_all", "hval_clean"):
         ex, ey, c, cl = paired(xdocs, ydocs, name, path)
         p, r, n = boot(ex, ey, c, cl, SEEDS[name], n_boot)
         out[name] = {"delta_points": round(p, 3), "ci95": ci(r), "clusters": n,

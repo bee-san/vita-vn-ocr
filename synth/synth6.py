@@ -23,6 +23,8 @@ shadow, box colour and opacity) and the title's real pages, with every text box 
   synth6.py assets --hooked DIR --pages DIR --splits SPLITS --harvest DIR --out ASSETS  styles, layout, inventory
   synth6.py font-check --assets ASSETS --ckpt CKPT --out ASSETS/font_check.json     common lines read back by OCR
   synth6.py glyph-check --assets ASSETS --ckpt CKPT --out ASSETS/glyph_check.json   every kana/kanji, per font
+  synth6.py glyph-geometry --assets ASSETS --out ASSETS/glyph_geometry.json        glyphs outside their pen cell
+  synth6.py inventory --assets ASSETS                rebuild the font inventory alone
   synth6.py manifests --assets ASSETS        data/manifests/synth6_fonts.json + synth6_styles.json (committed)
   synth6.py preview --assets ASSETS --view vita --out DIR [--n 40]                  contact sheets
   synth6.py compare --assets ASSETS --title T --out sheet.png                       real vs synthetic, one title
@@ -90,6 +92,7 @@ CFG = {
     "min_label": 1,
     "min_contrast": 60,         # luma levels between the fill and its surround (legibility)
     "max_busy": 45,             # luma sd around unframed text (no halo or shadow of half opacity)
+    "min_char_contrast": 40,    # the lowest per-character contrast (a line partly over a bright patch)
     "scene_box_alpha": [0.8, 1.0],
     "page_tries": 4,            # pages tried for a free dialogue row before a scene placement
 }
@@ -132,8 +135,12 @@ class World:
             check = json.loads((assets / "font_check.json").read_text(encoding="utf-8"))["fonts"]
         self.font_check = check
         gc = assets / "glyph_check.json"
-        self.deny = {k: v["suspect"] for k, v in json.loads(gc.read_text(encoding="utf-8"))["fonts"].items()} \
+        self.deny = {k: set(v["suspect"]) for k, v in json.loads(gc.read_text(encoding="utf-8"))["fonts"].items()} \
             if gc.exists() else {}
+        gg = assets / "glyph_geometry.json"
+        if gg.exists():
+            for k, v in json.loads(gg.read_text(encoding="utf-8"))["fonts"].items():
+                self.deny.setdefault(k, set()).update(v["misplaced"])
         self.inventory = {r["font"]: r for r in inv}
         self.cross = {}
         for r in inv:
@@ -252,8 +259,12 @@ def pick_font(rng, T):
         return font, size, sp, "matched", mf["font"]
     target = title_advance(T) * float(rng.uniform(*CFG["cross_size"]))
     want_ink = target * float(rng.uniform(0.82, 0.93))
-    face = W.cross_faces[int(rng.integers(len(W.cross_faces)))]
-    cands = W.cross[face]
+    for _ in range(8):           # a face whose strikes all need a scale outside [0.5, 1.7] is redrawn
+        face = W.cross_faces[int(rng.integers(len(W.cross_faces)))]
+        cands = W.cross[face]
+        if cands[0]["kind"] == "vector" or any(0.5 <= want_ink / font_metrics(W.font(c["font"]))[0] <= 1.7
+                                               for c in cands):
+            break
     if cands[0]["kind"] == "vector":
         r = cands[int(rng.integers(len(cands)))]
         font = W.font(r["font"])
@@ -308,13 +319,14 @@ def pick_style(rng, T, mode, kind="line"):
 # ----------------------------------------------------------------------------- text layout
 
 def wrap(font, text, scale, spacing, max_w, rng):
-    """Greedy VN wrap: as many characters as fit in max_w px; a closing mark that would start a line hangs on the
+    """Greedy VN wrap: as many characters as fit in max_w px; one closing mark that would start a line hangs on the
     previous one (engines let 、。」 overhang). Drawable characters only (the caller checked)."""
     lines, cur, w = [], "", 0.0
     s = scale if font.kind == "bitmap" else 1.0
     for ch in text:
         adv = font.glyph(ch)[3] * s + spacing
-        if cur and w + adv > max_w and ch not in CLOSE:
+        # a closing mark may hang past max_w, as engines let 、。」 do, but only one: a second breaks the line
+        if cur and w + adv > max_w and (ch not in CLOSE or w > max_w):
             lines.append(cur)
             cur, w = "", 0.0
         cur += ch
@@ -390,7 +402,7 @@ def composite(img, cov, x, y, style):
 
 
 def draw_box(img, rng, x0, y0, x1, y1, rgb, alpha):
-    """A dialogue box of the title's measured colour and opacity (rounded corners, a faint lighter rim)."""
+    """A flat dialogue box of the given colour and opacity, with rounded corners (no rim, no texture)."""
     H, W_ = img.shape[:2]
     x0, y0, x1, y1 = max(0, x0), max(0, y0), min(W_, x1), min(H, y1)
     if x1 - x0 < 8 or y1 - y0 < 8:
@@ -419,6 +431,28 @@ def free_rows(rows, boxes, platform):
         if all(bx + bw + m <= x0 or bx - m >= x1 or by + bh <= ya or by >= yb for bx, by, bw, bh in boxes):
             out.append(r)
     return out
+
+
+def row_chain(rng, free, k_max):
+    """Up to k_max free rows, one region's lines: from a random free row, each next row the nearest one below that
+    does not overlap the previous row (a title with several layouts has rows 5-10 px apart: drawing two of those
+    would stack two lines) and starts within 2.5 row heights of its top (the next line of the same box)."""
+    free = sorted(free, key=lambda r: (r["y0"], -r["count"]))
+    if not free:
+        return []
+    chain = [free[int(rng.integers(len(free)))]]
+    while len(chain) < k_max:
+        last = chain[-1]
+        nxt = [r for r in free if r["y0"] >= last["y0"] + last["h"] and r["y0"] - last["y0"] <= 2.5 * last["h"]]
+        if not nxt:
+            break
+        chain.append(min(nxt, key=lambda r: (r["y0"], -r["count"])))
+    return chain
+
+
+def overlaps(a, b):
+    """Do two [x, y, w, h] boxes overlap?"""
+    return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
 
 
 def scene_slot(rng, T, boxes, platform, n_lines, pitch, width):
@@ -482,9 +516,7 @@ def render_region(rng, view):
     width = max([r["x1"] - min(v for v, _ in r["x0"]) for r in rows] or [0.7 * T["dims"][0]])
     slots = []                       # (x0, top, max_w, kind)
     if placement == "rows":
-        free.sort(key=lambda r: r["y0"])
-        start = int(rng.integers(len(free)))
-        for r in free[start:start + k_max]:
+        for r in row_chain(rng, free, k_max):
             xs = [v for v, _ in r["x0"]]
             ws = np.array([n for _, n in r["x0"]], np.float64)
             x0 = xs[int(rng.choice(len(xs), p=ws / ws.sum()))]
@@ -536,7 +568,12 @@ def render_region(rng, view):
     # a speaker name on a free name row
     nrows = T["layout"].get("name") or []
     if nrows and placement == "rows" and rng.random() < CFG["name"]:
-        nf = free_rows(nrows, boxes, plat)
+        drawn = [ln["cell"] for ln in lines if ln.get("cell")]
+
+        def row_box(r):
+            x = min(v for v, _ in r["x0"])
+            return [x, r["y0"], r["x1"] - x, r["h"]]
+        nf = [r for r in free_rows(nrows, boxes, plat) if not any(overlaps(row_box(r), c) for c in drawn)]
         if nf:
             r = nf[int(rng.integers(len(nf)))]
             for _ in range(6):
@@ -588,41 +625,61 @@ def draw_text_line(img, font, s, scale, spacing, x0, y, style, kind):
     # place so that the quads' top sits on the row's top y
     ox_, oy_ = int(round(x0 - m)), int(round(y - qy0))
     total = composite(img, cov, ox_, oy_, style)
-    contrast, busy = legibility(img, cov, total, ox_, oy_)
+    contrast, busy, worst = legibility(img, cov, total, ox_, oy_, cells)
     framed = any((style.get(k) or {}).get("alpha", 0.0) >= 0.5 for k in ("halo", "shadow"))
     ys, xs = np.nonzero(total > 0.1)
     ink = None if not len(xs) else [int(xs.min()) + ox_, int(ys.min()) + oy_, int(xs.max() - xs.min() + 1),
                                     int(ys.max() - ys.min() + 1)]
     cell = [int(math.floor(qx0)) + ox_, int(math.floor(qy0)) + oy_, int(math.ceil(qx1 - qx0)),
             int(math.ceil(qy1 - qy0))]
-    return {"text": s, "kind": kind, "cell": cell, "ink": ink, "contrast": contrast, "busy": busy,
-            "legible": bool(contrast >= CFG["min_contrast"] and (framed or busy <= CFG["max_busy"]))}
+    return {"text": s, "kind": kind, "cell": cell, "ink": ink, "contrast": contrast, "busy": busy, "worst": worst,
+            "legible": bool(contrast >= CFG["min_contrast"] and worst >= CFG["min_char_contrast"]
+                            and (framed or busy <= CFG["max_busy"]))}
 
 
-def legibility(img, cov, total, x, y):
-    """(contrast, busy) of a drawn line after compositing: the luma contrast of the glyphs' fill core against the
-    pixels just outside everything drawn (fill, halo, shadow), or against the halo where one is drawn (medians);
-    and the luma spread (sd) of those outside pixels. A line under CFG min_contrast, or over CFG max_busy without
-    a halo or shadow of at least half opacity, is not cropped: real games keep text legible."""
+def legibility(img, cov, total, x, y, cells=()):
+    """(contrast, busy, worst) of a drawn line after compositing. contrast: the luma contrast of the glyphs' fill core
+    against the pixels just outside everything drawn (fill, halo, shadow), or against the halo where one is drawn
+    (medians). busy: the luma spread (sd) of those outside pixels. worst: the lowest such contrast over the line's
+    character cells (pen to pen + advance; cells with fewer than 6 core pixels, such as a small 、, are skipped), so a
+    line partly drawn over a bright patch is caught. A line under CFG min_contrast or min_char_contrast, or over
+    CFG max_busy without a halo or shadow of at least half opacity, is not cropped: real games keep text legible."""
     H, W_ = img.shape[:2]
     h, w = cov.shape
     x0, y0, x1, y1 = max(0, x), max(0, y), min(W_, x + w), min(H, y + h)
     if x1 <= x0 or y1 <= y0:
-        return 0.0, 255.0
+        return 0.0, 255.0, 0.0
     sl = (slice(y0 - y, y1 - y), slice(x0 - x, x1 - x))
     lum = 0.299 * img[y0:y1, x0:x1, 0] + 0.587 * img[y0:y1, x0:x1, 1] + 0.114 * img[y0:y1, x0:x1, 2]
-    core = cov[sl] >= 0.8
-    drawn = total[sl] > 0.08
+    c, t = cov[sl], total[sl]
+    core = c >= 0.8
+    drawn = t > 0.08
     ring = cv2.dilate(drawn.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~drawn
     if core.sum() < 8 or ring.sum() < 8:
-        return 0.0, 255.0
-    fill = float(np.median(lum[core]))
+        return 0.0, 255.0, 0.0
+    halo = (t > 0.3) & ~(c > 0.1)
+    use_halo = (t - c).max() > 0.3 and halo.sum() >= 8
+
+    def con(a, b, lo, hi):
+        """contrast of the core in columns [a, b) against the ring and halo in columns [lo, hi)"""
+        cm, rm, hm = core[:, a:b], ring[:, lo:hi], halo[:, lo:hi]
+        fill = float(np.median(lum[:, a:b][cm]))
+        v = abs(fill - float(np.median(lum[:, lo:hi][rm]))) if rm.sum() >= 4 else 0.0
+        if use_halo and hm.sum() >= 4:
+            v = max(v, abs(fill - float(np.median(lum[:, lo:hi][hm]))))
+        return v
+    contrast = con(0, core.shape[1], 0, core.shape[1])
     busy = float(lum[ring].std())
-    if total[sl][~core & drawn].size and (total[sl] - cov[sl]).max() > 0.3:      # a halo: fill against it
-        halo = (total[sl] > 0.3) & ~(cov[sl] > 0.1)
-        if halo.sum() >= 8:
-            return max(abs(fill - float(np.median(lum[ring]))), abs(fill - float(np.median(lum[halo])))), busy
-    return abs(fill - float(np.median(lum[ring]))), busy
+    worst = contrast
+    for ch, cx0, cx1, _, _ in cells:
+        if ch in F6.SPACES:
+            continue
+        a, b = int(math.floor(cx0)) - (x0 - x), int(math.ceil(cx1)) - (x0 - x)
+        a, b = max(0, a), min(core.shape[1], b)
+        if b - a < 2 or core[:, a:b].sum() < 6:
+            continue
+        worst = min(worst, con(a, b, max(0, a - 3), min(core.shape[1], b + 3)))
+    return contrast, busy, worst
 
 
 # ----------------------------------------------------------------------------- views and crops
@@ -715,8 +772,14 @@ def extract(rng, img, lines, meta):
         ln["cell_v"] = scaled(ln.get("cell"), k)
     mode = choose(rng, CFG["crop"])
     grads = grad_boxes(grey, lines, meta["real_boxes"], CFG["region_margin"][view], k) if mode == "grad" else {}
+    Hn, Wn = img.shape[:2]
     out = []
     for i, ln in enumerate(lines):
+        # a glyph cut off at the frame edge, or a line stacked on another drawn line, would make the label wrong
+        inside = all(bx is not None and bx[0] >= 0 and bx[1] >= 0 and bx[0] + bx[2] <= Wn and bx[1] + bx[3] <= Hn
+                     for bx in (ln.get("ink"), ln.get("cell")))
+        if not inside or any(j != i and stacked(ln.get("ink"), o.get("ink")) for j, o in enumerate(lines)):
+            continue
         lab = canon(ln["text"])
         if len(lab) < CFG["min_label"] or set(lab) <= SKIP_LABELS or \
                 not W.text.clean_label(lab, ln.get("source")):
@@ -745,9 +808,19 @@ def extract(rng, img, lines, meta):
         m = {k2: v for k2, v in meta.items() if k2 != "real_boxes"}
         m.update(kind=ln["kind"], crop=kind, crop_mode=mode, dark=int(dark), inverted=int(dark), box=box,
                  ink=ln["ink_v"], cell=ln["cell_v"], source=ln.get("source"), focus=ln.get("focus"),
-                 contrast=round(float(ln.get("contrast", 0.0)), 1), busy=round(float(ln.get("busy", 0.0)), 1))
+                 contrast=round(float(ln.get("contrast", 0.0)), 1), busy=round(float(ln.get("busy", 0.0)), 1),
+                 worst=round(float(ln.get("worst", 0.0)), 1))
         out.append((crop, lab, m))
     return out
+
+
+def stacked(a, b):
+    """Do two drawn lines' ink boxes overlap by a quarter of the smaller height or more (lines drawn on top of each
+    other, not neighbours whose halos touch)?"""
+    if a is None or b is None or a[0] >= b[0] + b[2] or b[0] >= a[0] + a[2]:
+        return False
+    ov = min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1])
+    return ov >= 0.25 * min(a[3], b[3])
 
 
 def crop_feasible(shape, label):
@@ -812,6 +885,8 @@ def recipe(args):
                        if (W.assets / "font_check.json").exists() else None,
                        "glyph_check_sha256": sha256(W.assets / "glyph_check.json")
                        if (W.assets / "glyph_check.json").exists() else None,
+                       "glyph_geometry_sha256": sha256(W.assets / "glyph_geometry.json")
+                       if (W.assets / "glyph_geometry.json").exists() else None,
                        "test_text_sha256": sha256(W.assets / "test_text.json")
                        if (W.assets / "test_text.json").exists() else None,
                        "hval_text_sha256": sha256(W.assets / "hval_text.json")
@@ -977,6 +1052,8 @@ def cmd_manifests(args):
     inv = json.loads((A / "fonts_inventory.json").read_text(encoding="utf-8"))
     fc = json.loads((A / "font_check.json").read_text(encoding="utf-8"))
     gc = json.loads((A / "glyph_check.json").read_text(encoding="utf-8"))
+    gg = json.loads((A / "glyph_geometry.json").read_text(encoding="utf-8"))["fonts"] \
+        if (A / "glyph_geometry.json").exists() else {}
     rows = []
     for r in inv:
         c, g = fc["fonts"].get(r["font"]), gc["fonts"].get(r["font"])
@@ -989,6 +1066,8 @@ def cmd_manifests(args):
                                                      "read_ok_share": g["read_ok_share"],
                                                      "placeholder": g["placeholder"], "wrong": g["wrong"],
                                                      "denied": g["suspect"]}
+        row["misplaced"] = (gg.get(r["font"]) or {}).get("misplaced")
+        row["near_test_font"] = r.get("near_test_font")
         row["drawn"] = not r["excluded"] and (r["glyphs"] or 0) >= 2000 and bool(c and c.get("pass"))
         rows.append(row)
     doc = {"kind": "synth6-fonts", "schema": 1,
@@ -999,8 +1078,10 @@ def cmd_manifests(args):
            "ocr_check": {"ckpt_sha256": fc["ckpt_sha256"], "max_cer": fc["max_cer"],
                          "text": FONT_CHECK_TEXT},
            "glyph_check": {"ckpt_sha256": gc["ckpt_sha256"], "references": gc["references"]},
+           "glyph_geometry": {"rule": "synth6_fonts.misplaced"},
            "assets_sha256": {n: sha256(A / n) for n in ("fonts_inventory.json", "font_check.json",
-                                                        "glyph_check.json")},
+                                                        "glyph_check.json", "glyph_geometry.json")
+                             if (A / n).exists()},
            "rows": rows}
     Path(args.fonts_out).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     t = json.loads((A / "titles.json").read_text(encoding="utf-8"))
@@ -1019,6 +1100,41 @@ def cmd_manifests(args):
             "titles": titles}
     Path(args.styles_out).write_text(json.dumps(sdoc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{len(rows)} fonts ({doc['drawn']} drawn) -> {args.fonts_out}; {len(titles)} titles -> {args.styles_out}")
+
+
+def cmd_inventory(args):
+    """Rebuild ASSETS/fonts_inventory.json alone (synth6_fonts.inventory: exclusions by hash, glyph identity,
+    fidelity, glyph count and tategaki forms), without re-measuring the titles."""
+    import synth6_assets as A6
+    dirs = A6.title_dirs(args.hooked)
+    train = {t for t, (_, md) in dirs.items() if md.get("split") == "train"}
+    rows = F6.inventory(args.harvest, train_titles=train)
+    (Path(args.assets) / "fonts_inventory.json").write_text(json.dumps(rows, ensure_ascii=False, indent=0) + "\n",
+                                                            encoding="utf-8")
+    from collections import Counter
+    print(f"{len(rows)} fonts; excluded {dict(Counter(w for r in rows for w in r['excluded']))}", flush=True)
+
+
+def cmd_glyph_geometry(args):
+    """ASSETS/glyph_geometry.json: per drawn-candidate font, the vocab characters it would draw outside its own pen
+    cell or not visibly (synth6_fonts.misplaced). The renderer denies them, as it denies the glyph check's."""
+    inv = json.loads((Path(args.assets) / "fonts_inventory.json").read_text(encoding="utf-8"))
+    vocab = [c for c in VOCAB.read_text(encoding="utf-8").split("\n") if c and c != "〓"]
+    out = {}
+    for r in inv:
+        if r["excluded"] or (r["glyphs"] or 0) < 2000:
+            continue
+        font = F6.open_font(Path(args.harvest) / r["font"])
+        if font.kind == "vector":
+            font.set_size(32)
+        bad = F6.misplaced(font, vocab)
+        out[r["font"]] = {"misplaced": "".join(bad)}
+    doc = {"kind": "synth6-glyph-geometry", "schema": 1, "rule": F6.misplaced.__doc__.split("\n\n")[0].strip(),
+           "fonts": out}
+    Path(args.out).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    n = sorted(len(v["misplaced"]) for v in out.values())
+    print(f"glyph geometry: {len(out)} fonts, {sum(1 for x in n if x)} with misplaced glyphs (median {n[len(n) // 2]}, "
+          f"max {n[-1]}) -> {args.out}", flush=True)
 
 
 def cmd_assets(args):
@@ -1269,8 +1385,8 @@ def cmd_glyph_check(args):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["assets", "font-check", "glyph-check", "manifests", "preview", "compare",
-                                     "shards", "manifest"])
+    ap.add_argument("mode", choices=["assets", "inventory", "font-check", "glyph-check", "glyph-geometry", "manifests",
+                                     "preview", "compare", "shards", "manifest"])
     ap.add_argument("--hooked", type=Path, default=DEFAULTS["hooked"])
     ap.add_argument("--pages", type=Path, default=DEFAULTS["pages"])
     ap.add_argument("--splits", type=Path, default=DEFAULTS["splits"])
@@ -1295,8 +1411,8 @@ def main():
     ap.add_argument("--styles-out", type=Path, default=ROOT / "data" / "manifests" / "synth6_styles.json")
     args = ap.parse_args()
     cv2.setNumThreads(1)
-    {"assets": cmd_assets, "font-check": cmd_font_check, "glyph-check": cmd_glyph_check, "manifests": cmd_manifests,
-     "preview": cmd_preview,
+    {"assets": cmd_assets, "inventory": cmd_inventory, "font-check": cmd_font_check, "glyph-check": cmd_glyph_check,
+     "glyph-geometry": cmd_glyph_geometry, "manifests": cmd_manifests, "preview": cmd_preview,
      "compare": cmd_compare, "shards": cmd_shards, "manifest": cmd_manifest}[args.mode](args)
 
 

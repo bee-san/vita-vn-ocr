@@ -22,7 +22,7 @@ import synth6_assets as A6  # noqa: E402
 import synth6_fonts as F6  # noqa: E402
 
 CHARS = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん「」、。！？…" \
-        "一二三日本人今何見思言気天でがだ"
+        "一二三日本人今何見思言気天でがだ・"
 
 
 def atlas_font(dirpath, font_path, title, fid, px=24, chars=CHARS, verdict="verified", vertical=False,
@@ -307,3 +307,89 @@ def test_psp2x_view_doubles_the_frame():
     assert out.shape == (544, 960, 3) and k == 2 and filt in S6.CFG["adrenaline"]
     same, k1, f1 = S6.to_view(np.random.default_rng(0), img, "psp")
     assert same is img and k1 == 1 and f1 is None
+
+
+# ----------------------------------------------------------------------------- the audit's defects (B1-B4, F2)
+
+def test_row_chain_never_stacks_rows():
+    rows = [{"y0": y, "h": 29, "x0": [[100, 9]], "x1": 800, "count": 9} for y in (64, 69, 80, 99, 110, 115, 145)]
+    rng = np.random.default_rng(0)
+    for _ in range(200):
+        ch = S6.row_chain(rng, rows, 4)
+        assert ch and all(b["y0"] >= a["y0"] + a["h"] and b["y0"] - a["y0"] <= 2.5 * a["h"] for a, b in zip(ch, ch[1:]))
+
+
+def test_stacked_and_overlaps():
+    assert S6.stacked([0, 100, 200, 30], [10, 105, 200, 30])            # drawn on top of each other
+    assert not S6.stacked([0, 100, 200, 30], [0, 127, 200, 30])         # neighbours whose halos touch (3 px)
+    assert not S6.stacked([0, 100, 200, 30], [300, 100, 200, 30])       # side by side
+    assert S6.overlaps([0, 0, 10, 10], [5, 5, 10, 10]) and not S6.overlaps([0, 0, 10, 10], [10, 0, 5, 5])
+
+
+def test_wrap_caps_the_overhang(tmp_path, font):
+    f = F6.open_font(atlas_font(tmp_path, font, "T", "bm"))
+    adv = f.glyph("あ")[3]
+    lines = S6.wrap(f, "あいうえお……！？」かき", 1.0, 0.0, 5 * adv, np.random.default_rng(0))
+    assert lines[0] == "あいうえお…"                 # one closing mark hangs, the next breaks the line
+    assert all(S6.F6.line_advance(f, ln) <= 6 * adv for ln in lines)
+
+
+def test_lines_off_the_frame_or_stacked_are_not_cropped(tmp_path, font, monkeypatch):
+    fake_world(tmp_path, font)
+    img = np.zeros((544, 960, 3), np.float32)
+    ok = {"text": "今日は", "kind": "line", "ink": [100, 400, 80, 26], "cell": [100, 400, 80, 26], "legible": True}
+    cut = {"text": "今日は", "kind": "line", "ink": [900, 400, 80, 26], "cell": [900, 400, 80, 26], "legible": True}
+    low = {"text": "いい天気", "kind": "line", "ink": [100, 530, 80, 20], "cell": [100, 530, 80, 20], "legible": True}
+    meta = {"view": "vita", "title": "TITLEV", "real_boxes": [], "mode": "matched", "placement": "rows"}
+    monkeypatch.setitem(S6.CFG, "crop", {"ink": 1.0})
+    got = S6.extract(np.random.default_rng(0), img, [ok, cut, low], dict(meta))
+    assert [m["ink"] for _, _, m in got] == [[100, 400, 80, 26]]
+    a = dict(ok)
+    b = dict(ok, ink=[110, 405, 80, 26], cell=[110, 405, 80, 26])
+    assert S6.extract(np.random.default_rng(0), img, [a, b], dict(meta)) == []
+
+
+def test_misplaced_glyphs(tmp_path, font):
+    d = atlas_font(tmp_path, font, "T", "bm")
+    f = F6.open_font(d)
+    x, y, w, h, ox, oy, adv = f.chars["・"]
+    f.chars["・"] = [x, y, w, h, 6, oy, 6]                 # a full cell at +6 with a half-width advance (B3)
+    f.chars["一"] = [x, y, w, h, ox, oy, adv]              # a blank cell would be "no visible ink"
+    f.atlas[y:y + h, x:x + w] = 0
+    f._cache.clear()
+    bad = set(F6.misplaced(f, "あ・一「」。"))
+    assert bad == {"・", "一"}
+
+
+def test_near_identical_copies_of_a_test_font_are_excluded(tmp_path, font):
+    atlas_font(tmp_path, font, "PCSG00415", "gothp32")
+    cp = atlas_font(tmp_path, font, "OTHER", "copy")                       # the same glyph bitmaps, re-encoded:
+    from PIL import Image
+    Image.open(cp / "atlas.png").save(cp / "atlas.png", compress_level=1)  # other PNG bytes, same pixels
+    g = json.loads((cp / "glyphs.json").read_text(encoding="utf-8"))
+    (cp / "glyphs.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
+    m = json.loads((cp / "font.json").read_text(encoding="utf-8"))
+    m.update(fidelity_by_title={}, content_sha256="x" * 64)
+    (cp / "font.json").write_text(json.dumps(m), encoding="utf-8")
+    atlas_font(tmp_path, font, "TRAIN1", "own", px=20)                     # another size: other bitmaps
+    old = F6.NEAR_MIN_COMMON
+    F6.NEAR_MIN_COMMON = 10
+    try:
+        rows = {r["font"]: r for r in F6.inventory(tmp_path, test_titles=("PCSG00415",), train_titles=set())}
+    finally:
+        F6.NEAR_MIN_COMMON = old
+    assert any("near-identical" in w for w in rows["OTHER/copy"]["excluded"])
+    assert rows["OTHER/copy"]["near_test_font"]["font"] == "PCSG00415/gothp32"
+    assert not rows["TRAIN1/own"]["excluded"]
+
+
+def test_legibility_catches_a_partly_invisible_line(tmp_path, font):
+    f = F6.open_font(atlas_font(tmp_path, font, "T", "bm"))
+    cov, cells = F6.draw_line(f, "今日はいい天気", x=4, y=4)
+    img = np.full((cov.shape[0] + 8, cov.shape[1] + 8, 3), 40.0, np.float32)
+    half = cov.shape[1] // 2
+    img[:, half + 2:] = 245.0                                           # the right half over a bright patch
+    st = {"fill": np.array([250, 250, 250], np.float32), "halo": None, "shadow": None}
+    total = S6.composite(img, cov, 2, 2, st)
+    contrast, busy, worst = S6.legibility(img, cov, total, 2, 2, cells)
+    assert worst < S6.CFG["min_char_contrast"] <= contrast or contrast < S6.CFG["min_contrast"]

@@ -1250,18 +1250,18 @@ def build_report(priv, out, suffix):
     rep = {"kind": "vocr6-final-test-report", "schema": 1, "created": now(), "repo_head": git_head(),
            "protocol_sha256": sha256(PROTOCOL), "attempt": json.loads((priv / "attempt.json").read_text()),
            "models": json.loads((priv / "models.json").read_text(encoding="utf-8")),
-           "rubi_path": None, "a": {}, "b": {}, "seen_flags": proto["seen_flags"]}
+           "rubi_path": None, "path_a": {}, "path_b": {}, "seen_flags": proto["seen_flags"]}
     # path (a)
     fixed = a_fixed_rows(priv, fams)
-    rep["a"]["vita_psp_fixed_lines"] = set_tables(fixed, fams, ("greedy", "lm"), cluster=lambda r: r["vn"],
+    rep["path_a"]["vita_psp_fixed_lines"] = set_tables(fixed, fams, ("greedy", "lm"), cluster=lambda r: r["vn"],
                                                   ident=lambda r: r["id"])
-    rep["a"]["vita_psp_fixed_lines_per_title"] = per_title(fixed, fams, ("greedy", "lm"))
+    rep["path_a"]["vita_psp_fixed_lines_per_title"] = per_title(fixed, fams, ("greedy", "lm"))
     dia = a_dialogue_rows(priv, fams)
-    rep["a"]["vita_psp_whole_dialogue"] = region_tables(dia, fams, ("greedy",), cluster=lambda r: r["vn"])
-    rep["a"]["vita_psp_whole_dialogue_per_title"] = per_title([r for r in dia if r["variant"] == "base"], fams,
+    rep["path_a"]["vita_psp_whole_dialogue"] = region_tables(dia, fams, ("greedy",), cluster=lambda r: r["vn"])
+    rep["path_a"]["vita_psp_whole_dialogue_per_title"] = per_title([r for r in dia if r["variant"] == "base"], fams,
                                                               ("greedy",))
     cl = a_clannad_rows(priv, fams, suffix)
-    rep["a"]["clannad_lines"] = {
+    rep["path_a"]["clannad_lines"] = {
         "dialogue": table(sub(cl, lambda r: not r["name"]), keys_for(fams, ("greedy",)), cluster=lambda r: r["page"],
                           ident=lambda r: r["id"], exact=True, min_clusters=2),
         "names": table(sub(cl, lambda r: r["name"]), keys_for(fams, ("greedy",)), cluster=lambda r: r["page"],
@@ -1271,7 +1271,7 @@ def build_report(priv, out, suffix):
     pc = a_pcsg_rows(priv, fams)
     import vocr6_baseline as VB
     pk = keys_for(fams, VB.DECODES)
-    rep["a"]["pcsg00807"] = {
+    rep["path_a"]["pcsg00807"] = {
         "clean": table(sub(pc, lambda r: r["part"] == "clean"), pk, cluster=lambda r: r["page"],
                        ident=lambda r: r["id"], exact=True, min_clusters=2),
         "page_refine_console_base": table(sub(pc, lambda r: r["part"] == "finder" and r.get("mode") == "refine"
@@ -1282,14 +1282,15 @@ def build_report(priv, out, suffix):
                                         ident=lambda r: r["id"], min_clusters=2),
         "page_textspot3": table(sub(pc, lambda r: r["part"] == "spot"), pk, cluster=lambda r: r["page"],
                                 ident=lambda r: r["id"], min_clusters=2)}
-    rep["a"]["tool_outputs"] = {
+    rep["path_a"]["tool_outputs"] = {
         "vocr3_report_pairs": json.loads((priv / "a" / "shared" / "shared.json").read_text(encoding="utf-8"))
         .get("pairs", {}),
         "clannad": json.loads((priv / "clannad" / f"clannad_{suffix}.json").read_text(encoding="utf-8"))["scores"],
         "clannad_dialogue_pairs": json.loads((priv / "clannad" / f"clannad_{suffix}_dialogue.json")
                                              .read_text(encoding="utf-8"))["pairs"],
         "resources": json.loads((priv / "a" / "shared" / "shared.json").read_text(encoding="utf-8"))["resources"]}
-    rep["a"]["tool_outputs"]["vocr3_report_pairs"] = R_compact_pairs(rep["a"]["tool_outputs"]["vocr3_report_pairs"])
+    tool = rep["path_a"]["tool_outputs"]
+    tool["vocr3_report_pairs"] = R_compact_pairs(tool["vocr3_report_pairs"])
     # path (b)
     bdir = priv / "b"
     if (bdir / "rows_vita-test.pkl").exists():
@@ -1300,31 +1301,31 @@ def build_report(priv, out, suffix):
             with open(bdir / f"rows_{s}.pkl", "rb") as fh:
                 b[s] = pickle.load(fh)
         fx = [dict(r, set=s, id=f"{s}:{r['id']}") for s in ("vita-test", "psp-test") for r in b[s]["rows"]["fixed"]]
-        rep["b"]["vita_psp_fixed_lines"] = set_tables(fx, fams, STAGES, cluster=lambda r: r["vn"],
+        rep["path_b"]["vita_psp_fixed_lines"] = set_tables(fx, fams, STAGES, cluster=lambda r: r["vn"],
                                                       ident=lambda r: r["id"])
-        rep["b"]["vita_psp_fixed_lines_per_title"] = per_title(fx, fams, ("shipped",))
+        rep["path_b"]["vita_psp_fixed_lines_per_title"] = per_title(fx, fams, ("shipped",))
         ru = [dict(r, set=s, id=r["uid"]) for s in ("vita-test", "psp-test") for r in b[s]["rows"]["units"]]
-        rep["b"]["vita_psp_whole_dialogue"] = region_tables(ru, fams, STAGES, cluster=lambda r: r["vn"])
-        rep["b"]["vita_psp_whole_dialogue_per_title"] = per_title([r for r in ru if r["variant"] == "base"], fams,
+        rep["path_b"]["vita_psp_whole_dialogue"] = region_tables(ru, fams, STAGES, cluster=lambda r: r["vn"])
+        rep["path_b"]["vita_psp_whole_dialogue_per_title"] = per_title([r for r in ru if r["variant"] == "base"], fams,
                                                                   ("shipped",))
         cfx = b["clannad"]["rows"]["fixed"]
-        rep["b"]["clannad_lines"] = {
+        rep["path_b"]["clannad_lines"] = {
             "dialogue": table(sub(cfx, lambda r: not r["name"]), keys_for(fams, STAGES), cluster=lambda r: r["page"],
                               ident=lambda r: r["id"], exact=True, min_clusters=2),
             "names": table(sub(cfx, lambda r: r["name"]), keys_for(fams, STAGES), cluster=lambda r: r["page"],
                            ident=lambda r: r["id"], exact=True, min_clusters=2)}
         cpu = b["clannad"]["rows"]["units"]
-        rep["b"]["clannad_pages"] = {
+        rep["path_b"]["clannad_pages"] = {
             "dialogue": table(cpu, keys_for(fams, STAGES), cluster=lambda r: r["page"], ident=lambda r: r["uid"],
                               min_clusters=2),
             "all": table(cpu, keys_for(fams, STAGES), chars_key="chars_all", err_key="errors_all",
                          cluster=lambda r: r["page"], ident=lambda r: r["uid"], min_clusters=2),
             "inputs": b["clannad"]["inputs"]}
         pfx = b["pcsg00807"]["rows"]["fixed"]
-        rep["b"]["pcsg00807_clean"] = table(pfx, keys_for(fams, STAGES), cluster=lambda r: r["page"],
+        rep["path_b"]["pcsg00807_clean"] = table(pfx, keys_for(fams, STAGES), cluster=lambda r: r["page"],
                                             ident=lambda r: r["id"], exact=True, min_clusters=2)
         pu = b["pcsg00807"]["rows"]["units"]
-        rep["b"]["pcsg00807_page"] = {}
+        rep["path_b"]["pcsg00807_page"] = {}
         for kind in ("page", "oracle"):
             for v in list(VARIANTS) + ["all-variants"]:
                 rs = sub(pu, lambda r: r["kind"] == kind and (v == "all-variants" or r["variant"] == v))
@@ -1335,8 +1336,9 @@ def build_report(priv, out, suffix):
                                        for k in ("whole", "cut", "missed", "merged", "junk")}
                     t["lines"] = sum(r["lines"] for r in rs)
                     t["boxes"] = sum(r["boxes"] for r in rs)
-                rep["b"]["pcsg00807_page"][f"{kind}|{v}"] = t
-        rep["b"]["reads"] = {s: {k: b[s][k] for k in ("dumps", "rereads", "cascaded", "read_errors", "finder_errors",
+                rep["path_b"]["pcsg00807_page"][f"{kind}|{v}"] = t
+        rep["path_b"]["reads"] = {s: {k: b[s][k] for k in ("dumps", "rereads", "cascaded", "read_errors",
+                                                           "finder_errors",
                                                       "finder", "inputs")} for s in SETS_B}
     rep["headline"] = headline(rep)
     rep["seen_per_title"] = {s: {vn: seen_of(proto, vn, s) for vn in {r["vn"] for r in fixed if r["set"] == s}
@@ -1367,22 +1369,23 @@ def headline(rep):
                       "VOCR6": r6 and {k: r6[k] for k in ("cer", "ci95", "errors", "chars")},
                       "VOCR6_minus_VOCR5": tbl["pairs"].get(f"{t}:{stage}")}
         return res
-    h = {"a": {}, "b": {}}
-    a = rep["a"]
-    h["a"]["clannad_lines"] = pick(a["clannad_lines"]["dialogue"], "greedy")
-    h["a"]["vita_psp_fixed_lines"] = pick(a["vita_psp_fixed_lines"]["pooled|dialogue"], "greedy")
-    h["a"]["vita_psp_fixed_lines_lm"] = pick(a["vita_psp_fixed_lines"]["pooled|dialogue"], "lm")
-    h["a"]["vita_psp_whole_dialogue_base"] = pick(a["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "greedy")
-    h["a"]["pcsg00807_clean"] = pick(a["pcsg00807"]["clean"], "rubi_cascade")
-    h["a"]["pcsg00807_page"] = pick(a["pcsg00807"]["page_refine_console_base"], "rubi_cascade")
-    b = rep.get("b") or {}
+    h = {"path_a": {}, "path_b": {}}
+    a = rep["path_a"]
+    h["path_a"]["clannad_lines"] = pick(a["clannad_lines"]["dialogue"], "greedy")
+    h["path_a"]["vita_psp_fixed_lines"] = pick(a["vita_psp_fixed_lines"]["pooled|dialogue"], "greedy")
+    h["path_a"]["vita_psp_fixed_lines_lm"] = pick(a["vita_psp_fixed_lines"]["pooled|dialogue"], "lm")
+    h["path_a"]["vita_psp_whole_dialogue_base"] = pick(a["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "greedy")
+    h["path_a"]["pcsg00807_clean"] = pick(a["pcsg00807"]["clean"], "rubi_cascade")
+    h["path_a"]["pcsg00807_page"] = pick(a["pcsg00807"]["page_refine_console_base"], "rubi_cascade")
+    b = rep.get("path_b") or {}
     if b:
-        h["b"]["clannad_lines"] = pick(b["clannad_lines"]["dialogue"], "shipped")
-        h["b"]["clannad_pages"] = pick(b["clannad_pages"]["dialogue"], "shipped")
-        h["b"]["vita_psp_fixed_lines"] = pick(b["vita_psp_fixed_lines"]["pooled|dialogue"], "shipped")
-        h["b"]["vita_psp_whole_dialogue_base"] = pick(b["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "shipped")
-        h["b"]["pcsg00807_clean"] = pick(b["pcsg00807_clean"], "shipped")
-        h["b"]["pcsg00807_page"] = pick(b["pcsg00807_page"]["page|base"], "shipped")
+        h["path_b"]["clannad_lines"] = pick(b["clannad_lines"]["dialogue"], "shipped")
+        h["path_b"]["clannad_pages"] = pick(b["clannad_pages"]["dialogue"], "shipped")
+        h["path_b"]["vita_psp_fixed_lines"] = pick(b["vita_psp_fixed_lines"]["pooled|dialogue"], "shipped")
+        h["path_b"]["vita_psp_whole_dialogue_base"] = pick(b["vita_psp_whole_dialogue"]["pooled|base|dialogue"],
+                                                           "shipped")
+        h["path_b"]["pcsg00807_clean"] = pick(b["pcsg00807_clean"], "shipped")
+        h["path_b"]["pcsg00807_page"] = pick(b["pcsg00807_page"]["page|base"], "shipped")
     return h
 
 
@@ -1438,7 +1441,7 @@ def markdown(rep, proto):
                f"{rp['textnorm']['textnorm_sha256'][:12]}…`, the non-Japanese line filter; PSP in the 2x console "
                "view.", ""]
     md += ["## Headline", ""]
-    b = rep.get("b") or {}
+    b = rep.get("path_b") or {}
     if b:
         md += ["### Path (b): Rubi's shipped path", ""]
         md += md_measure("CLANNAD, 2,052 dialogue lines (the frozen line crops)", b["clannad_lines"]["dialogue"],
@@ -1451,7 +1454,7 @@ def markdown(rep, proto):
                          b["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "shipped")
         md += md_measure("PCSG00807 clean lines", b["pcsg00807_clean"], "shipped")
         md += md_measure("PCSG00807 page path (base regions)", b["pcsg00807_page"]["page|base"], "shipped")
-    a = rep["a"]
+    a = rep["path_a"]
     md += ["### Path (a): VOCR5's locked path", ""]
     md += md_measure("CLANNAD dialogue lines (greedy)", a["clannad_lines"]["dialogue"], "greedy")
     md += md_measure("vita-test + psp-test fixed lines, dialogue (greedy, console polarity)",
@@ -1471,7 +1474,7 @@ def markdown(rep, proto):
                                   ("a", "vita_psp_fixed_lines", "greedy", "(a) fixed lines greedy"),
                                   ("a", "vita_psp_fixed_lines", "lm", "(a) fixed lines + LM"),
                                   ("a", "vita_psp_whole_dialogue", "greedy", "(a) whole dialogue base")):
-        tbls = rep.get(path, {}).get(key)
+        tbls = rep.get(f"path_{path}", {}).get(key)
         if not tbls:
             continue
         for t in TIERS:
@@ -1522,7 +1525,7 @@ def markdown(rep, proto):
                              ("b", "vita_psp_whole_dialogue_per_title", "shipped"),
                              ("a", "vita_psp_fixed_lines_per_title", "greedy"),
                              ("a", "vita_psp_whole_dialogue_per_title", "greedy")):
-        pt = rep.get(path, {}).get(key)
+        pt = rep.get(f"path_{path}", {}).get(key)
         if not pt:
             continue
         md += [f"**({path}) {key.replace('_per_title', '').replace('_', ' ')}, {stage}**", "",
@@ -1545,7 +1548,7 @@ def markdown(rep, proto):
 
 def cmd_report(a):
     rep = build_report(a.priv, a.out, a.suffix)
-    print(json.dumps(rep["headline"]["b"] or rep["headline"]["a"], ensure_ascii=False)[:4000])
+    print(json.dumps(rep["headline"]["path_b"] or rep["headline"]["path_a"], ensure_ascii=False)[:4000])
 
 
 # ----------------------------------------------------------------------------- selftest (development data only)
@@ -1874,7 +1877,7 @@ def cmd_dryrun(a):
     shutil.copyfile(rpath, priv / "rubi_path.json")
     rep = build_report(priv, work / "report", a.suffix)
     summary["report_md_lines"] = len((work / "report" / "report.md").read_text(encoding="utf-8").splitlines())
-    summary["headline_b_keys"] = sorted(rep["headline"]["b"])
+    summary["headline_b_keys"] = sorted(rep["headline"]["path_b"])
     write_json(work / "dryrun.json", summary)
     print(json.dumps(summary)[:3000])
 

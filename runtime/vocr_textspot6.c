@@ -1851,8 +1851,10 @@ static void input_codes(int8_t *dst, const uint16_t *ps, const unsigned char *ro
 }
 
 /* Frame row y into the network: at f = 1 the row itself; at f = 2 every second row (and the last) completes an
- * input row of 2x2 means. The input row goes into the first 3x3 layer, through the 1x1 layers before it. */
-static int feed(Net *t, const Src *s, unsigned y, unsigned bpp)
+ * input row of 2x2 means. The input row goes into the first 3x3 layer, through the 1x1 layers before it. Out of line
+ * (as it is with two callers): with VOCR_TEXTSPOT6_NO_MS, inlined into spot, its locals would add 208 B to the frame
+ * the dark pass's call chain also passes through. */
+NOINLINE static int feed(Net *t, const Src *s, unsigned y, unsigned bpp)
 {
     const unsigned char *row = src_row(s, y);
     unsigned first = t->rl[0], x, p;

@@ -8,10 +8,12 @@
 #               log.txt); its private twin $HERD/shared/private/vocr6-final-test/<basename OUT> holds every reading,
 #               plan, dump and per-unit row (protected data: never committed, never sent anywhere)
 #   PATHS       a,b (default, the final read) | a (the validation)
-#   RUBI        a Bee-san/Rubi_for_vita checkout of main for path (b) (default: a fresh clone of main in the private
-#               directory, taken now)
+#   RUBI        a bee-san/Rubi_for_vita checkout of main for path (b) (default: a fresh clone of main in the private
+#               directory, taken at the start of the final read, before anything is read)
+#   RESUME=1    continue an attempt a harness failure stopped: the attempt record stays, a resume record is
+#               appended (time, repo head), and every step whose output exists is not run again
 # Run it through heavy.sh (one slot, 5 threads). Each step writes its own log under the private directory; nothing of
-# a step's output reaches the terminal but this script's own one-line notes (no protected text, no *_DONE token).
+# a step's output reaches the terminal but this script's one-line notes (no protected text, no completion token).
 set -euo pipefail
 MODELS=$1; OUT=$(realpath -m "$2"); NAME=$(basename "$OUT")
 HERD=/local/home/skerraut/herd-vita-ocr; A=$HERD/shared/artifacts; export HERD
@@ -35,12 +37,19 @@ fi
 mkdir -p "$OUT" "$PRIV"/{logs,a/lm,a/pcsg,clannad,b,blobs}
 LOG=$OUT/log.txt
 note() { echo "$(date -u +%FT%TZ) $*" | tee -a "$LOG"; }
-run() {   # run LOGNAME CMD...: a step's output goes to its private log only
-  local name=$1; shift
+step() {   # step NAME OUTPUT CMD...: run CMD (its output to the step's private log) unless OUTPUT exists
+  local name=$1 output=$2; shift 2
+  if [ -e "$output" ]; then echo "$(date -u +%FT%TZ) step $name: $output exists, not run again" >> "$LOG"; return 0; fi
   if ! "$@" > "$PRIV/logs/$name.log" 2>&1; then note "step $name FAILED (log: $PRIV/logs/$name.log)"; exit 3; fi
 }
-# the attempt record: one validation and one final read, each refused a second time
-$PY - "$PRIV/attempt.json" "$MODE" "$P" "${MODELS}" <<'PY'
+# the attempt record: one validation and one final read, each refused a second time (RESUME=1 continues one)
+if [ -e "$PRIV/attempt.json" ]; then
+  [ "${RESUME:-0}" = 1 ] || { echo "$PRIV/attempt.json exists: this read has run (RESUME=1 continues it)"; exit 2; }
+  echo "{\"resumed\": \"$(date -u +%FT%TZ)\", \"repo_head\": \"$(git rev-parse HEAD)\"}" >> "$PRIV/resumes.jsonl"
+  cp "$PRIV/resumes.jsonl" "$OUT/resumes.jsonl"
+  note "resume $MODE at repo $(git rev-parse --short HEAD)"
+else
+  $PY - "$PRIV/attempt.json" "$MODE" "$P" "${MODELS}" <<'PY'
 import datetime, hashlib, json, subprocess, sys
 path, mode, proto, models = sys.argv[1:5]
 rec = {"mode": mode, "started": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -51,17 +60,30 @@ if models != "-":
 with open(path, "x") as f:
     json.dump(rec, f, indent=1)
 PY
-cp "$PRIV/attempt.json" "$OUT/attempt.json"
-note "start $MODE (families ${FAMS[*]}, paths $PATHS), repo $(git rev-parse --short HEAD), private $PRIV"
+  cp "$PRIV/attempt.json" "$OUT/attempt.json"
+  note "start $MODE (families ${FAMS[*]}, paths $PATHS), repo $(git rev-parse --short HEAD), private $PRIV"
+fi
+
+# ---- path (b)'s settings, resolved from Rubi main first: a mismatch stops the read before anything is read
+if [ "$MODE" = final ]; then
+  if [ -z "${RUBI:-}" ]; then
+    RUBI=$PRIV/rubi
+    step b_rubi_clone "$RUBI/.git" timeout 600 git clone -q https://github.com/bee-san/Rubi_for_vita.git "$RUBI"
+  fi
+  step b_rubi_path "$PRIV/rubi_path.json" "$PY" "$H" rubi-path --rubi "$RUBI" --out "$PRIV/rubi_path.json"
+  cp "$PRIV/rubi_path.json" "$OUT/rubi_path.json"
+  note "path (b): $(tail -n 1 "$PRIV/logs/b_rubi_path.log" 2>/dev/null || echo resolved earlier)"
+fi
 
 # ---- blobs: VOCR5's pinned files (path a: v0.3.0; path b: the gated blobs Rubi runs), VOCR6's staged ones
 B=$PRIV/blobs
 $PY - "$P" "$B" "$MODELS" "$MODE" <<'PY'
-import hashlib, json, shutil, sys
+import hashlib, json, os, shutil, sys
 proto, out, models, mode = sys.argv[1:5]
 p = json.load(open(proto))
 def put(src, dst, want):
-    shutil.copyfile(src, f"{out}/{dst}")
+    if not os.path.exists(f"{out}/{dst}"):
+        shutil.copyfile(src, f"{out}/{dst}")
     got = hashlib.sha256(open(f"{out}/{dst}", "rb").read()).hexdigest()
     if got != want:
         raise SystemExit(f"{src}: sha256 {got[:16]}... is not the pinned {want[:16]}...")
@@ -74,7 +96,7 @@ for t in "SNL":
         m = json.load(open(f"{models}/models.json"))["tiers"][t]
         put(f"{models}/{t}.vocr", f"VOCR6_{t}_w8.vocr", m["sha256"])
 PY
-[ "$MODE" = final ] && cp "$MODELS/models.json" "$PRIV/models.json"
+[ "$MODE" = final ] && cp "$MODELS/models.json" "$PRIV/models.json" && cp "$MODELS/models.json" "$OUT/models.json"
 (cd "$B" && sha256sum ./*.vocr) > "$OUT/blobs.sha256"
 ARMS=(); for f in "${FAMS[@]}"; do for t in S N L; do ARMS+=("${f}_$t"); done; done
 
@@ -95,21 +117,22 @@ for t in "SNL":
 json.dump(spec, open(out, "w"), indent=1)
 PY
 note "path (a): vocr3_report shared (${ARMS[*]})"
-run a_shared timeout 7200 "$PY" eval/vocr3_report.py shared --spec "$PRIV/a/spec.json" --blobs "$B" --data "$A/eval" \
-  --out "$PRIV/a/shared"
-run a_render "$PY" eval/vocr3_report.py render --out "$PRIV/a/shared"
+step a_shared "$PRIV/a/shared/shared.json" timeout 7200 "$PY" eval/vocr3_report.py shared --spec "$PRIV/a/spec.json" \
+  --blobs "$B" --data "$A/eval" --out "$PRIV/a/shared"
+step a_render "$PRIV/a/shared/report.json" "$PY" eval/vocr3_report.py render --out "$PRIV/a/shared"
 
 # ---- path (a) 2: the fixed lines with beam 8 + ctclm.2's 1 MB LM at its 1MB settings (vocr_cli), console polarity
 LM=$A/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm
 [ "$(sha256sum "$LM" | cut -c1-64)" = 993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9 ] || {
   note "$LM is not the pinned 1 MB LM"; exit 4; }
 OPTS="--stdin --topk 8 --beam 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000 --lm $LM"
-run a_make make -C runtime build/vocr_cli build/libvocr.so
+make -C runtime build/vocr_cli build/libvocr.so > "$PRIV/logs/a_make.log" 2>&1 || { note "runtime build failed"; exit 3; }
 note "path (a): beam + 1 MB LM on the fixed lines"
 for arm in "${ARMS[@]}"; do
   for s in vita-test psp-test; do
-    run "a_lm_${arm}_$s" timeout 3600 "$PY" eval/run.py --model "cmd:runtime/build/vocr_cli $B/${arm}_w8.vocr $OPTS" \
-      --set "$s" --data "$A/eval" --polarity console --out "$PRIV/a/lm/${arm}_$s.json"
+    step "a_lm_${arm}_$s" "$PRIV/a/lm/${arm}_$s.json" timeout 3600 "$PY" eval/run.py \
+      --model "cmd:runtime/build/vocr_cli $B/${arm}_w8.vocr $OPTS" --set "$s" --data "$A/eval" --polarity console \
+      --out "$PRIV/a/lm/${arm}_$s.json"
   done
 done
 # the dialogue-primary tables (eval/vocr5_dialogue.py), the LM arms beside the greedy ones
@@ -121,7 +144,7 @@ json.dump({"locked_report": {"arms": arms, "pairs": pairs}}, open(sys.argv[1], "
 PY
 LA=(); for arm in "${ARMS[@]}"; do for s in vita-test psp-test; do
   LA+=(--extra "console:${arm}+LM:$s=$PRIV/a/lm/${arm}_$s.json"); done; done
-run a_dialogue "$PY" eval/vocr5_dialogue.py tables --protocol "$PRIV/a/dialogue_pairs.json" \
+step a_dialogue "$PRIV/a/shared/dialogue.json" "$PY" eval/vocr5_dialogue.py tables --protocol "$PRIV/a/dialogue_pairs.json" \
   --report "$PRIV/a/shared/report.json" "${LA[@]}" --out "$PRIV/a/shared/dialogue.json" --md "$PRIV/a/shared/dialogue.md"
 
 # ---- path (a) 3: CLANNAD, the frozen references through eval/clannad_refs.py's extra-arms path (one attempt)
@@ -132,20 +155,20 @@ for t in S N L; do
   if [ "$MODE" = final ]; then PAIRS+=(--pair "VOCR6_$t:VOCR5_$t" --pair "VOCR6_$t:Lens"); else PAIRS+=(--pair "VOCR5_$t:Lens"); fi
 done
 note "path (a): CLANNAD extra arms (suffix $SUF)"
-run a_clannad_arms timeout 7200 "$PY" eval/clannad_refs.py arms --work "$WORK" --blobs "$B" "${EX[@]}" --suffix "$SUF" \
-  --into "$C"
-run a_clannad_score "$PY" eval/clannad_refs.py score --work "$WORK" --suffix "$SUF" --into "$C" "${PAIRS[@]}" \
-  --out "$C/clannad_$SUF.json"
+step a_clannad_arms "$C/arms.$SUF.meta.json" timeout 7200 "$PY" eval/clannad_refs.py arms --work "$WORK" --blobs "$B" \
+  "${EX[@]}" --suffix "$SUF" --into "$C"
+step a_clannad_score "$C/clannad_$SUF.json" "$PY" eval/clannad_refs.py score --work "$WORK" --suffix "$SUF" --into "$C" \
+  "${PAIRS[@]}" --out "$C/clannad_$SUF.json"
 # the dialogue pairs (not-name lines) from the attempt's per-line errors, the same page bootstrap
-run a_clannad_dialogue "$PY" eval/stride16_clannad_dialogue.py --work "$WORK" --private "$C/score.$SUF.private.jsonl" \
-  "${PAIRS[@]}" --out "$C/clannad_${SUF}_dialogue.json"
+step a_clannad_dialogue "$C/clannad_${SUF}_dialogue.json" "$PY" eval/stride16_clannad_dialogue.py --work "$WORK" \
+  --private "$C/score.$SUF.private.jsonl" "${PAIRS[@]}" --out "$C/clannad_${SUF}_dialogue.json"
 
 # ---- path (a) 4: the test title PCSG00807 as eval/vocr6_baseline.py read it (docs/vocr6-data.md)
 for f in "${FAMS[@]}"; do
   note "path (a): PCSG00807 ($f)"
   MARG=(); [ "$f" = VOCR6 ] && MARG=(--models "$MODELS")
-  run "a_pcsg_$f" timeout 7200 "$PY" "$H" pcsg-a --family "$f" "${MARG[@]}" --build-cache "$PRIV/a/pcsg/build" \
-    --cache "$PRIV/a/pcsg/cache_$f" --out "$PRIV/a/pcsg/$f.json"
+  step "a_pcsg_$f" "$PRIV/a/pcsg/$f.rows.pkl" timeout 7200 "$PY" "$H" pcsg-a --family "$f" "${MARG[@]}" \
+    --build-cache "$PRIV/a/pcsg/build" --cache "$PRIV/a/pcsg/cache_$f" --out "$PRIV/a/pcsg/$f.json"
 done
 
 # ---- VOCR5's path (a) against the published records (the validation; in the final read, the same check again)
@@ -157,31 +180,25 @@ else
 fi
 if [ "$MODE" = validate ]; then note "validation run finished"; exit 0; fi
 
-# ---- path (b): Rubi's shipped path, resolved from Rubi main now (before any path (b) read)
-if [ -z "${RUBI:-}" ]; then
-  RUBI=$PRIV/rubi; run b_rubi_clone timeout 600 git clone -q https://github.com/bee-san/Rubi_for_vita.git "$RUBI"
-fi
-run b_rubi_path "$PY" "$H" rubi-path --rubi "$RUBI" --out "$PRIV/rubi_path.json"
-cp "$PRIV/rubi_path.json" "$OUT/rubi_path.json"
-note "path (b): $(cat "$PRIV/logs/b_rubi_path.log" | tail -n 1)"
+# ---- path (b): Rubi's shipped path on every set (plans, reads, scores)
 for s in vita-test psp-test clannad pcsg00807; do
-  note "path (b): plan $s"
-  run "b_plan_$s" timeout 7200 "$PY" "$H" plan --set "$s" --rubi-path "$PRIV/rubi_path.json" --data "$A/eval" \
-    --out "$PRIV/b/plan_$s.pkl"
+  note "path (b): $s"
+  step "b_plan_$s" "$PRIV/b/plan_$s.pkl" timeout 7200 "$PY" "$H" plan --set "$s" --rubi-path "$PRIV/rubi_path.json" \
+    --data "$A/eval" --out "$PRIV/b/plan_$s.pkl"
   DUMPS=()
   for f in "${FAMS[@]}"; do
     for t in S N L; do
       if [ "$f" = VOCR5 ]; then BL=$B/VOCR5g_$t.vocr; else BL=$B/VOCR6_${t}_w8.vocr; fi
-      run "b_read_${s}_${f}_$t" timeout 7200 "$PY" "$H" read --plan "$PRIV/b/plan_$s.pkl" --blob "$BL" \
-        --rubi-path "$PRIV/rubi_path.json" --out "$PRIV/b/dump_${s}_${f}_$t.pkl"
+      step "b_read_${s}_${f}_$t" "$PRIV/b/dump_${s}_${f}_$t.pkl" timeout 7200 "$PY" "$H" read \
+        --plan "$PRIV/b/plan_$s.pkl" --blob "$BL" --rubi-path "$PRIV/rubi_path.json" --out "$PRIV/b/dump_${s}_${f}_$t.pkl"
       DUMPS+=(--dump "$f:$t=$PRIV/b/dump_${s}_${f}_$t.pkl")
     done
   done
-  run "b_score_$s" "$PY" "$H" score-b --plan "$PRIV/b/plan_$s.pkl" "${DUMPS[@]}" --rubi-path "$PRIV/rubi_path.json" \
-    --out "$PRIV/b/rows_$s.pkl"
+  step "b_score_$s" "$PRIV/b/rows_$s.pkl" "$PY" "$H" score-b --plan "$PRIV/b/plan_$s.pkl" "${DUMPS[@]}" \
+    --rubi-path "$PRIV/rubi_path.json" --out "$PRIV/b/rows_$s.pkl"
 done
 
 # ---- every table
-run report "$PY" "$H" report --priv "$PRIV" --suffix "$SUF" --out "$OUT"
+step report "$OUT/report.md" "$PY" "$H" report --priv "$PRIV" --suffix "$SUF" --out "$OUT"
 cp "$OUT/report.json" "$OUT/report.md" "$A/vocr6-final-test/"
 note "final read finished: $OUT/report.md"

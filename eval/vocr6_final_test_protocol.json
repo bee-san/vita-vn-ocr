@@ -229,5 +229,17 @@
   "No text of a protected line, crop or screenshot is committed or sent anywhere; public files hold counts, rates, intervals, ids and hashes",
   "No tool output with an all-caps *_DONE or *_BLOCKED token reaches the agent pane: every step logs to files"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "time": "this commit (see git log); before this harness read any protected set (no validation and no final read had run)",
+   "why": "robustness of the one final read, found by reviewing the driver before its first run",
+   "changes": [
+    "report.sh resolves path (b)'s settings from Rubi main first in the final read (rubi-path before any read), so a Rubi value outside the protocol's candidates stops the read before anything is read",
+    "RESUME=1 continues an attempt a harness failure stopped: the attempt record stays, resumes.jsonl records each resume (time, repo head), and no step whose output exists runs again; every step's output is a file",
+    "path (b): a finder error on a region (rc != 0) is Rubi's job failing on it: no line, no text, counted (finder_errors); a crop the runtime refuses is recorded as an error and its unit shows nothing (read_errors), as Rubi's job fails (core/vocr_ocr.c run_error); neither raises",
+    "validate: the test title's finder build identity (finder_tighten.build's driver and library sha256, compiled from this checkout's runtime/, which #130 changed after the baseline ran) is recorded beside the checks, not compared as a score"
+   ]
+  }
+ ]
 }

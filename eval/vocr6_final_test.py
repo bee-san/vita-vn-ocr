@@ -457,9 +457,9 @@ def find_boxes(exe, imgs, platforms, fix, probe=1):
     out = []
     for i in range(0, len(jobs), 256):
         for rc, found, probed, bx in PP.run_driver(exe, jobs[i:i + 256]):
-            if rc != 0:
-                raise SystemExit(f"the finder returned {rc} (no blank coercion)")
-            out.append(([tuple(b[:4]) for b in bx], [int(b[4]) for b in bx], {"found": found, "probed": probed}))
+            # a finder error is Rubi's job failing on the region (VJO_E_OCR_REGION): no line, no text; counted
+            out.append(([tuple(b[:4]) for b in bx] if rc == 0 else [], [int(b[4]) for b in bx] if rc == 0 else [],
+                        {"found": found, "probed": probed, "rc": rc}))
     return out
 
 
@@ -632,10 +632,13 @@ def plan_pcsg(rp, plan, pools, pagepool, pages):
     units, umeta = PP.hooked_units(pagepool, {"test"})
     frames = PP.Frames(pages, "console")
     imgs, infos = [], []
+    checked = set()
     for u, img, s, o in PP.unit_images(units, frames):
         png = pages / u["title"] / "pages" / f"{u['page']}.png"
-        if sha256(png) != u["image_sha256"]:
-            raise SystemExit(f"{png}: differs from the page pool's sha256")
+        if png not in checked:
+            if sha256(png) != u["image_sha256"]:
+                raise SystemExit(f"{png}: differs from the page pool's sha256")
+            checked.add(png)
         u["_h"], u["_w"] = img.shape
         cells, rboxes = PP.ref_geometry(u, s, o)
         pts = PP.ink_points(img, cells, rboxes)
@@ -695,8 +698,17 @@ def _init(blob, lm, settings, counter):
 
 
 def _read(job):
+    """One crop through rubi_line; a runtime error (pyvocr's VocrError, or an empty crop) is recorded as the crop's
+    error: Rubi's job fails on it (core/vocr_ocr.c run_error), so score-b blanks the crop's whole unit."""
     i, img, inv = job
-    return i, rubi_line(_W["rt"], _W["lm"], img, inv, _W["two"], _W["counter"])
+    from pyvocr import VocrError
+    try:
+        if img.size == 0:
+            raise ValueError("empty crop")
+        return i, rubi_line(_W["rt"], _W["lm"], img, inv, _W["two"], _W["counter"])
+    except (VocrError, ValueError) as e:
+        return i, {"g": "", "b": "", "conf": 1000, "used_g": "", "frames": 0, "gated": 0, "escaped": 0, "reread": 0,
+                   "edits": 0, "error": type(e).__name__}
 
 
 def cmd_read(a):
@@ -724,7 +736,7 @@ def cmd_read(a):
            "repo_head": git_head(), "crops": res, "seconds": round(time.time() - t0, 1), "at": now()}
     write_pickle(out, doc)
     print(json.dumps({"crops": len(res), "head_gate": gate, "two_level": two, "rereads": sum(r["reread"] for r in res),
-                      "seconds": doc["seconds"]}))
+                      "errors": sum(1 for r in res if r.get("error")), "seconds": doc["seconds"]}))
 
 
 # ----------------------------------------------------------------------------- score (path b)
@@ -741,7 +753,8 @@ class Norm:
 
 
 def stage_texts(dumps, family, tier, casc_conf, cnorm):
-    """{stage: [text per crop]} of one family's tier: greedy, rubi_tier, rubi_cascade, shipped."""
+    """{stage: [text per crop]} of one family's tier: greedy, rubi_tier, rubi_cascade, shipped; and the crops whose
+    read failed (the job tier's, or the cascade tier's for a crop it reads again)."""
     own = dumps[(family, tier)]["crops"]
     nt = NEXT[tier]
     up = dumps[(family, nt)]["crops"] if nt else None
@@ -749,14 +762,17 @@ def stage_texts(dumps, family, tier, casc_conf, cnorm):
     rt = [c["b"] if c["g"] else "" for c in own]
     rc = [compose(c, up[i] if up else None, casc_conf) for i, c in enumerate(own)]
     sh = [t if has_japanese(t) else "" for t in cnorm(rc)]
-    return {"greedy": g, "rubi_tier": rt, "rubi_cascade": rc, "shipped": sh}
+    failed = {i for i, c in enumerate(own) if c.get("error") or
+              (up is not None and c["g"] and c["conf"] < casc_conf and up[i].get("error"))}
+    return {"greedy": g, "rubi_tier": rt, "rubi_cascade": rc, "shipped": sh, "failed": failed}
 
 
-def unit_score(u, texts):
-    """(dialogue errors, dialogue chars, all errors, all chars) of a region or page: transcript_score's body and all."""
+def unit_score(u, texts, failed=()):
+    """(dialogue errors, dialogue chars, all errors, all chars) of a region or page: transcript_score's body and all.
+    A unit with a failed crop shows nothing (Rubi's job fails)."""
     from general_vn_textbox_guard import transcript_score
-    sc = transcript_score([{"text": ln["text"], "styles": ln.get("styles") or []} for ln in u["lines"]],
-                          [texts[c] for c in u["crops"]])
+    preds = [] if any(c in failed for c in u["crops"]) else [texts[c] for c in u["crops"]]
+    sc = transcript_score([{"text": ln["text"], "styles": ln.get("styles") or []} for ln in u["lines"]], preds)
     return sc["body"]["full"]["errors"], sc["body"]["full"]["chars"], sc["all"]["full"]["errors"], \
         sc["all"]["full"]["chars"]
 
@@ -785,7 +801,8 @@ def cmd_score_b(a):
         ref = norm(fx["text"])
         r = {k: fx.get(k) for k in ("id", "vn", "title", "page", "platform", "image", "name", "styles")}
         r["chars"] = len(ref)
-        r["errors"] = {f"{f}:{t}:{s}": lev(norm(texts[(f, t)][s][fx["crop"]]), ref)
+        r["errors"] = {f"{f}:{t}:{s}": lev("" if fx["crop"] in texts[(f, t)]["failed"] else
+                                           norm(texts[(f, t)][s][fx["crop"]]), ref)
                        for f in fams for t in TIERS for s in STAGES}
         rows["fixed"].append(r)
     for u in plan["units"]:
@@ -796,7 +813,7 @@ def cmd_score_b(a):
         for f in fams:
             for t in TIERS:
                 for s in STAGES:
-                    e, n, ea, na = unit_score(u, texts[(f, t)][s])
+                    e, n, ea, na = unit_score(u, texts[(f, t)][s], texts[(f, t)]["failed"])
                     r["errors"][f"{f}:{t}:{s}"] = e
                     r["errors_all"][f"{f}:{t}:{s}"] = ea
                     r["chars"], r["chars_all"] = n, na
@@ -810,6 +827,8 @@ def cmd_score_b(a):
                                                      "lm_settings", "library_sha256", "seconds")}
                      for (f, t), d in dumps.items()},
            "rereads": {f"{f}:{t}": sum(c["reread"] for c in d["crops"]) for (f, t), d in dumps.items()},
+           "read_errors": {f"{f}:{t}": sum(1 for c in d["crops"] if c.get("error")) for (f, t), d in dumps.items()},
+           "finder_errors": sum(1 for u in plan["units"] if (u.get("finder") or {}).get("rc")),
            "cascaded": {f"{f}:{t}": sum(1 for c in dumps[(f, t)]["crops"] if c["g"] and c["conf"] < rp["cascade_conf"])
                         for f in fams for t in TIERS if NEXT[t]},
            "rubi_path": {k: rp[k] for k in ("rubi_head", "lm", "cascade_conf", "counter")},
@@ -1046,11 +1065,12 @@ def a_pcsg_rows(priv, families):
 
 # ----------------------------------------------------------------------------- validate
 
-def strip_timing(v):
+def strip_timing(v, drop=("seconds",)):
+    """v without its timing fields (and any other keys in drop), at every depth."""
     if isinstance(v, dict):
-        return {k: strip_timing(x) for k, x in v.items() if k not in ("seconds",)}
+        return {k: strip_timing(x, drop) for k, x in v.items() if k not in drop}
     if isinstance(v, list):
-        return [strip_timing(x) for x in v]
+        return [strip_timing(x, drop) for x in v]
     return v
 
 
@@ -1108,9 +1128,15 @@ def cmd_validate(a):
     check("clannad.systems.Lens", cmine["systems"]["Lens"], cpub["systems"]["Lens"])
     bpub = json.loads((ROOT / "eval" / "vocr6_baseline_20261026.json").read_text(encoding="utf-8"))["sets"]["test"]
     bmine = json.loads((priv / "a" / "pcsg" / "VOCR5.json").read_text(encoding="utf-8"))["sets"]["test"]
-    check("pcsg00807.sets.test", strip_timing(bmine), strip_timing(bpub))
+    # the finder's build identity (the driver and library sha256 of finder_tighten.build, compiled now from this
+    # checkout's runtime/) is not a score: recorded beside the checks, not one of them
+    ident = ("finder_identity",)
+    check("pcsg00807.sets.test", strip_timing(bmine, ("seconds",) + ident), strip_timing(bpub, ("seconds",) + ident))
+    info = {"pcsg00807.finder_identity": {"equal": bmine.get("finder_identity") == bpub.get("finder_identity"),
+                                          "published": bpub.get("finder_identity"),
+                                          "this_read": bmine.get("finder_identity")}}
     doc = {"kind": "vocr6-final-test-validation", "at": now(), "repo_head": git_head(), "checks": checks,
-           "all_equal": all(c["equal"] for c in checks)}
+           "identity": info, "all_equal": all(c["equal"] for c in checks)}
     write_json(a.out, doc)
     print(json.dumps({"checks": len(checks), "equal": sum(c["equal"] for c in checks),
                       "differ": [c["check"] for c in checks if not c["equal"]]}))
@@ -1275,8 +1301,8 @@ def build_report(priv, out, suffix):
                     t["lines"] = sum(r["lines"] for r in rs)
                     t["boxes"] = sum(r["boxes"] for r in rs)
                 rep["b"]["pcsg00807_page"][f"{kind}|{v}"] = t
-        rep["b"]["reads"] = {s: {k: b[s][k] for k in ("dumps", "rereads", "cascaded", "finder", "inputs")}
-                             for s in SETS_B}
+        rep["b"]["reads"] = {s: {k: b[s][k] for k in ("dumps", "rereads", "cascaded", "read_errors", "finder_errors",
+                                                      "finder", "inputs")} for s in SETS_B}
     rep["headline"] = headline(rep)
     rep["seen_per_title"] = {s: {vn: seen_of(proto, vn, s) for vn in {r["vn"] for r in fixed if r["set"] == s}
                                  if seen_of(proto, vn, s)} for s in ("vita-test", "psp-test")}

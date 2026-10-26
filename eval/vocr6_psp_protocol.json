@@ -16,13 +16,41 @@
   "never": "the 2x (Adrenaline) view; any dev_sample VN (eval/manifests/reserved.json); vita-test, psp-test, CLANNAD; any hooked test title (index.json split test)",
   "hooked": "vocr6-ingest pools v1 (artifacts/vocr6-ingest/pools/v1, manifest.json; splits_v1.json): the 15 PSP train titles with verified lines (NPJH50127 has none). Screening runs train on split train only (guard and hval out); final runs add guard and hval_fold",
   "sources": {
-   "hk": {"what": "hooked PSP verified lines as ink crops: train/{line,name,furimain}/<PSP title>.npz", "opts": "kd=0,inv=0.5,fa=0.3", "weight": 0.15},
-   "hc": {"what": "console crops of the hooked PSP train pages (data/modelb_pools.py console: VOCR_LINES_GRAD + vocr_refine_lines(VOCR_REFINE_DEFAULT) at native size, each finder line paired with a verified line and kept only when it holds 40% of every non-blank character cell of that line and no other line's row): artifacts/vocr6-psp/pools/console/train/*.npz", "opts": "kd=0,inv=0.5", "weight": 0.15},
-   "npi": {"what": "VOCR5's pinned real pools cut to their native PSP rows (meta kind psp), ink crops: tt, tvt, rd, rvt, nat_ink, dntv_ink, dnst_ink, own_ink, own_m4, own_m8 (data/modelb_pools.py native)", "opts": "kd=0,inv=0.5,fa=0.3", "weight": 0.14},
-   "npg": {"what": "the same pools' native PSP GRAD crops and their refined copies: nat_grad, nat_ref, dntv_grad, dntv_ref, dnst_grad, dnst_ref, own_grad, own_ref", "opts": "kd=0,inv=0.5", "weight": 0.06},
-   "nv": {"what": "VOCR5-S's synthetic recipe C, as its fine-tune: nvsynth", "opts": "stream=1,pool=3,inv=0.2,fa=0.15", "weight": 0.25},
-   "s2": {"what": "synth2 shards 0-38", "opts": "stream=1,pool=3,inv=0.2,fa=0.15", "weight": 0.125},
-   "s3": {"what": "synth3 v2 (data/manifests/synth3_shards_v2.json)", "opts": "stream=1,pool=3,inv=0.2", "weight": 0.125}
+   "hk": {
+    "what": "hooked PSP verified lines as ink crops: train/{line,name,furimain}/<PSP title>.npz",
+    "opts": "kd=0,inv=0.5,fa=0.3",
+    "weight": 0.15
+   },
+   "hc": {
+    "what": "console crops of the hooked PSP train pages (data/modelb_pools.py console: VOCR_LINES_GRAD + vocr_refine_lines(VOCR_REFINE_DEFAULT) at native size, each finder line paired with a verified line and kept only when it holds 40% of every non-blank character cell of that line and no other line's row): artifacts/vocr6-psp/pools/console/train/*.npz",
+    "opts": "kd=0,inv=0.5",
+    "weight": 0.15
+   },
+   "npi": {
+    "what": "VOCR5's pinned real pools cut to their native PSP rows (meta kind psp), ink crops: tt, tvt, rd, rvt, nat_ink, dntv_ink, dnst_ink, own_ink, own_m4, own_m8 (data/modelb_pools.py native)",
+    "opts": "kd=0,inv=0.5,fa=0.3",
+    "weight": 0.14
+   },
+   "npg": {
+    "what": "the same pools' native PSP GRAD crops and their refined copies: nat_grad, nat_ref, dntv_grad, dntv_ref, dnst_grad, dnst_ref, own_grad, own_ref",
+    "opts": "kd=0,inv=0.5",
+    "weight": 0.06
+   },
+   "nv": {
+    "what": "VOCR5-S's synthetic recipe C, as its fine-tune: nvsynth",
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15",
+    "weight": 0.25
+   },
+   "s2": {
+    "what": "synth2 shards 0-38",
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15",
+    "weight": 0.125
+   },
+   "s3": {
+    "what": "synth3 v2 (data/manifests/synth3_shards_v2.json)",
+    "opts": "stream=1,pool=3,inv=0.2",
+    "weight": 0.125
+   }
   },
   "final_adds": "hk += guard/{line,name,furimain} and hval_fold/{line,name,furimain} of the PSP titles; hc += console/guard and console/hval",
   "weights_why": "VOCR5's real half (0.5) and its fine-tune's synthetic half for Small; the real half split 0.3 hooked (15 titles, exact labels) / 0.2 VOCR5's native PSP rows (about 250 VNs), so title variety is not drowned by the hooked titles' volume"
@@ -33,11 +61,46 @@
   "S_d0c1": "the same with --ctx 1"
  },
  "arms": {
-  "B24": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 24", "seeds": [1, 2]},
-  "B20": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 20", "seeds": [1, 2]},
-  "B24c1": {"init": "S_d0c1", "train2_args": "--width 1.0 --depth 0 --ctx 1 --height 24", "seeds": [1, 2]},
-  "B32": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 32", "seeds": [1, 2], "note": "the height-32 reference of the shape (the issue's 'measure both'); est. too slow at stride 8, so not selectable"},
-  "Q": {"what": "stage 2: the stage-1 winner's recipe with --qat 0.7 (int8 weight fake quantisation from 70% of the steps)", "seeds": [1, 2]}
+  "B24": {
+   "init": "S_d0c2",
+   "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 24",
+   "seeds": [
+    1,
+    2
+   ]
+  },
+  "B20": {
+   "init": "S_d0c2",
+   "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 20",
+   "seeds": [
+    1,
+    2
+   ]
+  },
+  "B24c1": {
+   "init": "S_d0c1",
+   "train2_args": "--width 1.0 --depth 0 --ctx 1 --height 24",
+   "seeds": [
+    1,
+    2
+   ]
+  },
+  "B32": {
+   "init": "S_d0c2",
+   "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 32",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "the height-32 reference of the shape (the issue's 'measure both'); est. too slow at stride 8, so not selectable"
+  },
+  "Q": {
+   "what": "stage 2: the stage-1 winner's recipe with --qat 0.7 (int8 weight fake quantisation from 70% of the steps)",
+   "seeds": [
+    1,
+    2
+   ]
+  }
  },
  "scoring": {
   "tool": "eval/modelb_eval.py read (the C runtime through pyvocr, W8F, greedy) on the frozen plans: dev (artifacts/vocr6-psp/eval/dev_plan.pkl) and hval (hval_plan.pkl); the int8 blob of the run's final EMA checkpoint (train/export.py --int8)",
@@ -64,5 +127,16 @@
   "in-run evaluations are logged only; every run is its final checkpoint",
   "every run is logged in /local/home/skerraut/herd-synth3/vocr6/experiments.jsonl"
  ],
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "date": "2026-10-26T10:00Z (commit time in git), while the first screening run (B24 seed 1) trained and before any model B run was scored",
+   "changes": [
+    "model B in release_rule (a)-(c) and in decisions.final's D is the blob as it would be released: the final run's int8 blob with the gate section and VOC2 trailer the 'head' decision kept, read in W8F with head_gate on and two_level as kept (the shipped form); the plain blob's scores are reported beside it",
+    "tile and head batch (vocr_opts tile_frames, head_frames) change no output (bit-identical at every tiling: tests/test_gate_w8f.py, tests/test_headgate.py); the released settings are chosen after the release decision to minimise budgets.time_rule's estimate subject to budgets.memory_bytes_le, and reported",
+    "if vocr6-synth6 writes SYNTH6_READY with PSP-native shards before the stage-2 decision, a stage-2b arm S6 runs: the stage-2 recipe with those shards as source s6 (stream=1, pool=3, inv=0.2) at weight 0.125, taken from s2 and s3 (0.0625 each), 2 seeds, adopted under decisions.stage2's rule against the stage-2 recipe; otherwise S6 is not run, and that is reported"
+   ],
+   "why": "(1) the time budget needs the gate and the two-level head, so the released model is the gated one and the rule must score that form; (2) tiling is a speed/memory setting with no effect on outputs; (3) the task asks for synth6's PSP-native renders once they exist, which they do not yet"
+  }
+ ]
 }

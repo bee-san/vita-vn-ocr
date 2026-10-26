@@ -258,7 +258,7 @@ def hval_plan(args):
            "crops": crops, "meta": meta, "fixed": fixed, "units": units}
     with open(args.out, "wb") as f:
         pickle.dump(doc, f, protocol=4)
-    print(f"HVAL_PLAN_DONE crops {len(crops)} clean {len(fixed)} ({n_files} files) units {len(units)} "
+    print(f"hval plan written: crops {len(crops)} clean {len(fixed)} ({n_files} files) units {len(units)} "
           f"pages {len(by_page)} titles {len({u['title'] for u in units})} skipped {skipped}", flush=True)
 
 
@@ -314,7 +314,7 @@ def read(plan_path, blob, lm, out, workers=5, head_gate="", two_level=False):
     tmp = Path(str(out) + ".tmp")
     tmp.write_text(json.dumps(doc, ensure_ascii=False) + "\n", encoding="utf-8")
     tmp.replace(out)
-    print(f"DUMP_DONE {out} {len(jobs)} crops {time.time() - t0:.0f}s", flush=True)
+    print(f"dumped: {out} {len(jobs)} crops {time.time() - t0:.0f}s", flush=True)
     return doc
 
 
@@ -490,7 +490,7 @@ def score(args, proto=None):
     tmp = Path(str(args.out) + ".tmp")
     tmp.write_text(json.dumps(doc, ensure_ascii=False) + "\n", encoding="utf-8")
     tmp.replace(args.out)
-    print("SCORE_DONE", args.name, json.dumps(doc["summary"]), flush=True)
+    print("scored:", args.name, json.dumps(doc["summary"]), flush=True)
     return doc
 
 

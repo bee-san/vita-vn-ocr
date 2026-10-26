@@ -24,6 +24,7 @@ def doc(name, page_err, clean_err, dev_err, titles=8, vns=12, seed=0):
             "platform": [("vita" if i % 2 else "psp") for i in range(titles) for _ in range(5)],
             "variant": ["base"] * (5 * titles), "chars": [100] * (5 * titles),
             "junk": [1 if k == 4 else 0 for _ in t for k in range(5)],
+            "merged": [1 if k == 3 and i == 0 else 0 for i, _ in enumerate(t) for k in range(5)],
             "errors": {"rubi": list(3 + page_err + rng.integers(0, 2, 5 * titles))}}
     for i in range(4, 5 * titles, 5):          # the junk unit of each title: a lottery of insertions
         page["errors"]["rubi"][i] = int(rng.integers(0, 80))
@@ -105,3 +106,10 @@ def test_seen_units_leave_the_decision_metric(monkeypatch):
     assert len(e) == 4 * 8 and "T0:0" in keys
     out = S.compare([a], [a], n_boot=200)
     assert {"hval_page", "hval_page_seen", "hval_page_all"} <= set(out)
+
+
+def test_merged_units_report_column():
+    a = doc("a", 0, 0, 0, seed=10)
+    e, c, cl, keys = S.component(a, "hval_page_nomerge", "rubi")
+    assert len(e) == 4 * 8 - 1 and "T0:3" not in keys
+    assert "hval_page_nomerge" in S.compare([a], [a], n_boot=100)

@@ -516,3 +516,95 @@ def test_committed_proxy_record():
     assert r["dev"]["exclude_vns"] == ["v12188", "v18432"]
     p = r["a1_parity"]
     assert p["pass"] and p["lines"] == 120 and all(p[m]["exact"] == 120 for m in ("f32", "w8f", "w8i"))
+
+
+@pytest.mark.parametrize("mode", ["w8f", "f32"])
+def test_head_gate_reads_z_prime_in_w8f_and_f32(mode):
+    """#126's gate in W8F and F32 on an attention blob: the C gate scores equal the twin's on z' (the head's input in
+    that mode), head_gate on equals the same mode's ungated read with the skipped frames as blanks, and the arena
+    (the W8F gate's dequantised block beside the attention's overlay) equals export.plan_arena, at several tilings."""
+    from pyvocr import Vocr
+
+    import export
+    import headgate as HG
+    base = blob_of(attn_model(seed=4, blank_bias=0.6), mode == "w8f")
+    a = Vocr(base, mode=mode)
+    xs = []
+    for g in crops(10, 5):
+        a.run(g, head_in=True)
+        xs.append(a.last_head_in.copy())
+    x = np.concatenate(xs)
+    rng = np.random.default_rng(11)
+    params = HG.quantise(rng.normal(0, 0.3, size=(16, x.shape[1])), rng.normal(0, 0.5, 16), rng.normal(0, 0.5, 16), 0.0)
+    t = np.float32(np.median(HG.gate_scores(params, x)))
+    blob = HG.append_gate(base, params, t)
+    vocab = [a.class_text(c) for c in range(a.n_classes)]
+    m = {"w8f": export.MODE_W8F, "f32": export.MODE_F32}[mode]
+    skipped = frames = 0
+    for tile, head in ((0, 0), (1, 1), (3, 7), (16, 4)):
+        on = Vocr(blob, mode=mode, head_gate="on", tile=tile, head=head)
+        assert on.arena_bytes == export.plan_arena(export.read_blob(blob), 0, tile, head, m, 1)
+        for i, g in enumerate(crops(8, 6)):
+            k = (1, 3, 8)[i % 3]
+            ref = a.run_topk(g, k, head_in=True)
+            tw = HG.gate_scores(params, ref["head_in"])
+            sim = HG.simulate(ref, tw > t, vocab)
+            y = on.run_topk(g, k, gate_score=True)
+            assert np.array_equal(y["gate_score"].view(np.uint32), tw.view(np.uint32))
+            assert y["text"] == sim["text"] and y["gated"] == sim["gated"]
+            assert np.array_equal(y["best"], sim["best"]) and np.array_equal(y["topc"], sim["topc"])
+            assert np.array_equal(y["topv"].view(np.uint32), sim["topv"].view(np.uint32))
+            skipped += sim["gated"]
+            frames += len(tw)
+    assert 0.2 < skipped / frames < 0.8
+
+
+def test_two_level_reads_z_prime_in_w8f():
+    """#126's W8F two-level head on an attention blob (alone and with a gate): the C escape scores, fired frames,
+    argmax and top-K equal head2level.twolevel_exact(mode="w8f") on z', and the arena equals export.plan_arena."""
+    from pyvocr import Vocr
+
+    import export
+    import head2level as H2
+    import headgate as HG
+    vocab = [chr(0x4E00 + i) for i in range(120)]
+    m = attn_model(seed=6, vocab=vocab)
+    with torch.no_grad():
+        m.head.bias.normal_(0, 1.0)
+        m.head.bias[0] += 2.0
+    blob = blob_of(m, True, vocab)
+    rng = np.random.default_rng(3)
+    pblob = H2.permute_blob(blob, np.concatenate([[0], 1 + rng.permutation(len(vocab))]))
+    head = H2.head_arrays(pblob)
+    q, scale = export.quantize_rows(rng.normal(0, 0.3, size=(16, head["K"])))
+    esc = dict(q=q, scale=scale.astype(np.float32), bias=rng.normal(0, 0.5, 16).astype(np.float32),
+               wl1=rng.normal(0, 0.05, 16).astype(np.float32), wb0=rng.normal(0, 0.05, 16).astype(np.float32),
+               w2=rng.normal(0, 0.5, 16).astype(np.float32), b2=np.float32(0.1), t=np.float32(0.0))
+    gp = HG.quantise(rng.normal(0, 0.3, size=(16, head["K"])), rng.normal(0, 0.5, 16), rng.normal(0, 0.5, 16), 0.0)
+    two_blob = H2.attach(HG.append_gate(pblob, gp, np.float32(0.0)), H2.write_trailer(pblob, 3, esc))
+    two = H2.read_trailer(two_blob)
+    full = Vocr(pblob, mode="w8f")
+    for tile, hb in ((0, 0), (2, 5)):
+        rt = Vocr(two_blob, mode="w8f", two_level=1, tile=tile, head=hb)
+        both = Vocr(two_blob, mode="w8f", two_level=1, head_gate="on", tile=tile, head=hb)
+        b = export.read_blob(two_blob)
+        assert rt.arena_bytes == export.plan_arena(b, 1024, tile, hb, export.MODE_W8F, two_level=two)
+        assert both.arena_bytes == export.plan_arena(b, 1024, tile, hb, export.MODE_W8F, 1, two)
+        fired = frames = 0
+        bvocab = [both.class_text(c) for c in range(both.n_classes)]
+        for g in crops(10, 7):
+            full.run(g, head_in=True)
+            tw = H2.twolevel_exact(full.last_head_in, head, two, topk=8, mode="w8f")
+            out = rt.run_topk(g, 8, esc=True, head_in=True)
+            assert np.array_equal(out["esc"].view(np.uint32), tw["score"].view(np.uint32))
+            assert out["escaped"] == int(tw["fire"].sum())
+            assert np.array_equal(out["best"], tw["best"]) and np.array_equal(out["topc"], tw["topc"])
+            assert np.array_equal(out["topv"].view(np.uint32), tw["topv"].view(np.uint32))
+            skip = HG.gate_scores(gp, out["head_in"]) > np.float32(0.0)
+            want = HG.simulate(out, skip, bvocab)
+            ob = both.run_topk(g, 8)
+            assert ob["text"] == want["text"] and np.array_equal(ob["best"], want["best"])
+            assert ob["gated"] == int(skip.sum())
+            fired += int(tw["fire"].sum())
+            frames += len(tw["fire"])
+        assert 0 < fired < frames

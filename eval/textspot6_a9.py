@@ -94,11 +94,22 @@ T_FULL = {"t32n4c16": t_full("t32n4c16", 32, 4, (1, 2, 4, 1)),
           "t32n6c16": t_full("t32n6c16", 32, 6, (1, 2, 4, 1, 2, 4)),
           "t24n6c16": t_full("t24n6c16", 24, 6, (1, 2, 4, 1, 2, 4)),
           "t48n4c16": t_full("t48n4c16", 48, 4, (1, 2, 4, 1))}
+# candidates near 250-300 ms for the two T_FULL shapes far above it (t32n6c16, t48n4c16): measured once, the ones
+# kept are added to the report's rows (T_FULL_ADDED)
+T_FULL_PROBE = {"t48n2c16": t_full("t48n2c16", 48, 2, (1, 2)), "t40n3c16": t_full("t40n3c16", 40, 3, (1, 2, 4)),
+                "t32n5c16": t_full("t32n5c16", 32, 5, (1, 2, 4, 1, 2)),
+                "t28n6c16": t_full("t28n6c16", 28, 6, (1, 2, 4, 1, 2, 4)),
+                "t24n8c16": t_full("t24n8c16", 24, 8, (1, 2, 4, 1, 2, 4, 1, 2)),
+                "t24n5c16": t_full("t24n5c16", 24, 5, (1, 2, 4, 1, 2))}
+# added to the rows (the issue: "add a shape or two if one of these is far from about 250-300 ms"): t32n6c16 and
+# t48n4c16 are est. 358 and 415 ms at 333 MHz; of T_FULL_PROBE's six measured once at 960x544 (264-339 ms), the two of
+# 40-48 channels nearest 300 ms
+T_FULL_ADDED = {k: T_FULL_PROBE[k] for k in ("t48n2c16", "t40n3c16")}
 T_HALF = ("t64n8c16", "t48n8c16d8", "t64n4c16")
 M_SHAPES = ("qS4", "qM4", "qL5")
 EXTRA = {}          # --shapes-json, or what a measured directory's meta.json records
-SETS = {"t480": [f"{n}_t{TAGS}" for n in T_HALF], "tfull": [f"{n}_t{TAGS}" for n in T_FULL],
-        "m": [f"{n}_t{TAGS}" for n in M_SHAPES], "base-t480": list(T_HALF), "base-tfull": list(T_FULL),
+SETS = {"t480": [f"{n}_t{TAGS}" for n in T_HALF], "tfull": [f"{n}_t{TAGS}" for n in (*T_FULL, *T_FULL_ADDED)],
+        "m": [f"{n}_t{TAGS}" for n in M_SHAPES], "base-t480": list(T_HALF), "base-tfull": [*T_FULL, *T_FULL_ADDED],
         "base-m": list(M_SHAPES)}
 SETS["v4"] = SETS["t480"] + SETS["tfull"] + SETS["m"]
 SETS["base"] = SETS["base-t480"] + SETS["base-tfull"] + SETS["base-m"]
@@ -125,6 +136,7 @@ def base_shapes():
     """{name: shape} of every shape this tool knows: the T shapes at 480, T_FULL, the M shapes, EXTRA."""
     out = {n: dict(S3.SHAPES[n]) for n in T_HALF}
     out.update({n: dict(s) for n, s in T_FULL.items()})
+    out.update({n: dict(s) for n, s in T_FULL_PROBE.items()})
     out.update({n: M3.check_shape(dict(S3.SHAPES[n])) for n in M_SHAPES})
     for n, s in EXTRA.items():
         if n in out and out[n] != s:
@@ -376,6 +388,7 @@ def cmd_report(argv):
     ap.add_argument("--md", default="")
     ap.add_argument("--code-size", default="")
     ap.add_argument("--stack", default="")
+    ap.add_argument("--probes", default="", help="a measured directory of T_FULL_PROBE rows (a block of its own)")
     ap.add_argument("--title", default="")
     args = ap.parse_args(argv)
     labels = ["main"] + [args.also_label[i] if i < len(args.also_label) else f"also{i}" for i in range(len(args.also))]
@@ -405,6 +418,8 @@ def cmd_report(argv):
                                             figs[r]["vtsp_bytes"])):
         fg = figs[r]
         row = dict(fg)
+        if fg["shape"] in T_FULL_ADDED:
+            row["added"] = "not in the issue's grid: added near 300 ms (T_FULL_ADDED)"
         for (cfl, mode, size), t in sorted(cells[r].items()):
             key = f"{'O2' if '-O2' in cfl.split() else 'Os' if '-Os' in cfl.split() else cfl}" + \
                 (" no_ms" if NO_MS in cfl.split() else "") + (" scalar" if "-DVOCR_NO_NEON" in cfl.split() else "")
@@ -453,6 +468,14 @@ def cmd_report(argv):
            "shapes": {row_shape(r)[1]: row_shape(r)[0] for r in allrows},
            "textspot3_rows_of_record": {k: str(v.relative_to(ROOT)) for k, v in T3_ROWS.items()},
            "summary": summary, "tables": [{k: v for k, v in tb.items() if k != "table"} for tb in tables]}
+    if args.probes:
+        meta, tab = table(args.probes)
+        res["probes"] = {"how": ("T_FULL_PROBE's candidates (tags 4, -O2, the default call), 960x544 only, measured "
+                                 "once to choose T_FULL_ADDED"), "dir": W2.portable([args.probes])[0],
+                         "rows": [{"row": t["shape"], "vtsp_bytes": figures(t["shape"])["vtsp_bytes"],
+                                   "macs_960": t["macs"], "ms_333_960": t["ms_per_frame"]["333"],
+                                   "ms_444_960": t["ms_per_frame"]["444"], "arena_up_to_960": t["arena_bytes"]}
+                                  for t in sorted(tab, key=lambda t: t["ms_per_frame"]["333"])]}
     if args.code_size:
         res["code_size"] = json.loads(Path(args.code_size).read_text(encoding="utf-8"))
     if args.stack:
@@ -489,11 +512,11 @@ def _f(v, fmt="{:.1f}"):
 def markdown(res):
     out = [res["title"] or "", "", res["note"], "",
            "| row | VTSP v | VTSP B | int8 weights | MACs / 960x544 | MACs / 480x272 | 960x544 @333 / @444 | no dark "
-           "@333 | 480x272 @333 / @444 | -Os 960x544 @333 | -Os no dark @333 | arena up to 960x544 | arena 480x272 | "
-           "tags vs textspot3 row @333 (runtime + tags) |",
-           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
+           "@333 | 480x272 @333 / @444 | -Os 960x544 @333 | -Os no dark @333 | -Os NO_MS 960x544 @333 / no dark | "
+           "arena up to 960x544 | arena 480x272 | tags vs textspot3 row @333 (runtime + tags) |",
+           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
     for r in res["summary"]:
-        o2, os_ = r.get("ms", {}).get("O2", {}), r.get("ms", {}).get("Os", {})
+        o2, os_, nm = (r.get("ms", {}).get(k, {}) for k in ("O2", "Os", "Os no_ms"))
         g = lambda d, m, s, k="333": d.get(m, {}).get(s, {}).get(k)  # noqa: E731
         ex = r.get("extra_of_the_tags", {}).get("dark", {}).get("960x544", {})
         exs = "-"
@@ -502,11 +525,13 @@ def markdown(res):
                   f"{_f(ex.get('tags_ms_333'), '{:+.1f}')})"
         elif "tags_ms_333" in ex:
             exs = f"tags {ex['tags_ms_333']:+.1f}"
-        out.append(f"| {r['row']} | {r['version']} | {r['vtsp_bytes']:,} | {r['weights_int8']:,} | "
+        name = r["row"] + (" (added)" if r.get("added") else "")
+        out.append(f"| {name} | {r['version']} | {r['vtsp_bytes']:,} | {r['weights_int8']:,} | "
                    f"{r['macs']['960x544']:,} | {r['macs']['480x272']:,} | {_f(g(o2, 'dark', '960x544'))} / "
                    f"{_f(g(o2, 'dark', '960x544', '444'))} | {_f(g(o2, 'nodark', '960x544'))} | "
                    f"{_f(g(o2, 'dark', '480x272'))} / {_f(g(o2, 'dark', '480x272', '444'))} | "
                    f"{_f(g(os_, 'dark', '960x544'))} | {_f(g(os_, 'nodark', '960x544'))} | "
+                   f"{_f(g(nm, 'dark', '960x544'))} / {_f(g(nm, 'nodark', '960x544'))} | "
                    f"{r.get('arena', {}).get('960x544', {}).get('up_to', 0):,} | "
                    f"{r.get('arena', {}).get('480x272', {}).get('up_to', 0):,} | {exs} |")
     cs = res.get("code_size")

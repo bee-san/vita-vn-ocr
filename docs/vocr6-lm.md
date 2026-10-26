@@ -40,9 +40,9 @@ CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (D
   cross-validated: at 1 MB, page path −0.54 points (−1.53 to −0.07), clean lines −0.10 (−0.14 to −0.05) and dev
   score −0.01 (−0.09 to +0.06); at 4 MB, −0.45 (−1.32 to −0.04), −0.06 (−0.11 to −0.02) and −0.05 (−0.09 to −0.01).
 - **What the game-text LM keeps.** It is order 3, so no stored fragment is longer than 3 characters. 1.5% of the
-  1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. 26% of them (19% at 4 MB) are ones
-  the same recipe without game text does not keep: the game counts also lift public n-grams over the pruning
-  threshold. Apart from runs of one repeated small kana (up to 22 characters), greedy continuation recovers at most
+  1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. Of all its bigrams and trigrams,
+  26% (19% at 4 MB) are ones the same recipe without game text does not keep: the game counts also lift public
+  n-grams over the pruning threshold. Apart from runs of one repeated small kana (up to 22 characters), greedy continuation recovers at most
   12 characters of a training line (a game's title in its own text), against 10 for the LM without game text.
 - **The dictionary-aware variant does not help.** A word bonus from JMdict's headwords ranked by Jiten (the files
   Rubi ships) is worse than the plain LM at every setting tried, so it is not built for the console. Its cost
@@ -151,7 +151,7 @@ cross-validated, Rubi's display path. Bold: the interval is entirely below 0.
   objectives of greedy, the four incumbents and the no-game-text rebuild of ctclm.2's 1 MB recipe (10:09-10:13Z),
   and the first no-game-text recipe's grid (`v6b_1000k`) had just finished (10:17:46Z). No game-text recipe had
   been decoded on that path (the first, 10:31:00Z), and no cross-validated number existed for either amendment (the
-  first selection, 13:15:27Z).
+  first selection, 1000k, by 11:31:54Z; the 13:15Z run of every tier rewrote its files).
 - **Two protocol dates were corrected without a note** in amendment 2's commit: `created` 09:55:00Z → 09:14:00Z,
   and amendment 1's `time` 10:20:00Z → 10:05:00Z. Both originals were later than the commits that carried them
   (09:16:54Z, 10:06:50Z). Nothing the rule reads changed.
@@ -351,9 +351,9 @@ probable next character for as long as it matches the line.
   - The 4 MB blob's threshold is 11 at weight 16, so it keeps every trigram of the game text.
   - At the 4 MB tier, the 3.6 MB game-text blob is not better than the 1 MB one. VOCR5-N, the selections'
     cross-validated errors on the same units, 4 MB − 1 MB: hval page path +0.18 (−0.02 to +0.59), dev score −0.00
-    (−0.05 to +0.05), objective +0.09 (−0.02 to +0.30). L is level too; only S is better with the 4 MB blob
-    (objective −0.07, −0.13 to −0.01).
-  - The 1 MB blob against the 4 MB incumbent: hval page path −0.63 (−1.97 to −0.005), dev score +0.01 (−0.06 to
+    (−0.05 to +0.05), objective +0.09 (−0.02 to +0.29). L is level too; only S is better with the 4 MB blob
+    (objective −0.06, −0.13 to −0.01).
+  - The 1 MB blob against the 4 MB incumbent: hval page path −0.63 (−1.97 to −0.005), dev score +0.01 (−0.05 to
     +0.08).
   - The 4 MB blob holds 10× the 1 MB one's game-only bigrams and 24× its trigrams (4,156 / 61,011 against 416 /
     2,551). The conductor's ruling ships it under the same rule as the 1 MB one, since users get it only by

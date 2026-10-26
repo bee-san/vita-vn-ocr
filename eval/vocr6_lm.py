@@ -703,7 +703,7 @@ def cmd_families(a):
 
 
 def _cv_units(path):
-    """(units as Unit objects, the .cv.npz arrays) of a select output's cross-validated errors."""
+    """(the units as stored, as Unit objects, the .cv.npz arrays) of a select output's cross-validated errors."""
     z = np.load(path)
     units = json.loads(str(z["units"]))
     U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
@@ -761,7 +761,7 @@ def cmd_checks(a):
                 hit = [x in train for x in t]
                 ch_all += sum(len(x) for x in t)
                 ch_seen += sum(len(x) for x, h in zip(t, hit) if h)
-                regs.append((pg["title_id"], r["variant"], any(hit)))
+                regs.append((pg["title_id"], str(pg["page"]), r["variant"], any(hit)))
     hv = pickle.loads((Path(a.hval_cache) / "units.pkl").read_bytes())
     hc_seen = {x[1] for x in hv if x[0] == "hc" and x[4][0][0] in train}
     hp_idx = [i for i, u in enumerate(u1) if u[0] == "hp"]
@@ -769,8 +769,8 @@ def cmd_checks(a):
         raise SystemExit("hp units are not the page pool's regions x 2 finder modes")
     seen = np.zeros(len(u1), bool)
     for j, i in enumerate(hp_idx):
-        tid, variant, hit = regs[j % len(regs)]
-        if u1[i][2] != tid or u1[i][1].split("|")[2] != variant:
+        tid, page, variant, hit = regs[j % len(regs)]
+        if u1[i][2] != tid or u1[i][1].split("|")[1:3] != [page, variant]:
             raise SystemExit("hp units out of the page pool's order")
         seen[i] = hit
     for i, u in enumerate(u1):
@@ -780,7 +780,7 @@ def cmd_checks(a):
     j854 = np.array([u[2] == "PCSG00854" for u in u1])
     f3 = {"hval_lines": len(held), "hval_lines_verbatim_in_hook_train": sum(norm(x) in train for x in held),
           "hval_lines_byte_identical_to_a_hook_train_line": held_raw_seen,
-          "hp_regions": len(regs), "hp_regions_seen": int(sum(r[2] for r in regs)),
+          "hp_regions": len(regs), "hp_regions_seen": int(sum(r[3] for r in regs)),
           "hp_units": len(hp_idx), "hp_units_seen": int(seen[hp_idx].sum()),
           "hp_seen_line_char_share": round(ch_seen / ch_all, 4),
           "hc_units": int(hc.sum()), "hc_units_seen": int(seen[hc].sum()), "by_tier": {}}

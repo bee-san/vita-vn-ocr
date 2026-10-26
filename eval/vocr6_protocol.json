@@ -1499,7 +1499,16 @@
    "base": {
     "arm": "R2",
     "rule": "stage 2's decision.recipe: R2's mix and init per seed are filled mechanically (recorded with the stage-2 decision); R2's own runs (seeds 1, 3) are X of every comparison",
-    "filled": null
+    "filled": {
+     "arm": "A15",
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed{seed}/ckpt_step15000.pt",
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
+      "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
+     },
+     "mix": "m1",
+     "why": "stage 3 amendment 1: the A family on m1, before R2 is known"
+    }
    },
    "arms": {
     "S3attn": {
@@ -1572,7 +1581,15 @@
    "decision": {
     "factor": "each arm Y against R2 (X), seed pairs (1,1), (3,3): decision.adopt; S3attn also needs every tier's blob within its caps (S < 1,000,000 B, N <= 1,600,000 B, L <= 2,500,000 B: L with --attn-dim 48 if 96 does not fit) and the est. box time within the tier's ceiling (S < 1 s, N ~1 s default sizing, L < 3 s at 333 MHz, no prefetch credit; ocr-speed's method)",
     "recipe": "R3 = R2 + every adopted arm; two or more adopted arms are confirmed by one combined pair (S3all) adopted over R2, else R3 = R2 + the adopted arm with the lowest mean hval_page"
-   }
+   },
+   "amendments": [
+    {
+     "n": 1,
+     "time": "this commit (see git log); before any stage-3 run",
+     "why": "compute: stage 2's slots run at ~1.0 steps/s and S2s6 waits for synth6 v3, so a slot idles; the stage-3 arms change the model or the loss, not the data, so they can be screened on stage 2's base while stage 2 runs",
+     "change": "stage 3's arms run now from A15 (mix m1, init v5f_N_seed{seed}; A15's own runs are X) instead of waiting for R2. R3 = R2 + every stage-3 arm adopted over A15, confirmed by one combined pair (R3 against R2, seeds 1 and 3) that must be adopted over R2; if it is not, R3 = R2 + the adopted stage-3 arm with the lowest mean hval_page, confirmed the same way, else R3 = R2. S3attn runs once PR #130 is merged into the runner"
+    }
+   ]
   },
   "4": {
    "name": "finalists: R3 at every tier, 3 seeds, then the shipped blobs with hval folded in",

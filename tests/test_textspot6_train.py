@@ -91,7 +91,7 @@ def test_window_geometry_and_targets():
     lines = [[40, 100, 300, 116, 0, 1.0, TR.CLASS_MASK["dialogue"]],
              [40, 140, 100, 156, 0, 0.7, TR.CLASS_MASK["notdlg"]],
              [40, 180, 300, 196, 0, 1.0, TR.CLASS_MASK["text"]]]
-    K, O, A1, A2, v, k, Wt, Mk = TR.targets(lines, [], 480, 256)
+    K, O, A1, A2, v, k, Wt, Mk = TR.targets(lines, [], 480, 256)  # noqa: E741
     assert set(np.unique(Mk[k])) <= {0, 1, 30}
     assert (Mk[~k] == 0).all() and (Mk[k] == 1).any() and (Mk[k] == 30).any()
     assert (Wt[Mk == 30] == np.float32(0.7)).all()

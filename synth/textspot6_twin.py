@@ -13,6 +13,8 @@ dialogue presence:
     r.pick         # the picked dialogue block (tag 0), -1 when there is none
     r.truncated    # 1 when candidates were dropped (more than BOX_MAX)
     r.presence     # the largest confidence of a tag-0 box (1..127), 0 when there is none
+    spot(m, region, scale=2)     # the scale forced (1 or 2) instead of the blob's rule: a region cut from a frame
+                                 # read at the frame's scale (the runtime's VOCR_TEXTSPOT6_SCALE1 / _SCALE2 flags)
 
 The classes (the exporter's convention, CLASSES): 0 dialogue (and narration), 1 speaker name, 2 choice, 3 UI text,
 4 scene text (signs, writing in a CG). A version-4 blob with T tag maps has the classes 0..T.
@@ -292,10 +294,12 @@ def scale_of(model, width, height=1):
     return 2 if wide or tall else 1
 
 
-def net_input(model, grey):
-    """(the network's input image, f)."""
+def net_input(model, grey, scale=None):
+    """(the network's input image, f). scale: None for the blob's rule, else 1 or 2 (forced)."""
     g = np.ascontiguousarray(grey)
-    f = scale_of(model, g.shape[1], g.shape[0])
+    if scale not in (None, 1, 2):
+        raise ValueError("scale: None, 1 or 2")
+    f = scale_of(model, g.shape[1], g.shape[0]) if scale is None else scale
     return (S.halve(g) if f == 2 else g), f
 
 
@@ -548,13 +552,20 @@ def spot_maps(model, maps, f, grey):
                   tuple(Block(*b) for b in blocks), pick, truncated, presence)
 
 
-def spot(model, img):
-    """The spotter on one frame (grey or RGB(A) uint8): a Result."""
+def spot(model, img, scale=None):
+    """The spotter on one frame or region (grey or RGB(A) uint8): a Result. scale None: the blob's rule (the
+    module docstring's f); 1 or 2: f forced (a region read at the scale of the frame it was cut from). Versions
+    1-3 with scale None are textspot3_twin.spot exactly (every tag 0)."""
     from common import grey_of
     g = np.ascontiguousarray(grey_of(img))
     if g.ndim != 2 or not g.size:
         raise ValueError("a non-empty frame")
-    x, f = net_input(model, g)
+    x, f = net_input(model, g, scale)
+    if model.version != VERSION_TAG:
+        m3 = model.t3
+        maps = T3.run_maps(m3, x)
+        r = T3.spot_maps(m3, maps, f, g) if m3.version == T3.VERSION_MS else T2.spot_maps(m3.t2, maps, f, g)
+        return from_v3(r)
     return spot_maps(model, run_maps(model, x), f, g)
 
 

@@ -212,6 +212,19 @@
    "pins": {
     "eval/textspot6.py": "74f1f5b67a6f926a33fb3cf655d9edd771cc1a28e8b3df90c1e3d283755fa9b0"
    }
+  },
+  {
+   "id": 3,
+   "utc": "2026-10-26T10:09:54Z",
+   "before": "every score of a textspot6 arm (stage 1 is training; nothing is scored)",
+   "what": [
+    "The crop decodes read a region at the scale the blob's rule gives the frame it was cut from, not the region's own size: synth/textspot6_twin.spot(model, region, scale=f) with f = scale_of(model, frame width, frame height); the C runtime gets the same as two flags (VOCR_TEXTSPOT6_SCALE1 / VOCR_TEXTSPOT6_SCALE2: f forced). Without it a region narrower than half_above would be read at twice the text size the network trained on (a console frame is 960 x 544, so every console region is read halved by the half-scale blobs, as the whole frame is).",
+    "spot(model, img) without scale is unchanged (versions 1-3 bit for bit textspot3_twin's); with scale, versions 1-3 run their own network and decode at the forced f (tests/test_textspot6_twin.py test_forced_scale)."
+   ],
+   "pins": {
+    "synth/textspot6_twin.py": "e913963d810ea81ca438b7ee0cd0f035742ef0a95325b3d96201ea108b1782f5",
+    "eval/textspot6.py": "a57a30ce7cd43f90a4fee1f2cb998974eac6ece0fb7964c7d65efcc86c08fab8"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

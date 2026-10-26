@@ -253,3 +253,21 @@ def test_cost_and_sizes():
     blob, _ = M6.random_blob(TINY_T, 1, 4, n_cal=2)
     assert c["weights_int8"] > 0 and len(blob) > c["weights_int8"]
     assert M6.head_scales(4)[16:] == (1 / 16,) * 16
+
+
+def test_forced_scale():
+    rng = np.random.default_rng(4)
+    blobs = [M6.random_blob(TINY_T, 1, 4, n_cal=2)[0], M6.random_blob(TINY_M, 1, 4, n_cal=2)[0],
+             T2.pack(X.random_vtdt(next(iter(S2.D2S)), 7, 2), 480, 1)]
+    for blob in blobs:
+        m = T6.Model(blob)
+        for g in (P.tiled(rng, 960, 544), P.tiled(rng, 400, 120), P.tiled(rng, 37, 61)):
+            rule = T6.scale_of(m, g.shape[1], g.shape[0])
+            assert T6.spot(m, g, scale=rule) == T6.spot(m, g)
+            other = 3 - rule
+            r = T6.spot(m, g, scale=other)
+            x, f = T6.net_input(m, g, other)
+            assert f == other and x.shape == ((-(-g.shape[0] // 2), -(-g.shape[1] // 2)) if other == 2 else g.shape)
+            assert all(b.x + b.w <= g.shape[1] and b.y + b.h <= g.shape[0] for b in r.boxes)
+    with pytest.raises(ValueError):
+        T6.net_input(T6.Model(blobs[0]), P.tiled(rng, 40, 40), 3)

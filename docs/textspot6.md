@@ -198,6 +198,11 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
      whole-frame capture.
    - The candidates are every arm × {crop, crop+refine, det, det+refine}.
    - The cost order puts the decode after bytes, ms and arena: crop first, det+refine last.
+3. **The crop decodes' scale** (before any score). A region is read at the scale the blob's rule gives the frame it
+   came from (`textspot6_twin.spot(..., scale=f)`; the runtime's `VOCR_TEXTSPOT6_SCALE1` / `_SCALE2` flags).
+   - Every console frame is 960×544, so a half-scale blob reads every console region halved, as it reads the whole
+     frame.
+   - Read at its own size, a region narrower than 480 px would show the network text twice the size it trained on.
 
 ## Results
 

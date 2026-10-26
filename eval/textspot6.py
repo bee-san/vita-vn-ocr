@@ -22,8 +22,10 @@ files eval/pagepath.py (vocr6-finder's page-path benchmark, #129) reads them fro
   textspot6.py spot-crop --blob B.vtsp --set hval|dev --out BOXES.jsonl [--units UNITS.jsonl] [--decode det|detref]
       the crop decode: the spotter on each unit's region alone, cut at the view's scale exactly as eval/pagepath.py
       cuts it (dev: the unit's grey region, a PSP one upscaled 2x bilinear; hval: --units, eval/pagepath.py units'
-      file, each region cut from the page at the view's scale), every horizontal box of the region read (no tag
-      filter, as GRAD + refine reads every line of a region): eval/pagepath.py --boxes; BOXES.meta.json beside it
+      file, each region cut from the page at the view's scale) and read at the scale the blob's rule gives the
+      frame it was cut from (textspot6_twin.spot(scale=f), f = scale_of(the frame's width and height); amendment 3),
+      every horizontal box of the region read (no tag filter, as GRAD + refine reads every line of a region):
+      eval/pagepath.py --boxes; BOXES.meta.json beside it
   textspot6.py hval-boxes --spot SPOT.jsonl --shards DIR --manifest M --out RES.json
       box P / R / F1 against the hval pages' verified lines (synth/textspot6_pages.py's hval shards: dialogue and
       name positives; "notdlg" boxes and ignore areas are left out: textspot_metrics.match_frame's ignore rule),
@@ -279,8 +281,8 @@ def cmd_pagepath_boxes(args):
 
 def _crop_one(job):
     import textspot6_twin as T6
-    uid, img = job
-    r = T6.spot(_W["model"], img)
+    uid, img, fw, fh = job
+    r = T6.spot(_W["model"], img, scale=T6.scale_of(_W["model"], fw, fh))
     boxes = [[b.x, b.y, b.w, b.h, b.vertical, b.conf, b.dark, b.block, b.tag, b.tconf] for b in r.boxes]
     if _W["decode"] == "detref":
         boxes = [[*b[:7], -1, b[7], 0] for b in refined(boxes, img)]
@@ -292,11 +294,13 @@ def crop_jobs(set_name, units_path=None, pages=PAGES):
 
     from common import to_gray
     if set_name == "dev":
+        dims = {k["frame"]: (g.shape[1], g.shape[0]) for k, g in dev_frames()}     # console-view frame sizes
         for i, u in enumerate(dev_units()):
             img = u["image"]
             if u["kind"] == "psp":
                 img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
-            yield f"dev:{i}:{u['unit']}:{u['variant']}", np.ascontiguousarray(img)
+            fw, fh = dims[dev_frame_key(u)]
+            yield f"dev:{i}:{u['unit']}:{u['variant']}", np.ascontiguousarray(img), fw, fh
         return
     rows = read_jsonl(units_path)
     units = [r for r in rows if "uid" in r]
@@ -315,7 +319,7 @@ def crop_jobs(set_name, units_path=None, pages=PAGES):
         g = cache[k]
         sc = 2 if u["platform"] == "psp" else 1
         x0, y0, x1, y1 = (v * sc for v in u["region"])
-        yield u["uid"], np.ascontiguousarray(g[y0:y1, x0:x1])
+        yield u["uid"], np.ascontiguousarray(g[y0:y1, x0:x1]), g.shape[1], g.shape[0]
 
 
 def cmd_spot_crop(args):
@@ -335,6 +339,7 @@ def cmd_spot_crop(args):
     os.replace(tmp, out)
     meta = {"blob": str(args.blob), "blob_sha256": hashlib.sha256(blob).hexdigest(), "set": args.set,
             "decode": f"crop{'+refine' if args.decode == 'detref' else ''}", "units": len(jobs),
+            "scale": "the frame's (amendment 3): textspot6_twin.spot(scale=scale_of(frame width, frame height))",
             "units_file": str(args.units) if args.units else str(DEV_UNITS), "twin": "synth/textspot6_twin.spot",
             "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     Path(str(out).replace(".jsonl", ".meta.json")).write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")

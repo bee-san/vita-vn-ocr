@@ -235,8 +235,8 @@ def cmd_console(a):
         why = Counter()
         jobs = []                                  # (split, page, region, region image)
         for p in pages:
-            if p["split"] not in splits or not p.get("regions"):
-                continue
+            if p["split"] not in splits or not p.get("regions") or p.get("untrusted"):
+                continue                         # a page whose labels are in doubt gives no crop (audit N8)
             path = Path(a.pages) / p["image"]
             if sha256(path) != p["image_sha256"]:
                 raise SystemExit(f"{path}: sha256 differs from the page record")

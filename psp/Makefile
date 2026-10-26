@@ -68,8 +68,12 @@ vocr_lines_refine.o: ../runtime/vocr_lines_refine.c ../runtime/vocr_lines_refine
 
 main.o: main.c ../runtime/vocr.h ../runtime/vocr_lines.h ../runtime/vocr_lines_refine.h
 
+# size rebuilds the objects first: make does not track CFLAGS, so objects left by a build with other flags (VFPU=1)
+# would otherwise be measured as they are
 .PHONY: size
-size: vocr.o vocr_lines.o vocr_lines_refine.o
+size:
+	rm -f vocr.o vocr_lines.o vocr_lines_refine.o vocr.su vocr.ci
+	$(MAKE) vocr.o vocr_lines.o vocr_lines_refine.o
 	psp-size vocr.o vocr_lines.o vocr_lines_refine.o
 	$(PYTHON) stack.py vocr.ci
 

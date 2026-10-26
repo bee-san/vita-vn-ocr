@@ -15,8 +15,11 @@ Under the PSP's time budget, no recognizer reached VOCR5-S's accuracy on PSP gam
 - **VOCR5-S's own shape is accurate but slow.** The control S32 is VOCR5-S fine-tuned on the same PSP data at its own shape.
   - It ties VOCR5-S on unseen PSP games: whole dialogue +0.04 [−0.24, +0.31], fixed lines −0.02 [−0.23, +0.16].
   - It is resolved better on the 15 hooked titles' hval: page path −0.73 [−1.32, −0.29], lines −0.75 [−1.43, −0.29].
-  - It needs an est. 2.05 s per nominal box on the scalar build (1.42 s with the VFPU), with the head gate and two-level head. It is not time-feasible.
-- **What costs accuracy.** Lowering the input height costs the most: from 32 to 24 rows +2.1 points of whole dialogue on top of depth 0 (B32 → B24), and to 18-20 rows +4.6. Dropping the stride-1 DS blocks (depth 0) costs +1.9 at height 32 (B32).
+  - Plain, as scored, it needs an est. 3.24 s per nominal box on the scalar build. With a head gate and two-level head it would need 2.05 s (1.42 s with the VFPU), but the head rule did not keep that head for S32: +0.03 [−0.03, +0.13] on development whole dialogue against the plain blob. Either way it is not time-feasible.
+- **What costs accuracy.** Lowering the input height costs the most.
+  - At depth 0, going from 32 to 24 rows costs +2.1 points of whole dialogue (B32 → B24), and to 20 rows +4.6 (B32 → B20).
+  - At depth 1 (VOCR5-S's layers), going from 32 to 18 rows costs +6.5 (S32 → S18).
+  - Dropping the stride-1 DS blocks (depth 0) costs +1.9 at height 32 (S32 → B32).
 - **The runs stopped early.** Stage 1 stopped after every arm's first seed (protocol amendment 4). No later stage could plausibly close a 3-4 point gap to a target that VOCR5-S's own shape only ties. Stopping can only lead to no release.
 
 **What ships instead:**
@@ -105,8 +108,8 @@ The estimate column is protocol's feasibility rule: the gate skips 0.9 × the ar
 - **The two-level head in W8F.** Level 1 and level 2 are W8F's head rows (dequant8 + mm_f32, as `run_head`); the escape is W8I's. The fired frames' float inputs are packed to the front of the accumulator.
 - **W8I runs are unchanged** bit for bit, and both options stay off by default.
 - **Arena.** A W8F two-level head needs its escape's int16 input in the head's scratch, and a W8F gate a dequantised first head block (`train/export.plan_arena` mirrors both).
-- **Tests.** `tests/test_gate_w8f.py` (19 tests) checks the C runtime against `train/headgate.py`'s and `train/head2level.py`'s twins bit for bit in W8F and F32, at several tilings: gate scores, gated runs, the two-level head, both together, and the arena mirror. `tests/test_headgate.py` and `tests/test_head2level.py` were updated for the wider modes.
-- **On the PSP.** In PPSSPP the scalar and VFPU builds return the host's text and logits bit for bit with the W8F gate and two-level head (`smoke_w8f`).
+- **Tests.** `tests/test_gate_w8f.py` (29 tests) checks the C runtime against `train/headgate.py`'s and `train/head2level.py`'s twins bit for bit in W8F and F32, at several tilings: gate scores, gated runs, the two-level head, both together, and the arena mirror. `tests/test_headgate.py` and `tests/test_head2level.py` were updated for the wider modes.
+- **On the PSP.** In PPSSPP the scalar and VFPU builds match the host with the W8F gate and two-level head (`smoke_w8f`). The texts of the gated and two-level runs match. The logits match bit for bit for the full head: the app's logit CRC is of the first run, which asks for the logits and so skips nothing.
 
 ## Results (stage 1, seed 1 of every arm; `eval/vocr6_psp_stage1_20261026.json`)
 
@@ -115,7 +118,7 @@ W8F int8 through the C runtime, greedy, no gate. Each arm is one fine-tune of 10
 | arm | est. s / box (feasibility rule) | SC | dev whole dialogue (GRAD + refine) | dev fixed lines | hval page path | hval lines |
 |---|---:|---:|---:|---:|---:|---:|
 | VOCR5-S (comparator) | 3.24 (plain W8F) | 5.73 | 6.49% | 1.17% | 7.64% | 1.26% |
-| S32 (control, VOCR5-S's shape) | 1.90 (gated) | 5.37 | 6.52% | 1.15% | 6.91% | 0.52% |
+| S32 (control, VOCR5-S's shape) | 3.24 plain; 1.90 with the rejected gated head | 5.37 | 6.52% | 1.15% | 6.91% | 0.52% |
 | B32 (depth 0, height 32) | 1.28 | 6.69 | 8.36% | 2.65% | 7.89% | 1.01% |
 | **B24** (depth 0, height 24) | **0.93** | 8.69 | 10.42% | 4.58% | 9.88% | 1.73% |
 | B24c1 | 0.83 | 9.77 | 11.83% | 6.06% | 10.59% | 2.51% |
@@ -164,14 +167,14 @@ The budget, estimated on the development whole-dialogue crops' own frame mix (`p
 
 | candidate | build | µs / frame (dev whole dialogue) | nominal box, emulated | est. console s per nominal box (× 1.45) | memory in all |
 |---|---|---:|---:|---:|---:|
-| B24 | scalar | 5,304 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,042,918 B |
-| B24 | VFPU | 3,775 | 0.603 s | 0.87 (VFPU unverified on a console) | about 1,043,454 B |
-| S32 | scalar | 6,794 | 1.411 s | **2.05** | 1,292,358 B |
-| S32 | VFPU | 4,668 | 0.977 s | 1.42 (VFPU unverified on a console) | about 1,292,894 B |
+| B24 | scalar | 5,304 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,042,498 B |
+| B24 | VFPU | 3,775 | 0.603 s | 0.87 (VFPU unverified on a console) | 1,042,918 B |
+| S32 | scalar | 6,794 | 1.411 s | **2.05** | 1,291,938 B |
+| S32 | VFPU | 4,668 | 0.977 s | 1.42 (VFPU unverified on a console) | 1,292,358 B |
 
 - **B24 is not time-feasible either.** The feasibility rule assumed the escape fires on 20% of the kept frames; on B24's development crops it fires on 47%. Its scalar estimate is 1.21 s, not 0.93 s.
-- **Memory is far inside the budget.** B24 needs 1,042,918 B in all: the blob with its gate and trailer 760,208, arena 192,448, code 60,811 (vocr.o 33,823 with main's attention op since the rebase, vocr_lines.o 19,084, vocr_lines_refine.o 7,904), stack 4,096 (3,744 used) and the finder's arena 25,355. The VFPU build's vocr.o is about 536 B larger.
-- **The table is measured on the merged runtime.** After the rebase onto main's attention op, the EBOOTs were rebuilt and both candidates re-read on the development crops and regions: every item is still identical to the host (`eval/vocr6_psp_verify_20261026.json` "rebased"). The hval rows above are pre-rebase; neither blob has an attention op, so the host reads them unchanged.
+- **Memory is far inside the budget.** B24 needs 1,042,498 B in all: the blob with its gate and trailer 760,208, arena 192,448, code 60,391 (vocr.o 33,403 with main's attention op since the rebase, vocr_lines.o 19,084, vocr_lines_refine.o 7,904), stack 4,096 (3,744 used) and the finder's arena 25,355. The VFPU build's vocr.o is 33,823 B (420 B larger).
+- **The table is measured on the merged runtime.** After the rebase onto main's attention op, the EBOOTs were rebuilt and both candidates re-read on the development crops and regions: every item is still identical to the host (`eval/vocr6_psp_verify_20261026.json` "rebased"). The hval rows above are pre-rebase; neither blob has an attention op, so the host reads them unchanged. After the audit's fixes (`psp/main.c`'s finder-mode checks) the EBOOTs were rebuilt once more. Both candidates' development crops and regions and the console bundle's 9 apps were re-run in PPSSPP: every item is identical to the host.
 
 ## Reproduce
 

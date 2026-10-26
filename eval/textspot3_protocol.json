@@ -607,6 +607,18 @@
     "runtime/vocr.c": "83cb778c482853d43bd2c361818793efdb9e9dcb50a6fff3c14f9fcf2e39ffda",
     "runtime/vocr.h": "a2fbed39216433dff01a44dd8b3ed0838c613f2aee4afe16a652dd2d3429297e"
    }
+  },
+  {
+   "id": 11,
+   "utc": "2026-10-26T12:33:24Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change (as amendments 8-10): runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with, gained VOCR6 stage 3's attention op (#125, docs/vocr6-attn.md: op type 5, which a blob without it never reaches) on top of amendment 10's runtime. A blob without the op, which is every blob these protocols read, runs bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged, and main's and this runtime give identical logits, text and arena on VOCR5-S/N/L (W8F, W8I), the gated and two-level blobs"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+    "runtime/vocr.h": "c9670efd980a993f98307e6093ca17c7595f64a09c11a3d4c7bb6cea84993de5"
+   }
   }
  ],
  "shapes": {

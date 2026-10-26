@@ -11,6 +11,7 @@ sum rounded on its own (vocr.c is built with -ffp-contract=off):
       S = 0 + float(c_0) + float(c_1) + ... with c_i the exact sum of q8 * q16 over
       k in [512 i, 512 i + 512); y = S * (scale * (max|x| / 32767)) + bias
   then ReLU (x > 0 ? x : 0), then the residual add.
+  attention (one ATTN op before the head; docs/vocr6-attn.md): attn_exact below.
 Columns outside the line are zeros, which the C code also adds (w * 0); rows outside
 the image are skipped. So on IEEE hardware without flush-to-zero the C runtime must
 return exactly these bits for any tile size; parity.py checks that. (ARMv7 NEON flushes
@@ -18,7 +19,7 @@ denormals to zero, so the NEON build can differ only if a denormal ever occurs.)
 """
 import numpy as np
 
-T_CONV, T_DW, T_PW, T_HEAD = 1, 2, 3, 4
+T_CONV, T_DW, T_PW, T_HEAD, T_ATTN = 1, 2, 3, 4, 5
 F32 = np.float32
 CHUNK = 512          # w8i: int32 sums over at most this many terms (vocr.c W8I_CHUNK)
 
@@ -90,6 +91,83 @@ def matmul_exact(x, op, mode):
     return _relu(y) if op["relu"] else y
 
 
+def _f32bits(u):
+    return np.frombuffer(np.uint32(u).tobytes(), F32)[0]
+
+
+# vocr.c exp_neg's float literals, bit for bit (also train/headgate.py's exp_neg)
+LOG2E = _f32bits(0x3FB8AA3B)
+POLY = [_f32bits(u) for u in (0x39218489, 0x3AAEC3FF, 0x3C1D955B, 0x3D635847, 0x3E75FDF0, 0x3F317218, 0x3F800000)]
+
+
+def exp_neg_exact(x):
+    """vocr.c exp_neg elementwise (float32 arithmetic only): x clamped to [-30, 0] (NaN to -30), 2^(x / ln 2) from
+    the float exponent bits and a degree-6 polynomial of the fraction."""
+    x = np.asarray(x, F32)
+    x = np.where(x > F32(-30), x, F32(-30)).astype(F32)
+    x = np.where(x > 0, F32(0), x).astype(F32)
+    t = (x * LOG2E).astype(F32)
+    e = t.astype(np.int32)                                    # (int32_t)t: towards zero
+    e = np.where(e.astype(F32) > t, e - 1, e).astype(np.int32)
+    f = (t - e.astype(F32)).astype(F32)
+    p = np.full(x.shape, POLY[0], F32)
+    for c in POLY[1:]:
+        p = ((p * f).astype(F32) + c).astype(F32)
+    p2 = ((e + 127).astype(np.uint32) << np.uint32(23)).view(F32)
+    return (p * p2).astype(F32)
+
+
+def softmax_exact(s):
+    """vocr.c softmax_row on each row of s (frames x keys, float32): the first-wins maximum, e = exp_neg(s - max),
+    sum = 0 + e_0 + e_1 + ..., then e * (1 / sum)."""
+    s = np.asarray(s, F32)
+    mx = s[:, 0].copy()
+    for k in range(1, s.shape[1]):
+        mx = np.where(s[:, k] > mx, s[:, k], mx)
+    e = exp_neg_exact((s - mx[:, None]).astype(F32))
+    tot = np.zeros(len(s), F32)
+    for k in range(s.shape[1]):
+        tot = (tot + e[:, k]).astype(F32)
+    inv = (F32(1) / tot).astype(F32)
+    return (e * inv[:, None]).astype(F32)
+
+
+def attn_parts(op):
+    """An ATTN op's QKV and O matrices as matmul_exact op dicts (train/export.py attn_parts)."""
+    def part(w, scale, bias):
+        p = {"w": w, "bias": bias, "int8": op["int8"], "relu": False, "cout": w.shape[0]}
+        if op["int8"]:
+            p["scale"] = scale
+        return p
+    return part(op["w"], op.get("scale"), op["bias"]), part(op["o_w"], op.get("o_scale"), op["o_bias"])
+
+
+def attn_exact(z, op, mode):
+    """vocr.c's attention over a line's frames z (T x d float32): the projections in `mode` (matmul_exact), then per
+    head scores s[q][k] = 0 + Q[q][0] K[k][0] + Q[q][1] K[k][1] + ... (float32, in order), softmax_exact, and
+    A[q][c] = 0 + P[q][0] V[0][c] + P[q][1] V[1][c] + ..., then z' = O(A) + z."""
+    qkv, o = attn_parts(op)
+    z = np.asarray(z, F32)
+    T = len(z)
+    da, nh = op["attn_dim"], op["heads"]
+    dh = da // nh
+    y = matmul_exact(z, qkv, mode)
+    q, k, v = y[:, :da], y[:, da:2 * da], y[:, 2 * da:]
+    a = np.zeros((T, da), F32)
+    for h in range(nh):
+        c = slice(h * dh, (h + 1) * dh)
+        qh, kh, vh = q[:, c], k[:, c], v[:, c]
+        s = np.zeros((T, T), F32)
+        for j in range(dh):
+            s = (s + (qh[:, j][:, None] * kh[:, j][None, :]).astype(F32)).astype(F32)
+        p = softmax_exact(s)
+        out = np.zeros((T, dh), F32)
+        for t in range(T):
+            out = (out + (p[:, t][:, None] * vh[t][None, :]).astype(F32)).astype(F32)
+        a[:, c] = out
+    return (matmul_exact(a, o, mode) + z).astype(F32)
+
+
 def forward(blob, x, mode):
     """x: H x W float32 input (W a multiple of the stride). Returns T x classes logits."""
     t = np.asarray(x, F32)
@@ -98,6 +176,9 @@ def forward(blob, x, mode):
         if op["type"] in (T_CONV, T_DW):
             dw_in = t
             t = conv_exact(t, op)
+            continue
+        if op["type"] == T_ATTN:                                  # one row of frames: 1 x W x d
+            t = attn_exact(t[0], op, mode)[None]
             continue
         h, w, c = t.shape
         if op["collapse"]:

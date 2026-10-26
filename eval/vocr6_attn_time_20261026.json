@@ -1,0 +1,187 @@
+{
+ "kind": "vocr6-attn-time",
+ "estimates_are_not_measurements": true,
+ "scale": 1.000676,
+ "mhz": 333,
+ "pack": {
+  "sha256": "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7",
+  "lines": 24,
+  "frames": 1609,
+  "sum_T2": 108719
+ },
+ "nominal_box": {
+  "lines": 3,
+  "frames": 80,
+  "finder_ms": 100.0
+ },
+ "tiers": {
+  "S": {
+   "nopld": {
+    "per_frame_ms_333": {
+     "ref": 1.7457,
+     "attn": 1.8519,
+     "attn_proj": 0.0663,
+     "attn_core_pack": 0.0673,
+     "attn_core_T80": 0.0797,
+     "other": -0.0275
+    },
+    "nominal_box_ms_333": {
+     "ref": 519.0,
+     "attn": 547.4,
+     "delta": 28.5
+    },
+    "nominal_box_ms_444": {
+     "ref": 389.2,
+     "attn": 410.6,
+     "delta": 21.3
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+     "attn": "d38616dc62b051a6cfdd230be535209a553e2bc0fcc4a1b69b1c79a152ba6571"
+    },
+    "cli_opts": "--topk 8 --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   },
+   "pld": {
+    "per_frame_ms_333": {
+     "ref": 1.528,
+     "attn": 1.6297,
+     "attn_proj": 0.0605,
+     "attn_core_pack": 0.0673,
+     "attn_core_T80": 0.0797,
+     "other": -0.0261
+    },
+    "nominal_box_ms_333": {
+     "ref": 466.7,
+     "attn": 494.1,
+     "delta": 27.4
+    },
+    "nominal_box_ms_444": {
+     "ref": 350.0,
+     "attn": 370.6,
+     "delta": 20.5
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+     "attn": "d38616dc62b051a6cfdd230be535209a553e2bc0fcc4a1b69b1c79a152ba6571"
+    },
+    "cli_opts": "--topk 8 --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   }
+  },
+  "N": {
+   "nopld": {
+    "per_frame_ms_333": {
+     "ref": 2.7434,
+     "attn": 2.8773,
+     "attn_proj": 0.0663,
+     "attn_core_pack": 0.0674,
+     "attn_core_T80": 0.0798,
+     "other": 0.0002
+    },
+    "nominal_box_ms_333": {
+     "ref": 758.4,
+     "attn": 793.5,
+     "delta": 35.1
+    },
+    "nominal_box_ms_444": {
+     "ref": 568.8,
+     "attn": 595.2,
+     "delta": 26.3
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b",
+     "attn": "c41290ffad4c445fc37a478b635d5e5301265aa1bb02932b7afcabf184371945"
+    },
+    "cli_opts": "--topk 8 --two-level --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   },
+   "pld": {
+    "per_frame_ms_333": {
+     "ref": 2.3276,
+     "attn": 2.457,
+     "attn_proj": 0.0604,
+     "attn_core_pack": 0.0674,
+     "attn_core_T80": 0.0798,
+     "other": 0.0017
+    },
+    "nominal_box_ms_333": {
+     "ref": 658.6,
+     "attn": 692.7,
+     "delta": 34.0
+    },
+    "nominal_box_ms_444": {
+     "ref": 494.0,
+     "attn": 519.5,
+     "delta": 25.5
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b",
+     "attn": "c41290ffad4c445fc37a478b635d5e5301265aa1bb02932b7afcabf184371945"
+    },
+    "cli_opts": "--topk 8 --two-level --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   }
+  },
+  "L": {
+   "nopld": {
+    "per_frame_ms_333": {
+     "ref": 7.0357,
+     "attn": 6.9542,
+     "attn_proj": 0.0721,
+     "attn_core_pack": 0.0673,
+     "attn_core_T80": 0.0797,
+     "other": -0.2209
+    },
+    "nominal_box_ms_333": {
+     "ref": 1788.6,
+     "attn": 1772.0,
+     "delta": -16.6
+    },
+    "nominal_box_ms_444": {
+     "ref": 1341.4,
+     "attn": 1329.0,
+     "delta": -12.4
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "41c3543ff8dddd45dc953a6a5f5d579ef9ca779f0e43196406be59c1d985c5b5",
+     "attn": "62ea3fe7e5e2f0b3c2bc27032f6e81444217f165f0d662570b86160305d53cb8"
+    },
+    "cli_opts": "--topk 8 --two-level --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   },
+   "pld": {
+    "per_frame_ms_333": {
+     "ref": 5.0097,
+     "attn": 5.1378,
+     "attn_proj": 0.0629,
+     "attn_core_pack": 0.0673,
+     "attn_core_T80": 0.0797,
+     "other": -0.0022
+    },
+    "nominal_box_ms_333": {
+     "ref": 1302.3,
+     "attn": 1336.0,
+     "delta": 33.7
+    },
+    "nominal_box_ms_444": {
+     "ref": 976.8,
+     "attn": 1002.0,
+     "delta": 25.3
+    },
+    "pack_texts_identical": true,
+    "blobs": {
+     "ref": "41c3543ff8dddd45dc953a6a5f5d579ef9ca779f0e43196406be59c1d985c5b5",
+     "attn": "62ea3fe7e5e2f0b3c2bc27032f6e81444217f165f0d662570b86160305d53cb8"
+    },
+    "cli_opts": "--topk 8 --two-level --head-gate on",
+    "vocr_c_sha256": "b25099028c212fb168d41acfed000e8fae41a89492766333414eef9aeecd96b8"
+   }
+  }
+ }
+}

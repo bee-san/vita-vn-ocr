@@ -3,6 +3,7 @@
 
   parity.py --fixture                         # random-init model, random crops, no data
   parity.py --fixture --stride 16             # the same at a coarser CTC frame step (12 or 16)
+  parity.py --fixture --attn 1                # with the attention op (docs/vocr6-attn.md)
   parity.py --ckpt CKPT [--shard SHARD.npz]   # default shard: the last synth shard (val)
   parity.py --ckpt CKPT --set real            # data/real crops, through the RGBA path
   parity.py --ckpt CKPT --set vita-test       # eval's hand-checked sets (also psp-test), RGBA
@@ -71,6 +72,7 @@ TILES = {"lib": [(1, 1), (2, 5), (3, 7), (7, 3), (16, 16), (128, 128)],   # (til
          "cli": [(1, 1), (3, 7), (128, 128)]}
 MODE_ID = {"f32": E.MODE_F32, "w8f": E.MODE_W8F, "w8i": E.MODE_W8I}
 ARENA_WIDTHS = (8, 100, 256, 640, 1000, 1024)
+ATTN_QK_GAIN = 4.0                      # fixture attention: Q and K weights times this (peaked softmax)
 
 
 # ---------------------------------------------------------------- data
@@ -193,6 +195,21 @@ def _matmul(X, op, mode):
     return Y
 
 
+def blob_attention(op, Z, mode):
+    """PyTorch float32 attention of a blob's ATTN op on a line's frames Z (T x d): the projections as _matmul does
+    them in `mode`, the scores, softmax (torch's exp) and weighted sums in float32, then O and the residual."""
+    import torch
+    qkv, o = E.attn_parts(op)
+    da, nh = op["attn_dim"], op["heads"]
+    dh = da // nh
+    Y = _matmul(Z, qkv, mode)
+    A = []
+    for h in range(nh):
+        q, k, v = (Y[:, i * da + h * dh:i * da + (h + 1) * dh] for i in range(3))
+        A.append(torch.softmax(q @ k.T, dim=1) @ v)
+    return _matmul(torch.cat(A, 1), o, mode) + Z
+
+
 def blob_forward(blob, x, mode):
     """PyTorch float32 forward of a parsed blob; x: H x W float32. Returns T x C logits."""
     import torch
@@ -209,6 +226,9 @@ def blob_forward(blob, x, mode):
             if op["relu"]:
                 t = F.relu(t)
             continue
+        if op["type"] == E.T_ATTN:                       # the frame row: 1 x d x 1 x T
+            t = blob_attention(op, t[0, :, 0, :].T.contiguous(), mode).T.reshape(1, -1, 1, t.shape[3])
+            continue
         _, c, h, w = t.shape
         X = t[0].permute(2, 1, 0).reshape(w, h * c) if op["collapse"] else \
             t[0].permute(1, 2, 0).reshape(h * w, c)
@@ -222,10 +242,12 @@ def blob_forward(blob, x, mode):
     return t[0, :, 0, :].T.contiguous().numpy()
 
 
-def fixture_model(seed=0, width=0.5, stride=8):
+def fixture_model(seed=0, width=0.5, stride=8, attn=0):
     """Random-init TinyVNOCR whose BatchNorm statistics are measured on fixture crops (so
     activations vary along the line like a trained net's) with random BN scales and shifts,
-    so the exporter's folding is exercised. stride: the CTC frame step (8, 12 or 16)."""
+    so the exporter's folding is exercised. stride: the CTC frame step (8, 12 or 16).
+    attn = 1 adds the attention block (docs/vocr6-attn.md) with its gate at 0.8 and Q, K scaled up so that the
+    softmax is peaked, not uniform: the parity then tests the attention, which a gate of 0 would hide."""
     import torch
     import torch.nn as nn
 
@@ -233,7 +255,7 @@ def fixture_model(seed=0, width=0.5, stride=8):
     from model import TinyVNOCR
     torch.manual_seed(seed)
     vocab = load_vocab(ROOT / "data" / "vocab.txt")
-    m = TinyVNOCR(len(vocab) + 1, width=width, stride=stride)
+    m = TinyVNOCR(len(vocab) + 1, width=width, stride=stride, attn=attn)
     bns = [mod for mod in m.modules() if isinstance(mod, nn.BatchNorm2d)]
     xs = [prep(img)[2] for _, img, _ in fixture_lines(16, seed + 1)]
     W = max(x.shape[1] for x in xs)
@@ -250,6 +272,10 @@ def fixture_model(seed=0, width=0.5, stride=8):
             bn.weight.copy_(torch.empty_like(bn.weight).uniform_(0.7, 1.3, generator=g))
             bn.bias.copy_(torch.empty_like(bn.bias).uniform_(-0.3, 0.2, generator=g))
         m.head.weight.mul_(4.0)
+        if m.attn is not None:
+            m.attn.gate.fill_(0.8)
+            m.attn.q.weight.mul_(ATTN_QK_GAIN)
+            m.attn.k.weight.mul_(ATTN_QK_GAIN)
     m.eval()
     return m, vocab
 
@@ -351,7 +377,7 @@ def worker_init(cfg):
     torch.set_num_threads(int(cfg.get("threads", 1)))
     torch.set_flush_denormal(False)      # keep IEEE denormals, as the C code and numpy do
     if cfg["fixture"]:
-        model, vocab = fixture_model(cfg["seed"], cfg["width"], cfg["stride"])
+        model, vocab = fixture_model(cfg["seed"], cfg["width"], cfg["stride"], cfg.get("attn", 0))
     else:
         model, vocab, _ = E.load_checkpoint(cfg["ckpt"])
     model.eval()
@@ -505,6 +531,8 @@ def main():
     ap.add_argument("--tol-scale", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--width", type=float, default=0.5, help="fixture model width multiplier")
+    ap.add_argument("--attn", type=int, default=0, choices=(0, 1),
+                    help="fixture model with the attention block (a checkpoint's own is used with --ckpt)")
     ap.add_argument("--stride", type=int, default=8, choices=(8, 12, 16),
                     help="fixture model CTC frame step (a checkpoint's own stride is used with --ckpt)")
     ap.add_argument("--report", type=Path, help="summary JSON (CI's VOCR_REPORT contract)")
@@ -517,7 +545,7 @@ def main():
     tmp = tempfile.TemporaryDirectory()
     if args.fixture:
         set_geometry(args.stride)
-        model, vocab = fixture_model(args.seed, args.width, args.stride)
+        model, vocab = fixture_model(args.seed, args.width, args.stride, args.attn)
         height, sha = H, b"fixture"
     else:
         import hashlib
@@ -540,7 +568,8 @@ def main():
         lines = load_eval(args.set, args.n, args.eval_data)
     else:
         lines = load_synth(args.data, args.n)
-    cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "stride": STRIDE, "ckpt": args.ckpt,
+    cfg = {"fixture": args.fixture, "seed": args.seed, "width": args.width, "stride": STRIDE, "attn": args.attn,
+           "ckpt": args.ckpt,
            "blobs": blobs, "modes": modes, "cli": args.cli, "tile_lines": args.tile_lines,
            "tol_scale": args.tol_scale}
     arena_ok, arena = arena_checks(cfg)

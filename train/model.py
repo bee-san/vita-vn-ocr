@@ -185,6 +185,78 @@ def channels(width):
     return [c(n) for n in (32, 64, 128, 160, 192)]
 
 
+class GlobalAttn(nn.Module):
+    """One light global self-attention layer over the frame row (VOCR6 stage 3, docs/vocr6-attn.md), on the
+    bottleneck's output z (N x d x 1 x T):
+
+        z' = z + g * O(concat_h softmax(Q_h(z) K_h(z)^T / sqrt(dh)) V_h(z))
+
+    Q, K, V (d -> dim) and O (dim -> d) are 1x1 QConv2d, so the int8 export and QAT treat them like every other
+    pointwise conv. dim is split into `heads` heads of dh = dim / heads channels, a multiple of 8 (the runtime's
+    8-wide blocks). K has no bias: a bias on K adds the same score to every key of a query, which the softmax cancels.
+    There is no positional embedding (the depthwise temporal convs before it give position, as conditional positional
+    encodings do: Chu et al. 2021, arXiv:2102.10882) and no LayerNorm. g is a learnt scalar initialised to 0 (ReZero:
+    Bachlechner et al. 2020, arXiv:2003.04887), so a model built with the block and loaded from a checkpoint without
+    it (load_state) starts as exactly that checkpoint's model. The export folds 1 / sqrt(dh) into Q and g into O.
+
+    lengths (N frame counts) masks a training batch's right padding out of the keys; a line read on its own (the
+    runtime, train2's validation, eval) has none."""
+
+    def __init__(self, d, dim=96, heads=2):
+        super().__init__()
+        dim, heads = int(dim), int(heads)
+        if heads < 1 or dim < 8 or dim % heads or (dim // heads) % 8:
+            raise ValueError(f"attention: dim {dim} must split into {heads} heads of a multiple of 8 channels")
+        self.dim, self.heads, self.dh = dim, heads, dim // heads
+        self.q = QConv2d(d, dim, 1)
+        self.k = QConv2d(d, dim, 1, bias=False)
+        self.v = QConv2d(d, dim, 1)
+        self.o = QConv2d(dim, d, 1)
+        self.gate = nn.Parameter(torch.zeros(1))
+
+    def forward(self, z, lengths=None):
+        n, _, h, t = z.shape
+        assert h == 1, "attention runs on the 1-row frame row"
+        q, k, v = (m(z).reshape(n, self.heads, self.dh, t) for m in (self.q, self.k, self.v))
+        s = torch.matmul(q.transpose(2, 3), k) * (self.dh ** -0.5)            # N x heads x T(query) x T(key)
+        if lengths is not None:
+            pad = torch.arange(t, device=z.device)[None, :] >= torch.as_tensor(lengths, device=z.device)[:, None]
+            s = s.masked_fill(pad[:, None, None, :], float("-inf"))
+        a = torch.matmul(s.softmax(-1), v.transpose(2, 3))                    # N x heads x T x dh
+        y = a.permute(0, 1, 3, 2).reshape(n, self.dim, 1, t)
+        return z + self.gate * self.o(y)
+
+
+ATTN_DEFAULTS = {"attn": 0, "attn_dim": 96, "attn_heads": 2}
+
+
+def attn_arch(src):
+    """The attention keys of a checkpoint or arch dict: {} without the block (attn 0 or absent: every checkpoint
+    before train2's --attn), else {attn: 1, attn_dim, attn_heads}."""
+    if not int(src.get("attn") or 0):
+        return {}
+    if int(src["attn"]) != 1:
+        raise ValueError(f"attn {src['attn']}: one attention layer (1) or none (0)")
+    return {"attn": 1, **{k: int(src.get(k) or ATTN_DEFAULTS[k]) for k in ("attn_dim", "attn_heads")}}
+
+
+@torch.no_grad()
+def load_state(model, sd):
+    """model.load_state_dict(sd), except that a state_dict without the attention block (a checkpoint from before
+    --attn, or of an --attn 0 run) loads into a model with it: the block keeps its initialisation with the gate at 0,
+    so the model computes exactly what the checkpoint's model does. Any other missing or unexpected key is an error.
+    Returns "fresh-attn" in that case, else "loaded"."""
+    attn = getattr(model, "attn", None)
+    if attn is not None and not any(k.startswith("attn.") for k in sd):
+        missing, unexpected = model.load_state_dict(sd, strict=False)
+        if unexpected or any(not k.startswith("attn.") for k in missing):
+            raise RuntimeError(f"state_dict does not fit the model: missing {missing}, unexpected {unexpected}")
+        attn.gate.zero_()
+        return "fresh-attn"
+    model.load_state_dict(sd)
+    return "loaded"
+
+
 STRIDES = (8, 12, 16)
 
 
@@ -208,10 +280,12 @@ class TinyVNOCR(nn.Module):
     rep >= 1 trains the stem and every depthwise conv with RepCBR's extra branches (rep
     parallel k x k branches); fuse_rep() turns such a model into the plain one it equals.
     stride is the CTC frame step in input columns (8, 12 or 16; stage_strides()).
+    attn = 1 adds GlobalAttn (attn_dim channels in attn_heads heads) between the bottleneck and the head; the head
+    then reads z'. It is built after the head, so the other modules draw the same initial values for a seed.
     The defaults build v1 exactly (same layers, same state_dict keys)."""
 
     def __init__(self, n_classes, width=1.0, bottleneck=96, depth=1, ctx=2, ctx_k=5, chans=None, rep=0,
-                 stride=8):
+                 stride=8, attn=0, attn_dim=96, attn_heads=2):
         super().__init__()
         if chans is not None:
             chans = tuple(int(c) for c in chans)
@@ -222,6 +296,7 @@ class TinyVNOCR(nn.Module):
         self.stride = int(stride)
         self.arch = dict(width=width, bottleneck=bottleneck, depth=depth, ctx=ctx, ctx_k=ctx_k,
                          chans=chans, rep=rep, stride=self.stride)
+        self.arch.update(attn_arch(dict(attn=attn, attn_dim=attn_dim, attn_heads=attn_heads)))
         self.features = nn.Sequential(
             conv_bn(1, c32, 3, 2, rep=rep),              # 16 x W/2  (12 at height 24)
             DS(c32, c64, 2, rep),                        # 8 x W/4
@@ -236,12 +311,19 @@ class TinyVNOCR(nn.Module):
         self.drop = nn.Dropout(0.1)
         self.bottleneck = QConv2d(c192, bottleneck, 1, bias=False)
         self.head = QConv2d(bottleneck, n_classes, 1)
+        a = attn_arch(self.arch)
+        self.attn = GlobalAttn(bottleneck, a["attn_dim"], a["attn_heads"]) if a else None
 
-    def forward(self, x, return_features=False):
+    def forward(self, x, return_features=False, lengths=None):
         """x: N x 1 x H x W (H = 32 or 24), values in [-1, 1]. Returns logits T x N x C (and,
-        with return_features, the N x C192 x 1 x T frame-row features the head reads)."""
+        with return_features, the N x C192 x 1 x T frame-row features the bottleneck reads).
+        lengths: N frame counts of a right-padded batch, which the attention block (attn = 1) masks out of its keys;
+        a model without the block ignores it."""
         feats = self.features(x)
-        f = self.head(self.bottleneck(self.drop(feats)))
+        z = self.bottleneck(self.drop(feats))
+        if self.attn is not None:
+            z = self.attn(z, lengths)
+        f = self.head(z)
         assert f.shape[2] == 1, f"input height {x.shape[2]} does not collapse to 1 row"
         logits = f.squeeze(2).permute(2, 0, 1)
         return (logits, feats) if return_features else logits
@@ -294,7 +376,7 @@ def load_plain_into_rep(model, plain_sd):
     kw = dict(model.arch)
     kw["rep"] = 0
     plain = TinyVNOCR(model.head.out_channels, **kw)
-    plain.load_state_dict(plain_sd)
+    load_state(plain, plain_sd)
     rep_names = {n for n, m in model.named_modules() if isinstance(m, RepCBR)}
     sd = model.state_dict()
     for k, v in plain.state_dict().items():
@@ -308,14 +390,16 @@ def load_plain_into_rep(model, plain_sd):
 
 def from_checkpoint(ck):
     """Rebuild the model a train.py checkpoint (dict or path) describes, v1 included.
-    Returns (model in eval mode, meta) with meta = {vocab, height, unk, stride} plus ARCH_KEYS
-    (and chans, when the checkpoint records explicit channel counts). A checkpoint without a
-    stride (every one before train2's --stride) is stride 8."""
+    Returns (model in eval mode, meta) with meta = {vocab, height, unk, stride} plus ARCH_KEYS and ATTN_DEFAULTS'
+    keys (and chans, when the checkpoint records explicit channel counts). A checkpoint without a
+    stride (every one before train2's --stride) is stride 8; one without attn (every one before --attn) has no
+    attention block (attn 0)."""
     if not isinstance(ck, dict):
         ck = torch.load(ck, map_location="cpu", weights_only=False)
     meta = {"vocab": ck["vocab"], "height": ck.get("height", 32), "unk": ck.get("unk"),
             "stride": int(ck.get("stride") or 8), **{k: ck.get(k, v) for k, v in ARCH_KEYS.items()}}
-    extra = {"stride": meta["stride"]}
+    extra = {"stride": meta["stride"], **attn_arch(ck)}
+    meta.update({**ATTN_DEFAULTS, **attn_arch(ck)})
     if ck.get("chans"):
         meta["chans"] = extra["chans"] = tuple(int(c) for c in ck["chans"])
     model = TinyVNOCR(len(meta["vocab"]) + 1, **{k: meta[k] for k in ARCH_KEYS}, **extra)

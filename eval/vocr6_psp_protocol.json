@@ -59,7 +59,8 @@
  "init": {
   "S_d0c2": "train/modelb_init.py --depth 0 --ctx 2 of VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt (exports to VOCR5_S_w8.vocr, sha256 f175bfcb...)",
   "S_d0c1": "the same with --ctx 1",
-  "S_d1c2": "VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt itself (exports to VOCR5_S_w8.vocr)"
+  "S_d1c2": "VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt itself (exports to VOCR5_S_w8.vocr)",
+  "S_d1c1": "train/modelb_init.py --depth 1 --ctx 1 of VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt"
  },
  "arms": {
   "B24": {
@@ -109,6 +110,24 @@
     1
    ],
    "note": "diagnostic control, not selectable (est. about 2.4 s per nominal box): VOCR5-S's own shape through the same recipe, which separates the recipe's effect from the shape change's"
+  },
+  "S18": {
+   "init": "S_d1c2",
+   "train2_args": "--width 1.0 --depth 1 --ctx 2 --height 18",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "VOCR5-S's shape at input height 18 (the native PSP finder crop height), from VOCR5-S's checkpoint"
+  },
+  "S18c1": {
+   "init": "S_d1c1",
+   "train2_args": "--width 1.0 --depth 1 --ctx 1 --height 18",
+   "seeds": [
+    1,
+    2
+   ],
+   "note": "the same with one temporal block (VOCR5-S's second Ctx block dropped)"
   }
  },
  "scoring": {
@@ -154,6 +173,15 @@
     "a diagnostic control arm S32 (1 seed): VOCR5-S's shape (depth 1, ctx 2, H 32) from VOCR5-S's own checkpoint through the screening recipe; not selectable (not time-feasible); no decision rule reads it"
    ],
    "why": "B24 seed 1 reads development PSP fixed lines at 4.58% against VOCR5-S's 1.17% (whole dialogue 10.42% against 6.49%; hval lines 1.73% against 1.26%). The control tells whether the screening recipe and data or the shape change (depth 0, input height) cost that, before any further arm is designed"
+  },
+  {
+   "n": 3,
+   "date": "2026-10-26T10:45Z (commit time in git), after B24 seed 1 was scored and before any other model B run was scored",
+   "changes": [
+    "two selectable arms: S18 (VOCR5-S's shape, depth 1, at input height 18) and S18c1 (the same with one temporal block), 2 seeds each, same recipe; their PPSSPP cost was measured before this amendment (sweep4: est. 0.95 s and 0.88 s per nominal box at a 0.58 blank share)",
+    "successive halving for stage 1: every arm's seed 1 runs first; an arm whose seed-1 SC exceeds the lowest seed-1 SC among the feasible arms by more than 1.0 point is eliminated without a second seed; every other arm runs seed 2, and decisions.stage1 then reads the surviving arms (mean over 2 seeds)"
+   ],
+   "why": "B24 seed 1 is worse than VOCR5-S even on the hval titles it trained on (hval lines 1.73% against 1.26%; development fixed lines 4.58% against 1.17%), which points at the depth-0 shape's lost capacity and the move from height 32 rather than at data variety; S18 keeps VOCR5-S's every layer and moves only the input height, to the native PSP crop height, which sweep4 shows fits the time budget at depth 1. Halving keeps second seeds for arms that can still win"
   }
  ]
 }

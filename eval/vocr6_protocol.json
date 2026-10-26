@@ -1495,6 +1495,12 @@
      "time": "this commit (see git log); before any combined (S2all / R3) run",
      "why": "saves one ~4 h round on the critical path (stages 2 and 3 run side by side since stage 3 amendment 1)",
      "change": "one combined pair replaces stage 2's S2all and stage 3's R3-against-R2 pair: when every stage-2 and stage-3 single arm is decided, R3all = A15 + every adopted stage-2 factor + every adopted stage-3 arm (mixes composed as in stages.2.decision.recipe; arch_extra / train_extra merged; steps 45,000 iff S3long is adopted, else 15,000), seeds 1 and 3. R3all is the recipe iff it is adopted over A15 (decision.adopt) and its mean hval_page is not above the best single adopted arm's; otherwise the best single adopted arm (lowest mean hval_page) is the recipe; with no adopted arm, A15's recipe. With one adopted arm in all, that arm is the recipe without a combined pair"
+    },
+    {
+     "n": 3,
+     "time": "this commit (see git log); before any score of S2r70, S2r30, S3attn, S3rep, S3gtc or S3long and before any combined or stage-4 run",
+     "why": "compute: 0.7-1.0 steps/s per slot on 13 slots; S2r30 and S2r70 are levels of one factor",
+     "change": "S2r30 (seeds 1, 3) runs only if S2r70 is not adopted over A15; otherwise it is reported as not run (the real share's direction is then settled)"
     }
    ]
   },
@@ -1575,7 +1581,8 @@
       "--guide-weight",
       "0.1"
      ],
-     "what": "an auxiliary attention-decoder (NRTR, GTC) loss on the frame features, training only (never exported), at weight 0.1: the earlier test at weight 1.0 from scratch was +3.08 at 5k steps (docs/vocr3-arch-candidates.md: 're-test only with a lower weight'), here a lower weight and a warm start"
+     "what": "an auxiliary attention-decoder (NRTR, GTC) loss on the frame features, training only (never exported), at weight 0.1: the earlier test at weight 1.0 from scratch was +3.08 at 5k steps (docs/vocr3-arch-candidates.md: 're-test only with a lower weight'), here a lower weight and a warm start",
+     "stopped": "stage 3 amendment 3 (compute; prior +3.08 at weight 1.0): not run"
     },
     "S3long": {
      "run": "v6s3long_N",
@@ -1610,6 +1617,12 @@
      "n": 2,
      "time": "this commit (see git log); before any combined run",
      "change": "see stages.2.amendments[1] (one combined pair R3all for both stages)"
+    },
+    {
+     "n": 3,
+     "time": "this commit (see git log); before any score of S2r70, S2r30, S3attn, S3rep, S3gtc or S3long and before any combined or stage-4 run",
+     "why": "compute; S3long's 2 x ~12.5 h runs would hold stage 3's slots ahead of the short arms",
+     "change": "S3gtc is not run (its prior at weight 1.0 is +3.08, docs/vocr3-arch-candidates.md; the lowest-value arm). Order: S3long seed 1 (running), S3attn seeds 1 and 3, S3rep seeds 1 and 3, then S3long seed 3. S3long leaves R3all: it decides stage 4c (stages.4.amendments[1]) only"
     }
    ]
   },
@@ -1655,6 +1668,13 @@
      "4b_seed": "4b retrains seed 1 of every adopted tier (fixed now, before any score, instead of the median-dev seed: seeds are exchangeable a priori, and a seed fixed in advance selects nothing); its runs start with 4a's. If its tier is not adopted in 4a, its 4b run is not shipped",
      "finder": "4a's plans (hval and dev) are cut by the line path Rubi ships at the time of the 4a fill: today the finder with its short-line probe and VOCR_FIX_DEFAULT = COLGAP alone (#129 amendment 3; JUNK is opt-in), built by eval/vocr6_score.py hval-plan / dev-plan --driver <pagepath_find with -DPAGEPATH_FIX> --fix 1 --probe 1. The plans' sha256 are recorded with the fill, before any 4a read",
      "lm": "the LM Rubi ships by default for every tier (ocr_lm = 1000k: vocr6-lm's game-text h64 1 MB LM with its settings, alpha 600 / beta 2500 / BOS, #137 and Rubi #306, if merged by the fill; else ctclm.2 at Rubi's settings), via eval/vocr6_score.py read --lm --lm-opts; the cascade S -> N -> L as registered"
+    },
+    {
+     "n": 2,
+     "time": "this commit (see git log); before any score of S2r70, S2r30, S3attn, S3rep, S3gtc or S3long and before any combined or stage-4 run",
+     "why": "compute: a 45k recipe at every tier (Large ~18 h per run) and a separate N confirmation round put ~1.5 days on the critical path",
+     "budget": "stage 4 trains at 15,000 steps. R3all (stages.2.amendments[1]) is composed without S3long. If S3long is adopted over A15, stage 4c retrains the shipped recipe at 45,000 steps for every adopted tier (seed 1 with hval folded in, as 4b) and replaces the 4b blob in a follow-up release iff it is adopted over the 4b blob on the shipped path (decision.adopt, 4b as X, one pair; dev not resolved worse)",
+     "confirmation": "R3all's confirmation pair at N (seeds 1 and 3, plan v2, against A15) doubles as stage 4a's Normal runs: stage 4a's S and L runs (seeds 1-3) and N seed 2 start with it, on R3all's recipe. If the confirmation fails, the fallback recipe (stages.2.amendments[1]) is run at every tier as 4a, and the runs on R3all are reported only"
     }
    ]
   },

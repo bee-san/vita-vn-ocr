@@ -213,7 +213,8 @@
   "pcsg00807": "the test title's VN v18432 is a VOCR5 development-sample VN (4 dev lines; VOCR6's dev comparisons leave it out); no VOCR6 run trained on the title (test split) and the lm6 LMs hold no test-title text",
   "lm_ctclm2": "ctclm.2's 1 MB LM: its Jiten word list includes the scripts of CLANNAD, 7 of vita-test's 16 games and 1 of psp-test's 14 (their names removed; README, docs/ctc-lm-decode.md)",
   "lm_lm6": "the lm6 LMs add the hooked train titles' text (docs/vocr6-lm.md on #137): Little Busters!, planetarian, Collar x Malice among them; the Jiten caveat of ctclm.2 still holds",
-  "vocr5_dev_sample": "PCSG00576 (v12188) trains VOCR6 and is a development-sample VN (no protected set)"
+  "vocr5_dev_sample": "PCSG00576 (v12188) trains VOCR6 and is a development-sample VN (no protected set)",
+  "clannad_glyph_raster": "vocr6-lead's stage 4 final_test (eval/vocr6_protocol.json, feat/vocr6-t1-stages 7bdc052; vocr6-synth6's finding): two hooked train titles draw dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised, PCSG00620 Grisaia Spinout (1,696 lines) and PCSG00007 Little Busters! (878 lines): 39,447 glyphs of 1,201 characters; synth6 v3 draws it too (27 fonts, 4.06% of Vita crops). Every VOCR6 model trained on the hooked lines has seen CLANNAD's glyph raster: disclosed with every CLANNAD number"
  },
  "reported": {
   "headline": "per tier S / N / L: VOCR6 and VOCR5 dialogue CER with intervals and VOCR6 - VOCR5 with its paired interval, on CLANNAD (lines), vita-test + psp-test (fixed lines, pooled; whole dialogue at base) and the test title (clean lines; page path at base), path (b) first, then path (a)",
@@ -283,6 +284,15 @@
     "vocr6_final_test.py rubicheck (development data only: hooked hval and train regions of the train titles, a sample per title plus regions whose verified text holds a counter): path (b)'s finder and line read against Rubi's own host tool vjo-ocr (host/ocr_tool.c: vjo_vocr_ocr_policy, the game worker's job) built from Rubi main cbaa4e3, with the models, LM and finder that checkout pins (VOCR5's gated blobs, ctclm.2's 1 MB LM, fix 0), per tier S / N / L: boxes, dark flags, each line's text and the job's text",
     "paths.b.rubi_functions pins the sha256 of the Rubi functions the model stands for, from that checkout; rubi-path stops the final read if Rubi main's differ (review, rubicheck again, amend)",
     "rubi-path records Rubi main's VOCR5 pins instead of requiring them (path (b) reads the protocol's gated VOCR5 blobs)"
+   ]
+  },
+  {
+   "n": 4,
+   "time": "this commit (see git log); before any path (b) read and before the final read",
+   "why": "vocr6-lead added a CLANNAD exposure to stage 4's final_test seen flags (feat/vocr6-t1-stages 7bdc052, stage 4 amendment 4: lm6.2 carries lm6.1's 1 MB bytes, so path (b)'s LM pin stands); and #134 put a shorter eval/vocr6_score.py on main",
+   "changes": [
+    "seen_flags.clannad_glyph_raster: disclosed with every CLANNAD number (the report prints every seen flag)",
+    "the selftest's reference scorer (eval/vocr6_score.py) is loaded from feat/vocr6-t1-stages fb077e7, the version the recorded selftest read (sha256 808b49ee...), whatever main holds; no read changes"
    ]
   }
  ]

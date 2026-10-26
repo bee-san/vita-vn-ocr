@@ -1449,6 +1449,17 @@ def pcell(p):
     return f"{p['delta']:+.2f}" + (f" [{p['ci95'][0]:+.2f}, {p['ci95'][1]:+.2f}]" if p.get("ci95") else "")
 
 
+SEEN_KEYS = {"clannad": ("all_models", "vocr6_training", "clannad", "clannad_glyph_raster"),
+             "vita_psp": ("all_models", "vocr6_training", "vita-test"),
+             "pcsg00807": ("all_models", "vocr6_training", "pcsg00807")}
+
+
+def seen_note(kind, lm=None):
+    """The seen flags a table carries (their keys in the protocol's seen_flags, printed in full at the end)."""
+    keys = list(SEEN_KEYS[kind]) + ([lm] if lm else [])
+    return " (seen flags: " + ", ".join(keys) + ")"
+
+
 def md_measure(title, tbl, stage, note=""):
     md = [f"**{title}**{note}", "", "| tier | VOCR5 | VOCR6 | VOCR6 - VOCR5 (points) |", "|---|---|---|---|"]
     for t in TIERS:
@@ -1485,26 +1496,30 @@ def markdown(rep, proto):
     if b:
         md += ["### Path (b): Rubi's shipped path", ""]
         md += md_measure("CLANNAD, 2,052 dialogue lines (the frozen line crops)", b["clannad_lines"]["dialogue"],
-                         "shipped")
+                         "shipped", seen_note("clannad", "lm_lm6"))
         md += md_measure("CLANNAD pages (Rubi's finder on the ROI; pages with a complete reference)",
-                         b["clannad_pages"]["dialogue"], "shipped")
+                         b["clannad_pages"]["dialogue"], "shipped", seen_note("clannad", "lm_lm6"))
         md += md_measure("vita-test + psp-test fixed lines, dialogue", b["vita_psp_fixed_lines"]["pooled|dialogue"],
-                         "shipped")
+                         "shipped", seen_note("vita_psp", "lm_lm6"))
         md += md_measure("vita-test + psp-test whole dialogue (base)",
-                         b["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "shipped")
-        md += md_measure("PCSG00807 clean lines", b["pcsg00807_clean"], "shipped")
-        md += md_measure("PCSG00807 page path (base regions)", b["pcsg00807_page"]["page|base"], "shipped")
+                         b["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "shipped",
+                         seen_note("vita_psp", "lm_lm6"))
+        md += md_measure("PCSG00807 clean lines", b["pcsg00807_clean"], "shipped", seen_note("pcsg00807", "lm_lm6"))
+        md += md_measure("PCSG00807 page path (base regions)", b["pcsg00807_page"]["page|base"], "shipped",
+                         seen_note("pcsg00807", "lm_lm6"))
     a = rep["path_a"]
     md += ["### Path (a): VOCR5's locked path", ""]
-    md += md_measure("CLANNAD dialogue lines (greedy)", a["clannad_lines"]["dialogue"], "greedy")
+    md += md_measure("CLANNAD dialogue lines (greedy)", a["clannad_lines"]["dialogue"], "greedy", seen_note("clannad"))
     md += md_measure("vita-test + psp-test fixed lines, dialogue (greedy, console polarity)",
-                     a["vita_psp_fixed_lines"]["pooled|dialogue"], "greedy")
-    md += md_measure("the same with beam 8 + ctclm.2's 1 MB LM", a["vita_psp_fixed_lines"]["pooled|dialogue"], "lm")
+                     a["vita_psp_fixed_lines"]["pooled|dialogue"], "greedy", seen_note("vita_psp"))
+    md += md_measure("the same with beam 8 + ctclm.2's 1 MB LM", a["vita_psp_fixed_lines"]["pooled|dialogue"], "lm",
+                     seen_note("vita_psp", "lm_ctclm2"))
     md += md_measure("vita-test + psp-test whole dialogue (base, GRAD)", a["vita_psp_whole_dialogue"]
-                     ["pooled|base|dialogue"], "greedy")
-    md += md_measure("PCSG00807 clean lines (rubi_cascade)", a["pcsg00807"]["clean"], "rubi_cascade")
+                     ["pooled|base|dialogue"], "greedy", seen_note("vita_psp"))
+    md += md_measure("PCSG00807 clean lines (rubi_cascade)", a["pcsg00807"]["clean"], "rubi_cascade",
+                     seen_note("pcsg00807", "lm_ctclm2"))
     md += md_measure("PCSG00807 page GRAD + refine (base, rubi_cascade)", a["pcsg00807"]["page_refine_console_base"],
-                     "rubi_cascade")
+                     "rubi_cascade", seen_note("pcsg00807", "lm_ctclm2"))
     md += ["## Vita and PSP apart", ""]
     hdr = "| measure | tier | " + " | ".join(f"{s} VOCR5 | {s} VOCR6 | {s} Δ" for s in ("vita-test", "psp-test")) + \
           " |"
@@ -1623,17 +1638,21 @@ def selftest_finder(src_dir, out_dir, plan_path, pages, limit=0):
             "plan_driver_sha256": plan["driver_sha256"], "driver": meta}
 
 
-def t1_module(name, work, ref="origin/feat/vocr6-t1-stages"):
-    """A module of vocr6-lead's T1 kit (eval/<name>.py on feat/vocr6-t1-stages, not on main), loaded from a copy in
-    work (the selftest's reference implementation only)."""
+T1_SCORER = {"commit": "fb077e7", "branch": "feat/vocr6-t1-stages",
+             "sha256": "808b49eedb97446ea76867a7beb2d2f14609680b0f19aa7eabdd7ad4afd7c3bb"}
+
+
+def t1_module(name, work, pin=T1_SCORER):
+    """vocr6-lead's T1 scorer eval/<name>.py at the commit the recorded selftest read (feat/vocr6-t1-stages fb077e7:
+    its stage-4 cascade; main's #134 version has none), copied into work and checked by sha256: the selftest's
+    reference implementation only."""
     import importlib.util
-    if (ROOT / "eval" / f"{name}.py").exists():
-        path = ROOT / "eval" / f"{name}.py"
-    else:
-        subprocess.run(["git", "fetch", "-q", "origin", ref.split("/", 1)[1]], cwd=ROOT, capture_output=True)
-        path = Path(work) / f"{name}.py"
-        path.write_bytes(subprocess.run(["git", "show", f"{ref}:eval/{name}.py"], cwd=ROOT, capture_output=True,
-                                        check=True).stdout)
+    subprocess.run(["git", "fetch", "-q", "origin", pin["branch"]], cwd=ROOT, capture_output=True)
+    path = Path(work) / f"{name}.py"
+    path.write_bytes(subprocess.run(["git", "show", f"{pin['commit']}:eval/{name}.py"], cwd=ROOT, capture_output=True,
+                                    check=True).stdout)
+    if sha256(path) != pin["sha256"]:
+        raise SystemExit(f"{name}.py at {pin['commit']} is not the pinned reference")
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

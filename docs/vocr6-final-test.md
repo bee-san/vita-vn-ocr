@@ -5,9 +5,9 @@ read once, after every VOCR6 choice, with VOCR5 beside them, on the protected se
 frozen references and the hooked test title PCSG00807 (Dance with Devils). The read reports; it chooses nothing.
 Every number is a host measurement. Nothing ran on a console.
 
-- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae), with three
-  amendments made before any read of the path they touch: robustness (91cd103), path (b)'s LM (51dd0a6), and the check
-  of path (b) against Rubi's own code (f289ea5). The hashes are those of the original commits (tag
+- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae), with four
+  amendments made before any read of the path they touch: robustness (91cd103), path (b)'s LM (51dd0a6), the check
+  of path (b) against Rubi's own code (f289ea5), and the CLANNAD glyph-raster disclosure (amendment 4). The hashes are those of the original commits (tag
   `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
@@ -105,6 +105,10 @@ Filled in by the final read: `eval/vocr6_final_test_<date>.json` and the tables 
 - VOCR6 trained on the hooked train titles, and their text is in the lm6 LM. Three of them relate to protected sets:
   - Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited- (v21789);
   - Little Busters! (PCSG00007) and planetarian (ULJM05383) share the Key 10th Memorial BOX with CLANNAD.
+- CLANNAD's glyph raster: two hooked train titles, PCSG00620 Grisaia Spinout and PCSG00007 Little Busters!, draw
+  dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised (39,447 glyphs of 1,201 characters), and
+  synth6 v3 draws it too. So every VOCR6 model has seen CLANNAD's glyph raster (vocr6-lead's stage-4 seen flag,
+  vocr6-synth6's finding).
 - ctclm.2's Jiten word list includes CLANNAD's script and those of 7 vita-test and 1 psp-test games.
 - PCSG00807 (v18432) is a VOCR5 development-sample VN. No VOCR6 run trained on it, and no LM holds its text.
 

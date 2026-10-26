@@ -300,9 +300,18 @@ def normed(texts):
     return {k: norm(v) for k, v in texts.items()}
 
 
+DEV_OVERRIDE = {}          # tier -> a dev-cache pickle of another blob (--dev-cache T=FILE; VOCR6's logits)
+
+
 def dev_reads(tier):
-    """[(row key, read)] of the head gate's development cache, arm today (the release blob's own reads)."""
+    """[(row key, read)] of the head gate's development cache, arm today (the release blob's own reads), or of a
+    dev-cache file for another blob (DEV_OVERRIDE)."""
     import headgate_eval as HE
+    if tier in DEV_OVERRIDE:
+        d = pickle.loads(Path(DEV_OVERRIDE[tier]).read_bytes())
+        if d["blob_sha256"] != sha256(BLOBS[tier]):
+            raise SystemExit(f"{DEV_OVERRIDE[tier]}: read another blob than {BLOBS[tier]}")
+        return d["reads"], d["meta"]
     c = HE.load_cache(DEV_CACHE, tier)
     fixed = HE.fixed_rows()
     keys = HE.row_keys(c["keys"], fixed)
@@ -669,6 +678,87 @@ def cmd_select(a):
                         **{f"in_{m}": err(m, choice[None]) for m in ("N", "S", "L")})
     print(json.dumps({"tier": a.tier, "chosen": out["chosen"]["in_sample"], "rule": rule,
                       "N": {k: out["models"]["N"][k] for k in ("incumbent", "cv", "in_sample")}}, ensure_ascii=False))
+
+
+def settings_report(units, greedy, errs, configs, ref=None, key="N|none"):
+    """Another recognizer's LM settings (VOCR6's logits; not part of the protocol's decision). greedy: {seed: unit
+    errors}; errs: {seed: configs x unit errors} of one LM over one grid; ref: a config of the grid (the VOCR5-tuned
+    setting). The setting minimising the objective averaged over the seeds, in-sample and 2-fold cross-validated on
+    the protocol's folds (each fold scored by the other fold's choice; the first minimum in grid order); per seed its
+    scores and its paired intervals against greedy and against ref; and per alpha the in-sample best."""
+    sc = Scorer(units)
+    U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    seeds = sorted(errs)
+
+    def mean_obj(fold):
+        return np.mean([sc.scores(errs[s], fold=fold)["obj"] for s in seeds], axis=0)
+
+    pick = {f: int(np.argmin(mean_obj(f))) for f in (0, 1, None)}
+    out = {"key": key, "seeds": seeds, "configs": len(configs),
+           "chosen": {"fold0": configs[pick[0]], "fold1": configs[pick[1]], "in_sample": configs[pick[None]]},
+           "ref": ref, "per_seed": {}, "by_alpha": {}}
+    j_ref = configs.index(ref) if ref in configs else None
+    for s in seeds:
+        g = greedy[s]
+        e_in = errs[s][pick[None]]
+        e_cv = np.where(sc.fold == 0, errs[s][pick[1]], errs[s][pick[0]])
+        rep = {"greedy": rounded(sc.scores(g)), "in_sample": rounded(sc.scores(e_in)), "cv": rounded(sc.scores(e_cv)),
+               "cv_minus_greedy": compare(U, g, e_cv), "in_sample_minus_greedy": compare(U, g, e_in)}
+        if j_ref is not None:
+            e_ref = errs[s][j_ref]
+            rep["ref"] = rounded(sc.scores(e_ref))
+            rep["ref_minus_greedy"] = compare(U, g, e_ref)
+            rep["cv_minus_ref"] = compare(U, e_ref, e_cv)
+        out["per_seed"][s] = rep
+    allm = mean_obj(None)
+    hc = np.mean([sc.scores(errs[s])["hc"] for s in seeds], axis=0)
+    for al in sorted({c["alpha"] for c in configs}):
+        js = [j for j, c in enumerate(configs) if c["alpha"] == al]
+        j = js[int(np.argmin(allm[js]))]
+        out["by_alpha"][str(al)] = {"config": configs[j], "obj": round(float(allm[j]), 4), "hc": round(float(hc[j]), 4)}
+    return out
+
+
+def cmd_blob_report(a):
+    """settings_report over tune runs of one recognizer's seeds: --run SEED=DIR (each DIR holds greedy.npz and one
+    <lm>.npz per --lm NAME[:alpha,beta,flags], the ref setting)."""
+    runs = dict(r.split("=", 1) for r in a.run)
+    out = {"kind": "vocr6-lm-blob-settings", "schema": 1, "created": utc_now(), "key": a.key, "runs": {}, "lms": {}}
+    greedy, units = {}, None
+    for s, d in runs.items():
+        meta, e = load_tune(Path(d) / "greedy.npz", {a.key})
+        units = units or meta["units"]
+        if meta["units"] != units:
+            raise SystemExit(f"{d}: other units")
+        greedy[s] = e[a.key][0]
+        out["runs"][s] = {"dir": str(d), "blobs": meta["blobs"]}
+    for spec in a.lm:
+        name, _, r = spec.partition(":")
+        ref = None
+        if r:
+            al, be, fl = (int(x) for x in r.split(","))
+            ref = {"alpha": al, "beta": be, "flags": fl, "gate": 8000, "bracket": 8000}
+        errs, cfgs, lm_sha = {}, None, None
+        for s, d in runs.items():
+            meta, e = load_tune(Path(d) / f"{name}.npz", {a.key})
+            if meta["units"] != units:
+                raise SystemExit(f"{d}/{name}.npz: other units")
+            cfgs = cfgs or meta["configs"]
+            if meta["configs"] != cfgs:
+                raise SystemExit(f"{name}: the seeds' grids differ")
+            lm_sha = meta["lm_sha256"]
+            errs[s] = e[a.key]
+        out["lms"][name] = {"lm_sha256": lm_sha, **settings_report(units, greedy, errs, cfgs, ref, a.key)}
+    Path(a.out).write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    ks = ("hc", "hp", "dev", "obj")
+    for name, r in out["lms"].items():
+        ps = r["per_seed"]
+        print(json.dumps({"lm": name, "in_sample": r["chosen"]["in_sample"],
+                          "cv": {s: {k: ps[s]["cv"][k] for k in ks} for s in ps},
+                          "greedy": {s: {k: ps[s]["greedy"][k] for k in ks} for s in ps},
+                          "ref": {s: {k: ps[s].get("ref", {}).get(k) for k in ks} for s in ps}}), flush=True)
 
 
 def cmd_families(a):
@@ -1175,8 +1265,39 @@ def cmd_hval_cache(a):
     reads = [(k, res[k]) for k, _, _ in jobs]
     doc = {"tier": a.tier, "blob": BLOBS[a.tier].name, "blob_sha256": sha256(BLOBS[a.tier]), "reads": reads,
            "seconds": round(time.time() - t0, 1), "created": utc_now()}
-    (d / f"reads_{a.tier}.pkl").write_bytes(pickle.dumps(doc, protocol=4))
+    tag = READS_TAG.get(a.tier)
+    (d / (f"reads_{a.tier}.{tag}.pkl" if tag else f"reads_{a.tier}.pkl")).write_bytes(pickle.dumps(doc, protocol=4))
     print(json.dumps({k: doc[k] for k in ("tier", "blob_sha256", "seconds")} | {"reads": len(reads)}), flush=True)
+
+
+def _dwork(job):
+    k, img, inv = job
+    o = _R["rt"].run_topk(img, K, invert=inv)
+    return k, {x: o[x] for x in ("text", "topv", "topc", "blank", "conf_min", "frames")}
+
+
+def cmd_dev_cache(a):
+    """One blob's reads of VOCR5's development cohorts, exactly the head gate cache's reads (eval/headgate_eval.py
+    fixed_rows, wd_lines, reads: tv/dn as stored and with the inversion undone, wd's lines through the C GRAD finder
+    and the refinement), keyed as dev_reads() keys them; for another recognizer's logits (VOCR6's)."""
+    import headgate_eval as HE
+    t0 = time.time()
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fixed = HE.fixed_rows()
+    wd, ident, flags = HE.wd_lines(out.parent / "build")
+    rd = HE.reads(fixed, wd)
+    keys = HE.row_keys([k for k, _, _ in rd], fixed)
+    jobs = [(i, img, inv) for i, (_, img, inv) in enumerate(rd)]
+    with mp.get_context("fork").Pool(a.procs, initializer=_rinit, initargs=(BLOBS[a.tier],)) as pool:
+        res = dict(pool.imap_unordered(_dwork, jobs, chunksize=16))
+    doc = {"tier": a.tier, "blob": str(BLOBS[a.tier]), "blob_sha256": sha256(BLOBS[a.tier]),
+           "reads": [(keys[i], res[i]) for i in range(len(rd))],
+           "meta": {"reads": len(rd), "finder": {k: v for k, v in ident.items() if k != "driver"}, "flags": flags},
+           "seconds": round(time.time() - t0, 1), "created": utc_now()}
+    out.write_bytes(pickle.dumps(doc, protocol=4))
+    print(json.dumps({"tier": a.tier, "blob_sha256": doc["blob_sha256"], "reads": len(rd), "seconds": doc["seconds"]}),
+          flush=True)
 
 
 def hval_load(d, tiers):
@@ -1185,11 +1306,30 @@ def hval_load(d, tiers):
     units = [Unit(*st) for st in pickle.loads((d / "units.pkl").read_bytes())]
     reads = {}
     for t in tiers:
-        c = pickle.loads((d / f"reads_{t}.pkl").read_bytes())
+        f = d / f"reads_{t}.pkl"
+        tag = READS_TAG.get(t)
+        if tag:
+            f = d / f"reads_{t}.{tag}.pkl"
+        c = pickle.loads(f.read_bytes())
         if c["blob_sha256"] != sha256(BLOBS[t]):
-            raise SystemExit(f"{d}: tier {t} read another blob")
+            raise SystemExit(f"{f}: tier {t} read another blob than {BLOBS[t]}")
         reads[t] = c["reads"]
     return units, reads
+
+
+READS_TAG = {}            # tier -> the tag of its hval reads file when BLOBS[tier] is overridden (--blob)
+
+
+def set_blobs(specs, dev_caches=()):
+    """--blob T=PATH (another recognizer as tier T: its hval reads are reads_T.<blob stem>.pkl) and --dev-cache
+    T=FILE (its dev reads, dev-cache)."""
+    for spec in specs or ():
+        t, _, path = spec.partition("=")
+        BLOBS[t] = Path(path)
+        READS_TAG[t] = Path(path).stem
+    for spec in dev_caches or ():
+        t, _, path = spec.partition("=")
+        DEV_OVERRIDE[t] = path
 
 
 def main():
@@ -1205,6 +1345,17 @@ def main():
     p.add_argument("--tier", required=True)
     p.add_argument("--dir", required=True)
     p.add_argument("--procs", type=int, default=5)
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p = sub.add_parser("blob-report")
+    p.add_argument("--run", action="append", required=True, help="SEED=DIR of one seed's tune runs")
+    p.add_argument("--lm", action="append", required=True, help="NAME[:alpha,beta,flags] (the reference setting)")
+    p.add_argument("--key", default="N|none")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("dev-cache")
+    p.add_argument("--tier", required=True)
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--procs", type=int, default=5)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("tune")
     p.add_argument("--lm", required=True, help="NAME=PATH (NAME=none: greedy)")
     p.add_argument("--grid", default=json.dumps({"alpha": [500], "beta": [3500]}))
@@ -1213,6 +1364,8 @@ def main():
     p.add_argument("--hval-cache")
     p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
     p.add_argument("--both", action="store_true", help="with --rubi: the original path's errors too (raw:<tier>)")
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--dev-cache", action="append", default=[], help="T=FILE: its dev reads (dev-cache)")
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("screen")
@@ -1270,9 +1423,10 @@ def main():
                    help="shown: Rubi's display rules (amendment 1; the decision); raw: the original line path")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    cmds = {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
-            "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families, "summary": cmd_summary,
-            "checks": cmd_checks, "tables": cmd_tables}
+    set_blobs(getattr(a, "blob", None), getattr(a, "dev_cache", None))
+    cmds = {"tune": cmd_tune, "dev-cache": cmd_dev_cache, "screen": cmd_screen, "hval-units": cmd_hval_units,
+            "hval-cache": cmd_hval_cache, "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families,
+            "summary": cmd_summary, "checks": cmd_checks, "tables": cmd_tables, "blob-report": cmd_blob_report}
     cmds[a.cmd](a)
 
 

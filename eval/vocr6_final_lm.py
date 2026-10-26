@@ -526,9 +526,10 @@ def cmd_select(a):
             r = tier_select(sc, U, E, Kk, cs_idx, cs_units, tier, cfgs, ship_j, thrs, cells, ship_cell,
                             set(E["b"]), casc_ship)
             ship_thr = casc_ship if tier != "L" else "none"
-            g = E["g"][f"{tier}|{ship_thr}"][0] if "g" in E else None
-            if g is not None:
+            if "g" in E:                                # the recognizer alone (#127's greedy), and with its cascade
+                g = E["g"][f"{tier}|none"][0]
                 r["greedy"] = V.rounded(sc.scores(g))
+                r["greedy_cascade"] = V.rounded(sc.scores(E["g"][f"{tier}|{ship_thr}"][0]))
                 r["shipped_minus_greedy"] = V.compare(U, g, E["b"][f"{tier}|{ship_thr}"][ship_j])
             jb, tb = r["b"]["_choice"][2]
             e_in = E["b"][f"{tier}|{tb}"][jb]
@@ -620,6 +621,73 @@ def cmd_continuity(a):
     print(json.dumps(out["arms"]), flush=True)
 
 
+# ---------------------------------------------------------------- summary (result.json, tables)
+
+def _pt(c):
+    return f"{c['delta_points']:+.3f} ({c['ci95'][0]:+.3f} to {c['ci95'][1]:+.3f})"
+
+
+def summarise(sel):
+    """The compact record (result.json) and markdown tables of a select output."""
+    res = {"kind": "vocr6-final-lm-summary", "schema": 1, "created": utc_now(), "protocol_sha256":
+           sel["protocol_sha256"], "decisions": sel["decisions"], "blobs": {}, "jobs": {}}
+    md = ["| tier | LM | decision | shipped: obj / hp / hc / dev | b (CV) - shipped, objective | b chosen (in-sample) "
+          "| b guards: hp / hc / dev | c (CV) - shipped, objective | c chosen |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    cs = ["| tier | LM | arm | counters kept (of 3,969) | counter-set CER | kept share - shipped | CER - shipped |",
+          "|---|---|---|---:|---:|---|---|"]
+    for lt, rec in sel["lm_tiers"].items():
+        for t, b in rec["tiers"].items():
+            res["blobs"][t] = {k: b[k] for k in ("blob", "blob_sha256", "hval_reader", "hval_reader_sha256")}
+        for tier, r in rec["jobs"].items():
+            sh, rb, rc = r["b"]["shipped"], r["b"], r["c"]
+            cb, cc = rb["cv_minus_shipped"], rc["cv_minus_shipped"]
+            d = sel["decisions"][tier][lt]
+            res["jobs"].setdefault(tier, {})[lt] = {
+                "decision": d, "greedy": r.get("greedy"), "shipped": sh,
+                "b": {"chosen": rb["chosen"], "cv": rb["cv"], "cv_minus_shipped": cb, "rule": rb["rule"],
+                      "counter": rb["counter"], "workspace_bytes": rb["workspace_bytes"]},
+                "c": {"chosen": rc["chosen"], "cv": rc["cv"], "cv_minus_shipped": cc, "rule": rc["rule"],
+                      "counter": rc["counter"],
+                      "cells": {k: {"objective": v["objective"], "counter_kept": v["counter_kept"],
+                                    "counter_cer": v["counter_cer"]} for k, v in rc["cells"].items()}},
+                "counter_edits_shipped": rec["counter_edits"][tier]["shipped"],
+                "check_shipped_twice_equal": r["check_shipped_twice_equal"]}
+            ch = rb["chosen"]["in_sample"]
+            c0 = ch["config"]
+            fl = "|".join(n for bit, n in ((1, "BOS"), (2, "EOS")) if c0["flags"] & bit) or "0"
+            arm = "" if d["arm"] == "keep" else f" ({d['arm']})"
+            mark = " (shipped)" if ch["is_shipped"] else ""
+            casc = "" if ch["cascade_conf"] == "none" else f" c{ch['cascade_conf']}"
+            ci_, co_ = rc["chosen"]["in_sample"]
+            md.append(f"| {tier} | {lt} | {d['decision']}{arm} | "
+                      f"{sh['obj']:.3f} / {sh['hp']:.3f} / {sh['hc']:.3f} / {sh['dev']:.3f} | {_pt(cb['obj'])} | "
+                      f"a{c0['alpha']} b{c0['beta']} {fl}{casc}{mark}"
+                      f" | {_pt(cb['hp'])} / {_pt(cb['hc'])} / {_pt(cb['dev'])} | {_pt(cc['obj'])} | {ci_}/{co_} |")
+            k = rb["counter"]
+            e0, e1 = (100 * k["errors"][i] / k["chars"] for i in (0, 1))
+            cs.append(f"| {tier} | {lt} | shipped | {k['kept'][0]:,} | {e0:.3f}% | – | – |")
+            cs.append(f"| {tier} | {lt} | b (in-sample) | {k['kept'][1]:,} | {e1:.3f}% | "
+                      f"{_pt(k['kept_share'])} | {_pt(k['cer'])} |")
+            k = rc["counter"]
+            e1 = 100 * k["errors"][1] / k["chars"]
+            cs.append(f"| {tier} | {lt} | c (in-sample {ci_}/{co_}) | {k['kept'][1]:,} | {e1:.3f}% | "
+                      f"{_pt(k['kept_share'])} | {_pt(k['cer'])} |")
+    return res, "\n".join(md) + "\n\n" + "\n".join(cs) + "\n"
+
+
+def cmd_summary(a):
+    import finder_tighten as FT
+    sel = json.loads(Path(a.select).read_text(encoding="utf-8"))
+    res, md = summarise(sel)
+    res["select_sha256"] = sha256(a.select)
+    FT.assert_public(res)
+    Path(a.out).write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    if a.md:
+        Path(a.md).write_text(md, encoding="utf-8")
+    print(json.dumps(res["decisions"], ensure_ascii=False), flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -653,8 +721,13 @@ def main():
     p.add_argument("--synth", default=str(SYNTH))
     p.add_argument("--lm", action="append", required=True, help="NAME:PATH:ALPHA:BETA:FLAGS")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("summary")
+    p.add_argument("--select", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--md")
     a = ap.parse_args()
-    {"counter-cache": cmd_counter_cache, "tune": cmd_tune, "select": cmd_select, "continuity": cmd_continuity}[a.cmd](a)
+    {"counter-cache": cmd_counter_cache, "tune": cmd_tune, "select": cmd_select, "continuity": cmd_continuity,
+     "summary": cmd_summary}[a.cmd](a)
 
 
 if __name__ == "__main__":

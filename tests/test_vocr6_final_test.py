@@ -168,6 +168,33 @@ def test_resolve_lm_matches_a_candidate(tmp_path, monkeypatch):
         F.resolve_lm(other, proto)
 
 
+def test_pinned_lm_amendment_2(tmp_path):
+    """Path (b)'s LM is pinned (amendment 2): the candidate's file and the release's settings.json must agree."""
+    proto = json.loads(json.dumps(PROTO))
+    pin = proto["paths"]["b"]["lm"]
+    assert pin["candidate"] == "lm6_1000k" and pin["settings_tier"] == "1000k"
+    c = proto["paths"]["b"]["lm_candidates"]["lm6_1000k"]
+    assert c["settings"] == {"beam": 8, "topk": 8, "alpha": 600, "beta": 2500, "gate": 8000, "flags": 1,
+                             "bracket": 8000}
+    lm = tmp_path / "lm.vlm"
+    lm.write_bytes(b"lm")
+    c["file"], c["sha256"] = str(lm), F.sha256(lm)
+    st = {"tiers": {"1000k": {"sha256": c["sha256"], "config": dict(c["settings"]), "cascade_conf": 700}}}
+    sj = tmp_path / "settings.json"
+    sj.write_text(json.dumps(st))
+    pin["settings_json"], pin["settings_json_sha256"] = str(sj), F.sha256(sj)
+    got = F.pinned_lm(proto)
+    assert got["sha256"] == c["sha256"] and got["settings"]["flags"] == 1 and got["settings"]["alpha"] == 600
+    st["tiers"]["1000k"]["config"]["beta"] = 3500
+    sj.write_text(json.dumps(st))
+    pin["settings_json_sha256"] = F.sha256(sj)
+    with pytest.raises(SystemExit):
+        F.pinned_lm(proto)
+    sha, settings = F.rubi_lm(RUBI_LMS_306)
+    assert sha == PROTO["paths"]["b"]["lm_candidates"]["lm6_1000k"]["sha256"] and settings == {
+        "beam": 8, "topk": 8, "gate": 8000, "bracket": 8000, "beta": 2500, "alpha": 600, "flags": 1}
+
+
 def test_vocr_pins_and_defines():
     cmake = ("set(VJO_VOCR_COMMIT " + "a" * 40 + ")\nset(_vocr_pins\n  vocr.c " + "b" * 64 + "\n  vocr_lines_fix.c "
              + "c" * 64 + ")\n")

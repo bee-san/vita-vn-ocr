@@ -189,6 +189,9 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
 - **Why gate 0.** At gate 0, z' = z exactly, so the gate and the escape skip and fire on the same frames (the texts of
   all 24 lines are identical). The difference is the op's own cost. Its arithmetic does not depend on its weights'
   values.
+- **Runtime measured.** `vocr.c` `b2509902…` (the record's `vocr_c_sha256`). The later commits change only `plan()`'s
+  overflow checks and a comment, which no frame runs (the auditor's re-run of one pair gave identical per-phase
+  counts, apart from 64-187 instructions of integer division in the setup phase).
 - **Projection.** The scores and weighted sums cost T per frame. Their phase is projected from the pack's lines
   (Σ T² = 108,719) to the nominal box's 3 lines of 80 frames. The nominal box is 240 frames plus 0.1 s for the finder.
 

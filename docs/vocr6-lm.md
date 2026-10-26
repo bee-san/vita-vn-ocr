@@ -434,8 +434,24 @@ for ctclm.2's LM and the shipped one (alpha 0.6, beta 2.5, BOS) for the game-tex
   run repeats per recognizer in 10-15 minutes in one heavy slot (Reproduce). It is to be run on the final
   S/N/L blobs before they are pinned, and with the 0.5 and 2 MB LMs.
 - **For the 1% target.** Rubi's display rules alone cost 0.14 points of hval clean-line CER, on lines that carry no
-  word to look up. Keeping punctuation-only lines in the Shell's filter is a display choice for Rubi; box borders
-  are handled by the border rule, not the filter.
+  word to look up.
+- **Keeping those lines (display arm P1, pre-registered; report and decision):** the Shell's filter also keeps a
+  line whose characters, spaces ignored, are all in `…―ー！？!?「」『』、。・～〜` and number at least 2. On identical
+  decodes (the 1 MB game-text LM at its shipped setting), P1 − today:
+  - VOCR5-N + cascade: clean lines −0.092 (−0.155 to −0.035), page path −0.046 (−0.107 to −0.001), dev score
+    0.000, objective −0.023 (−0.053 to −0.000). VOCR5-S + cascade and VOCR5-L move the same way.
+  - VOCR6 runs: clean lines −0.09 and page path −0.05 to −0.06 for each. Dev score +0.002 to +0.026, not resolved,
+    for three of them. For A15 seed 1 it is +0.054 (+0.005 to +0.126), resolved worse: dev whole dialogue +0.108
+    (+0.010 to +0.251), 13 units worse. That recognizer reads some box decorations as punctuation-only lines,
+    which P1 keeps.
+  - The pre-registered rule asks that no run be resolved worse on dev, so P1 is not adopted. Rubi's filter stays as
+    it is. A narrower arm (for instance, keep such a line only beside a Japanese line of the same job) needs its own
+    pre-registration.
+- **Counter lines (reported by vocr6-rubi-ship on Rubi #306).** On #109's synthetic counter set (VOCR5-N), the
+  1 MB game-text LM at its new setting keeps 3,015 counters, against 3,104 with ctclm.2 at Rubi's old setting, and
+  its CER is 3.78% against 3.60%. The loss is mostly on crops cut at the edge. A crafted `ルッ月` line reads 九月
+  instead of 九ヶ月. The dev lines are level. The VOCR6 pass on the final S/N/L blobs adds this set as a
+  not-resolved-worse guard, and checks the counter re-decode thresholds (6 / 4 nats) on VOCR6 logits.
 
 ## For Rubi
 

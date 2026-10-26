@@ -5037,5 +5037,677 @@
     }
    }
   }
+ },
+ "display_arm_p1": {
+  "preregistered": "2026-10-26T17:44:48Z (vocr6/experiments.jsonl)",
+  "keep": "a line whose characters, spaces ignored, are all in …―ー！？!?「」『』、。・～〜 and number >= 2",
+  "decision": "not adopted: rule (c) fails on A15 seed 1 (dev score resolved worse)",
+  "runs": {
+   "vocr5": {
+    "kind": "vocr6-lm-display-arm",
+    "schema": 1,
+    "created": "2026-10-26T19:38:18Z",
+    "arm": "P1 keep punctuation-only lines",
+    "lm": "h64_1000k.vlm",
+    "lm_sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+    "config": {
+     "alpha": 600,
+     "beta": 2500,
+     "flags": 1,
+     "gate": 8000,
+     "bracket": 8000
+    },
+    "cascade_conf": 700,
+    "blobs": {
+     "S": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+     "N": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+     "L": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+    },
+    "name": "VOCR5 S/N/L",
+    "models": {
+     "S+cascade": {
+      "X": {
+       "tv": 0.7389,
+       "dn": 0.6734,
+       "wd": 5.5857,
+       "hc": 0.5231,
+       "hp": 3.3911,
+       "dev": 3.1459,
+       "obj": 3.2685
+      },
+      "Y": {
+       "tv": 0.7389,
+       "dn": 0.6734,
+       "wd": 5.5897,
+       "hc": 0.433,
+       "hp": 3.3578,
+       "dev": 3.1479,
+       "obj": 3.2529
+      },
+      "units_changed": 37,
+      "units_better": 36,
+      "units_worse": 1,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0039,
+        "ci95": [
+         0.0,
+         0.0132
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0901,
+        "ci95": [
+         -0.1517,
+         -0.034
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0332,
+        "ci95": [
+         -0.0807,
+         -0.0035
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.002,
+        "ci95": [
+         0.0,
+         0.0066
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0156,
+        "ci95": [
+         -0.0394,
+         -0.0006
+        ]
+       }
+      }
+     },
+     "N+cascade": {
+      "X": {
+       "tv": 0.5414,
+       "dn": 0.5113,
+       "wd": 5.2118,
+       "hc": 0.4036,
+       "hp": 3.2477,
+       "dev": 2.8691,
+       "obj": 3.0584
+      },
+      "Y": {
+       "tv": 0.5414,
+       "dn": 0.5113,
+       "wd": 5.2118,
+       "hc": 0.3115,
+       "hp": 3.2018,
+       "dev": 2.8691,
+       "obj": 3.0354
+      },
+      "units_changed": 45,
+      "units_better": 42,
+      "units_worse": 3,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0921,
+        "ci95": [
+         -0.155,
+         -0.0346
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0459,
+        "ci95": [
+         -0.1067,
+         -0.0006
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0229,
+        "ci95": [
+         -0.0534,
+         -0.0003
+        ]
+       }
+      }
+     },
+     "L": {
+      "X": {
+       "tv": 0.535,
+       "dn": 0.4552,
+       "wd": 5.1803,
+       "hc": 0.3899,
+       "hp": 3.2249,
+       "dev": 2.8377,
+       "obj": 3.0313
+      },
+      "Y": {
+       "tv": 0.535,
+       "dn": 0.4552,
+       "wd": 5.1803,
+       "hc": 0.2978,
+       "hp": 3.1732,
+       "dev": 2.8377,
+       "obj": 3.0054
+      },
+      "units_changed": 46,
+      "units_better": 42,
+      "units_worse": 4,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0921,
+        "ci95": [
+         -0.155,
+         -0.0346
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0517,
+        "ci95": [
+         -0.1199,
+         0.0
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0259,
+        "ci95": [
+         -0.06,
+         0.0
+        ]
+       }
+      }
+     }
+    }
+   },
+   "S2cils1": {
+    "kind": "vocr6-lm-display-arm",
+    "schema": 1,
+    "created": "2026-10-26T19:38:22Z",
+    "arm": "P1 keep punctuation-only lines",
+    "lm": "h64_1000k.vlm",
+    "lm_sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+    "config": {
+     "alpha": 600,
+     "beta": 2500,
+     "flags": 1,
+     "gate": 8000,
+     "bracket": 8000
+    },
+    "cascade_conf": 700,
+    "blobs": {
+     "N": "5bd6332641b6f1520b3229fcac5324a6f83b20d47b77b7b1980e9b682c2ce012"
+    },
+    "name": "S2cils1",
+    "models": {
+     "N": {
+      "X": {
+       "tv": 0.6624,
+       "dn": 0.6485,
+       "wd": 5.4381,
+       "hc": 0.3585,
+       "hp": 3.3923,
+       "dev": 3.0468,
+       "obj": 3.2195
+      },
+      "Y": {
+       "tv": 0.6624,
+       "dn": 0.6485,
+       "wd": 5.4893,
+       "hc": 0.2664,
+       "hp": 3.3449,
+       "dev": 3.0724,
+       "obj": 3.2086
+      },
+      "units_changed": 62,
+      "units_better": 57,
+      "units_worse": 5,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0512,
+        "ci95": [
+         0.0,
+         0.1364
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0921,
+        "ci95": [
+         -0.1548,
+         -0.0347
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0474,
+        "ci95": [
+         -0.1028,
+         -0.0053
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.0256,
+        "ci95": [
+         0.0,
+         0.0682
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0109,
+        "ci95": [
+         -0.0426,
+         0.0189
+        ]
+       }
+      }
+     }
+    }
+   },
+   "S2cils3": {
+    "kind": "vocr6-lm-display-arm",
+    "schema": 1,
+    "created": "2026-10-26T19:38:26Z",
+    "arm": "P1 keep punctuation-only lines",
+    "lm": "h64_1000k.vlm",
+    "lm_sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+    "config": {
+     "alpha": 600,
+     "beta": 2500,
+     "flags": 1,
+     "gate": 8000,
+     "bracket": 8000
+    },
+    "cascade_conf": 700,
+    "blobs": {
+     "N": "6d15fecfd459ddd0438818eacd9fde9ce2ecef74a1fc9474de9df04c88b0662a"
+    },
+    "name": "S2cils3",
+    "models": {
+     "N": {
+      "X": {
+       "tv": 0.7707,
+       "dn": 0.7358,
+       "wd": 5.6172,
+       "hc": 0.3448,
+       "hp": 3.4957,
+       "dev": 3.1852,
+       "obj": 3.3405
+      },
+      "Y": {
+       "tv": 0.7707,
+       "dn": 0.7358,
+       "wd": 5.629,
+       "hc": 0.2527,
+       "hp": 3.4385,
+       "dev": 3.1911,
+       "obj": 3.3148
+      },
+      "units_changed": 52,
+      "units_better": 48,
+      "units_worse": 4,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0118,
+        "ci95": [
+         0.0,
+         0.0396
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0921,
+        "ci95": [
+         -0.155,
+         -0.0346
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0572,
+        "ci95": [
+         -0.1253,
+         -0.0058
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.0059,
+        "ci95": [
+         0.0,
+         0.0198
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0257,
+        "ci95": [
+         -0.0607,
+         0.0006
+        ]
+       }
+      }
+     }
+    }
+   },
+   "A15s1": {
+    "kind": "vocr6-lm-display-arm",
+    "schema": 1,
+    "created": "2026-10-26T19:38:30Z",
+    "arm": "P1 keep punctuation-only lines",
+    "lm": "h64_1000k.vlm",
+    "lm_sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+    "config": {
+     "alpha": 600,
+     "beta": 2500,
+     "flags": 1,
+     "gate": 8000,
+     "bracket": 8000
+    },
+    "cascade_conf": 700,
+    "blobs": {
+     "N": "e1a54fb5cc1f39518a0d096d4ce79777a4ff3f62700981950fb8e55a3e462fcc"
+    },
+    "name": "A15s1",
+    "models": {
+     "N": {
+      "X": {
+       "tv": 0.7134,
+       "dn": 0.6796,
+       "wd": 5.5228,
+       "hc": 0.3389,
+       "hp": 3.3341,
+       "dev": 3.1096,
+       "obj": 3.2219
+      },
+      "Y": {
+       "tv": 0.7134,
+       "dn": 0.6796,
+       "wd": 5.631,
+       "hc": 0.2449,
+       "hp": 3.2757,
+       "dev": 3.1638,
+       "obj": 3.2197
+      },
+      "units_changed": 78,
+      "units_better": 65,
+      "units_worse": 13,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.1083,
+        "ci95": [
+         0.01,
+         0.251
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.094,
+        "ci95": [
+         -0.1574,
+         -0.0356
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0585,
+        "ci95": [
+         -0.1258,
+         -0.0069
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.0541,
+        "ci95": [
+         0.005,
+         0.1255
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0022,
+        "ci95": [
+         -0.0449,
+         0.0418
+        ]
+       }
+      }
+     }
+    }
+   },
+   "A15s3": {
+    "kind": "vocr6-lm-display-arm",
+    "schema": 1,
+    "created": "2026-10-26T19:38:35Z",
+    "arm": "P1 keep punctuation-only lines",
+    "lm": "h64_1000k.vlm",
+    "lm_sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+    "config": {
+     "alpha": 600,
+     "beta": 2500,
+     "flags": 1,
+     "gate": 8000,
+     "bracket": 8000
+    },
+    "cascade_conf": 700,
+    "blobs": {
+     "N": "208a8d0efa445b16d1ff5ee3b2d7692b253f9de75e2c7759d719ebe4e4e3a073"
+    },
+    "name": "A15s3",
+    "models": {
+     "N": {
+      "X": {
+       "tv": 0.7006,
+       "dn": 0.5986,
+       "wd": 5.6034,
+       "hc": 0.3487,
+       "hp": 3.2286,
+       "dev": 3.1265,
+       "obj": 3.1776
+      },
+      "Y": {
+       "tv": 0.7006,
+       "dn": 0.5986,
+       "wd": 5.6074,
+       "hc": 0.2566,
+       "hp": 3.1796,
+       "dev": 3.1285,
+       "obj": 3.1541
+      },
+      "units_changed": 44,
+      "units_better": 42,
+      "units_worse": 2,
+      "Y_minus_X": {
+       "tv": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 92
+       },
+       "dn": {
+        "delta_points": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "clusters": 33
+       },
+       "wd": {
+        "delta_points": 0.0039,
+        "ci95": [
+         0.0,
+         0.0132
+        ],
+        "clusters": 91
+       },
+       "hc": {
+        "delta_points": -0.0921,
+        "ci95": [
+         -0.155,
+         -0.0346
+        ],
+        "clusters": 46
+       },
+       "hp": {
+        "delta_points": -0.0489,
+        "ci95": [
+         -0.1089,
+         -0.0022
+        ],
+        "clusters": 46
+       },
+       "dev": {
+        "delta_points": 0.002,
+        "ci95": [
+         0.0,
+         0.0066
+        ]
+       },
+       "obj": {
+        "delta_points": -0.0235,
+        "ci95": [
+         -0.0533,
+         -0.0002
+        ]
+       }
+      }
+     }
+    }
+   }
+  }
  }
 }

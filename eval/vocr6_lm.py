@@ -148,15 +148,66 @@ class Unit:
         """Unit(*state()) rebuilds it (plain data: the private caches never pickle this class)."""
         return (self.part, self.uid, self.cluster, self.name, [(r, list(k)) for r, k in self.segs], self.platform)
 
-    def errors(self, texts):
+    def errors(self, texts, show=None):
+        """The unit's errors under texts {key: raw text}; show (RubiShow) applies Rubi's display rules to each
+        segment's lines first (protocol amendment 1)."""
         e = 0
         for i, (ref, keys) in enumerate(self.segs):
-            pred = "".join(texts[k] for k in keys)
+            if show is None:
+                pred = "".join(norm(texts[k]) for k in keys)
+            else:
+                raw = tuple(t for t in (texts[k] for k in keys) if t)
+                pred = show.memo.get(raw)
+                if pred is None:
+                    pred = show.memo[raw] = "".join(norm(x) for x in show(raw))
             m = self.memo.get((i, pred))
             if m is None:
                 m = self.memo[(i, pred)] = lev(ref, pred)
             e += m
         return e
+
+
+RUBI_TEXTNORM_SHA256 = "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe"   # Rubi main bd130a8
+RUBI_TEXTNORM_H_SHA256 = "e950ae0a3c3bea7fe8911909c7958e5f24e25eaea0fdca5032e233e65a6d5f21"
+
+
+def is_japanese_char(c):
+    """Rubi_for_vita core/utf.h vjo_is_japanese_char."""
+    cp = ord(c)
+    return 0x3040 <= cp <= 0x309F or 0x30A0 <= cp <= 0x30FF or 0x4E00 <= cp <= 0x9FAF
+
+
+class RubiShow:
+    """What Rubi shows of a job's lines (protocol amendment 1): the lines read (an empty one adds nothing) joined
+    by '\\n' as finish_line joins them; the game worker's core/textnorm.c (vjo_text_normalize_as, flags 0: every
+    rule, the border rule included, as non_japanese_filter = lines, the default, runs it) built from a Rubi
+    checkout at RUBI_TEXTNORM_SHA256; then the Shell's core/textfilter.c vjo_filter_lines (non_japanese_filter =
+    lines): a line without a kana or kanji goes. Returns the shown lines."""
+
+    def __init__(self, rubi, build_dir):
+        import ctypes as C
+        import subprocess
+        src, hdr = Path(rubi) / "core" / "textnorm.c", Path(rubi) / "core" / "textnorm.h"
+        if sha256(src) != RUBI_TEXTNORM_SHA256 or sha256(hdr) != RUBI_TEXTNORM_H_SHA256:
+            raise SystemExit(f"{src}: not Rubi main bd130a8's textnorm.c/.h")
+        out = Path(build_dir) / "librubi_textnorm.so"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        if not out.exists():
+            subprocess.run(["gcc", "-std=c99", "-O2", "-fPIC", "-shared", "-I", str(src.parent), "-o", str(out),
+                            str(src)], check=True)
+        self.lib = C.CDLL(str(out))
+        self.lib.vjo_text_normalize_as.argtypes = [C.c_char_p, C.c_uint, C.c_void_p]
+        self.lib.vjo_text_normalize_as.restype = C.c_uint
+        self.C, self.memo = C, {}
+
+    def textnorm(self, s):
+        buf = self.C.create_string_buffer(s.encode("utf-8"))
+        self.lib.vjo_text_normalize_as(buf, 0, None)
+        return buf.value.decode("utf-8")
+
+    def __call__(self, lines):
+        text = self.textnorm("\n".join(x for x in lines if x))
+        return [x for x in text.split("\n") if any(is_japanese_char(c) for c in x)]
 
 
 def dev_units():
@@ -223,8 +274,8 @@ class Tier:
         """{key: Rubi's text} with the LM blob (path or bytes; None: greedy) at opts (beam, topk, alpha, beta, gate,
         flags, bracket)."""
         from pyvocr import VocrLM, post_counters
-        if lm is None:
-            return {k: post_counters(self.greedy[k], self.rt.lib)[0] if self.greedy[k] else "" for k in self.keys}
+        if lm is None:                                   # the recognizer's own reading (eval/headgate_eval's greedy)
+            return dict(self.greedy)
         dec = VocrLM(self.rt, lm, check_crc=False, **opts)
         out = {}
         lib = self.rt.lib
@@ -257,8 +308,8 @@ def dev_reads(tier):
 
 # ---------------------------------------------------------------- scoring
 
-def unit_errors(units, texts):
-    return np.array([u.errors(texts) for u in units], np.int64)
+def unit_errors(units, texts, show=None):
+    return np.array([u.errors(texts, show) for u in units], np.int64)
 
 
 def rate(units, err, part, name=False, mask=None):
@@ -334,8 +385,9 @@ def lm_opts(cfg):
 _W = {}
 
 
-def _init(tiers, hval_dir):
+def _init(tiers, hval_dir, rubi=None):
     _W["tiers"], _W["units"] = load_all(tiers, hval_dir)
+    _W["show"] = RubiShow(rubi, PRIV / "build") if rubi else None
 
 
 def load_all(tiers, hval_dir):
@@ -354,13 +406,14 @@ def _tune_one(job):
     lm, cfg, thrs = job
     tiers, units = _W["tiers"], _W["units"]
     opts = lm_opts(cfg)
-    tx = {t: normed(tiers[t].decode(lm, opts)) for t in tiers}
+    show = _W["show"]
+    tx = {t: tiers[t].decode(lm, opts) for t in tiers}
     out = {}
     for t in tiers:
-        out[(t, "none")] = unit_errors(units, tx[t])
+        out[(t, "none")] = unit_errors(units, tx[t], show)
         if UP[t] in tiers:
             for thr in thrs:
-                out[(t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr))
+                out[(t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr), show)
     return cfg, out
 
 
@@ -372,7 +425,7 @@ def cmd_tune(a):
     lm_path = None if lm in ("", "none") else lm
     cfgs = grid_configs(grid) if lm_path else [{"alpha": 0, "beta": 0}]
     t0 = time.time()
-    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(tiers, a.hval_cache)) as pool:
+    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(tiers, a.hval_cache, a.rubi)) as pool:
         res = pool.map(_tune_one, [(lm_path, c, thrs) for c in cfgs], chunksize=1)
     _init(tiers, a.hval_cache)
     units = _W["units"]
@@ -384,9 +437,9 @@ def cmd_tune(a):
             "configs": cfgs, "cascade": thrs, "tiers": tiers, "blobs": {t: sha256(BLOBS[t]) for t in tiers},
             "units": [[u.part, u.uid, u.cluster, u.name, u.chars, u.platform] for u in units],
             "hval_cache": str(a.hval_cache) if a.hval_cache else None, "seconds": round(time.time() - t0, 1),
-            "created": utc_now()}
+            "display_rules": bool(a.rubi), "created": utc_now()}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(a.out, meta=json.dumps(meta), **{k: np.stack(v) for k, v in errs.items()})
+    np.savez_compressed(a.out, meta=json.dumps(meta), **{k: np.stack(v).astype(np.int16) for k, v in errs.items()})
     best = {}
     for k, v in errs.items():
         sc = [score(units, e)["obj"] for e in v]
@@ -432,6 +485,250 @@ def cmd_screen(a):
         out["lms"][name] = row
         print(name, json.dumps(row), flush=True)
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+
+
+# ---------------------------------------------------------------- selection
+
+PARTS = ("tv", "dn", "wd", "hc", "hp")
+
+
+class Scorer:
+    """Vectorised scores of error matrices (configs x units) over the units of a tune file."""
+
+    def __init__(self, units):
+        self.part = np.array([u[0] for u in units])
+        self.cluster = np.array([u[2] for u in units])
+        self.name = np.array([bool(u[3]) for u in units])
+        self.chars = np.array([u[4] for u in units], float)
+        self.plat = np.array([u[5] or "" for u in units])
+        self.fold = np.array([fold_of(c) for c in self.cluster])
+
+    def mask(self, part, fold=None, name=False, plat=None):
+        m = (self.part == part) & (self.name == name)
+        if fold is not None:
+            m &= self.fold == fold
+        if plat is not None:
+            m &= self.plat == plat
+        return m
+
+    def cer(self, E, part, **kw):
+        m = self.mask(part, **kw)
+        c = self.chars[m].sum()
+        return np.asarray(E)[..., m].sum(-1) / c * 100 if c else np.full(np.shape(E)[:-1], np.nan)
+
+    def scores(self, E, fold=None):
+        out = {p: self.cer(E, p, fold=fold) for p in PARTS}
+        out["dev"] = sum(w * out[p] for p, w in DEV_W.items())
+        out["obj"] = 0.5 * out["hp"] + 0.5 * out["dev"] if not np.all(np.isnan(out["hp"])) else out["dev"]
+        return out
+
+
+def load_tune(path, keys=None):
+    """(meta, {key: errors configs x units}) of a tune file; keys: only those (the selection's)."""
+    z = np.load(path)
+    meta = json.loads(str(z["meta"]))
+    return meta, {k: z[k].astype(np.int64) for k in z.files if k != "meta" and (keys is None or k in keys)}
+
+
+def rounded(d, n=4):
+    return {k: (None if v is None or np.isnan(v) else round(float(v), n)) for k, v in d.items()}
+
+
+def cmd_select(a):
+    """The protocol's cross-validated selection and rule for one LM tier (module docstring)."""
+    proto = json.loads(Path(a.protocol).read_text(encoding="utf-8"))
+    inc_meta, inc = load_tune(a.incumbent)
+    greedy_meta, greedy = load_tune(a.greedy)
+    units = inc_meta["units"]
+    sc = Scorer(units)
+    U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    thrs = [int(t) for t in proto["grid"]["cascade_conf_selectable"]]
+    need = {f"{m}|{t}" for m in ("N", "S") for t in thrs} | {"L|none"}
+    lms = []
+    for p in a.tune:
+        meta, errs = load_tune(p, need)
+        if meta["units"] != units:
+            raise SystemExit(f"{p}: other units than the incumbent's")
+        lms.append((meta, errs))
+    # options in (recipe order, grid order, threshold order)
+    opts = [(i, j, t) for i, (meta, _) in enumerate(lms) for j in range(len(meta["configs"])) for t in thrs]
+
+    def err(model, o):
+        meta, errs = lms[o[0]]
+        key = f"{model}|{o[2]}" if model != "L" else "L|none"
+        return errs[key][o[1]]
+
+    choice = {}
+    for f in (0, 1, None):
+        vals = {}
+        for i, (meta, errs) in enumerate(lms):
+            for t in thrs:
+                for j, x in enumerate(sc.scores(errs[f"N|{t}"], fold=f)["obj"]):
+                    vals[(i, j, t)] = x
+        best = None
+        for o in opts:                                   # the first minimum in (recipe, grid, threshold) order
+            if best is None or vals[o] < best[0] - 1e-12:
+                best = (vals[o], o)
+        choice[f] = best[1]
+
+    def describe(o):
+        meta = lms[o[0]][0]
+        return {"lm": meta["lm"], "lm_sha256": meta["lm_sha256"], "config": meta["configs"][o[1]], "cascade_conf": o[2]}
+
+    inc_key = {"N": f"N|{proto['incumbent']['cascade_conf']}", "S": f"S|{proto['incumbent']['cascade_conf']}",
+               "L": "L|none"}
+    out = {"kind": "vocr6-lm-select", "schema": 1, "created": utc_now(), "tier": a.tier,
+           "protocol_sha256": sha256(a.protocol), "incumbent": {"lm": inc_meta["lm"], "sha256": inc_meta["lm_sha256"],
+                                                                "config": inc_meta["configs"][0]},
+           "units": {p: int(sc.mask(p).sum()) for p in PARTS}, "clusters": {
+               p: int(len(set(sc.cluster[sc.mask(p)]))) for p in PARTS},
+           "recipes": [m["lm"] for m, _ in lms], "options": len(opts),
+           "chosen": {"fold0": describe(choice[0]), "fold1": describe(choice[1]), "in_sample": describe(choice[None])},
+           "models": {}}
+    cv_units = {}
+    for model in ("N", "S", "L"):
+        e_inc = inc[inc_key[model]][0]
+        e_cv = np.where(sc.fold == 0, err(model, choice[1]), err(model, choice[0]))   # fold 0 scored by fold 1's
+        e_in = err(model, choice[None])
+        cv_units[model] = e_cv
+        g = greedy[f"{model}|none"][0]
+        rep = {"greedy": rounded(sc.scores(g)), "incumbent": rounded(sc.scores(e_inc)),
+               "cv": rounded(sc.scores(e_cv)), "in_sample": rounded(sc.scores(e_in)),
+               "cv_minus_incumbent": compare(U, e_inc, e_cv), "in_sample_minus_incumbent": compare(U, e_inc, e_in),
+               "incumbent_minus_greedy": compare(U, g, e_inc)}
+        rep["by_platform"] = {pl: {p: {"incumbent": round(float(sc.cer(e_inc, p, plat=pl)), 4),
+                                       "cv": round(float(sc.cer(e_cv, p, plat=pl)), 4),
+                                       "in_sample": round(float(sc.cer(e_in, p, plat=pl)), 4)}
+                                   for p in ("hc", "hp")} for pl in ("vita", "psp")}
+        rep["names"] = {p: {"incumbent": round(float(sc.cer(e_inc, p, name=True)), 4),
+                            "in_sample": round(float(sc.cer(e_in, p, name=True)), 4)} for p in ("tv", "dn")}
+        out["models"][model] = rep
+    hp_titles = sorted(set(sc.cluster[sc.mask("hp")]))
+    out["hp_by_title"] = {}
+    for tid in hp_titles:
+        m = sc.mask("hp") & (sc.cluster == tid)
+        c = sc.chars[m].sum()
+        e_inc = inc[inc_key["N"]][0]
+        out["hp_by_title"][tid] = {"platform": str(sc.plat[m][0]), "chars": int(c),
+                                   "incumbent": round(float(e_inc[m].sum() / c * 100), 3),
+                                   "cv": round(float(cv_units["N"][m].sum() / c * 100), 3)}
+    # report only: hp without the titles whose incumbent page-path CER is above 50% (a finder that reads a box's
+    # decoration as lines of junk: their insertions follow the decoder's per-character bonus, not the text)
+    e_inc_n = inc[inc_key["N"]][0]
+    junk = [t for t, v in out["hp_by_title"].items() if v["incumbent"] > 50]
+    keep = ~np.isin(sc.cluster, junk)
+    Uk = [u for u, k in zip(U, keep) if k]
+    out["hp_without_junk_titles"] = {"titles": junk, "cv_minus_incumbent": compare(
+        Uk, e_inc_n[keep], cv_units["N"][keep]).get("hp")}
+    # the cascade thresholds beyond the selectable ones, at the in-sample LM and setting (report only)
+    i, j, _ = choice[None]
+    _, all_thr = load_tune(a.tune[i], {f"N|{t}" for t in lms[i][0]["cascade"]})
+    out["cascade_report"] = {str(t): rounded(sc.scores(all_thr[f"N|{t}"][j])) for t in lms[i][0]["cascade"]}
+    r = {m: out["models"][m]["cv_minus_incumbent"] for m in ("N", "S", "L")}
+
+    def worse(c):
+        return c["ci95"][0] > 0
+
+    rule = {"a_hp_better": bool(r["N"]["hp"]["ci95"][1] < 0),
+            "b_dev_not_worse": bool(not worse(r["N"]["dev"])),
+            "c_S_L_not_worse": bool(all(not worse(r[m][p]) for m in ("S", "L") for p in ("hp", "dev"))),
+            "d_bytes": None, "d_workspace": None}
+    meta_in = lms[i][0]
+    if meta_in["lm_path"]:
+        nb = Path(meta_in["lm_path"]).stat().st_size
+        rule["d_bytes"] = bool(nb <= proto["incumbent"]["lms"][a.tier]["bytes"])
+        rule["lm_bytes"] = nb
+        ws = workspace_bytes(meta_in["lm_path"], lm_opts(meta_in["configs"][j]))
+        rule["workspace_bytes"] = ws
+        rule["d_workspace"] = bool(max(ws.values()) <= 49152)
+    rule["adopted"] = bool(all(v for k, v in rule.items() if k[0] in "abcd" and k[1] == "_"))
+    out["rule"] = rule
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"tier": a.tier, "chosen": out["chosen"]["in_sample"], "rule": rule,
+                      "N": {k: out["models"]["N"][k] for k in ("incumbent", "cv", "in_sample")}}, ensure_ascii=False))
+
+
+def workspace_bytes(lm, opts):
+    """vocr_lm_workspace_bytes of each VOCR5 tier with this LM and setting (Rubi: VJO_VOCR_LM_WS_BYTES 49,152 B)."""
+    from pyvocr import Vocr, VocrLM
+    return {t: VocrLM(Vocr(str(BLOBS[t]), mode="w8i", max_width=1024), lm, **opts).workspace_bytes for t in BLOBS}
+
+
+# ---------------------------------------------------------------- the dictionary-aware prototype
+
+def decode_py(tier, lm, opts, lexicon, bonus):
+    """Rubi's line path with lm/vlm.py's Python twin of the decoder and the lexicon bonus: ({key: text}, stats)."""
+    import vlm
+    from pyvocr import post_counters
+    rt = tier.rt
+    texts = [rt.class_text(c) for c in range(rt.n_classes)]
+    cmap = vlm.class_map(lm, texts)
+    roles = [vlm.bracket_role(t) for t in texts]
+    out, st = {}, {"lm_calls": 0}
+    lexicon.steps = 0
+    for k, s in zip(tier.keys, tier.src):
+        if s is None:
+            out[k] = ""
+            continue
+        cl = vlm.decode(lm, cmap, s[0], s[1], s[2], roles=roles, stats=st, lexicon=lexicon, lex_bonus=bonus, **opts)
+        out[k] = post_counters("".join(texts[c] for c in cl), rt.lib)[0]
+    return out, {"lm_calls": st["lm_calls"], "lex_steps": lexicon.steps,
+                 "lines": sum(s is not None for s in tier.src)}
+
+
+def _lex_one(job):
+    import lexicon as LX
+    import vlm
+    lm_path, cfg, lex_path, lx, thrs = job
+    tiers, units = _W["tiers"], _W["units"]
+    lm = vlm.LM(Path(lm_path).read_bytes())
+    words = [tuple(lm.token_of(ch) for ch in w) for w, _ in LX.load(lex_path, lx["max_rank"])]
+    lexi = vlm.Lexicon([w for w in words if vlm.UNK not in w], lx.get("max_len", 8))
+    opts = lm_opts(cfg)
+    show = _W["show"]
+    tx, stats = {}, {}
+    for t in tiers:
+        tx[t], stats[t] = decode_py(tiers[t], lm, opts, lexi, lx["bonus"])
+    out = {}
+    for t in tiers:
+        out[(t, "none")] = unit_errors(units, tx[t], show)
+        if UP[t] in tiers:
+            for thr in thrs:
+                out[(t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr), show)
+    return lx, out, stats, len(lexi.words)
+
+
+def cmd_lex_tune(a):
+    """The lexicon bonus over a small grid, on top of one LM and setting (the Python twin; slow but exact)."""
+    tiers = a.tiers.split(",")
+    grid = json.loads(a.grid)
+    cfg = json.loads(a.config)
+    thrs = [int(x) for x in a.cascade.split(",")]
+    name, _, lm = a.lm.partition("=")
+    lxs = grid_configs(grid)
+    t0 = time.time()
+    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(tiers, a.hval_cache, a.rubi)) as pool:
+        res = pool.map(_lex_one, [(lm, cfg, a.lexicon, lx, thrs) for lx in lxs], chunksize=1)
+    _init(tiers, a.hval_cache)
+    units = _W["units"]
+    errs, stats = {}, []
+    for lx, out, st, nw in res:
+        for (t, thr), e in out.items():
+            errs.setdefault(f"{t}|{thr}", []).append(e)
+        stats.append({"lexicon": lx, "words": nw, "stats": st})
+    meta = {"lm": f"{name}+lex", "lm_path": lm, "lm_sha256": sha256(lm), "base_config": cfg, "lexicon": a.lexicon,
+            "lexicon_sha256": sha256(a.lexicon), "grid": grid, "configs": [dict(cfg, lex=lx) for lx in lxs],
+            "cascade": thrs, "tiers": tiers, "blobs": {t: sha256(BLOBS[t]) for t in tiers},
+            "units": [[u.part, u.uid, u.cluster, u.name, u.chars, u.platform] for u in units],
+            "hval_cache": str(a.hval_cache) if a.hval_cache else None, "stats": stats,
+            "display_rules": bool(a.rubi), "seconds": round(time.time() - t0, 1), "created": utc_now()}
+    np.savez_compressed(a.out, meta=json.dumps(meta), **{k: np.stack(v).astype(np.int16) for k, v in errs.items()})
+    sc = Scorer(meta["units"])
+    for k in sorted(errs):
+        if k.startswith("N|"):
+            print(k, [round(float(x), 4) for x in sc.scores(np.stack(errs[k]))["obj"]], flush=True)
 
 
 # ---------------------------------------------------------------- hval (the hooked screening pages)
@@ -581,14 +878,34 @@ def main():
     p.add_argument("--cascade", default=str(CASCADE_CONF), help="cascade thresholds, comma-separated")
     p.add_argument("--tiers", default="S,N,L")
     p.add_argument("--hval-cache")
+    p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("screen")
     p.add_argument("--lm", action="append", required=True)
     p.add_argument("--hval-text", required=True)
     p.add_argument("--out", required=True)
+    p = sub.add_parser("lex-tune")
+    p.add_argument("--lm", required=True, help="NAME=PATH")
+    p.add_argument("--config", required=True, help="the n-gram setting (JSON: alpha, beta, flags, ...)")
+    p.add_argument("--lexicon", required=True, help="lm/lexicon.py's LEX.tsv")
+    p.add_argument("--grid", required=True, help='JSON {"bonus": [...], "max_rank": [...]}')
+    p.add_argument("--cascade", default=str(CASCADE_CONF))
+    p.add_argument("--tiers", default="S,N,L")
+    p.add_argument("--hval-cache")
+    p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
+    p.add_argument("--procs", type=int, default=5)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("select")
+    p.add_argument("--protocol", required=True)
+    p.add_argument("--tier", required=True, help="the LM tier (500k, 1000k, 2000k, 4000k)")
+    p.add_argument("--incumbent", required=True, help="tune file of the incumbent LM at Rubi's setting")
+    p.add_argument("--greedy", required=True, help="tune file of --lm greedy=none")
+    p.add_argument("--tune", action="append", required=True, help="tune files of the tier's recipes")
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache}[a.cmd](a)
+    {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
+     "select": cmd_select, "lex-tune": cmd_lex_tune}[a.cmd](a)
 
 
 if __name__ == "__main__":

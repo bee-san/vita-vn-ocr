@@ -163,3 +163,62 @@ def test_lev_matches_metrics():
         a = "".join(rng.choice(list(al), rng.integers(0, 8)))
         b = "".join(rng.choice(list(al), rng.integers(0, 8)))
         assert V.lev(a, b) == lev(a, b)
+
+
+def _synthetic(n_cfg=3, better=1):
+    """Units of every part (8 clusters each, 10 characters a unit) and 6 counter units; arm b's config `better` at the
+    shipped threshold has 1 error a real unit against the shipped config's 2; arm c's cells equal the shipped."""
+    units = []
+    for p in ("tv", "dn", "wd", "hc", "hp"):
+        for i in range(16):
+            units.append([p, f"{p}{i}", f"{p}c{i % 8}", False, 10, "vita" if i % 2 else "psp"])
+    for i in range(6):
+        units.append(["cs", f"sy{i}", f"cs{i // 3:03d}", False, 10, None])
+    n = len(units)
+    cs_idx = np.array([u[0] == "cs" for u in units])
+    paths = [f"{t}|{thr}" for t, thr in F.path_keys([500, 600, 700])]
+    E = {"b": {}, "c": {}}
+    Kk = {"b": {}, "c": {}}
+    for k in paths:
+        e = np.full((n_cfg, n), 2, np.int64)
+        e[:, cs_idx] = 1
+        if k.endswith("|700") or k == "L|none":
+            e[better, ~cs_idx] = 1
+        E["b"][k] = e
+        Kk["b"][k] = np.ones((n_cfg, cs_idx.sum()), bool)
+        E["c"][k] = np.repeat(E["b"][k][:1], 15, axis=0)
+        Kk["c"][k] = np.ones((15, cs_idx.sum()), bool)
+    return units, cs_idx, E, Kk
+
+
+def test_tier_select_and_rule_on_synthetic_errors():
+    units, cs_idx, E, Kk = _synthetic()
+    sc = V.Scorer(units)
+    U = [V.Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    cs_units = [u for u in U if u.part == "cs"]
+    cfgs = [{"gate": 8000, "alpha": a} for a in (600, 500, 400)]
+    cells = [(t, o) for t in (4000, 5000, 6000, 7000, 8000) for o in (3000, 4000, 5000)]
+    ship_cell = cells.index((6000, 4000))
+    for tier in ("S", "N", "L"):
+        r = F.tier_select(sc, U, E, Kk, cs_idx, cs_units, tier, cfgs, 0, [500, 600, 700], cells, ship_cell,
+                          set(E["b"]), 700)
+        thr = 700 if tier != "L" else "none"
+        assert r["b"]["chosen"]["in_sample"] == {"config": cfgs[1], "cascade_conf": thr, "is_shipped": False}
+        assert r["b"]["chosen"]["fold0"] == r["b"]["chosen"]["fold1"] == r["b"]["chosen"]["in_sample"]
+        cmp_b = r["b"]["cv_minus_shipped"]
+        assert cmp_b["obj"]["delta_points"] == pytest.approx(-10.0) and cmp_b["obj"]["ci95"][1] < 0
+        assert r["b"]["counter"]["kept"] == [6, 6] and r["b"]["counter"]["cer"]["delta_points"] == 0.0
+        assert r["c"]["chosen"]["in_sample"] == (6000, 4000)            # every cell ties: the shipped cell
+        assert r["c"]["cv_minus_shipped"]["obj"]["delta_points"] == 0.0 and r["check_shipped_twice_equal"]
+        rb = F.apply_rule(cmp_b, r["b"]["counter"], True)
+        rc = F.apply_rule(r["c"]["cv_minus_shipped"], r["c"]["counter"], True)
+        assert rb["passes"] and not rc["passes"] and F.decide(rb, rc, -10.0, 0.0) == "b"
+    # the shipped config best everywhere: nothing changes
+    units, cs_idx, E, Kk = _synthetic(better=0)
+    sc = V.Scorer(units)
+    r = F.tier_select(sc, U, E, Kk, cs_idx, cs_units, "N", cfgs, 0, [500, 600, 700], cells, ship_cell, set(E["b"]),
+                      700)
+    assert r["b"]["chosen"]["in_sample"]["is_shipped"]
+    assert r["b"]["cv_minus_shipped"]["obj"] == {"delta_points": 0.0, "ci95": [0.0, 0.0]}

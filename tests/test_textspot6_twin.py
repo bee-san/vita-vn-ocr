@@ -248,6 +248,30 @@ def test_cap_key_and_truncation():
     assert min(b.conf for b in r.boxes) == 7         # the 6 least confident went
 
 
+def test_cap_ties_beyond_the_key_go_by_tconf():
+    """Two components of one box, conf, n and class (rows 10 and 12, their A codes 16 apart), at the cap's 64th place
+    behind 63 more confident lines: the cap keeps the one of the lower tconf (the (key, box) pairs' last field), and
+    without the cap both are listed in (x, y, w, h, vertical, conf, tag, tconf) order."""
+    m = _model(2)
+    h, w = 160, 480
+    for first, second in ((30, 20), (20, 30)):
+        mp = _maps(h, w, 2)
+        mp[0, 10, 20:30] = mp[0, 12, 20:30] = 50
+        mp[2, 10, 20:30], mp[3, 10, 20:30] = 0, 16                  # rows [41, 50) before the pad: one box
+        mp[2, 12, 20:30], mp[3, 12, 20:30] = 16, 0
+        mp[5, 10, 20:30], mp[5, 12, 20:30] = first, second          # class 2, tconf first / second
+        g = np.full((h, w), 128, np.uint8)
+        both = [b for b in T6.spot_maps(m, mp, 1, g).boxes if b.conf == 50]
+        assert [(b.x, b.y, b.w, b.h, b.tag) for b in both] == [(78, 39, 44, 13, 2)] * 2
+        assert [b.tconf for b in both] == [20, 30] and both[0].block == both[1].block
+        for i in range(63):
+            row, col = 2 * (i // 21), 1 + 5 * (i % 21)
+            _line(mp, row, col, col + 3, [-10, -10], k=100)
+        r = T6.spot_maps(m, mp, 1, g)
+        kept = [b for b in r.boxes if b.conf == 50]
+        assert r.truncated == 1 and len(r.boxes) == 64 and [b.tconf for b in kept] == [20]
+
+
 def test_cost_and_sizes():
     c = M6.cost(TINY_T, 480, 272, 4)
     blob, _ = M6.random_blob(TINY_T, 1, 4, n_cal=2)

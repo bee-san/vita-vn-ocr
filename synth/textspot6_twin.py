@@ -67,8 +67,9 @@ along, the 4 f drop, the pad, the clip), and per kept component of n cells:
 
 Then:
 
-    caps      at most BOX_MAX = 64 candidates: the smallest by (-conf, -n, vertical, y, x, h, w, tag); truncated = 1
-              when any was dropped
+    caps      at most BOX_MAX = 64 candidates: the smallest by (-conf, -n, vertical, y, x, h, w, tag, tconf); truncated
+              = 1 when any was dropped (the cap sorts (key, box) pairs: after the key, which ends in the class, the
+              box's tconf breaks a tie; two candidates equal in all of it are the same box in every output field)
     dark      synth/common.line_dark on the frame's grey in the box (vocr_line_dark)
     blocks    textspot_twin's rule plus one condition: two boxes join a block when they have one orientation AND
               one tag, overlap along the line, the gap between them across the line is at most the larger one's

@@ -14,7 +14,11 @@
  *
  * Batch input: records of eight little-endian u32 (width, height, finder, fix, probe, refine flags, 0, 0) and then
  * width x height grey bytes. Output: one line per record, "rc found probed n" then n times "x y w h dark".
- * Rubi is GPL-3.0-or-later like this repository; probe_short_lines is its code, adapted to the in-memory region.
+ * Provenance and licence: probe_short_lines below is adapted from bee-san/Rubi_for_vita core/vocr_ocr.c at bd130a8,
+ * where the function entered in #194 (49310ed, 2026-10-17, while Rubi's LICENSE was the GPL-3.0 text). At bd130a8
+ * ("Update LICENSE", 2026-10-26) Rubi's LICENSE file is the EUPL v1.2 (its README still says GPL-3.0). Both
+ * repositories have the same owner (bee-san), who publishes this one under GPL-3.0-or-later; the EUPL v1.2's
+ * compatibility clause (Article 5 and its appendix) also lists the GPL v3. The owner may want to confirm.
  */
 #include <stdint.h>
 #include <stdio.h>

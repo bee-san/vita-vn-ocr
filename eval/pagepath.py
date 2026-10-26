@@ -2,25 +2,29 @@
 """The page-path benchmark (issue #129): whole dialogue read the way Rubi reads it, from the line finder to the text
 the player sees, on the owner's hooked pages (#125) and on the development whole-dialogue units.
 
-  pagepath.py units --pagepool DIR --pages DIR --set hval|tune|test [--per-title N] --out UNITS.jsonl
+  pagepath.py units --pagepool DIR --set hval|tune|test [--per-title N] --out UNITS.jsonl
       region units of the hooked pages: each page's dialogue groups as the regions a player draws (the page pool's
       base / expanded-4 / expanded-8 regions: eval/finder_tighten.py's rule), with their verified lines
   pagepath.py run --units UNITS.jsonl|DEV.pkl --pages DIR --finder SPEC|--boxes FILE --models DIR --lm FILE
                   --rubi RUBI --cache DB --out RESULT.json [--rows ROWS.jsonl] [--tier N] [--workers 5]
       find (or take) every unit's line boxes, read every crop the way Rubi reads it, score
-  pagepath.py compare --base RESULT.json --arm RESULT.json [--rows-base R --rows-arm R] [--out JSON]
-      paired difference in dialogue CER with title / VN cluster bootstrap intervals
+  pagepath.py compare --base RESULT.json --arm RESULT.json [--out JSON]
+      paired difference in dialogue CER with title / VN cluster bootstrap intervals (the two runs must hold the same
+      units; settings that differ between them are printed and recorded)
 
-Units. A hooked unit is one dialogue group of a page cut as a region: the page pool's (data/import_hooked.py pages)
-regions, which group a page's verified horizontal dialogue lines with eval's rule, take their union plus 12 px
+Units. A hooked unit is one dialogue group of a page cut as a region: the page pool's (data/import_hooked.py pages,
+#132) regions, which group a page's verified horizontal dialogue lines with eval's rule, take their union plus 12 px
 (Vita) / 6 px (PSP) and grow it by 0 / 4 / 8 px, and keep every other text box (speaker names, unverified rows,
 vertical columns) out of it. Its reference is those lines' labels, top to bottom; its cells are the lines'
 character cells (renderer geometry). A development unit is one of #119's whole-dialogue units
-($A/vocr5-analysis/work/units.pkl: teacher_val and devnative, other games than the corpus).
+($A/vocr5-analysis/work/units.pkl: teacher_val and devnative, other games than the corpus); its cells are even
+splits of each line's ink box, one per character.
 
-Views. "console" (the default): what Rubi gets. Vita frames as they are; a PSP frame upscaled 2x bilinear before it
-is cut (Adrenaline shows a PSP game 2x on the Vita's screen; cv2.INTER_LINEAR on the colour frame, then
-synth/common.to_gray). "native": every frame at its own size.
+Views. "console" (the default): what Rubi gets. Vita frames as they are; a hooked PSP frame upscaled 2x bilinear
+before it is cut (Adrenaline shows a PSP game 2x on the Vita's screen; cv2.INTER_LINEAR on the colour frame, then
+synth/common.to_gray). A development PSP unit is #119's grey region upscaled 2x after the cut, as #119 did
+(va_dump.py), so it differs from Rubi's view at the region's border pixels and by +-1 rounding. "native": every
+frame at its own size. A page's PNG is checked against the unit's image_sha256 before it is used.
 
 The path (Rubi main bd130a8, core/vocr_ocr.c, game_ocr/main.c): the finder (Rubi: VOCR_LINES_TEXTBOX_RECOVERY), its
 short-line probe (#194), the refinement on PSP titles (ocr_refine_lines = psp), all in eval/pagepath_find.c; then
@@ -28,24 +32,37 @@ per crop, read with its dark flag as VOCR_INVERT: W8I greedy with the top 8 kept
 nats), beam 8 + the 1 MB LM (alpha 500, beta 3500, gate 8000, EOS, bracket 8000) when the greedy text is not empty;
 the cascade (a line whose greedy confidence is under 0.7 is read again by the next tier up: S -> N, N -> L; its
 re-decoded beam text shown, empty when its greedy text is); Rubi's core/textnorm.c (built from --rubi); the Shell's
-non_japanese_filter = lines (a line with no hiragana, katakana or CJK goes). The cascade's time ceiling is not
-modelled.
+non_japanese_filter = lines (a line with no hiragana, katakana or CJK goes; --filter lines+punct also keeps a line
+with CJK punctuation, a bracket or an ellipsis, --filter none every line). The LM's decoder settings are Rubi's for
+that LM (lms[] of core/vocr_ocr.c, by file name: alpha 500, gate 8000, EOS, bracket 8000; beta 3000 for
+vocr_lm_o3_500k / _2000k, 3500 for _1000k / _4000k); another LM needs --lm-alpha / --lm-beta / --lm-flags (else
+the 1000k's settings, with a warning). The cascade's time ceiling (ocr_cascade_ms = 2000: a cascade read that would
+pass it is skipped) is not modelled: it never binds on the host (0 of 859 audited units), and on the console it can
+only keep the job tier's reading, never improve one.
 
 Scores. Dialogue CER of a unit: every crop's text in box order, each normalised with eval/metrics.norm and joined,
 against the reference lines joined the same way, by Levenshtein distance (train/general_vn_textbox_guard
-transcript_score's count for a region without names). Line statistics against the reference cells: a line is whole
-when one box holds every cell centre, cut when the best box holds only some, missed when none holds any; a box is
-merged when it holds over half the cells of two or more lines, junk when it holds no cell.
+transcript_score's count for a region without names). Line statistics against the reference cells, each inked cell
+standing for the centroid of its high-contrast pixels (ink_points): a line is whole when one box holds every one of
+its inked cells, cut when the best box holds only some, missed when none holds any (and "noink", counted apart,
+when it has no inked cell at all); a box is merged when it holds over half the inked cells of two or more lines,
+junk when it holds none.
 
 --finder SPEC: a preset (rubi, rubi-noprobe, grad, grad+refine, textbox, textbox_recovery) with optional overrides
 "preset,key=value,...": mode=grad|textbox|textbox_recovery, probe=0|1, refine=psp|all|off|<flags>, fix=<int>
-(runtime/vocr_lines_fix.h, #129's finder fixes; built with -DPAGEPATH_FIX), lines=<path to a vocr_lines.c
-variant>. Presets: rubi = Rubi today (TEXTBOX_RECOVERY, its short-line probe, the refinement on PSP titles).
+(runtime/vocr_lines_fix.h, #129's finder fixes, which land with its finder-fix PR; built with -DPAGEPATH_FIX;
+fix=0 builds that file's identity, the frozen finder's boxes), lines=<path to a vocr_lines.c variant>.
+Presets: rubi = Rubi today (TEXTBOX_RECOVERY, its short-line probe, the refinement on PSP titles).
 --finder oracle: each reference line's own box plus its pad (the recognizer's floor on the page path).
 --boxes FILE: precomputed boxes, JSONL {"unit": id, "boxes": [[x, y, w, h(, dark)], ...]} in region pixels (a learned
-spotter's, vocr6-spotter); a box without its dark flag gets synth/common.line_dark's. --frame-boxes FILE: JSONL
+spotter's, vocr6-spotter), clipped to the region (a box with nothing inside it is dropped; both are counted in the
+result's finder record); a box without its dark flag gets synth/common.line_dark's. --frame-boxes FILE: JSONL
 {"title", "page", "view": "vita"|"psp2x"|"psp", "boxes": [...]} in frame pixels: a unit keeps the boxes whose centre
-lies in its region, clipped to it.
+lies in its region, clipped to it (a page given as a number is zero-padded to six digits; fractional coordinates
+are rounded outward). Units left with no box are counted and printed.
+
+Cached readings are keyed by the crop's pixels and polarity and by a tag naming the blob, the LM and its decoder
+settings, the re-decode, the top-K, the width clamp and the sha256 of the runtime library that read them.
 
 Everything read here is private (copyrighted frames and the owner's text): units, rows and the cache stay under
 $HERD/shared/artifacts; RESULT.json holds counts only.
@@ -86,12 +103,14 @@ PRESETS = {
 }
 TOPK = 8
 LM_OPTS = dict(beam=8, topk=8, alpha=500, beta=3500, gate=8000, flags=2, bracket=8000)   # core/vocr_ocr.c lm_opts
+RUBI_LM_BETA = {"vocr_lm_o3_500k.vlm": 3000, "vocr_lm_o3_1000k.vlm": 3500,  # Rubi bd130a8 core/vocr_ocr.c lms[]
+                "vocr_lm_o3_2000k.vlm": 3000, "vocr_lm_o3_4000k.vlm": 3500}
 REDECODE = (6000, 4000)                 # VJO_VOCR_COUNTER_TAU / _OPEN
 CASCADE_CONF = 700                      # VJO_VOCR_CASCADE_CONF
 NEXT_TIER = {"S": "N", "N": "L", "L": None}
 BLOBS = {"S": "VOCR5_S_w8.vocr", "N": "VOCR5_N_w8.vocr", "L": "VOCR5_L_w8.vocr"}
 MAX_WIDTH = 1024                        # the model's clamp (Rubi: 1,024 px / 8 frames)
-BOOT_REPS, BOOT_SEED = 10000, 0
+BOOT_REPS, BOOT_SEED, BOOT_MIN_CLUSTERS = 10000, 0, 5
 
 
 # ----------------------------------------------------------------------------- small helpers
@@ -155,6 +174,15 @@ def has_japanese(t):
     return any(0x3040 <= ord(c) <= 0x309F or 0x30A0 <= ord(c) <= 0x30FF or 0x4E00 <= ord(c) <= 0x9FAF for c in t)
 
 
+def has_japanese_or_punct(t):
+    """has_japanese, or a CJK punctuation mark or bracket (U+3001-U+303F: 、。「」『』【】〜 ...) or an ellipsis (… ‥):
+    a candidate filter that keeps 「……」 and …… lines (--filter lines+punct)."""
+    return has_japanese(t) or any(0x3001 <= ord(c) <= 0x303F or c in "…‥" for c in t)
+
+
+FILTERS = {"lines": has_japanese, "lines+punct": has_japanese_or_punct, "none": lambda t: True}
+
+
 def line_conf(g, cmin):
     """core/vocr_ocr.c line_conf: conf_min in 1/1000, 1000 for a line read as empty."""
     if not g:
@@ -191,19 +219,28 @@ class Frames:
         self.dir = Path(pages_dir)
         self.view = view
         self.cache = {}
+        self.checked = {}                   # (title, page) -> the sha256 the page was checked against
 
     def scale(self, platform):
         return 2 if (self.view == "console" and platform == "psp") else 1
 
-    def grey(self, tid, page, platform):
+    def grey(self, tid, page, platform, sha256=None):
+        """The page in this view; with `sha256` (the page pool's image_sha256) the PNG is checked against it once,
+        so a changed page cannot change a frozen benchmark's number without notice."""
         k = (tid, page)
+        path = self.dir / tid / "pages" / f"{page}.png"
+        if sha256 is not None and self.checked.get(k) != sha256:
+            got = sha256_file(path)
+            if got != sha256:
+                raise SystemExit(f"{path}: sha256 {got} differs from the page pool's {sha256}")
+            self.checked[k] = sha256
         if k not in self.cache:
             import cv2
 
             from common import to_gray
-            bgr = cv2.imread(str(self.dir / tid / "pages" / f"{page}.png"), cv2.IMREAD_COLOR)
+            bgr = cv2.imread(str(path), cv2.IMREAD_COLOR)
             if bgr is None:
-                raise FileNotFoundError(self.dir / tid / "pages" / f"{page}.png")
+                raise FileNotFoundError(path)
             rgb = np.ascontiguousarray(bgr[..., ::-1])
             s = self.scale(platform)
             if s != 1:
@@ -329,7 +366,7 @@ def unit_images(units, frames):
             yield u, np.ascontiguousarray(img), s, (0, 0)
             continue
         s = frames.scale(u["platform"])
-        g = frames.grey(u["title"], u["page"], u["platform"])
+        g = frames.grey(u["title"], u["page"], u["platform"], u.get("image_sha256"))
         x0, y0, x1, y1 = (v * s for v in u["region"])
         yield u, np.ascontiguousarray(g[y0:y1, x0:x1]), s, (x0, y0)
 
@@ -349,9 +386,11 @@ def parse_finder(spec):
     name, *rest = spec.split(",")
     if name not in PRESETS:
         raise SystemExit(f"unknown finder preset {name!r} ({', '.join(PRESETS)})")
-    cfg = dict(PRESETS[name], preset=name, lines=None)
+    cfg = dict(PRESETS[name], preset=name, lines=None, impl="frozen")
     for kv in rest:
         k, _, v = kv.partition("=")
+        if k == "fix":
+            cfg["impl"] = "fix"            # runtime/vocr_lines_fix.c, whatever the flags (fix=0: its identity)
         if k == "mode":
             if v not in FINDER_MODES:
                 raise SystemExit(f"unknown finder mode {v!r}")
@@ -384,12 +423,15 @@ def build_driver(cfg, out_dir, cc="gcc"):
     rt = ROOT / "runtime"
     srcs = [ROOT / "eval" / "pagepath_find.c", rt / "vocr_lines_refine.c"]
     defs = []
-    if cfg["fix"]:
-        srcs += [rt / "vocr_lines_fix.c"]
+    if cfg["fix"] or cfg.get("impl") == "fix":
+        srcs += [rt / "vocr_lines_fix.c", rt / "vocr_lines_rows.c"]
         defs.append("-DPAGEPATH_FIX")
     srcs.append(Path(cfg["lines"]) if cfg["lines"] else rt / "vocr_lines.c")
     h = hashlib.sha256(" ".join([cc] + defs).encode())
-    for s in srcs + [rt / "vocr_lines.h", rt / "vocr_lines_refine.h"]:
+    headers = [rt / f for f in ("vocr_lines.h", "vocr_lines_refine.h", "vocr_lines_rows.h", "vocr_lines_fix.h")]
+    for s in srcs + headers:
+        if not s.exists():
+            continue
         h.update(s.read_bytes())
     exe = Path(out_dir) / f"pagepath_find_{h.hexdigest()[:16]}"
     if not exe.exists():
@@ -429,12 +471,12 @@ def run_driver(exe, jobs):
 _W = {}
 
 
-def _init(lib, blobs, lm):
+def _init(lib, blobs, lm, lm_opts):
     from pyvocr import Vocr, VocrLM, load_lib
     L = load_lib(lib)
     for tag, path in blobs.items():
         r = Vocr(path, mode="w8i", max_width=MAX_WIDTH, lib=L)
-        _W[tag] = (r, VocrLM(r, lm, **LM_OPTS))
+        _W[tag] = (r, VocrLM(r, lm, **lm_opts))
 
 
 def _read(job):
@@ -449,7 +491,8 @@ def _read(job):
 
 
 class Cache:
-    """Crop readings by (model tag, crop key) in SQLite: a model tag names the blob, the LM and the decode."""
+    """Crop readings by (model tag, crop key) in SQLite: a model tag names the blob, the LM, the decode and the
+    runtime library."""
 
     def __init__(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -473,16 +516,40 @@ class Cache:
         self.db.commit()
 
 
-def model_tag(blob, lm):
-    return (f"{sha256_file(blob)[:20]}|{sha256_file(lm)[:20]}|"
-            f"{json.dumps(LM_OPTS, sort_keys=True)}|rd{REDECODE[0]}/{REDECODE[1]}|k{TOPK}|w{MAX_WIDTH}")
+RUNTIME_LIB = ROOT / "runtime" / "build" / "libvocr.so"
 
 
-def read_all(crops, tags, lm, cache, workers):
-    """crops: {key: (img, invert)}; tags: [(tag, blob)] to read every crop with. Fills the cache."""
-    lib = str(ROOT / "runtime" / "build" / "libvocr.so")
+def runtime_lib():
+    """The runtime library the readings come from, (re)built if a runtime source is newer, and its sha256."""
     from pyvocr import load_lib
-    load_lib()                          # (re)builds runtime/build/libvocr.so if a source is newer
+    load_lib()
+    return str(RUNTIME_LIB), sha256_file(RUNTIME_LIB)
+
+
+def lm_settings(lm, alpha=None, beta=None, flags=None):
+    """Rubi's decoder settings for an LM (core/vocr_ocr.c lm_opts with lms[]'s beta, by file name), with overrides
+    in 1/1000; an LM Rubi does not ship gets the 1000k's unless all of alpha, beta and flags are given."""
+    opts = dict(LM_OPTS)
+    name = Path(lm).name
+    if name in RUBI_LM_BETA:
+        opts["beta"] = RUBI_LM_BETA[name]
+    elif None in (alpha, beta, flags):
+        print(f"warning: {name} is not one of Rubi's LMs; its unset decoder settings are vocr_lm_o3_1000k's",
+              file=sys.stderr, flush=True)
+    for k, v in (("alpha", alpha), ("beta", beta), ("flags", flags)):
+        if v is not None:
+            opts[k] = int(v)
+    return opts
+
+
+def model_tag(blob, lm, lm_opts, lib_sha256):
+    return (f"{sha256_file(blob)[:20]}|{sha256_file(lm)[:20]}|"
+            f"{json.dumps(lm_opts, sort_keys=True)}|rd{REDECODE[0]}/{REDECODE[1]}|k{TOPK}|w{MAX_WIDTH}|"
+            f"lib{lib_sha256[:20]}")
+
+
+def read_all(crops, tags, lm, cache, workers, lm_opts, lib):
+    """crops: {key: (img, invert)}; tags: [(tag, blob)] to read every crop with. Fills the cache."""
     for tag, blob in tags:
         have = cache.get(tag, crops)
         todo = [(k, tag, crops[k][0], crops[k][1]) for k in crops if k not in have]
@@ -490,7 +557,7 @@ def read_all(crops, tags, lm, cache, workers):
             continue
         t0 = time.time()
         rows = []
-        with Pool(workers, initializer=_init, initargs=(lib, {tag: blob}, lm)) as pool:
+        with Pool(workers, initializer=_init, initargs=(lib, {tag: blob}, lm, lm_opts)) as pool:
             for i, (k, t, g, b, c, fr) in enumerate(pool.imap_unordered(_read, todo, chunksize=8)):
                 rows.append((t, k, g, b, c, fr))
                 if len(rows) >= 2000:
@@ -546,7 +613,7 @@ def line_stats(boxes, points):
     status = []
     for li, pl in enumerate(pts):
         best = max((cov[bi][li] for bi in range(len(boxes))), default=0)
-        status.append("whole" if best == len(pl) else "cut" if best else "missed")
+        status.append("noink" if not pl else "whole" if best == len(pl) else "cut" if best else "missed")
     kinds = []
     for bi in range(len(boxes)):
         held = [li for li, pl in enumerate(pts) if pl and 2 * cov[bi][li] > len(pl)]
@@ -561,9 +628,9 @@ def score_unit(u, boxes, texts, points):
     st = Counter(status)
     kd = Counter(kinds)
     return {"errors": lev(pred, ref), "chars": len(ref), "lines": len(u["lines"]), "boxes": len(boxes),
-            "whole": st["whole"], "cut": st["cut"], "missed": st["missed"], "merged": kd["merged"],
-            "junk": kd["junk"], "cells": sum(1 for pl in points for p in pl if p is not None), "status": status,
-            "kinds": kinds}
+            "whole": st["whole"], "cut": st["cut"], "missed": st["missed"], "noink": st["noink"],
+            "merged": kd["merged"], "junk": kd["junk"], "cells": sum(1 for pl in points for p in pl if p is not None),
+            "status": status, "kinds": kinds}
 
 
 def summarize(rows, key=lambda r: "all"):
@@ -572,7 +639,7 @@ def summarize(rows, key=lambda r: "all"):
         k = key(r)
         s = out.setdefault(k, Counter())
         s["units"] += 1
-        for f in ("errors", "chars", "lines", "boxes", "whole", "cut", "missed", "merged", "junk", "frames"):
+        for f in ("errors", "chars", "lines", "boxes", "whole", "cut", "missed", "noink", "merged", "junk", "frames"):
             s[f] += r.get(f, 0)
     res = {}
     for k, s in sorted(out.items()):
@@ -592,22 +659,44 @@ def load_units(path):
     return doc[1:], doc[0]
 
 
-def external_boxes(u, s, origin, region_boxes, frame_boxes):
+def page_id(p):
+    """A page id as the page pool writes it: six digits."""
+    return f"{int(p):06d}" if isinstance(p, int) or (isinstance(p, str) and p.isdigit()) else p
+
+
+def clip_box(b, w, h):
+    """(x, y, w, h(, dark)) clipped to a w x h region, fractional edges rounded outward; None when nothing is left."""
+    x0, y0 = max(0, int(np.floor(b[0]))), max(0, int(np.floor(b[1])))
+    x1, y1 = min(w, int(np.ceil(b[0] + b[2]))), min(h, int(np.ceil(b[1] + b[3])))
+    if x1 <= x0 or y1 <= y0:
+        return None
+    return (x0, y0, x1 - x0, y1 - y0, *[int(v) for v in b[4:5]])
+
+
+def external_boxes(u, s, origin, region_boxes, frame_boxes, stats):
+    """A unit's boxes from --boxes (region pixels) or --frame-boxes (frame pixels), clipped to its region."""
+    W, H = u["_w"], u["_h"]
     if region_boxes is not None:
-        return [tuple(b) for b in region_boxes.get(u["uid"], [])]
+        out = []
+        for b in region_boxes.get(u["uid"], []):
+            c = clip_box(b, W, H)
+            if c is None:
+                stats["boxes_dropped"] += 1
+                continue
+            stats["boxes_clipped"] += c[:4] != tuple(b[:4])
+            out.append(c)
+        return out
     view = ("psp2x" if s == 2 else u["platform"])
-    fb = frame_boxes.get((u["title"], u.get("page"), view), [])
+    fb = frame_boxes.get((u["title"], page_id(u.get("page")), view), [])
     ox, oy = origin
     out = []
     for b in fb:
         cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
-        x0, y0 = b[0] - ox, b[1] - oy
-        if not inside((0, 0, u["_w"], u["_h"]), (cx - ox, cy - oy)):
+        if not inside((0, 0, W, H), (cx - ox, cy - oy)):
             continue
-        x1, y1 = min(u["_w"], x0 + b[2]), min(u["_h"], y0 + b[3])
-        x0, y0 = max(0, x0), max(0, y0)
-        if x1 > x0 and y1 > y0:
-            out.append((int(x0), int(y0), int(x1 - x0), int(y1 - y0), *b[4:5]))
+        c = clip_box((b[0] - ox, b[1] - oy, *b[2:]), W, H)
+        if c is not None:
+            out.append(c)
     return out
 
 
@@ -637,13 +726,16 @@ def cmd_run(a):
     work = Path(a.work)
     tier = a.tier
     blobs = {t: Path(a.models) / BLOBS[t] for t in ("S", "N", "L")}
-    tags = {t: model_tag(blobs[t], a.lm) for t in blobs}
+    lm_opts = lm_settings(a.lm, a.lm_alpha, a.lm_beta, a.lm_flags)
+    lib, lib_sha = runtime_lib()
+    tags = {t: model_tag(blobs[t], a.lm, lm_opts, lib_sha) for t in blobs}
     meta = {"schema": SCHEMA, "kind": "vocr6-pagepath-result", "units_file": str(a.units),
             "units_sha256": sha256_file(a.units), **umeta, "view": a.view, "tier": tier,
             "cascade": NEXT_TIER[tier] if not a.no_cascade else None,
             "blobs": {t: {"name": blobs[t].name, "sha256": sha256_file(blobs[t])} for t in blobs},
-            "lm": {"name": Path(a.lm).name, "sha256": sha256_file(a.lm)}, "lm_opts": LM_OPTS,
-            "redecode": REDECODE, "cascade_conf": CASCADE_CONF, "repo_head": subprocess.run(
+            "lm": {"name": Path(a.lm).name, "sha256": sha256_file(a.lm)}, "lm_opts": lm_opts,
+            "runtime_lib_sha256": lib_sha,
+            "redecode": REDECODE, "cascade_conf": CASCADE_CONF, "filter": a.filter, "repo_head": subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
             "pagepath_sha256": sha256_file(__file__)}
     region_boxes = frame_boxes = None
@@ -658,7 +750,7 @@ def cmd_run(a):
         meta["finder"] = {"boxes": str(a.boxes), "boxes_sha256": sha256_file(a.boxes)}
         cfg = None
     elif a.frame_boxes:
-        frame_boxes = {(r["title"], r.get("page"), r["view"]): r["boxes"] for r in read_jsonl(a.frame_boxes)}
+        frame_boxes = {(r["title"], page_id(r.get("page")), r["view"]): r["boxes"] for r in read_jsonl(a.frame_boxes)}
         meta["finder"] = {"frame_boxes": str(a.frame_boxes), "frame_boxes_sha256": sha256_file(a.frame_boxes)}
         cfg = None
     else:
@@ -673,6 +765,7 @@ def cmd_run(a):
     else:
         meta["textnorm"] = None
     t0 = time.time()
+    ext = Counter()
     # 1. boxes and crops
     plan = []                                   # per unit: (u, boxes, dark, crop keys, cells, probe info)
     crops = {}
@@ -703,7 +796,8 @@ def cmd_run(a):
     for u, img, s, o in unit_images(units, frames):
         u["_h"], u["_w"] = img.shape
         if cfg is None:
-            bx = oracle_boxes(u, s, o) if oracle else external_boxes(u, s, o, region_boxes, frame_boxes)
+            bx = oracle_boxes(u, s, o) if oracle else external_boxes(u, s, o, region_boxes, frame_boxes, ext)
+            ext["units_without_boxes"] += not bx
             boxes = [tuple(int(v) for v in b[:4]) for b in bx]
             dark = [int(b[4]) if len(b) > 4 else line_dark(img, b[:4]) for b in bx]
             add(u, img, s, o, boxes, dark, 0, len(boxes), 0)
@@ -714,14 +808,18 @@ def cmd_run(a):
     if batch:
         flush()
     print(f"found boxes for {len(plan)} units, {len(crops)} distinct crops, {time.time() - t0:.0f}s", flush=True)
+    if cfg is None and not oracle:
+        meta["finder"].update({k: ext[k] for k in ("boxes_clipped", "boxes_dropped", "units_without_boxes")})
+        print(f"external boxes: {ext['boxes_clipped']} clipped, {ext['boxes_dropped']} dropped (outside the region), "
+              f"{ext['units_without_boxes']} units without a box", flush=True)
     # 2. readings
     cache = Cache(a.cache)
     up = NEXT_TIER[tier] if not a.no_cascade else None
-    read_all(crops, [(tags[tier], blobs[tier])], a.lm, cache, a.workers)
+    read_all(crops, [(tags[tier], blobs[tier])], a.lm, cache, a.workers, lm_opts, lib)
     first = cache.get(tags[tier], crops)
     if up:
         low = {k: crops[k] for k, (g, b, c, fr) in first.items() if g and line_conf(g, c) < CASCADE_CONF}
-        read_all(low, [(tags[up], blobs[up])], a.lm, cache, a.workers)
+        read_all(low, [(tags[up], blobs[up])], a.lm, cache, a.workers, lm_opts, lib)
         second = cache.get(tags[up], low)
     else:
         second = {}
@@ -736,7 +834,8 @@ def cmd_run(a):
             up_read = second.get(k)
             raw.append(compose((g, b, c), (up_read[0], up_read[1], up_read[2]) if up_read else None))
     normed = textnorm(norm_exe, raw)
-    shown = [t if has_japanese(t) else "" for t in normed]
+    keep = FILTERS[a.filter]
+    shown = [t if keep(t) else "" for t in normed]
     rows, i = [], 0
     for u, boxes, dark, keys, points, info in plan:
         texts = shown[i:i + len(keys)]
@@ -757,21 +856,23 @@ def cmd_run(a):
                        "by_variant": summarize(pub, lambda r: f"{r['set']}:{r['variant']}"),
                        "by_title": summarize(pub, lambda r: f"{r['set']}:{r['cluster']}")}
     meta["units"] = [{k: r[k] for k in ("uid", "set", "cluster", "platform", "variant", "errors", "chars", "lines",
-                                        "boxes", "whole", "cut", "missed", "merged", "junk", "frames")} for r in pub]
+                                        "boxes", "whole", "cut", "missed", "noink", "merged", "junk", "frames")}
+                     for r in pub]
     Path(a.out).write_text(json.dumps(meta, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
     s = meta["summary"]["by_platform"]
     for k, v in s.items():
         print(f"{k}: units {v['units']} CER {v['cer']:.3f}% ({v['errors']}/{v['chars']}) recall {v['line_recall']:.3f}"
               f" precision {v['box_precision']:.3f} cut {v['cut']} missed {v['missed']} merged {v['merged']}"
               f" junk {v['junk']}", flush=True)
-    print("PAGEPATH_RUN_DONE", a.out, flush=True)
+    print("pagepath run: wrote", a.out, flush=True)
 
 
 # ----------------------------------------------------------------------------- compare
 
-def cluster_bootstrap(rows_a, rows_b, reps=BOOT_REPS, seed=BOOT_SEED):
+def cluster_bootstrap(rows_a, rows_b, reps=BOOT_REPS, seed=BOOT_SEED, min_clusters=BOOT_MIN_CLUSTERS):
     """(CER(a) - CER(b)) in points with whole clusters resampled (sorted cluster ids, cluster sums,
-    default_rng(seed).integers, numpy's linear 2.5 / 97.5 percentiles: eval/vocr3_report.cluster_bootstrap)."""
+    default_rng(seed).integers, numpy's linear 2.5 / 97.5 percentiles, no interval under `min_clusters` clusters,
+    6 decimals: eval/vocr3_report.cluster_bootstrap)."""
     a = {r["uid"]: r for r in rows_a}
     b = {r["uid"]: r for r in rows_b}
     if set(a) != set(b) or any(a[k]["chars"] != b[k]["chars"] for k in a):
@@ -788,9 +889,9 @@ def cluster_bootstrap(rows_a, rows_b, reps=BOOT_REPS, seed=BOOT_SEED):
     n = np.array([sums[k][2] for k in keys], np.float64)
     tot_n = max(1.0, float(n.sum()))
     out = {"clusters": len(keys), "chars": int(n.sum()), "arm_errors": int(ea.sum()), "base_errors": int(eb.sum()),
-           "arm_cer": round(100 * ea.sum() / tot_n, 4), "base_cer": round(100 * eb.sum() / tot_n, 4),
-           "delta": round(100 * (ea.sum() - eb.sum()) / tot_n, 4), "reps": reps, "seed": seed}
-    if len(keys) < 2 or n.sum() == 0:
+           "arm_cer": round(100 * ea.sum() / tot_n, 6), "base_cer": round(100 * eb.sum() / tot_n, 6),
+           "delta": round(100 * (ea.sum() - eb.sum()) / tot_n, 6), "reps": reps, "seed": seed}
+    if len(keys) < max(2, min_clusters) or n.sum() == 0:
         return dict(out, ci95=None)
     rng = np.random.default_rng(seed)
     idx = rng.integers(0, len(keys), (reps, len(keys)))
@@ -800,13 +901,37 @@ def cluster_bootstrap(rows_a, rows_b, reps=BOOT_REPS, seed=BOOT_SEED):
     lo, hi = np.percentile(ds, [2.5, 97.5])
     worse = [k for k in keys if sums[k][0] > sums[k][1]]
     better = [k for k in keys if sums[k][0] < sums[k][1]]
-    return dict(out, ci95=[round(100 * float(lo), 4), round(100 * float(hi), 4)],
+    return dict(out, ci95=[round(100 * float(lo), 6), round(100 * float(hi), 6)],
                 clusters_better=len(better), clusters_worse=len(worse))
+
+
+# the settings of a run that a comparison may vary on purpose (a finder arm, an LM, a tier) but should show
+SETTINGS = ("view", "tier", "cascade", "blobs", "lm", "lm_opts", "redecode", "cascade_conf", "filter", "textnorm",
+            "runtime_lib_sha256", "finder")
+
+
+def check_pair(A, B):
+    """Refuse two runs of different units; return the settings that differ ({key: [base, arm]})."""
+    if A.get("units_sha256") != B.get("units_sha256"):
+        raise SystemExit(f"compare: the runs are of different unit files (units_sha256 {B.get('units_sha256')} "
+                         f"against {A.get('units_sha256')})")
+    ua, ub = {u["uid"]: u for u in A["units"]}, {u["uid"]: u for u in B["units"]}
+    if set(ua) != set(ub):
+        raise SystemExit(f"compare: the runs hold different units ({len(set(ub) - set(ua))} only in the base, "
+                         f"{len(set(ua) - set(ub))} only in the arm; e.g. --set or --limit differ)")
+    bad = [k for k in ua if ua[k]["chars"] != ub[k]["chars"]]
+    if bad:
+        raise SystemExit(f"compare: {len(bad)} units have different references, e.g. {bad[0]}")
+    return {k: [B.get(k), A.get(k)] for k in SETTINGS if A.get(k) != B.get(k)}
 
 
 def cmd_compare(a):
     A = json.loads(Path(a.arm).read_text(encoding="utf-8"))
     B = json.loads(Path(a.base).read_text(encoding="utf-8"))
+    differs = check_pair(A, B)
+    for k, (vb, va) in differs.items():
+        print(f"differs: {k}: base {json.dumps(vb, ensure_ascii=False)[:160]} | arm "
+              f"{json.dumps(va, ensure_ascii=False)[:160]}", flush=True)
     res = {}
     groups = defaultdict(lambda: ([], []))
     ua = {u["uid"]: u for u in A["units"]}
@@ -823,7 +948,8 @@ def cmd_compare(a):
               f"{c.get('clusters_worse')})", flush=True)
     if a.out:
         Path(a.out).write_text(json.dumps({"base": a.base, "arm": a.arm, "base_sha256": sha256_file(a.base),
-                                           "arm_sha256": sha256_file(a.arm), "compare": res}, indent=1) + "\n")
+                                           "arm_sha256": sha256_file(a.arm), "differs": sorted(differs),
+                                           "compare": res}, indent=1) + "\n")
 
 
 # ----------------------------------------------------------------------------- units
@@ -859,9 +985,14 @@ def main(argv=None):
     g.add_argument("--frame-boxes")
     p.add_argument("--models", required=True, help="directory with VOCR5_{S,N,L}_w8.vocr")
     p.add_argument("--lm", required=True)
+    p.add_argument("--lm-alpha", type=int, help="the LM's weight in 1/1000 (default: Rubi's for this LM, 500)")
+    p.add_argument("--lm-beta", type=int, help="the per-character bonus in 1/1000 nat (default: Rubi's for this LM)")
+    p.add_argument("--lm-flags", type=int, help="vocr_lm flags (default: Rubi's, 2 = VOCR_LM_EOS)")
     p.add_argument("--rubi", help="a Rubi_for_vita checkout (core/textnorm.c); without it no textnorm")
     p.add_argument("--tier", default="N", choices=("S", "N", "L"))
     p.add_argument("--no-cascade", action="store_true")
+    p.add_argument("--filter", default="lines", choices=sorted(FILTERS),
+                   help="the Shell's line filter: lines (Rubi: non_japanese_filter = lines), lines+punct, none")
     p.add_argument("--cache", required=True)
     p.add_argument("--work", default=str(Path(tempfile.gettempdir()) / "pagepath"))
     p.add_argument("--workers", type=int, default=5)

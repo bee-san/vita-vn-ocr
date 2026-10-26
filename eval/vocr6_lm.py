@@ -659,8 +659,175 @@ def cmd_select(a):
     rule["adopted"] = bool(all(v for k, v in rule.items() if k[0] in "abcd" and k[1] == "_"))
     out["rule"] = rule
     Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    np.savez_compressed(a.out + ".cv.npz", units=json.dumps(units), **{f"cv_{m}": cv_units[m] for m in cv_units},
+                        **{f"inc_{m}": inc[inc_key[m]][0] for m in inc_key},
+                        **{f"in_{m}": err(m, choice[None]) for m in ("N", "S", "L")})
     print(json.dumps({"tier": a.tier, "chosen": out["chosen"]["in_sample"], "rule": rule,
                       "N": {k: out["models"]["N"][k] for k in ("incumbent", "cv", "in_sample")}}, ensure_ascii=False))
+
+
+def cmd_families(a):
+    """Protocol amendment 2: family B (game text) against family A (none), both cross-validated (select's .cv.npz)."""
+    za, zb = np.load(a.a + ".cv.npz"), np.load(a.b + ".cv.npz")
+    units = json.loads(str(za["units"]))
+    if json.loads(str(zb["units"])) != units:
+        raise SystemExit("the two selections scored other units")
+    U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    cmp = {m: compare(U, za[f"cv_{m}"], zb[f"cv_{m}"]) for m in ("N", "S", "L")}
+    cin = {m: compare(U, za[f"in_{m}"], zb[f"in_{m}"]) for m in ("N", "S", "L")}
+    ra, rb = (json.loads(Path(x).read_text(encoding="utf-8")) for x in (a.a, a.b))
+
+    def worse(c):
+        return c["ci95"][0] > 0
+    rule = {"B_passes_rule": bool(rb["rule"]["adopted"]), "A_passes_rule": bool(ra["rule"]["adopted"]),
+            "hp_better": bool(cmp["N"]["hp"]["ci95"][1] < 0), "objective_better": bool(cmp["N"]["obj"]["ci95"][1] < 0),
+            "dev_not_worse": bool(not worse(cmp["N"]["dev"])),
+            "S_L_not_worse": bool(all(not worse(cmp[m][p]) for m in ("S", "L") for p in ("hp", "dev")))}
+    rule["B_instead_of_A"] = bool(rule["B_passes_rule"] and rule["hp_better"] and rule["objective_better"]
+                                  and rule["dev_not_worse"] and rule["S_L_not_worse"])
+    rule["ships"] = "B" if rule["B_instead_of_A"] else "A" if rule["A_passes_rule"] else "incumbent"
+    out = {"kind": "vocr6-lm-families", "created": utc_now(), "tier": ra["tier"], "path": ra.get("path"),
+           "A": {"select": Path(a.a).name, "chosen": ra["chosen"]["in_sample"]},
+           "B": {"select": Path(a.b).name, "chosen": rb["chosen"]["in_sample"]},
+           "B_minus_A_cv": cmp, "B_minus_A_in_sample": cin, "rule": rule}
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"tier": out["tier"], "rule": rule, "N_obj": cmp["N"]["obj"], "N_hp": cmp["N"]["hp"],
+                      "N_dev": cmp["N"]["dev"]}))
+
+
+def cmd_summary(a):
+    """The committed result (eval/vocr6_lm_dev_<date>.json): every selection, the family comparisons, the screens,
+    the dictionary variant, the memorisation report and the shipped blobs. Counts, rates, hashes, ids only."""
+    sel = Path(a.select_dir)
+    out = {"kind": "vocr6-lm-dev", "schema": 1, "created": utc_now(), "issue": 127,
+           "protocol_sha256": sha256(a.protocol), "tiers": {}, "original_path": {}}
+    for f in sorted(sel.glob("*.json")):
+        tier, rest = f.stem.split("_", 1)
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        part, path = rest.rsplit("_", 1)
+        (out["tiers"] if path == "shown" else out["original_path"]).setdefault(tier, {})[part] = doc
+    for key, files in (("screen", a.screen), ("memorisation", a.memo), ("lexicon", a.lexicon),
+                       ("final_check", a.final_check), ("sensitivity", a.sensitivity)):
+        out[key] = [json.loads(Path(x).read_text(encoding="utf-8")) for x in files]
+    out["shipped"] = json.loads(Path(a.shipped).read_text(encoding="utf-8")) if a.shipped else None
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{a.out}: {Path(a.out).stat().st_size:,} B")
+
+
+def _pp(x):
+    return "–" if x is None else f"{x:.3f}"
+
+
+def _ci(c):
+    return f"{c['delta_points']:+.3f} ({c['ci95'][0]:+.3f} to {c['ci95'][1]:+.3f})"
+
+
+def cmd_tables(a):
+    """docs/vocr6-lm.md's tables from the summary JSON (between <!-- table:NAME --> and <!-- /table:NAME -->)."""
+    import re
+    j = json.loads(Path(a.json).read_text(encoding="utf-8"))
+    T = j["tiers"]
+    tabs = {}
+    rows = ["| LM tier | ships | recipe (game-text weight, re-cut) | alpha | beta | flags | cascade |",
+            "|---|---|---|---:|---:|---|---:|"]
+    for t in ("500k", "1000k", "2000k", "4000k"):
+        s = (j.get("shipped") or {}).get(t) or {}
+        if not s or s.get("family") == "incumbent":
+            rows.append(f"| {t} | ctclm.2 (unchanged) | – | 500 | {RUBI_BETA[t]} | EOS | 700 |")
+            continue
+        c = s["config"]
+        fl = " \\| ".join(n for b, n in ((1, "BOS"), (2, "EOS")) if c["flags"] & b) or "0"
+        rows.append(f"| {t} | `{s['file']}` | {s['recipe']} | {c['alpha']} | {c['beta']} | {fl} | "
+                    f"{s['cascade_conf']} |")
+    tabs["shipped"] = rows
+    rows = ["| LM tier | part | greedy | incumbent | A in-sample | A cross-validated | B in-sample | "
+            "B cross-validated |", "|---|---|---:|---:|---:|---:|---:|---:|"]
+    for t in ("500k", "1000k", "2000k", "4000k"):
+        bkey = "B3" if "B3" in T[t] else "B"
+        A, B = T[t]["A"]["models"]["N"], T[t][bkey]["models"]["N"]
+        for p, name in (("hp", "hval page path"), ("hc", "hval clean lines"), ("dev", "dev score"),
+                        ("wd", "dev whole dialogue"), ("obj", "objective")):
+            rows.append(f"| {t} | {name} | {_pp(A['greedy'][p])} | {_pp(A['incumbent'][p])} | "
+                        f"{_pp(A['in_sample'][p])} | {_pp(A['cv'][p])} | {_pp(B['in_sample'][p])} | "
+                        f"{_pp(B['cv'][p])} |")
+    tabs["results"] = rows
+    rows = ["| LM tier | family | chosen (in-sample) | hp, CV − incumbent | dev score, CV − incumbent | (a) | (b) | "
+            "(c) | (d) | adopted |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for t in ("500k", "1000k", "2000k", "4000k"):
+        for fam in ("A", "B", "B3"):
+            if fam not in T[t]:
+                continue
+            r = T[t][fam]
+            c = r["chosen"]["in_sample"]
+            cm = r["models"]["N"]["cv_minus_incumbent"]
+            ru = r["rule"]
+            yn = {True: "yes", False: "no", None: "–"}
+            label = {"A": "A (no game text)", "B": "B (game text)", "B3": "B, order 3"}[fam]
+            rows.append(f"| {t} | {label} | `{c['lm']}` a{c['config']['alpha']} b{c['config']['beta']} "
+                        f"f{c['config']['flags']} c{c['cascade_conf']} | {_ci(cm['hp'])} | {_ci(cm['dev'])} | "
+                        f"{yn[ru['a_hp_better']]} | {yn[ru['b_dev_not_worse']]} | {yn[ru['c_S_L_not_worse']]} | "
+                        f"{yn[ru['d_bytes'] and ru['d_workspace']]} | {yn[ru['adopted']]} |")
+    tabs["rule"] = rows
+    rows = ["| LM tier | comparison | objective | hval page path | hval clean lines | dev score | ships |",
+            "|---|---|---|---|---|---|---|"]
+    for t in ("500k", "1000k", "2000k", "4000k"):
+        for key, name in (("AB", "B − A"), ("B3vsA", "B (order 3) − A"), ("BvsB3", "B (order 4) − B (order 3)")):
+            if key not in T[t]:
+                continue
+            c = T[t][key]["B_minus_A_cv"]["N"]
+            ships = {"AB": {"A": "A", "B": "B"}, "B3vsA": {"A": "A", "B": "B, order 3"},
+                     "BvsB3": {"A": "B, order 3", "B": "B, order 4"}}[key].get(T[t][key]["rule"]["ships"],
+                                                                         T[t][key]["rule"]["ships"])
+            rows.append(f"| {t} | {name} | {_ci(c['obj'])} | {_ci(c['hp'])} | {_ci(c['hc'])} | {_ci(c['dev'])} | "
+                        f"{ships} |")
+    tabs["families"] = rows
+    rows = ["| LM tier | model | hval page path | hval clean lines | dev score | objective |",
+            "|---|---|---|---|---|---|"]
+    for t in ("1000k", "4000k"):
+        bkey = "B3" if "B3" in T[t] else "B"
+        for m, name in (("S", "VOCR5-S + cascade to N"), ("N", "VOCR5-N + cascade to L"), ("L", "VOCR5-L")):
+            c = T[t][bkey]["models"][m]["cv_minus_incumbent"]
+            rows.append(f"| {t} | {name} | {_ci(c['hp'])} | {_ci(c['hc'])} | {_ci(c['dev'])} | "
+                        f"{_ci(c['obj'])} |")
+    tabs["models"] = rows
+    rows = ["| LM tier | platform | hc incumbent | hc B (CV) | hp incumbent | hp B (CV) |",
+            "|---|---|---:|---:|---:|---:|"]
+    for t in ("1000k", "4000k"):
+        bkey = "B3" if "B3" in T[t] else "B"
+        for pl in ("vita", "psp"):
+            x = T[t][bkey]["models"]["N"]["by_platform"][pl]
+            rows.append(f"| {t} | {pl} | {x['hc']['incumbent']:.3f} | {x['hc']['cv']:.3f} | "
+                        f"{x['hp']['incumbent']:.3f} | {x['hp']['cv']:.3f} |")
+    tabs["platform"] = rows
+    rows = ["| LM tier | path | A chosen | B chosen | ships |", "|---|---|---|---|---|"]
+    for t in ("500k", "1000k", "2000k", "4000k"):
+        o = j["original_path"].get(t)
+        if not o:
+            continue
+        ca, cb = o["A"]["chosen"]["in_sample"], o["B"]["chosen"]["in_sample"]
+        rows.append(f"| {t} | original | `{ca['lm']}` a{ca['config']['alpha']} b{ca['config']['beta']} "
+                    f"f{ca['config']['flags']} | `{cb['lm']}` a{cb['config']['alpha']} b{cb['config']['beta']} "
+                    f"f{cb['config']['flags']} | {o['AB']['rule']['ships']} |")
+    tabs["original"] = rows
+    if j.get("screen"):
+        rows = ["| LM | bytes | hval lines, BOS | hval, no BOS | dev references, BOS | dev, no BOS |",
+                "|---|---:|---:|---:|---:|---:|"]
+        for s in j["screen"]:
+            for name, r in s["lms"].items():
+                rows.append(f"| `{name}` | {r['bytes']:,} | {r['hval_bos']:.3f} | {r['hval_nobos']:.3f} | "
+                            f"{r['dev_bos']:.3f} | {r['dev_nobos']:.3f} |")
+        tabs["screen"] = rows
+    doc = Path(a.doc).read_text(encoding="utf-8")
+    for k, rows in tabs.items():
+        pat = re.compile(rf"(<!-- table:{k} -->\n).*?(<!-- /table:{k} -->)", re.S)
+        doc, n = pat.subn(lambda m, rows=rows: m.group(1) + "\n".join(rows) + "\n" + m.group(2), doc)
+        if not n:
+            print(f"no marker for table {k}", file=sys.stderr)
+    Path(a.doc).write_text(doc, encoding="utf-8")
 
 
 def workspace_bytes(lm, opts):
@@ -893,6 +1060,23 @@ def main():
     p.add_argument("--lm", action="append", required=True)
     p.add_argument("--hval-text", required=True)
     p.add_argument("--out", required=True)
+    p = sub.add_parser("summary")
+    p.add_argument("--protocol", required=True)
+    p.add_argument("--select-dir", required=True)
+    p.add_argument("--screen", action="append", default=[])
+    p.add_argument("--memo", action="append", default=[])
+    p.add_argument("--lexicon", action="append", default=[])
+    p.add_argument("--final-check", action="append", default=[])
+    p.add_argument("--sensitivity", action="append", default=[])
+    p.add_argument("--shipped")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("tables")
+    p.add_argument("--json", required=True)
+    p.add_argument("--doc", required=True)
+    p = sub.add_parser("families")
+    p.add_argument("--a", required=True, help="select output of family A (no game text)")
+    p.add_argument("--b", required=True, help="select output of family B (game text)")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("lex-tune")
     p.add_argument("--lm", required=True, help="NAME=PATH")
     p.add_argument("--config", required=True, help="the n-gram setting (JSON: alpha, beta, flags, ...)")
@@ -916,7 +1100,8 @@ def main():
     p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
-     "select": cmd_select, "lex-tune": cmd_lex_tune}[a.cmd](a)
+     "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families, "summary": cmd_summary,
+     "tables": cmd_tables}[a.cmd](a)
 
 
 if __name__ == "__main__":

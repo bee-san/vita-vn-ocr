@@ -512,39 +512,55 @@ def cmd_clannad(a):
         x, y, w, h = rs[0]["roi"]
         rois.append(np.ascontiguousarray(frames[-1].grey[y:y + h, x:x + w]))
     grad = TP.c_grad(FT.build(priv / "fbuild", a.compiler)["driver"])(rois)
-    spots = {"textspot6": spot_rows(blob, frames, priv / "spot_textspot6.jsonl", "clannad", a.workers),
-             "textspot3": spot_rows(T3_BLOB, frames, priv / "spot_textspot3.jsonl", "clannad", a.workers)}
-    # (a) whole frames, textspot3's way
+    # (a) whole frames, textspot3's way. The stored arms come first: they must reproduce their committed records
+    # before any box of the final weights (or the re-spotted textspot3 pick) is computed on a CLANNAD page.
     mine = [("textspot6_det", "textspot6", "det"), ("textspot6_detref", "textspot6", "detref"),
             ("textspot3_reread", "textspot3", "detref")]
-    per_frame = []
-    for i, f in enumerate(frames):
-        d = {n: E6.arm_of(spots[src][i], k, f.height)[0] for n, src, k in mine}
-        for arm, doc in stored.items():
-            fr = doc["frames"][f.id]
-            d[arm] = dict(fr, boxes=[tuple(b) for b in fr["boxes"]], blocks=[tuple(b) for b in fr["blocks"]])
-        per_frame.append(d)
-    names = list(per_frame[0])
     cache = TS.Cache(priv / "cache")
     try:
-        n_read = TS.read_all(frames, per_frame, models, rd, cache, a.workers)
-        preds, counts, extra = TP2.clannad_preds(pages, frames, per_frame, grad, refs, names, models, rd, cache)
+        sp = [{arm: dict(doc["frames"][f.id], boxes=[tuple(b) for b in doc["frames"][f.id]["boxes"]],
+                         blocks=[tuple(b) for b in doc["frames"][f.id]["blocks"]]) for arm, doc in stored.items()}
+              for f in frames]
+        preds, counts, extra, n_read, diffs = {}, {}, None, 0, []
+        if stored:
+            n_read += TS.read_all(frames, sp, models, rd, cache, a.workers)
+            p0, counts, extra = TP2.clannad_preds(pages, frames, sp, grad, refs, list(stored), models, rd, cache)
+            preds = {n: p0[n][RULE_MODEL] for n in stored}
+            sel0 = [x for x in refs.values() if x["status"] == "ref" and x["id"] in preds[TP2.REF_ARM]]
+            sc0 = scope_tables(sel0, preds, list(stored), [])
+            diffs = [k for k, v in (("scored_lines", len(sel0)), ("counts", extra)) if v != record[k]]
+            diffs += [f"arms.{k}" for k in stored if counts[k] != want[k]]
+            for scope in ("dialogue", "all"):
+                sy = sc0[scope]["systems"]
+                diffs += [f"{scope}.{k}" for k in TP2.STORED_ARMS
+                          if sy[k] != record["scopes"][scope]["systems"].get(f"{k}/{RULE_MODEL}")]
+                if sy[T3_ARM] != t3rec["scopes"][scope]["systems"].get(f"{T3_ARM}/{RULE_MODEL}"):
+                    diffs.append(f"{scope}.{T3_ARM}")
+            if diffs:
+                (out / "clannad.stopped.json").write_text(json.dumps(
+                    {"stopped": utc(), "why": "the stored arms do not reproduce their records; no box of the final "
+                     "weights was computed", "differences": diffs}, indent=1) + "\n", encoding="utf-8")
+                raise SystemExit(f"the stored arms do not reproduce their CLANNAD records: {diffs[:5]}")
+        spots = {"textspot6": spot_rows(blob, frames, priv / "spot_textspot6.jsonl", "clannad", a.workers),
+                 "textspot3": spot_rows(T3_BLOB, frames, priv / "spot_textspot3.jsonl", "clannad", a.workers)}
+        per_frame = [{n: E6.arm_of(spots[src][i], k, f.height)[0] for n, src, k in mine} for i, f in enumerate(frames)]
+        n_read += TS.read_all(frames, per_frame, models, rd, cache, a.workers)
+        p1, c1, extra1 = TP2.clannad_preds(pages, frames, per_frame, grad, refs, [n for n, _, _ in mine], models, rd,
+                                           cache)
     finally:
         cache.close()
-    preds = {n: preds[n][RULE_MODEL] for n in names}
+    if extra is not None and extra1 != extra:
+        raise SystemExit("the page counts differ between the stored arms' pass and the final weights'")
+    extra = extra1
+    preds.update({n: p1[n][RULE_MODEL] for n, _, _ in mine})
+    counts.update(c1)
+    names = [n for n, _, _ in mine] + list(stored)
     sel_lines = [x for x in refs.values() if x["status"] == "ref" and x["id"] in preds[names[0]]]
+    (priv / "preds_whole.json").write_text(json.dumps(preds, ensure_ascii=False) + "\n", encoding="utf-8")
     whole = {"scored_lines": len(sel_lines), "counts": extra, "arms": {n: counts[n] for n in names},
              "read": n_read, "cache_seed": seeded, "primary": f"textspot6_{KIND[dec]}",
              "scopes": scope_tables(sel_lines, preds, names, ["textspot6_det", "textspot6_detref"])}
     if not dry:
-        diffs = [k for k, v in (("scored_lines", len(sel_lines)), ("counts", extra)) if v != record[k]]
-        diffs += [f"arms.{k}" for k in stored if counts[k] != want[k]]
-        for scope in ("dialogue", "all"):
-            sy = whole["scopes"][scope]["systems"]
-            diffs += [f"{scope}.{k}" for k in TP2.STORED_ARMS
-                      if sy[k] != record["scopes"][scope]["systems"].get(f"{k}/{RULE_MODEL}")]
-            if sy[T3_ARM] != t3rec["scopes"][scope]["systems"].get(f"{T3_ARM}/{RULE_MODEL}"):
-                diffs.append(f"{scope}.{T3_ARM}")
         same = sum(1 for i, f in enumerate(frames)
                    if [list(b) for b in per_frame[i]["textspot3_reread"]["boxes"]]
                    == [list(b) for b in stored[T3_ARM]["frames"][f.id]["boxes"]])
@@ -582,6 +598,7 @@ def cmd_clannad(a):
             for ref_row, k in keyed_refs(rs, refs, grad[idx_of[page]]):
                 rp[n][ref_row["id"]] = "".join(t for t, o in zip(r["texts"], owner) if o == k)
     roi_lines = [x for x in sel_lines if x["id"] in rp["grad_refine"]]
+    (priv / "preds_roi.json").write_text(json.dumps(rp, ensure_ascii=False) + "\n", encoding="utf-8")
     roi = {"units": len(units), "units_sha256": sha256_file(pkl), "decode": dec, "scored_lines": len(roi_lines),
            "assignment": "pagepath's boxes (ROI px) go to the GRAD box of the ROI they lie mostly inside "
                          "(textdet_protected.assign); a reference line reads its boxes' page-path texts in box order",
@@ -597,8 +614,6 @@ def cmd_clannad(a):
     for part, doc in (("whole", whole), ("roi", roi)):
         for n, v in doc["scopes"]["dialogue"]["systems"].items():
             print(f"clannad {part} {n}: dialogue CER {v['cer']} {v.get('cer_ci95')}", flush=True)
-    if not dry and whole["stored"]["differences"]:
-        raise SystemExit(f"the stored arms do not reproduce their records: {whole['stored']['differences'][:5]}")
     return result
 
 

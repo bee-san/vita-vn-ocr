@@ -3,7 +3,7 @@
 # one real read. title: two hval titles (one Vita, one PSP); tests: textspot's development manifest; clannad: a
 # stand-in work directory from 30 hval pages of two Vita titles. Run through heavy.sh (5 threads).
 #   test_dryrun.sh RUN_DIR DECODE...     a finished stage-1 run as the "final" weights, e.g. base_qS4_seed1 crop det
-# Env: PAGEPATH (the pinned eval/pagepath.py), OUT (default $A/vocr6-spotter/dryrun).
+# Env: PAGEPATH (the pinned eval/pagepath.py), OUT (default $A/vocr6-spotter/dryrun), ONLY (title|tests|clannad).
 set -euo pipefail
 HERD=${HERD:-/local/home/skerraut/herd-vita-ocr}
 A=$HERD/shared/artifacts
@@ -23,14 +23,15 @@ for dec in "$@"; do
   printf '{"kind": "textspot6-selection", "dry_run": true, "pick": {"arm": "%s", "decode": "%s", "seed": %s}}\n' \
     "$arm" "$dec" "$seed" > "$SEL"
   D=$OUT/$dec
-  rm -rf "$D"
-  "$PY" "$REPO/eval/textspot6_test.py" title --dry-run --split hval --titles PCSG01110,NPJG00016 --selection "$SEL" \
+  only=${ONLY:-}
+  if [ -n "$only" ]; then rm -rf "${D:?}/$only"; else rm -rf "$D"; fi
+  [ -z "$only" ] || [ "$only" = title ] && "$PY" "$REPO/eval/textspot6_test.py" title --dry-run --split hval --titles PCSG01110,NPJG00016 --selection "$SEL" \
     --final "$RUN" --out "$D/title" --pagepath "$PAGEPATH"
-  if [ $first = 1 ]; then
+  if [ $first = 1 ] && { [ -z "$only" ] || [ "$only" = tests ]; }; then
     "$PY" "$REPO/eval/textspot6_test.py" tests --dry-run --selection "$SEL" --final "$RUN" --out "$D/tests"
     first=0
   fi
-  "$PY" "$REPO/eval/textspot6_test.py" clannad --dry-run --work "$OUT/standin" --selection "$SEL" --final "$RUN" \
+  [ -z "$only" ] || [ "$only" = clannad ] && "$PY" "$REPO/eval/textspot6_test.py" clannad --dry-run --work "$OUT/standin" --selection "$SEL" --final "$RUN" \
     --out "$D/clannad" --pagepath "$PAGEPATH"
 done
 echo "test_dryrun finished $OUT"

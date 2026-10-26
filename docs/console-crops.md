@@ -11,8 +11,8 @@ line, and label it with that line's text. The resulting pool is for crop-in-the-
 arm S2cil.
 
 `data/console_crops.py` builds the pool. It is private by design: the crops and labels are copyrighted game data and
-stay under `$HERD/shared/artifacts`. Only the manifest (sha256 and counts, no text) is committed:
-`data/manifests/vocr6_console_crops_v1.json`.
+stay under `$HERD/shared/artifacts`. Only the manifests (sha256 and counts, no text) are committed:
+`data/manifests/vocr6_console_crops_v1.json` and `_v2.json`.
 
 ## How a crop is made
 
@@ -81,7 +81,8 @@ and the counts per title and kind.
       (232 → 1,102, 996 of them on renderer text boxes, so not negatives) and more negatives (20 → 102), and other
       jitter draws where box indices shift.
     - NPJG00016: 1 console and 5 native whole crops differ.
-  - A v2 is cut with `fix=1`, Rubi's default, or with vocr6-spotter's spotter if #129's amendment 2 selects it.
+  - [v2](#v2-2026-10-26) is cut with `fix=1`, Rubi's default. If #129's amendment 2 selects vocr6-spotter's
+    spotter, a later pool is cut from its boxes.
 - **Input:** page pool v1 (`eab8f07b…`, splits `417df3d7…`), sets train / hval / guard, variants base and
   expanded-8, both views.
 - **Build:** 7 minutes for the 46 titles with dialogue regions, 5 processes.
@@ -183,6 +184,57 @@ Other notes on v1:
 
   v1 itself is rebuilt byte for byte by #136's script (`git show 7902aff:data/console_crops.py`) on #135's finder
   (audit-vocr6-finder-c §4).
+
+## v2 (2026-10-26)
+
+v2 is cut by Rubi's shipped finder and labelled with the required-cell rule. It is for vocr6-lead's stage-4b fold-in
+retrain, on the train, hval and guard pages. v1 is unchanged and stays pinned for S2cil.
+
+- **Finder:** `rubi,fix=1`, COLGAP alone. That is `VOCR_FIX_DEFAULT` since #129's amendment 3, and Rubi's
+  `ocr_line_fix = on` (bee-san/Rubi_for_vita#330).
+- **Labelling:** the required-cell rule above.
+- **Everything else is v1's:** page pool v1, the three sets, both variants, both views and jitter 2.
+- **Build:** `data/console_crops.py` at main `7766d4a` (#136's merge) with the command under Reproduce. It took 7.5
+  minutes with 5 processes.
+- **Manifest:** sha256 `45cbddaa2aa7d5226ea4bf5999b25aee313e977132d58b0f19f49833177e894e`, committed as
+  `data/manifests/vocr6_console_crops_v2.json`.
+
+| pool | train v1 → v2 | hval v1 → v2 | guard v1 → v2 |
+|---|---:|---:|---:|
+| console (whole lines) | 98,324 → 98,340 | 4,245 → 4,245 | 4,574 → 4,574 |
+| console_jitter | 304,524 → 304,543 | 13,064 → 13,068 | 14,249 → 14,247 |
+| console_empty (negatives) | 1,145 → **4,712** | 38 → 195 | 50 → 226 |
+| console_native / _jitter_native | 38,500 / 111,152 → 38,542 / 111,284 | 1,679 / 4,700 → 1,680 / 4,705 | 1,671 / 4,779 → 1,672 / 4,782 |
+| console_empty_native | 689 → **1,937** | 25 → 81 | 29 → 76 |
+| drop_* | 150 / 321 / 142 / 299 → 150 / 323 / 142 / 299 | 2 / 4 / 2 / 4, unchanged | 0 |
+
+The labelled pools barely change. The negatives grow about fourfold, because without JUNK the finder returns frame
+strips, ornaments and slivers of art on a region's edge as lines, as Rubi's default does on the console. The
+required-cell rule cannot add empty boxes: a box over a required cell counts as holding its line. So the growth is
+the finder's (audit-vocr6-finder-f's PCSG00854 rebuild above shows the same).
+
+Finder boxes in the console view, all splits:
+- 168,858 whole;
+- 2,919 partial;
+- 526 merged;
+- 6,969 empty, of which 1,792 overlap a renderer text box and are not used as negatives.
+
+Coverage: 77,597 of the train split's 79,733 region lines (97.3%) have at least one whole console crop (v1: 77,596).
+
+**Verification** (2026-10-26, `verify_v2.py`: v1's script on v2's directory):
+
+- **Files:** all 476 listed files are present, with no extra ones. Every sha256, crop count and layout is right.
+- **Re-cut:** 3,000 random crops were re-cut from their page, after checking the page's sha256. All 3,000 are
+  pixel-exact, with the right label and split.
+- **Loader:** `train/train2.load_shard` with the N vocab keeps every train crop.
+- **v1's known wrong labels:** none of the 63 listed crops is in v2 (no v2 crop has their pixels).
+- **By eye:** 48 random console_empty crops that are new in v2 (of 3,563), on one contact sheet, checked by the
+  assistant (Claude). They are frame strips, ornament borders, gradient bars, slivers of character art and a clock
+  icon, and none holds text.
+- **Against v1:** of v2's whole-line crops, 99.94% of train/console and 99.69% of train/console_native have the
+  pixels and the label of a v1 crop (hval and guard 99.88-100%). Of the jittered ones, 96.0-96.8% do in every split:
+  a box's draws follow its index among the region's boxes, and that shifts where JUNK dropped a box before. Only
+  17-37% of the negatives are v1's.
 
 ## Reproduce
 

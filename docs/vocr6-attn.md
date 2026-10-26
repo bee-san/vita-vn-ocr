@@ -25,7 +25,10 @@ arm decides whether VOCR6 uses it.
 - **Time (estimates).** The op costs about 0.15 ms a frame on a 640-px line, at 333 MHz on one Cortex-A9 without
   prefetch credit. That is **+35 ms per nominal 3-line box for Normal** on top of the adopted gate + two-level head
   (758 → 794 ms; +26 ms at 444 MHz), and +28 ms for Small. That is 22-23% of the 122-160 ms the speed work freed.
-- **Proxy (a smoke test, not a decision).** "Proxy" below.
+- **Proxy (a smoke test, not a decision).** A 15k-step re-fine-tune of VOCR5-N with the block against the same
+  run without it, 1 seed each: the block trains (its gate moves from 0 to 0.039). teacher_val_dev reads 1.434 /
+  1.508% against the control's 1.572 / 1.551%. The dev score (W8I, Rubi's decode) is level: 2.042 against 2.049,
+  −0.007 points [−0.133, +0.117]. "Proxy" below.
 
 Nothing ran on a console.
 
@@ -267,7 +270,39 @@ Pre-registered in `vocr6/experiments.jsonl` (09:33Z). `eval/vocr6_attn_proxy.sh 
   `args.json`). lr 1.2e-3, warmup 500, cosine to 5%, batch 96, EMA 0.999, seed 1.
 - **Arms.** `--attn 1` (dim 96, 2 heads, from gate 0) against the same run with `--attn 0`.
 
-_Running at the time of writing; results are filled in when both runs finish._
+**Results** (measured; `eval/vocr6_attn_proxy_20261026.json`). Dev = the lead's `eval/vocr6_score.py`
+(`feat/vocr6-recipe`), dev plan only: VOCR5's development score 0.25 tv + 0.25 dn + 0.5 wd in the console view, W8I,
+Rubi's decode without the cascade, no head gate, the hooked titles' VNs (v12188, v18432) left out. The init's row is
+the lead's own score of the same blob.
+
+| run | teacher_val_dev CER, rv / rvn (train2's log: float, EMA, greedy) | dev score, W8I + Rubi's decode (tv / dn / wd) | dev score, W8I greedy |
+|---|---:|---:|---:|
+| init: `v5f_N_seed1` step 15000 (VOCR5-N, seed 1) | 1.561 / 1.561% | 2.098 (0.675 / 0.773 / 3.472) | 2.309 |
+| a0: + 15k steps, `--attn 0` | 1.572 / 1.551% | 2.049 (0.612 / 0.836 / 3.373) | 2.305 |
+| a1: + 15k steps, `--attn 1` | 1.434 / 1.508% | 2.042 (0.650 / 0.698 / 3.409) | 2.290 |
+
+Paired differences in the dev score, in CER points, with 95% intervals from the lead's `eval/vocr6_select.py`
+bootstrap over VNs (10,000 resamples):
+
+- a0 → a1, the block (a1 against its control a0): dev score −0.007 points [−0.133, +0.117] with Rubi's decode (tv
+  +0.038, dn −0.137, wd +0.035); greedy −0.015 [−0.100, +0.065]; teacher_val_dev rv −0.138, rvn −0.042
+- init → a0, 15k more fine-tuning steps without it: dev score −0.050 points [−0.137, +0.036] with Rubi's decode (tv
+  −0.064, dn +0.062, wd −0.098); greedy −0.004 [−0.078, +0.071]; teacher_val_dev rv +0.011, rvn −0.011
+- init → a1, 15k more steps with it: dev score −0.057 points [−0.150, +0.036] with Rubi's decode (tv −0.025, dn
+  −0.075, wd −0.063); greedy −0.019 [−0.108, +0.071]; teacher_val_dev rv −0.127, rvn −0.053
+
+- **It trains.** The learnt gate moves from 0 to 0.039. On 40 teacher_val_dev lines the block's output g·O(·) is a
+  median 15% of z's norm (8-21%). Its attention is sharply peaked (mean largest weight 0.97), on keys a mean 10.9
+  frames from the query, beyond the ±4 frames of VOCR5's temporal convolutions.
+- **The trained checkpoint is exact.** `parity.py --ckpt` on a1's final checkpoint, 120 lines of synth2's held-out
+  shard: bit-exact to the twin in f32, W8F and W8I; max normalised logit difference to PyTorch 5.1e-6 / 3.7e-6 /
+  3.3e-4; the same text as PyTorch on every line; tiles, invert and arena pass.
+- **What it shows.** The block trains. On teacher_val_dev a1 reads 0.14 / 0.04 points better than a0. On the dev
+  score, the shipped form, the two are level: −0.007 points [−0.133, +0.117] (tv +0.04 and wd +0.04 worse, dn −0.14
+  better, none resolved). One seed of a 15k re-fine-tune cannot resolve gains of this size. The arms also do not share their
+  dropout draws: the block's initialisation draws from torch's global RNG, so every later dropout mask differs (the
+  batches are the same, from numpy's generator). The stage-3 arm decides, with its own seeds and the hval page path.
+- **Cost of the runs.** a1 09:35-11:58Z (2.4 slot-hours), a0 12:34-15:29Z (2.9 slot-hours, on a busier machine).
 
 ## Limits
 
@@ -311,7 +346,17 @@ HEAVY_SLOTS=12 $H/heavy.sh eval/reproducibility/vocr6-attn-20261026/a9.sh $D/cos
 # the proxy (one heavy slot each)
 HEAVY_SLOTS=12 $H/heavy.sh timeout 36000 eval/vocr6_attn_proxy.sh 1 1 $D/runs
 HEAVY_SLOTS=12 $H/heavy.sh timeout 36000 eval/vocr6_attn_proxy.sh 0 1 $D/runs
+# their dev scores: eval/vocr6_score.py and eval/vocr6_select.py from origin/feat/vocr6-recipe, the dev plan only
+for a in a0 a1; do R=vocr6attn_N_${a}_s1; B=$D/blobs/${R}_w8.vocr; W=$H/shared/artifacts/vocr5-analysis/work
+  .venv-ci/bin/python train/export.py --ckpt $D/runs/$R/ckpt_step15000.pt --out $B --int8
+  HEAVY_SLOTS=12 $H/heavy.sh .venv-ci/bin/python eval/vocr6_score.py read --plan $W/plan.pkl --blob $B \
+    --lm $H/shared/artifacts/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm --out $D/scores/dump_dev_$a.json
+  .venv-ci/bin/python eval/vocr6_score.py score --name $R --blob $B --rubi-norm $H/shared/artifacts/vocr6-lead/tools/rubi_norm \
+    --dev-plan $W/plan.pkl --dev-units $W/units.pkl --dev-dump $D/scores/dump_dev_$a.json --exclude-vns v12188 v18432 \
+    --out $D/scores/score_$a.json
+done
 ```
 
 The committed records are `eval/vocr6_attn_sizes_20261026.json` and `eval/vocr6_attn_time_20261026.json` (the two
-`cost/` files above).
+`cost/` files above) and `eval/vocr6_attn_proxy_20261026.json` (the proxy: the runs' logs, the dev scores and their
+paired intervals, the trained block's diagnostics and parity).

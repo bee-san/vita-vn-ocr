@@ -1,0 +1,457 @@
+{
+ "kind": "vocr6-attn-proxy",
+ "schema": 1,
+ "smoke_test_not_a_decision": true,
+ "preregistered": "vocr6/experiments.jsonl 2026-10-26T09:33:31Z (label vocr6-s3-attn, arm 'proxy a1 vs a0')",
+ "script": {
+  "file": "eval/vocr6_attn_proxy.sh",
+  "sha256": "a1acbbdcbed1d6e6e1132af0308f8c4c2b2170caf567d9d3073540acb9bea77d",
+  "commit": "7db44ab"
+ },
+ "init": {
+  "checkpoint": "$HERD/shared/artifacts/vocr5-train/runs/v5f_N_seed1/ckpt_step15000.pt",
+  "sha256": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266"
+ },
+ "arms": {
+  "a0": "--attn 0",
+  "a1": "--attn 1 --attn-dim 96 --attn-heads 2"
+ },
+ "runs": {
+  "a0": {
+   "checkpoint_sha256": "770338f90dcc85fce988e422f7bd6314411e389cc8379ff4c1c12c23d655968d",
+   "blob_sha256": "1d1603fe5edf035928098c684038b63f16fb67c77d40240f66e2c4f6016df8a0",
+   "blob_bytes": 1185632,
+   "arena_w8i_bytes": 182944
+  },
+  "a1": {
+   "checkpoint_sha256": "2b862a3989c9df447019ee59ae3533b122054d48fe1b5a33753b134047f21e70",
+   "blob_sha256": "ed41fd8ea1d08b0fb5b609fb97ea4851c3bc72b14e88ef880e0440936c447e9c",
+   "blob_bytes": 1225632,
+   "arena_w8i_bytes": 232096
+  }
+ },
+ "wall_clock": {
+  "a1": [
+   "2026-10-26T09:35:00Z",
+   "2026-10-26T11:58:31Z"
+  ],
+  "a0": [
+   "2026-10-26T12:34:12Z",
+   "2026-10-26T15:28:39Z"
+  ]
+ },
+ "teacher_val_dev": {
+  "what": "train2's log: float EMA model, greedy, eval/metrics.norm CER; rv as stored, rvn native polarity",
+  "file_sha256": "e2f0300fd9f417b6c3c01e1dab36641bfd72749e2cac5db896226ef0d29b65dd",
+  "init_step15000": {
+   "rv": 0.015611724723874256,
+   "rvn": 0.015611724723874256,
+   "rv_exact": 0.9009384775808134,
+   "rvn_exact": 0.899895724713243
+  },
+  "curves": {
+   "a0": [
+    {
+     "step": 2500,
+     "rv": 0.016143,
+     "rvn": 0.016037
+    },
+    {
+     "step": 5000,
+     "rv": 0.016355,
+     "rvn": 0.016143
+    },
+    {
+     "step": 7500,
+     "rv": 0.015506,
+     "rvn": 0.015506
+    },
+    {
+     "step": 10000,
+     "rv": 0.015399,
+     "rvn": 0.016037
+    },
+    {
+     "step": 12500,
+     "rv": 0.016143,
+     "rvn": 0.016249
+    },
+    {
+     "step": 15000,
+     "rv": 0.015718,
+     "rvn": 0.015506
+    }
+   ],
+   "a1": [
+    {
+     "step": 2500,
+     "rv": 0.016143,
+     "rvn": 0.016037
+    },
+    {
+     "step": 5000,
+     "rv": 0.015399,
+     "rvn": 0.01593
+    },
+    {
+     "step": 7500,
+     "rv": 0.015718,
+     "rvn": 0.015718
+    },
+    {
+     "step": 10000,
+     "rv": 0.015081,
+     "rvn": 0.015293
+    },
+    {
+     "step": 12500,
+     "rv": 0.014444,
+     "rvn": 0.014975
+    },
+    {
+     "step": 15000,
+     "rv": 0.014337,
+     "rvn": 0.015081
+    }
+   ]
+  },
+  "final": {
+   "a0": {
+    "rv": 0.015717926932880204,
+    "rvn": 0.015505522514868308,
+    "rv_exact": 0.9030239833159541,
+    "rvn_exact": 0.9030239833159541
+   },
+   "a1": {
+    "rv": 0.01433729821580289,
+    "rvn": 0.01508071367884452,
+    "rv_exact": 0.913451511991658,
+    "rvn_exact": 0.9092805005213764
+   }
+  }
+ },
+ "dev": {
+  "what": "eval/vocr6_score.py read/score (origin/feat/vocr6-recipe), dev plan only: 0.25 tv + 0.25 dn + 0.5 wd, console view, W8I, Rubi decode (counter re-decode 6000/4000, beam 8 + 1 MB LM) without cascade, no head gate",
+  "dev_plan_sha256": "12938dfa38cd8f9b22a5607e469d061bd4b87bfab4deca1ab55e78116e485ef3",
+  "exclude_vns": [
+   "v12188",
+   "v18432"
+  ],
+  "init_score_file": "$HERD/shared/artifacts/vocr6-lead/scores/score_VOCR5-N-seed1.json (the lead's, same blob)",
+  "summary": {
+   "init": {
+    "rubi": {
+     "hval_clean_dlg": 0.5485,
+     "hval_clean_dlg_vita": 0.457,
+     "hval_clean_dlg_psp": 0.7229,
+     "hval_clean_name": 7.5,
+     "hval_page": 2.317,
+     "hval_page_vita": 2.0693,
+     "hval_page_psp": 2.7823,
+     "hval_page_all": 3.9047,
+     "tv": 0.6752,
+     "dn": 0.7732,
+     "wd": 3.4719,
+     "dev_score": 2.0981
+    },
+    "greedy": {
+     "hval_clean_dlg": 0.5975,
+     "hval_clean_dlg_vita": 0.466,
+     "hval_clean_dlg_psp": 0.8482,
+     "hval_clean_name": 0.0,
+     "hval_page": 2.4818,
+     "hval_page_vita": 2.1781,
+     "hval_page_psp": 3.0524,
+     "hval_page_all": 5.8577,
+     "tv": 0.9682,
+     "dn": 0.8979,
+     "wd": 3.6845,
+     "dev_score": 2.3088
+    }
+   },
+   "a0": {
+    "rubi": {
+     "tv": 0.6115,
+     "dn": 0.8355,
+     "wd": 3.3735,
+     "dev_score": 2.0485
+    },
+    "greedy": {
+     "tv": 0.9299,
+     "dn": 0.9353,
+     "wd": 3.6766,
+     "dev_score": 2.3046
+    }
+   },
+   "a1": {
+    "rubi": {
+     "tv": 0.6497,
+     "dn": 0.6983,
+     "wd": 3.4089,
+     "dev_score": 2.0415
+    },
+    "greedy": {
+     "tv": 1.0064,
+     "dn": 0.9103,
+     "wd": 3.6215,
+     "dev_score": 2.2899
+    }
+   }
+  },
+  "pairs": {
+   "a0->a1": {
+    "rubi": {
+     "tv": {
+      "delta_points": 0.038,
+      "ci95": [
+       -0.089,
+       0.162
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": -0.137,
+      "ci95": [
+       -0.413,
+       0.051
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": 0.035,
+      "ci95": [
+       -0.172,
+       0.241
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.007,
+      "ci95": [
+       -0.133,
+       0.117
+      ]
+     }
+    },
+    "greedy": {
+     "tv": {
+      "delta_points": 0.076,
+      "ci95": [
+       -0.1,
+       0.239
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": -0.025,
+      "ci95": [
+       -0.141,
+       0.072
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": -0.055,
+      "ci95": [
+       -0.189,
+       0.071
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.015,
+      "ci95": [
+       -0.1,
+       0.065
+      ]
+     }
+    }
+   },
+   "init->a0": {
+    "rubi": {
+     "tv": {
+      "delta_points": -0.064,
+      "ci95": [
+       -0.232,
+       0.088
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": 0.062,
+      "ci95": [
+       -0.054,
+       0.208
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": -0.098,
+      "ci95": [
+       -0.241,
+       0.033
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.05,
+      "ci95": [
+       -0.137,
+       0.036
+      ]
+     }
+    },
+    "greedy": {
+     "tv": {
+      "delta_points": -0.038,
+      "ci95": [
+       -0.162,
+       0.086
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": 0.037,
+      "ci95": [
+       -0.079,
+       0.182
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": -0.008,
+      "ci95": [
+       -0.125,
+       0.105
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.004,
+      "ci95": [
+       -0.078,
+       0.071
+      ]
+     }
+    }
+   },
+   "init->a1": {
+    "rubi": {
+     "tv": {
+      "delta_points": -0.025,
+      "ci95": [
+       -0.14,
+       0.094
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": -0.075,
+      "ci95": [
+       -0.305,
+       0.097
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": -0.063,
+      "ci95": [
+       -0.202,
+       0.083
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.057,
+      "ci95": [
+       -0.15,
+       0.036
+      ]
+     }
+    },
+    "greedy": {
+     "tv": {
+      "delta_points": 0.038,
+      "ci95": [
+       -0.12,
+       0.192
+      ],
+      "clusters": 92
+     },
+     "dn": {
+      "delta_points": 0.012,
+      "ci95": [
+       -0.11,
+       0.147
+      ],
+      "clusters": 33
+     },
+     "wd": {
+      "delta_points": -0.063,
+      "ci95": [
+       -0.212,
+       0.083
+      ],
+      "clusters": 91
+     },
+     "dev": {
+      "delta_points": -0.019,
+      "ci95": [
+       -0.108,
+       0.071
+      ]
+     }
+    }
+   }
+  },
+  "bootstrap": "eval/vocr6_select.py boot over VNs, seeds tv 0 dn 1 wd 2, 10,000 resamples"
+ },
+ "a1_block": {
+  "gate": 0.0393,
+  "lines": 40,
+  "set": "teacher_val_dev (random 40, seed 0)",
+  "out_over_z_norm_median": 0.146,
+  "out_over_z_norm_range": [
+   0.084,
+   0.206
+  ],
+  "mean_max_attention_weight": 0.97,
+  "normalised_entropy_median": 0.02,
+  "mean_key_query_distance_frames": 10.9
+ },
+ "a1_parity": {
+  "set": "synth2 held-out shard synth_00039.npz",
+  "lines": 120,
+  "pass": true,
+  "f32": {
+   "exact": 120,
+   "logits_ok": 120,
+   "max_norm_diff": 5.056313745027326e-06,
+   "same_text": 120,
+   "text_diff_tie_only": 0,
+   "tiles_checked": 24,
+   "tiles_ok": 24,
+   "invert_ok": 24
+  },
+  "w8f": {
+   "exact": 120,
+   "logits_ok": 120,
+   "max_norm_diff": 3.7110431688444203e-06,
+   "same_text": 120,
+   "text_diff_tie_only": 0,
+   "tiles_checked": 24,
+   "tiles_ok": 24,
+   "invert_ok": 24
+  },
+  "w8i": {
+   "exact": 120,
+   "logits_ok": 120,
+   "max_norm_diff": 0.0003288576562113021,
+   "same_text": 120,
+   "text_diff_tie_only": 0,
+   "tiles_checked": 24,
+   "tiles_ok": 24,
+   "invert_ok": 24
+  }
+ }
+}

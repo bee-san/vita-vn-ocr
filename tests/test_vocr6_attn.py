@@ -499,3 +499,20 @@ def test_committed_cost_records():
             assert t["tiers"][tier][basis]["pack_texts_identical"]
     assert t["estimates_are_not_measurements"] and t["scale"] == 1.000676
     assert t["tiers"]["N"]["nopld"]["nominal_box_ms_333"] == {"ref": 758.4, "attn": 793.5, "delta": 35.1}
+
+
+def test_committed_proxy_record():
+    """The proxy's record (docs/vocr6-attn.md "Proxy"): the numbers the docs quote, a smoke test by its own label."""
+    r = json.loads((ROOT / "eval/vocr6_attn_proxy_20261026.json").read_text())
+    assert r["smoke_test_not_a_decision"] and r["arms"]["a1"].startswith("--attn 1")
+    f = r["teacher_val_dev"]["final"]
+    assert round(100 * f["a1"]["rv"], 3) == 1.434 and round(100 * f["a1"]["rvn"], 3) == 1.508
+    assert round(100 * f["a0"]["rv"], 3) == 1.572 and round(100 * f["a0"]["rvn"], 3) == 1.551
+    s = r["dev"]["summary"]
+    assert (s["init"]["rubi"]["dev_score"], s["a0"]["rubi"]["dev_score"], s["a1"]["rubi"]["dev_score"]) == \
+        (2.0981, 2.0485, 2.0415)
+    d = r["dev"]["pairs"]["a0->a1"]["rubi"]["dev"]
+    assert d["delta_points"] == -0.007 and d["ci95"] == [-0.133, 0.117]
+    assert r["dev"]["exclude_vns"] == ["v12188", "v18432"]
+    p = r["a1_parity"]
+    assert p["pass"] and p["lines"] == 120 and all(p[m]["exact"] == 120 for m in ("f32", "w8f", "w8i"))

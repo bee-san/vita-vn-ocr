@@ -1,0 +1,362 @@
+{
+ "kind": "vocr6-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/125",
+ "plan": "plans/vocr6-plan.md section 7 (herd-synth3); prompts/vocr6-common.md",
+ "registered": "TBD (filled when stage 1 is registered, before any stage-1 run)",
+ "lead": "vocr6-lead",
+ "tiers": {
+  "S": {
+   "shape": "s_w100v4987",
+   "arch": [
+    "--width",
+    "1.0"
+   ],
+   "vocab": {
+    "path": "data/vocab_4987_proof.txt",
+    "sha256": "4a1e7cb77c627a217ae57c7ed427f0695c732dfb85158c674ec4d14994a4e04c"
+   }
+  },
+  "N": {
+   "shape": "n_w150v5631",
+   "arch": [
+    "--width",
+    "1.5"
+   ],
+   "vocab": {
+    "path": "data/vocab_vn_5631.txt",
+    "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0"
+   }
+  },
+  "L": {
+   "shape": "l_lw300v5631",
+   "arch": [
+    "--width",
+    "2.0",
+    "--chans",
+    "64,128,256,480,576"
+   ],
+   "vocab": {
+    "path": "data/vocab_vn_5631.txt",
+    "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0"
+   }
+  }
+ },
+ "mixes": {
+  "m1": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tt.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m4.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m8.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.25,
+    "globs": [
+     "HOOKED_POOLS/train/line/*.npz",
+     "HOOKED_POOLS/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   }
+  ]
+ },
+ "mix_notes": {
+  "m1": "VOCR5-N arm F's fine-tune mix (eval/vocr5_run.sh N F) with its real half split in two: VOCR5's pinned real pools at half their weights (0.25) and the hooked corpus' train split (horizontal lines and names; hval and guard pages out) at 0.25. Synthetic half unchanged (nv 0.225 + s2 0.1125 with fa=0.15, s3v3 0.1125, s4 0.05)."
+ },
+ "data_pins": {
+  "hooked": {
+   "manifest": "HOOKED_POOLS/manifest.json",
+   "sha256": "TBD",
+   "sources": [
+    "hk"
+   ]
+  },
+  "vocr5_pools": {
+   "pin": "eval/vocr5_pools.sha256",
+   "sources": [
+    "tt",
+    "rd",
+    "rpi",
+    "rpg",
+    "owi",
+    "owg",
+    "nti",
+    "ntg"
+   ]
+  },
+  "synthetic_manifests": [
+   {
+    "manifest": "data/manifests/synth3_shards_v3.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3"
+   },
+   {
+    "manifest": "data/manifests/synth4_shards_v5631.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards"
+   }
+  ]
+ },
+ "log_vals": [
+  "tvd:/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/teacher_val_dev.npz:n=1000",
+  "hvl:HVAL_LOG_NPZ:n=2000"
+ ],
+ "log_select": "hvl",
+ "log_note": "the --val sets are logged only: every run's model is its final step (ckpt_step<steps>.pt)",
+ "scoring": {
+  "tool": "eval/vocr6_score.py all",
+  "path": "W8I C runtime greedy + top-8; counter re-decode 6000/4000; beam 8 + vocr_lm_o3_1000k (alpha 500, beta 3500, gate 8000, EOS, bracket 8000) when the greedy text is not empty; Rubi core/textnorm.c; the non-Japanese line filter; no cascade (stage 4 adds it)",
+  "rubi": "bee-san/Rubi_for_vita main bd130a8 (core/vocr_ocr.c, core/textnorm.c identical to 56a831c, which reports/vocr5-analysis read)",
+  "lm": {
+   "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm",
+   "sha256": "TBD"
+  },
+  "rubi_norm": {
+   "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/tools/rubi_norm",
+   "sha256": "TBD"
+  },
+  "dev_plan": {
+   "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-analysis/work/plan.pkl",
+   "sha256": "TBD"
+  },
+  "dev_units": {
+   "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-analysis/work/units.pkl",
+   "sha256": "TBD"
+  },
+  "hval_plan": {
+   "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/hval_plan_v1.pkl",
+   "sha256": "TBD"
+  },
+  "dev_exclude_vns": [
+   "v12188",
+   "v18432"
+  ],
+  "dev_exclude_why": "v12188 is the hooked train title PCSG00576 (seen); v18432 is the hooked test title PCSG00807 (Dance with Devils), kept out of selection",
+  "check": "the dev part reproduces reports/vocr5-analysis's VOCR5-N console-view numbers exactly: crops identical (6,424), no-cascade tv 0.65 / dn 0.6601 / wd 3.2606, with the cascade 0.5125 / 0.6241 / 3.0169"
+ },
+ "decision": {
+  "tool": "eval/vocr6_select.py compare",
+  "metric": "dialogue CER, rubi path (scoring.path), console view",
+  "components": {
+   "hval_page": "every complete hval page's whole-dialogue regions (base, +4, +8 px) through the C finder VOCR_LINES_TEXTBOX_RECOVERY (+ refinement on PSP), clusters = titles",
+   "hval_clean": "hval dialogue lines as clean crops, clusters = titles (report)",
+   "dev": "0.25 tv + 0.25 dn + 0.5 wd (VOCR5's development score) without dev_exclude_vns, clusters = VNs, tv/dn/wd resampled independently"
+  },
+  "bootstrap": {
+   "resamples": 10000,
+   "seeds": {
+    "hval_page": 10,
+    "hval_clean": 11,
+    "tv": 0,
+    "dn": 1,
+    "wd": 2
+   }
+  },
+  "adopt": "Y over X iff the hval_page interval of mean(Y) - mean(X) lies below 0, every seed pair's hval_page point difference is below 0, and the dev interval does not lie above 0"
+ },
+ "stages": {
+  "1": {
+   "name": "initialisation",
+   "tier": "N",
+   "seeds": [
+    1,
+    3
+   ],
+   "registered": "TBD",
+   "defaults": {
+    "mix": "m1",
+    "batch": 96,
+    "final_lr": 0.05,
+    "wd": 0.01,
+    "ema": 0.999
+   },
+   "arms": {
+    "A15": {
+     "run": "v6s1A15_N",
+     "family": "A",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed{seed}/ckpt_step15000.pt",
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
+      "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
+     },
+     "what": "full fine-tune of VOCR5-N (its own fine-tuned checkpoint, seed 1 = v5f_N_seed1, seed 3 = the released v5f_N_seed3)"
+    },
+    "A45": {
+     "run": "v6s1A45_N",
+     "family": "A",
+     "steps": 45000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed{seed}/ckpt_step15000.pt",
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
+      "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
+     },
+     "what": "A at 3x"
+    },
+    "B15": {
+     "run": "v6s1B15_N",
+     "family": "B",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/pre5_N_seed{seed}/ckpt_step150000.pt",
+     "init_sha256": {
+      "1": "ae010ed7b69dea7c8ff7f1f5e817d604efe09cdd464bb80fe275e96ba2359d42",
+      "3": "56dc43e58a072a3a70e94fc80e43a9d88a734cd837c218872af0501e4652ea9c"
+     },
+     "what": "VOCR5-N's synthetic-only pretrain (pre5_N_seed*, 150,000 steps of nv + s2 + s3v3 + s4, never a real line), then this fine-tune"
+    },
+    "B45": {
+     "run": "v6s1B45_N",
+     "family": "B",
+     "steps": 45000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/pre5_N_seed{seed}/ckpt_step150000.pt",
+     "init_sha256": {
+      "1": "ae010ed7b69dea7c8ff7f1f5e817d604efe09cdd464bb80fe275e96ba2359d42",
+      "3": "56dc43e58a072a3a70e94fc80e43a9d88a734cd837c218872af0501e4652ea9c"
+     },
+     "what": "B at 3x"
+    },
+    "C50": {
+     "run": "v6s1C50_N",
+     "family": "C",
+     "steps": 50000,
+     "lr": 0.002,
+     "warmup": 1000,
+     "eval_every": 10000,
+     "what": "random init, the same mix from the first step (the pretrain's lr 2e-3, 1,000 warm-up steps)"
+    },
+    "C150": {
+     "run": "v6s1C150_N",
+     "family": "C",
+     "steps": 150000,
+     "lr": 0.002,
+     "warmup": 1000,
+     "eval_every": 10000,
+     "what": "C at 3x (the pretrain's length)"
+    }
+   },
+   "decision": {
+    "primary": "the long budgets A45, B45, C150 (converged accuracy); short budgets and the short -> long gain are reported with each run's slot-hours (cost)",
+    "incumbent": "VOCR5-N as released (v0.3.0 VOCR5_N_w8.vocr = v5f_N_seed3 step 15000), scored on the same plans; for each pair it is X for both seeds",
+    "winner": "W1 = the long-budget arm with the lowest mean hval_page CER whose dev interval against VOCR5-N does not lie above 0. W2 = the next lowest if W1 is not adopted over it (decision.adopt); W2 is carried into stage 2 only if it is another family and costs no more new slot-hours than W1",
+    "budget": "stage 2 and 3 screen at the winner family's short budget; stage 4 uses the long budget iff long is adopted over short for W1 (decision.adopt, the short runs as X)",
+    "pipelining": "stage 2 starts when A15/A45/B15/B45 are scored, from the better of A and B by the winner rule restricted to them; if C150 becomes W1, stage 2's adopted factors are applied to C in stage 4 after one confirmation pair (C150 with the factors against C150)"
+   }
+  }
+ }
+}

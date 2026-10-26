@@ -60,7 +60,8 @@ def page(tid, n, split, text2, dark=False, dim=0, strip_text=False, variants=("b
         cells = []
         for i in range(len(text)):
             x0 = 40 + i * 24
-            glyph(g, x0, y0, 20, DIM if li == 0 and i < dim else INK)
+            dimmed = i in dim if isinstance(dim, tuple) else i < dim
+            glyph(g, x0, y0, 20, DIM if li == 0 and dimmed else INK)
             cells.append([x0, y0, x0 + 22, y0 + 20])
         lines.append({"id": f"{tid}:{n}:line{li + 1}", "kind": "line", "vertical": False,
                       "box": [40, y0, 24 * len(text) - 2, 20], "box_main": None, "pad": 4, "text": text,
@@ -87,7 +88,8 @@ def page(tid, n, split, text2, dark=False, dim=0, strip_text=False, variants=("b
 PAGES = (("000001", "train", TEXT2, False, {}), ("000002", "train", "たちつ€てと", True, {}),
          ("000003", "hval", TEXT2, False, {}), ("000004", "train", TEXT2, False, {"dim": 3}),
          ("000005", "train", TEXT2, False, {"strip_text": True}),
-         ("000006", "train", TEXT2, False, {"variants": ("base", "expanded-8")}))
+         ("000006", "train", TEXT2, False, {"variants": ("base", "expanded-8")}),
+         ("000007", "train", TEXT2, False, {"dim": (7,)}))
 
 
 @pytest.fixture(scope="module")
@@ -130,6 +132,7 @@ def test_whole_crops_are_labelled_and_exact(built):
     assert by_page["000002"] == [TEXT1]                                # its second line is out of vocab
     assert by_page["000004"] == [TEXT2]                                # its first line's dim word: never whole
     assert sorted(by_page["000005"]) == sorted([TEXT1, TEXT2])
+    assert sorted(by_page["000007"]) == sorted([TEXT1, TEXT2])          # a dim glyph mid-line, inside the box
     for m, lab, c in cons:
         assert m["kind"] == "whole" and m["view"] == "console"
         img = CC.PP.Frames(pages, "console").grey("T", m["page"], "vita")
@@ -138,6 +141,17 @@ def test_whole_crops_are_labelled_and_exact(built):
         want = img[y0 + y:y0 + y + h, x0 + x:x0 + x + w]
         assert np.array_equal(c, 255 - want if m["inverted"] else want)
         assert m["inverted"] == (m["page"] == "000002")                 # the dark page's crops are inverted
+
+
+def test_dim_glyph_inside_the_box_stays_whole(built):
+    d, out, pages, rows, _ = built
+    cell = next(r for r in rows if r["page"] == "000007")["lines"][0]["cell_boxes"][7]
+    jit = [m for m, lab, c in read(out, "train/console_jitter/T.npz") if m["page"] == "000007" and lab == TEXT1]
+    assert jit
+    for m in jit:                                                       # every jittered box still covers it
+        x0, y0 = origin(m["variant"])
+        x, y, w, h = m["box"]
+        assert CC.covers((x + x0, y + y0, w, h), cell)
 
 
 def test_dim_word_makes_the_box_partial(built):
@@ -199,10 +213,11 @@ def test_splits_and_manifest(built):
         assert hashlib.sha256((out / rel).read_bytes()).hexdigest() == v["sha256"]
         assert len(CC.read_npz(out / rel)) == v["crops"]
     assert sorted(str(p.relative_to(out)) for p in out.rglob("*.npz")) == sorted(man["files"])
-    # whole crops stored: pages 1, 5, 6 two each, 2 and 4 one each (train, 8), page 3 two (hval)
-    assert man["counts"]["console:console"] == 10 and man["counts"]["console:drop_console"] == 1
+    # whole crops stored: pages 1, 5, 6, 7 two each, 2 and 4 one each (train, 10), page 3 two (hval)
+    assert man["counts"]["console:console"] == 12 and man["counts"]["console:drop_console"] == 1
     with pytest.raises(SystemExit):
-        CC.main([*args[:6], "train,test", *args[7:-1], str(d / "never")])  # the test split is refused
+        CC.main([*args[:8], "train,test", *args[9:-1], str(d / "never")])  # the test split is refused
+    assert args[7] == "--sets" and not (d / "never").exists()
 
 
 def test_train2_reads_the_shards(built):
@@ -213,7 +228,7 @@ def test_train2_reads_the_shards(built):
     from common import load_vocab
     vocab = load_vocab(ROOT / "data" / "vocab_vn_5631.txt")
     items, st = train2.load_shard(str(out / "train/console/T.npz"), train2.encoder(vocab), {}, train2.norm)
-    assert st["kept"] == 8 and st["dropped"] == 0 and all(it.img.shape[0] == 32 for it in items)
+    assert st["kept"] == 10 and st["dropped"] == 0 and all(it.img.shape[0] == 32 for it in items)
 
 
 # ----------------------------------------------------------------------------- the rules, on small arrays
@@ -248,8 +263,17 @@ def test_required_cells():
     dim = [[20.0, 0.0, 40.0, 24.0]]
     assert CC.required_cells(img, cells, boxes, ["あいうえ"], pts) == [dim + [[40.0, 0.0, 60.0, 24.0]]]
     assert CC.required_cells(img, cells, boxes, ["あい\u3000え"], pts) == [dim]        # a space needs no cover
-    # one cell more than characters: an inkless cell counts only with weak ink (the dim glyph, not the blank cell)
-    assert CC.required_cells(img, cells, boxes, ["あいう"], pts) == [dim]
+    # one cell more than characters: an inkless cell counts only with weak ink (the dim glyph, not the blank cell),
+    # and only when there are more such cells than extra cells (then they cannot all be the line's blank extras)
+    assert CC.required_cells(img, cells, boxes, ["あいう"], pts) == [[]]
+    two = [cells[0] + [[80, 0, 100, 24]]]                               # one more cell: still one extra, now blank
+    img2 = np.concatenate([img, np.full((24, 20), PAPER, np.uint8)], axis=1)
+    pts2 = CC.PP.ink_points(img2, two, [[0, 0, 100, 24]])
+    assert CC.required_cells(img2, two, [[0, 0, 100, 24]], ["あいうえ"], pts2) == [[]]
+    tex = img2.copy()
+    tex[2:22:3, 82:98:3] = PAPER + 50                                   # texture: weak "ink" in the blank extra cell
+    pts3 = CC.PP.ink_points(tex, two, [[0, 0, 100, 24]])
+    assert CC.required_cells(tex, two, [[0, 0, 100, 24]], ["あいうえ"], pts3) == [dim + [[80.0, 0.0, 100.0, 24.0]]]
 
 
 def test_jitter_avoids_other_lines_and_keeps_required_cells():

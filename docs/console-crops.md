@@ -34,7 +34,10 @@ Some cells hold a character with no pixel at the line's threshold, such as a wor
 cover at least half of each such cell (`required_cells`):
 - when the line has one cell per character of its label (89% of lines), every inkless cell of a non-space
   character;
-- otherwise every inkless cell with weak ink, at half the threshold.
+- otherwise, the inkless cells with weak ink (at half the threshold), but only when there are more of them than the
+  line has extra cells. A line's extra cells, such as an indent or a blank cell before or after the text, are blank.
+  Over a textured box or scenery a blank cell has weak "ink" too, and requiring it would drop correct crops
+  (audit-vocr6-finder-d).
 
 | box | rule | becomes |
 |---|---|---|
@@ -115,16 +118,32 @@ for a final model retrained with hval folded back in.
 **Independent audit** (audit-vocr6-finder-c, its own seeds): 18,012 more random crops re-cut pixel-exact, 280 of 280
 labelled crops and 80 of 80 negatives right by eye, and 4 titles rebuilt byte for byte.
 
-**Known issue: v1 has 44 wrong labels in the train pools S2cil reads** (11 in console, 33 in console_jitter; 0.011% of
-each; 0 in native, hval or guard). v1 was built before the required-cell rule above existed. Each of these crops is
-a finder box that leaves out a word in a dim colour, labelled with the whole line all the same. By title:
-- PCSG00805: 8 + 32;
-- NPJG00016: 2 + 0;
-- PCSG00935: 1 + 1.
+**Known issue: v1 has 63 wrong labels in its train pools** (0.013%; none in hval or guard), counted by two audits:
+- 12 in console and 44 in console_jitter, the pools S2cil reads;
+- 3 in console_native and 4 in console_jitter_native.
 
-The rule now in the script makes such a box partial. On 6 rebuilt titles it changes only PCSG00805 (53 whole crops
-and 210 jittered ones fewer, all splits), NPJG00016, NPJH50641 and PCSG00935 (2-3 whole crops each). PCSG00380, whose
-lines start with an inkless indent cell, and PCSG00753, a ruled-paper background, are byte for byte as before.
+v1 was built before the required-cell rule above existed. Each of these crops is a finder box that leaves out a
+character in a dim colour, or more than half of its cell, labelled with the whole line all the same. They are in
+PCSG00805, NPJG00016, PCSG00935 and NPJH50297. The lists are `missing_chars.json` (audit-vocr6-finder-c) and
+`v1_extra_wrong.json` (audit-vocr6-finder-d).
+
+The rule now in the script makes such a box partial. I rebuilt 8 titles with it, on #135's finder. Only the three
+titles with dim words change, all in the train split:
+- PCSG00805: 45 crops fewer;
+- NPJG00016: 12 fewer;
+- PCSG00935: 5 fewer.
+
+By pool: console 12, console_jitter 44, console_native 2 and console_jitter_native 4. 77 of the 85 files are byte
+for byte v1's. Unchanged are:
+- PCSG00713, with scenery and portraits behind its box;
+- NPJH50356, a patterned box;
+- NPJH50641;
+- PCSG00380, whose lines start with an inkless indent cell;
+- PCSG00469, with centred lines.
+
+A first version of the rule, which required every weak-ink extra cell, would have dropped 2,581 correct crops of
+those titles (PCSG00713 −12%; audit-vocr6-finder-d B1). Its limit: on a line with more cells than characters, a
+single dim character next to a clean extra cell is not caught.
 
 Other notes on v1:
 - **The driver.** v1's driver (`e32cd2da…` in the manifest) was compiled from a `vocr_lines_fix.c` (`9fe5427c…`) that
@@ -138,8 +157,12 @@ Other notes on v1:
   - the required-cell rule;
   - the driver is built once before the workers start (they raced on its file on a cold work directory);
   - `--sets test` is refused;
+  - the de-duplication key hashes the crop's bytes (its shape is already in the key), which changes no output;
   - its units carry the page's sha256, so that the page check of #135's `eval/pagepath.py` applies;
   - its last print.
+
+  v1 itself is rebuilt byte for byte by #136's script (`git show 7902aff:data/console_crops.py`) on #135's finder
+  (audit-vocr6-finder-c §4).
 
 ## Reproduce
 
@@ -147,7 +170,7 @@ Other notes on v1:
 A=$HERD/shared/artifacts
 data/console_crops.py build --pagepool $A/vocr6-ingest/pagepool/v1 --pages $A/vocr6-ingest/pages \
   --finder rubi,fix=5 --sets train,hval,guard --variants base,expanded-8 --views console,native --jitter 2 \
-  --procs 5 --out $A/vocr6-finder/crops/v1
+  --procs 5 --out $A/vocr6-finder/crops/v2    # a new pool: never write into the pinned v1
 ```
 
 `tests/test_console_crops.py` builds a pool from procedural pages through the same driver. No game data is used.

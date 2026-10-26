@@ -14,7 +14,8 @@ probe, the refinement on PSP titles). Each box is matched to the region's verifi
 A cell is inked when it has high-contrast pixels (eval/pagepath.ink_points, GRAD's own test: its point is their
 centroid). A box must also cover at least half of every inkless cell that is a character all the same, a word in a
 dim colour whose contrast is under the line's threshold (required_cells: with one cell per character of the label,
-an inkless non-space character's cell; otherwise an inkless cell with weak ink, at half the threshold):
+an inkless non-space character's cell; otherwise the inkless cells with weak ink, at half the threshold, when there
+are more of them than the line has extra cells):
   whole    the box holds every inked cell and covers every required cell of one line, and holds or covers none of
            another: label = the line's text
   partial  the box holds or covers some of one line's cells and none of another: left out (a cell whose ink
@@ -103,8 +104,11 @@ def required_cells(img, cells, boxes, texts, points):
     """Per reference line the inkless cells a box must cover to take the line's label (audit-vocr6-finder-c F1):
     cells with no ink point (ink_points' None: no pixel at the line's threshold, max(40, 2/5 of the 99th percentile
     of the 3x3 contrast in the line's box)) that hold a character all the same, such as a word in a dim colour.
-    With one cell per character of the text, the inkless cells of non-space characters; otherwise the inkless cells
-    with weak ink (2 or more pixels at or above max(16, half the threshold)). [[x0, y0, x1, y1]] per line."""
+    With one cell per character of the text, the inkless cells of non-space characters. Otherwise the inkless cells
+    with weak ink (2 or more pixels at or above max(16, half the threshold)), but only when there are more of them
+    than the line has extra cells: a line's extra cells (an indent, a blank cell before or after the text) are blank,
+    and over a textured box or scenery a blank cell has weak "ink" too (audit-vocr6-finder-d B1).
+    [[x0, y0, x1, y1]] per line."""
     H, W = img.shape
     c = PP.contrast3(img)
     out = []
@@ -128,6 +132,8 @@ def required_cells(img, cells, boxes, texts, points):
                 if xb <= xa or yb <= ya or int((c[ya:yb, xa:xb] >= weak).sum()) < 2:
                     continue
             need.append([float(v) for v in cell])
+        if not mapped and len(cl) > len(text) and len(need) <= len(cl) - len(text):
+            need = []                       # they can all be the line's extra (blank) cells
         out.append(need)
     return out
 

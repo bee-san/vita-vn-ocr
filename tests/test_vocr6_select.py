@@ -5,7 +5,14 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "eval"))
+import pytest  # noqa: E402
 import vocr6_select as S  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def no_seen_units(monkeypatch):
+    """The synthetic documents' unit keys are not the hval plan's: no unit is train-seen unless a test says so."""
+    monkeypatch.setitem(S._SEEN, "units", frozenset())
 
 
 def doc(name, page_err, clean_err, dev_err, titles=8, vns=12, seed=0):
@@ -87,3 +94,14 @@ def test_junk_units_are_out_of_the_decision_metric():
     out = S.compare([a], [b], n_boot=2000)
     width = lambda k: out[k]["ci95"][1] - out[k]["ci95"][0]   # noqa: E731
     assert width("hval_page") < width("hval_page_all")
+
+
+def test_seen_units_leave_the_decision_metric(monkeypatch):
+    a = doc("a", 0, 0, 0, seed=9)
+    monkeypatch.setitem(S._SEEN, "units", frozenset({"T0:0", "T1:1"}))
+    e, c, cl, keys = S.component(a, "hval_page", "rubi")
+    assert len(e) == 4 * 8 - 2 and "T0:0" not in keys
+    e, c, cl, keys = S.component(a, "hval_page_seen", "rubi")
+    assert len(e) == 4 * 8 and "T0:0" in keys
+    out = S.compare([a], [a], n_boot=200)
+    assert {"hval_page", "hval_page_seen", "hval_page_all"} <= set(out)

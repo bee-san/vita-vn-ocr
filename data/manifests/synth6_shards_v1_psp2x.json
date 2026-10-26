@@ -1,0 +1,413 @@
+{
+ "kind": "synth6-shards",
+ "schema": 1,
+ "sets": {
+  "psp2x": {
+   "kind": "synth6-recipe",
+   "schema": 1,
+   "view": "psp2x",
+   "seed": 20261026,
+   "per_shard": 10000,
+   "cfg": {
+    "generator": "synth6",
+    "version": 1,
+    "matched": 0.55,
+    "placement": {
+     "rows": 0.8,
+     "scene": 0.1,
+     "scene_box": 0.1
+    },
+    "lines": [
+     0.45,
+     0.35,
+     0.15,
+     0.05
+    ],
+    "name": 0.35,
+    "text": {
+     "pool": 0.4,
+     "hook": 0.25,
+     "target": 0.25,
+     "confusion": 0.1
+    },
+    "fullwidth_space": 0.2,
+    "crop": {
+     "cell": 0.35,
+     "ink": 0.35,
+     "grad": 0.3
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2,
+     "psp2x": 4
+    },
+    "pad_extra": {
+     "vita": {
+      "top": 0.04,
+      "bottom": 0.06,
+      "left": 0.12,
+      "right": 0.04
+     },
+     "psp": {
+      "top": 0.0,
+      "bottom": 0.02,
+      "left": 0.2,
+      "right": 0.0
+     }
+    },
+    "region_margin": {
+     "vita": 12,
+     "psp": 6,
+     "psp2x": 12
+    },
+    "adrenaline": {
+     "bilinear": 0.8,
+     "nearest": 0.15,
+     "bicubic": 0.05
+    },
+    "cross_size": [
+     0.9,
+     1.12
+    ],
+    "accent": 0.5,
+    "style_jitter": {
+     "rgb": 10,
+     "alpha": 0.12,
+     "drop_halo": 0.05,
+     "drop_shadow": 0.05
+    },
+    "borrow_style": 0.12,
+    "spacing_jitter": 0.6,
+    "y_jitter": 1,
+    "scene_band": [
+     0.06,
+     0.72
+    ],
+    "min_label": 1,
+    "min_contrast": 60,
+    "max_busy": 45,
+    "scene_box_alpha": [
+     0.8,
+     1.0
+    ],
+    "page_tries": 4
+   },
+   "code_sha256": {
+    "synth6.py": "589c611d5bd7c7ee4d9f1662c7e926e34bd60ec02c53d39d4abb659cd3a27b4e",
+    "synth6_fonts.py": "bf65980e2e5cd9042e14e694ac723438835e9ede87cf1128db5f751dffa3c4d0",
+    "synth6_assets.py": "87042f28719379acfe68008d3bceee201f2e39f0bd59e345b65ced0a9f7c5e83",
+    "synth6_text.py": "304659306fa98fd8a1ffcfe465e3270ca19d0eea445cf74966a366836b59a1fc",
+    "synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+    "common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e"
+   },
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "assets": {
+    "titles_sha256": "0bcfc82ce4e61fc4637bc4c5764168a9976caca8809467f7aee146687c28059d",
+    "hooktext_sha256": "c9d2eafd7eecd254479a3028c95bf40d5f9c499c1aebd810d48037eb4432f3c7",
+    "real_counts_sha256": "552ffc3a2424a3ed118ae6d396cabfe84dcd74e49511d19e5167eb75d15c49cb",
+    "fonts_inventory_sha256": "e2efdd8a2782a1b2d4f812c79d9f9379eac0c1c7078d4ade7b3a69a8b3b212ac",
+    "font_check_sha256": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
+    "glyph_check_sha256": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
+    "test_text_sha256": "a5e030cf8fb48113cdc17c5b75f4005e45750119da6b8a9a680e0a1d11abb906",
+    "hval_text_sha256": "24d9551bae272e2844e03cc108e48b30868788a5b3883d9e8931d19fbd68e0d8",
+    "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e"
+   },
+   "titles": [
+    "NPJG00016",
+    "NPJH00140",
+    "NPJH50001",
+    "NPJH50002",
+    "NPJH50132",
+    "NPJH50279",
+    "NPJH50297",
+    "NPJH50356",
+    "NPJH50382",
+    "NPJH50551",
+    "NPJH50621",
+    "NPJH50641",
+    "NPJH50649",
+    "ULJM05383",
+    "ULJM05674"
+   ],
+   "cross_faces": 142,
+   "cross_fonts": 307,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "names_dropped_excluded": 255,
+    "targets": "15bd0f42ba2db5016d55af5e9a7409967ebed7e08475b7684d472297c99253bb",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0"
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00000.npz",
+   "bytes": 113855811,
+   "sha256": "3ef0332b6e283e09a81b1c2e492461761a50b2ec8a575a6a7adf20a836410c7d",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00001.npz",
+   "bytes": 114103502,
+   "sha256": "02c760761fd125ffd7b7fd5c47637da873072c60a8fdb39673939c9785314f52",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00002.npz",
+   "bytes": 115008482,
+   "sha256": "5b538b619284b5bd814848662fc4cfc4a3e380432cc53ad768c12f0a4e9ddc7d",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00003.npz",
+   "bytes": 115827363,
+   "sha256": "8363e48e5333cf3fabc3c2f359f7c5ef0c59d1b2111ebe3e2d825e8dcde7ae9b",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00004.npz",
+   "bytes": 115276076,
+   "sha256": "2b0449b7084bc405661c7c697a1645bfdb2113dd0751c9ad17f470df893143cd",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00005.npz",
+   "bytes": 115813566,
+   "sha256": "38f104e821e106b3f054a80f9e7f0d73a9b050fba5127c734419b5bcce15ae4c",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00006.npz",
+   "bytes": 113305349,
+   "sha256": "80867f94f59c2a2e3bcbe9942995a08bca205ff44fc6164c798d8ad1d48d961b",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00007.npz",
+   "bytes": 115678330,
+   "sha256": "4878c3d12cb164de00453b6a167f72dddcf8d5621a152842a91369bca5d1e6f4",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00008.npz",
+   "bytes": 116110757,
+   "sha256": "5a2611ca74e5bed35808bba5c1359eb6cab41e8663084950b94e82eed655e241",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00009.npz",
+   "bytes": 116395817,
+   "sha256": "bb78b3da45192201f23b962dde63b06cd91ca311b36084be7d080d47fbda226c",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00010.npz",
+   "bytes": 114809227,
+   "sha256": "65ffc0188096077bd76dfbeba2906c4837c195b7c5cabd22069e62504056f55d",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00011.npz",
+   "bytes": 115197636,
+   "sha256": "95f308218f7c53d6cf460ccd59e0700f60ca6f11cab41e9c4f694780fde73039",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00012.npz",
+   "bytes": 115930881,
+   "sha256": "593192b4d233912f42ec100c7f920a3a8ce539849617192a2dc62c818398849e",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00013.npz",
+   "bytes": 113776808,
+   "sha256": "cce8017202b7d6b40b36c59c8e84ec391beae5f7022d365eda94a8fadd9aba84",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00014.npz",
+   "bytes": 115284653,
+   "sha256": "4869321f731ad7c466f5228add2e2fdbf598cdfa41aa11369f1975de4991724f",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00015.npz",
+   "bytes": 116556380,
+   "sha256": "0563b69b0d3192c4cabbb78641853c68d1a39ad9f64b139e06ef3eeade72e1c2",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00016.npz",
+   "bytes": 114564637,
+   "sha256": "69a51c552aa50dc4aec7c433176935b9e6858ca2f30b4930d637837ab78b20cf",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00017.npz",
+   "bytes": 116311420,
+   "sha256": "ccdc829a7e78b9663b79135054104a6fda883b4a992ad32e3174740046ac28d3",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00018.npz",
+   "bytes": 113135372,
+   "sha256": "e4788ab4287e860aec3003b8d623a6be50df2329713f1be4b191e10f7dfa6f85",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00019.npz",
+   "bytes": 114626683,
+   "sha256": "47d40c56250a59c4f4d94104fc6b4a257a759e63c2162effb1cbe1b3b6402c6f",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00020.npz",
+   "bytes": 115456977,
+   "sha256": "650968c00c8fcf0ffe645c687958bac975a2c621d358bb6599c307402789f374",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00021.npz",
+   "bytes": 114574656,
+   "sha256": "7126ca9c786d83cbcb8a7d68702baa505cf69d6dd5d0075963b78e249e489a9c",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00022.npz",
+   "bytes": 114952414,
+   "sha256": "b7b7093d261d58d4b9b66bcaa097976febc21b62c2e1c800f43680ee31bc714a",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00023.npz",
+   "bytes": 115272032,
+   "sha256": "9cc7d6976cb2b48ccc920de857fedfe96cec33a6755f7ce34bfd831ff123c956",
+   "samples": 10000
+  },
+  {
+   "set": "psp2x",
+   "file": "synth6_psp2x_00024.npz",
+   "bytes": 115469391,
+   "sha256": "b63a70eecc92c34742c16604209098ad1d5d403688dbcb4a2e4eb92438205023",
+   "samples": 10000
+  }
+ ],
+ "samples": 250000,
+ "bytes": 2877294220
+}

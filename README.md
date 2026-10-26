@@ -112,7 +112,7 @@ The recognizers on this repository's releases, except v0.2.2-meiki.1 (MeikiOCR's
 - **The owner's own console captures**: VOCR4-W20 (v0.2.5-vocr4.1) and VOCR5 (`docs/vocr4.md`, `docs/owner-pool.md`).
 - **Sources of two private research experiments**: the `fresh_anime_s1` run of v0.2.2-fl10-training.1 trained on AnimeText crops ([JustANormalTinkerer/animetext-ocr](https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr), revision `9c70c6b5609c4378d46ac0df4927c4119ebfd83d`, CC BY-NC-SA 4.0; `docs/hiragana.md`), and both runs of v0.2.2-fl10-bitmap.1 trained on renders of the owner's own CLANNAD PS Vita bitmap fonts, read from the owner's game files (`docs/native-bitmap-fonts.md`, `docs/native-bitmap-training.md`).
 
-The screenshots, crops, fonts and texts are training input only; none is redistributed. Google Lens appears as a comparison and never as a training-label source; its readings were among the unattributed candidates of the second and third reads of the CLANNAD test references (`docs/clannad-v1-v2-v3-lens.md`). The character LMs of v0.2.6-ctclm.1 and v0.2.6-ctclm.2 list their sources and licences in their `ATTRIBUTION.md` (CC BY-SA 4.0).
+The screenshots, crops, fonts and texts are training input only; none is redistributed. Google Lens appears as a comparison and never as a training-label source; its readings were among the unattributed candidates of the second and third reads of the CLANNAD test references (`docs/clannad-v1-v2-v3-lens.md`). The character LMs of v0.2.6-ctclm.1, v0.2.6-ctclm.2 and v0.3.7-lm6.2 list their sources and licences in their `ATTRIBUTION.md` (CC BY-SA 4.0); v0.3.7-lm6.2's 1 MB and 4 MB LMs also carry character n-gram counts of the owner's hooked console captures (`docs/vocr6-lm.md`).
 
 ## License
 

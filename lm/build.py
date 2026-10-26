@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build the character n-gram LM (a VOLM blob, lm/vlm.py) that runtime/vocr_lm.c reads.
 
-  build.py --out LM.vlm [--order 4] [--bytes 1000000] [--corpora aozora_dialogue,aozora_narration]
+  build.py --out LM.vlm [--order 4] [--bytes 1000000] [--corpora aozora_dialogue,aozora_narration,hook_train:16]
            [--jiten vn=0.2,novel=0.1] [--profiles ...] [--heldout realplus] [--manifest LM.json]
+           [--protect ctclm2|vocr6] [--recut none|lines|both] [--vocab-extra vn5631] [--exclude-vns VNS.txt]
 
 Deterministic: the same pinned inputs (lm/sources.json, every file checked by sha256) and arguments give the
 same bytes (the tests build a small model twice). Steps:
@@ -31,15 +32,33 @@ Held-out text for the profile choice is never development data: by default it is
 (real VN lines of training-side VNs, the recognizer's training pool; the LM is not trained on them), never
 teacher_val, devnative, the owner pool or any protected set.
 
-Protected titles (always applied, before step 1): the VNs of eval/manifests/test_games.json (its "all", the
-vita-test and psp-test games and their release partners, together with "all_20261012", the wider list of the
-earlier reservation rule) and data/manifests/synth3_exclude_clannad.json (the CLANNAD family), plus any
---exclude-vns list. Their VNDB character names and titles (synth3's pinned VNDB extracts) become
-text markers, after synth's rule (synth/owner_games.marker_candidates) but stricter: always every title (>= 3
-Japanese or >= 5 Latin characters), every full name of two or more parts (joined, >= 3 characters) and the
-CLANNAD manifest's own curated markers; and every other full name or name part of >= 2 characters (Japanese script)
-that occurs in at most 50 corpus pieces (more: a common word or surname, such as 岡崎, which stays). A corpus piece
-holding a marker is dropped, and so is a Jiten word that is one. The counts go into the manifest.
+Protected titles (always applied, before step 1), by --protect:
+- ctclm2 (the default; the release v0.2.6-ctclm.2 rule): the VNs of eval/manifests/test_games.json (its "all", the
+  vita-test and psp-test games and their release partners, together with "all_20261012", the wider list of the
+  earlier reservation rule) and data/manifests/synth3_exclude_clannad.json (the CLANNAD family);
+- vocr6 (AGENTS.md's training data policy of 2026-10-25: the old reservations no longer withhold training data):
+  the CLANNAD family except the VNs the owner made training data (realplus/shots.OWNER_ALLOWED: planetarian), and
+  the vita-test and psp-test games themselves (test_games.json "vita-test", "psp-test": the small frozen benchmark,
+  so its scores stay comparable with the old releases'), without release partners or families;
+plus, in both, any --exclude-vns list (the hooked corpus' `test` titles). Their VNDB character names and titles
+(synth3's pinned VNDB extracts) become text markers, after synth's rule (synth/owner_games.marker_candidates) but
+stricter: always every title (>= 3 Japanese or >= 5 Latin characters), every full name of two or more parts
+(joined, >= 3 characters) and the CLANNAD manifest's own curated markers; and every other full name or name part of
+>= 2 characters (Japanese script) that occurs in at most 50 corpus pieces (more: a common word or surname, such as
+岡崎, which stays). A corpus piece holding a marker is dropped, and so is a Jiten word that is one. The counts go into
+the manifest. A corpus whose sources.json entry says "visual_lines" (the hooked titles' own text, lm/hook_text.py)
+is neither filtered nor counted for the rare-name rule: the owner's train titles are training data as they are
+(a hooked title that is also a protected VN is reported as seen).
+
+Options for the VOCR6 recipes (docs/vocr6-lm.md); at their defaults the output is byte-identical to before:
+- --corpora NAME:W counts every piece of corpus NAME W times (an integer weight, default 1);
+- --recut lines|both wraps every piece of a corpus that is not "visual_lines" into visual lines, the way a dialogue
+  box wraps an utterance: a width drawn per piece from --recut-widths (deterministic: the piece's blake2b hash),
+  punctuation and small kana that may not start a line hung on the line before (at most 2), an opening bracket
+  never left at a line's end. `lines` replaces each piece by its lines, `both` keeps the piece and adds its lines
+  when it wraps. The decoder reads one visual line at a time, from <s> to </s>;
+- --vocab-extra NAME adds the characters of sources.json "vocab_extra" NAME to the LM's vocabulary (the union:
+  VOCR5-N/L's 5,631 classes are not all in data/vocab.txt).
 """
 import argparse
 import bisect
@@ -149,14 +168,66 @@ def jiten_words(path, vocab):
     return best
 
 
-def protected(src, extra_vns=()):
+OWNER_ALLOWED = ("v34",)   # realplus/shots.OWNER_ALLOWED: planetarian, training data in all releases (owner)
+NO_START = set("、。，．・：；？！ー」』）】〉》〕］…‥ゝゞヽヾぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ々!?)]")
+NO_END = set("「『（【〈《〔［([")
+RECUT_WIDTHS = "16,18,20,22,24,26,28,30,32"     # characters per line of the hooked titles' boxes (docs/vocr6-lm.md)
+HANG = 2
+
+
+def protected_vns(src, rule, extra_vns=()):
+    """The protected VN ids under a --protect rule (module docstring)."""
+    ex = src["exclusions"]
+    tg = json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))
+    clannad = set(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["vns"])
+    if rule == "ctclm2":
+        vns = set(tg["all"]) | set(tg.get("all_20261012", []))  # today's reservation and the 2026-10-12 one
+        vns |= clannad
+    elif rule == "vocr6":
+        vns = (clannad - set(OWNER_ALLOWED)) | set(tg["vita-test"]) | set(tg["psp-test"])
+    else:
+        raise SystemExit(f"--protect: unknown rule {rule!r}")
+    return vns | set(extra_vns)
+
+
+def wrap(s, width, hang=HANG):
+    """s cut into lines of `width` characters, as a dialogue box wraps it (module docstring, --recut)."""
+    out, i, n = [], 0, len(s)
+    while n - i > width:
+        j, k = i + width, 0
+        while j < n and s[j] in NO_START and k < hang:
+            j, k = j + 1, k + 1
+        while j - 1 > i and s[j - 1] in NO_END:
+            j -= 1
+        out.append(s[i:j])
+        i = j
+    if i < n:
+        out.append(s[i:])
+    return out
+
+
+def recut(lines, weights, widths, mode):
+    """(pieces, weights) after --recut: each piece wrapped at a width drawn from `widths` by its hash."""
+    if mode == "none":
+        return lines, weights
+    out, w = [], []
+    for s, m in zip(lines, weights):
+        width = widths[int.from_bytes(hashlib.blake2b(s.encode("utf-8"), digest_size=4).digest(), "little")
+                       % len(widths)]
+        parts = wrap(s, width)
+        if mode == "both" and len(parts) > 1:
+            out.append(s)
+            w.append(m)
+        out += parts
+        w += [m] * len(parts)
+    return out, w
+
+
+def protected(src, extra_vns=(), rule="ctclm2"):
     """(VN ids, [name parts] per character, titles and curated markers) of the protected titles and extra VNs."""
     from synth3_text import norm_vn
     ex = src["exclusions"]
-    tg = json.loads(checked(ex["test_games"]).read_text(encoding="utf-8"))
-    vns = set(tg["all"]) | set(tg.get("all_20261012", []))      # today's reservation and the 2026-10-12 one
-    vns |= set(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["vns"])
-    vns |= set(extra_vns)
+    vns = protected_vns(src, rule, extra_vns)
     curated = list(json.loads(checked(ex["clannad"]).read_text(encoding="utf-8"))["text_markers"]["strings"])
     chars, titles = [], []
     with open(checked(ex["vndb_chars"]), encoding="utf-8") as f:
@@ -185,9 +256,9 @@ def hit_lines(text, starts, s, cap=None):
     return out
 
 
-def exclude_protected(corpus_lines, jiten, vns, chars, titles):
+def exclude_protected(corpus_lines, jiten, vns, chars, titles, kept_index=None):
     """Drop the corpus pieces and the Jiten words that name a protected title or character (module docstring).
-    Returns (kept pieces, filtered jiten, stats)."""
+    Returns (kept pieces, filtered jiten, stats); kept_index (a list), when given, gets the kept pieces' indices."""
     always, rare = set(), set()
     for t in titles:
         t = unicodedata.normalize("NFC", t or "").strip()
@@ -217,6 +288,8 @@ def exclude_protected(corpus_lines, jiten, vns, chars, titles):
             drop |= h
     markers = always | {m for m in rare if hits[m] <= MAX_RARE_HITS}
     kept = [x for i, x in enumerate(corpus_lines) if i not in drop]
+    if kept_index is not None:
+        kept_index += [i for i in range(len(corpus_lines)) if i not in drop]
     out, jdrop = {}, {}
     for name, (wd, share) in jiten.items():
         out[name] = ({w: r for w, r in wd.items() if w not in markers}, share)
@@ -227,14 +300,15 @@ def exclude_protected(corpus_lines, jiten, vns, chars, titles):
     return kept, out, stats
 
 
-def sequences(corpus_lines, vocab, jiten, corpus_chars):
-    """Token sequences with multiplicities: corpus pieces (<s> ... </s>, x1) and Jiten pseudo-sentences."""
+def sequences(corpus_lines, vocab, jiten, corpus_chars, weights=None):
+    """Token sequences with multiplicities: corpus pieces (<s> ... </s>, x their weight, default 1) and Jiten
+    pseudo-sentences."""
     seqs, mult = [], []
     BOS, EOS = vlm.BOS, vlm.EOS
-    for s in corpus_lines:
+    for i, s in enumerate(corpus_lines):
         t = vocab.encode(s)
         seqs.append(np.concatenate([[BOS], t, [EOS]]).astype(np.int32))
-        mult.append(1)
+        mult.append(1 if weights is None else int(weights[i]))
     jstats = {}
     for name, (words, share) in jiten.items():
         if share <= 0:
@@ -550,20 +624,38 @@ def build(args):
     src = load_sources(args.sources)
     vocab_path = checked(src["vocab"])
     chars = [c for c in vocab_path.read_text(encoding="utf-8").split("\n") if c]
+    extra_vocab = {}
+    for name in [v for v in args.vocab_extra.split(",") if v]:
+        e = src["vocab_extra"][name]
+        extra_vocab[name] = e["sha256"]
+        chars += [c for c in checked(e).read_text(encoding="utf-8").split("\n") if c]
     if any(len(c) != 1 for c in chars):
         raise SystemExit("data/vocab.txt: every class must be one character")
     vocab = Vocab(chars)
     V1 = vocab.V + 1                                   # + WB
-    corpora, corpus_lines, paths = [], [], {"vocab": src["vocab"]["path"]}
-    for name in [c for c in args.corpora.split(",") if c]:
+    corpora, paths = [], {"vocab": src["vocab"]["path"]}
+    public, public_w, visual, visual_w = [], [], [], []
+    for spec in [c for c in args.corpora.split(",") if c]:
+        name, _, w = spec.partition(":")
+        w = int(w) if w else 1
+        if w < 1:
+            raise SystemExit(f"--corpora {spec}: the weight must be a positive integer")
         e = src["corpora"][name]
         p = checked(e)
         lines = read_lines(p, args.limit)
-        corpus_lines += lines
-        corpora.append({"name": name, "sha256": e["sha256"], "licence": e["licence"], "attribution": e["attribution"],
-                        "lines": len(lines), "chars": sum(map(len, lines))})
+        rec = {"name": name, "sha256": e["sha256"], "licence": e["licence"], "attribution": e["attribution"],
+               "lines": len(lines), "chars": sum(map(len, lines))}
+        if w != 1:
+            rec["weight"] = w
+        if e.get("visual_lines"):
+            rec["visual_lines"] = True
+            visual += lines
+            visual_w += [w] * len(lines)
+        else:
+            public += lines
+            public_w += [w] * len(lines)
+        corpora.append(rec)
         paths[name] = e["path"]
-    corpus_chars = sum(c["chars"] for c in corpora)
     jiten, jmeta = {}, []
     for part in [p for p in args.jiten.split(",") if p]:
         name, _, share = part.partition("=")
@@ -576,13 +668,23 @@ def build(args):
     extra = []
     for path in args.exclude_vns:
         extra += [v.strip() for v in Path(path).read_text(encoding="utf-8").split() if v.strip()]
-    vns, chars, titles = protected(src, extra)
-    corpus_lines, jiten, xstats = exclude_protected(corpus_lines, jiten, vns, chars, titles)
+    vns, chars, titles = protected(src, extra, args.protect)
+    kept_idx = []
+    public, jiten, xstats = exclude_protected(public, jiten, vns, chars, titles, kept_idx)
+    public_w = [public_w[i] for i in kept_idx]
     xstats["extra_vns"] = len(set(extra))
     xstats["extra_vns_sha256"] = hashlib.sha256("\n".join(sorted(set(extra))).encode()).hexdigest() if extra else None
-    corpus_chars = sum(map(len, corpus_lines))
+    if args.protect != "ctclm2":
+        xstats["protect"] = args.protect
+    if visual:
+        xstats["visual_lines_exempt"] = len(visual)
+    widths = [int(x) for x in args.recut_widths.split(",")]
+    n_public = len(public)
+    public, public_w = recut(public, public_w, widths, args.recut)
+    corpus_lines, weights = public + visual, public_w + visual_w
+    corpus_chars = sum(len(s) * w for s, w in zip(corpus_lines, weights))
     print(f"exclusion: {xstats}", flush=True)
-    seqs, mult, jstats = sequences(corpus_lines, vocab, jiten, corpus_chars)
+    seqs, mult, jstats = sequences(corpus_lines, vocab, jiten, corpus_chars, weights)
     for m in jmeta:
         m.update(jstats.get(m["name"], {}))
     print(f"corpus {len(corpus_lines):,} pieces, {corpus_chars:,} chars; jiten {jstats}", flush=True)
@@ -631,6 +733,11 @@ def build(args):
                 "ngrams_counted": [int(len(c[0])) for c in counts], "profiles": tried,
                 "chosen_thresholds": [int(x) for x in th],
                 "builder": {"script": "lm/build.py", "numpy": np.__version__}}
+    if extra_vocab:
+        manifest["vocab"]["extra"] = extra_vocab
+    if args.recut != "none":
+        manifest["recut"] = {"mode": args.recut, "widths": widths, "hang": HANG, "pieces_in": n_public,
+                             "pieces_out": len(public)}
     msha = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).digest()
     blob = assemble(keys, logp, logbo, args.order, V1, vocab, msha)
     Path(args.out).write_bytes(blob)
@@ -658,6 +765,12 @@ def main():
     ap.add_argument("--limit", type=int, default=0, help="read at most this many lines per corpus (tests)")
     ap.add_argument("--exclude-vns", action="append", default=[],
                     help="a file of VN ids (whitespace-separated) excluded like the protected titles (ablations)")
+    ap.add_argument("--protect", default="ctclm2", choices=("ctclm2", "vocr6"),
+                    help="the protected-title rule (module docstring; ctclm2 rebuilds the released blobs)")
+    ap.add_argument("--recut", default="none", choices=("none", "lines", "both"),
+                    help="wrap the public corpora's pieces into visual lines (module docstring)")
+    ap.add_argument("--recut-widths", default=RECUT_WIDTHS, help="characters per line to draw from (--recut)")
+    ap.add_argument("--vocab-extra", default="", help="sources.json vocab_extra entries added to the vocabulary")
     build(ap.parse_args())
 
 

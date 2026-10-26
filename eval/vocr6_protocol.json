@@ -1028,10 +1028,11 @@
   "tool": "eval/vocr6_select.py compare",
   "metric": "dialogue CER, rubi path (scoring.path), console view",
   "components": {
-   "hval_page": "the decision metric: every hval page's whole-dialogue regions (base, +4, +8 px; vocr6-ingest's page pool, which keeps every other box out of a region) through the C finder VOCR_LINES_TEXTBOX_RECOVERY (+ refinement on PSP) in the console view, over the region units whose finder output has no junk box (a finder box covering no reference line); merged lines, missed lines and the finder's imperfect crops all count; clusters = titles",
+   "hval_page": "the decision metric: every hval page's whole-dialogue regions (base, +4, +8 px; vocr6-ingest's page pool, which keeps every other box out of a region) through the C finder VOCR_LINES_TEXTBOX_RECOVERY (+ refinement on PSP) in the console view, over the region units whose finder output has no junk box (a finder box covering no reference line); merged lines, missed lines and the finder's imperfect crops all count; clusters = titles; without the units that hold a train-seen line (stage 1 amendment 3)",
    "hval_page_all": "the same over every unit, junk boxes included (report)",
    "hval_clean": "hval dialogue lines as clean crops, clusters = titles (report)",
-   "dev": "0.25 tv + 0.25 dn + 0.5 wd (VOCR5's development score, console view) without dev_exclude_vns, clusters = VNs, tv/dn/wd resampled independently"
+   "dev": "0.25 tv + 0.25 dn + 0.5 wd (VOCR5's development score, console view) without dev_exclude_vns, clusters = VNs, tv/dn/wd resampled independently",
+   "hval_page_seen": "hval_page with the train-seen units kept (report)"
   },
   "bootstrap": {
    "resamples": 10000,
@@ -1041,7 +1042,8 @@
     "hval_clean": 11,
     "tv": 0,
     "dn": 1,
-    "wd": 2
+    "wd": 2,
+    "hval_page_seen": 13
    }
   },
   "adopt": "Y over X iff the hval_page interval of mean(Y) - mean(X) lies below 0, every seed pair's hval_page point difference is below 0, and the dev interval does not lie above 0 (plans/vocr6-plan.md section 7: better on hval page-path dialogue CER and not worse on the unseen-game dev sets, game-bootstrap 95% intervals, across seeds)",
@@ -1172,6 +1174,13 @@
      "why": "compute: stage 2 needs slots from the moment A15/B15 are scored, while A45/B45 (4 runs x ~7.2 h) and C50 hold 6; Hyperband promotes only arms in contention",
      "promotion_45k": "after A15 and B15 (both seeds) are scored: if one family's 15k arm is adopted over the other's (decision.adopt with the other as X), only that family's 45k runs are started and the other family stops at 15k (its 15k numbers are reported); otherwise both families' 45k runs are started. decision.winner is then taken over the 45k runs that ran (plus C150 if amendment 1 promotes it)",
      "signal": "the lead writes the promotion to /local/home/skerraut/herd-synth3/vocr6/s1-promote.txt (lines 'A45 GO|STOP', 'B45 GO|STOP') and the experiment log; arm agents start a 45k run only after its GO line"
+    },
+    {
+     "n": 3,
+     "time": "this commit (see git log); before any stage-1 score",
+     "why": "audit-vocr6-ingest F3: the hval page path is not deduplicated against train; 354 of 6,327 region units (5.6%) hold a line whose duplicate cluster has a train copy, which a model trained on train may read from memory",
+     "change": "decision.components.hval_page also leaves out the units listed in $A/vocr6-lead/plans/hval_seen_units_v1.json (sha256 574ee0cdeea1cfb2abc232a4f43eacd674cc5bdf1e59d575eb5bf540cf6a2d19; built from vocr6-ingest pools/v1/decisions pools.line.seen_train over hval_plan_v1's units); hval_page_seen (junk-free, seen kept) is reported beside it. Applies to every stage",
+     "checked_on_incumbents_only": "VOCR5-N 2.354 -> 1.871 (the seen units are mostly '……' rows the finder misses); VOCR5-N -> L -0.111 [-0.216, -0.021] with seen kept, -0.112 [-0.213, -0.024] without; -> S +0.183 both; -> N seed1 -0.037 / -0.038"
     }
    ]
   },

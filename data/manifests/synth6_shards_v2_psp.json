@@ -1,0 +1,415 @@
+{
+ "kind": "synth6-shards",
+ "schema": 1,
+ "sets": {
+  "psp": {
+   "kind": "synth6-recipe",
+   "schema": 1,
+   "view": "psp",
+   "seed": 20261027,
+   "per_shard": 10000,
+   "cfg": {
+    "generator": "synth6",
+    "version": 1,
+    "matched": 0.55,
+    "placement": {
+     "rows": 0.8,
+     "scene": 0.1,
+     "scene_box": 0.1
+    },
+    "lines": [
+     0.45,
+     0.35,
+     0.15,
+     0.05
+    ],
+    "name": 0.35,
+    "text": {
+     "pool": 0.4,
+     "hook": 0.25,
+     "target": 0.25,
+     "confusion": 0.1
+    },
+    "fullwidth_space": 0.2,
+    "crop": {
+     "cell": 0.35,
+     "ink": 0.35,
+     "grad": 0.3
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2,
+     "psp2x": 4
+    },
+    "pad_extra": {
+     "vita": {
+      "top": 0.04,
+      "bottom": 0.06,
+      "left": 0.12,
+      "right": 0.04
+     },
+     "psp": {
+      "top": 0.0,
+      "bottom": 0.02,
+      "left": 0.2,
+      "right": 0.0
+     }
+    },
+    "region_margin": {
+     "vita": 12,
+     "psp": 6,
+     "psp2x": 12
+    },
+    "adrenaline": {
+     "bilinear": 0.8,
+     "nearest": 0.15,
+     "bicubic": 0.05
+    },
+    "cross_size": [
+     0.9,
+     1.12
+    ],
+    "accent": 0.5,
+    "style_jitter": {
+     "rgb": 10,
+     "alpha": 0.12,
+     "drop_halo": 0.05,
+     "drop_shadow": 0.05
+    },
+    "borrow_style": 0.12,
+    "spacing_jitter": 0.6,
+    "y_jitter": 1,
+    "scene_band": [
+     0.06,
+     0.72
+    ],
+    "min_label": 1,
+    "min_contrast": 60,
+    "max_busy": 45,
+    "min_char_contrast": 40,
+    "scene_box_alpha": [
+     0.8,
+     1.0
+    ],
+    "page_tries": 4
+   },
+   "code_sha256": {
+    "synth6.py": "001e7a497261baf7a6b508d71458b315a8fd57d39ae9dfc4b397bb1cd26b81b2",
+    "synth6_fonts.py": "a6ceaeb6f57971d6bec88adb5401625175018286c313a493a961b677e99be858",
+    "synth6_assets.py": "45d7028f9c6d0ea5bac632538262c50be5478d6b303de51a429b2c89db093ff1",
+    "synth6_text.py": "86caf9879ade8bf5b1f19fd835e7e788c80833c2c12f931e1d8f1f732850bb13",
+    "synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+    "common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e"
+   },
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "assets": {
+    "titles_sha256": "0bcfc82ce4e61fc4637bc4c5764168a9976caca8809467f7aee146687c28059d",
+    "hooktext_sha256": "c9d2eafd7eecd254479a3028c95bf40d5f9c499c1aebd810d48037eb4432f3c7",
+    "real_counts_sha256": "552ffc3a2424a3ed118ae6d396cabfe84dcd74e49511d19e5167eb75d15c49cb",
+    "fonts_inventory_sha256": "921dcf4d03075b587bfde60007ae3dc97d2e33bb3c2d96e7baf8e852ea1fdf22",
+    "font_check_sha256": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
+    "glyph_check_sha256": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
+    "glyph_geometry_sha256": "9584a5e1131e60077e0b232cbf6aec05c2b856269fc5639cd3d5e72bf75aa2d6",
+    "test_text_sha256": "a5e030cf8fb48113cdc17c5b75f4005e45750119da6b8a9a680e0a1d11abb906",
+    "hval_text_sha256": "24d9551bae272e2844e03cc108e48b30868788a5b3883d9e8931d19fbd68e0d8",
+    "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e"
+   },
+   "titles": [
+    "NPJG00016",
+    "NPJH00140",
+    "NPJH50001",
+    "NPJH50002",
+    "NPJH50132",
+    "NPJH50279",
+    "NPJH50297",
+    "NPJH50356",
+    "NPJH50382",
+    "NPJH50551",
+    "NPJH50621",
+    "NPJH50641",
+    "NPJH50649",
+    "ULJM05383",
+    "ULJM05674"
+   ],
+   "cross_faces": 128,
+   "cross_fonts": 293,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "names_dropped_excluded": 255,
+    "targets": "15bd0f42ba2db5016d55af5e9a7409967ebed7e08475b7684d472297c99253bb",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0"
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "psp",
+   "file": "synth6_psp_00000.npz",
+   "bytes": 37254547,
+   "sha256": "3dd87925bbd2a66a26dd38f31ba7458d50b93b0138d75611e08179b17ea6fd9b",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00001.npz",
+   "bytes": 37186486,
+   "sha256": "38145e99d9db3ffce8f4409ce4e00ad6c715c4f16160be809329b7beb47a898f",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00002.npz",
+   "bytes": 37453371,
+   "sha256": "180e7262b06b860958f65fe1af04dc08400911e4a65bad6dc9131a257c4430db",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00003.npz",
+   "bytes": 37237716,
+   "sha256": "c6ae97ffee9cc13e565de790d8e84bcf87e4b5e35d27169608314f6e68421921",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00004.npz",
+   "bytes": 36970761,
+   "sha256": "b7d94470f7c5b36dcc16506ec1e984e0e0e65d0a3eff1ab7086d88a5cda516ec",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00005.npz",
+   "bytes": 37062654,
+   "sha256": "c9e5a2372439774e26663f1317361be7217e6c4f161c4183eff0faddf2953dc0",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00006.npz",
+   "bytes": 36979010,
+   "sha256": "35db61e598d61a8d3618a9b5d115ac2bce3f6b230f33044a7439c5d2aedc0b05",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00007.npz",
+   "bytes": 37252449,
+   "sha256": "e116c2e390a662273a440216c8fd27966229e01a38beda7606e00ab6083607ca",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00008.npz",
+   "bytes": 37276790,
+   "sha256": "5783df95800b806f3890225b4277dcc39e71bd700ed55f829cd52be3d4a6f3a9",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00009.npz",
+   "bytes": 37296067,
+   "sha256": "f69498c2cb945e2010e30ffb9057082d238a74088a17d9bc06e493ab596c26f4",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00010.npz",
+   "bytes": 36971488,
+   "sha256": "7cb0860d53808cc6724e3a7f388d724527706f392a69830616c63d4548a3843c",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00011.npz",
+   "bytes": 37199262,
+   "sha256": "6ee340859dd3561fa75433334cc5afb2d8d0088d943dee1cd57e08726a03f9ca",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00012.npz",
+   "bytes": 37192332,
+   "sha256": "76a07476c271ea149026f587b55763c43c4a0ea3ff69a01a97ed6625cca9e5d7",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00013.npz",
+   "bytes": 37305821,
+   "sha256": "bfe661f78a7bb30dc76f5ee98ee8d8c43ace00c4f1458258f38cad79a5055789",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00014.npz",
+   "bytes": 37056323,
+   "sha256": "958ae1b10d374730efda0788ddf4cf267d605cb04e6700bdd1216762aa6558cd",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00015.npz",
+   "bytes": 37046246,
+   "sha256": "72b3b80d5ee25c43b32eac0391967221b2a6e6b202728c17ac039b8e87147809",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00016.npz",
+   "bytes": 36903124,
+   "sha256": "b51393c8cbeed39df44db8292d48cf09f94a62fa2005cb84664177ec6d6ddd62",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00017.npz",
+   "bytes": 37107533,
+   "sha256": "191d5e84b1bb23da66cd26b6bbfee5cb98c0fe537a7fe142ee6f24077176fd0c",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00018.npz",
+   "bytes": 37291970,
+   "sha256": "0b83bc73e79a2c2704d3e860e6ff679b425c03d1b292385ac34e26b1e773fbf8",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00019.npz",
+   "bytes": 37226412,
+   "sha256": "6765299670a63b433365e7e79636ec83627bf40eb06e85e806b5978e56e45963",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00020.npz",
+   "bytes": 36852489,
+   "sha256": "72eb79e270cda8dec6b8670063296a4ada07f813fc13986bdcb6b0638904bd9d",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00021.npz",
+   "bytes": 37338732,
+   "sha256": "0ff822265ef832689746865acd8d0c9e41f06018e6de8ac0291296a87930d4f3",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00022.npz",
+   "bytes": 37079995,
+   "sha256": "b027e962b916291537942a5e0c48b095de0bd7008dfc48709497e9004d75009a",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00023.npz",
+   "bytes": 37340754,
+   "sha256": "023908b29567819f58c60cac1fcc5ea96b0320fbcbf4196c7490e388f1285b06",
+   "samples": 10000
+  },
+  {
+   "set": "psp",
+   "file": "synth6_psp_00024.npz",
+   "bytes": 36966342,
+   "sha256": "55d82c0b0e8bd7ebe1fd5252b424fbb205621383f6a8e80b1cf7f5021768b344",
+   "samples": 10000
+  }
+ ],
+ "samples": 250000,
+ "bytes": 928848674
+}

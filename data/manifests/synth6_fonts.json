@@ -56,7 +56,7 @@
   "fonts_inventory.json": "921dcf4d03075b587bfde60007ae3dc97d2e33bb3c2d96e7baf8e852ea1fdf22",
   "font_check.json": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
   "glyph_check.json": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
-  "glyph_geometry.json": "9584a5e1131e60077e0b232cbf6aec05c2b856269fc5639cd3d5e72bf75aa2d6"
+  "glyph_geometry.json": "ef10e3af158e2c7fa31206563aa9faf315174cfbfd1ccdf52b7173ab7d8c0cc2"
  },
  "rows": [
   {
@@ -96,6 +96,8 @@
     "denied": "冦囗岾杲暉寨笞舂"
    },
    "misplaced": "│",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -124,6 +126,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -163,6 +167,8 @@
     "denied": "烏犠束剌勳吝咸嗚悋洽窖膈腟荼鍜鰔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "≪",
    "near_test_font": null,
    "drawn": true
   },
@@ -202,6 +208,8 @@
     "denied": "臼鴎鰍繊禄肋録論倭和話歪賄脇惑枠鷲亙亘鰐詫藁蕨椀湾碗腕弌丕个丼乂乖乘舒弍于亞亢亰亶仍仄仆仂仗仞仭仟价伉佚佛佗佇佶侈侏侘佻佩佰侑佯來侖儘俟俎俘俑俚俐俤俥"
    },
    "misplaced": "",
+   "swapped": "」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓∧⇒⇔∀≒≪≫‰♯♭♪†◯",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -239,6 +247,8 @@
     "denied": "オペ采瞋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -274,6 +284,8 @@
     "denied": "囗蔔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -300,6 +312,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -335,6 +349,8 @@
     "denied": "囗蔔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -359,6 +375,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -394,6 +412,8 @@
     "denied": "亰冤冦勳囗瀾爛荼謚讓濶闔鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -420,6 +440,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -455,6 +477,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -490,6 +514,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -525,6 +551,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -560,6 +588,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -595,6 +625,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -630,6 +662,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -656,6 +690,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -691,6 +727,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -726,6 +764,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -761,6 +801,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -796,6 +838,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -831,6 +875,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -866,6 +912,8 @@
     "denied": "姑怫怏枋檍欹泱罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -892,6 +940,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -927,6 +977,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -962,6 +1014,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・_：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -997,6 +1051,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1032,6 +1088,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1067,6 +1125,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1102,6 +1162,8 @@
     "denied": "璽囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1128,6 +1190,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -1163,6 +1227,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1198,6 +1264,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1233,6 +1301,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1268,6 +1338,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1303,6 +1375,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1338,6 +1412,8 @@
     "denied": "咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1364,6 +1440,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -1403,6 +1481,8 @@
     "denied": "滾吞啞搔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1442,6 +1522,8 @@
     "denied": "滾吞啞搔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1468,6 +1550,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -1503,6 +1587,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1538,6 +1624,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1573,6 +1661,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1608,6 +1698,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1643,6 +1735,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1678,6 +1772,8 @@
     "denied": "怫惻檍烙罍鳰"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1713,6 +1809,8 @@
     "denied": "怫惻檍烙罍鳰"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1748,6 +1846,8 @@
     "denied": "怫惻檍烙罍鳰"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1783,6 +1883,8 @@
     "denied": "怫惻檍烙罍鳰"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1818,6 +1920,8 @@
     "denied": "怫惻檍烙罍鳰"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1853,6 +1957,8 @@
     "denied": "囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1888,6 +1994,8 @@
     "denied": "囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1923,6 +2031,8 @@
     "denied": "囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1958,6 +2068,8 @@
     "denied": "囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -1993,6 +2105,8 @@
     "denied": "囗賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2028,6 +2142,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2063,6 +2179,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2098,6 +2216,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2133,6 +2253,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2168,6 +2290,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2205,6 +2329,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2233,6 +2359,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -2270,6 +2398,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2307,6 +2437,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2344,6 +2476,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2381,6 +2515,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2418,6 +2554,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2446,6 +2584,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -2483,6 +2623,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2520,6 +2662,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2557,6 +2701,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2594,6 +2740,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2631,6 +2779,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2668,6 +2818,8 @@
     "denied": "橡俎惻枋檍罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2696,6 +2848,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -2733,6 +2887,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2770,6 +2926,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2807,6 +2965,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2844,6 +3004,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2881,6 +3043,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2918,6 +3082,8 @@
     "denied": "囗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -2946,6 +3112,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -2983,6 +3151,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3020,6 +3190,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3057,6 +3229,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3094,6 +3268,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3131,6 +3307,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3168,6 +3346,8 @@
     "denied": "リ咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3196,6 +3376,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -3231,6 +3413,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3266,6 +3450,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": false
   },
@@ -3301,6 +3487,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3336,6 +3524,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": false
   },
@@ -3371,6 +3561,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3406,6 +3598,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3441,6 +3635,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3476,6 +3672,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3511,6 +3709,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3546,6 +3746,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3572,6 +3774,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -3611,6 +3815,8 @@
     "denied": "ペヵ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3650,6 +3856,8 @@
     "denied": "ペヵ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3688,6 +3896,8 @@
     "denied": "♡♥ゔヷヸヹヺ剝啞噓嚙悅搔摑暠杦栁棈潑瀆燁畯瘦綠繫蒴誾軀醬閒頰驎髙鹼麵閏咋竸孑峭晢泱衍籖蔔諫鏈闥"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3727,6 +3937,8 @@
     "denied": "斡毅沓鵠宍怜亙丼囮惠洸竇繩蜆蟆蟯詈貪閼霓頷鬲"
    },
    "misplaced": "─│┌┐└┘",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3753,6 +3965,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -3788,6 +4002,8 @@
     "denied": "亰冤冦凩囗擂荼蜩謚讓辜闃闔闡鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -3825,6 +4041,8 @@
     "denied": "ペ"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.9994
@@ -3865,6 +4083,8 @@
     "denied": ""
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9994
@@ -3905,6 +4125,8 @@
     "denied": "悔"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9994
@@ -3945,6 +4167,8 @@
     "denied": ""
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.9994
@@ -3974,6 +4198,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -4000,6 +4226,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -4026,6 +4254,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -4052,6 +4282,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -4087,6 +4319,8 @@
     "denied": "ヵ閏讐"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4122,6 +4356,8 @@
     "denied": "ヵ閏讐"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4157,6 +4393,8 @@
     "denied": "橡"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4192,6 +4430,8 @@
     "denied": "橡"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4227,6 +4467,8 @@
     "denied": "臼咋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4262,6 +4504,8 @@
     "denied": "臼咋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4297,6 +4541,8 @@
     "denied": "苫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4332,6 +4578,8 @@
     "denied": "苫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4367,6 +4615,8 @@
     "denied": "渥烏碍毅禽碕深宣釆圃丼俎勳甸卮峽廈懦擒晢棡泗沱淮湍濬痾竇簑縅胥舂荼裄襦貪鈿霓"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4402,6 +4652,8 @@
     "denied": "渥烏碍毅禽碕深宣釆圃丼俎勳甸卮峽廈懦擒晢棡泗沱淮湍濬痾竇簑縅胥舂荼裄襦貪鈿霓"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4437,6 +4689,8 @@
     "denied": "渥烏碍毅禽碕深宣釆圃丼俎勳甸卮峽廈懦擒晢棡泗沱淮湍濬痾竇簑縅胥舂荼裄襦貪鈿霓"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4472,6 +4726,8 @@
     "denied": "薗剌卮囗怱枹殱泱瀲續舂謦醪闔鸛"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4507,6 +4763,8 @@
     "denied": "薗剌囗怱枹泱瀲續舂襴謦醪闔鸛"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4542,6 +4800,8 @@
     "denied": "薗囗怱榑櫚淙疸笞舂"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4577,6 +4837,8 @@
     "denied": "閤鵠苫摸丕丼匕廈杳渭湍澆潘痾痼舂艷茣荼蜩襴豐貪齎轂鈑鰺鼬"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4612,6 +4874,8 @@
     "denied": "亰冤冦囗瀾荼蜩謚讓濶闔闡鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4647,6 +4911,8 @@
     "denied": "臼劒卮痼瘋舂萼鑚濶關韭"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4684,6 +4950,8 @@
     "denied": "ペ饗斤丕儼竸怫杲泱篷錣鶩"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4719,6 +4987,8 @@
     "denied": "臼浬鰍禽硯准戚宣萄苫涌丼俎凩甸嶝廈恫旱晢沱涅淮濬痾砠竇緘舂荼衾貪躪隨閼闔霓魘鶫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4758,6 +5028,8 @@
     "denied": "烏旬俎儔囗悋懦擂杪滬荼蛄譬魘鶇"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4797,6 +5069,8 @@
     "denied": "烏旬俎儔囗悋懦擂杪滬荼蛄譬魘鶇"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4836,6 +5110,8 @@
     "denied": "亰冤囗擂瀾繝荼薑讓濶闔闡鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4871,6 +5147,8 @@
     "denied": "斡粟袷按威惟蔭吋碓臼叡鋭益閲鴎禍蛾劾馨且翰含机毅戯享兇卿喬彊挟狂尭吟串釧粂鍬権硯枯糊跨糠絞衡鴻豪鵠昆艮嵯詐塞才采裁碕孜諮雌宍遮衆醜述峻竣舜招掌肖菖唇紳帥椙拙羨舛薦疏宋藻其柁駄台鐸奪稚竹抽蔦悌梯顛套董鐙届鳶楢廿捻膿蚤罵醗秘逼描鰭譜扮聞貿穆盆麿蔓摸蒙籾愈揖柚猷裕抑酪掠累漣榔聾亙亘藁丕丼舒亶仗仭佰來侖俤倚僭價僵儂儔儺兒冑冕冰凾刎剔勳匈甸匕卅厖簒曼吁呵咒咢咸啜喙喊啾喨噎營噬噪嚼囁囈堝墫壹夾婀婉嫗嬌宦寳峙峽崑崢嶝嶮帙帶帷廸彜弑弖怏憊懋截扁扠扨扼抉抒抓抔拗拿拈拜拌拇抛拉挌拮拱挂拵捐挾捏掣掏掉掟掵捩掾揆揣揉插揶揄搦攝搗搏摧摯攪撓撥撩撈撼擒擅撻擂擱擡攬擴擲攀擽攘攣攫攵收攸效敖敍敞敝敲數斂斃變斟旁旒昊杳昜曉暸朏枉枋柯桙梠棍棗楸楫楙楪榑榴橇蘗櫂檸櫞蘖歐汾泗洟衍涕渣滿滬漲煦爲爻狢畚疆疇疳疽痙瘠癰皸睨睥砌砠礪碼磬磚磴祓秧秡穹窖邃笞筥筬箋箒篥籐粢紂綣緻緲縋縷繚繽續纜缺罎羆羈羇羸翦飜耆聚聲肓胱脣膈膂膺臑臘臾舂舅與舍艪艾茴茱茫莅莚荼菲蒡蕈蘂薛蚪蛉蚫蛛蛯蜆蜑蜍蜴蜿蜻蝎蝴蝓蝣蠅螢螂蟋螽蟀雖蟄螳蟇蟆螻蟯蟲蟠蠏蠍蟾蟷蠎蟒蠕蠢蠱蠧衒衙衞衢衫袁衾衵衽袂袗袢袍袿袱裃裄裔裘裲褄褌褓褞褥褪褫襁襄褻褶襠襯覃覡覺訌訶誅誨諄諂諤諠諡謨豁豌豎貉貳貮贓趺跏跣踉踝踞蹂踵蹊蹉蹌蹲躊躓躪軋軛軣軻軫輜輛輌輦輳輻轅轂輾轉轆轢轤辜辟辣辷迚迢迪邇迴逅迹逑逡逍逞逵逹迸遑遉隨遲邂遽邁邀邊邏邯邱邵扈鄂鄒鄙鄲酊酖酣酩醋醂醫醪醺釉釼釵鈞釿鈕鈑鉞鉗銕鈿銜銖錮錣鏝鐐鐡鑞鑚閻闃闖隍隶霓靉韃韆韋韜頡頷顫餠饅饐饑饒饌馘駟駑駮駻騙騾髞髢髻鮴鯔鱇鵙鷦黽"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4897,6 +5175,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -4932,6 +5212,8 @@
     "denied": "亰冤冦囗渭痼荼薑蜩謚濶闔鬲鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -4973,6 +5255,8 @@
     "denied": "薗戚苫凉怱怏恫慓杳疸舂蕈闔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5012,6 +5296,8 @@
     "denied": "睦"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5051,6 +5337,8 @@
     "denied": "巾禽訓醸惰萄銅閥薮"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5086,6 +5374,8 @@
     "denied": "咋峽恫慓滬痼諤閨闔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5121,6 +5411,8 @@
     "denied": "ヵ咋趨峽恫慓痼諤閨濶闔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5156,6 +5448,8 @@
     "denied": "閲桁俊丈寸吊倣万了老傅嗚靂騙"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "┐",
    "near_test_font": null,
    "drawn": true
   },
@@ -5195,6 +5489,8 @@
     "denied": "擅"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5223,6 +5519,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -5262,6 +5560,8 @@
     "denied": "擅"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5301,6 +5601,8 @@
     "denied": "擅"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5340,6 +5642,8 @@
     "denied": "擅"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5379,6 +5683,8 @@
     "denied": "擅"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5418,6 +5724,8 @@
     "denied": "擅"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5457,6 +5765,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5496,6 +5806,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5535,6 +5847,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5574,6 +5888,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5613,6 +5929,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5652,6 +5970,8 @@
     "denied": "悔橡怫惻檍烙罍苟"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5691,6 +6011,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5730,6 +6052,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5769,6 +6093,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5808,6 +6134,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5847,6 +6175,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5886,6 +6216,8 @@
     "denied": "囗蘗"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5925,6 +6257,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -5964,6 +6298,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6003,6 +6339,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6042,6 +6380,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6081,6 +6421,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6120,6 +6462,8 @@
     "denied": "咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6148,6 +6492,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6176,6 +6522,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6204,6 +6552,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6232,6 +6582,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6267,6 +6619,8 @@
     "denied": "斡臼蝦鈎廓兜仰弧鵠才宍哨碩疏怠漬苫葺諭苓零亙丼亶仭佰倪冉冦劒匕卮咸嗚營寳岑岾幔广惠憔挂攵旱杳晧朮梠蘗欒殱洸淦猊疥痾盒瞽窖綵肓舍舩艷莟荼蔟蘂藉蚫蛛衾覿貪跏轂醂鐃閊閾闌靫頷馗駮骰魘鯣鰆鰊鱸鶩悅畯"
    },
    "misplaced": "",
+   "swapped": "!\"#$%&'()*+,-./0",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6293,6 +6647,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6328,6 +6684,8 @@
     "denied": "亰冤囗渭痼繝蜩讓濶闔鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6354,6 +6712,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6391,6 +6751,8 @@
     "denied": "咋洽"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9999
@@ -6431,6 +6793,8 @@
     "denied": "拾謄怏檍簑粱糀苟豐"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9999
@@ -6460,6 +6824,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6490,6 +6856,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -6529,6 +6897,8 @@
     "denied": "臼亰冦凩囗瀾痼荼蜩讓濶闔闡鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6567,6 +6937,8 @@
     "denied": "薗鴬遣宍丗咸恫慓晢曄泱邃笞綯縅薑謚謦譬齎轂ゕゖ噓瀆"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6602,6 +6974,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6641,6 +7015,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6680,6 +7056,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6719,6 +7097,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6758,6 +7138,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6795,6 +7177,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6834,6 +7218,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6869,6 +7255,8 @@
     "denied": "渥薗咋苫囗鑚濶"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6904,6 +7292,8 @@
     "denied": "亰冤勳囗擂渭荼濶闔闡鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -6941,6 +7331,8 @@
     "denied": ""
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.9992
@@ -6981,6 +7373,8 @@
     "denied": "洽"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.9992
@@ -7021,6 +7415,8 @@
     "denied": "謄鳶怫怏慟檍烙簑粱糀薑豐"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.9992
@@ -7061,6 +7457,8 @@
     "denied": "冶"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.9992
@@ -7099,6 +7497,8 @@
     "denied": "斡薗澗禽巷鵠才宍窒苫敦蝿葺穆埋憂苓亙恫貪賽駮"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7134,6 +7534,8 @@
     "denied": "圃眈"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7169,6 +7571,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7204,6 +7608,8 @@
     "denied": "鳥謄"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7239,6 +7645,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7265,6 +7673,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -7300,6 +7710,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7335,6 +7747,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7370,6 +7784,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7405,6 +7821,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7440,6 +7858,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7475,6 +7895,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7510,6 +7932,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7545,6 +7969,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7580,6 +8006,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7615,6 +8043,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7650,6 +8080,8 @@
     "denied": "怫枋橦檍烙罍"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7685,6 +8117,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7720,6 +8154,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7755,6 +8191,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7790,6 +8228,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7825,6 +8265,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7860,6 +8302,8 @@
     "denied": "囗掉賈"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7895,6 +8339,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7930,6 +8376,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -7965,6 +8413,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8000,6 +8450,8 @@
     "denied": "咋"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8035,6 +8487,8 @@
     "denied": "咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8070,6 +8524,8 @@
     "denied": "咋"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8105,6 +8561,8 @@
     "denied": "ら鴎乙漉昏昆泥尼昧牝冶丼弍兌兔刹剿奧娑孑寳尢崋憙戛旱杲蘗殳毟爻粢肓舂荼蒻訛豐閻顱鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8142,6 +8600,8 @@
     "denied": "哀旭虻絢袷案杏惟為衣磯因右碓臼渦鰻頴駅掩襖仮加歌禍蛾悔貝碍鎧柿蛎閣笠橿潟括竃栢官寛憾柑桓款漢潅甘観間関巌危喜机毅祇砧客弓旧挙兇競彊況胸巾欣禽金狗串沓郡兄圭敬警迎欠穴権硯遣元弧雇呉吾口后康恒抗綱号合克刻告此昏昆些叉左査細榊碕昨冊札傘算仔師祉諮雌滋璽宍捨洲淑熟旬潤曙庶嘗庄招掌昌樟消礁称紹肖衝詳剰常嘱燭審晋浸疹紳推粋枢菅栖誓斉席昔拙先尖旋閃禅繕噌挿操捉揃損妥惰怠黛鯛拓沢凧蛸探綻鍛暖知痴蜘抽注貯凋庁弔腸蔦剃呈挺邸摘貼点湯痘答謄豆頭騰闘撞洞瀞捺弐寧悩農巴肺這箔畑伐隼叛般頒盤否碑菱逼蛭副払沸物憤扮聞閉別娩墓包呆崩庖抱方砲亡傍妨帽紡膨奔翻盆磨毎又麿万巳稔粍盲籾問悶愈佑裕与誉容蓉淀来欄吏李立掠臨累苓鈴狼亘藁丼佛勳唸嚼圓寥彷悋扼捏晨曉洒滸皺禪竇經緘羞袢訃詈逅鄙鋏錮闊"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8179,6 +8639,8 @@
     "denied": "ぽ斡洩掩俺禾蛎鈎萱柑莞間巌毅僑禽吟串硯賢鵠肴璽酋醇掌丈紳塵脊拙煽蒼脹佃邸套騰苫敦蚤駁噺釆逼斧蔽紡穆漫蒙莱僚怜苓鈴亘丼勳呵姜嬌寥峽崚曖炙熄璧稻窘竦縺菫覿詈邇逅遽鄙"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8216,6 +8678,8 @@
     "denied": "悔閤壬牲戰"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8253,6 +8717,8 @@
     "denied": "舘鴫曾酉嗚翆"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8281,6 +8747,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -8320,6 +8788,8 @@
     "denied": "キ臼薗苅毅伺諏睡潰悌鏑吐廿曝釆唯略蕨俎冲凉凾區吁咀啜喊喞嗜嘛嘯噬嚔囃寞乢峭嵶嶝恃恂恫悛悴愼慟懦戛晧曄曚蘖泗璧甌疇皹盖眈眇眦睥窖竄籘續翦脛臘舍艸苟蒡蝴蠎觸贐躅軣迢醺鈿鑽閂闊闔闖陟隕鞆韭驛鵙鶉黽熙杦畯ゖ啞"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8359,6 +8829,8 @@
     "denied": "キ臼薗苅毅伺諏睡潰悌鏑吐廿曝釆唯略蕨俎冲凉凾區吁咀啜喊喞嗜嘛嘯噬嚔囃寞乢峭嵶嶝恃恂恫悛悴愼慟懦戛晧曄曚蘖泗璧甌疇皹盖眈眇眦睥窖竄籘續翦脛臘舍艸苟蒡蝴蠎觸贐躅軣迢醺鈿鑽閂闊闔闖陟隕鞆韭驛鵙鶉黽熙杦畯ゖ啞"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8398,6 +8870,8 @@
     "denied": "臼亰冤冦囗悃擂杳荼蜩讓闔鬲鰺鳫ゕゖ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8426,6 +8900,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -8461,6 +8937,8 @@
     "denied": "薗ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8496,6 +8974,8 @@
     "denied": "ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8531,6 +9011,8 @@
     "denied": "oοо‐‥℃ⅠⅡⅢ①②③♡沓宍匕杲疸窖肓舂ゕゖ俱內吞竽"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8566,6 +9048,8 @@
     "denied": "臼剌匈廈涅湮湍癩籘肓舂荼謚邇隨韆鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8592,6 +9076,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -8627,6 +9113,8 @@
     "denied": "亰倬冤冦勳囗擂繝虱諤濶闔鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8662,6 +9150,8 @@
     "denied": "遺閲嗣俊綜吊伐妨紡万了老傅嗚靂"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "┐\"",
    "near_test_font": null,
    "drawn": true
   },
@@ -8697,6 +9187,8 @@
     "denied": "薗剌囗孃怱慓續舂蠎讓闔"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8732,6 +9224,8 @@
     "denied": "沓丕丼冲甸嗚槫瀾痾糀羲舂艷莓荼覯謚貪躪轂濶鶫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8767,6 +9261,8 @@
     "denied": "橡俎嗚嵒怫怏椈檍泱磬糀駘"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8791,6 +9287,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -8815,6 +9313,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -8850,6 +9350,8 @@
     "denied": "咋釆"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8885,6 +9387,8 @@
     "denied": "咋釆"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8920,6 +9424,8 @@
     "denied": "圃摸"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8955,6 +9461,8 @@
     "denied": "圃摸"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -8990,6 +9498,8 @@
     "denied": "咋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9025,6 +9535,8 @@
     "denied": "咋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9053,6 +9565,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -9081,6 +9595,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -9120,6 +9636,8 @@
     "denied": "烏葺圃摸涌莱丕剿勳匕峽晧曉枹泗瘤眈肓艷薹衵閂闌"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9159,6 +9677,8 @@
     "denied": "仝ぅぞたづふぶぷゃらろタヒヤ渥虻畏磯允閲宴乙化菓閣完潅含癌棄毅紀記詰灸巨侠兇彊況寓栗兄繋枯綱閤漉昏昆混叉砦撮子旨枝柴蛇醇薯娼小菖蒸塵錐枢寸世績曾巣窓糟霜他怠替宅誰値弛池畜窒聴綴潰嬬呈泥擢兎東淘鐙尼肉寧嚢琶婆莫閥氾晩磐悲樋毘幅覆胞亡忙某穆凡繭巳密免摸儲杢悶也柚麗倭藁乂亰佚佗侏侘佻俥倚倪傀僥僭儔儡兒兌兔冕冤几凩凾刹勣勵丗厦參曼呰咢咸哈唸噎噫囂堡毀壟奕奘娑嫗孀宦寞屎屬峽崋嵒嶝幀廈廏廖弩怺恍惺愨愧慓懦戀扼掏揉摧攪擅攵敍敝敲數斃无昊昵曉曚梠梍棍棠榮槃樓櫺殳汞洒涓滉滬澆濬瀋瀾烱炬烝熄爻瑟瓊瓮瓲疱痾瘧癘盥眈睨睛睾瞞磬稷穹窕邃笞筐筅筥篦篶粲粱粽糀紂綯繽纜翊耨聚肓脣臂舅舍芟芻苺莓范茹茫茣荵萃莽萸萼葷蓊蓙蓁蔕蓼蕈蘂薹藐蚩蚫蜑蛹蜴蜩蝗蝣蟆蟯蠏蟷衢袍袿裲褶襴襷詈諧譁豎跣躁辜逹鄲鉤鉋錣鏖鑼閻濶闍雋雹霹頸顱驛驢骼髀髢髱魘鮑鰕鰊鶫鷄麋黽堯"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9198,6 +9718,8 @@
     "denied": "oοо‐‥℃ⅠⅡⅢ①②③♡沓宍凉匕杲濘爼疸罍肓舂蘂逑誾ゕゖ俱內吞竽"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9233,6 +9755,8 @@
     "denied": "咋"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9272,6 +9796,8 @@
     "denied": "ヵ寡渇翰交鵠嘗惰苧釆仟兔匐咸囗孃斈恫挌敖杳煕璧畚瘁眞瞽礒稈笨肓胄舳茘荵莽蔔薹諠謦讓轂迴鏤閠韋颱饕鶉ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9311,6 +9837,8 @@
     "denied": "苫釆冲嶝瀾窖舂茣荼薀ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9350,6 +9878,8 @@
     "denied": "oοо‐‥℃ⅠⅡⅢ①②③♡沓宍匕杲疸肓舂誾ゕゖ俱內吞竽"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9388,6 +9918,8 @@
     "denied": "烏索潰莱俎奧晢筥舂艷荼謚貪鈿鶫ゕゖ俱吞嬴竽鱨"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9426,6 +9958,8 @@
     "denied": "薗凉寳怱怏恫慓杳疸舂"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9465,6 +9999,8 @@
     "denied": "萱"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9500,6 +10036,8 @@
     "denied": "薗苫凉怏恫慓杳疸舂蕈鰕"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9537,6 +10075,8 @@
     "denied": "ペ"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/gothp32",
     "identical_glyph_share": 0.999
@@ -9577,6 +10117,8 @@
     "denied": "洽煕濶"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mdnp32",
     "identical_glyph_share": 0.999
@@ -9617,6 +10159,8 @@
     "denied": "ヵ謄橡鳶柾寞怫怏慟檍檳簑粱糀苟豐"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/mgothp32",
     "identical_glyph_share": 0.999
@@ -9657,6 +10201,8 @@
     "denied": "冶蘗"
    },
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": {
     "font": "PCSG00415/minp32",
     "identical_glyph_share": 0.999
@@ -9695,6 +10241,8 @@
     "denied": "殴鵠嗚孑恫杳穰篷籖胥舂荼諂謦貪贏躪轂閼鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9730,6 +10278,8 @@
     "denied": "亰冤冦囗擂瀾荼蜩讓濶闃闔鰺鳫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9765,6 +10315,8 @@
     "denied": "οоｏ穐栢翰脊拍捧昧吏丼亶仗倪儺竸冑咸啾姜峽幔怱惠惷拮掉旱杲杳蘗櫚欒殳皺盒磚箴篷籐縢羃羸胥舍艷艾苣莟荼薑蜴蠎袿裄貪躪轢逅釿鍮鑞鑰頷鯡鰆鰈鰊鷙"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9800,6 +10352,8 @@
     "denied": "亰冤凩囗擂瀾荼蜩讓濶闔闡鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9835,6 +10389,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9861,6 +10417,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -9896,6 +10454,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9931,6 +10491,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -9966,6 +10528,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10001,6 +10565,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10036,6 +10602,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10071,6 +10639,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10106,6 +10676,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10141,6 +10713,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10176,6 +10750,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10211,6 +10787,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10246,6 +10824,8 @@
     "denied": "ヵ悔橡怫怏檍檳欹泱簑糀豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10281,6 +10861,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10316,6 +10898,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10351,6 +10935,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10386,6 +10972,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10421,6 +11009,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10456,6 +11046,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10491,6 +11083,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10526,6 +11120,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10561,6 +11157,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10596,6 +11194,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10631,6 +11231,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・~н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10666,6 +11268,8 @@
     "denied": "咋洽煕"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10701,6 +11305,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10727,6 +11333,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -10762,6 +11370,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10797,6 +11407,8 @@
     "denied": ""
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10832,6 +11444,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10867,6 +11481,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10902,6 +11518,8 @@
     "denied": ""
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10937,6 +11555,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -10972,6 +11592,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11007,6 +11629,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11042,6 +11666,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11077,6 +11703,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11112,6 +11740,8 @@
     "denied": "謄鳶兌怫怏檍檳泱簑糀聰莟豐"
    },
    "misplaced": "・н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11147,6 +11777,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11182,6 +11814,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11217,6 +11851,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11252,6 +11888,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11287,6 +11925,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11322,6 +11962,8 @@
     "denied": "冶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11357,6 +11999,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11392,6 +12036,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11427,6 +12073,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11462,6 +12110,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11497,6 +12147,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・~н：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11532,6 +12184,8 @@
     "denied": "ヵ咋洽煕濶"
    },
    "misplaced": "・~：；",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11567,6 +12221,8 @@
     "denied": "宍冑凉娥怱恫泱穰舂謦貪轂鉤鑚鰺ゕゖ俱"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11602,6 +12258,8 @@
     "denied": "‐‥℃ⅠⅡⅢ①②③♡鈎壕苫粍匕嘖營孃惠滕疸痼穰粽肓茣隗內枘竽"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11637,6 +12295,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11672,6 +12332,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11707,6 +12369,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11742,6 +12406,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11777,6 +12443,8 @@
     "denied": "ゞ斡按烏臼薗鈎黍仰串硯濠鵠叉竺漬苫葺苓亙丼沁貪頷"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11812,6 +12480,8 @@
     "denied": "ゞ斡按烏臼薗鈎黍仰串硯濠鵠叉竺漬苫葺苓亙丼沁貪頷"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11847,6 +12517,8 @@
     "denied": "讃剌尢慓旱痼竇簑舂艷荼蠎覯貳賺跌鑰鰺ゕゖ俱吞"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11882,6 +12554,8 @@
     "denied": "薗剌ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11917,6 +12591,8 @@
     "denied": "剌ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11952,6 +12628,8 @@
     "denied": "薗梼剖剌ゔ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -11987,6 +12665,8 @@
     "denied": "oοо‐‥℃ⅠⅡⅢ①②③♡沓宍匕埒杲肓舂逑銷誾ゕゖ俱內吞竽龗"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -12022,6 +12702,8 @@
     "denied": "杏襖禍毅旧巾串枯絞遮醇掌申酔羨薦怠奪旦抽套秘武聞娘抑藁丼呵啜拮擂璧瘤盪芒蛛誑諤踪躊轢頷餃"
    },
    "misplaced": ",.",
+   "swapped": "",
+   "manual_deny": "〒",
    "near_test_font": null,
    "drawn": true
   },
@@ -12057,6 +12739,8 @@
     "denied": "キ吋臼薗憶蝦鈎毅蟻口巷伺靭諏睡惜占潰悌廿曝噺圃鳳蕨俎冲凉凾匕叭咀啜喊喞喨噎嘯噬堝娥崛嵶嶝恃恂恫悛悴愼慟懦戛摧擂暉曄曚泗涸璧眇眩睫瞋笳籐籘腮臘舍蒡雖蠎觸贐踞躅軣遑閂闊闃闔隕靄鞆韭鵙鶉黽杦ゖ啞"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -12092,6 +12776,8 @@
     "denied": "キ吋臼薗憶蝦鈎毅蟻口巷伺靭諏睡惜占潰悌廿曝噺圃鳳蕨俎冲凉凾匕叭咀啜喊喞喨噎嘯噬堝娥崛嵶嶝恃恂恫悛悴愼慟懦戛摧擂暉曄曚泗涸璧眇眩睫瞋笳籐籘腮臘舍蒡雖蠎觸贐踞躅軣遑閂闊闃闔隕靄鞆韭鵙鶉黽杦ゖ啞"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -12127,6 +12813,8 @@
     "denied": "亰冤勳囗杳渭瀾痼蜩讓闔鰺鳫ゔゕゖ"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -12153,6 +12841,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12193,6 +12883,8 @@
     "denied": "諌厦囗艷蕈諫"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -12217,6 +12909,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12241,6 +12935,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12265,6 +12961,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12289,6 +12987,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12313,6 +13013,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12337,6 +13039,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12361,6 +13065,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12385,6 +13091,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12409,6 +13117,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12433,6 +13143,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12457,6 +13169,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12481,6 +13195,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12505,6 +13221,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12529,6 +13247,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12553,6 +13273,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12577,6 +13299,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12606,6 +13330,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12630,6 +13356,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12654,6 +13382,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12678,6 +13408,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12702,6 +13434,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12726,6 +13460,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12750,6 +13486,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12774,6 +13512,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12798,6 +13538,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12822,6 +13564,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12846,6 +13590,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12870,6 +13616,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12894,6 +13642,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12918,6 +13668,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12942,6 +13694,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12966,6 +13720,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -12990,6 +13746,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13031,6 +13789,8 @@
     "denied": ""
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -13070,6 +13830,8 @@
     "denied": "奧"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -13109,6 +13871,8 @@
     "denied": "ケ竸杳綟豐關闢鬲誾"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -13148,6 +13912,8 @@
     "denied": "遣苫剌艷濶鰺"
    },
    "misplaced": "",
+   "swapped": "",
+   "manual_deny": "",
    "near_test_font": null,
    "drawn": true
   },
@@ -13171,6 +13937,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13194,6 +13962,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13217,6 +13987,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13240,6 +14012,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13263,6 +14037,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13286,6 +14062,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13309,6 +14087,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13332,6 +14112,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13357,6 +14139,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13382,6 +14166,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   },
@@ -13410,6 +14196,8 @@
    "ocr_check": null,
    "glyph_check": null,
    "misplaced": null,
+   "swapped": null,
+   "manual_deny": null,
    "near_test_font": null,
    "drawn": false
   }

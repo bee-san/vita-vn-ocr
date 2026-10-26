@@ -42,7 +42,7 @@ hooked lines.
 | name | a speaker name on a free name row that no drawn line overlaps (35%), in the title's name style | the title's name rows |
 | text | below | |
 | view | **vita** 960×544; **psp** 480×272 (model B); **psp2x** the PSP frame upscaled 2× after drawing, as Rubi captures a PSP game through Adrenaline (bilinear 80%, nearest 15%, bicubic 5%) | |
-| crop | the renderer cell box + pad (the hooked pool's convention, 35%), the ink box + pad + extra margin (eval's, 35%), or the console's GRAD finder box on the dialogue region (30%; a line without a one-line GRAD box, or whose GRAD box holds less than 90% of its ink height, gets its ink crop). Pad 4 px Vita and 2×, 2 px PSP. Console polarity: a dark-text crop is inverted (`common.line_dark`) | real boxes on the page block a GRAD box that merges them |
+| crop | the renderer cell box + pad (the hooked pool's convention, 35%), the ink box + pad + extra margin (eval's, 35%), or the console's GRAD finder box on the dialogue region (30%; a line without a one-line GRAD box, or whose GRAD box holds less than 90% of its ink height or not all of its ink width, gets its ink crop). Pad 4 px Vita and 2×, 2 px PSP. Console polarity: a dark-text crop is inverted (`common.line_dark`) | real boxes on the page block a GRAD box that merges them |
 | never cropped | a line whose ink or cell box leaves the frame; a line whose ink overlaps another drawn line's by a quarter of the smaller height; a line with a fill contrast under 60 luma levels, or any character cell under 40, or a busy surround (luma sd over 45) that no halo or shadow of half opacity frames | the real titles' median dialogue contrast is 80-250 levels (lowest NPJH50621, 80) |
 
 ### Text
@@ -85,11 +85,25 @@ second. Labels are `teacher/vote.canon` of the drawn text, the hooked pool's lab
 | **failed the OCR check** (the 10 px and 15 px strikes of PCSG00216's `textfont_2`, whose strokes break at that size) | 2 |
 | **drawn** | **293** |
 
-So a CLANNAD score of a model trained on synth6 v3 has not seen CLANNAD's font files or glyph bitmaps through
-synth6, nor its text or pages. The typeface itself (Prototype's ゴシック) is still seen: Little Busters'
-LUCA FONT.PAK draws it in other bitmaps, and Little Busters is a train title with real pages. Dance with Devils'
-FOT-ModeMinA Std B has no near copy in the pack: no bitmap font shares half its glyphs (the audit's measure). The same typeface is drawn
-from the Otomate titles' FFU atlases.
+**CLANNAD's glyph raster is still drawn, through 24 LUCA fonts** (measured by the second audit round). The
+`gothic32`, `mincho32`, `modern32` and `marugothic32` of six Prototype titles (PCSG00183, PCSG00206, PCSG00620
+Grisaia Spinout, PCSG00785, PCSG00988, PCSG01000) hold CLANNAD's 32 px raster, re-quantised through another
+palette. None of their glyphs is byte-identical, so the rule above does not catch them, but for 92-98% of the
+characters they share with CLANNAD's matching font the glyph has the same ink box and differs by at most one of 16
+grey levels per pixel. They are drawn in 19,106 v3 Vita crops (3.8%), 0 PSP; 10,837 of those are PCSG00620's own
+fonts, whose `gothic32` is its verified dialogue font. v1 drew them in 17,705 Vita crops, besides the 14 Key-port
+copies (77k crops).
+
+**They are kept, and disclosed.** Grisaia Spinout (PCSG00620) is a hooked train title. Its 1,696 real train lines
+are drawn in that same raster, so every VOCR6 model trained on the hooked lines sees it whatever synth6 does, and
+removing the fonts from synth6 would not make CLANNAD's raster unseen. It would also take away a train title's
+matched font. So: a CLANNAD score of a model trained on synth6 v3 (or on the hooked lines) has seen CLANNAD's glyph
+raster, though not its font files, text or pages, and VOCR6's CLANNAD reports must say so. Little Busters' LUCA
+fonts are close but not the same (within two grey levels for 64-83% of the glyphs of three of them, by the audit's
+measure).
+
+Dance with Devils' FOT-ModeMinA Std B has no near copy in the pack, even by ink-box alignment (the audit's measure).
+The same typeface is drawn from the Otomate titles' FFU atlases.
 
 Four checks guard what a glyph shows, since a wrong glyph teaches a wrong label. The renderer never draws a
 character that any of them denies in that font.
@@ -116,7 +130,8 @@ character that any of them denies in that font.
   40% of its coverage) outside its own pen cell, or that has no visible ink (maximum coverage under 0.3), is denied.
   The 164 LUCA fonts store ・：； in a full cell with a half-width advance, which drops the mark into the next
   character's cell (the audit found this in v1). Also denied: н in 40 fonts, ~ in 10, PCSG01083's , and .,
-  and PCSG00380 font_Vita's faint box-drawing glyphs. 167 fonts lose 1-6 characters.
+  PCSG00380 font_Vita's faint box-drawing glyphs, NPJH50132 jp8's │ and PCSG00007 mincho20's _. 167 fonts lose 1-6
+  characters.
 - **Shifted tables** (`synth6.py glyph-geometry`, `synth6_fonts.swapped`). The two checks above read kana and kanji
   and a few lines of text, so a symbol table can be wrong unseen. Every symbol, punctuation mark, Latin letter and
   digit is compared in Shift-JIS order with the reference glyphs of itself and of its neighbours 1-2 codes away
@@ -126,8 +141,15 @@ character that any of them denies in that font.
   - **NPJH50649's `lt18`**: correct up to （）, then shifted by one from 0x8176 on: 」 is drawn as 「 (the font has
     no 「), 『 as 」, 【 as 』, ＝ as ÷, ○ as ★, ° as ♀, ■ as □ ... 63 characters.
   - **PCSG00629's `advfont`**: 16 half-width marks !"#$%&'()*+,-./0.
-  - No other drawn font. In v2, 0.22% of the PSP crops drew a symbol of lt18's run (＝ in two thirds of them),
-    0.02% of the Vita crops.
+  - No other drawn font. In v2, 0.38-0.39% of the PSP crops drew a symbol of lt18's run (＝ in 40% of them; 『 and
+    』 in most of the rest), and 0.035% of the Vita crops.
+  - The shift counts assigned codes only, as a decoder's table does: ◯ (0x81FC) follows four unassigned codes, and
+    the first version of the rule, which counted raw codes, missed it. v3 rendered with that version, so 6 of its
+    PSP crops show ◯ as ¶; main's rule denies ◯ too.
+- **Single wrong glyphs** at rarely used codes are not checked automatically outside a shifted run. The second audit
+  round's per-symbol screen found 5, confirmed by eye: ┐ drawn as a wave in PCSG00617's and PCSG00838's `font24`, "
+  as a box icon in PCSG00838's, ≪ as a long dash in NPJH50621's `font16`, and 〒 as 」 in PCSG01083's. They are listed
+  by hand (`synth6.MANUAL_DENY`) and denied on main. v3, rendered before, holds 21 crops of them.
 
 Per drawn font, the median is 5 denied characters and the p90 is 23 (before the shifted-table check).
 
@@ -178,6 +200,10 @@ are not affected. Examples (`synth6_styles.json`):
 - **v2's own label audit** (the same measure as v1's; its worst-crop sheets read by eye) found what B1-B4 had
   hidden: lt18's shifted symbol table (□□□ for ■■■, ♀ for °) and GRAD boxes cut through the glyphs (a 15 px band
   across a 30 px line). Both are fixed in v3, with tests.
+- **The second audit round** (on v3) reproduced the pins, the re-render, the label audit and the proof. It found:
+  - B5: CLANNAD's raster in 24 LUCA fonts, kept and disclosed (above);
+  - 38 residual crops: F7, a GRAD box holding only part of a line at the region edge; F8, ◯ in lt18 and 5 single
+    wrong symbols. These are fixed on main with tests, and v3 keeps them.
 - **Unit tests** (`tests/test_synth6.py`, CI fixtures only):
   - drawing: atlas drawing at scale 1 is exact; scale and spacing move the pen; the wrap and its one-mark overhang;
   - fonts: every inventory exclusion, including near-identical copies; the misplaced-glyph rule;
@@ -213,17 +239,25 @@ of 6 pinned shards (vita 0 and 31, psp2x 0 and 12, psp 0 and 20), re-rendered in
 | ink beyond the frame (B2) | 1,183 / 5,459 / 5,432 crops (vita / psp2x / psp) | 0 |
 | ・：； in a font that draws them outside their cell (B3) | 0.19% | 0 |
 | a GRAD box holding less than 80% of its line's ink height | (v2: 0.12 / 0.31 / 0.01%) | 0 |
-| a symbol of lt18's shifted table | (v2: 0.02 / 0.22 / 0.22%) | 0 (denied) |
+| a GRAD box holding only part of its line's width (the line at the region edge; F7) | | 11 psp crops (NPJH50279) |
+| a symbol of lt18's shifted table | (v2: 0.035 / 0.39 / 0.38%) | 6 crops (◯; F8) |
+| a single wrong symbol glyph (F8) | | 21 crops |
 
-The 0.006-0.010% of v3 crops that hold ・：； in PCSG01083's font are drawn correctly: that font's ink for them lies
-inside its narrow advance.
+The 0.006-0.010% of v3 crops that hold ・：； in PCSG01083's font are drawn inside that font's narrow advance; in
+cross mode a negative spacing can still press the dot into the next glyph (1 of 4 such crops the audit viewed, 80
+crops in all). The 38 residual crops (F7, F8) are fixed in main's renderer, not in v3: 38 in 1,000,000 did not
+justify another render. Also in v3, measured by the audit:
+- a page-UI triangle (▶) over the first glyph in 2 of 126 random crops, with the label right;
+- in tall-cell cross fonts, a cell crop holding part of the next drawn line (625 / 1,045 / 676 crops at 25% or more of
+  its height);
+- drawn ink over 25% or more of a real text box's height in 34 PSP crops, mostly NPJH50297.
 
 | | vita | psp2x | psp |
 |---|---:|---:|---:|
 | titles / fonts drawn | 31 / 262 | 15 / 158 | 15 / 156 |
 | matched / cross font | 32.1 / 67.9% | 14.8 / 85.2% | 14.6 / 85.4% |
 | rows / scene_box / bare scene | 72.1 / 22.8 / 5.2% | 64.8 / 25.6 / 9.6% | 64.9 / 25.4 / 9.7% |
-| crop: ink / cell / GRAD | 41.1 / 35.0 / 24.0% | 44.4 / 34.9 / 20.7% | 38.8 / 35.1 / 26.2% |
+| crop: ink / cell / GRAD | 41.0 / 34.9 / 24.0% | 44.4 / 34.9 / 20.7% | 38.8 / 35.1 / 26.2% |
 | inverted (dark text) | 29.1% | 17.9% | 17.8% |
 | names | 1.6% | 1.4% | 1.4% |
 | text: pool / hook / target / confusion | 40.2 / 24.2 / 24.3 / 9.7% | 40.3 / 24.4 / 24.2 / 9.8% | 40.4 / 24.3 / 24.4 / 9.6% |
@@ -239,7 +273,7 @@ s4v5631 gives them a median of 76 in 1,000,000 crops, with a curriculum aimed at
 crops on the real fonts and styles instead; its targets are a quarter of the lines.
 
 **Balance.** Titles are drawn uniformly (Vita 3.23% each, PSP 6.67%). The crops follow within ±20% for 27 of 31
-Vita titles but only 6 of 15 PSP titles. Under-produced titles:
+Vita titles but only 5 (psp2x) and 6 (psp) of 15 PSP titles. Under-produced titles:
 - PCSG00751 0.98% and PCSG00468 1.73% (scattered rows);
 - NPJH50621 2.1% and NPJH50356 2.3%, whose text has the lowest real contrast (80 and 87 levels) on textured boxes,
   so many of their lines fail the legibility rule;
@@ -291,7 +325,12 @@ share is within 2.5 points of v3's. The first 1,000 crops of 6 shards re-render 
 - 2 crops showing 有紀寧, a CLANNAD character's given name, from a Jiten word carrier for 寧. The carrier filter
   came later.
 
-v2 (code `5483ee8`, seed 20261027) was rendered, measured and replaced by v3 without being used; it is not pinned.
+v2 (code `5483ee8`, tag `synth6-v2-render-5483ee8`, seed 20261027) was rendered, measured and replaced by v3
+without being used; it is not pinned.
+v3 was rendered at `17e3365` (tag `synth6-v3-render-17e3365`) with the asset files whose sha256 its recipes record.
+Main's renderer adds F7 and F8 (the GRAD width rule, the assigned-code shift, the manual denials), so a shard
+re-rendered with main can differ from v3 where those apply. v3 has 3 crops whose label holds ことみ inside
+ということみたい (hook text), no CLANNAD name.
 
 ## The proof (pre-registered)
 
@@ -324,7 +363,8 @@ after the protocol commit but before the first run: no outcome could inform them
 | dev score (0.25 tv + 0.25 dn + 0.5 wd) | 1.990 | 2.177 / 2.056 | 1.959 / 2.043 | **−0.116 [−0.230, −0.014]** |
 | ... tv / dn / wd | 0.66 / 0.66 / 3.32 | | | −0.108 / −0.087 / −0.134 |
 
-**Verdict: better** (the registered rule; `$A/proof/summary.json`). The lead's stage rule, page-path primary, would
+**Verdict: better** (the registered rule; `$A/proof/summary.json`). It passes at the rule's edge: the hval clean
+interval's upper bound is −0.002. The lead's stage rule, page-path primary, would
 not adopt on this proof alone: the page path is level.
 
 Reported, not decided:
@@ -333,11 +373,13 @@ Reported, not decided:
 - **Rare characters:** the 288 hval clean lines (5,888 characters) that hold a character with fewer than 20
   occurrences in the real train lines read 0.433% → 0.365% with Rubi's decode: −0.068 [−0.146, +0.011], not
   resolved. Greedy: +0.008 [−0.109, +0.173].
-- **The extra synth4 weight** costs VOCR5-N's development score (+0.07 and +0.19); synth6 does not (−0.03, +0.05).
+- **The extra synth4 weight** costs VOCR5-N's development score (point values, no interval: +0.19 and +0.07 for the
+  two P4 seeds); synth6 does not (−0.03 and +0.05).
 
 **Caveats.**
-- The proof trained on **v1**: about 1.5-2% of its crops carry the defects v2 and v3 fix. It also drew the 14 fonts
-  that are copies of CLANNAD's (B4); no CLANNAD score was taken.
+- The proof trained on **v1**: about 1.5-2% of its crops carry the defects v2 and v3 fix. It also drew CLANNAD's
+  glyph raster: the 14 Key-port copies (77k crops) and the 24 LUCA re-quantised copies (17,705 Vita crops). No
+  CLANNAD score was taken.
 - The measured gain is for v1 against synth4 at 8,000 steps, at one tier (N). v3's cleaner labels are not measured.
   Stage 2's S2s6 measures synth6 v3 on/off in the stage's own recipe.
 
@@ -348,9 +390,10 @@ Reported, not decided:
 - **Styles are measured, not hand-checked per title.** The halo, shadow and box detectors are simple. Eye checks on
   the compare sheets agree with them, but a measured opacity can be off where a box is textured, or where the text
   sits on the scene.
-- **The glyph checks are filters, not a proof.** They catch a glyph read as another character by two independent
-  measures, a placeholder, and a glyph outside its cell. A wrong glyph that neither the recognizer nor the template
-  match can tell from the right one would pass.
+- **The glyph checks are filters, not a proof.** For kana and kanji they catch a glyph read as another character by
+  two independent measures. They also catch placeholders, glyphs outside their cell and shifted symbol tables. A
+  single wrong symbol outside a shifted run is not checked automatically: the 5 the audit found are denied by hand,
+  and others may remain.
 - **Real text under a drawn line**, where a page shows text its boxes miss (old speech bubbles, earlier NVL lines):
   about 0.2-0.3% of crops in v1's label audits, more on bubble and NVL titles; v3 has not changed it. A later
   version could draw such titles only in `scene_box` (its own box hides what lies below).

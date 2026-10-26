@@ -421,3 +421,15 @@ def test_grad_boxes_must_cover_the_line(monkeypatch):
     assert S6.grad_boxes(grey, [line], [], 12, 1) == {}              # a 15 px band through a 30 px line: refused
     monkeypatch.setattr(S6, "find_lines_ex", lambda reg, mode: ([(9, 9, 256, 36)], [0], False))
     assert S6.grad_boxes(grey, [line], [], 12, 1) == {0: (47, 97, 256, 36)}
+    # a line that starts at x 2, at the region's edge: a box holding only its right part is refused (F7)
+    edge = {"ink_v": [2, 100, 250, 30], "text": "x"}                # region: x 0-264, y 88-142
+    monkeypatch.setattr(S6, "find_lines_ex", lambda reg, mode: ([(120, 9, 135, 36)], [0], False))
+    assert S6.grad_boxes(grey, [edge], [], 12, 1) == {}
+    monkeypatch.setattr(S6, "find_lines_ex", lambda reg, mode: ([(0, 9, 255, 36)], [0], False))
+    assert S6.grad_boxes(grey, [edge], [], 12, 1) == {0: (0, 97, 255, 36)}
+
+
+def test_shift_steps_over_unassigned_codes():
+    assert F6.cp932_shift("◯", -1) == "¶"          # 0x81F8-0x81FB are unassigned: ◯'s previous assigned code is ¶
+    assert F6.cp932_shift("」", -1) == "「" and F6.cp932_shift("B", -1) == "A" and F6.cp932_shift("A", 1) == "B"
+    assert F6.cp932_shift("é", 1) is None             # not in cp932

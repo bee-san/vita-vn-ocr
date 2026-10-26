@@ -280,17 +280,38 @@ def shape_vec(font, ch, size=24):
     return v / nv if nv > 1e-6 else None
 
 
+@lru_cache(maxsize=None)
+def _cp932_group(lead):
+    """The assigned characters of one Shift-JIS group in code order: a two-byte lead byte's row, or (lead 0) ASCII."""
+    out = []
+    if lead == 0:
+        for b in range(0x20, 0x7F):
+            out.append(bytes([b]).decode("cp932"))
+        return tuple(out)
+    for t in list(range(0x40, 0x7F)) + list(range(0x80, 0xFD)):
+        try:
+            c = bytes([lead, t]).decode("cp932")
+        except UnicodeDecodeError:
+            continue
+        if len(c) == 1:
+            out.append(c)
+    return tuple(out)
+
+
 def cp932_shift(ch, d):
-    """The character d Shift-JIS (cp932) codes away from ch, or None."""
+    """The character d *assigned* Shift-JIS (cp932) codes away from ch in its row (unassigned codes are skipped, as a
+    decoder's glyph table skips them), or None."""
     try:
         b = ch.encode("cp932")
     except UnicodeEncodeError:
         return None
-    try:
-        t = (int.from_bytes(b, "big") + d).to_bytes(len(b), "big").decode("cp932")
-    except (UnicodeDecodeError, OverflowError):
+    if len(b) == 1 and not 0x20 <= b[0] < 0x7F:
         return None
-    return t if len(t) == 1 else None
+    g = _cp932_group(b[0] if len(b) == 2 else 0)
+    if ch not in g:
+        return None
+    i = g.index(ch) + d
+    return g[i] if 0 <= i < len(g) else None
 
 
 SHIFTS = (-2, -1, 1, 2)

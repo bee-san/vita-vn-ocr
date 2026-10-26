@@ -141,7 +141,7 @@ class World:
         gg = assets / "glyph_geometry.json"
         if gg.exists():
             for k, v in json.loads(gg.read_text(encoding="utf-8"))["fonts"].items():
-                self.deny.setdefault(k, set()).update(v["misplaced"] + v.get("swapped", ""))
+                self.deny.setdefault(k, set()).update(v["misplaced"] + v.get("swapped", "") + v.get("manual", ""))
         self.inventory = {r["font"]: r for r in inv}
         self.cross = {}
         for r in inv:
@@ -750,6 +750,8 @@ def grad_boxes(grey, lines, real, margin, k):
             continue
         if min(y + h, e[3]) - max(y, e[2]) < CFG["grad_cover"] * band:      # a band cut through the glyphs
             continue
+        if x > e[4] + 1 or x + w < e[5] - 1:          # the box must hold the line's ink across, even at the region edge
+            continue
         if e[4] > rx0 + PAD + 1 and abs(x + PAD - e[4]) > 3:
             continue
         if e[5] < rx1 - PAD - 1 and abs(x + w - PAD - e[5]) > 3:
@@ -1071,6 +1073,7 @@ def cmd_manifests(args):
                                                      "denied": g["suspect"]}
         row["misplaced"] = (gg.get(r["font"]) or {}).get("misplaced")
         row["swapped"] = (gg.get(r["font"]) or {}).get("swapped")
+        row["manual_deny"] = (gg.get(r["font"]) or {}).get("manual")
         row["near_test_font"] = r.get("near_test_font")
         row["drawn"] = not r["excluded"] and (r["glyphs"] or 0) >= 2000 and bool(c and c.get("pass"))
         rows.append(row)
@@ -1119,6 +1122,13 @@ def cmd_inventory(args):
     print(f"{len(rows)} fonts; excluded {dict(Counter(w for r in rows for w in r['excluded']))}", flush=True)
 
 
+# Single wrong glyphs at rarely used codes, found by the second audit round's per-symbol screen (shape cosine against
+# the reference fonts) and confirmed by eye (reports/audit-vocr6-synth6-b.md, F8). No automatic check covers a
+# single wrong symbol outside a shifted run, so these are listed by hand.
+MANUAL_DENY = {"PCSG00617/font24": "┐", "PCSG00838/font24": "┐\"", "NPJH50621/font16": "≪",
+               "PCSG01083/font_system": "〒"}
+
+
 def cmd_glyph_geometry(args):
     """ASSETS/glyph_geometry.json: per drawn-candidate font, the vocab characters it would draw outside its own pen
     cell or not visibly (synth6_fonts.misplaced). The renderer denies them, as it denies the glyph check's."""
@@ -1141,7 +1151,7 @@ def cmd_glyph_geometry(args):
             font.set_size(32)
         bad = F6.misplaced(font, vocab)
         sw = F6.swapped(font, shapes, refs)
-        out[r["font"]] = {"misplaced": "".join(bad), "swapped": "".join(sw)}
+        out[r["font"]] = {"misplaced": "".join(bad), "swapped": "".join(sw), "manual": MANUAL_DENY.get(r["font"], "")}
     doc = {"kind": "synth6-glyph-geometry", "schema": 1, "rule": F6.misplaced.__doc__.split("\n\n")[0].strip(),
            "fonts": out}
     Path(args.out).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

@@ -321,6 +321,7 @@ def test_doc_tables_match_the_committed_result(tmp_path):
     for tier in ("500k", "2000k"):
         assert j["tiers"][tier]["AB"]["rule"]["ships"] == "incumbent" and j["shipped"][tier]["family"] == "incumbent"
 
+
 def test_settings_report_picks_the_seed_mean_best():
     """Another recognizer's settings: setting 1 has fewer errors on every unit for both seeds, so every fold and the
     in-sample choice pick it; its CV errors are its errors; the ref (setting 0) comparison is the paired difference."""
@@ -341,11 +342,17 @@ def test_settings_report_picks_the_seed_mean_best():
         assert ps["cv_minus_vocr5_setting"]["hc"]["delta_points"] == -20.0
     assert r["by_alpha"]["600"]["config"] == cfgs[1]
 
-def test_display_arm_p1_keeps_punctuation_lines(tmp_path):
-    """Display arm P1: a line of dialogue punctuation only (>= 2 characters, spaces ignored) stays; Rubi's filter as
-    it is drops it; lines of other symbols still go."""
+
+def test_punct_line():
+    """Display arm P1's line test: dialogue punctuation only (>= 2 characters, spaces ignored)."""
     assert V.punct_line("……") and V.punct_line("「…… 」") and V.punct_line("！？")
     assert not V.punct_line("…") and not V.punct_line("Ab12") and not V.punct_line("…a")
+
+
+@pytest.mark.skipif(not (RUBI / "core" / "textnorm.c").exists(), reason="no Rubi_for_vita checkout (RUBI_DIR)")
+def test_display_arm_p1_keeps_punctuation_lines(tmp_path):
+    """Display arm P1: a line of dialogue punctuation only stays; Rubi's filter as it is drops it; lines of other
+    symbols still go."""
     try:
         x, y = V.RubiShow(RUBI, tmp_path), V.RubiShow(RUBI, tmp_path, keep_punct=True)
     except SystemExit:

@@ -6,6 +6,12 @@ development cohorts (eval/vocr6_lm_protocol.json; docs/vocr6-lm.md).
   vocr6_lm.py screen --lm NAME=PATH ... --hval-text HVAL.txt --out SCREEN.json
   vocr6_lm.py tune --lm NAME=PATH --grid JSON --tiers S,N,L --out DIR/NAME.npz [--hval-cache DIR] [--procs 5]
   vocr6_lm.py select --protocol eval/vocr6_lm_protocol.json --tune DIR --out eval/vocr6_lm_dev_<date>.json
+Another recognizer as tier T (VOCR6's logits; docs/vocr6-lm.md "LM settings on VOCR6's logits"): --blob T=PATH on
+hval-cache / tune / display-arm / show-cost, --dev-cache T=FILE on tune / display-arm, and
+  vocr6_lm.py dev-cache --tier T --blob T=PATH --out FILE                     its reads of VOCR5's dev cohorts (heavy)
+  vocr6_lm.py blob-report --run SEED=DIR ... --lm NAME[:a,b,f] --out FILE     its settings across seeds (report)
+  vocr6_lm.py show-cost --blob N=PATH --hval-cache DIR --rubi RUBI --out FILE  what the display rules alone cost
+  vocr6_lm.py display-arm --tiers N --blob N=PATH --dev-cache N=FILE ...      display arm P1 (keep punctuation lines)
 
 Reads. Every crop the console would hand the recognizer, read once per tier (VOCR5-S/N/L, the release blobs, W8I,
 head gate off) through the C runtime with the top-8 extras, the blank's logit and conf_min:
@@ -710,7 +716,9 @@ def settings_report(units, greedy, errs, configs, ref=None, key="N|none"):
     out = {"key": key, "seeds": seeds, "configs": len(configs),
            "chosen": {"fold0": configs[pick[0]], "fold1": configs[pick[1]], "in_sample": configs[pick[None]]},
            "vocr5_setting": ref, "per_seed": {}, "by_alpha": {}}
-    j_ref = configs.index(ref) if ref in configs else None
+    if ref is not None and ref not in configs:
+        raise SystemExit(f"the reference setting {ref} is not in the grid")
+    j_ref = configs.index(ref) if ref is not None else None
     for s in seeds:
         g = greedy[s]
         e_in = errs[s][pick[None]]
@@ -1366,12 +1374,6 @@ def cmd_hval_cache(a):
     print(json.dumps({k: doc[k] for k in ("tier", "blob_sha256", "seconds")} | {"reads": len(reads)}), flush=True)
 
 
-def _dwork(job):
-    k, img, inv = job
-    o = _R["rt"].run_topk(img, K, invert=inv)
-    return k, {x: o[x] for x in ("text", "topv", "topc", "blank", "conf_min", "frames")}
-
-
 def cmd_dev_cache(a):
     """One blob's reads of VOCR5's development cohorts, exactly the head gate cache's reads (eval/headgate_eval.py
     fixed_rows, wd_lines, reads: tv/dn as stored and with the inversion undone, wd's lines through the C GRAD finder
@@ -1386,7 +1388,7 @@ def cmd_dev_cache(a):
     keys = HE.row_keys([k for k, _, _ in rd], fixed)
     jobs = [(i, img, inv) for i, (_, img, inv) in enumerate(rd)]
     with mp.get_context("fork").Pool(a.procs, initializer=_rinit, initargs=(BLOBS[a.tier],)) as pool:
-        res = dict(pool.imap_unordered(_dwork, jobs, chunksize=16))
+        res = dict(pool.imap_unordered(_rwork, jobs, chunksize=16))
     doc = {"tier": a.tier, "blob": str(BLOBS[a.tier]), "blob_sha256": sha256(BLOBS[a.tier]),
            "reads": [(keys[i], res[i]) for i in range(len(rd))],
            "meta": {"reads": len(rd), "finder": {k: v for k, v in ident.items() if k != "driver"}, "flags": flags},

@@ -394,7 +394,7 @@ vocr6-lead saw ctclm.2's LM at Rubi's settings raise VOCR6 stage-1 clean-line CE
 whether VOCR6's sharper logits need other settings. This run decodes two VOCR6 N recognizers, stage 2's adopted
 S2cil and stage 1's A15 (two seeds each), with VOCR5-N as the control. Tier N alone, without the cascade, on Rubi's
 line path with its display rules, on hval (the screening LM builds) and VOCR5's dev units. The grid is alpha
-0.1-0.8, beta 0-5 nats, flags 0-3 and the confidence gate 2/4/8 nats, about 1,056 settings, 2-fold
+0.1-0.8, beta 0-5 nats, flags 0-3 and the confidence gate 2/4/8 nats, 1,056 settings (8 × 11 × 4 × 3), 2-fold
 cross-validated on the protocol's folds. It is a report, outside the protocol's decision. Machine-readable:
 `eval/vocr6_lm_vocr6logits_20261026.json`.
 
@@ -421,8 +421,9 @@ for ctclm.2's LM and the shipped one (alpha 0.6, beta 2.5, BOS) for the game-tex
   greedy text through `core/textnorm.c` and the Shell's non-Japanese filter is at 0.437%. The rules drop 14
   dialogue lines made only of punctuation (the `……` kind), 75 reference characters. They do the same for every
   recognizer (`show_cost` in the JSON: +0.13-0.14 points for each). A greedy arm without the rules, compared with
-  an LM arm with them, puts this cost on the LM. With the rules on both sides, the shipped game-text LMs lower
-  VOCR6's clean-line CER by 0.09-0.14 points, resolved for each seed. ctclm.2's lowers it by about 0.05.
+  an LM arm with them, puts this cost on the LM. With the rules on both sides, the game-text LMs (the screening builds
+  of the shipped recipes, h64_1000k and h16rl_4000k: the shipped blobs hold hval's text) lower VOCR6's clean-line CER
+  by 0.09-0.14 points, resolved for each seed. ctclm.2's lowers it by about 0.05.
 - **The gain shrinks as the recognizer sharpens.** The game-text 1 MB LM takes 0.33 points off VOCR5-N's clean
   lines and 0.09-0.12 off VOCR6's.
 - **Retuning does not beat the shipped settings for the shipped LMs.** Cross-validated against the shipped setting:
@@ -430,9 +431,9 @@ for ctclm.2's LM and the shipped one (alpha 0.6, beta 2.5, BOS) for the game-tex
   nats) wins some in-sample bests but does not survive the cross-validation. ctclm.2's 1 MB LM would gain from a
   retune on A15 (−0.51 and −0.29), mostly on the hval page path (−0.95 and −0.53, with wide intervals), but it no
   longer ships at 1 MB.
-- **So VOCR6 N keeps Rubi's per-tier settings** (1 and 4 MB alpha 0.6, beta 2.5, BOS; 0.5 and 2 MB ctclm.2's). The
-  run repeats per recognizer in 10-15 minutes in one heavy slot (Reproduce). It is to be run on the final
-  S/N/L blobs before they are pinned, and with the 0.5 and 2 MB LMs.
+- **So VOCR6 N keeps the 1 MB and 4 MB settings** (alpha 0.6, beta 2.5, BOS; 4 MB measured on S2cil only). The 0.5
+  and 2 MB tiers were not run here and keep ctclm.2's settings until the final S/N/L pass (vocr6-final-lm,
+  `docs/vocr6-final-lm.md`). The run repeats per recognizer in 10-15 minutes in one heavy slot (Reproduce).
 - **For the 1% target.** Rubi's display rules alone cost 0.14 points of hval clean-line CER, on lines that carry no
   word to look up.
 - **Keeping those lines (display arm P1, pre-registered; report and decision):** the Shell's filter also keeps a
@@ -442,8 +443,8 @@ for ctclm.2's LM and the shipped one (alpha 0.6, beta 2.5, BOS) for the game-tex
     0.000, objective −0.023 (−0.053 to −0.000). VOCR5-S + cascade and VOCR5-L move the same way.
   - VOCR6 runs: clean lines −0.09 and page path −0.05 to −0.06 for each. Dev score +0.002 to +0.026, not resolved,
     for three of them. For A15 seed 1 it is +0.054 (+0.005 to +0.126), resolved worse: dev whole dialogue +0.108
-    (+0.010 to +0.251), 13 units worse. That recognizer reads some box decorations as punctuation-only lines,
-    which P1 keeps.
+    (+0.010 to +0.251), 6 whole-dialogue units of 5 VNs worse (13 units over all parts: those 6 and 7 hval page
+    units). That recognizer reads some box decorations as punctuation-only lines, which P1 keeps.
   - The pre-registered rule asks that no run be resolved worse on dev, so P1 is not adopted. Rubi's filter stays as
     it is. A narrower arm (for instance, keep such a line only beside a Japanese line of the same job) needs its own
     pre-registration.
@@ -501,6 +502,8 @@ B=BLOB.vocr; T=$P/v6/tune_NAME
   --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --lm NAME=LM.vlm --grid GRID --out $T/NAME.npz  # and --lm greedy=none
 .venv-ci/bin/python eval/vocr6_lm.py blob-report --name NAME --run 1=$T ... --lm NAME:ALPHA,BETA,FLAGS --out REPORT.json
 .venv-ci/bin/python eval/vocr6_lm.py show-cost --blob N=$B --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --out COST.json
+.venv-ci/bin/python eval/vocr6_lm.py display-arm --tiers N --blob N=$B --dev-cache N=$P/v6/dev_N_NAME.pkl \
+  --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --lm LM.vlm --config SETTING --name NAME --out P1.json   # display arm P1
 ```
 
 `dev-cache` reproduces the head gate cache's reads of VOCR5-N bit for bit (8,233 reads checked). The LM and the

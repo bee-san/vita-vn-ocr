@@ -282,7 +282,7 @@ def bracket_next(st, r):
 
 
 def decode(lm, cmap, topv, topc, blank, beam=8, topk=8, alpha=0, beta=0, gate=0, flags=0, bracket=0, roles=None,
-           stats=None):
+           stats=None, lexicon=None, lex_bonus=0):
     """CTC prefix beam search (Viterbi: max over alignments) with shallow LM fusion, exactly as
     vocr_lm_decode. topv/topc: frames x K, blank: frames or None; cmap: class -> LM token.
     alpha, beta, gate in 1/1000 (nat). Returns the classes of the best prefix.
@@ -294,13 +294,18 @@ def decode(lm, cmap, topv, topc, blank, beam=8, topk=8, alpha=0, beta=0, gate=0,
     with max (not sum) where paths meet. A new prefix that equals a kept prefix (the same characters)
     is merged into it. The beam keeps the `beam` best prefixes by max(sb', snb'), ties to the earlier
     one (kept prefixes in beam order first, then the new ones in creation order). bracket > 0 (1/1000 nat)
-    costs a closing bracket that does not match the innermost open one; roles[c] is class c's bracket_role."""
+    costs a closing bracket that does not match the innermost open one; roles[c] is class c's bracket_role.
+
+    lexicon (a Lexicon; the dictionary-aware prototype of docs/vocr6-lm.md, Python only: vocr_lm.c has no such
+    term): a new prefix whose last L >= 2 characters spell one of its words, L the longest, gains lex_bonus
+    (1/1000 nat) x (L - 1). With lexicon None or lex_bonus 0 the search is vocr_lm_decode's, unchanged."""
     T = len(topv)
     if T > MAX_FRAMES:
         raise ValueError(f"{T} frames: the decoder takes at most {MAX_FRAMES}")
     if T and int(np.max(np.asarray(topc)[:, :topk])) >= len(cmap):
         raise ValueError("a top-K class is not below the model's class count (vocr_lm_decode: VOCR_E_ARG)")
     a, b, g, br = milli_to_q10(alpha), milli_to_q10(beta), milli_to_q10(gate), milli_to_q10(bracket)
+    lb = milli_to_q10(lex_bonus) if lexicon is not None else 0
     use_lm = a != 0 and lm is not None
     # nodes: parent, class, length, hash, LM state; node 0 is the empty prefix
     par, cls, ln, hs, bk = [NONE], [0], [0], [0], [0]
@@ -337,6 +342,10 @@ def decode(lm, cmap, topv, topc, blank, beam=8, topk=8, alpha=0, beta=0, gate=0,
                 else:
                     lmq, nst = 0, st[n]
                 val = src + q + lmq + b
+                if lb:
+                    L = lexicon.longest(cmap[c], n, par, cls, cmap)
+                    if L >= 2:
+                        val += lb * (L - 1)
                 bst = 0
                 if br:
                     bst, mis = bracket_next(bk[n], roles[c])
@@ -398,3 +407,29 @@ def class_map(lm, class_texts):
         r = bracket_role(t)
         return t if not r else "」" if r & 0x80 else "「"
     return [UNK] + [lm.token_of(fold(t)) for t in class_texts[1:]]
+
+
+class Lexicon:
+    """Words as LM-token tuples, for decode(lexicon=...): longest() walks a new prefix back from its last character
+    through the suffix set (every suffix of every word) and stops at the first suffix no word ends in; `steps`
+    counts the set lookups (the console-cost estimate's operation count)."""
+
+    def __init__(self, words, max_len=8):
+        self.words = {w for w in words if 2 <= len(w) <= max_len}
+        self.suffixes = {w[i:] for w in self.words for i in range(len(w))}
+        self.max_len = max_len
+        self.steps = 0
+
+    def longest(self, t, node, par, cls, cmap):
+        """The longest word length ending in token t after the prefix ending at node (0: none)."""
+        key, best, m = (t,), 0, node
+        while len(key) < self.max_len and m:
+            key = (cmap[cls[m]],) + key
+            m = par[m]
+            self.steps += 1
+            if key not in self.suffixes:
+                break
+            if key in self.words:
+                best = len(key)
+        return best
+

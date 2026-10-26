@@ -147,9 +147,10 @@ def main(argv=None):
                 explog({"kind": "note",
                         "what": f"sched.py: the helper ({hstat.name}) reported {ready}; its slot returns"})
         cap = read_cap(a.cap_file, 0)
-        mine = cap - (1 if reserve.exists() else 0)
+        want = (runs / "helper.want").exists()
+        mine = cap - (1 if (reserve.exists() or want) else 0)
         go = runs / "helper_go"
-        if reserve.exists() and len(active) <= cap - 1:
+        if (reserve.exists() or want) and len(active) <= cap - 1:
             go.write_text(utc() + "\n")
         elif go.exists():
             go.unlink()

@@ -2,6 +2,8 @@
 """VOCR6 stage 4 (#125): the head gate (#120) and the two-level head (#122) fit on a VOCR6 blob, their rules, the VOCR6
 decision path and the console estimates (eval/vocr6_gate_protocol.json; docs/headgate.md, docs/head2level.md).
 
+  vocr6_gate.py init --out OUT [options]                             the run's configuration and the development lines
+                                                                      (before tiers are prepared in parallel)
   vocr6_gate.py run --tier T --blob B [--next-blob NB] --out OUT     the tier (its next tier first when needed), decided
   vocr6_gate.py prepare --tier T --blob B --out OUT                   fits, blobs, development reads, VOCR6-path
                                                                       dumps, A9
@@ -1526,6 +1528,7 @@ def decide(ctx, tier):
         shutil.copyfile(fb, fin / name)
     dec["final_blob"] = {"path": str(fin / name) if fa != "today" else str(fb), "name": name, "sha256": sha256(fb),
                          "bytes": fb.stat().st_size, "source": str(fb)}
+    dec["decided_at"] = now()
     (ctx.out / tier / "decision.json").write_text(json.dumps(dec, indent=1) + "\n")
     print(f"{tier}: decided {fa} ({name}, {fb.stat().st_size} B)", flush=True)
     return dec
@@ -1641,6 +1644,19 @@ def timing(ctx):
         d = ctx.out / t / "steps"
         if d.exists():
             rows += [json.loads(p.read_text()) for p in sorted(d.glob("*.json"))]
+        dp = ctx.out / t / "decision.json"
+        if dp.exists():               # the decision phase: the rules' scoring, the VOCR6 path's scores, the estimates
+            dec = json.loads(dp.read_text())
+            t0 = datetime.datetime.strptime(dec["at"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+            end = dec.get("decided_at") or datetime.datetime.fromtimestamp(
+                dp.stat().st_mtime, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            t1 = datetime.datetime.strptime(end, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+            wall = (t1 - t0).total_seconds()
+            # the steps a decision ran itself (a fallback's reads, A9 and dumps) are rows of their own: not twice
+            inner = sum(r["wall_s"] for r in rows if r["tier"] == t and r["start"] >= dec["at"] and r["end"] <= end)
+            own = max(0.0, wall - inner)
+            rows.append({"tier": t, "step": "decide", "start": dec["at"], "end": end, "wall_s": round(own, 1),
+                         "slot_hours": round(own / 3600, 4), "wall_s_with_inner_steps": wall})
     tot = {t: round(sum(r["slot_hours"] for r in rows if r["tier"] == t), 3) for t in ("dev",) + TIERS}
     return {"rows": [{k: r[k] for k in ("tier", "step", "start", "end", "wall_s", "slot_hours")} for r in rows],
             "slot_hours": tot, "slot_hours_total": round(sum(tot.values()), 3)}
@@ -1770,11 +1786,12 @@ def cmd_check_vocr5(a):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
-    for name in ("run", "prepare", "decide"):
+    for name in ("run", "prepare", "decide", "init"):
         p = sub.add_parser(name)
-        p.add_argument("--tier", required=True, choices=TIERS)
         p.add_argument("--out", required=True)
-        if name != "decide":
+        if name != "init":
+            p.add_argument("--tier", required=True, choices=TIERS)
+        if name in ("run", "prepare"):
             p.add_argument("--blob", required=True)
         if name == "run":
             p.add_argument("--next-blob", default="")
@@ -1797,9 +1814,12 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--record", required=True)
     a = ap.parse_args()
-    if a.cmd in ("run", "prepare", "decide"):
+    if a.cmd in ("run", "prepare", "decide", "init"):
         ctx = Ctx(a.out, a)
-        if a.cmd == "run":
+        if a.cmd == "init":
+            ensure_dev_lines(ctx)
+            print(json.dumps(ctx.cfg))
+        elif a.cmd == "run":
             run_tier(ctx, a.tier, a.blob, a.next_blob)
         elif a.cmd == "prepare":
             prepare(ctx, a.tier, a.blob)

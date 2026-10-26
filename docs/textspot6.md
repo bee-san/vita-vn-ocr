@@ -265,6 +265,11 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
     teacher by amendment 5's rule is `base_qS4` seed 2 (the best representative decode: crop, 1.3868% unseen-dev
     CER, against `base_qL5`'s 1.4418%), so stage 2 distils from `base_qS4_seed2/final.pt`
     (`eval/textspot6_teacher_20261026.json`).
+15. **The test sets with a negative verdict** (before the selection; no test set read). They are still read once,
+    report only, with the research pre-release's blob (the best eligible candidate as trained, no retrain) through
+    the same commands (`--research`), so the owner has its test numbers. No decision changes: no Rubi default, no
+    Rubi PR. Registered after the M arms' scores, whose representatives are not resolved below GRAD + refine on
+    unseen dev.
 
 ## Results
 

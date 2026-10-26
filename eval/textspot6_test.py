@@ -28,6 +28,9 @@ counts, rates, intervals and hashes only; units, boxes and readings stay under O
       textspot3's pick (stored units, checked against its record, and re-read through this harness) and
       textspot's stored arms; plus the tagged dialogue CER and the text-free frames' presence (as tsdev)
 
+--research (amendment 15): with a negative verdict, the research pre-release's blob (the selection record's
+best_eligible_if_negative, as trained on train: --final is its own run) is read the same way, report only.
+
 --dry-run reads a non-protected stand-in through the same code, for testing before the one read: title with
 --split hval --titles A,B; tests with the development manifest (no stored arms); clannad with --work a stand-in
 directory built from hval pages by `textspot6_test.py standin`. A dry run refuses the protected inputs, and the
@@ -91,13 +94,18 @@ def git(*args):
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
 
 
-def load_selection(path, dry):
-    """The selection record (its pick names the arm, the decode and the representative seed). A real read needs it
+def load_selection(path, dry, research=False):
+    """The selection record and the model it names: its pick (arm, decode, representative seed), or with --research
+    and a negative verdict its best eligible candidate (amendment 15), as sel["pick"]. A real read needs the record
     committed, unmodified since, and pushed."""
     path = Path(path)
     sel = json.loads(path.read_text(encoding="utf-8"))
     if sel.get("kind") != "textspot6-selection":
         raise SystemExit(f"{path}: not a textspot6 selection record")
+    if research:
+        if sel.get("pick") or not sel.get("best_eligible_if_negative"):
+            raise SystemExit(f"{path}: --research reads the research release of a negative verdict only")
+        sel = dict(sel, pick=dict(sel["best_eligible_if_negative"], research=True))
     if not sel.get("pick"):
         raise SystemExit(f"{path}: no pick (negative verdict): nothing is read")
     rec = {"path": str(path), "sha256": sha256_file(path), "pick": sel["pick"]}
@@ -124,10 +132,10 @@ def check_final(run_dir, sel, dry):
     info = {"run": d.name, "recipe": run["recipe"], "shape": run["shape"]["name"], "seed": run["seed"],
             "hook_splits": run["args"].get("hook_splits"), "teacher": run.get("teacher"),
             "blob_sha256": sha256_file(blob), "blob_bytes": blob.stat().st_size}
-    want = (recipe, shape, sel["pick"]["seed"], FINAL_SPLITS)
+    want = (recipe, shape, sel["pick"]["seed"], "train" if sel["pick"].get("research") else FINAL_SPLITS)
     have = (info["recipe"], info["shape"], info["seed"], info["hook_splits"])
     if not dry and have != want:
-        raise SystemExit(f"{d}: {have} is not the pick's final retrain {want}")
+        raise SystemExit(f"{d}: {have} is not the pick's final retrain (or the research release's run) {want}")
     return blob, info
 
 
@@ -184,7 +192,7 @@ def cmd_title(a):
     if not dry and (a.split != "test" or a.titles):
         raise SystemExit("the test read is split test, every title")
     import textspot as TS
-    sel, sel_rec = load_selection(a.selection, dry)
+    sel, sel_rec = load_selection(a.selection, dry, a.research)
     dec = sel["pick"]["decode"]
     blob, final = check_final(a.final, sel, dry)
     t3 = check_t3()
@@ -278,7 +286,7 @@ def cmd_tests(a):
     import textspot_metrics as M
     import textspot_protected as TP
     dry = a.dry_run
-    sel, sel_rec = load_selection(a.selection, dry)
+    sel, sel_rec = load_selection(a.selection, dry, a.research)
     dec = sel["pick"]["decode"]
     blob, final = check_final(a.final, sel, dry)
     t3 = check_t3()
@@ -463,7 +471,7 @@ def cmd_clannad(a):
     from textspot3_protected import COUNT_KEYS, stored_clannad_counts
 
     from common import to_gray
-    sel, sel_rec = load_selection(a.selection, dry)
+    sel, sel_rec = load_selection(a.selection, dry, a.research)
     dec = sel["pick"]["decode"]
     blob, final = check_final(a.final, sel, dry)
     t3 = check_t3()
@@ -698,6 +706,8 @@ def main(argv=None):
         p.add_argument("--workers", type=int, default=5)
         p.add_argument("--compiler", default="gcc")
         p.add_argument("--dry-run", action="store_true", help="a non-protected stand-in through the same code")
+        p.add_argument("--research", action="store_true",
+                       help="a negative verdict's research release (amendment 15), as trained")
         if name != "tests":
             p.add_argument("--pagepath", required=True, help="the pinned eval/pagepath.py")
         if name == "title":

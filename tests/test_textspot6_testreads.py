@@ -45,6 +45,20 @@ def test_selection_must_be_committed_for_a_real_read(tmp_path):
     assert sel["pick"] == PICK and rec["dry_run"]
 
 
+def test_research_read_only_with_a_negative_verdict(tmp_path):
+    best = {"arm": "base_qS4", "decode": "crop", "seed": 2, "dev_cer": 1.39}
+    p = tmp_path / "neg.json"
+    p.write_text(json.dumps({"kind": "textspot6-selection", "pick": None, "best_eligible_if_negative": best}))
+    with pytest.raises(SystemExit, match="nothing is read"):
+        T.load_selection(p, dry=True)
+    sel, rec = T.load_selection(p, dry=True, research=True)
+    assert sel["pick"]["research"] and sel["pick"]["arm"] == "base_qS4"
+    blob, info = T.check_final(final_run(tmp_path, splits="train"), sel, dry=False)     # its own run, as trained
+    assert info["hook_splits"] == "train"
+    with pytest.raises(SystemExit, match="research release of a negative verdict only"):
+        T.load_selection(selection(tmp_path, PICK), dry=True, research=True)
+
+
 def test_final_run_is_the_picks_retrain(tmp_path):
     sel = {"pick": PICK}
     blob, info = T.check_final(final_run(tmp_path), sel, dry=False)

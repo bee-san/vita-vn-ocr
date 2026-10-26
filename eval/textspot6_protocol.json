@@ -392,6 +392,15 @@
     "The teacher by amendment 5: base_qS4 (its representative's best decode, crop, seed 2, 1.3868% unseen-dev CER) against base_qL5 (crop, seed 1, 1.4418%); the teacher model is base_qS4_seed2/final.pt.",
     "vocr6-lead lends 2 heavy slots from 23:45Z to 06:25Z (vocr6-spotter = 5 in that window, 3 otherwise)."
    ]
+  },
+  {
+   "id": 15,
+   "utc": "2026-10-26T22:21:21Z",
+   "before": "the selection and every stage-2 score (stage 2 is training); no test set has been read",
+   "what": [
+    "With a negative verdict the test sets are still read once, report only, so that the owner has the test title's, CLANNAD's and vita-test / psp-test's numbers of the best spotter: the research pre-release's blob (the eligible candidate with the lowest unseen-dev CER, as trained on train; no retrain) through the same commands (eval/textspot6_test.py --research). It changes no decision: there is still no Rubi default and no Rubi PR.",
+    "Disclosed: registered after stage 1's M arms were scored, whose representatives are not resolved below GRAD + refine on unseen dev (#128); the rule and the selection are unchanged."
+   ]
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

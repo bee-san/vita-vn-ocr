@@ -98,8 +98,8 @@ $(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
 $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
-check: check-lines check-lines-fix check-split check-textdet check-textgate check-vertical check-textspot \
-       check-textspot2 check-textspot3 check-post check-widen check-charbox check-vocr
+check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
+       check-textspot3 check-post check-widen check-charbox check-vocr check-lines-fix
 
 include vocr_lines.mk
 include vocr_lines_fix.mk

@@ -155,7 +155,6 @@ def test_dim_glyph_inside_the_box_stays_whole(built):
         assert CC.covers((x + x0, y + y0, w, h), cell)
 
 
-
 def test_harvest_hands_the_jitter_its_required_cells(built, monkeypatch):
     """The jitter is given the line's required cells (audit-vocr6-finder-f N1). Page 7's dim glyph lies inside the
     line's ink extent, which every jittered box holds anyway, so the test above passes without them; this one spies on
@@ -176,7 +175,6 @@ def test_harvest_hands_the_jitter_its_required_cells(built, monkeypatch):
     want = [cell[0] - x0, cell[1] - y0, cell[2] - x0, cell[3] - y0]   # in the region's coordinates
     assert seen and sum(1 for need in seen if need) >= 1
     assert all(np.allclose(c, want) for need in seen for c in need)    # page 7's dim glyph, and only it
-    assert any(np.allclose(c, want) for need in seen for c in need)
 
 
 def test_dim_word_makes_the_box_partial(built):

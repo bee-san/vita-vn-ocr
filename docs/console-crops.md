@@ -81,7 +81,8 @@ and the counts per title and kind.
       (232 → 1,102, 996 of them on renderer text boxes, so not negatives) and more negatives (20 → 102), and other
       jitter draws where box indices shift.
     - NPJG00016: 1 console and 5 native whole crops differ.
-  - [v2](#v2-2026-10-26) is cut with `fix=1`, Rubi's default. If #129's amendment 2 selects vocr6-spotter's
+  - [v2](#v2-2026-10-26) is cut with `fix=1`, Rubi's default with bee-san/Rubi_for_vita#330. If #129's amendment 2
+    selects vocr6-spotter's
     spotter, a later pool is cut from its boxes.
 - **Input:** page pool v1 (`eab8f07b…`, splits `417df3d7…`), sets train / hval / guard, variants base and
   expanded-8, both views.
@@ -187,7 +188,8 @@ Other notes on v1:
 
 ## v2 (2026-10-26)
 
-v2 is cut by Rubi's shipped finder and labelled with the required-cell rule. It is for vocr6-lead's stage-4b fold-in
+v2 is cut by Rubi's default finder with bee-san/Rubi_for_vita#330 (`ocr_line_fix = on`) and labelled with the
+required-cell rule. It is for vocr6-lead's stage-4b fold-in
 retrain, on the train, hval and guard pages. v1 is unchanged and stays pinned for S2cil.
 
 - **Finder:** `rubi,fix=1`, COLGAP alone. That is `VOCR_FIX_DEFAULT` since #129's amendment 3, and Rubi's
@@ -208,8 +210,9 @@ retrain, on the train, hval and guard pages. v1 is unchanged and stays pinned fo
 | console_empty_native | 689 → **1,937** | 25 → 81 | 29 → 76 |
 | drop_* | 150 / 321 / 142 / 299 → 150 / 323 / 142 / 299 | 2 / 4 / 2 / 4, unchanged | 0 |
 
-The labelled pools barely change. The negatives grow about fourfold, because without JUNK the finder returns frame
-strips, ornaments and slivers of art on a region's edge as lines, as Rubi's default does on the console. The
+The labelled pools barely change. The console view's negatives grow about fourfold (4.2×; the native view's 2.8×), because without JUNK the finder returns frame
+strips, ornaments and slivers of art on a region's edge as lines, as Rubi's finder with `ocr_line_fix = on` cuts them
+(the same C code, checked on the host). The
 required-cell rule cannot add empty boxes: a box over a required cell counts as holding its line. So the growth is
 the finder's (audit-vocr6-finder-f's PCSG00854 rebuild above shows the same).
 
@@ -242,7 +245,7 @@ Coverage: 77,597 of the train split's 79,733 region lines (97.3%) have at least 
 A=$HERD/shared/artifacts
 data/console_crops.py build --pagepool $A/vocr6-ingest/pagepool/v1 --pages $A/vocr6-ingest/pages \
   --finder rubi,fix=1 --sets train,hval,guard --variants base,expanded-8 --views console,native --jitter 2 \
-  --procs 5 --out $A/vocr6-finder/crops/v2    # Rubi's default finder; a new pool: never write into the pinned v1
+  --procs 5 --out $A/vocr6-finder/crops/v2    # Rubi's default finder with #330; a new pool: never write into the pinned v1
 ```
 
 `tests/test_console_crops.py` builds a pool from procedural pages through the same driver. No game data is used.

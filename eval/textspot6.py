@@ -19,6 +19,11 @@ files eval/pagepath.py (vocr6-finder's page-path benchmark, #129) reads them fro
       (a unit keeps the boxes whose centre lies in its region); dev -> --boxes {unit, boxes} in the unit's region
       px at its view scale (pagepath.dev_units' uid "dev:<i>:<unit>:<variant>"). Horizontal boxes only (the page
       path reads horizontal lines). --tags dialogue keeps the boxes of tag 0 only
+  textspot6.py spot-crop --blob B.vtsp --set hval|dev --out BOXES.jsonl [--units UNITS.jsonl] [--decode det|detref]
+      the crop decode: the spotter on each unit's region alone, cut at the view's scale exactly as eval/pagepath.py
+      cuts it (dev: the unit's grey region, a PSP one upscaled 2x bilinear; hval: --units, eval/pagepath.py units'
+      file, each region cut from the page at the view's scale), every horizontal box of the region read (no tag
+      filter, as GRAD + refine reads every line of a region): eval/pagepath.py --boxes; BOXES.meta.json beside it
   textspot6.py hval-boxes --spot SPOT.jsonl --shards DIR --manifest M --out RES.json
       box P / R / F1 against the hval pages' verified lines (synth/textspot6_pages.py's hval shards: dialogue and
       name positives; "notdlg" boxes and ignore areas are left out: textspot_metrics.match_frame's ignore rule),
@@ -270,6 +275,72 @@ def cmd_pagepath_boxes(args):
           f"{meta['blob_sha256'][:12]}")
 
 
+# ----------------------------------------------------------------------------- the crop decode
+
+def _crop_one(job):
+    import textspot6_twin as T6
+    uid, img = job
+    r = T6.spot(_W["model"], img)
+    boxes = [[b.x, b.y, b.w, b.h, b.vertical, b.conf, b.dark, b.block, b.tag, b.tconf] for b in r.boxes]
+    if _W["decode"] == "detref":
+        boxes = [[*b[:7], -1, b[7], 0] for b in refined(boxes, img)]
+    return {"unit": uid, "boxes": [[b[0], b[1], b[2], b[3], b[6]] for b in boxes if not b[4]]}
+
+
+def crop_jobs(set_name, units_path=None, pages=PAGES):
+    import cv2
+
+    from common import to_gray
+    if set_name == "dev":
+        for i, u in enumerate(dev_units()):
+            img = u["image"]
+            if u["kind"] == "psp":
+                img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+            yield f"dev:{i}:{u['unit']}:{u['variant']}", np.ascontiguousarray(img)
+        return
+    rows = read_jsonl(units_path)
+    units = [r for r in rows if "uid" in r]
+    cache = {}
+    for u in units:
+        k = (u["title"], u["page"])
+        if k not in cache:
+            cache.clear()
+            bgr = cv2.imread(str(Path(pages) / u["title"] / "pages" / f"{u['page']}.png"), cv2.IMREAD_COLOR)
+            if bgr is None:
+                raise FileNotFoundError(f"{u['title']}:{u['page']}")
+            rgb = np.ascontiguousarray(bgr[:, :, ::-1])
+            if u["platform"] == "psp":
+                rgb = cv2.resize(rgb, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+            cache[k] = to_gray(np.ascontiguousarray(rgb))
+        g = cache[k]
+        sc = 2 if u["platform"] == "psp" else 1
+        x0, y0, x1, y1 = (v * sc for v in u["region"])
+        yield u["uid"], np.ascontiguousarray(g[y0:y1, x0:x1])
+
+
+def cmd_spot_crop(args):
+    import multiprocessing as mp
+
+    import textspot6_twin as T6
+    blob = Path(args.blob).read_bytes()
+    _W["model"], _W["decode"] = T6.Model(blob), args.decode
+    t0 = time.time()
+    jobs = list(crop_jobs(args.set, args.units))
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = Path(str(out) + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f, mp.get_context("fork").Pool(args.workers) as pool:
+        for rec in pool.imap(_crop_one, jobs, chunksize=8):
+            f.write(json.dumps(rec) + "\n")
+    os.replace(tmp, out)
+    meta = {"blob": str(args.blob), "blob_sha256": hashlib.sha256(blob).hexdigest(), "set": args.set,
+            "decode": f"crop{'+refine' if args.decode == 'detref' else ''}", "units": len(jobs),
+            "units_file": str(args.units) if args.units else str(DEV_UNITS), "twin": "synth/textspot6_twin.spot",
+            "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+    Path(str(out).replace(".jsonl", ".meta.json")).write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
+    print(f"TEXTSPOT6_SPOT_CROP_DONE {args.set} {len(jobs)} units {time.time() - t0:.0f} s -> {out}", flush=True)
+
+
 # ----------------------------------------------------------------------------- hval box metrics
 
 def hval_refs(shards, manifest):
@@ -464,6 +535,13 @@ def main(argv=None):
     b.add_argument("--out", required=True)
     b.add_argument("--tags", default="all", choices=("all", "dialogue"))
     b.add_argument("--decode", default="det", choices=("det", "detref"))
+    e = sub.add_parser("spot-crop")
+    e.add_argument("--blob", required=True)
+    e.add_argument("--set", required=True, choices=("hval", "dev"))
+    e.add_argument("--units", help="hval: eval/pagepath.py units' file")
+    e.add_argument("--out", required=True)
+    e.add_argument("--decode", default="det", choices=("det", "detref"))
+    e.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "5")))
     c = sub.add_parser("hval-boxes")
     c.add_argument("--spot", required=True)
     c.add_argument("--shards", required=True)
@@ -480,8 +558,8 @@ def main(argv=None):
     d.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "5")))
     args = ap.parse_args(argv)
     os.environ.setdefault("OMP_NUM_THREADS", "1")
-    {"spot": cmd_spot, "pagepath-boxes": cmd_pagepath_boxes, "hval-boxes": cmd_hval_boxes,
-     "tsdev": cmd_tsdev}[args.cmd](args)
+    {"spot": cmd_spot, "pagepath-boxes": cmd_pagepath_boxes, "hval-boxes": cmd_hval_boxes, "tsdev": cmd_tsdev,
+     "spot-crop": cmd_spot_crop}[args.cmd](args)
 
 
 if __name__ == "__main__":

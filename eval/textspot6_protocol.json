@@ -126,7 +126,7 @@
  "rule": {
   "eligible": "VTSP bytes <= 512,000, est. ms @333 <= 300, arena <= 262,144, C == twin on every development frame",
   "beats_grad_refine": "unseen dev: page-path dialogue CER difference (candidate - GRAD + refine) with a 95% interval entirely below 0; hval: the difference not resolved above 0",
-  "cost_order": "VTSP bytes, est. ms @333, arena, det before det+refine, then the name",
+  "cost_order": "VTSP bytes, est. ms @333 per 960 x 544 frame, arena, decode (crop, crop+refine, det, det+refine), then the name (amendment 2)",
   "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
   "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
   "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, Rubi DRAFT PR (never merged by the fleet)"
@@ -198,6 +198,19 @@
      "threads": 5,
      "startup_s": 12.3
     }
+   }
+  },
+  {
+   "id": 2,
+   "utc": "2026-10-26T10:01:35Z",
+   "before": "every score of a textspot6 arm (stage 1's runs are training; none has finished, none is scored)",
+   "what": [
+    "Two more decodes per arm, the crop decodes: crop (the spotter on each unit's region alone, cut at the view's scale exactly as eval/pagepath.py cuts it, every horizontal box of the region read, as GRAD + refine reads every line of a region; eval/textspot6.py spot-crop) and crop+refine (its horizontal boxes through VOCR_REFINE_DEFAULT). It is how Rubi would use the spotter as a drop-in for GRAD + refine inside the player's region, without a whole-frame capture, at a cost that scales with the region.",
+    "The candidates are every arm x {det, det+refine, crop, crop+refine}, each represented by its median seed. The cost order becomes: VTSP bytes, est. ms per 960 x 544 frame at 333 MHz, arena, then the decode (crop, crop+refine, det, det+refine: the cheaper console path first), then the name. Eligibility is unchanged (the per-frame budget bounds a region's).",
+    "Reason: Rubi's OCR job reads the player's region (core/vocr_ocr.c); a whole-frame decode needs the frame captured, a crop decode does not. Registered before any score."
+   ],
+   "pins": {
+    "eval/textspot6.py": "74f1f5b67a6f926a33fb3cf655d9edd771cc1a28e8b3df90c1e3d283755fa9b0"
    }
   }
  ],

@@ -177,6 +177,28 @@ The textspot3 pick and GRAD + refine are read the same way for the paired compar
 - **The dev regions were drawn by people,** so the region-assisted page path gives the spotter the same region as
   GRAD + refine. The whole-frame tagged path is reported beside it.
 
+### Amendments
+
+Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs and scores it names.
+
+1. **Data, shapes, sweep** (2026-10-26T09:54Z, before every run and score).
+   - The hooked page shards are pinned: `data/manifests/textspot6_pages_v1.json`, the post-audit page pool v1.
+     - train: 50,243 pages; positives dialogue 81,542, name 7,809, "not dialogue" 34,336; 146,968 ignore areas.
+     - hval 2,191 pages, guard 2,337.
+     - 32 untrusted pages are left out; test pages are never read.
+     - MeikiOCR ran on all 54,803 non-test pages.
+   - Stage 1's shapes are registered: `t64n8c16`, `qS4`, `qL5`.
+   - The sweep is `eval/reproducibility/textspot6-20261026/sweep.py` with `stage1_plan.jsonl`: 8 runs, at most 2 at
+     once.
+   - Probes, in ms per step before QAT: 291.9 / 212.6 / 256.8 (T / qS4 / qL5).
+2. **Crop decodes** (before any score).
+   - Each arm also runs as `crop`: the spotter on each unit's region alone, cut as `eval/pagepath.py` cuts it, with
+     every horizontal box read. `crop+refine` adds `VOCR_REFINE_DEFAULT`.
+   - This is how Rubi would use the spotter as a drop-in for GRAD + refine inside the player's region, without a
+     whole-frame capture.
+   - The candidates are every arm × {crop, crop+refine, det, det+refine}.
+   - The cost order puts the decode after bytes, ms and arena: crop first, det+refine last.
+
 ## Results
 
 (none yet)

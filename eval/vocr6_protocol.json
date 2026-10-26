@@ -1175,7 +1175,7 @@
     1,
     3
    ],
-   "registered": "2026-10-26T12:1xZ (this commit), before any stage-2 run and before any stage-1 score",
+   "registered": "2026-10-26T11:55Z (commit c326e05), before any stage-2 run and before any stage-1 score",
    "defaults": {
     "mix": "m1",
     "batch": 96,

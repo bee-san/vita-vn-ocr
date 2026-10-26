@@ -1165,6 +1165,13 @@
      "c_rung": "C150 (seeds 1, 3) runs only if C50 is in contention after both C50 seeds are scored: mean hval_page(C50) - min(mean hval_page(A15), mean hval_page(B15)) <= +0.50 points AND mean dev(C50) - dev(VOCR5-N) <= +0.75 points (means over seeds 1, 3; rubi path). Otherwise family C stops at 50k (its numbers are reported) and decision.winner is taken over A45 and B45 only. The thresholds are set from the prior evidence on longer schedules: VOCR3's 4x longer FL10 pretrain gave -0.85 development points (docs/vocr3.md); train2's longer fine-tune was not better (docs/train2.md, F15b)",
      "pipelining": "replaces decision.pipelining: stage 2 starts when A15 and B15 (both seeds) are scored, from W15 = the better of A15 and B15 by decision.winner's rule applied to the short budget (lowest mean hval_page whose dev interval against VOCR5-N does not lie above 0), at that family's short budget. If the long-budget decision later makes the other family (or C150) W1, every factor stage 2 adopts gets one confirmation pair on W1 in stage 4 (W1 + factors against W1)",
      "order": "A15 and B15 first (both seeds), then A45 and B45; C50 from the start on its own slots"
+    },
+    {
+     "n": 2,
+     "time": "this commit (see git log); before any stage-1 score (the experiment log has no stage-1 done line)",
+     "why": "compute: stage 2 needs slots from the moment A15/B15 are scored, while A45/B45 (4 runs x ~7.2 h) and C50 hold 6; Hyperband promotes only arms in contention",
+     "promotion_45k": "after A15 and B15 (both seeds) are scored: if one family's 15k arm is adopted over the other's (decision.adopt with the other as X), only that family's 45k runs are started and the other family stops at 15k (its 15k numbers are reported); otherwise both families' 45k runs are started. decision.winner is then taken over the 45k runs that ran (plus C150 if amendment 1 promotes it)",
+     "signal": "the lead writes the promotion to /local/home/skerraut/herd-synth3/vocr6/s1-promote.txt (lines 'A45 GO|STOP', 'B45 GO|STOP') and the experiment log; arm agents start a 45k run only after its GO line"
     }
    ]
   },

@@ -370,6 +370,18 @@
     "Rubi's next finder default is GRAD + refine with COLGAP alone, eval/pagepath.py --finder rubi,fix=1 (vocr6-finder, #129 amendment 3: JUNK deletes text lines in tight regions, #135's audit), not rubi,fix=5. Amendment 9's report row and its Rubi-default test are against rubi,fix=1; rubi,fix=5 stays as one more report row.",
     "Report-only robustness rows for the pick (and the baselines): vocr6-finder's tight-region units ($A/vocr6-finder/units_v1/hval_tight.jsonl: 0 px around the ink; hval_tight2.jsonl: 2 px; dev_tight.pkl: 1 px), the regions a player draws tight to the text."
    ]
+  },
+  {
+   "id": 13,
+   "utc": "2026-10-26T16:20:59Z",
+   "before": "any test read (no test title page, CLANNAD page or vita-test / psp-test frame has been read by any textspot6 model); the selection is not yet made",
+   "what": [
+    "How the test sets are read (eval/textspot6_test.py): the final weights (the pick's recipe and seed on train + guard + hval); every check that needs no protected pixel first, then an exclusive attempt record.",
+    "Test title: eval/pagepath.py units --set test (as hval's units), read with GRAD + refine (--finder rubi), Rubi's next finder (rubi,fix=1, report), textspot3's pick and the final weights, both in the pick's decode exactly as score_run.sh reads hval; paired with page clusters (one title).",
+    "CLANNAD (a), textspot3's way: whole frames, the final weights in det and det+refine (the primary one is the pick's decode on a whole frame: crop -> det, crop+refine -> det+refine), against textspot3's pick and textspot's arms from their stored boxes (checked against their committed records first), VOCR5-N; textspot3's pick is also re-spotted and checked box for box. CLANNAD (b), report only: each page's ROI through eval/pagepath.py (GRAD + refine, rubi,fix=1, textspot3's pick and the final weights in the pick's decode), attributed to the reference lines as (a).",
+    "vita-test + psp-test: textspot3's way, the final weights in det and det+refine against textspot3's stored units (checked against its record, and re-read here) and textspot's stored arms, VOCR5-N; plus the tagged dialogue CER and presence on text-free frames.",
+    "Before the read, the script runs on non-protected stand-ins (--dry-run: two hval titles, textspot's development frames, a CLANNAD-shaped directory of hval pages) with a stage-1 run as the weights."
+   ]
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

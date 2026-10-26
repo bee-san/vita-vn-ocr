@@ -85,22 +85,24 @@ def read_jsonl(path):
 
 # ----------------------------------------------------------------------------- frames
 
-def hval_records(pool=POOL):
+def hval_records(pool=POOL, split="hval", titles=None):
+    """The page pool's records of one split (default "hval"; eval/textspot6_test.py reads "test"), optionally of
+    some titles only."""
     out = []
     for f in sorted(Path(pool).glob("*.jsonl")):
         for line in f.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
-            if r["split"] == "hval":
+            if r["split"] == split and (titles is None or r["title_id"] in titles):
                 out.append(r)
     return out
 
 
-def hval_frames(pool=POOL, pages=PAGES):
-    """[(key, grey)] of every hval page in its views: key {"title", "page", "view"}."""
+def hval_frames(pool=POOL, pages=PAGES, split="hval", titles=None):
+    """[(key, grey)] of every page of a split (default hval) in its views: key {"title", "page", "view"}."""
     import cv2
 
     from common import to_gray
-    for r in hval_records(pool):
+    for r in hval_records(pool, split, titles):
         bgr = cv2.imread(str(Path(pages) / r["image"]), cv2.IMREAD_COLOR)
         if bgr is None:
             raise FileNotFoundError(r["image"])
@@ -196,27 +198,33 @@ def _spot_one(job):
             "pick": r.pick, "presence": r.presence, "truncated": r.truncated, "rboxes": refined(boxes, g)}
 
 
-def cmd_spot(args):
+def write_spot(blob_path, jobs, out, set_name, workers):
+    """`spot`'s file: the twin on every (key, grey) job, a meta line then one row per frame (_spot_one)."""
     import multiprocessing as mp
 
     import textspot6_twin as T6
-    blob = Path(args.blob).read_bytes()
+    blob = Path(blob_path).read_bytes()
     _W["model"] = T6.Model(blob)
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = Path(str(out) + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"meta": {"blob": str(blob_path), "blob_sha256": hashlib.sha256(blob).hexdigest(),
+                                     "set": set_name, "frames": len(jobs), "twin": "synth/textspot6_twin.spot",
+                                     "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}}) + "\n")
+        with mp.get_context("fork").Pool(workers) as pool:
+            for rec in pool.imap(_spot_one, jobs, chunksize=4):
+                f.write(json.dumps(rec) + "\n")
+    os.replace(tmp, out)
+    return out
+
+
+def cmd_spot(args):
     t0 = time.time()
     jobs = list(FRAMES[args.set]())
     if args.limit:
         jobs = jobs[:args.limit]
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = Path(str(out) + ".tmp")
-    with open(tmp, "w", encoding="utf-8") as f:
-        f.write(json.dumps({"meta": {"blob": str(args.blob), "blob_sha256": hashlib.sha256(blob).hexdigest(),
-                                     "set": args.set, "frames": len(jobs), "twin": "synth/textspot6_twin.spot",
-                                     "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}}) + "\n")
-        with mp.get_context("fork").Pool(args.workers) as pool:
-            for rec in pool.imap(_spot_one, jobs, chunksize=4):
-                f.write(json.dumps(rec) + "\n")
-    os.replace(tmp, out)
+    out = write_spot(args.blob, jobs, args.out, args.set, args.workers)
     print(f"textspot6 spot finished: {args.set} {len(jobs)} frames {time.time() - t0:.0f} s -> {out}", flush=True)
 
 
@@ -241,33 +249,46 @@ def decoded(r, decode):
     return [[*b[:7], -1, b[7], 0] for b in r["rboxes"]]
 
 
+def frame_boxes(rows, decode, tags="all"):
+    """eval/pagepath.py --frame-boxes rows of a pool split's spot rows: {title, page, view, boxes [[x, y, w, h,
+    dark]]} in frame px, horizontal boxes only."""
+    return [{"title": r["title"], "page": r["page"], "view": r["view"],
+             "boxes": [[b[0], b[1], b[2], b[3], b[6]] for b in decoded(r, decode) if keep_box(b, tags)]}
+            for r in rows]
+
+
+def region_boxes(boxes, region, tags="all"):
+    """A whole-frame decode's boxes inside one region (x0, y0, x1, y1 in the frame's px): the horizontal boxes whose
+    centre lies in it, clipped to it, in region px [[x, y, w, h, dark]], in the decode's order."""
+    x0, y0, x1, y1 = region
+    w, h = x1 - x0, y1 - y0
+    bx = []
+    for b in boxes:
+        if not keep_box(b, tags):
+            continue
+        cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
+        if not (x0 <= cx < x1 and y0 <= cy < y1):
+            continue
+        a0, b0 = max(0, b[0] - x0), max(0, b[1] - y0)
+        a1, b1 = min(w, b[0] + b[2] - x0), min(h, b[1] + b[3] - y0)
+        if a1 > a0 and b1 > b0:
+            bx.append([int(a0), int(b0), int(a1 - a0), int(b1 - b0), int(b[6])])
+    return bx
+
+
 def cmd_pagepath_boxes(args):
     meta, rows = load_spot(args.spot)
     out = []
     if args.set == "hval":
-        for r in rows:
-            out.append({"title": r["title"], "page": r["page"], "view": r["view"],
-                        "boxes": [[b[0], b[1], b[2], b[3], b[6]] for b in decoded(r, args.decode)
-                                  if keep_box(b, args.tags)]})
+        out = frame_boxes(rows, args.decode, args.tags)
     elif args.set == "dev":
         by = {r["frame"]: r for r in rows}
         for i, u in enumerate(dev_units()):
             r = by[dev_frame_key(u)]
             s = 2 if u["kind"] == "psp" else 1
-            x0, y0, x1, y1 = (v * s for v in u["region"])
-            w, h = x1 - x0, y1 - y0
-            bx = []
-            for b in decoded(r, args.decode):
-                if not keep_box(b, args.tags):
-                    continue
-                cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
-                if not (x0 <= cx < x1 and y0 <= cy < y1):
-                    continue
-                a0, b0 = max(0, b[0] - x0), max(0, b[1] - y0)
-                a1, b1 = min(w, b[0] + b[2] - x0), min(h, b[1] + b[3] - y0)
-                if a1 > a0 and b1 > b0:
-                    bx.append([int(a0), int(b0), int(a1 - a0), int(b1 - b0), int(b[6])])
-            out.append({"unit": f"dev:{i}:{u['unit']}:{u['variant']}", "boxes": bx})
+            reg = tuple(v * s for v in u["region"])
+            out.append({"unit": f"dev:{i}:{u['unit']}:{u['variant']}",
+                        "boxes": region_boxes(decoded(r, args.decode), reg, args.tags)})
     else:
         raise SystemExit("pagepath-boxes: --set hval or dev")
     with open(args.out, "w", encoding="utf-8") as f:
@@ -279,14 +300,20 @@ def cmd_pagepath_boxes(args):
 
 # ----------------------------------------------------------------------------- the crop decode
 
-def _crop_one(job):
+def crop_boxes(model, img, fw, fh, decode):
+    """The crop decode on one region's grey (cut at the view's scale) of a fw x fh frame: the spotter at the frame's
+    scale (amendment 3), det or detref, its horizontal boxes [[x, y, w, h, dark]] in region px."""
     import textspot6_twin as T6
-    uid, img, fw, fh = job
-    r = T6.spot(_W["model"], img, scale=T6.scale_of(_W["model"], fw, fh))
+    r = T6.spot(model, img, scale=T6.scale_of(model, fw, fh))
     boxes = [[b.x, b.y, b.w, b.h, b.vertical, b.conf, b.dark, b.block, b.tag, b.tconf] for b in r.boxes]
-    if _W["decode"] == "detref":
+    if decode == "detref":
         boxes = [[*b[:7], -1, b[7], 0] for b in refined(boxes, img)]
-    return {"unit": uid, "boxes": [[b[0], b[1], b[2], b[3], b[6]] for b in boxes if not b[4]]}
+    return [[b[0], b[1], b[2], b[3], b[6]] for b in boxes if not b[4]]
+
+
+def _crop_one(job):
+    uid, img, fw, fh = job
+    return {"unit": uid, "boxes": crop_boxes(_W["model"], img, fw, fh, _W["decode"])}
 
 
 def crop_jobs(set_name, units_path=None, pages=PAGES):
@@ -322,21 +349,27 @@ def crop_jobs(set_name, units_path=None, pages=PAGES):
         yield u["uid"], np.ascontiguousarray(g[y0:y1, x0:x1]), g.shape[1], g.shape[0]
 
 
-def cmd_spot_crop(args):
+def write_crop(blob, jobs, decode, out, workers):
+    """--boxes rows of the crop decode for (uid, region grey, frame width, frame height) jobs (_crop_one)."""
     import multiprocessing as mp
 
     import textspot6_twin as T6
-    blob = Path(args.blob).read_bytes()
-    _W["model"], _W["decode"] = T6.Model(blob), args.decode
-    t0 = time.time()
-    jobs = list(crop_jobs(args.set, args.units))
-    out = Path(args.out)
+    _W["model"], _W["decode"] = T6.Model(blob), decode
+    out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(str(out) + ".tmp")
-    with open(tmp, "w", encoding="utf-8") as f, mp.get_context("fork").Pool(args.workers) as pool:
+    with open(tmp, "w", encoding="utf-8") as f, mp.get_context("fork").Pool(workers) as pool:
         for rec in pool.imap(_crop_one, jobs, chunksize=8):
             f.write(json.dumps(rec) + "\n")
     os.replace(tmp, out)
+    return out
+
+
+def cmd_spot_crop(args):
+    blob = Path(args.blob).read_bytes()
+    t0 = time.time()
+    jobs = list(crop_jobs(args.set, args.units))
+    out = write_crop(blob, jobs, args.decode, args.out, args.workers)
     meta = {"blob": str(args.blob), "blob_sha256": hashlib.sha256(blob).hexdigest(), "set": args.set,
             "decode": f"crop{'+refine' if args.decode == 'detref' else ''}", "units": len(jobs),
             "scale": "the frame's (amendment 3): textspot6_twin.spot(scale=scale_of(frame width, frame height))",
@@ -460,6 +493,21 @@ def tagged_dialogue(dets, refs, width, height):
     return e + extra, n
 
 
+def arm_of(r, decode, height):
+    """(textspot's arm dict, the boxes with their tags) of one spot row in a whole-frame decode: det, the decoded
+    boxes, blocks and pick as they are; detref, the refined boxes regrouped and ordered (textspot6_twin.
+    group_and_order on the frame's height). The boxes are [x, y, w, h, vertical, conf, dark, block, tag]."""
+    import textspot6_twin as T6
+    if decode == "det":
+        bx = [list(b) for b in r["boxes"]]
+        return {"boxes": [tuple(b[:8]) for b in bx], "blocks": [tuple(k[:7]) for k in r["blocks"]],
+                "pick": r["pick"], "truncated": r["truncated"]}, bx
+    ob, bl, pk = T6.group_and_order([(*b[:7], b[7], 0) for b in r["rboxes"]], height)
+    bx = [[*b[:7], b[9], b[7], b[8]] for b in ob]
+    return {"boxes": [tuple(b[:8]) for b in bx], "blocks": [tuple(k[:7]) for k in bl], "pick": pk,
+            "truncated": r["truncated"]}, bx
+
+
 def cmd_tsdev(args):
     import shutil
 
@@ -478,19 +526,10 @@ def cmd_tsdev(args):
     cache = TSE.Cache(cache_dir)
     models = [TSE.SHORT.get(m, m) for m in args.models.split(",")]
     readers = TSE.c_readers({m: TSE.BLOBS[m] for m in [*models, TSE.V_MODEL]}, Path(args.cbuild))
-    import textspot6_twin as T6
     arms, tagged_boxes = [], []
     for f in frames:
-        r = by[f.id]
-        if args.decode == "det":
-            bx = [list(b) for b in r["boxes"]]
-            arms.append({"spot": {"boxes": [tuple(b[:8]) for b in bx], "blocks": [tuple(k[:7]) for k in r["blocks"]],
-                                  "pick": r["pick"], "truncated": r["truncated"]}})
-        else:
-            ob, bl, pk = T6.group_and_order([(*b[:7], b[7], 0) for b in r["rboxes"]], f.height)
-            bx = [[*b[:7], b[9], b[7], b[8]] for b in ob]
-            arms.append({"spot": {"boxes": [tuple(b[:8]) for b in bx], "blocks": [tuple(k[:7]) for k in bl],
-                                  "pick": pk, "truncated": r["truncated"]}})
+        arm, bx = arm_of(by[f.id], args.decode, f.height)
+        arms.append({"spot": arm})
         tagged_boxes.append(bx)
     n_read = TSE.read_all(frames, arms, models, readers, cache, workers=args.workers)
     out = {"spot": meta, "decode": args.decode, "read": n_read, "models": {}}

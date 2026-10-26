@@ -249,6 +249,18 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
     regions, so `rubi,fix=1` replaces `rubi,fix=5` in amendment 9's row and test, and fix=5 stays as a report row.
     The pick and the baselines are also read on vocr6-finder's tight-region units (0, 2 and 1 px around the ink),
     report only.
+13. **How the test sets are read** (`eval/textspot6_test.py`, before any test read). The final weights are the
+    pick's recipe and seed retrained on train + guard + hval. Every check that needs no protected pixel runs first,
+    then an exclusive attempt record refuses a second read.
+    - Test title: `pagepath.py units --set test`, read by GRAD + refine, `rubi,fix=1` (report), textspot3's pick
+      and the final weights in the pick's decode, as hval is read; page-cluster intervals (one title).
+    - CLANNAD, textspot3's way: whole frames, the final weights in det and det+refine (the primary is the pick's
+      decode on a whole frame), against textspot3's pick and textspot's arms from their stored boxes, which must
+      reproduce their committed records first. Report only: each page's ROI through the page path, as Rubi reads
+      a region.
+    - vita-test + psp-test: textspot3's way, against textspot3's stored units and textspot's stored arms; plus the
+      tagged dialogue CER and presence on text-free frames.
+    - The script runs first on non-protected stand-ins (`--dry-run`) with a stage-1 run as the weights.
 
 ## Results
 

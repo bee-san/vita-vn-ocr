@@ -230,6 +230,32 @@ def test_markdown_measure_and_headline_shapes():
     assert "1.00% [0.50, 1.50]" in md[4] and "-0.10 [-0.30, +0.10]" in md[4]
 
 
+def test_stage_texts_and_failed_units():
+    def crop(g, b, conf, err=None):
+        c = {"g": g, "b": b, "conf": conf, "reread": 0}
+        if err:
+            c["error"] = err
+        return c
+    dumps = {("VOCR6", "N"): {"crops": [crop("ab", "AB", 900), crop("cd", "CD", 600), crop("", "", 1000),
+                                        crop("", "", 1000, "VocrError")]},
+             ("VOCR6", "L"): {"crops": [crop("ab", "AX", 950), crop("cd", "CE", 990, None), crop("x", "X", 900),
+                                        crop("", "", 1000)]}}
+    st = F.stage_texts(dumps, "VOCR6", "N", 700, lambda texts: list(texts))
+    assert st["greedy"] == ["ab", "cd", "", ""]
+    assert st["rubi_tier"] == ["AB", "CD", "", ""]
+    assert st["rubi_cascade"] == ["AB", "CE", "", ""]            # the doubtful line shows Large's reading
+    assert st["failed"] == {3}
+    # a cascade read that failed fails the line it replaces
+    dumps[("VOCR6", "L")]["crops"][1]["error"] = "VocrError"
+    assert F.stage_texts(dumps, "VOCR6", "N", 700, lambda t: list(t))["failed"] == {1, 3}
+    # Large: no cascade
+    assert F.stage_texts(dumps, "VOCR6", "L", 700, lambda t: list(t))["rubi_cascade"] == ["AX", "CE", "X", ""]
+    u = {"lines": [{"text": "あい", "styles": []}, {"text": "う", "styles": ["name"]}], "crops": [0, 1]}
+    texts = ["あい", "う"]
+    assert F.unit_score(u, texts) == (0, 2, 0, 3)
+    assert F.unit_score(u, texts, failed={1}) == (2, 2, 3, 3)    # the job fails: nothing shown
+
+
 def test_driver_script_is_safe():
     sh = (ROOT / "eval" / "reproducibility" / "vocr6-final" / "report.sh").read_text(encoding="utf-8")
     assert "vocr6_final_test_protocol.json" in sh and "set -euo pipefail" in sh

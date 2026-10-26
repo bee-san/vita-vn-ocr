@@ -42,8 +42,9 @@ CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (D
 - **What the game-text LM keeps.** It is order 3, so no stored fragment is longer than 3 characters. 1.5% of the
   1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. Of all its bigrams and trigrams,
   26% (19% at 4 MB) are ones the same recipe without game text does not keep: the game counts also lift public
-  n-grams over the pruning threshold. Apart from runs of one repeated small kana (up to 22 characters), greedy continuation recovers at most
-  12 characters of a training line (a game's title in its own text), against 10 for the LM without game text.
+  n-grams over the pruning threshold. Apart from runs of one repeated small kana (up to 22 characters), greedy
+  continuation recovers at most 12 characters of a training line (a game's title in its own text), against 10 for
+  the LM without game text.
 - **The dictionary-aware variant does not help.** A word bonus from JMdict's headwords ranked by Jiten (the files
   Rubi ships) is worse than the plain LM at every setting tried, so it is not built for the console. Its cost
   would be 0.23-2.5 MB more memory and about 200 trie lookups per line (estimates).
@@ -268,9 +269,11 @@ Vita and PSP (VOCR5-N + cascade, CER %):
 
 ### On the shared page-path benchmark (#129, report only)
 
-`eval/pagepath.py` reads whole dialogue with Rubi's actual finder: TEXTBOX_RECOVERY with its short-line probe, and
-the refinement on PSP titles. The rule above used VOCR5's GRAD and GRAD + refine regions. This run is VOCR5-N with
-its cascade: the incumbent against the shipped 1 MB setting, `--lm-opts '{"alpha": 600, "beta": 2500, "flags": 1}'`.
+`eval/pagepath.py` reads whole dialogue with Rubi `bd130a8`'s finder (its `rubi` preset, frozen): TEXTBOX_RECOVERY
+with its short-line probe, and the refinement on PSP titles. The rule above used VOCR5's GRAD and GRAD + refine
+regions. This run is VOCR5-N with its cascade: the incumbent against the shipped 1 MB setting (`--lm-alpha 600
+--lm-beta 2500 --lm-flags 1`). #135 has since made COLGAP the finder default that Rubi gets; its hval gain (3.875%
+→ 3.292%, `docs/finder-fix.md`) and this LM's were measured separately, on the same baseline.
 hval uses the screening build `h64_1000k`, since the shipped blob holds hval's text; the dev units (#119's) use the
 shipped blob. The setting was chosen in-sample on this round's own hval, so the hval number here is optimistic.
 
@@ -389,8 +392,8 @@ in `lm/vlm.py`'s Python twin of the decoder (`decode(lexicon=…)`), on the ship
 
 - New files: `vocr_lm6_o3_1000k.vlm` and `vocr_lm6_o3_4000k.vlm` (pre-release v0.3.7-lm6.2, CC BY-SA 4.0, with
   `ATTRIBUTION.md`, `SHA256SUMS` and the settings), cut from this PR's merge. v0.3.7-lm6.1 holds the same blobs. It
-  went out from this PR's branch before the audit, with an `ATTRIBUTION.md` that missed Little Busters!, and is
-  superseded.
+  went out from this PR's branch before the audit, with an `ATTRIBUTION.md` and notes that missed Little Busters!
+  and called Collar x Malice a vita-test game, and is superseded.
 - The 0.5 and 2 MB tiers keep ctclm.2's files and settings.
 - `core/vocr_ocr.c`: the LM table carries each tier's alpha, beta and flags.
 

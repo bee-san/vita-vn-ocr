@@ -195,7 +195,7 @@ def main(argv=None):
         t.join()
     for name, ok in results:
         print(name, "OK" if ok else "FAILED")
-    print("TEXTSPOT6_SWEEP_DONE", sum(ok for _, ok in results), "of", len(results))
+    print("sweep finished:", sum(ok for _, ok in results), "of", len(results))
 
 
 if __name__ == "__main__":

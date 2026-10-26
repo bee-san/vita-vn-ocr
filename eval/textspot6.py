@@ -217,7 +217,7 @@ def cmd_spot(args):
             for rec in pool.imap(_spot_one, jobs, chunksize=4):
                 f.write(json.dumps(rec) + "\n")
     os.replace(tmp, out)
-    print(f"TEXTSPOT6_SPOT_DONE {args.set} {len(jobs)} frames {time.time() - t0:.0f} s -> {out}", flush=True)
+    print(f"textspot6 spot finished: {args.set} {len(jobs)} frames {time.time() - t0:.0f} s -> {out}", flush=True)
 
 
 def load_spot(path):
@@ -343,7 +343,7 @@ def cmd_spot_crop(args):
             "units_file": str(args.units) if args.units else str(DEV_UNITS), "twin": "synth/textspot6_twin.spot",
             "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     Path(str(out).replace(".jsonl", ".meta.json")).write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
-    print(f"TEXTSPOT6_SPOT_CROP_DONE {args.set} {len(jobs)} units {time.time() - t0:.0f} s -> {out}", flush=True)
+    print(f"textspot6 spot-crop finished: {args.set} {len(jobs)} units {time.time() - t0:.0f} s -> {out}", flush=True)
 
 
 # ----------------------------------------------------------------------------- hval box metrics

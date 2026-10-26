@@ -148,7 +148,8 @@
   "cost_order": "VTSP bytes, est. ms @333 per 960 x 544 frame, arena, decode (crop, crop+refine, det, det+refine), then the name (amendment 2)",
   "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
   "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
-  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, a normal Rubi PR merged after CI + memory ledger + audit MERGE_OK, a Rubi test pre-release and test issue, an off-switch defaulting to the measured best (amendment 4)"
+  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, a normal Rubi PR merged after CI + memory ledger + audit MERGE_OK, a Rubi test pre-release and test issue, an off-switch defaulting to the measured best (amendment 4)",
+  "rubi_default": "the adopted pick is Rubi's default finder only if, against rubi,fix=5 (#135) on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (amendment 9)"
  },
  "test": {
   "read_once_after": "the selection commit",
@@ -304,6 +305,31 @@
    "pins": {
     "eval/reproducibility/textspot6-20261026/sched.py": "62c077d1f550f5d80fe1fb207e85ceb9063a01bd3188296fcf275a0f18e0bb2e",
     "eval/reproducibility/textspot6-20261026/stage1c_plan.jsonl": "fdec10c5d50c1cd73ff721fd32c3ffe20de6e9c9d776a0b1147f13b5b4004985"
+   }
+  },
+  {
+   "id": 9,
+   "utc": "2026-10-26T13:45:05Z",
+   "before": "the selection; NOT before every score: disclosed below",
+   "disclosure": "This amendment comes after a partial look at one textspot6 score: the scoring of base_t64n8c16_seed1 (started 13:35Z with the #131 pin) had finished its crop and crop+refine dev and hval runs when it was stopped at 13:45Z for this change, and its log lines (dev crop+refine Vita 2.090% / PSP 2.174%, hval crop Vita 1.581% / PSP 1.243%) were seen. Nothing in the rule, the arms or the candidates changes here; only the benchmark's code version (which changes no number, checked below) and a report-only row are added, plus the rule that sets Rubi's default, which the owner's directive (vocr6-common, 10:17Z) requires.",
+   "what": [
+    "Benchmark version: vocr6-finder's PR #135 at 2d3971b (eval/pagepath.py, eval/pagepath_find.c, runtime/vocr_lines_fix.c/.h/.mk; $A/vocr6-spotter/pagepath_snap135/repo, a checkout of main 8a71eec with those files) replaces #131's. The benchmark's owner states #135 changes no --finder number (it adds --boxes clipping, a page sha check and the runtime in the cache tag). Check, before the selection reads anything: GRAD + refine (--finder rubi) and textspot3's pick (all four decodes) scored with #135 must equal #131's scores unit for unit (errors and chars of every unit, dev and hval); if any unit differs, the rule reads #131's scores of every arm (re-scored with #131) and #135 serves only the row below.",
+    "Report-only baseline row: Rubi's next finder, GRAD + refine with #129's COLGAP + JUNK fixes (eval/pagepath.py --finder rubi,fix=5, #135), on the same units.",
+    "Rubi's default (owner 10:17Z: 'defaulting to the measured-best choice'): the adopted pick becomes Rubi's default finder only if, against rubi,fix=5 on the same units, its unseen-dev page-path dialogue CER difference has a 95% interval entirely below 0 and its hval difference is not resolved above 0 (the rule's own test, against the finder Rubi will ship); otherwise the spotter ships behind its setting, off by default.",
+    "Prints: eval/textspot6.py and sweep.py no longer print *_DONE marker lines (the orchestrator reads them); no number changes."
+   ],
+   "pins": {
+    "pagepath_snap135": {
+     "eval/pagepath.py": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea",
+     "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+     "runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "runtime/vocr_lines_fix.h": "0ebca0c0ffe47f7841fea314faedc3ab150f579537aa8693b5eed61c650b0c82",
+     "runtime/vocr_lines_fix.mk": "cb0f1238bd2b254c93340ae55ab88ddb3a8199d9fd561ad9fcfecf6c57dd03ef"
+    },
+    "pr": "https://github.com/bee-san/vita-vn-ocr/pull/135",
+    "commit": "2d3971b",
+    "eval/textspot6.py": "51ad39e6af09939f731b89d7436f4dcc23b34f995b65df6d9105c19d2b175a99",
+    "eval/reproducibility/textspot6-20261026/score_run.sh": "000ac29556129cc6663795bd874d35d3245de7bd2d2b95ec4b66b101d1186e21"
    }
   }
  ],

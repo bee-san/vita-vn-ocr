@@ -3,7 +3,8 @@
 # units and the hval regions in the four decodes, then eval/pagepath.py (vocr6-finder's page-path benchmark, #129) on
 # each, and the report-only whole-frame metrics. Run it through heavy.sh (5 threads).
 #   score_run.sh RUN_DIR|BLOB.vtsp NAME [DECODES]      DECODES default "crop crop+refine det det+refine"
-#   score_run.sh --baseline                             GRAD + refine (eval/pagepath.py --finder rubi) on dev and hval
+#   score_run.sh --baseline [NAME SPEC]                 a finder on dev and hval: default grad_refine = --finder rubi
+#                                                       (Rubi today); e.g. grad_refine_fix5 "rubi,fix=5" (#135)
 # Env: PAGEPATH (the pinned eval/pagepath.py; its directory's pagepath_find.c is built by it), OUT (default
 # $A/vocr6-spotter/eval), WORKERS (5). Results: OUT/<NAME>/{dev,hval}_<decode>.json (+ .rows.jsonl), tsdev_*.json.
 set -euo pipefail
@@ -33,10 +34,11 @@ pp() {   # pp SET UNITS OUTBASE ARGS...: one eval/pagepath.py run
 }
 
 if [ "${1:-}" = --baseline ]; then
-  D=$OUT/grad_refine; mkdir -p "$D"
-  pp dev "$UNITS_DEV" "$D/dev" --finder rubi
-  pp hval "$UNITS_HVAL" "$D/hval" --finder rubi
-  echo "SCORE_BASELINE_DONE $D"; exit 0
+  BNAME=${2:-grad_refine}; SPEC=${3:-rubi}
+  D=$OUT/$BNAME; mkdir -p "$D"
+  pp dev "$UNITS_DEV" "$D/dev" --finder "$SPEC"
+  pp hval "$UNITS_HVAL" "$D/hval" --finder "$SPEC"
+  echo "score_baseline finished $D"; exit 0
 fi
 
 SRC=${1:?usage: score_run.sh RUN_DIR|BLOB.vtsp NAME [DECODES]}; NAME=${2:?name}
@@ -77,4 +79,4 @@ done
 "$PY" "$REPO/eval/textspot6.py" hval-boxes --spot "$D/spot_hval.jsonl" \
   --shards "$HERD/shared/private/vocr6-spotter/shards_v1" --manifest "$REPO/data/manifests/textspot6_pages_v1.json" \
   --out "$D/hval_boxes.json"
-echo "SCORE_RUN_DONE $NAME $D"
+echo "score_run finished $NAME $D"

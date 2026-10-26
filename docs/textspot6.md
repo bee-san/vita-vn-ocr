@@ -229,6 +229,15 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
      runtime helper until the helper's runtime is ready.
    - `nohook_t64n8c16` becomes a report-only control with 2 seeds. The candidates are `base_t64n8c16`, `base_qS4`,
      `base_qL5` and stage 2's `kd_t64n8c16`, 3 seeds each.
+9. **The benchmark at #135, Rubi's next finder, Rubi's default** (13:50Z).
+   - **Disclosed:** this comes after a partial look at one score. The first scoring of `base_t64n8c16_seed1` was
+     stopped for this change after its crop runs, and their lines were seen.
+   - Nothing in the rule, the arms or the candidates changes.
+   - The benchmark moves to vocr6-finder's PR #135 (`2d3971b`). It must reproduce #131's GRAD + refine and
+     textspot3-pick scores unit for unit. If it does not, the rule reads #131's scores.
+   - A report-only row is added: Rubi's next finder, `--finder rubi,fix=5` (#129's COLGAP + JUNK).
+   - Rubi's default: the adopted pick becomes the default finder only if it also beats `rubi,fix=5` by the rule's own
+     test. Otherwise the spotter ships behind its setting, off by default.
 
 ## Results
 

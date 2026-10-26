@@ -1335,7 +1335,7 @@
     },
     {
      "n": 4,
-     "time": "this commit (see git log, ~12:55Z); before any stage-1 score (no stage-1 done line in the experiment log)",
+     "time": "2026-10-26T12:48:45Z (commit 1677de9; an earlier revision said ~12:55Z, written ahead of the clock); before any stage-1 score",
      "why": "compute, measured: Normal runs train at 0.93-1.0 steps/s per slot at load ~80 (A15/B15/C50 since 11:52Z) against the ~1.74 the protocol assumed, and the conductor cut heavy-slots from 15 to 12 at 12:37Z. At that rate C50 is ~15 h and C150 ~45 h per run, A45/B45 ~12.5 h, and stage 2 (14 runs) could not start before ~16:00Z on free slots",
      "c_family": "stopped at ~2.3k / 1.7k of 50k steps (vocr6-s1-c, both seeds), not scored. Even if amendment 1's rung promoted it, C150 (2 x ~45 h) and a C-based stage 4 (S/N/L x 3 seeds from scratch) do not fit this round's compute, so the rung could not change the round's decision; the freed slots go to stage 2",
      "long_budget": "A45 and B45 are not run (vocr6/s1-promote.txt: A45 STOP, B45 STOP). The long-budget question moves to stage 3: S3long (R2 at 45,000 steps, seeds 1 and 3) is run unconditionally there, on the final data mix",
@@ -1552,6 +1552,41 @@
     "factor": "each arm Y against R2 (X), seed pairs (1,1), (3,3): decision.adopt; S3attn also needs every tier's blob within its caps (S < 1,000,000 B, N <= 1,600,000 B, L <= 2,500,000 B: L with --attn-dim 48 if 96 does not fit) and the est. box time within the tier's ceiling (S < 1 s, N ~1 s default sizing, L < 3 s at 333 MHz, no prefetch credit; ocr-speed's method)",
     "recipe": "R3 = R2 + every adopted arm; two or more adopted arms are confirmed by one combined pair (S3all) adopted over R2, else R3 = R2 + the adopted arm with the lowest mean hval_page"
    }
+  },
+  "4": {
+   "name": "finalists: R3 at every tier, 3 seeds, then the shipped blobs with hval folded in",
+   "registered": "see git log (feat/vocr6-recipe); before any stage-1, 2, 3 or 4 score",
+   "recipe": "R3 (stage 3's decision.recipe: its mix, its arch_extra / train_extra, its steps: 45,000 iff S3long is adopted over R2, else 15,000)",
+   "inits": {
+    "S": {
+     "1": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "2": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "3": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt"
+    },
+    "N": {
+     "1": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed1/ckpt_step15000.pt",
+     "2": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed2/ckpt_step15000.pt",
+     "3": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed3/ckpt_step15000.pt"
+    },
+    "L": {
+     "1": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed1/ckpt_step15000.pt",
+     "2": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed2/ckpt_step15000.pt",
+     "3": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed3/ckpt_step15000.pt"
+    },
+    "note": "the A family's VOCR5 fine-tuned checkpoint of the tier per seed (VOCR5-S has two: seed 3 starts from the released v5f_S_seed2 with training seed 3); if stage 2's B clause moved the base to B, the tier's pre5_<T> pretrain checkpoints instead; sha256 recorded when the arms are filled"
+   },
+   "4a": {
+    "what": "R3 at S, N and L, seeds 1, 2 and 3, hval out (the screening data): N reuses stage 3's R3 runs for seeds 1 and 3",
+    "scoring": "the shipped page path at the time of stage 4, recorded with the fill: vocr6-finder's finder setting as Rubi ships it (#129: rubi with fix=COLGAP|JUNK if merged), vocr6-lm's LM and its settings for the tier (#127), the cascade S -> N and N -> L with the same seed's next-tier VOCR6 model (VOCR5 S -> N, N -> L for the incumbents), Rubi's textnorm and line filter; head gate and two-level head off (speed only; their own rules decide them afterwards). A new hval / dev plan with that finder is built before any 4a score",
+    "adopt": "per tier T: R3-T is adopted over VOCR5-T iff decision.adopt with three seed pairs (X = the released VOCR5-T blob for every pair) on hval_page and the dev score, on the shipped path; a tier whose R3 is not adopted keeps VOCR5"
+   },
+   "4b": {
+    "what": "per adopted tier: one run of R3 with hval folded back in (the hooked pools train + guard + hval_fold, the console crops of train + hval + guard pages, VOCR5's real pools as pinned by eval/vocr5_pools.sha256 instead of the guarded screening copies), from the seed whose 4a dev score is the median of the three",
+    "check": "the 4b blob must not be resolved worse than its 4a sibling on the dev score (VN bootstrap, one pair); otherwise the 4a sibling ships",
+    "gate": "the head gate (#120) and, for N and L, the two-level head (#122) are fit on each shipped blob and adopted or not under those PRs' pre-registered rules (train/headgate.py, train/head2level.py)",
+    "ship": "the shipped S/N/L blobs go to a vita-vn-ocr pre-release with SHA256SUMS, docs/vocr6.md, and a Rubi_for_vita PR pinning them"
+   },
+   "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools"
   }
  },
  "incumbents": {

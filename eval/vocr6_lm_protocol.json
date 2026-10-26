@@ -1,0 +1,98 @@
+{
+ "kind": "vocr6-lm-protocol",
+ "schema": 1,
+ "created": "2026-10-26T09:55:00Z",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/127",
+ "tracking": "https://github.com/bee-san/vita-vn-ocr/issues/125",
+ "question": "Does a character LM built with the hooked train titles' own text (and decoder settings retuned on the hooked hval set and VOCR5's development cohorts) read dialogue better than Rubi's shipped LM (v0.2.6-ctclm.2) through Rubi's line path, per LM tier?",
+ "frozen_before": "any decode of a new LM is scored, and any held-out cross-entropy of a new LM on hval or development text is computed (LM builds and the builder's own realplus profile choice may run before)",
+ "incumbent": {
+  "lms": {
+   "500k": {"file": "vocr_lm_o3_500k.vlm", "bytes": 499824, "sha256": "38ea94e0c4ec93863454387e7c2c469d209aaf21f2f6ee5d040e75a09d00d286", "beta": 3000},
+   "1000k": {"file": "vocr_lm_o3_1000k.vlm", "bytes": 987600, "sha256": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9", "beta": 3500},
+   "2000k": {"file": "vocr_lm_o3_2000k.vlm", "bytes": 1971568, "sha256": "ac33e461bd346617aae27168aee47230a758f4b301d78b59eb55ca25a21bcb34", "beta": 3000},
+   "4000k": {"file": "vocr_lm_o3_4000k.vlm", "bytes": 3781072, "sha256": "01f49be1691a1aab5a6d33414ce7d17c3e5b2daf97dfccb0d341a380a68e5898", "beta": 3500}
+  },
+  "settings": {"beam": 8, "topk": 8, "alpha": 500, "gate": 8000, "flags": 2, "bracket": 8000, "note": "Rubi_for_vita core/vocr_ocr.c lm_opts(); beta per tier above"},
+  "cascade_conf": 700,
+  "source": "release v0.2.6-ctclm.2 (ctc-lm-decode/release_pub2), what Rubi main bd130a8 pins"
+ },
+ "models": {
+  "S": {"blob": "VOCR5_S_w8.vocr (v5f_S_seed2_w8.vocr)", "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "cascade_to": "N"},
+  "N": {"blob": "VOCR5_N_w8.vocr (v5f_N_seed3_w8.vocr)", "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "cascade_to": "L"},
+  "L": {"blob": "VOCR5_L_w8.vocr (v5f_L_seed2_w8.vocr)", "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3", "cascade_to": null},
+  "mode": "W8I through the C runtime, head gate off (the release blobs as Rubi main runs them); top-8 extras, blank logit, conf_min",
+  "primary": "N with its cascade to L",
+  "later": "the VOCR6 finalists' logits, when T1 delivers them: the same harness, report"
+ },
+ "line_path": "Rubi_for_vita core/vocr_ocr.c finish_line as eval/headgate_eval.Decoder.rubi models it: an empty greedy line stays empty; counter re-decode (tau 6000, open 4000); vocr_lm_decode on the (edited) top-K; the counter text rule (vocr_post_counters); cascade: a line with line_conf < cascade_conf shows the next tier up's text of the same crop by the same steps and the same LM (no time ceiling modelled)",
+ "sets": {
+  "dev": {
+   "what": "VOCR5's development cohorts as eval/headgate_eval.py reads them (the head gate's development cache, arm today = the release blobs): tv (teacher_val_dev.npz) and dn (devnative's four *_dev.npz), views rv and rvn; wd (tv_dlg + dn_dlg, GRAD flags 0 and GRAD + refine, base/+4/+8 regions, dn shots tv holds skipped)",
+   "cache_sha256": {"S": "30b30dfeb119f89d5d25ef3c78e07d36e7dde023ee4557e2ff70abddc8f99cb5", "N": "eb0060ca104473e96b1be3244001299d6d063f9b0a669807325314868539ac19", "L": "29257b92332be9fda2b5940af13a55c752d5ad91dc7a0a9ec197238f1797cbde"},
+   "check": "with every VN, the harness gives eval/headgate_dev_20261023.json's today scores exactly (greedy, rubi, rubi_cascade, S/N/L)",
+   "exclude_vns": {"v12188": "a hooked train title (PCSG00576): its text is in the new LMs", "v18432": "a hooked test title (PCSG00807, Dance with Devils)"}
+  },
+  "hval": {
+   "what": "the hooked corpus' screening pages: data/import_hooked.py's split (vocr6-ingest), pages assigned hval; LMs screened on them are built from the train pages only (lm/hook_text.py --keep train: hval and guard pages out)",
+   "splits": {"file": "splits_v1.json", "sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e", "params": {"share": 0.04, "guard": 15, "seed": 20261026, "min_pages": 200, "block_max": 40}, "note": "if the ingest's final split differs, the hook text is re-exported, the screening LMs rebuilt and this file amended before any hval score is read"},
+   "hc": "the ingest's hval line pool (verified horizontal dialogue/narration lines, cluster representatives not duplicating a train line), as stored (the console's polarity)",
+   "hp": "every hval page's whole-dialogue regions (the ingest's pagepool, eval/finder_tighten.py's rule: base, +4, +8), through the C GRAD finder (flags 0) and with the refinement (VOCR_REFINE_DEFAULT)",
+   "view": "rubi: Vita pages native; PSP pages upscaled 2x bilinear (cv2.INTER_LINEAR on RGB, then synth/common.to_gray), as Adrenaline shows them to Rubi; PSP clean crops from line_x2",
+   "secondary_view": "native (PSP at 480x272): report only",
+   "seen_flags": {"v18160": "Collar x Malice (PCSG00866): a vita-test VN; its hooked text trains the new LMs", "v34": "planetarian (ULJM05383): shares a release with CLANNAD (owner: training data)"}
+  },
+  "never_read": ["CLANNAD", "vita-test", "psp-test", "the fresh native textbox test", "the hooked test titles (Dance with Devils)"]
+ },
+ "metric": {
+  "cer": "dialogue CER: eval/metrics.norm on reference and output, Levenshtein; tv/dn per line over both views; wd/hp per region on the found lines' texts joined in reading order against the region's reference lines joined; hc per line; names a secondary column",
+  "dev_score": "0.25 tv + 0.25 dn + 0.5 wd (VOCR5's score), CER points",
+  "objective": "0.5 hp + 0.5 dev_score, CER points (primary model)",
+  "bootstrap": "10,000 resamples of clusters per part (VNs for tv/dn/wd, hooked titles for hc/hp), seeds tv 0, dn 1, wd 2, hp 3, hc 4; 95% percentile interval of the paired difference",
+  "cross_entropy_screen": "held-out nats per character with </s>, BOS on and off, on the hval lines (lm/hook_text.py --heldout; lines wholly in data/vocab.txt) and on the dev cohorts' tv/dn dialogue references: a screen that orders recipes, never a decision"
+ },
+ "arms": {
+  "note": "each built at the tier's budget = the incumbent's exact bytes (no more resident memory than today), lm/build.py with the public corpora and Jiten shares of ctclm.2 (Aozora dialogue + narration, Aratako, JESC, Tatoeba; vn 0.4, novel 0.2); every recipe built is reported; recipes may be added during screening (a larger hook weight, another re-cut) and every recipe tuned at a tier enters that tier's cross-validated selection",
+  "repro": "ctclm.2's command, unchanged: must give the incumbent's bytes (checked: 1000k 99300061... bit for bit)",
+  "v6b": "--protect vocr6 --vocab-extra vn5631 --exclude-vns test_vns.txt (no hook text): the policy-aligned name filter and VOCR5-N/L's vocabulary alone",
+  "hW": "v6b + hook_train:W for W in 1, 4, 16, 64 (the hooked train pages' distinct visual lines counted W times; never name-filtered)",
+  "hWrb / hWrl": "hW + --recut both / lines (the public corpora wrapped into visual lines)",
+  "hWo4": "hW at order 4",
+  "sizes": "the best recipes at 1000k first, then at 500k, 2000k and 4000k"
+ },
+ "grid": {
+  "alpha": [300, 400, 500, 600, 700, 800],
+  "beta": [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000],
+  "flags": [0, 1, 2, 3],
+  "gate": [8000],
+  "bracket": [8000],
+  "beam": [8],
+  "topk": [8],
+  "cascade_conf_selectable": [500, 600, 700],
+  "cascade_conf_report_only": [800, 900],
+  "note": "beam and top-K stay Rubi's (its workspace and top-K buffers are sized for 8 x 8); a grid edge chosen in-sample is reported and the grid is extended once along it"
+ },
+ "selection": {
+  "per_tier": "each LM tier (500k, 1000k, 2000k, 4000k) on its own; one setting per LM for every model, as Rubi's lm_opts()",
+  "objective": "the primary model's objective (N with its cascade)",
+  "cross_validation": "2 folds: a cluster's fold is the low bit of sha256(cluster id) (VNs for dev, hooked titles for hval). The (recipe, setting, cascade threshold) with the lowest objective on fold f's units is chosen, ties to the first in (recipe order, grid order); fold 1-f's units are scored with that choice; the cross-validated errors of every unit are the new arm's",
+  "shipped": "the in-sample choice over all units (reported beside the cross-validated estimate)"
+ },
+ "rule": {
+  "adopt_tier_iff": [
+   "(a) hp dialogue CER, cross-validated new - incumbent, has its 95% title-cluster interval entirely below 0",
+   "(b) the dev score difference (cross-validated) is not resolved worse: its 95% interval is not entirely above 0",
+   "(c) neither VOCR5-S (with its cascade to N) nor VOCR5-L (no cascade), decoded with the same LM and the same cross-validated choices, is resolved worse on hp or on the dev score",
+   "(d) the blob is at most the incumbent's bytes, and vocr_lm_workspace_bytes for VOCR5-S/N/L at the chosen setting is at most Rubi's VJO_VOCR_LM_WS_BYTES (49,152 B); otherwise the Rubi change it needs is stated and nothing is adopted without it"
+  ],
+  "primary_tier": "1000k (Rubi's default)",
+  "final_blob": "an adopted tier's recipe is rebuilt from lm/hook_text.py --keep final (hval folded back in) and ships with the in-sample setting; it is checked on dev only (not resolved worse than the screening build); hval cannot score it",
+  "cascade": "a cascade threshold above 700 (more re-reads, more time) is reported only, never selected"
+ },
+ "dictionary_variant": {
+  "what": "a word-level bonus in the beam: when a prefix ends in a word of the lexicon (JMdict's headwords and readings in Rubi's pinned JMdict-plain.zip, ranked by the Jiten global frequency list Rubi ships, at most 8 characters, in vocabulary), the extension gets a bonus; prototyped in lm/vlm.py's Python twin of the decoder (same integer arithmetic otherwise)",
+  "grid": "bonus per word character and a frequency-rank cap, small (report the grid)",
+  "rule": "adopted only under the same rule (a)-(c) against the adopted n-gram LM of the 1000k tier, and only if its estimated console cost fits: LM + lexicon bytes at most the tier's incumbent bytes plus 1 MB, and at most +5 ms per 640-px line at 333 MHz (estimate, from its operation counts on development lines); otherwise reported with its measured CER and its estimated cost"
+ },
+ "reports": ["per tier: greedy, incumbent, best recipe in-sample and cross-validated, with intervals; per part; Vita and PSP separately (hc, hp); per title (hp); S/N/L; the cascade thresholds 500-900; the CE screen of every recipe; the lines changed and the errors fixed/introduced; the native view; the dictionary variant's CER and cost estimate"]
+}

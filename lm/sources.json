@@ -41,6 +41,22 @@
    "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
    "licence": "CC BY-SA 4.0",
    "attribution": "Japanese Wikipedia via wikimedia/wikipedia 20231101.ja (https://huggingface.co/datasets/wikimedia/wikipedia, CC BY-SA 4.0)"
+  },
+  "hook_train": {
+   "path": "$HERD/shared/private/vocr6-lm/text/hook_train.txt",
+   "sha256": "2fd37ecd496dfd047b1ed5dcf3c907018d52f548cb4c0cd52f71210624f658ad",
+   "licence": "the owner's hooked PS Vita / PSP captures (vita-vn-ocr #125): the games' own text, copyrighted by their publishers; private training use only, never redistributed (the LM is a model of it, as the recognizers are of the screenshots)",
+   "attribution": "visual lines of the owner's hooked PS Vita / PSP visual-novel captures (vita-vn-ocr #125, #127)",
+   "visual_lines": true,
+   "built_by": "lm/hook_text.py export --keep train (docs/vocr6-lm.md); screening: the train pages of the 48 train titles (hval and guard pages left out)"
+  },
+  "hook_final": {
+   "path": "$HERD/shared/private/vocr6-lm/text/hook_final.txt",
+   "sha256": "7b2fbe824f29645862ab9e9b10aaffb701654c713957b14e4d0afcaaaaeb3525",
+   "licence": "the owner's hooked PS Vita / PSP captures (vita-vn-ocr #125): the games' own text, copyrighted by their publishers; private training use only, never redistributed (the LM is a model of it, as the recognizers are of the screenshots)",
+   "attribution": "visual lines of the owner's hooked PS Vita / PSP visual-novel captures (vita-vn-ocr #125, #127)",
+   "visual_lines": true,
+   "built_by": "lm/hook_text.py export --keep final (docs/vocr6-lm.md); final: every page of the 48 train titles (hval folded back in)"
   }
  },
  "jiten": {
@@ -84,6 +100,13 @@
    "path": "$HERD/shared/artifacts/synth3/text/vndb_vn_titles.tsv",
    "sha256": "7dec1fc3df0b71f26008abf1ec27e9edd6fe32ba28ab4abf57b5a42d8f8e77f0",
    "note": "VNDB titles by VN, the same dump"
+  }
+ },
+ "vocab_extra": {
+  "vn5631": {
+   "path": "data/vocab_vn_5631.txt",
+   "sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "note": "VOCR5-N/L's classes (5,631 with the blank): 611 of them are not in data/vocab.txt"
   }
  }
 }

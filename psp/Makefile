@@ -4,6 +4,7 @@
 #   make -C psp VFPU=1          the same with the VFPU matrix products (opt-in)
 #   make -C psp LARGEMEM=1      PSP_LARGE_MEMORY = 1: on a 64 MB PSP (2000 / 3000 / Go) the app gets the
 #                               larger user partition (about 52 MB instead of 24 MB); ignored on a PSP-1000
+#   make -C psp TITLE="..."     the XMB title (default "vocr OCR test", with " (VFPU)" and " 64MB" as built)
 #   make -C psp size            code size of vocr.o and the line finder, and vocr.o's worst-case stack chain
 #   make -C psp clean
 #
@@ -38,6 +39,9 @@ PSP_EBOOT_TITLE = $(TITLE_BASE) 64MB
 else
 PSP_LARGE_MEMORY = 0
 PSP_EBOOT_TITLE = $(TITLE_BASE)
+endif
+ifneq ($(TITLE),)
+PSP_EBOOT_TITLE = $(TITLE)
 endif
 VOCR_FLAGS = -Wpedantic -Wcast-align -fstack-usage -fcallgraph-info=su
 LIBS = -lpsppower

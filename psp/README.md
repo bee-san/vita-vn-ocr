@@ -9,6 +9,18 @@ The [released FL10 / VOCR2 profile](../docs/fl10-psp-profile.md) adds current-we
 measurements and a reproducible generated-input check. The v1 figures below remain
 historical; the FL10 profile is an arithmetic and allocation test, not an accuracy test.
 
+**Model B (VOCR6, [docs/vocr6-psp.md](../docs/vocr6-psp.md), #126).**
+
+- No PSP recognizer is released: within an est. 1 s per 3-line box on the scalar build, none reached VOCR5-S's accuracy on unseen PSP games.
+- This directory gained the app's new modes (below), the 64 MB build (`make LARGEMEM=1`), the XMB title override (`make TITLE=...`) and four tools:
+  - `modelb_sweep.py`: shape × mode × gate / two-level timing in PPSSPP;
+  - `modelb_verify.py`: bit-exact parity on every scored crop and region, the budget;
+  - `modelb_bundle.py`: a console test bundle without game data.
+- The app's new modes:
+  - the head gate and two-level head (`gate=`, `two_level=`, now W8F too);
+  - a page path (`finder=0|2|3`, `refine=`): the line finder and its refinement, then every line, timed separately;
+  - a memory-partition probe (`probe=1`).
+
 ## Results
 
 - **Same output as the host.** In PPSSPPHeadless 1.20.4 the PSP build's logits are
@@ -292,4 +304,6 @@ toolchain needed).
 - Any run on a PSP console: speed, the VFPU's bits, and the free memory next to a VN.
 - A PSP plugin (PRX) build. The runtime has no system calls, no globals and no malloc, so it
   drops into one.
-- `vocr_lines.c` on the PSP: it compiles (7,644 B) but wasn't run in PPSSPP.
+- `vocr_lines.c` on the PSP: runs in PPSSPP since #126 (the app's finder mode: bit-exact with the host on 3,030 real
+  regions, 0.58 emulated us per pixel, about 25 ms for a 480 x 90 region); psp-gcc `-O2 -G0` 19,084 B, plus 7,904 B for
+  the refinement.

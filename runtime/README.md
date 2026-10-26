@@ -232,7 +232,7 @@ threshold. With the gate on, a frame scoring above the threshold skips the head 
 
 ```c
 opts.mode = VOCR_MODE_W8I;
-opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;   /* ON needs W8I and a gate */
+opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;   /* ON needs a gate (any mode) */
 size_t need = vocr_arena_bytes(&model, &opts);      /* + 48 B for VOCR5 at the default tile and batch */
 rc = vocr_init(&ctx, &model, &opts, arena, need);
 rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose head was skipped */
@@ -249,6 +249,12 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose he
   gated top-K (`vocr_post_stats.contexts`): the re-decode looks at blank frames' top-K, which a skipped frame does not
   offer (docs/headgate.md, "Counters").
 - `vocr_extra.head_in` (frames × K floats) returns the head's input per frame, for fitting a gate.
+- In W8F and F32 too (#126, model B for the PSP, whose fastest mode is W8F): the gate's own arithmetic is the same in
+  every mode (the head's input quantised to int16, layer 1 through `mm_i16`), and a skipped frame's blank logit is the
+  run's own head arithmetic (W8F: the head's first block dequantised once per tile, then `mm_f32`), computed only when
+  the caller keeps the top-K. W8I runs are unchanged bit for bit. `tests/test_gate_w8f.py` checks the C library against
+  the twin in W8F and F32 at several tilings; a W8F gate adds the dequantised block (K × 8 floats) to the gate's
+  scratch (`train/export.plan_arena` mirrors it).
 - A blob without the section loads as before; an older runtime reads a gated blob as the plain version-1 blob (it
   reads only the header's byte count). `vocr_load` rejects a damaged section's structure, `vocr_check_crc` its
   content; `export.py --info` and `headgate.py info` print it.
@@ -276,7 +282,7 @@ rare block (`rare_k` and its offsets non-zero; rejected, docs/head2level.md) is 
 ```c
 opts.mode = VOCR_MODE_W8I;
 opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;
-opts.two_level = (unsigned)vocr_has_two_level(&model);   /* needs W8I and a trailer, else VOCR_E_MODE */
+opts.two_level = (unsigned)vocr_has_two_level(&model);   /* needs W8I or W8F and a trailer, else VOCR_E_MODE */
 size_t need = vocr_arena_bytes(&model, &opts);      /* + 1,456 B for VOCR5 at the default tile and batch */
 rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that also ran level 2 */
 ```
@@ -285,6 +291,10 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   frame the gate does not skip; the escape decides which of them also run level 2, the other rows, packed into one
   batch. A frame that fires gets today's logits, argmax and top-K bit for bit; one that does not gets them over the
   level-1 classes. A block whose 8 logits cannot change a frame's state is not scanned per class.
+- W8F (#126): level 1 and level 2 are W8F's head rows (`dequant8` + `mm_f32`, as the full head), the escape reads the
+  head's input quantised to int16 as in W8I, and the fired frames' float inputs are packed to the front of the
+  accumulator. The W8F head scratch then also holds the escape's int16 input. `tests/test_gate_w8f.py` checks the C
+  library against `train/head2level.py twolevel_exact(mode="w8f")` bit for bit, alone and with the gate.
 - `two_level = 0` (a zeroed `vocr_opts`) runs the full head on the permuted rows: today's output. A run that asks for
   the logits, or sets `vocr_extra.ungated`, runs the full head too (and the gate skips nothing). A caller should read
   a line again with `ungated = 1` when its reading holds a full-size カ or ケ before 月 所 年 国 条, where the escape may

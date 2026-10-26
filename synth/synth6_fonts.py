@@ -12,9 +12,11 @@ sampling at sub-pixel positions (cv2.warpAffine, as a GPU samples a glyph textur
 is rasterised by FreeType at the pixel size; the pen advances by the glyph's advance plus a letter spacing.
 
 Exclusion (`inventory`): every font of a test title (CLANNAD PCSG00415, Dance with Devils PCSG00807: `test` in the
-corpus index, and CLANNAD by name) and every other font whose content or file sha256 equals one of them is never
-drawn; so is a font whose decoder disagreed with its own title's pages (fidelity `mismatch`) unless it is verified
-on another title, and a font with too few glyphs to draw a line.
+corpus index, and CLANNAD by name), every other font whose content or file sha256 equals one of them, and every
+bitmap font whose glyph bitmaps equal a test-title font's for 95% of their common characters (the same font files
+another release ships) is never drawn; so is a font whose decoder disagreed with its own title's pages (fidelity
+`mismatch`) unless it is verified on another title, and a font with too few glyphs to draw a line. `misplaced`
+lists the characters a font would draw outside its own pen cell or not visibly; the renderer never draws those.
 """
 import hashlib
 import json
@@ -239,6 +241,64 @@ def scan(harvest):
     return out
 
 
+def misplaced(font, chars):
+    """The characters of `chars` that `font` would not draw where a reader sees them: a glyph whose ink lies mostly
+    (more than 40% of its coverage) outside its own pen cell (pen - 1 to pen + advance + 1 px), such as a middle dot
+    stored in a full cell with a half-width advance, which lands inside the next character; or a glyph with no
+    visible ink (maximum coverage under 0.3). Spaces are never listed."""
+    out = []
+    for c in chars:
+        if c in SPACES or not font.has(c):
+            continue
+        g, ox, _, adv = font.glyph(c)
+        if g.size <= 1 or float(g.max()) < 0.3:
+            out.append(c)
+            continue
+        w = (g * (g >= 0.3)).sum(axis=0)
+        xs = ox + np.arange(g.shape[1])
+        if float(w[(xs < -1) | (xs > adv + 1)].sum()) > 0.4 * float(w.sum()):
+            out.append(c)
+    return out
+
+
+def glyph_digests(font_dir):
+    """{character: sha1 of its glyph bitmap and its size} of a bitmap font (None for a vector font)."""
+    meta = load_meta(font_dir)
+    if meta["kind"] != "bitmap":
+        return None
+    f = AtlasFont(font_dir)
+    out = {}
+    for c, (x, y, w, h, _, _, _) in f.chars.items():
+        b = f.atlas[y:y + h, x:x + w]
+        out[c] = hashlib.sha1(b.tobytes() + bytes(f"{w},{h}", "ascii")).hexdigest()
+    return out
+
+
+NEAR_SHARE = 0.95       # a font whose glyphs are this identical to a test-title font's is excluded too
+NEAR_MIN_COMMON = 500
+
+
+def near_identical(harvest, rows, test_titles):
+    """{font id: (test font id, share)} of every bitmap font that is not a test title's whose glyph bitmaps equal a
+    test-title font's for at least NEAR_SHARE of the characters both hold (another release shipping the same font
+    files, re-encoded: an exact-hash check misses those)."""
+    tests = {r["font"]: glyph_digests(Path(harvest) / r["font"]) for r in rows if r["title"] in test_titles}
+    tests = {k: v for k, v in tests.items() if v}
+    out = {}
+    for r in rows:
+        if r["title"] in test_titles or r["kind"] != "bitmap":
+            continue
+        d = glyph_digests(Path(harvest) / r["font"])
+        for tf, td in tests.items():
+            common = d.keys() & td.keys()
+            if len(common) < NEAR_MIN_COMMON:
+                continue
+            share = sum(d[c] == td[c] for c in common) / len(common)
+            if share >= NEAR_SHARE and share > out.get(r["font"], ("", 0.0))[1]:
+                out[r["font"]] = (tf, round(share, 4))
+    return out
+
+
 def inventory(harvest, test_titles=TEST_TITLES, train_titles=None):
     """The synth6 font inventory: one row per harvested font with its sha256s, fidelity and the decision.
 
@@ -273,12 +333,16 @@ def inventory(harvest, test_titles=TEST_TITLES, train_titles=None):
         if r["title"] in test_titles:
             test_hashes |= {r["content_sha256"]} | set(r["files"].values())
     test_hashes.discard(None)
+    near = near_identical(harvest, rows, test_titles)
     for r in rows:
         why = []
         if r["title"] in test_titles:
             why.append("test-title font")
         elif ({r["content_sha256"]} | set(r["files"].values())) & test_hashes:
             why.append("byte-identical to a test-title font")
+        elif r["font"] in near:
+            why.append("near-identical to a test-title font (glyph bitmaps)")
+            r["near_test_font"] = {"font": near[r["font"]][0], "identical_glyph_share": near[r["font"]][1]}
         verdicts = {v["verdict"] for v in r["fidelity"].values()}
         if "mismatch" in verdicts and not verdicts & set(TRUSTED):
             why.append("decoder mismatch on its own title's pages")

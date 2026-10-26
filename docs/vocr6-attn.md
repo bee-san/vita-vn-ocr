@@ -111,7 +111,7 @@ The full layout is in `train/export.py`'s docstring. In short:
   32-bit: `sizeof(vocr_model)` goes from 1,848 to 1,872 B and `sizeof(vocr_ctx)` from 2,012 to 2,048 B. `vocr_opts`
   and `vocr_extra` are unchanged.
 - **Code and stack.** `vocr.o` grows from 23,267 to 25,971 B (+2,704 B; VitaSDK gcc `-O2`, NEON). The scalar build
-  goes from 18,295 to 21,075 B. `attn_line` is inlined into `vocr_run`, whose frame grows from 592 to 600 B. The deepest
+  goes from 18,295 to 21,075 B, and psp-gcc `-O2 -G0` from 28,091 to 32,579 B (VFPU build 28,607 to 33,003 B). `attn_line` is inlined into `vocr_run`, whose frame grows from 592 to 600 B. The deepest
   chain (`vocr_run` → `run_head` → `mm_i16`) stays the longest.
 
 ### The head gate and the two-level head
@@ -275,6 +275,9 @@ _Running at the time of writing; results are filled in when both runs finish._
   model (H15) in one game at an assumed 333 MHz. Nothing of this has run on a console.
 - **Longer lines.** The op's cost grows with T² per line, the only part of the recognizer that does: a 1,024-px line
   (128 frames) costs about 25 ms in the op (est., N, 333 MHz), against about 12 ms for 640 px.
+- **Turning it off.** The op is part of a blob, not a runtime option: a model trained with it reads z', so it cannot
+  run without it. The off setting for a console is the model choice (a blob without the op), and a runtime without
+  the op support refuses an attention blob instead of misreading it.
 - **Memory.** The line buffer makes the arena depend on `max_width`. A caller that plans for narrower lines
   (`vocr_opts.max_width`) gets a smaller arena, and `VOCR_E_WIDTH` for a wider line, as today.
 - **Gate and escape refit.** The released gate and escape were fit on VOCR5's z. A model trained with attention needs

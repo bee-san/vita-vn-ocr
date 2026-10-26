@@ -9,16 +9,18 @@ A run is named by its score file (score_<RUN>.json under one of the --scores dir
 by position (seed pairs). Each component's difference is mean(Y) - mean(X) of the per-row errors (runs averaged within
 an arm), over the component's reference characters, in CER points:
 
-  hval_page   every complete hval page's whole-dialogue regions (base, +4, +8 px) through the C finder: the
-              decision metric; clusters = titles
+  hval_page   the complete hval pages' whole-dialogue regions (base, +4, +8 px) through the C finder, over the units
+              whose finder output has no junk box (one covering no reference line): the decision metric; clusters
+              = titles
+  hval_page_all  the same over every unit, junk boxes included (report)
   hval_clean  hval dialogue lines as clean crops (report); clusters = titles
   dev         0.25 tv + 0.25 dn + 0.5 wd (VOCR5's development score, console view, without the hooked titles' VNs);
               tv, dn and wd resampled independently over VNs; a replicate is the weighted sum
 
-10,000 resamples; numpy seeds hval_page 10, hval_clean 11, tv 0, dn 1, wd 2. Y is adopted over X iff hval_page's
-interval lies entirely below 0 and every pair's hval_page point difference is below 0 ("better on hval page-path
-dialogue CER, across seeds") and the dev score's interval does not lie entirely above 0 ("not worse on the
-unseen-game dev sets").
+10,000 resamples; numpy seeds hval_page 10, hval_page_all 12, hval_clean 11, tv 0, dn 1, wd 2. Y is adopted over X
+iff hval_page's interval lies entirely below 0 and every pair's hval_page point difference is below 0 ("better
+on hval page-path dialogue CER, across seeds") and the dev score's interval does not lie entirely above 0 ("not
+worse on the unseen-game dev sets").
 """
 import argparse
 import json
@@ -28,7 +30,7 @@ from pathlib import Path
 import numpy as np
 
 N_BOOT = 10000
-SEEDS = {"hval_page": 10, "hval_clean": 11, "tv": 0, "dn": 1, "wd": 2}
+SEEDS = {"hval_page": 10, "hval_page_all": 12, "hval_clean": 11, "tv": 0, "dn": 1, "wd": 2}
 DEV_WEIGHTS = {"tv": 0.25, "dn": 0.25, "wd": 0.5}
 
 
@@ -41,11 +43,15 @@ def find_score(dirs, run):
 
 
 def component(doc, name, path):
-    """(errors, chars, clusters, row keys) of one component's dialogue rows."""
+    """(errors, chars, clusters, row keys) of one component's dialogue rows. hval_page is the page path over the
+    region units whose finder output has no junk box (a box that covers no reference line): junk boxes are the
+    finder's (T3) and model-independent in where they fall, while what a model reads into them is a lottery that
+    swamps every recognizer difference (eval/vocr6_protocol.json decision.page_metric_evidence); hval_page_all
+    keeps every unit (report)."""
     r = doc["rows"]
-    if name == "hval_page":
+    if name in ("hval_page", "hval_page_all"):
         x = r["hval_page"]
-        keep = np.ones(len(x["chars"]), bool)
+        keep = np.ones(len(x["chars"]), bool) if name == "hval_page_all" else np.asarray(x["junk"]) == 0
         cl, keys = np.asarray(x["title"]), x["unit"]
     elif name == "hval_clean":
         x = r["hval_clean"]
@@ -67,8 +73,13 @@ def component(doc, name, path):
 
 
 def platform_mask(doc, name, platform):
-    x = doc["rows"][name]
-    m = np.ones(len(x["chars"]), bool) if name == "hval_page" else np.asarray(x["kind"]) == "line"
+    x = doc["rows"]["hval_page" if name.startswith("hval_page") else name]
+    if name == "hval_page":
+        m = np.asarray(x["junk"]) == 0
+    elif name == "hval_page_all":
+        m = np.ones(len(x["chars"]), bool)
+    else:
+        m = np.asarray(x["kind"]) == "line"
     return (np.asarray(x["platform"]) == platform)[m]
 
 
@@ -107,7 +118,7 @@ def ci(reps):
 
 def compare(xdocs, ydocs, path="rubi", n_boot=N_BOOT):
     out = {}
-    for name in ("hval_page", "hval_clean"):
+    for name in ("hval_page", "hval_page_all", "hval_clean"):
         ex, ey, c, cl = paired(xdocs, ydocs, name, path)
         p, r, n = boot(ex, ey, c, cl, SEEDS[name], n_boot)
         out[name] = {"delta_points": round(p, 3), "ci95": ci(r), "clusters": n,
@@ -145,15 +156,15 @@ def decide(xdocs, ydocs, path="rubi", n_boot=N_BOOT):
 
 
 def table(docs, path="rubi"):
-    head = ("| run | hval page | (Vita / PSP) | hval clean | (Vita / PSP) | hval names | dev score | tv | dn | wd |\n"
-            "|---|---:|---|---:|---|---:|---:|---:|---:|---:|")
+    head = ("| run | hval page | (Vita / PSP) | page, junk incl. | hval clean | (Vita / PSP) | dev score | tv | dn "
+            "| wd |\n|---|---:|---|---:|---:|---|---:|---:|---:|---:|")
     rows = [head]
     for d in docs:
         s = d["summary"][path]
         rows.append(f"| {d['name']} | {s['hval_page']:.2f}% | {s['hval_page_vita']:.2f} / {s['hval_page_psp']:.2f} | "
-                    f"{s['hval_clean_dlg']:.2f}% | {s['hval_clean_dlg_vita']:.2f} / {s['hval_clean_dlg_psp']:.2f} | "
-                    f"{s['hval_clean_name']:.2f}% | {s['dev_score']:.3f} | {s['tv']:.2f} | {s['dn']:.2f} | "
-                    f"{s['wd']:.2f} |")
+                    f"{s['hval_page_all']:.2f}% | {s['hval_clean_dlg']:.2f}% | "
+                    f"{s['hval_clean_dlg_vita']:.2f} / {s['hval_clean_dlg_psp']:.2f} | {s['dev_score']:.3f} | "
+                    f"{s['tv']:.2f} | {s['dn']:.2f} | {s['wd']:.2f} |")
     return "\n".join(rows)
 
 

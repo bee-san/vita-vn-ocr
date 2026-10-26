@@ -151,6 +151,10 @@ def check_inputs(proto, spec, sources, seed):
                os.path.getsize(Path(m["dir"]) / s["file"]) != int(s["bytes"])]
         if bad:
             raise SystemExit(f"{m['manifest']}: {len(bad)} shards have another size")
+    used = {f for _, _, files, _ in sources for f in files}
+    for p, h in (pins.get("guarded") or {}).get("files", {}).items():
+        if p in used and sha256(p) != h:
+            raise SystemExit(f"{p} differs from the protocol's sha256 (data_pins.guarded)")
     return rec
 
 
@@ -268,6 +272,7 @@ def finish(args, proto, st, spec):
            "blob_bytes": sc["blob_bytes"], "arena_bytes": sc["arena_bytes"],
            "hval_clean_cer": sc["summary"]["rubi"].get("hval_clean_dlg"),
            "hval_page_cer": sc["summary"]["rubi"].get("hval_page"),
+           "hval_page_all_cer": sc["summary"]["rubi"].get("hval_page_all"),
            "dev_score": sc["summary"]["rubi"].get("dev_score"), "summary": sc["summary"],
            "score_file": str(scores / f"score_{name}.json"), "at": now(),
            "notes": "W8I + Rubi per-line decode (no cascade); final step; dev without the hooked titles' VNs"}

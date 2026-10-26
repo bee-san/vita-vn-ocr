@@ -619,6 +619,18 @@
     "runtime/vocr.c": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
     "runtime/vocr.h": "c9670efd980a993f98307e6093ca17c7595f64a09c11a3d4c7bb6cea84993de5"
    }
+  },
+  {
+   "id": 12,
+   "utc": "2026-10-26T17:35:04Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change (as amendments 8-11): runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with, gained #126's head gate in W8F and F32 and two-level head in W8F (model B for the PSP; docs/vocr6-psp.md) on top of amendment 11's attention op: vocr_opts.head_gate is accepted in every mode with a gated blob and vocr_opts.two_level in W8I and W8F; a skipped frame's blank logit and the two-level head's rows use the run's own head arithmetic. W8I runs and every run with both options off (every textspot path) are bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes are unchanged, and its gate and two-level tests now also run in W8F (and the gate in F32) against references read in the same mode"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "TO_BE_RECOMPUTED",
+    "runtime/vocr.h": "TO_BE_RECOMPUTED"
+   }
   }
  ],
  "shapes": {

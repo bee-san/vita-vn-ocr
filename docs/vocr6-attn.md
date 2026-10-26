@@ -193,8 +193,8 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   all 24 lines are identical). The difference is the op's own cost. Its arithmetic does not depend on its weights'
   values.
 - **Runtime measured.** `vocr.c` `b2509902…` (the record's `vocr_c_sha256`). The later commits change only `plan()`'s
-  overflow checks and a comment, which no frame runs (the auditor's re-run of one pair gave identical per-phase
-  counts, apart from 64-187 instructions of integer division in the setup phase).
+  overflow checks and a comment, which no frame runs. The auditor's re-run of one pair on the measured runtime gave
+  identical per-phase counts, apart from 64-187 instructions of integer division in the setup phase.
 - **Projection.** The scores and weighted sums cost T per frame. Their phase is projected from the pack's lines
   (Σ T² = 108,719) to the nominal box's 3 lines of 80 frames. The nominal box is 240 frames plus 0.1 s for the finder.
 
@@ -244,7 +244,7 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   - a cancel at every poll;
   - known-answer hashes (host gcc and clang and Cortex-A9 NEON and scalar under qemu give the same);
   - the gate and two-level suites on attention blobs.
-- **`tests/test_vocr6_attn.py` (21 tests, CI's pytest).**
+- **`tests/test_vocr6_attn.py` (22 tests, CI's pytest).**
   - the model: off = no block, initialisation, refused shapes, gate 0 = old logits and gradients, masking;
   - `train2.py --attn` from an old checkpoint, with resume and the refused combinations;
   - the export's folds and sizes;
@@ -260,8 +260,16 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
 ## Proxy (a smoke test, not a decision)
 
 One short run so the lead knows the block trains. **This is not a selection, and nothing is decided on it.** It is
-1 seed per arm, logged on teacher_val_dev as VOCR5 did. Never read: vita-test, psp-test, CLANNAD and the hooked test
-titles.
+1 seed per arm, logged on teacher_val_dev as VOCR5 did.
+
+**What was read.**
+
+- **Never read:** no hooked page, and no line of vita-test, psp-test or CLANNAD.
+- **Training pools:** VOCR5-N's 21 pinned pools hold no row of v18432 (Dance with Devils, the hooked test title) or of
+  v12188 (a hooked train title's VN, which the dev score leaves out).
+- **teacher_val_dev:** the set train2 logs (as VOCR5's runs did) holds 3 lines of v18432 (rows 361-363) and 14 of
+  v12188 among its 959. The teacher_val_dev column below reads them. The dev score leaves both VNs out.
+- **Selection:** nothing is selected on either: each run's final checkpoint is the run.
 
 Pre-registered in `vocr6/experiments.jsonl` (09:33Z). `eval/vocr6_attn_proxy.sh ATTN`:
 
@@ -291,7 +299,8 @@ bootstrap over VNs (10,000 resamples):
 - init → a1, 15k more steps with it: dev score −0.057 points [−0.150, +0.036] with Rubi's decode (tv −0.025, dn
   −0.075, wd −0.063); greedy −0.019 [−0.108, +0.071]; teacher_val_dev rv −0.127, rvn −0.053
 
-- **It trains.** The learnt gate moves from 0 to 0.039. On 40 teacher_val_dev lines the block's output g·O(·) is a
+- **It trains.** The learnt gate moves from 0 to 0.039. On 40 teacher_val_dev lines (none of v18432's) the block's
+  output g·O(·) is a
   median 15% of z's norm (8-21%). Its attention is sharply peaked (mean largest weight 0.97), on keys a mean 10.9
   frames from the query, beyond the ±4 frames of VOCR5's temporal convolutions.
 - **The trained checkpoint is exact.** `parity.py --ckpt` on a1's final checkpoint, 120 lines of synth2's held-out

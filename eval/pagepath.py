@@ -576,10 +576,12 @@ def rubi_norm_tool(rubi, out_dir, cc="gcc"):
     if not exe.exists():
         exe.parent.mkdir(parents=True, exist_ok=True)
         main = Path(out_dir) / f"rubi_norm_{h[:16]}.c"
-        main.write_text('#include <stdio.h>\n#include <string.h>\n#include "textnorm.h"\n'
+        tmpc = main.with_suffix(f".{os.getpid()}.c")
+        tmpc.write_text('#include <stdio.h>\n#include <string.h>\n#include "textnorm.h"\n'
                         'int main(void) { static char b[1 << 16]; while (fgets(b, sizeof b, stdin)) {\n'
                         '  size_t n = strlen(b); if (n && b[n - 1] == \'\\n\') b[--n] = 0;\n'
                         '  vjo_text_normalize(b, NULL); fputs(b, stdout); fputc(\'\\n\', stdout); } return 0; }\n')
+        os.replace(tmpc, main)  # put in place whole: a compiler reading it never sees it truncated (audit g1)
         tmp = exe.with_suffix(f".{os.getpid()}.tmp")       # one per process: builds may start together
         subprocess.run([cc, "-std=c99", "-O2", f"-I{Path(rubi) / 'core'}", "-o", str(tmp), str(main), str(src)],
                        check=True)

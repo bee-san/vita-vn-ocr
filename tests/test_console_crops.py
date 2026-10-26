@@ -8,7 +8,8 @@ test checks:
 - the strip is an empty crop, unless a renderer text box overlaps it;
 - a line whose first word is drawn too dim for the finder is never labelled whole;
 - the same crop from two region variants is stored once;
-- jittered crops hold the line's whole ink and are seeded (the same crops twice);
+- jittered crops hold the line's whole ink and are seeded (the same crops twice), and are given the line's required
+  cells;
 - a label outside the vocab goes to drop_*;
 - hval stays in its own split, and the test split is refused;
 - the manifest records every file's sha256;
@@ -152,6 +153,30 @@ def test_dim_glyph_inside_the_box_stays_whole(built):
         x0, y0 = origin(m["variant"])
         x, y, w, h = m["box"]
         assert CC.covers((x + x0, y + y0, w, h), cell)
+
+
+
+def test_harvest_hands_the_jitter_its_required_cells(built, monkeypatch):
+    """The jitter is given the line's required cells (audit-vocr6-finder-f N1). Page 7's dim glyph lies inside the
+    line's ink extent, which every jittered box holds anyway, so the test above passes without them; this one spies on
+    the call."""
+    d, out, pages, rows, _ = built
+    exe, dmeta = CC.PP.build_driver(CC.PP.parse_finder("rubi"), d / "work" / "bin")    # the fixture's, cached
+    seen, real = [], CC.jitter_boxes
+
+    def spy(box, ink, avoid_pts, W, H, n, seed, need=(), avoid_cells=()):
+        seen.append([list(c) for c in need])
+        return real(box, ink, avoid_pts, W, H, n, seed, need, avoid_cells)
+
+    monkeypatch.setattr(CC, "jitter_boxes", spy)
+    CC.title_job(("T", str(d / "pagepool"), str(pages), "rubi", {"train"}, {"base"}, ["console"], 2, str(exe), dmeta,
+                  0))
+    cell = next(r for r in rows if r["page"] == "000007")["lines"][0]["cell_boxes"][7]
+    x0, y0 = origin("base")
+    want = [cell[0] - x0, cell[1] - y0, cell[2] - x0, cell[3] - y0]   # in the region's coordinates
+    assert seen and sum(1 for need in seen if need) >= 1
+    assert all(np.allclose(c, want) for need in seen for c in need)    # page 7's dim glyph, and only it
+    assert any(np.allclose(c, want) for need in seen for c in need)
 
 
 def test_dim_word_makes_the_box_partial(built):

@@ -66,7 +66,8 @@ def seen_units():
 # hval plans whose region units carry the ids SEEN_UNITS (and the exposed list) were built on: v1 and v2 hold the
 # same 6,327 units in the same order (amendment 5); a score read on any other plan is refused
 KNOWN_PLANS = {"dfefdd96c0f4c6596f964189a996dd719e35f7dde941fabc61f15cf0e743c8ff": "hval_plan_v1",
-               "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba": "hval_plan_v2"}
+               "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba": "hval_plan_v2",
+               "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a": "hval_plan_v3"}
 
 
 def find_score(dirs, run):

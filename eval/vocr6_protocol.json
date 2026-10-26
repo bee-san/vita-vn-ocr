@@ -1700,7 +1700,20 @@
      },
      "note": "stage 4a's VOCR5 incumbents are read with the same LM builds and settings on the same plans"
     }
-   ]
+   ],
+   "plans": {
+    "hval": {
+     "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/hval_plan_v3.pkl",
+     "sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+     "what": "the same 6,327 region units and 3,184 clean crops as v1/v2, cut by eval/pagepath_find.c from main f8a1856 (#135 merged) with -DPAGEPATH_FIX: preset rubi (TEXTBOX_RECOVERY + the short-line probe + the per-box refinement on PSP), fix 1 = VOCR_FIX_DEFAULT (COLGAP); driver sha256 656847d2a8508d03acb69ff7207f735bb8e3f6c1d370ceb59ed396dac2c99038"
+    },
+    "dev": {
+     "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/dev_plan_v2.pkl",
+     "sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+     "what": "#119's 1,161 whole-dialogue units cut again by the same driver (console view; its fixed-line crops unchanged), eval/vocr6_score.py dev-plan"
+    },
+    "built": "2026-10-26T19:28-19:37Z (heavy.sh slot 4), before any stage-4 read of a VOCR6 model; the VOCR5 incumbents were read on them in the same job (scores4/)"
+   }
   },
   "P1L": {
    "name": "Large probe: stage 1's A15 recipe at the Large tier, to measure the gap to the owner's target (< 1% dialogue CER through Rubi's page path, Large first; conductor 15:37Z) early",

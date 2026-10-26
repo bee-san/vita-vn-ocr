@@ -39,3 +39,19 @@ def test_repo_protocol_stage2_arms_name_the_base():
         assert arm["init"] == "W15" and arm["mix"] in doc["mixes"]
         tot = sum(s["weight"] for s in doc["mixes"][arm["mix"]])
         assert abs(tot - 1.0) < 1e-6
+
+
+def test_base_mix_is_filled():
+    filled = {"arm": "S2x2", "mix": "m1_x2", "init": "/i{seed}", "init_sha256": {"1": "a"}}
+    arms = {"S3rep": {"run": "v6s3rep_N", "mix": "R2", "init": "R2", "arch_extra": ["--rep", "2"]}}
+    doc = {"stages": {"3": {"tier": "N", "base": {"arm": "R2", "filled": filled}, "arms": arms}}}
+    st, spec = R.arm_spec(doc, "3", "S3rep")
+    assert spec["mix"] == "m1_x2" and spec["init"] == "/i{seed}" and spec["base"] == "S2x2"
+
+
+def test_repo_protocol_stage3_arms_name_the_base():
+    doc = json.loads((ROOT / "eval/vocr6_protocol.json").read_text(encoding="utf-8"))
+    st = doc["stages"]["3"]
+    assert st["base"]["arm"] == "R2"
+    for arm in st["arms"].values():
+        assert arm["init"] == "R2" and arm["mix"] == "R2"

@@ -1,0 +1,326 @@
+# vocr6-lm: Rubi's character LM rebuilt with the hooked games' text (T4, #127)
+
+Rubi decodes every OCR line with a CTC prefix beam search and a character 3-gram LM (`runtime/vocr_lm.c`; release
+v0.2.6-ctclm.2, `docs/ctc-lm-decode.md`). This round rebuilt that LM with the text of the owner's hooked PS Vita and
+PSP captures (#125), retuned the decoder on the hooked hval pages and VOCR5's development cohorts through Rubi's own
+line path, and tried a dictionary-aware variant.
+
+**Everything here is development data, and every console time is an estimate.** No protected set was read: not
+CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (Dance with Devils). Selection follows
+`eval/vocr6_lm_protocol.json`, frozen before any score was read, with two dated amendments (below). Machine-readable:
+`eval/vocr6_lm_dev_20261026.json`. The tables are generated from it by `eval/vocr6_lm.py tables`.
+
+## Answers first
+
+- **Two of Rubi's four LM tiers change: 1 MB (the default) and 4 MB.** Both are rebuilt with the hooked train titles'
+  lines and get new decoder settings. 0.5 MB and 2 MB keep ctclm.2 and its settings: the pre-registered rule
+  adopted nothing there. The new blobs are no larger than the ones they replace (982,320 B against 987,600 B;
+  3,603,552 B against 3,781,072 B).
+- **New settings for the adopted tiers.** LM weight 0.6 (was 0.5) and a per-character bonus of 2.5 nats (was 3.5).
+  The start-of-line context is on and the end-of-line term is off (`VOCR_LM_BOS`, was `VOCR_LM_EOS`). The cascade
+  threshold stays 700.
+- **Measured gain (VOCR5-N with its cascade to L, cross-validated, Rubi's display path):** hooked hval page path
+  dialogue CER 4.12% → 3.39% (1 MB) and 4.03% → 3.57% (4 MB). hval clean lines 0.49% → 0.40% and 0.46% → 0.41%.
+  The unseen-game dev score is level: 2.93 → 2.90 and 2.89 → 2.90, neither resolved. VOCR5-S and VOCR5-L
+  move the same way (models table).
+- **Most of the page-path gain is one title.** PCSG00854's dialogue box has a decoration that the finder reads
+  as a line of junk. The old LM starts that line with a kana, so Rubi's non-Japanese filter keeps it on screen;
+  the new LM does not, and the filter drops it. Without that title the gains are smaller but still resolved:
+  page path −0.10 points (−0.17 to −0.03) at 1 MB and −0.05 (−0.11 to −0.002) at 4 MB, clean lines −0.09
+  (−0.14 to −0.03) at 1 MB.
+- **The game text itself is what helps.** The same recipe without game text (family A, with the retuned
+  settings) is not resolved better than the incumbent at any tier. With game text (family B) minus without (A),
+  cross-validated: at 1 MB, page path −0.54 points (−1.53 to −0.07), clean lines −0.10 (−0.14 to −0.05) and dev
+  score −0.01 (−0.09 to +0.06); at 4 MB, −0.45 (−1.32 to −0.04), −0.06 (−0.11 to −0.02) and −0.05 (−0.09 to −0.01).
+- **What the game-text LM keeps.** It is order 3, so no stored fragment is longer than 3 characters. 1.5% of the
+  1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. Greedy continuation recovers at most
+  12 characters of a real line (a title in its own game), against 10 for the LM without game text.
+- **The dictionary-aware variant does not help.** A word bonus from JMdict's headwords ranked by Jiten (the files
+  Rubi ships) is worse than the plain LM at every setting tried, so it is not built for the console. Its cost
+  would be 0.23-2.5 MB more memory and about 200 trie lookups per line (estimates).
+- **On the original line path nothing passes.** Without Rubi's display rules (amendment 1), the junk lines drive
+  the selection toward reading fewer characters, and no tier's choice meets the rule.
+
+## What ships
+
+<!-- table:shipped -->
+| LM tier | ships | recipe (game-text weight, re-cut) | alpha | beta | flags | cascade |
+|---|---|---|---:|---:|---|---:|
+| 500k | ctclm.2 (unchanged) | – | 500 | 3000 | EOS | 700 |
+| 1000k | `vocr_lm6_o3_1000k.vlm` | game text x64, order 3 | 600 | 2500 | BOS | 700 |
+| 2000k | ctclm.2 (unchanged) | – | 500 | 3000 | EOS | 700 |
+| 4000k | `vocr_lm6_o3_4000k.vlm` | game text x16, re-cut, order 3 | 600 | 2500 | BOS | 700 |
+<!-- /table:shipped -->
+
+The flags are `vocr_lm_opts.flags`; beam 8, top-8, gate 8 nats and bracket 8 nats are unchanged everywhere. One blob
+serves every model, as before. The decoder workspace is 41,632 B for VOCR5-N/L and 39,712 B for VOCR5-S, under Rubi's
+`VJO_VOCR_LM_WS_BYTES` (49,152 B). The search is the same, so the per-line time is unchanged: est. 0.4-0.7 ms per
+640-px line (`docs/ctc-lm-decode.md`). The blobs are smaller, so their one-time load is not longer. Rubi needs a code
+change, because its `lm_opts()` uses one LM weight and one flag set for every tier; the Rubi PR makes both per tier.
+
+## How it was measured
+
+- **Models.** VOCR5-S/N/L (v0.3.0), W8I through the C runtime, head gate off (what Rubi main runs), top-8 extras.
+  Primary: VOCR5-N with its cascade to VOCR5-L; S (cascading to N) and L (no cascade) must not be resolved worse.
+- **Line path** (Rubi `core/vocr_ocr.c` `finish_line`, modelled by `eval/headgate_eval.Decoder.rubi`). An empty
+  line stays empty. Then the counter re-decode, the beam + LM, and the counter text rule. A line whose greedy
+  confidence is under the cascade threshold shows the next size's reading of the same crop. After amendment 1
+  comes what Rubi shows: the job's lines through Rubi's own `core/textnorm.c` (built from Rubi main `bd130a8`;
+  its border rule drops lines like `ーニーー…`), then the Shell's non-Japanese line filter. Without amendment 1,
+  the harness reproduces `eval/headgate_dev_20261023.json`'s scores exactly.
+- **Sets.**
+  - dev: VOCR5's development cohorts, from the head gate's cache: tv, dn (both views) and wd (GRAD and GRAD +
+    refine, three region margins). Two VNs are left out: v12188 is a hooked train title, v18432 the hooked test
+    title.
+  - hval: the ingest's screening pages (`splits_v1.json`, 4% of each train title's pages in blocks with 15-page
+    guard bands). hc is its verified dialogue lines (3,170); hp is its whole-dialogue regions through GRAD and
+    GRAD + refine (12,654 region reads of 46 titles). PSP pages are in the Adrenaline view, upscaled 2× bilinear.
+  - The LMs screened on hval never saw hval or guard pages (`lm/hook_text.py --keep train`).
+- **Score.** Dialogue CER. The dev score is 0.25 tv + 0.25 dn + 0.5 wd (VOCR5's). The objective is 0.5 hp + 0.5 dev
+  score. Intervals: 10,000-resample cluster bootstraps (VNs for dev, titles for hval).
+- **Selection.** Per LM tier, over each family's recipes, the grid (alpha 0.3-0.8, beta 1.0-5.0 nats, flags
+  0-3) and cascade thresholds 500/600/700, 2-fold cross-validated by cluster. The choice made on one fold scores
+  the other fold. The adoption rule:
+  - (a) hp resolved better;
+  - (b) dev score not resolved worse;
+  - (c) S and L not resolved worse;
+  - (d) bytes and workspace within Rubi's limits.
+- **Amendment 1** (10:05Z, before any cross-validated number). Add Rubi's display rules to the line path. On the
+  original path, PCSG00854's junk lines made up about half of all hval page-path errors and pulled the in-sample
+  choice to the grid's lowest per-character bonus, with clean lines and dev worse.
+- **Amendment 2** (10:22Z, conductor and owner directive). Decide two families separately: A without game text, B
+  with it. B ships instead of A only if, cross-validated, B − A is resolved better on hp and on the objective, the
+  dev score is not resolved worse, and S and L are not resolved worse. B stays at order 3 unless a higher order is
+  resolved better.
+
+## Results
+
+Dialogue CER, %, VOCR5-N with its cascade (threshold 700 for the incumbent, the families' own choices otherwise);
+greedy is VOCR5-N alone, without the LM and the cascade:
+
+<!-- table:results -->
+| LM tier | part | greedy | incumbent | A in-sample | A cross-validated | B in-sample | B cross-validated |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 500k | hval page path | 4.220 | 3.983 | 3.456 | 4.164 | 3.280 | 3.345 |
+| 500k | hval clean lines | 0.760 | 0.521 | 0.525 | 0.531 | 0.421 | 0.449 |
+| 500k | dev score | 3.404 | 2.929 | 2.894 | 2.966 | 2.963 | 3.029 |
+| 500k | dev whole dialogue | 5.926 | 5.273 | 5.235 | 5.334 | 5.298 | 5.383 |
+| 500k | objective | 3.812 | 3.456 | 3.175 | 3.565 | 3.121 | 3.187 |
+| 1000k | hval page path | 4.220 | 4.116 | 3.426 | 3.937 | 3.248 | 3.393 |
+| 1000k | hval clean lines | 0.760 | 0.488 | 0.515 | 0.501 | 0.404 | 0.404 |
+| 1000k | dev score | 3.404 | 2.929 | 2.831 | 2.915 | 2.869 | 2.904 |
+| 1000k | dev whole dialogue | 5.926 | 5.294 | 5.190 | 5.288 | 5.212 | 5.253 |
+| 1000k | objective | 3.812 | 3.522 | 3.129 | 3.426 | 3.058 | 3.149 |
+| 2000k | hval page path | 4.220 | 3.962 | 3.363 | 3.784 | 3.257 | 3.711 |
+| 2000k | hval clean lines | 0.760 | 0.480 | 0.474 | 0.488 | 0.398 | 0.409 |
+| 2000k | dev score | 3.404 | 2.898 | 2.838 | 2.996 | 2.828 | 2.937 |
+| 2000k | dev whole dialogue | 5.926 | 5.265 | 5.226 | 5.397 | 5.212 | 5.298 |
+| 2000k | objective | 3.812 | 3.430 | 3.100 | 3.390 | 3.042 | 3.324 |
+| 4000k | hval page path | 4.220 | 4.026 | 3.330 | 4.021 | 3.255 | 3.570 |
+| 4000k | hval clean lines | 0.760 | 0.462 | 0.447 | 0.478 | 0.394 | 0.413 |
+| 4000k | dev score | 3.404 | 2.889 | 2.832 | 2.947 | 2.826 | 2.901 |
+| 4000k | dev whole dialogue | 5.926 | 5.269 | 5.172 | 5.354 | 5.208 | 5.277 |
+| 4000k | objective | 3.812 | 3.457 | 3.081 | 3.484 | 3.041 | 3.235 |
+<!-- /table:results -->
+
+The rule, per tier and family (cross-validated differences from the incumbent, points, 95% interval):
+
+<!-- table:rule -->
+| LM tier | family | chosen (in-sample) | hp, CV − incumbent | dev score, CV − incumbent | (a) | (b) | (c) | (d) | adopted |
+|---|---|---|---|---|---|---|---|---|---|
+| 500k | A (no game text) | `repro_500k` a500 b2000 f1 c700 | +0.181 (+0.009 to +0.529) | +0.037 (-0.016 to +0.096) | no | yes | yes | yes | no |
+| 500k | B (game text) | `h256rl_500k` a700 b3000 f1 c700 | -0.638 (-1.990 to +0.001) | +0.099 (+0.020 to +0.181) | no | no | no | yes | no |
+| 1000k | A (no game text) | `v6b_1000k` a500 b2000 f1 c700 | -0.179 (-0.634 to +0.047) | -0.014 (-0.088 to +0.068) | no | yes | yes | yes | no |
+| 1000k | B (game text) | `h64_1000k` a600 b2500 f1 c700 | -0.722 (-2.151 to -0.046) | -0.025 (-0.099 to +0.041) | yes | yes | yes | yes | yes |
+| 2000k | A (no game text) | `v6b_2000k` a500 b2000 f1 c700 | -0.178 (-0.659 to +0.064) | +0.097 (+0.028 to +0.166) | no | no | no | yes | no |
+| 2000k | B (game text) | `h16rl_2000k` a600 b2500 f1 c700 | -0.251 (-0.737 to +0.009) | +0.039 (-0.022 to +0.096) | no | yes | no | yes | no |
+| 4000k | A (no game text) | `v6b_4000k` a600 b3000 f1 c700 | -0.005 (-0.084 to +0.056) | +0.058 (-0.006 to +0.124) | no | yes | no | yes | no |
+| 4000k | B (game text) | `h64rlo4_4000k` a600 b2500 f1 c700 | -0.543 (-1.676 to -0.002) | +0.057 (-0.013 to +0.123) | yes | yes | yes | yes | yes |
+| 4000k | B, order 3 | `h16rl_4000k` a600 b2500 f1 c700 | -0.456 (-1.382 to -0.014) | +0.012 (-0.048 to +0.071) | yes | yes | yes | yes | yes |
+<!-- /table:rule -->
+
+Family comparisons (cross-validated, points):
+
+<!-- table:families -->
+| LM tier | comparison | objective | hval page path | hval clean lines | dev score | ships |
+|---|---|---|---|---|---|---|
+| 500k | B − A | -0.378 (-1.224 to +0.025) | -0.819 (-2.520 to -0.038) | -0.082 (-0.134 to -0.033) | +0.063 (-0.008 to +0.135) | incumbent |
+| 1000k | B − A | -0.277 (-0.774 to -0.028) | -0.543 (-1.526 to -0.068) | -0.098 (-0.144 to -0.052) | -0.011 (-0.094 to +0.065) | B |
+| 2000k | B − A | -0.066 (-0.100 to -0.034) | -0.073 (-0.124 to -0.029) | -0.078 (-0.119 to -0.040) | -0.058 (-0.104 to -0.012) | incumbent |
+| 4000k | B − A | -0.270 (-0.803 to -0.007) | -0.538 (-1.604 to -0.027) | -0.053 (-0.101 to -0.008) | -0.001 (-0.054 to +0.051) | B |
+| 4000k | B (order 3) − A | -0.249 (-0.677 to -0.037) | -0.452 (-1.316 to -0.039) | -0.065 (-0.115 to -0.018) | -0.046 (-0.088 to -0.006) | B, order 3 |
+| 4000k | B (order 4) − B (order 3) | -0.021 (-0.130 to +0.043) | -0.086 (-0.301 to +0.030) | +0.012 (-0.014 to +0.037) | +0.045 (+0.011 to +0.080) | B, order 3 |
+<!-- /table:families -->
+
+At 4 MB the B selection's own choice was order 4 (`h64rlo4_4000k`). Amendment 2's order clause compares it with
+the best order-3 B: order 4 is not resolved better (objective −0.02, −0.13 to +0.04), and its dev score is resolved
+worse (+0.045, +0.011 to +0.080). So the order-3 B ships.
+
+Each model with the shipped LM and setting, against the incumbent (cross-validated, points):
+
+<!-- table:models -->
+| LM tier | model | hval page path | hval clean lines | dev score | objective |
+|---|---|---|---|---|---|
+| 1000k | VOCR5-S + cascade to N | -0.268 (-0.723 to -0.023) | -0.059 (-0.115 to -0.009) | +0.022 (-0.083 to +0.136) | -0.123 (-0.363 to +0.024) |
+| 1000k | VOCR5-N + cascade to L | -0.722 (-2.151 to -0.046) | -0.084 (-0.137 to -0.030) | -0.025 (-0.099 to +0.041) | -0.374 (-1.090 to -0.025) |
+| 1000k | VOCR5-L | -0.732 (-2.152 to -0.072) | -0.065 (-0.113 to -0.015) | +0.018 (-0.052 to +0.085) | -0.357 (-1.070 to -0.014) |
+| 4000k | VOCR5-S + cascade to N | -0.351 (-1.045 to -0.007) | -0.047 (-0.100 to +0.004) | +0.025 (-0.060 to +0.111) | -0.163 (-0.520 to +0.027) |
+| 4000k | VOCR5-N + cascade to L | -0.456 (-1.382 to -0.014) | -0.049 (-0.102 to +0.004) | +0.012 (-0.048 to +0.071) | -0.222 (-0.689 to +0.010) |
+| 4000k | VOCR5-L | -0.471 (-1.394 to -0.028) | -0.047 (-0.091 to -0.004) | -0.009 (-0.065 to +0.044) | -0.240 (-0.706 to -0.010) |
+<!-- /table:models -->
+
+Vita and PSP (VOCR5-N + cascade, CER %):
+
+<!-- table:platform -->
+| LM tier | platform | hc incumbent | hc B (CV) | hp incumbent | hp B (CV) |
+|---|---|---:|---:|---:|---:|
+| 1000k | vita | 0.430 | 0.370 | 4.593 | 3.485 |
+| 1000k | psp | 0.598 | 0.467 | 3.260 | 3.229 |
+| 4000k | vita | 0.415 | 0.373 | 4.473 | 3.773 |
+| 4000k | psp | 0.552 | 0.490 | 3.223 | 3.204 |
+<!-- /table:platform -->
+
+- **Names (secondary).** devnative's speaker names read much better with the start-of-line context: 8.66% → 2.89%
+  (VOCR5-N, 1 MB, in-sample). teacher_val's name-like lines are slightly worse (2.91% → 3.19%).
+- **Cascade threshold (report only).** At the shipped 1 MB setting, the objective is 3.13 / 3.08 / 3.06 / 3.03 /
+  3.02 at thresholds 500 / 600 / 700 / 800 / 900. A higher threshold re-reads more lines, and Rubi's 2 s ceiling
+  bounds that time, so 700 stays.
+- **The original line path** (no display rules), for comparison. Nothing ships at any tier:
+
+<!-- table:original -->
+| LM tier | path | A chosen | B chosen | ships |
+|---|---|---|---|---|
+| 500k | original | `v6brl_500k` a600 b1000 f3 | `h256rl_500k` a800 b1000 f3 | incumbent |
+| 1000k | original | `v6brl_1000k` a700 b1000 f3 | `h1024rl_1000k` a600 b1000 f3 | incumbent |
+| 2000k | original | `v6b_2000k` a700 b1000 f3 | `h256rl_2000k` a600 b1000 f3 | incumbent |
+| 4000k | original | `v6brl_4000k` a600 b1000 f3 | `h64rlo4_4000k` a800 b1000 f3 | incumbent |
+<!-- /table:original -->
+
+- **Final blobs.** The shipped blobs were rebuilt with hval folded back in (`hook_final`). On dev they are not
+  resolved worse than the screening builds at the shipped setting: 1 MB N −0.006 points (−0.024 to +0.010), 4 MB N
+  +0.001 (−0.010 to +0.011). hval cannot score them, since its text is now in them.
+
+### Held-out cross-entropy (the screen)
+
+Nats per character with `</s>`, on hval's lines and on the dev references (lower is better). The screen ordered
+the recipes; decisions come only from decoding.
+
+<!-- table:screen -->
+| LM | bytes | hval lines, BOS | hval, no BOS | dev references, BOS | dev, no BOS |
+|---|---:|---:|---:|---:|---:|
+| `old_1000k` | 987,600 | 3.493 | 3.658 | 3.904 | 4.045 |
+| `v6b_1000k` | 986,416 | 3.495 | 3.659 | 3.912 | 4.054 |
+| `h1_1000k` | 975,872 | 3.427 | 3.600 | 3.894 | 4.036 |
+| `h4_1000k` | 985,168 | 3.346 | 3.533 | 3.862 | 4.013 |
+| `h16_1000k` | 979,872 | 3.234 | 3.440 | 3.817 | 3.980 |
+| `h64_1000k` | 987,216 | 3.153 | 3.368 | 3.810 | 3.976 |
+| `h16rb_1000k` | 984,112 | 3.274 | 3.479 | 3.827 | 3.994 |
+| `h16rl_1000k` | 986,208 | 3.235 | 3.438 | 3.807 | 3.972 |
+| `h16o4_1000k` | 984,624 | 3.311 | 3.542 | 3.896 | 4.076 |
+| `h64rl_1000k` | 981,872 | 3.152 | 3.369 | 3.798 | 3.969 |
+| `h256_1000k` | 986,128 | 3.139 | 3.356 | 3.833 | 3.996 |
+| `h256rl_1000k` | 987,488 | 3.138 | 3.356 | 3.824 | 3.990 |
+| `h1024rl_1000k` | 987,584 | 3.145 | 3.362 | 3.848 | 4.010 |
+<!-- /table:screen -->
+
+## The game text: what it adds and what it keeps
+
+Measured with `lm/memorization.py`. Stored n-grams are checked against the public text the builder reads (the five
+corpora, their visual-line re-cut and the Jiten words). Greedy runs are measured on the hooked train lines the blobs
+were built from, and on hval's lines. A greedy run starts at a position of a line and follows the LM's own most
+probable next character for as long as it matches the line.
+
+| LM | game text | stored bigrams / trigrams | of them only in the game text | longest greedy run on its own training lines | lines with a run of ≥ 8 / ≥ 12 / ≥ 20 | longest run on held-out lines |
+|---|---|---:|---:|---:|---|---:|
+| ctclm.2, 1 MB | none | 70,817 / 121,536 | 0 / 0 | 10 | 45 / 0 / 0 | 9 |
+| family A, 1 MB (`v6b_1000k`) | none | 70,436 / 120,116 | 0 / 0 | 10 | 45 / 0 / 0 | 9 |
+| family A, 4 MB (`v6b_4000k`) | none | 236,941 / 541,242 | 0 / 0 | 10 | 46 / 0 / 0 | 9 |
+| screening `h64_1000k` | ×64 | 66,089 / 131,980 | 384 / 2,286 | 22 | 97 / 2 / 1 | 10 |
+| screening `h16rl_4000k` | ×16 | 207,304 / 670,744 | 3,857 / 56,366 | 22 | 109 / 2 / 1 | 10 |
+| shipped `vocr_lm6_o3_1000k` | ×64 | 66,123 / 130,260 | 416 / 2,551 | 22 | 112 / 4 / 1 | (hval is in its text) |
+| shipped `vocr_lm6_o3_4000k` | ×16 | 199,552 / 648,198 | 4,156 / 61,011 | 22 | 116 / 4 / 1 | (hval is in its text) |
+
+- **What is kept.** Order 3 stores no fragment longer than 3 characters. The fragments found only in the game text
+  are 1.5% of the shipped 1 MB blob's bigrams and trigrams, and 7.7% of the 4 MB blob's, which prunes less.
+- **What greedy continuation recovers.** The longest runs of the shipped blobs are a repeated small kana (ぁ × 22,
+  ぇ × 14-15) and a game's title inside its own text (12 characters). No other training line gives a run of 12 or
+  more; the LMs without game text reach 10, on common phrases. On held-out lines of the same games, the screening
+  builds reach at most 10, as the LMs without game text reach 9.
+- **Pruning.** Order 3 is the smallest order the decoder uses, and order 4 was not resolved better (4 MB, above).
+  The byte budgets are Rubi's tiers, no larger than before.
+  - The 1 MB blob's count threshold is 136 (ctclm.2: 49). A trigram the public text does not have stays only if it
+    occurs at least three times in the game's distinct lines (64 each).
+  - The 4 MB blob's threshold is 11 at weight 16, so it keeps every trigram of the game text.
+
+**Licence.** The blobs stay CC BY-SA 4.0, as their open sources (Jiten, JESC) require. The game text enters only as
+character n-gram counts, as the recognizers' weights carry what they learnt from the owner's screenshots, and the
+release's `ATTRIBUTION.md` discloses it in the same way (owner directive of 2026-10-26: "LM from game hook text:
+allowed"). The games' text belongs to its publishers, and no running text is in the blobs.
+
+## The dictionary-aware variant
+
+The prototype adds a bonus when a prefix of the beam ends in a word of a lexicon. The lexicon is the JMdict forms
+in Rubi's pinned `JMdict-plain.zip`, ranked by the Jiten global list Rubi ships (`jiten_freq_global.zip`), 2-8
+characters, in vocabulary (`lm/lexicon.py`). The bonus is `bonus × (L − 1)` for the longest word length `L`. It ran
+in `lm/vlm.py`'s Python twin of the decoder (`decode(lexicon=…)`), on the shipped 1 MB LM and setting, over a
+4 × 3 grid: bonus 0.25-2 nats, words of Jiten rank up to 20k / 100k / 300k.
+
+- **CER.** Every setting is worse than the plain LM (objective 3.067-3.439 against 3.058, VOCR5-N + cascade,
+  in-sample). The cross-validated choice (bonus 0.25 nat, rank ≤ 20k) is not resolved better on hp, and S or L is
+  resolved worse. Not adopted, so no C code was written.
+- **Cost if it were built (estimates).** Memory: a reversed trie of 33k / 155k / 355k nodes for the 20k / 100k /
+  300k lists, about 0.23 / 1.1 / 2.5 MB at 7 B a node. Time: about 200 trie steps a line (VOCR5-N), next to the
+  beam's 158 LM calls a line. Scaled from the decoder's est. 0.4-0.7 ms for those calls, that is est. +0.5-0.9 ms
+  per 640-px line, within the protocol's +5 ms limit. Its CER is what rules it out.
+- **Why it does not help.** The 3-gram LM and the Jiten word counts already in it cover most short words, and a
+  word bonus also rewards wrong splits that happen to form words.
+
+## For Rubi
+
+- New files: `vocr_lm6_o3_1000k.vlm` and `vocr_lm6_o3_4000k.vlm` (pre-release v0.3.7-lm6.1, CC BY-SA 4.0, with
+  `ATTRIBUTION.md`, `SHA256SUMS` and the settings).
+- The 0.5 and 2 MB tiers keep ctclm.2's files and settings.
+- `core/vocr_ocr.c`: the LM table carries each tier's alpha, beta and flags.
+
+## Reproduce
+
+```sh
+P=$HERD/shared/private/vocr6-lm; A=$HERD/shared/artifacts/vocr6-lm; I=$HERD/shared/artifacts/vocr6-ingest
+# hook text (train pages only; --keep final for the shipped builds)
+.venv-ci/bin/python lm/hook_text.py export --root $HERD/shared/private/hooked-b2 --splits $I/splits_v1.json --keep train \
+  --vocab data/vocab.txt --vocab data/vocab_vn_5631.txt --out $P/text/hook_train.txt --heldout $P/text/hval_lines.txt \
+  --manifest $P/text/hook_train.json --test-vns $P/text/test_vns.txt
+# an LM (the shipped 1 MB recipe; ctclm.2's own command still gives its bytes bit for bit)
+.venv-ci/bin/python lm/build.py --out vocr_lm6_o3_1000k.vlm --manifest vocr_lm6_o3_1000k.json --bytes 987600 --order 3 \
+  --jiten vn=0.4,novel=0.2 --corpora aozora_dialogue,aozora_narration,aratako_dsv3,jesc,tatoeba,hook_final:64 \
+  --protect vocr6 --vocab-extra vn5631 --exclude-vns $P/text/test_vns.txt
+#   4 MB: --bytes 3781072, hook_final:16, --recut lines
+# hval reads (the ingest's pools and page pool), then the grid on both line paths, then the selection
+.venv-ci/bin/python eval/vocr6_lm.py hval-units --pools $I/pools/v1 --pagepool $I/pagepool/v1 --pages $I/pages --out $P/hval_rubi
+for t in S N L; do .venv-ci/bin/python eval/vocr6_lm.py hval-cache --tier $t --dir $P/hval_rubi; done
+.venv-ci/bin/python eval/vocr6_lm.py tune --lm NAME=LM.vlm --grid GRID --tiers S,N,L --cascade 500,600,700,800,900 \
+  --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --both --out $P/tune4/NAME.npz
+bash $A/select_all.sh        # select (families A, B; both paths) and families, per tier
+.venv-ci/bin/python lm/memorization.py report --lm NAME=LM.vlm ... --train TEXT --heldout HELD --public PUBLIC --out MEMO.json
+.venv-ci/bin/python eval/vocr6_lm.py lex-tune --lm ... --config SETTING --lexicon LEX.tsv --grid LEXGRID ...
+.venv-ci/bin/python eval/vocr6_lm.py summary ... --out eval/vocr6_lm_dev_20261026.json
+.venv-ci/bin/python eval/vocr6_lm.py tables --json eval/vocr6_lm_dev_20261026.json --doc docs/vocr6-lm.md
+```
+
+For the VOCR6 recognizers, run `hval-cache` with their blobs (`BLOBS`) and repeat the tune and select steps. The
+LM and the harness do not depend on the recognizer.
+
+## Limits
+
+- **The page-path gain rests mostly on one title.** Without PCSG00854's junk lines it is −0.10 points (resolved). The
+  finder that reads the decoration as a line is T3's problem (vocr6-finder).
+- **The hval pages are the train titles' own games.** The LM saw other passages of the same games, so hval
+  measures "a game the LM knows". The unseen-game dev cohorts show no resolved gain or loss.
+- **The dev references are labelled by engine agreement plus an assistant reviewer**, not hand-checked.
+- **Two-fold cross-validation with a 216-setting grid is noisy.** At 0.5 and 2 MB the folds chose different
+  settings, which is why nothing was adopted there. An in-sample choice would look better than the
+  cross-validated numbers show.
+- **Seen titles.** Collar x Malice (v18160) is a vita-test game and a hooked train title, so its text is in the
+  new LMs. planetarian (v34) shares a release with CLANNAD. Any vita-test, psp-test or CLANNAD score decoded with
+  these LMs must disclose that, and the Jiten caveat of `docs/ctc-lm-decode.md` still holds.
+- **No console run.** Every time and memory figure for the console is an estimate.

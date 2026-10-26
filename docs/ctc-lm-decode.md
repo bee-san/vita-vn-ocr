@@ -7,6 +7,9 @@ output with a beam search over each frame's best few classes and scores the cand
 n-gram language model, in plain C on the console: `runtime/vocr_lm.c`, no malloc, integer scores, an LM blob of
 0.5, 1, 2 or 4 MB used in place.
 
+**Superseded in part (2026-10-26):** the 1 MB and 4 MB tiers and their decoder settings are replaced by VOCR6's
+LMs built with the hooked games' text (`docs/vocr6-lm.md`, #127); the 0.5 MB and 2 MB tiers stay as below.
+
 **Everything here is development data or an estimate.** The tuning and every score below read only teacher_val,
 devnative v3 and the owner pool (the owner's 2026-10-14 13:25Z rule: only CLANNAD, vita-test and psp-test are test
 sets; none of them was read). Dialogue CER is the primary metric and names a secondary column (13:57Z). Console

@@ -3,6 +3,7 @@ fixtures only (no hooked, development or protected data is read here)."""
 import hashlib
 import importlib.util
 import json
+import os
 import random
 import subprocess
 import sys
@@ -17,6 +18,7 @@ for p in (ROOT / "lm", ROOT / "eval", ROOT / "runtime", ROOT / "tests"):
         sys.path.insert(0, str(p))
 
 import hook_text as H  # noqa: E402
+import memorization as M  # noqa: E402
 import vlm  # noqa: E402
 import vocr6_lm as V  # noqa: E402
 from metrics import lev as lev_ref  # noqa: E402
@@ -197,3 +199,108 @@ def test_units_cascade_and_bootstrap():
     assert "dev" not in cmp
     assert V.grid_configs({"b": [1, 2], "a": [3]}) == [{"a": 3, "b": 1}, {"a": 3, "b": 2}]
     assert V.fold_of("v12") in (0, 1) and V.fold_of("v12") == int(hashlib.sha256(b"v12").hexdigest(), 16) % 2
+
+
+
+def test_memorisation_argmax_and_recovery(tmp_path):
+    """Next.argmax is the brute-force argmax of LM.score over every token; a line the LM was built from many times
+    is recovered further by greedy continuation than random text; kept_ngrams lists every entry."""
+    blob, _ = T.build(tmp_path, tmp_path / "lm.vlm")
+    lm = vlm.LM(blob)
+    nx = M.Next(lm)
+    st = lm.initial(vlm.FLAG_BOS)
+    for ch in "あいうかき":
+        toks = [t for t in range(vlm.FIRST, lm.V)] + [vlm.EOS]
+        brute = max(toks, key=lambda t: (lm.score(st, t)[0], -t))
+        assert nx.argmax(st) == brute
+        st = lm.score(st, lm.token_of(ch))[1]
+    kept = M.kept_ngrams(lm)
+    assert [len(kept[k]) for k in range(1, lm.order + 1)] == lm.n
+    r = M.recovery(lm, ["あいうかきく", "ほへせそ"])
+    assert r["lines"] == 2 and 0 <= r["next_char_exact_share"] <= 1 and r["longest_run"]["max"] >= 1
+    assert sum(r["longest_run_by_length"].values()) == 2
+
+
+def test_display_rules_filter():
+    assert V.is_japanese_char("あ") and V.is_japanese_char("ア") and V.is_japanese_char("漢")
+    assert not V.is_japanese_char("1") and not V.is_japanese_char("Ａ") and not V.is_japanese_char("」")
+
+
+RUBI = Path(os.environ.get("RUBI_DIR", "/home/skerraut/herd-synth3/clones/vocr6-lm-rubi/Rubi_for_vita"))
+
+
+@pytest.mark.skipif(not (RUBI / "core" / "textnorm.c").exists(), reason="no Rubi_for_vita checkout (RUBI_DIR)")
+def test_rubi_show(tmp_path):
+    try:
+        sh = V.RubiShow(RUBI, tmp_path)
+    except SystemExit:
+        pytest.skip("the Rubi checkout is not at the pinned textnorm.c")
+    assert sh(["ーニーーーーニーニーーーー"]) == []                       # the border rule (R08d)
+    assert sh(["テキスト", "ーニーーーニー"]) == ["テキスト"]
+    assert sh(["2Gf1010101010I0U", "「しかも"]) == ["「しかも"]              # the Shell's non-Japanese filter
+    assert sh(["", "あ", ""]) == ["あ"] and sh(["コ一一"]) == ["コーー"] and sh(["一二三"]) == ["一二三"]
+
+
+def _fake_tune(path, units, configs, errs, lm="x", lm_path=None, cascade=(500, 600, 700)):
+    meta = {"lm": lm, "lm_path": lm_path, "lm_sha256": None, "configs": configs, "cascade": list(cascade),
+            "units": units}
+    np.savez_compressed(path, meta=json.dumps(meta), **{k: np.asarray(v, np.int16) for k, v in errs.items()})
+
+
+def test_select_cross_validates(tmp_path):
+    """Two recipes, two settings: recipe b's setting 1 has fewer errors on every unit, so both folds choose it, and
+    the cross-validated errors are its errors; against an incumbent with more errors the rule's (a)-(c) hold."""
+    import argparse
+    units = []
+    for i in range(80):
+        part = ("tv", "dn", "wd", "hp")[i % 4]
+        units.append([part, f"u{i}", f"c{i % 16}", False, 10, "vita"])
+    n = len(units)
+    base = np.full((1, n), 3)
+    keys = [f"{m}|{t}" for m in ("S", "N") for t in (500, 600, 700, 800, 900)] + ["S|none", "N|none", "L|none"]
+    _fake_tune(tmp_path / "inc.npz", units, [{"alpha": 500, "beta": 3500}], {k: base for k in keys}, "inc")
+    _fake_tune(tmp_path / "greedy.npz", units, [{"alpha": 0, "beta": 0}], {k: base + 1 for k in keys}, "greedy")
+    a = np.stack([np.full(n, 2), np.full(n, 2)])
+    b = np.stack([np.full(n, 2), np.full(n, 1)])
+    _fake_tune(tmp_path / "a.npz", units, [{"alpha": 400, "beta": 2000}, {"alpha": 400, "beta": 2500}],
+               {k: a for k in keys}, "a", cascade=(500, 600, 700, 800, 900))
+    _fake_tune(tmp_path / "b.npz", units, [{"alpha": 400, "beta": 2000}, {"alpha": 400, "beta": 2500}],
+               {k: b for k in keys}, "b", cascade=(500, 600, 700, 800, 900))
+    out = tmp_path / "sel.json"
+    V.cmd_select(argparse.Namespace(protocol=str(ROOT / "eval" / "vocr6_lm_protocol.json"), tier="1000k",
+                                    incumbent=str(tmp_path / "inc.npz"), greedy=str(tmp_path / "greedy.npz"),
+                                    tune=[str(tmp_path / "a.npz"), str(tmp_path / "b.npz")], path="shown",
+                                    out=str(out)))
+    r = json.loads(out.read_text(encoding="utf-8"))
+    for f in ("fold0", "fold1", "in_sample"):
+        assert r["chosen"][f]["lm"] == "b" and r["chosen"][f]["config"]["beta"] == 2500
+        assert r["chosen"][f]["cascade_conf"] == 500                           # ties go to the first threshold
+    n_cmp = r["models"]["N"]["cv_minus_incumbent"]
+    assert n_cmp["hp"]["delta_points"] == -20.0 and n_cmp["hp"]["ci95"] == [-20.0, -20.0]
+    assert r["rule"]["a_hp_better"] and r["rule"]["b_dev_not_worse"] and r["rule"]["c_S_L_not_worse"]
+    assert r["rule"]["d_bytes"] is None and not r["rule"]["adopted"]          # no blob: (d) cannot be checked
+
+
+def test_doc_tables_match_the_committed_result(tmp_path):
+    """docs/vocr6-lm.md's tables are eval/vocr6_lm.py tables of eval/vocr6_lm_dev_20261026.json, and what ships fits
+    the incumbents' bytes and Rubi's decoder workspace."""
+    import argparse
+    doc = ROOT / "docs" / "vocr6-lm.md"
+    res = ROOT / "eval" / "vocr6_lm_dev_20261026.json"
+    copy = tmp_path / "doc.md"
+    copy.write_text(doc.read_text(encoding="utf-8"), encoding="utf-8")
+    V.cmd_tables(argparse.Namespace(json=str(res), doc=str(copy)))
+    assert copy.read_text(encoding="utf-8") == doc.read_text(encoding="utf-8")
+    j = json.loads(res.read_text(encoding="utf-8"))
+    proto = json.loads((ROOT / "eval" / "vocr6_lm_protocol.json").read_text(encoding="utf-8"))
+    assert [x["n"] for x in proto["amendments"]] == [1, 2]
+    for tier, s in j["shipped"].items():
+        assert s["bytes"] <= proto["incumbent"]["lms"][tier]["bytes"]
+    for tier in ("1000k", "4000k"):
+        key = "B3" if "B3" in j["tiers"][tier] else "B"
+        rule = j["tiers"][tier][key]["rule"]
+        assert rule["adopted"] and max(rule["workspace_bytes"].values()) <= 49152
+        chosen = j["tiers"][tier][key]["chosen"]["in_sample"]["config"]
+        assert j["shipped"][tier]["config"] == dict({"beam": 8, "topk": 8}, **chosen)
+    for tier in ("500k", "2000k"):
+        assert j["tiers"][tier]["AB"]["rule"]["ships"] == "incumbent" and j["shipped"][tier]["family"] == "incumbent"

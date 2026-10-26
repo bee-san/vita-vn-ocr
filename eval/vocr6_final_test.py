@@ -339,6 +339,37 @@ def resolve_lm(src, proto):
     raise SystemExit(f"Rubi's 1000k LM {sha[:16]}... is none of the protocol's candidates")
 
 
+def c_function(src, name):
+    """The text of C function `name` in src (from its signature to its closing brace), or None."""
+    m = re.search(r"^(?:static\s+)?(?:__attribute__\(\(\w+\)\)\s+)?[\w\s\*]+?\b" + name + r"\s*\([^;{]*\)\s*\{", src,
+                  re.M)
+    if not m:
+        return None
+    i, depth = m.end(), 1
+    while depth and i < len(src):
+        depth += {"{": 1, "}": -1}.get(src[i], 0)
+        i += 1
+    return src[m.start():i]
+
+
+def rubi_functions(rubi):
+    """sha256 of the Rubi functions path (b) models (core/vocr_ocr.c's line read and probe, the Shell's line
+    filter): {name: sha256 or None}."""
+    rubi = Path(rubi)
+    src = (rubi / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
+    out = {}
+    for n in ("line_conf", "counter_redecode", "reread_ungated", "read_full", "kana_counter", "read_again",
+              "finish_line", "probe_short_lines", "probe_contrast"):
+        f = c_function(src, n)
+        out[n] = hashlib.sha256(f.encode()).hexdigest() if f else None
+    f = c_function((rubi / "core" / "textfilter.c").read_text(encoding="utf-8"), "line_has_japanese")
+    out["textfilter.c:line_has_japanese"] = hashlib.sha256(f.encode()).hexdigest() if f else None
+    m = re.search(r"static inline int vjo_is_japanese_char\(uint32_t cp\)\s*\{.*?\n\}",
+                  (rubi / "core" / "utf.h").read_text(encoding="utf-8"), re.S)
+    out["utf.h:vjo_is_japanese_char"] = hashlib.sha256(m.group(0).encode()).hexdigest() if m else None
+    return out
+
+
 def c_define(src, name):
     m = re.search(r"#define\s+" + name + r"\s+(\d+)u?\b", src)
     return int(m.group(1)) if m else None
@@ -460,8 +491,16 @@ def cmd_rubi_path(a):
                         "textnorm_h_sha256": sha256(rubi / "core" / "textnorm.h")},
            "vocr_pin": {"commit": commit, "files": pins}, "vocr5_in_rubi": models,
            "vocr5_in_rubi_matches_protocol": models == want}
-    if not doc["vocr5_in_rubi_matches_protocol"]:
-        raise SystemExit("Rubi's VOCR5 pins differ from the protocol's gated VOCR5 blobs")
+    # amendment 3: the Rubi functions path (b) models must be the ones rubicheck compared against (else the model of
+    # Rubi's line read may be stale: stop before anything is read); VOCR5's pins are recorded (path (b) reads the
+    # protocol's gated VOCR5 blobs whatever Rubi pins by then)
+    ref = proto["paths"]["b"]["rubi_functions"]["sha256"]
+    got = rubi_functions(rubi)
+    doc["rubi_functions"] = {"reference": proto["paths"]["b"]["rubi_functions"]["rubi"], "equal": got == ref,
+                             "differ": sorted(k for k in set(ref) | set(got) if ref.get(k) != got.get(k))}
+    if got != ref:
+        raise SystemExit(f"Rubi's {doc['rubi_functions']['differ']} differ from the code rubicheck compared "
+                         "path (b) with: review and amend before the read")
     write_json(out, doc, exclusive=True)
     print(json.dumps({"rubi_head": head, "lm": lm["candidate"], "settings": lm["settings"],
                       "rubi_main_lm": lm["rubi_main"]["candidate"], "fix": fix, "finder_tree": fsrc["tree"],
@@ -1883,6 +1922,127 @@ def cmd_dryrun(a):
     print(json.dumps(summary)[:3000])
 
 
+# ----------------------------------------------------------------------------- rubicheck (development data only)
+
+def cmd_rubicheck(a):
+    """Development data only (hooked hval regions of the train titles): path (b)'s finder and line read against
+    Rubi's own host tool vjo-ocr (host/ocr_tool.c: vjo_vocr_ocr_policy, the game worker's job: the finder with its
+    short-line probe, the refinement, the head gate, the two-level head, the counter re-decode, the re-read, the LM and
+    the cascade), built from a Rubi checkout, with the models and LM that checkout pins (VOCR5's gated blobs, its 1 MB
+    LM) and the finder it runs (fix 0 until Rubi pins #129's fixes). Compared per region and tier: the boxes, the dark
+    flags, each line's text and the job's text."""
+    import cv2
+    from pyvocr import Vocr, VocrLM
+
+    proto = protocol()
+    s = proto["sets"]["pcsg00807"]
+    pagepool, pages = Path(s["pagepool_dir"]), Path(s["pages_dir"])
+    work = Path(a.work)
+    work.mkdir(parents=True, exist_ok=True)
+    md = Path(a.models)
+    names = {"S": "VOCR5_S_w8g.vocr", "N": "VOCR5_N_w8g2.vocr", "L": "VOCR5_L_w8g2.vocr"}
+    for t in TIERS:
+        if sha256(md / names[t]) != proto["models"]["VOCR5"]["gated"][t]["sha256"]:
+            raise SystemExit(f"{md / names[t]} is not the protocol's gated VOCR5 {t}")
+    src = (Path(a.rubi) / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
+    lm_sha, lm_set = rubi_lm(src)
+    lm_name = {c["sha256"]: Path(c["file"]).name for c in proto["paths"]["b"]["lm_candidates"].values()}[lm_sha]
+    lm = md / lm_name
+    if sha256(lm) != lm_sha:
+        raise SystemExit(f"{lm} is not the LM Rubi pins")
+    fsrc = finder_sources(work / "finder_src")
+    exe, _ = build_finder(work / "finder_src", work / "bin")
+    fix = int(a.fix)
+    rts = {}
+    for t in TIERS:
+        gate, two = blob_heads(md / names[t])
+        rt = Vocr(str(md / names[t]), mode="w8i", max_width=1024, head_gate="on" if gate else "off",
+                  two_level=1 if two else 0)
+        rts[t] = (rt, VocrLM(rt, str(lm), **lm_set), two)
+    units, counter_units = [], []
+    counter_re = re.compile("[〇一二三四五六七八九十百千万0-9０-９何数幾][ヶヵケカッ箇][月年所国条]")
+    for f in sorted(pagepool.glob("*.jsonl")):
+        allrows = [r for r in read_jsonl(f) if r.get("regions") and not r.get("untrusted") and
+                   r["split"] in ("train", "hval")]
+        rows = [r for r in allrows if r["split"] == "hval"]
+        rng = np.random.default_rng(int(hashlib.sha256(f"rubicheck:{f.stem}".encode()).hexdigest()[:8], 16))
+        for i in sorted(rng.choice(len(rows), size=min(a.per_title, len(rows)), replace=False).tolist()) if rows \
+                else []:
+            r = rows[i]
+            g = [x for x in r["regions"] if x["variant"] == "base"][0]
+            units.append((r, g))
+        # development regions whose verified text holds a counter (the re-decode's and the re-read's cases)
+        for r in allrows:
+            texts = {ln["id"]: ln["text"] for ln in r["lines"]}
+            for g in r["regions"]:
+                if g["variant"] == "base" and any(counter_re.search(texts.get(i, "")) for i in g["lines"]):
+                    counter_units.append((r, g))
+    rng = np.random.default_rng(20261026)
+    if counter_units and a.counter_regions:
+        pick = sorted(rng.choice(len(counter_units), size=min(a.counter_regions, len(counter_units)),
+                                 replace=False).tolist())
+        units += [counter_units[i] for i in pick]
+    res = {"regions": 0, "sampled": len(units), "counter_candidates": len(counter_units),
+           "tiers": {t: defaultdict(int) for t in TIERS}, "fix": fix, "finder_source": fsrc["tree"],
+           "rubi_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=a.rubi, capture_output=True,
+                                       text=True).stdout.strip(), "lm": lm_name, "lm_settings": lm_set,
+           "differences": []}
+    for r, g in units:
+        bgr = cv2.imread(str(pages / r["image"]), cv2.IMREAD_COLOR)
+        rgb2, grey2, sc = console_frame(np.ascontiguousarray(bgr[..., ::-1]), r["platform"])
+        x0, y0, x1, y1 = (v * sc for v in g["region"])
+        reg_rgb = np.ascontiguousarray(rgb2[y0:y1, x0:x1])
+        grey = np.ascontiguousarray(grey2[y0:y1, x0:x1])
+        H, W = grey.shape
+        if W > 960 or H > 544:
+            continue
+        rgba = np.concatenate([reg_rgb, np.full((H, W, 1), 255, np.uint8)], axis=2)
+        rp = work / "region.rgba"
+        rp.write_bytes(np.ascontiguousarray(rgba).tobytes())
+        boxes, dark, st = find_boxes(exe, [grey], [r["platform"]], fix)[0]
+        crops = [np.ascontiguousarray(grey[y:y + h, x:x + w]) for (x, y, w, h) in boxes]
+        mine = {t: [rubi_line(rts[t][0], rts[t][1], c, d, rts[t][2], (6000, 4000)) for c, d in zip(crops, dark)]
+                for t in TIERS}
+        res["regions"] += 1
+        for t in TIERS:
+            nt = NEXT[t]
+            comp = [compose(m, mine[nt][i] if nt else None, 700) for i, m in enumerate(mine[t])]
+            lp = work / "lines.jsonl"
+            if lp.exists():
+                lp.unlink()
+            argv = [str(a.vjo_ocr), "--backend", "vocr", "--model", names[t], "--lm", lm_name, "--counters", "on",
+                    "--head-gate", "on", "--two-level", "on", "--refine", "on" if r["platform"] == "psp" else "off",
+                    "--lines", str(lp)] + (["--cascade", names[nt]] if nt else []) + [str(md), str(W), str(H),
+                                                                                     str(rp)]
+            out = subprocess.run(argv, capture_output=True, timeout=600)
+            theirs = read_jsonl(lp) if lp.exists() else []
+            text = out.stdout.decode("utf-8")[:-1] if out.returncode == 0 else None
+            e = res["tiers"][t]
+            e["regions"] += 1
+            tb = [tuple(x["box"]) for x in theirs]
+            same_boxes = tb == [tuple(b) for b in boxes] and [x["dark"] for x in theirs] == list(dark)
+            e["boxes_equal"] += same_boxes
+            e["lines"] += len(boxes)
+            if same_boxes:
+                eq = [x["text"] == c for x, c in zip(theirs, comp)]
+                e["line_text_equal"] += sum(eq)
+                e["greedy_equal"] += sum(x["greedy"] == (m["used_g"] if m["g"] else "")
+                                         for x, m in zip(theirs, mine[t]))
+                e["cascaded"] += sum(1 for x in theirs if x["flags"] & 0x0400)
+            job = "\n".join(c for c in comp if c)
+            e["job_text_equal"] += text == job
+            e["rereads"] += sum(m["reread"] for m in mine[t])
+            if not same_boxes or text != job:
+                res["differences"].append({"title": r["title_id"], "page": r["page"], "tier": t,
+                                           "boxes_equal": same_boxes, "rc": out.returncode,
+                                           "lines_theirs": len(theirs), "lines_mine": len(boxes)})
+    res["tiers"] = {t: dict(v) for t, v in res["tiers"].items()}
+    res["all_equal"] = all(v["boxes_equal"] == v["regions"] and v["job_text_equal"] == v["regions"]
+                           for v in res["tiers"].values())
+    write_json(a.out, res)
+    print(json.dumps({k: v for k, v in res.items() if k != "differences"}))
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -1940,6 +2100,15 @@ def main(argv=None):
     p.add_argument("--suffix", default="v6ftcheck")
     p.add_argument("--pages", type=int, default=12)
     p.add_argument("--workers", type=int, default=5)
+    p = sp.add_parser("rubicheck")
+    p.add_argument("--work", required=True)
+    p.add_argument("--rubi", required=True)
+    p.add_argument("--vjo-ocr", required=True, help="Rubi's host tool (build/vjo-ocr of the --rubi checkout)")
+    p.add_argument("--models", required=True, help="a directory with the models and LMs that checkout pins")
+    p.add_argument("--fix", default="0", help="the finder fix Rubi's checkout runs (0 until it pins #129's)")
+    p.add_argument("--per-title", type=int, default=6)
+    p.add_argument("--counter-regions", type=int, default=150)
+    p.add_argument("--out", required=True)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)
     p.add_argument("--suffix", required=True)
@@ -1947,7 +2116,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     {"stage": cmd_stage, "rubi-path": cmd_rubi_path, "pcsg-a": cmd_pcsg_a, "plan": cmd_plan, "read": cmd_read,
      "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "dryrun": cmd_dryrun,
-     "report": cmd_report}[a.cmd](a)
+     "rubicheck": cmd_rubicheck, "report": cmd_report}[a.cmd](a)
 
 
 if __name__ == "__main__":

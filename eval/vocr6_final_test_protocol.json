@@ -171,6 +171,23 @@
     "settings_json_sha256": "6f6137f68fc48c85c9ad5ebf210cdff6f5355dfca727596e06af7cc3bd1fa9e7",
     "settings_tier": "1000k",
     "why": "amendment 2: vocr6-lead's ruling (eval/vocr6_protocol.json stage 4 amendment 3, feat/vocr6-t1-stages 7ecdbb0): the final test reads the shipped 1 MB game-text LM v0.3.7-lm6.1 vocr_lm6_o3_1000k.vlm (no test title's or CLANNAD's text in it) at alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 (VOCR_LM_BOS), beam 8, top-8, cascade under 700, whether or not Rubi main pins it yet (Rubi #306); rubi-path records Rubi main's own LM pin beside it"
+   },
+   "rubi_functions": {
+    "rubi": "bee-san/Rubi_for_vita main cbaa4e3 (2026-10-26; #328's re-read fixes included)",
+    "what": "sha256 of the C functions path (b)'s Python model of Rubi's line read stands for (core/vocr_ocr.c line_conf, counter_redecode, reread_ungated, read_full, kana_counter, read_again, finish_line, probe_short_lines, probe_contrast; core/textfilter.c line_has_japanese; core/utf.h vjo_is_japanese_char), from the checkout vocr6_final_test.py rubicheck compared the model with; rubi-path stops the final read if Rubi main's differ",
+    "sha256": {
+     "line_conf": "9ac6be1f5649489735861e58628a6f464b5423ca3e5d210f975523291914f211",
+     "counter_redecode": "8041f9623a8ee26c5b9cac7f6ccaa723a384d4d850c7c5da77f8fceea66b6ca9",
+     "reread_ungated": "baa45ccecdafdb60de70bbed87b1bf93192883d91fd9165c3151267efdbb3a50",
+     "read_full": "8436e3740532ff82f0a8e8993e5f98c8f62512061eb62557941bb55bfc5e7a29",
+     "kana_counter": "92e828034518dd65655714fc41802c2ca8bfa6e6d1c55b4d132242f355df62b1",
+     "read_again": "32fdd901b9f48aafe59efccf63fd0109a3034f21c84d948499ae2c59f94e4880",
+     "finish_line": "f2122df4a9f4c411d9f892e878d7814f17275ccf0be39a065837e02821339b8d",
+     "probe_short_lines": "69166bfaa40d5ee07a2a23bdd326b0cd5f96f9ca6217872052d4d1f83f87c8e4",
+     "probe_contrast": "ab8ccd3d8e2184fe6371cd637e24bf30542f9dd7b8f7ab8404b9fee1a30cc124",
+     "textfilter.c:line_has_japanese": "4f6a289bdf5613b6efccba8b179491bcb49ab702f0bb45519f566a5c83d3f9fa",
+     "utf.h:vjo_is_japanese_char": "a15bd002b98bd2186efeee74045eaaa531c7a002aba76cf20e9d16aa7a349302"
+    }
    }
   }
  },
@@ -256,6 +273,16 @@
    "changes": [
     "paths.b.lm pins lm_candidates.lm6_1000k (sha256 41591acc...) and its settings (alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 = VOCR_LM_BOS, beam 8, top-8; cascade 700), checked against the release's settings.json (sha256 6f6137f6...); before, rubi-path took the LM Rubi main pins (ctclm.2 until Rubi #306 merges)",
     "rubi-path records Rubi main's default-tier LM pin and settings (lm.rubi_main) and whether they equal the pinned LM; it no longer stops on it"
+   ]
+  },
+  {
+   "n": 3,
+   "time": "this commit (see git log); before any path (b) read and before the final read",
+   "why": "Rubi main moved after the registration (#328: #307's re-read fixes), and path (b) models Rubi's line read in Python; the model must stand for the code Rubi ships at the final read",
+   "changes": [
+    "vocr6_final_test.py rubicheck (development data only: hooked hval and train regions of the train titles, a sample per title plus regions whose verified text holds a counter): path (b)'s finder and line read against Rubi's own host tool vjo-ocr (host/ocr_tool.c: vjo_vocr_ocr_policy, the game worker's job) built from Rubi main cbaa4e3, with the models, LM and finder that checkout pins (VOCR5's gated blobs, ctclm.2's 1 MB LM, fix 0), per tier S / N / L: boxes, dark flags, each line's text and the job's text",
+    "paths.b.rubi_functions pins the sha256 of the Rubi functions the model stands for, from that checkout; rubi-path stops the final read if Rubi main's differ (review, rubicheck again, amend)",
+    "rubi-path records Rubi main's VOCR5 pins instead of requiring them (path (b) reads the protocol's gated VOCR5 blobs)"
    ]
   }
  ]

@@ -195,6 +195,27 @@ def test_pinned_lm_amendment_2(tmp_path):
         "beam": 8, "topk": 8, "gate": 8000, "bracket": 8000, "beta": 2500, "alpha": 600, "flags": 1}
 
 
+def test_c_function_extraction():
+    src = """static int a(int x)
+{
+    if (x) { return 1; }
+    return 0;
+}
+
+static __attribute__((noinline)) int probe(Stream *s, VocrLineSet *set)
+{
+    while (1) { break; }
+    return 2;
+}
+"""
+    assert F.c_function(src, "a").startswith("static int a(int x)") and F.c_function(src, "a").endswith("}")
+    assert "while (1) { break; }" in F.c_function(src, "probe")
+    assert F.c_function(src, "missing") is None
+    ref = PROTO["paths"]["b"]["rubi_functions"]["sha256"]
+    assert set(ref) >= {"finish_line", "read_again", "probe_short_lines", "textfilter.c:line_has_japanese"}
+    assert all(SHA.match(v) for v in ref.values())
+
+
 def test_vocr_pins_and_defines():
     cmake = ("set(VJO_VOCR_COMMIT " + "a" * 40 + ")\nset(_vocr_pins\n  vocr.c " + "b" * 64 + "\n  vocr_lines_fix.c "
              + "c" * 64 + ")\n")

@@ -1,0 +1,151 @@
+{
+ "kind": "textspot6-protocol",
+ "schema": 1,
+ "issue": 128,
+ "tracking": 125,
+ "frozen_utc": "2026-10-26T09:36:58Z",
+ "frozen_before": "every textspot6 training run and every score of a textspot6 arm (no run, probe or score exists: the 60-step trainer smoke on 2 titles and the harness checks on textspot3's released pick are not arms)",
+ "doc": "docs/textspot6.md",
+ "sources_sha256": {
+  "synth/textspot6_twin.py": "f3b0d9697f6c889d19852caec0a3d9678491cb5f6ae7b087d52cc96889e49688",
+  "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+  "train/textspot6_train.py": "2dbecfa7b3b2dfbfdc0f9b30cfaf386f582f4ef912db261b40e478d18ae99eca",
+  "train/textspot6_shapes.py": "e2f060e7cd3fa58b240dcf3a740731f05e1a9c4c130f34be974e6902bd63901d",
+  "synth/textspot6_pages.py": "593aeb75433319216983c4c50c38c1fab46090c527ba629a61ad68ab5c3fd00d"
+ },
+ "spotter": {
+  "format": "VTSP version 4 (synth/textspot6_twin.py): textspot3's T trunk (VTDT) or M network (VTMS) with a 16 + 4 T channel d2s head; T = 4 tag maps",
+  "tags": 4,
+  "classes": [
+   "dialogue",
+   "name",
+   "choice",
+   "ui",
+   "scene"
+  ],
+  "runtime": "runtime/vocr_textspot6.c (pinned by an amendment before any score: C == twin on every development frame is an eligibility condition)"
+ },
+ "budget": {
+  "vtsp_max": 512000,
+  "ms_max_333_960": 300,
+  "arena_max": 262144,
+  "time": "the A9 cycle model's high bound x 1.0007 at 333 MHz on runtime/vocr_textspot6.c for the shape and scale (textspot3's method), plus 1.4 ms per refined horizontal box at the arm's median on the development Vita frames for det+refine; reported at 444 MHz too",
+  "owner": "weights <= 500 KB (2026-10-26); time within textspot3's budget unless a bigger one clearly pays (the trade reported)",
+  "slots": 2,
+  "slot_hours": "about 30-40"
+ },
+ "data": {
+  "hook": "vocr6-ingest's page pool v1 + splits_v1.json through synth/textspot6_pages.py (rules in its RULES; the shard manifest data/manifests/textspot6_pages_v1.json is pinned by an amendment before any run)",
+  "synth": "data/manifests/textspot_shards_v1.json",
+  "real": "data/manifests/textspot2_shards_v1.json (its skip lists)",
+  "splits": {
+   "screening": [
+    "train"
+   ],
+   "final": [
+    "train",
+    "guard",
+    "hval"
+   ],
+   "never": [
+    "test"
+   ]
+  },
+  "mix": {
+   "base": {
+    "hook": 0.5,
+    "synth": 0.25,
+    "real": 0.25
+   },
+   "nohook": {
+    "synth": 0.5,
+    "real": 0.5
+   }
+  },
+  "title_temp": 0.5,
+  "untrusted_pages": "left out"
+ },
+ "recipes": {
+  "base": "30,000 steps x 16 windows of 256 x 512 at the network's scale, AdamW 4e-3, 500 warm-up, cosine to 1e-4, clip 5, EMA 0.999 from step 1,000, QAT from 80% (EMA swap, BN re-estimation 32 batches, #97's calibration 32 batches), the QAT average is the run's model; loss = textspot2_train.loss_of + 1.0 x tag loss; augmentation as train/textspot6_train.AUG",
+  "nohook": "base with the nohook mix",
+  "kd": "base + textspot2_train.kd_loss on K, O, A from the teacher + 1.0 x KL(teacher || student) of the tag softmax on cells where sigmoid(K_t) > 0.5"
+ },
+ "stages": {
+  "1": [
+   {
+    "arm": "base_t64n8c16",
+    "shape": "t64n8c16"
+   },
+   {
+    "arm": "base_qS4",
+    "shape": "qS4"
+   },
+   {
+    "arm": "base_qL5",
+    "shape": "qL5"
+   },
+   {
+    "arm": "nohook_t64n8c16",
+    "shape": "t64n8c16"
+   },
+   {
+    "arm": "base_<full-res T>",
+    "shape": "registered by an amendment with its A9 row, before its runs"
+   }
+  ],
+  "2": {
+   "rule": "kd_t64n8c16 distilled from the stage-1 M arm (base_qS4 or base_qL5) with the lower unseen-dev page-path dialogue CER (its representative's det or det+refine, whichever is lower; ties: the smaller shape); the teacher is that representative seed's final.pt",
+   "seeds": [
+    1,
+    2
+   ]
+  }
+ },
+ "seeds": {
+  "per_arm": [
+   1,
+   2
+  ],
+  "report": "every seed",
+  "representative": "per decode, the median seed by unseen-dev page-path dialogue CER (sorted by that CER, then hval page-path CER, then seed; index n // 2: with 2 seeds the worse one); never the best seed",
+  "crashes": "restart from scratch with the same seed, at most 3 attempts"
+ },
+ "metrics": {
+  "primary": "page-path dialogue CER through eval/pagepath.py (#129; pinned by an amendment before any score): Rubi's read (VOCR5-N W8I top 8, counter re-decode, beam 8 + the 1 MB LM, cascade N -> L below 0.7, textnorm, the non-Japanese line filter)",
+  "unseen_dev": "#119's 1,161 whole-dialogue units ($A/vocr5-analysis/work/units.pkl, console view); the headline leaves the units of v12188 (seen: hooked title PCSG00576) out; the full set reported",
+  "hval": "the page pool's dialogue regions of the hval pages (base / +4 / +8), console view (PSP at 2x)",
+  "spotter_boxes": "eval/textspot6.py spot (the whole frame) -> pagepath-boxes: each unit reads the horizontal boxes whose centre lies in its region; decodes det and det+refine",
+  "baseline": "GRAD + refine: eval/pagepath.py --finder rubi on the unit's region",
+  "intervals": "paired; 10,000 cluster-bootstrap resamples, seed 0: VN clusters (dev), title clusters (hval)",
+  "report_only": [
+   "tsdev: textspot's whole-frame metrics on its 188 dev frames + the tagged dialogue CER + presence on the 25 text-free frames (eval/textspot6.py tsdev; the harness reproduces textspot3's record of its pick exactly, both decodes)",
+   "hval boxes: P / R / F1 vs the verified lines, recall per class, tag accuracy, per view and title",
+   "textspot3's pick (v0.3.4-textspot3.1) through the same paths"
+  ]
+ },
+ "rule": {
+  "eligible": "VTSP bytes <= 512,000, est. ms @333 <= 300, arena <= 262,144, C == twin on every development frame",
+  "beats_grad_refine": "unseen dev: page-path dialogue CER difference (candidate - GRAD + refine) with a 95% interval entirely below 0; hval: the difference not resolved above 0",
+  "cost_order": "VTSP bytes, est. ms @333, arena, det before det+refine, then the name",
+  "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
+  "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
+  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, Rubi DRAFT PR (never merged by the fleet)"
+ },
+ "test": {
+  "read_once_after": "the selection commit",
+  "sets": [
+   "the test title(s) through the page path (Dance with Devils page-pool units)",
+   "CLANNAD whole frames (the frozen long-run references, textspot3's way)",
+   "vita-test + psp-test whole frames (eval/manifests/textspot-test.jsonl)"
+  ],
+  "paired_against": "GRAD + refine and textspot3's pick, read the same way"
+ },
+ "estimates": "console times are A9 cycle-model estimates; nothing runs on a console (hardware work is paused)",
+ "disclosures": [
+  "hval is seen titles (blocks of training titles)",
+  "one dev VN is seen (v12188, hooked PCSG00576); the headline leaves it out",
+  "the dev regions were drawn by people: the region-assisted page path gives the spotter GRAD + refine's region; the whole-frame tagged path is reported beside it"
+ ],
+ "amendments": [],
+ "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)"
+}

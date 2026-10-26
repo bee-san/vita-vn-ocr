@@ -19,7 +19,7 @@ Under the PSP's time budget, no recognizer reached VOCR5-S's accuracy on PSP gam
 - **What costs accuracy.** Lowering the input height costs the most.
   - At depth 0, going from 32 to 24 rows costs +2.1 points of whole dialogue (B32 → B24), and to 20 rows +4.6 (B32 → B20).
   - At depth 1 (VOCR5-S's layers), going from 32 to 18 rows costs +6.5 (S32 → S18).
-  - Dropping the stride-1 DS blocks (depth 0) costs +1.9 at height 32 (S32 → B32).
+  - Dropping the stride-1 DS blocks (depth 0) costs +1.8 at height 32 (S32 → B32).
 - **The runs stopped early.** Stage 1 stopped after every arm's first seed (protocol amendment 4). No later stage could plausibly close a 3-4 point gap to a target that VOCR5-S's own shape only ties. Stopping can only lead to no release.
 
 **What ships instead:**
@@ -167,7 +167,7 @@ The budget, estimated on the development whole-dialogue crops' own frame mix (`p
 
 | candidate | build | µs / frame (dev whole dialogue) | nominal box, emulated | est. console s per nominal box (× 1.45) | memory in all |
 |---|---|---:|---:|---:|---:|
-| B24 | scalar | 5,304 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,042,498 B |
+| B24 | scalar | 5,305 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,042,498 B |
 | B24 | VFPU | 3,775 | 0.603 s | 0.87 (VFPU unverified on a console) | 1,042,918 B |
 | S32 | scalar | 6,794 | 1.411 s | **2.05** | 1,291,938 B |
 | S32 | VFPU | 4,668 | 0.977 s | 1.42 (VFPU unverified on a console) | 1,292,358 B |

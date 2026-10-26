@@ -524,22 +524,25 @@ class Plan:
         return len(self.doc["crops"]) - 1
 
 
-def plan_tests(name, rp, plan, data):
+def plan_tests(name, rp, plan, data, rows=None, platform=None, image_of=None):
     """vita-test / psp-test: fixed lines (box + pad as eval/sets.py cuts them, x2 from the 2x frame on PSP; invert =
     line_polarity of the grey crop) and whole-dialogue regions (base / +4 / +8, without the regions that hold an
-    uncertain line) through Rubi's finder."""
+    uncertain line) through Rubi's finder. rows / platform / image_of: a stand-in set (dryrun) instead of the
+    manifest's."""
     import sets
     from fetch import shot_path
     from PIL import Image
 
     from common import line_polarity, to_gray
-    platform = sets.SETS[name]
+    platform = platform or sets.SETS[name]
     pad = sets.PAD[platform]
-    rows = sets.read_manifest(name)
+    stand_in = rows is not None
+    rows = rows if stand_in else sets.read_manifest(name)
+    image_of = image_of or (lambda r: shot_path(data, platform, r["vn"], r["url"]))
     frames = {}
 
     def frame(r):
-        p = shot_path(data, platform, r["vn"], r["url"])
+        p = image_of(r)
         if p not in frames:
             if sha256(p) != r["sha256"]:
                 raise SystemExit(f"{name} {r['id']}: the screenshot differs from the manifest's sha256")
@@ -582,8 +585,8 @@ def plan_tests(name, rp, plan, data):
         info.update(boxes=[list(b) for b in boxes], dark=dark, finder=st,
                     crops=[plan.crop(img[y:y + h, x:x + w], d) for (x, y, w, h), d in zip(boxes, dark)])
         plan.doc["units"].append(info)
-    plan.doc["inputs"] = {"manifest": f"eval/manifests/{name}.jsonl",
-                          "manifest_sha256": sha256(sets.MANIFESTS / f"{name}.jsonl"),
+    plan.doc["inputs"] = {"manifest": "stand-in" if stand_in else f"eval/manifests/{name}.jsonl",
+                          "manifest_sha256": None if stand_in else sha256(sets.MANIFESTS / f"{name}.jsonl"),
                           "screenshots": len(frames), "regions_excluded_uncertain": excluded}
 
 
@@ -650,18 +653,18 @@ def plan_clannad(rp, plan, work):
                           "pages": len(by_page), "pages_scored": len(infos), "pages_skipped": dict(skipped)}
 
 
-def plan_pcsg(rp, plan, pools, pagepool, pages):
+def plan_pcsg(rp, plan, pools, pagepool, pages, title="PCSG00807", split="test", vn="v18432"):
     """The test title: its clean line crops (invert off) and eval/pagepath.py's hooked units of the test split, cut
     by Rubi's finder and, for the decomposition, by the reference boxes plus pad (pagepath's oracle)."""
     import pagepath as PP
 
     import import_hooked as IH
     pools, pagepool, pages = Path(pools), Path(pagepool), Path(pages)
-    f = pools / "test" / "line" / "PCSG00807.npz"
+    f = pools / split / "line" / f"{title}.npz"
     for i, (m, lab, g) in enumerate(IH.read_npz(f)):
-        plan.doc["fixed"].append({"id": m["id"], "vn": "v18432", "page": m["page"], "platform": m["platform"],
+        plan.doc["fixed"].append({"id": m["id"], "vn": vn, "page": m["page"], "platform": m["platform"],
                                   "name": False, "styles": [], "text": lab, "crop": plan.crop(g, False)})
-    units, umeta = PP.hooked_units(pagepool, {"test"})
+    units, umeta = PP.hooked_units(pagepool, {split}, titles={title})
     frames = PP.Frames(pages, "console")
     imgs, infos = [], []
     checked = set()
@@ -679,7 +682,7 @@ def plan_pcsg(rp, plan, pools, pagepool, pages):
     found = find_boxes(rp["finder"]["driver"], imgs, [u["platform"] for u, _, _, _ in infos], rp["finder"]["fix"])
     from common import line_dark
     for img, (u, s, o, pts), (boxes, dark, st) in zip(imgs, infos, found):
-        base = {"cluster": u["cluster"], "vn": "v18432", "page": u["page"], "platform": u["platform"],
+        base = {"cluster": u["cluster"], "vn": vn, "page": u["page"], "platform": u["platform"],
                 "variant": u["variant"], "lines": [{"id": ln["id"], "text": ln["text"], "styles": []}
                                                    for ln in u["lines"]], "points": pts}
         plan.doc["units"].append(dict(base, uid=u["uid"], kind="page", boxes=[list(b) for b in boxes], dark=dark,
@@ -1699,6 +1702,183 @@ def cmd_selftest(a):
     print(json.dumps({k: v for k, v in out.items() if k in ("finder", "plain", "gated")}))
 
 
+# ----------------------------------------------------------------------------- dryrun (development data only)
+
+DRY_TESTS = {"vita-test": ("PCSG00576", "PCSG00146"), "psp-test": ("NPJH50001", "ULJM05674")}
+DRY_CLANNAD, DRY_PCSG = "PCSG00620", "PCSG00576"
+
+
+def dry_pages(pagepool, title, n):
+    rows = [r for r in read_jsonl(Path(pagepool) / f"{title}.jsonl") if r["split"] == "hval" and r.get("regions")]
+    return rows[:n]
+
+
+def dry_tests_rows(pagepool, titles, n):
+    """A vita-test / psp-test-shaped stand-in from hooked hval pages: each base region a manifest region, its
+    verified lines the rows."""
+    out = []
+    for t in titles:
+        for r in dry_pages(pagepool, t, n):
+            by = {ln["id"]: ln for ln in r["lines"]}
+            for g in r["regions"]:
+                if g["variant"] != "base":
+                    continue
+                x0, y0, x1, y1 = g["region"]
+                for lid in g["lines"]:
+                    ln = by[lid]
+                    out.append({"id": lid, "vn": t, "title": t, "session": r["page"], "url": "", "page": r["page"],
+                                "sha256": r["image_sha256"], "dims": r["dims"], "region": [x0, y0, x1 - x0, y1 - y0],
+                                "box": ln.get("box_main") or ln["box"], "text": ln["text"], "styles": []})
+    return out
+
+
+def dry_clannad_work(work, pagepool, pages, title, n):
+    """A clannad_refs-shaped work directory from hooked hval pages: a page's first base region is the ROI, its lines
+    the long-run lines (stored grey PNG crops), every second page with one extra no-text line (an empty reference)."""
+    import cv2
+    from PIL import Image
+
+    from common import line_dark, to_gray
+    work, session = Path(work), Path(work) / "session"
+    (session / "inputs").mkdir(parents=True, exist_ok=True)
+    lines, refs = [], []
+    for seq, r in enumerate(dry_pages(pagepool, title, n)):
+        src = session / "inputs" / f"{seq:06d}-native.png"
+        if not src.exists():
+            os.symlink(Path(pages) / r["image"], src)
+        rgb = np.ascontiguousarray(cv2.imread(str(src), cv2.IMREAD_COLOR)[..., ::-1])
+        g = [x for x in r["regions"] if x["variant"] == "base"][0]
+        x0, y0, x1, y1 = g["region"]
+        roi = [x0, y0, x1 - x0, y1 - y0]
+        grey = to_gray(rgb)[y0:y1, x0:x1]
+        by = {ln["id"]: ln for ln in r["lines"]}
+        boxes = []
+        for lid in g["lines"]:
+            bx, by_, bw, bh = by[lid].get("box_main") or by[lid]["box"]
+            boxes.append((by[lid]["text"], [max(0, bx - x0 - 3), max(0, by_ - y0 - 3), min(bw + 6, x1 - bx), bh + 6]))
+        if seq % 2:
+            boxes.append(("", [0, 0, max(8, roi[2] // 8), max(8, roi[3] // 8)]))
+        for i, (text, b) in enumerate(boxes):
+            x, y, w, h = b
+            w, h = min(w, roi[2] - x), min(h, roi[3] - y)
+            crop = np.ascontiguousarray(grey[y:y + h, x:x + w])
+            path = session / "inputs" / f"{seq:06d}-line-{i:02d}.png"
+            Image.fromarray(crop).save(path)
+            dark = bool(line_dark(grey, (x, y, w, h)))
+            lines.append({"id": f"p{seq:05d}-{i}", "page": f"p{seq:05d}", "seq": seq, "i": i, "event_sha256": "",
+                          "line": {"box": [x, y, w, h], "dark": dark, "mode": "L",
+                                   "path": str(path.relative_to(session)), "sha256": sha256(path), "size": [w, h]},
+                          "source": {"mode": "RGB", "path": str(src.relative_to(session)), "sha256": sha256(src),
+                                     "size": [rgb.shape[1], rgb.shape[0]]},
+                          "roi": roi, "box": [x, y, w, h], "dark": dark, "lens": "", "cached": ""})
+            refs.append({"id": f"p{seq:05d}-{i}", "page": f"p{seq:05d}", "status": "ref" if text else "excluded",
+                         "text": text, "name": False, "notext": not text, "dark": dark, "reads": [],
+                         "why": "r1=r2" if text else "r1,r2 skip:notext"})
+    import clannad_refs as C
+    meta = {"session": str(session), "lines_sha256": C.write_jsonl(work / "lines.jsonl", lines),
+            "pages": len({x["page"] for x in lines}), "lines": len(lines)}
+    write_json(work / "lines.meta.json", meta)
+    write_json(work / "refs.freeze.json", {"refs_sha256": C.write_jsonl(work / "refs.jsonl", refs)})
+    return work
+
+
+def dry_fake_priv(priv, val, models, rows_b, suffix):
+    """A private directory for build_report: the validation's path (a) outputs with every VOCR5 entry copied as
+    VOCR6 (the renderer's test only; no model reads anything), the stand-in path (b) rows, a stand-in models.json."""
+    priv, val = Path(priv), Path(val)
+    for d in ("a/shared", "a/lm", "a/pcsg", "clannad", "b"):
+        (priv / d).mkdir(parents=True, exist_ok=True)
+    rep = json.loads((val / "a/shared/report.json").read_text(encoding="utf-8"))
+    sh = rep["shared"]
+    for pol in sh["fixed_line"]:
+        for t in TIERS:
+            sh["fixed_line"][pol][f"VOCR6_{t}"] = sh["fixed_line"][pol][f"VOCR5_{t}"]
+    for t in TIERS:
+        sh["dialogue"]["units"][f"VOCR6_{t}"] = sh["dialogue"]["units"][f"VOCR5_{t}"]
+    write_json(priv / "a/shared/report.json", rep)
+    shutil.copyfile(val / "a/shared/shared.json", priv / "a/shared/shared.json")
+    for f in (val / "a/lm").glob("VOCR5_*.json"):
+        shutil.copyfile(f, priv / "a/lm" / f.name)
+        shutil.copyfile(f, priv / "a/lm" / f.name.replace("VOCR5_", "VOCR6_"))
+    rows = read_jsonl(val / "clannad" / f"score.{suffix}.private.jsonl")
+    for x in rows:
+        for t in TIERS:
+            x["errors"][f"VOCR6_{t}"] = x["errors"][f"VOCR5_{t}"]
+    with open(priv / "clannad" / f"score.{suffix}.private.jsonl", "w", encoding="utf-8") as f:
+        for x in rows:
+            f.write(json.dumps(x, ensure_ascii=False) + "\n")
+    for n in (f"clannad_{suffix}.json", f"clannad_{suffix}_dialogue.json"):
+        shutil.copyfile(val / "clannad" / n, priv / "clannad" / n)
+    for f in ("VOCR5", "VOCR6"):
+        shutil.copyfile(val / "a/pcsg/VOCR5.rows.pkl", priv / "a/pcsg" / f"{f}.rows.pkl")
+    write_json(priv / "attempt.json", {"mode": "dryrun", "started": now()})
+    write_json(priv / "models.json", models)
+    for s, p in rows_b.items():
+        shutil.copyfile(p, priv / "b" / f"rows_{s}.pkl")
+
+
+def cmd_dryrun(a):
+    """Development data only (the hooked hval block; no protected set is read by a model): path (b)'s plan, read and
+    score-b on stand-ins of the four sets, then build_report on the stand-in rows with path (a)'s inputs copied from
+    the validation's private outputs (VOCR6 = VOCR5 there): the final read's code paths, end to end."""
+    proto = protocol()
+    work = Path(a.work)
+    work.mkdir(parents=True, exist_ok=True)
+    s = proto["sets"]["pcsg00807"]
+    pagepool, pages, pools = s["pagepool_dir"], s["pages_dir"], s["pools_dir"]
+    rpath = work / "rubi_path.json"
+    if not rpath.exists():
+        cmd_rubi_path(argparse.Namespace(rubi=a.rubi, out=str(rpath)))
+    rp = load_rubi_path(rpath)
+    blobs = {("VOCR5", t): proto["models"]["VOCR5"]["gated"][t]["file"] for t in TIERS}
+    for t, spec in zip(TIERS, a.vocr6.split(",")):
+        blobs[("VOCR6", t)] = spec
+    summary, rows_b = {}, {}
+    for name in SETS_B:
+        planp = work / f"plan_{name}.pkl"
+        if not planp.exists():
+            plan = Plan(name)
+            if name in DRY_TESTS:
+                rows = dry_tests_rows(pagepool, DRY_TESTS[name], a.pages)
+                plan_tests(name, rp, plan, None, rows=rows, platform="vita" if name == "vita-test" else "psp",
+                           image_of=lambda r: Path(pages) / r["vn"] / "pages" / f"{r['page']}.png")
+            elif name == "clannad":
+                plan_clannad(rp, plan, dry_clannad_work(work / "clannad_work", pagepool, pages, DRY_CLANNAD,
+                                                        a.pages * 2))
+            else:
+                plan_pcsg(rp, plan, pools, pagepool, pages, title=DRY_PCSG, split="hval", vn=DRY_PCSG)
+            plan.doc["finder"] = {k: rp["finder"][k] for k in ("fix", "driver_sha256", "sources_sha256")}
+            write_pickle(planp, plan.doc)
+        dumps = []
+        for (fam, t), blob in blobs.items():
+            dp = work / f"dump_{name}_{fam}_{t}.pkl"
+            if not dp.exists():
+                cmd_read(argparse.Namespace(plan=str(planp), blob=str(blob), rubi_path=str(rpath), workers=a.workers,
+                                            out=str(dp)))
+            dumps.append(f"{fam}:{t}={dp}")
+        rows_b[name] = work / f"rows_{name}.pkl"
+        if not rows_b[name].exists():
+            cmd_score_b(argparse.Namespace(plan=str(planp), dump=dumps, rubi_path=str(rpath), out=str(rows_b[name])))
+        with open(rows_b[name], "rb") as f:
+            d = pickle.load(f)
+        summary[name] = {"fixed": len(d["rows"]["fixed"]), "units": len(d["rows"]["units"]),
+                         "read_errors": d["read_errors"], "finder_errors": d["finder_errors"], "rereads": d["rereads"]}
+    models = {"kind": "vocr6-final-test-models", "staged": now(), "tiers": {}}
+    for t in TIERS:
+        b = blobs[("VOCR6", t)]
+        gate, two = blob_heads(b)
+        models["tiers"][t] = {"source": str(b), "file": Path(b).name, "sha256": sha256(b),
+                              "bytes": Path(b).stat().st_size, "head_gate": gate, "two_level": two}
+    priv = work / "priv"
+    dry_fake_priv(priv, a.validation, models, rows_b, a.suffix)
+    shutil.copyfile(rpath, priv / "rubi_path.json")
+    rep = build_report(priv, work / "report", a.suffix)
+    summary["report_md_lines"] = len((work / "report" / "report.md").read_text(encoding="utf-8").splitlines())
+    summary["headline_b_keys"] = sorted(rep["headline"]["b"])
+    write_json(work / "dryrun.json", summary)
+    print(json.dumps(summary)[:3000])
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -1748,13 +1928,22 @@ def main(argv=None):
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--parts", default="finder,plain,gated")
     p.add_argument("--out", required=True)
+    p = sp.add_parser("dryrun")
+    p.add_argument("--work", required=True)
+    p.add_argument("--rubi", required=True)
+    p.add_argument("--vocr6", required=True, help="S,N,L stand-in blobs (development: any VOCR6 candidates)")
+    p.add_argument("--validation", required=True, help="the validation's private directory (path (a) outputs)")
+    p.add_argument("--suffix", default="v6ftcheck")
+    p.add_argument("--pages", type=int, default=12)
+    p.add_argument("--workers", type=int, default=5)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)
     p.add_argument("--suffix", required=True)
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     {"stage": cmd_stage, "rubi-path": cmd_rubi_path, "pcsg-a": cmd_pcsg_a, "plan": cmd_plan, "read": cmd_read,
-     "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "report": cmd_report}[a.cmd](a)
+     "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "dryrun": cmd_dryrun,
+     "report": cmd_report}[a.cmd](a)
 
 
 if __name__ == "__main__":

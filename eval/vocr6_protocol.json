@@ -1608,6 +1608,36 @@
     "ship": "the shipped S/N/L blobs go to a vita-vn-ocr pre-release with SHA256SUMS, docs/vocr6.md, and a Rubi_for_vita PR pinning them"
    },
    "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools"
+  },
+  "P1L": {
+   "name": "Large probe: stage 1's A15 recipe at the Large tier, to measure the gap to the owner's target (< 1% dialogue CER through Rubi's page path, Large first; conductor 15:37Z) early",
+   "tier": "L",
+   "seeds": [
+    2
+   ],
+   "registered": "see git log; after stage 1 (decided 15:45Z), before this run",
+   "defaults": {
+    "mix": "m1",
+    "batch": 96,
+    "final_lr": 0.05,
+    "wd": 0.01,
+    "ema": 0.999
+   },
+   "arms": {
+    "A15L": {
+     "run": "v6p1A15_L",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed{seed}/ckpt_step15000.pt",
+     "init_sha256": {
+      "2": "42dccc7ed03a92b47c7a1eb0c73fad0d84fad9ecb9d249e1997fc8772258a746"
+     },
+     "what": "a full fine-tune of the released VOCR5-L (v5f_L_seed2) on m1, as A15 for Normal"
+    }
+   },
+   "decision": "adopts nothing: reported against VOCR5-L (hval page, clean, dev; the decomposition), as the Large tier's gap to 1%. Stage 4a's Large runs are separate (R3's recipe, 3 seeds)"
   }
  },
  "incumbents": {

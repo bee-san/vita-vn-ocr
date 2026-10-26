@@ -94,6 +94,29 @@ def test_code_size_and_stack(table):
         assert set(A6.STACK_ROOTS) <= set(b["peaks"]) and b["peaks"]["vocr_textspot6_find"]["bytes"] < 4096
 
 
+def test_regions_at_a_forced_scale(table):
+    """vocr6-spotter's 12:05Z request: the T and M shapes at half scale (tags 4) on regions of 900x150 .. 960x544 read
+    with VOCR_TEXTSPOT6_SCALE2, -O2 (dark and no dark) and -Os (NO_MS for T); a 960x544 region is the frame itself,
+    which the rule halves too, so its row is the main table's."""
+    fb = table["forced"]
+    rows = {(r["row"], r["region"], r["build"]): r for r in fb["rows"]}
+    shapes = [f"{n}_t4" for n in ("t64n8c16", "t48n8c16d8", "t64n4c16", "qS4", "qM4", "qL5")]
+    main = {r["row"]: r for r in table["summary"]}
+    for name in shapes:
+        os_build = "Os no_ms" if name.startswith("t") else "Os"
+        for reg in ("900x150", "900x200", "900x300", "960x544"):
+            r = rows[(name, reg, "O2")]
+            assert r["force"] == 2 and "ms_333_dark" in r and "ms_333_nodark" in r and r["frame_arena_bytes"] > 0
+            assert r["ms_444_dark"] == pytest.approx(r["ms_333_dark"] * 333 / 444)
+            assert rows[(name, reg, os_build)]["frame_arena_bytes"] == r["frame_arena_bytes"]
+            w, h = map(int, reg.split("x"))
+            shape, base, tags = A6.row_shape(name)
+            assert r["macs"] == A6.cost_of(dict(shape, tags=tags, base=base), -(-w // 2), -(-h // 2))["macs"]
+        r = rows[(name, "960x544", "O2")]
+        assert r["ms_333_dark"] == pytest.approx(main[name]["ms"]["O2"]["dark"]["960x544"]["333"])
+        assert r["frame_arena_bytes"] == main[name]["arena"]["960x544"]["frame"]
+
+
 def test_no_local_paths():
     raw = TABLE.read_text(encoding="utf-8")
     assert "/home/" not in raw and "/local/" not in raw

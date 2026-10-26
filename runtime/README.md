@@ -878,11 +878,12 @@ if (set.pick >= 0) { /* set.blocks[set.pick] is the dialogue block */ }
   | VitaSDK Thumb-2 `-O2 -DVOCR_NO_NEON` | 21,332 B | 11,808 B |
   | VitaSDK Thumb-2 `-Os` (NEON) | 20,296 B | 10,684 B |
   | VitaSDK Thumb-2 `-Os -DVOCR_NO_NEON` | 16,894 B | 9,304 B |
-  | psp-gcc `-O2 -G0` (object) | 33,456 B | 18,604 B |
-  | psp-gcc `-Os -G0` (object) | 28,412 B | 15,380 B |
+  | psp-gcc `-O2 -G0` (object) | 33,580 B | 18,764 B |
+  | psp-gcc `-Os -G0` (object) | 28,524 B | 15,508 B |
 
-  `vocr_textspot3.c` is 23,880 / 19,452 B (Vita `-O2` / `-Os` NEON); version 4 adds the tag decode, and
-  `-DVOCR_TEXTSPOT6_NO_MS` drops the map ops, their kernels and their plan (`vocr_textspot2.c` is 11,844 / 9,746 B).
+  `vocr_textspot3.c` is 23,880 / 19,452 B (Vita `-O2` / `-Os` NEON); version 4 adds the tag decode and the
+  scale flags, and `-DVOCR_TEXTSPOT6_NO_MS` drops the map ops, their kernels and their plan (`vocr_textspot2.c` is
+  11,844 / 9,746 B).
 
 Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`):
 - the method is textspot's, on this file's Vita code: random version-4 blobs with 4 tags and the pinned frames;
@@ -891,17 +892,17 @@ Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`):
 
 | shape (scale) | VTSP B | MACs / 960x544 | 960x544 @333 / @444 | no dark @333 | 480x272 @333 / @444 | `-Os` @333 (NO_MS) | arena up to 960x544 | the tags @333 |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| `t64n4c16` (half above 480) | 28,624 | 48.7 M | 159.9 / 119.9 ms | 154.3 ms | 152.0 / 114.0 ms | 170.6 (170.6) ms | 132,927 | +4.4 ms (vs textspot3's row +2.2) |
-| `t48n8c16d8` (half above 480) | 33,472 | 53.6 M | 185.7 / 139.3 ms | 180.5 ms | 177.6 / 133.2 ms | 197.8 (197.8) ms | 241,887 | +5.2 ms (vs textspot3's row +2.9) |
-| `t64n8c16` (half above 480) | 52,176 | 86.8 M | 264.2 / 198.2 ms | 258.4 ms | 255.6 / 191.7 ms | 282.4 (282.4) ms | 244,607 | +6.7 ms (vs textspot3's row +3.4) |
-| `t24n6c16` (full) | 10,520 | 65.3 M | 290.6 / 217.9 ms | 288.4 ms | 79.3 / 59.5 ms | 306.8 (306.8) ms | 166,047 | +17.9 ms |
-| `t32n4c16` (full) | 11,056 | 72.5 M | 290.1 / 217.6 ms | 287.5 ms | 79.5 / 59.6 ms | 307.9 (307.9) ms | 141,663 | +15.7 ms |
-| `t48n2c16` (full, added) | 11,488 | 80.6 M | 293.4 / 220.0 ms | 290.9 ms | 78.3 / 58.7 ms | 311.5 (311.5) ms | 106,335 | +19.3 ms |
-| `t40n3c16` (full, added) | 11,936 | 80.8 M | 303.3 / 227.5 ms | 301.1 ms | 82.0 / 61.5 ms | 321.7 (321.7) ms | 147,391 | +19.9 ms |
-| `t32n6c16` (full) | 14,960 | 93.9 M | 358.8 / 269.1 ms | 356.4 ms | 97.6 / 73.2 ms | 380.6 (380.6) ms | 204,095 | +14.3 ms |
-| `t48n4c16` (full) | 18,816 | 125.2 M | 410.1 / 307.6 ms | 407.4 ms | 111.0 / 83.3 ms | 437.0 (437.0) ms | 186,975 | +18.2 ms |
-| `qS4` (480 / 272) | 118,096 | 76.7 M | 199.1 / 149.4 ms | 191.0 ms | 188.9 / 141.7 ms | 215.4 ms | 256,247 | +3.8 ms (vs textspot3's row +4.0) |
-| `qM4` (480 / 272) | 248,304 | 97.7 M | 222.8 / 167.1 ms | 215.0 ms | 212.5 / 159.4 ms | 244.6 ms | 256,247 | +6.1 ms (vs textspot3's row +6.2) |
+| `t64n4c16` (half above 480) | 28,624 | 48.7 M | 159.9 / 119.9 ms | 154.3 ms | 152.0 / 114.0 ms | 171.0 (170.6) ms | 132,927 | +4.4 ms (vs textspot3's row +2.2) |
+| `t48n8c16d8` (half above 480) | 33,472 | 53.6 M | 185.7 / 139.3 ms | 180.5 ms | 177.6 / 133.2 ms | 198.2 (197.8) ms | 241,887 | +5.2 ms (vs textspot3's row +2.9) |
+| `t64n8c16` (half above 480) | 52,176 | 86.8 M | 264.2 / 198.2 ms | 258.4 ms | 255.6 / 191.7 ms | 282.5 (282.4) ms | 244,607 | +6.7 ms (vs textspot3's row +3.4) |
+| `t24n6c16` (full) | 10,520 | 65.3 M | 290.6 / 217.9 ms | 288.4 ms | 79.3 / 59.5 ms | 307.0 (306.8) ms | 166,047 | +17.9 ms |
+| `t32n4c16` (full) | 11,056 | 72.5 M | 290.1 / 217.6 ms | 287.5 ms | 79.5 / 59.6 ms | 307.6 (307.9) ms | 141,663 | +15.7 ms |
+| `t48n2c16` (full, added) | 11,488 | 80.6 M | 293.4 / 220.0 ms | 290.9 ms | 78.3 / 58.7 ms | 311.7 (311.5) ms | 106,335 | +19.3 ms |
+| `t40n3c16` (full, added) | 11,936 | 80.8 M | 303.3 / 227.5 ms | 301.1 ms | 82.0 / 61.5 ms | 321.0 (321.7) ms | 147,391 | +19.9 ms |
+| `t32n6c16` (full) | 14,960 | 93.9 M | 358.8 / 269.1 ms | 356.4 ms | 97.5 / 73.2 ms | 379.5 (380.6) ms | 204,095 | +14.3 ms |
+| `t48n4c16` (full) | 18,816 | 125.2 M | 410.1 / 307.6 ms | 407.4 ms | 111.0 / 83.3 ms | 441.6 (437.0) ms | 186,975 | +18.2 ms |
+| `qS4` (480 / 272) | 118,096 | 76.7 M | 199.1 / 149.4 ms | 191.0 ms | 188.9 / 141.7 ms | 215.8 ms | 256,247 | +3.8 ms (vs textspot3's row +4.0) |
+| `qM4` (480 / 272) | 248,304 | 97.7 M | 222.8 / 167.1 ms | 215.0 ms | 212.5 / 159.4 ms | 244.6 ms | 256,247 | +6.1 ms (vs textspot3's row +6.3) |
 | `qL5` (480 / 272) | 448,304 | 108.9 M | 237.0 / 177.7 ms | 229.2 ms | 226.8 / 170.1 ms | 261.6 ms | 256,247 | +4.9 ms (vs textspot3's row +5.2) |
 
 - "the tags": the tagged row minus the same shape's version-2 (T) or version-3 (M) blob on this runtime; textspot3's
@@ -911,8 +912,18 @@ Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`):
 - "full": half_above 0, a 960 x 544 frame read whole; `t32n6c16` and `t48n4c16` are far above 300 ms, so
   `t48n2c16` and `t40n3c16` were added (of six candidates measured once at 960 x 544, the two of 40-48 channels
   nearest 300 ms).
-- The cache term of the model moves with the code's layout: the flags' few instructions moved these rows by up to
-  4.6 ms (1%) against the same blobs and frames measured before them.
+
+A region read at `VOCR_TEXTSPOT6_SCALE2` (Rubi's crop decode: the player's region of a 960 x 544 frame, halved),
+est. ms @333 with the dark pass, `-O2` (`-Os`, NO_MS for the T shapes), and the region's exact arena:
+
+| shape | 900x150 | 900x200 | 900x300 | 960x544 |
+|---|---:|---:|---:|---:|
+| `t64n4c16` | 51.0 (54.1) ms, 127,663 B | 64.5 (68.6) ms, 127,663 B | 92.0 (98.0) ms, 127,663 B | 159.9 (170.6) ms, 132,927 B |
+| `t48n8c16d8` | 57.2 (60.7) ms, 232,687 B | 75.0 (79.6) ms, 232,687 B | 107.6 (114.4) ms, 232,687 B | 185.7 (197.8) ms, 241,887 B |
+| `t64n8c16` | 82.1 (87.4) ms, 235,119 B | 104.7 (111.6) ms, 235,119 B | 150.5 (160.6) ms, 235,119 B | 264.2 (282.4) ms, 244,607 B |
+| `qS4` | 61.7 (66.6) ms, 157,295 B | 78.7 (85.0) ms, 168,239 B | 111.6 (120.6) ms, 190,127 B | 199.1 (215.8) ms, 256,247 B |
+| `qM4` | 67.6 (74.1) ms, 157,295 B | 86.8 (95.1) ms, 168,239 B | 126.1 (138.2) ms, 190,127 B | 222.8 (244.6) ms, 256,247 B |
+| `qL5` | 74.5 (82.2) ms, 157,295 B | 94.8 (104.6) ms, 168,239 B | 134.5 (148.4) ms, 190,127 B | 237.0 (261.6) ms, 256,247 B |
 
 Checks: `make check-textspot6` (in `make check`, so in `ci/runtime.sh gcc|clang` with ASan + UBSan):
 - strict compiles (also `-DVOCR_NO_NEON`, `-DVOCR_TEXTSPOT6_NO_MS` and both);

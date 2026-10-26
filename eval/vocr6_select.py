@@ -198,9 +198,19 @@ def compare(xdocs, ydocs, path="rubi", n_boot=N_BOOT):
     return out
 
 
+def same_plan(docs):
+    """Every run of a comparison must have been read on the same hval plan (v1 and v2 share their unit ids, so the
+    row check alone would not catch a mix)."""
+    plans = {d.get("hval_plan_sha256") for d in docs}
+    if len(plans) > 1:
+        raise SystemExit("the runs were read on different hval plans: " +
+                         ", ".join(f"{d['name']}={str(d.get('hval_plan_sha256'))[:12]}" for d in docs))
+
+
 def decide(xdocs, ydocs, path="rubi", n_boot=N_BOOT):
     if len(xdocs) != len(ydocs):
         raise SystemExit("X and Y need the same number of runs (seed pairs)")
+    same_plan(list(xdocs) + list(ydocs))
     total = compare(xdocs, ydocs, path, n_boot)
     pairs = {f"{x['name']}->{y['name']}": compare([x], [y], path, n_boot) for x, y in zip(xdocs, ydocs)}
     checks = {"hval_page_ci_below_zero": total["hval_page"]["ci95"][1] < 0,

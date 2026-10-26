@@ -125,3 +125,12 @@ def test_excluded_units_leave_every_page_component(monkeypatch):
     assert len(S.platform_mask(a, "hval_page", "vita")) == 4 * 8 - 2
     e, c, cl, keys = S.component(a, "hval_clean", "rubi")
     assert len(e) == 4 * 8
+
+
+def test_runs_read_on_different_plans_are_refused():
+    a, b = doc("a", 0, 0, 0, seed=12), doc("b", 0, 0, 0, seed=13)
+    a["hval_plan_sha256"], b["hval_plan_sha256"] = "p1", "p2"
+    with pytest.raises(SystemExit, match="different hval plans"):
+        S.decide([a], [b], n_boot=10)
+    b["hval_plan_sha256"] = "p1"
+    S.decide([a], [b], n_boot=10)

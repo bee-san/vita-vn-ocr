@@ -5,8 +5,9 @@ files (counts only: no text, no pixels).
   finder_fix_tables.py --runs DIR --out eval/finder_fix_20261026.json
 
 DIR holds <arm>_<set>.json of `pagepath.py run` (arms base, F1, F12, F123, F13, oracle; S_*/L_* for the tiers; sets
-hval, dev, tune, test, empty). Every comparison is pagepath.py's cluster bootstrap (titles on hval and tune, VNs on
-dev, pages on the single test title).
+hval, dev, tune, test, empty, and the tight-region variants hval_tight, hval_tight2, dev_tight, tune_tight,
+tune_tight2 of amendment 3). Every comparison is pagepath.py's cluster bootstrap (titles on hval and tune, VNs on
+dev, pages on the single test title). The default is F1 (COLGAP) since #129's amendment 3.
 """
 import argparse
 import json
@@ -19,6 +20,7 @@ sys.path.insert(0, str(ROOT / "eval"))
 import pagepath as PP  # noqa: E402
 
 STEPS = (("F1", "base"), ("F12", "F1"), ("F123", "F1"), ("F13", "F1"), ("F13", "base"), ("F123", "base"))
+TIGHT = ("hval_tight", "hval_tight2", "dev_tight", "tune_tight", "tune_tight2")
 
 
 def load(runs, name):
@@ -49,14 +51,18 @@ def main():
     ap.add_argument("--runs", required=True)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    doc = {"schema": "vocr6-finder-fix-results/1", "issue": 129,
+    doc = {"schema": "vocr6-finder-fix-results/2", "issue": 129, "default": "F1",
+           "decision": "amendment 1 adopted F13 (COLGAP|JUNK) on the scored regions; amendment 3 made F1 (COLGAP) the "
+                       "default after the audit's tight-region check: JUNK deletes text lines in regions drawn tight",
            "path": "eval/pagepath.py (#131): TEXTBOX_RECOVERY + Rubi's short-line probe + the refinement on PSP "
                    "titles, VOCR5 W8I, counter re-decode 6/4, beam 8 + vocr_lm_o3_1000k, cascade < 0.7, Rubi's "
                    "core/textnorm.c, the non-Japanese line filter; console view (PSP frames 2x bilinear)",
-           "arms": {"base": "Rubi today: the frozen finder", "F1": "fix COLGAP", "F12": "fix COLGAP|VALLEY",
-                    "F123": "fix COLGAP|VALLEY|JUNK", "F13": "fix COLGAP|JUNK (adopted: VOCR_FIX_DEFAULT)",
+           "arms": {"base": "Rubi today: the frozen finder", "F1": "fix COLGAP (VOCR_FIX_DEFAULT, amendment 3)",
+                    "F12": "fix COLGAP|VALLEY", "F123": "fix COLGAP|VALLEY|JUNK",
+                    "F13": "fix COLGAP|JUNK (adopted by amendment 1, opt-in since amendment 3)",
                     "oracle": "each reference line's own box plus its pad"},
-           "runs": {}, "steps": {}, "tiers": {}, "test_once": {}, "empty_regions": {}, "per_title_hval": {}}
+           "runs": {}, "steps": {}, "tiers": {}, "tight": {}, "test_once": {}, "test_reads": {},
+           "empty_regions": {}, "per_title_hval": {}}
     first = None
     for arm in ("base", "F1", "F12", "F123", "F13", "oracle"):
         for s in ("hval", "dev", "tune"):
@@ -74,13 +80,38 @@ def main():
                                                          "psp": cmp(x, y, platform="psp")}
     for t in ("S", "L"):
         for s in ("hval", "dev"):
-            x, y = load(a.runs, f"{t}_F13_{s}"), load(a.runs, f"{t}_base_{s}")
+            y = load(a.runs, f"{t}_base_{s}")
+            for arm in ("F1", "F13"):
+                x = load(a.runs, f"{t}_{arm}_{s}")
+                if x and y:
+                    doc["tiers"].setdefault(f"{t}_{s}", {"base": totals(y)})
+                    doc["tiers"][f"{t}_{s}"][arm] = totals(x)
+                    doc["tiers"][f"{t}_{s}"][f"delta_{arm}"] = cmp(x, y)
+    for s in TIGHT:
+        for arm in ("base", "F1", "F13"):
+            r = load(a.runs, f"{arm}_{s}")
+            if r:
+                doc["runs"][f"{arm}_{s}"] = dict(totals(r), units_sha256=r["units_sha256"])
+        for arm, base in (("F1", "base"), ("F13", "F1"), ("F13", "base")):
+            x, y = load(a.runs, f"{arm}_{s}"), load(a.runs, f"{base}_{s}")
             if x and y:
-                doc["tiers"][f"{t}_{s}"] = {"base": totals(y), "F13": totals(x), "delta": cmp(x, y)}
-    x, y = load(a.runs, "F13_test"), load(a.runs, "base_test")
-    if x and y:
-        doc["test_once"] = {"title": "PCSG00807", "base": totals(y), "F13": totals(x),
-                            "delta_page_clusters": cmp(x, y, by_page=True)}
+                doc["tight"][f"{arm}_vs_{base}_{s}"] = {"all": cmp(x, y), "vita": cmp(x, y, platform="vita"),
+                                                        "psp": cmp(x, y, platform="psp")}
+    y = load(a.runs, "base_test")
+    if y:
+        doc["test_once"] = {"title": "PCSG00807", "base": totals(y)}
+        for arm in ("F1", "F13"):
+            x = load(a.runs, f"{arm}_test")
+            if x:
+                doc["test_once"][arm] = totals(x)
+                doc["test_once"][f"delta_{arm}_page_clusters"] = cmp(x, y, by_page=True)
+    # every read of the test title, in order (report only: nothing was selected on any of them)
+    for arm in ("base", "F13", "F13p", "F1"):
+        r = load(a.runs, f"{arm}_test")
+        if r:
+            doc["test_reads"][arm] = {"finder": r["finder"].get("preset"), "fix": r["finder"].get("fix"),
+                                      "filter": r.get("filter", "lines"), "errors": totals(r)["errors"],
+                                      "chars": totals(r)["chars"]}
     for arm in ("base", "F13", "F123"):
         r = load(a.runs, f"{arm}_empty")
         if r:

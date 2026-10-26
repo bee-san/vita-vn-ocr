@@ -3,11 +3,12 @@
 The page-path driver built with -DPAGEPATH_FIX (`--finder rubi,fix=N`) on procedural regions:
 - fix 0 gives the frozen finder's boxes;
 - VOCR_FIX_COLGAP keeps a line whole across a wide gap;
-- VOCR_FIX_JUNK drops a frame strip on the region's top edge;
-- the default (COLGAP | JUNK) leaves a plain region alone.
+- VOCR_FIX_JUNK (opt-in) drops a frame strip on the region's top edge;
+- the fixes leave a plain region alone.
 
-It also checks that eval/finder_fix_20261026.json's decisions follow #129's pre-registered rule. The frozen finder
-files keep their pinned sha256. Procedural regions only: no screenshots, fonts or models.
+It also checks that eval/finder_fix_20261026.json's decisions follow #129's pre-registered rule, and that the
+default is COLGAP alone (#129 amendment 3: JUNK deletes text lines in regions drawn tight). The frozen finder files
+keep their pinned sha256. Procedural regions only: no screenshots, fonts or models.
 """
 import hashlib
 import json
@@ -49,7 +50,7 @@ def test_default_flags():
     h = (ROOT / "runtime" / "vocr_lines_fix.h").read_text(encoding="utf-8")
     flags = {k: int(v, 16) for k, v in re.findall(r"#define (VOCR_FIX_[A-Z]+) (0x[0-9a-f]+)u", h)}
     assert flags == {"VOCR_FIX_COLGAP": 1, "VOCR_FIX_VALLEY": 2, "VOCR_FIX_JUNK": 4}
-    assert "#define VOCR_FIX_DEFAULT (VOCR_FIX_COLGAP | VOCR_FIX_JUNK)" in h
+    assert re.search(r"#define VOCR_FIX_DEFAULT VOCR_FIX_COLGAP\b", h)     # JUNK and VALLEY are opt-in
 
 
 @pytest.fixture(scope="module")
@@ -108,16 +109,18 @@ def test_junk_drops_an_edge_strip(drivers):
     assert rc == 0 and len(boxes) == 2 and boxes[0][1] == 0
     rc, found, probed, boxes = run(fixed, g, 4)
     assert rc == 0 and len(boxes) == 1 and boxes[0][1] > 20
-    assert run(fixed, g, 5)[3] == boxes                       # the default drops it too
+    assert run(fixed, g, 5)[3] == boxes                       # COLGAP | JUNK drops it too
+    assert len(run(fixed, g, 1)[3]) == 2                       # the default (COLGAP) keeps it
 
 
-def test_default_leaves_a_plain_region_alone(drivers):
+def test_fixes_leave_a_plain_region_alone(drivers):
     frozen, fixed = drivers
     g = np.full((120, 640), PAPER, np.uint8)
     glyphs(g, 20, 20, 20, 20)
     glyphs(g, 20, 60, 12, 20)
     for refine in (0, PP.REFINE_ALL):
-        assert run(fixed, g, 5, refine) == run(frozen, g, 0, refine)
+        for fix in (1, 5, 7):
+            assert run(fixed, g, fix, refine) == run(frozen, g, 0, refine)
 
 
 def test_results_follow_the_preregistered_rule():
@@ -128,9 +131,14 @@ def test_results_follow_the_preregistered_rule():
         hv, dv = st[f"{arm}_vs_{base}_hval"]["all"], st[f"{arm}_vs_{base}_dev"]["all"]
         return hv["ci95"][1] < 0 and dv["ci95"][1] <= 0.05
 
-    # COLGAP over Rubi today; VALLEY (with or without JUNK) not over COLGAP; COLGAP + JUNK over COLGAP
+    # COLGAP over Rubi today; VALLEY (with or without JUNK) not over COLGAP; COLGAP + JUNK over COLGAP on the
+    # regions as scored, but not on the same regions cut tight (amendment 3), where COLGAP still is over Rubi today
     assert adopted("F1", "base") and not adopted("F12", "F1") and not adopted("F123", "F1")
     assert adopted("F13", "F1")
+    t = d["tight"]
+    assert t["F13_vs_F1_dev_tight"]["all"]["ci95"][1] > 0.05 and t["F1_vs_base_dev_tight"]["all"]["ci95"][1] < 0
+    assert t["F1_vs_base_hval_tight"]["all"]["ci95"][1] < 0
+    assert d["default"] == "F1"
     r = d["runs"]
     assert (r["base_hval"]["cer"], r["F13_hval"]["cer"]) == pytest.approx((3.875, 1.898), abs=6e-4)
     assert (r["base_dev"]["cer"], r["F13_dev"]["cer"]) == pytest.approx((3.036, 2.325), abs=6e-4)

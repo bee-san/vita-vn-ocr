@@ -294,6 +294,33 @@ def parse_lm_opts(src):
     return out
 
 
+def rubi_lm(src):
+    """What Rubi main's core/vocr_ocr.c pins for the default LM tier (ocr_lm = 1000k, lms[] row 2, lm_opts):
+    (sha256, settings)."""
+    sha, beta, tier, alpha, flags = parse_lm_row(src)
+    opts = parse_lm_opts(src)
+    return sha, {"beam": opts.get("beam"), "topk": opts.get("topk"), "gate": opts.get("gate"),
+                 "bracket": opts.get("bracket"), "beta": beta if opts.get("beta") == "lm->beta" else opts.get("beta"),
+                 "alpha": alpha if opts.get("alpha") == "lm->alpha" else opts.get("alpha"),
+                 "flags": flags if opts.get("flags") == "lm->flags" else opts.get("flags")}
+
+
+def pinned_lm(proto):
+    """Amendment 2: path (b)'s LM is pinned (vocr6-lead's ruling, eval/vocr6_protocol.json stage 4 amendment 3):
+    the shipped 1 MB game-text LM with its settings, checked against the release's settings.json."""
+    pin = proto["paths"]["b"]["lm"]
+    c = proto["paths"]["b"]["lm_candidates"][pin["candidate"]]
+    if sha256(c["file"]) != c["sha256"]:
+        raise SystemExit(f"{c['file']} differs from its pinned sha256")
+    st = json.loads(Path(pin["settings_json"]).read_text(encoding="utf-8"))
+    if sha256(pin["settings_json"]) != pin["settings_json_sha256"]:
+        raise SystemExit(f"{pin['settings_json']} differs from its pinned sha256")
+    tier = st["tiers"][pin["settings_tier"]]
+    if tier["sha256"] != c["sha256"] or tier["config"] != c["settings"] or tier["cascade_conf"] != 700:
+        raise SystemExit("the release's settings.json does not hold the pinned LM's settings")
+    return {"candidate": pin["candidate"], "file": c["file"], "sha256": c["sha256"], "settings": dict(c["settings"])}
+
+
 def resolve_lm(src, proto):
     """The default LM tier's file and settings Rubi ships (ocr_lm = 1000k, lms[] row 2, lm_opts)."""
     sha, beta, tier, alpha, flags = parse_lm_row(src)
@@ -384,7 +411,11 @@ def cmd_rubi_path(a):
     cfg = (rubi / "core" / "config.c").read_text(encoding="utf-8")
     cmake = (rubi / "cmake" / "VocrOCR.cmake").read_text(encoding="utf-8")
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=rubi, capture_output=True, text=True).stdout.strip()
-    lm = resolve_lm(src, proto)
+    lm = pinned_lm(proto)                      # amendment 2: pinned; Rubi main's own pin is recorded beside it
+    rsha, rset = rubi_lm(src)
+    known = [n for n, c in proto["paths"]["b"]["lm_candidates"].items() if c["sha256"] == rsha]
+    lm["rubi_main"] = {"sha256": rsha, "settings": rset, "candidate": known[0] if known else None,
+                       "equal_to_pinned": rsha == lm["sha256"] and rset == lm["settings"]}
     if not re.search(r"c->ocr_lm\s*=\s*2\s*;", cfg):
         raise SystemExit("Rubi's default ocr_lm is not tier 2 (1000k)")
     head_default = re.search(r"c->ocr_head_gate\s*=\s*VJO_HEAD_GATE_DEFAULT", cfg) is not None
@@ -432,8 +463,9 @@ def cmd_rubi_path(a):
     if not doc["vocr5_in_rubi_matches_protocol"]:
         raise SystemExit("Rubi's VOCR5 pins differ from the protocol's gated VOCR5 blobs")
     write_json(out, doc, exclusive=True)
-    print(json.dumps({"rubi_head": head, "lm": lm["candidate"], "settings": lm["settings"], "fix": fix,
-                      "finder_tree": fsrc["tree"], "finder_commit": fsrc["commit"][:12]}))
+    print(json.dumps({"rubi_head": head, "lm": lm["candidate"], "settings": lm["settings"],
+                      "rubi_main_lm": lm["rubi_main"]["candidate"], "fix": fix, "finder_tree": fsrc["tree"],
+                      "finder_commit": fsrc["commit"][:12]}))
 
 
 def load_rubi_path(path):
@@ -1545,11 +1577,28 @@ def selftest_finder(src_dir, out_dir, plan_path, pages, limit=0):
             "plan_driver_sha256": plan["driver_sha256"], "driver": meta}
 
 
-def selftest_plain(plan_path, dump_paths, blobs, lm, settings, k, workers, rubi_norm):
+def t1_module(name, work, ref="origin/feat/vocr6-t1-stages"):
+    """A module of vocr6-lead's T1 kit (eval/<name>.py on feat/vocr6-t1-stages, not on main), loaded from a copy in
+    work (the selftest's reference implementation only)."""
+    import importlib.util
+    if (ROOT / "eval" / f"{name}.py").exists():
+        path = ROOT / "eval" / f"{name}.py"
+    else:
+        subprocess.run(["git", "fetch", "-q", "origin", ref.split("/", 1)[1]], cwd=ROOT, capture_output=True)
+        path = Path(work) / f"{name}.py"
+        path.write_bytes(subprocess.run(["git", "show", f"{ref}:eval/{name}.py"], cwd=ROOT, capture_output=True,
+                                        check=True).stdout)
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def selftest_plain(plan_path, dump_paths, blobs, lm, settings, k, workers, rubi_norm, work):
     """Path (b)'s line read with plain blobs (no head gate) against vocr6-lead's hval dumps of the same plan (eval/
     vocr6_score.py read): greedy, the beam text and the confidence per crop; then the cascade, textnorm and the
     filter against vocr6_score.texts(rubi, up=the next tier)."""
-    import vocr6_score as VS
+    VS = t1_module("vocr6_score", work)
     with open(plan_path, "rb") as f:
         plan = pickle.load(f)
     dumps = {t: json.loads(Path(p).read_text(encoding="utf-8")) for t, p in dump_paths.items()}
@@ -1629,18 +1678,23 @@ def cmd_selftest(a):
     src = Path(a.work) / "finder_src"
     out["finder_source"] = finder_sources(src)
     lead = A / "vocr6-lead"
-    out["finder"] = selftest_finder(src, Path(a.work) / "bin", lead / "plans" / "hval_plan_v2.pkl",
-                                    A / "vocr6-ingest" / "pages", a.limit)
+    if "finder" in a.parts:
+        out["finder"] = selftest_finder(src, Path(a.work) / "bin", lead / "plans" / "hval_plan_v2.pkl",
+                                        A / "vocr6-ingest" / "pages", a.limit)
+        write_json(a.out, out)
     rel = A / "vocr5-train" / "release" / "v0.3.0"
     lmc = proto["paths"]["b"]["lm_candidates"]["ctclm2_1000k"]
     import pagepath as PP
     rubi_norm = PP.rubi_norm_tool(a.rubi, Path(a.work) / "bin")[0]
-    out["plain"] = selftest_plain(lead / "plans" / "hval_plan_v1.pkl",
-                                  {"N": lead / "scores" / "dump_hval_VOCR5-N.json",
-                                   "L": lead / "scores" / "dump_hval_VOCR5-L.json"},
-                                  {"N": rel / "VOCR5_N_w8.vocr", "L": rel / "VOCR5_L_w8.vocr"},
-                                  lmc["file"], lmc["settings"], a.k, a.workers, rubi_norm)
-    out["gated"] = selftest_gated(A / "vocr6-ingest" / "baseline" / "hval", TIERS, a.k, a.workers, lmc["file"])
+    if "plain" in a.parts:
+        out["plain"] = selftest_plain(lead / "plans" / "hval_plan_v1.pkl",
+                                      {"N": lead / "scores" / "dump_hval_VOCR5-N.json",
+                                       "L": lead / "scores" / "dump_hval_VOCR5-L.json"},
+                                      {"N": rel / "VOCR5_N_w8.vocr", "L": rel / "VOCR5_L_w8.vocr"},
+                                      lmc["file"], lmc["settings"], a.k, a.workers, rubi_norm, a.work)
+        write_json(a.out, out)
+    if "gated" in a.parts:
+        out["gated"] = selftest_gated(A / "vocr6-ingest" / "baseline" / "hval", TIERS, a.k, a.workers, lmc["file"])
     write_json(a.out, out)
     print(json.dumps({k: v for k, v in out.items() if k in ("finder", "plain", "gated")}))
 
@@ -1692,6 +1746,7 @@ def main(argv=None):
     p.add_argument("--k", type=int, default=3000)
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--limit", type=int, default=0)
+    p.add_argument("--parts", default="finder,plain,gated")
     p.add_argument("--out", required=True)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)

@@ -119,7 +119,7 @@
   },
   "b": {
    "name": "Rubi's shipped path at the final read",
-   "resolution": "vocr6_final_test.py rubi-path reads a checkout of bee-san/Rubi_for_vita main taken at the final read (its head recorded) and writes OUT/rubi_path.json before any read: the default LM tier's file (core/vocr_ocr.c lms[] for VJO_VOCR_LM2_NAME, config.c's ocr_lm = 1000k) matched by sha256 to lm_candidates, its settings from that lms[] row and lm_opts(), the cascade threshold, the counter re-decode constants, the head-gate default, the refinement default, the finder fix default and textnorm's sha256. A Rubi value that is not one of the candidates below stops the read (no silent fallback)",
+   "resolution": "vocr6_final_test.py rubi-path reads a checkout of bee-san/Rubi_for_vita main taken at the final read (its head recorded) and writes OUT/rubi_path.json before any read: the default LM tier Rubi main pins (core/vocr_ocr.c lms[] for VJO_VOCR_LM2_NAME, config.c's ocr_lm = 1000k; recorded beside the pinned LM since amendment 2, which fixes the LM read: paths.b.lm), the cascade threshold, the counter re-decode constants, the head-gate default, the refinement default, the finder fix default and textnorm's sha256. A Rubi value that is not one of the candidates below stops the read (no silent fallback)",
    "finder": "Rubi's line path on a grey region, eval/pagepath_find.c (a port of Rubi core/vocr_ocr.c's: VOCR_LINES_TEXTBOX_RECOVERY, the short-line probe #194, the per-box refinement with Rubi's 16-line cap) built with -DPAGEPATH_FIX: fix = the finder default Rubi ships, VOCR_FIX_DEFAULT = VOCR_FIX_COLGAP (1, #129 amendment 3; JUNK and VALLEY opt-in). If Rubi main does not pin runtime/vocr_lines_fix.c yet, COLGAP from vita-vn-ocr's runtime/vocr_lines_fix.c (main if #135 merged, else #135's head) all the same, as stage 4 amendment 1 cut stage 4a's plans; if Rubi pins it, that file (sha256 equal to Rubi's cmake/VocrOCR.cmake pin) and Rubi's default. probe 1; refinement VOCR_REFINE_ALL on PSP titles only (ocr_refine_lines = psp); the source files' sha256 recorded",
    "view": "the console view (what Rubi reads on a Vita): Vita frames as they are; a PSP frame upscaled 2x bilinear (cv2.INTER_LINEAR on the colour frame, then synth/common.to_gray), the regions and line boxes scaled by 2, the +4 / +8 px region variants by 8 / 16 px (eval/pagepath.py's console view)",
    "line_read": "each crop, as core/vocr_ocr.c finish_line reads it: W8I (runtime/vocr.c through runtime/pyvocr.py), the blob's head gate and two-level head on when it holds them, top-8 extras; a line read as empty stays empty (confidence 1000); the counter re-decode (6000 / 4000); the ungated re-read when the run skipped frames and the re-decode found a counter context, or the two-level head is on and the greedy text holds a full-size カ/ケ before 月所年国条 (read_again); the beam + LM decode over the (re-read, re-decoded) extras with the resolved LM settings; the line's confidence (conf_min x 1000 + 0.5 in float, truncated) from the read used",
@@ -164,7 +164,14 @@
     "pcsg00807_clean": "the test pool's 1,152 clean line crops (invert off) through line_read, the cascade and the display",
     "pcsg00807_page": "eval/pagepath.py's hooked units of the test split (pagepath.hooked_units: base / +4 / +8 regions with their verified lines), console view, the finder above, scored as pagepath.score_unit (dialogue CER over the joined, normalised texts; line statistics against the renderer's cells). Decomposition (report only): the same units read from their reference boxes plus pad (pagepath's oracle finder)"
    },
-   "stages_reported": "per measure, besides the shipped text: greedy (the gated recognizer's own greedy text), rubi_tier (line_read of the tier alone, no cascade), rubi_cascade (with the cascade), shipped (rubi_cascade through textnorm and the line filter): report only, for the error decomposition"
+   "stages_reported": "per measure, besides the shipped text: greedy (the gated recognizer's own greedy text), rubi_tier (line_read of the tier alone, no cascade), rubi_cascade (with the cascade), shipped (rubi_cascade through textnorm and the line filter): report only, for the error decomposition",
+   "lm": {
+    "candidate": "lm6_1000k",
+    "settings_json": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.1/settings.json",
+    "settings_json_sha256": "6f6137f68fc48c85c9ad5ebf210cdff6f5355dfca727596e06af7cc3bd1fa9e7",
+    "settings_tier": "1000k",
+    "why": "amendment 2: vocr6-lead's ruling (eval/vocr6_protocol.json stage 4 amendment 3, feat/vocr6-t1-stages 7ecdbb0): the final test reads the shipped 1 MB game-text LM v0.3.7-lm6.1 vocr_lm6_o3_1000k.vlm (no test title's or CLANNAD's text in it) at alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 (VOCR_LM_BOS), beam 8, top-8, cascade under 700, whether or not Rubi main pins it yet (Rubi #306); rubi-path records Rubi main's own LM pin beside it"
+   }
   }
  },
  "metrics": {
@@ -239,6 +246,15 @@
     "RESUME=1 continues an attempt a harness failure stopped: the attempt record stays, resumes.jsonl records each resume (time, repo head), and no step whose output exists runs again; every step's output is a file",
     "path (b): a finder error on a region (rc != 0) is Rubi's job failing on it: no line, no text, counted (finder_errors); a crop the runtime refuses is recorded as an error and its unit shows nothing (read_errors), as Rubi's job fails (core/vocr_ocr.c run_error); neither raises",
     "validate: the test title's finder build identity (finder_tighten.build's driver and library sha256, compiled from this checkout's runtime/, which #130 changed after the baseline ran) is recorded beside the checks, not compared as a score"
+   ]
+  },
+  {
+   "n": 2,
+   "time": "this commit (see git log); before any path (b) read (the validation, running, reads path (a) only)",
+   "why": "vocr6-lead's message (2026-10-26 ~19:20Z) and eval/vocr6_protocol.json stage 4 amendment 3 (feat/vocr6-t1-stages 7ecdbb0): path (b)'s LM is the shipped 1 MB game-text LM with its settings",
+   "changes": [
+    "paths.b.lm pins lm_candidates.lm6_1000k (sha256 41591acc...) and its settings (alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 = VOCR_LM_BOS, beam 8, top-8; cascade 700), checked against the release's settings.json (sha256 6f6137f6...); before, rubi-path took the LM Rubi main pins (ctclm.2 until Rubi #306 merges)",
+    "rubi-path records Rubi main's default-tier LM pin and settings (lm.rubi_main) and whether they equal the pinned LM; it no longer stops on it"
    ]
   }
  ]

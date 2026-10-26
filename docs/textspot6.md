@@ -220,6 +220,10 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
    - The reference scores posted on #128 used the finder's working copy, which differs only in the module
      docstring.
    - They are scored again with the pinned files before the selection.
+7. **The Rubi merge gate** (owner, 11:33Z; process only). A Rubi_for_vita PR merges as soon as the local gate
+   passes: host ctest, both Vita builds with their import, metadata and memory-ledger gates, and `e2e_package.py`
+   when packaging changed. Its audit runs in parallel, and its findings become a follow-up PR. The label's 3 slots
+   include its helper and auditors.
 
 ## Results
 

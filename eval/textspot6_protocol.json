@@ -266,6 +266,15 @@
     "pr": "https://github.com/bee-san/vita-vn-ocr/pull/131",
     "commit": "fadc3c6"
    }
+  },
+  {
+   "id": 7,
+   "utc": "2026-10-26T11:52:25Z",
+   "before": "every score of a textspot6 arm (process only: the rule is unchanged)",
+   "what": [
+    "Owner 2026-10-26T11:33Z (prompts/_rules.md, last entry) replaces amendment 4's Rubi merge gate: a Rubi_for_vita PR is merged right after the local gate passes in the clone (host ctest, both Vita builds, normal and debug, with their import, module-metadata and memory-ledger gates, and tools/e2e_package.py when packaging changed), without waiting for GitHub CI; its audit runs in parallel and its findings become a follow-up PR; the release (a test pre-release here) is tagged right after the merge and the Release workflow builds its assets. A PR whose local Vita build or ledger gate fails is never merged.",
+    "Slots (vocr6/slots.txt 11:58Z): the label's 3 slots include its runtime helper and its auditors; the training runs take at most 2 once the detached seed-1 run ends, and the third slot is shared through a lock (slot3.lock) by the scoring queue and the helper."
+   ]
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

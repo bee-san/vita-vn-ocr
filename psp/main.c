@@ -872,6 +872,12 @@ int main(int argc, char **argv)
             for (k = 0; k < nl; k++) {
                 const VocrLine *ln = &g_job.set.lines[k];
                 size_t tl;
+                /* vocr_find_lines clips every box to the region and the refinement never grows one; checked here
+                 * anyway, as the crop is read in place from the region */
+                if (!ln->w || !ln->h || ln->x > w || ln->y > h || ln->w > w - ln->x || ln->h > h - ln->y) {
+                    snprintf(err, sizeof err, "finder, region %u line %u: box outside the region", j, k);
+                    goto fail;
+                }
                 img.pixels = (const unsigned char *)b_crop.p + (size_t)ln->y * w * ch + (size_t)ln->x * ch;
                 img.width = ln->w;
                 img.height = ln->h;
@@ -891,12 +897,15 @@ int main(int argc, char **argv)
                 escaped += lo.escaped;
                 us += lo.us;
                 tl = strlen(text);
-                if (used + tl + 2 < sizeof rtext) {
-                    if (k) rtext[used++] = '\t';
-                    memcpy(rtext + used, text, tl);
-                    used += tl;
-                    rtext[used] = 0;
+                if (used + tl + 2 >= sizeof rtext) { /* a region's text over 16 KB: report it, never drop a line */
+                    snprintf(err, sizeof err, "region %u: its lines' text is over %u bytes", j,
+                             (unsigned)sizeof rtext);
+                    goto fail;
                 }
+                if (k) rtext[used++] = '\t';
+                memcpy(rtext + used, text, tl);
+                used += tl;
+                rtext[used] = 0;
                 bl += (size_t)snprintf(boxes + bl, sizeof boxes - bl, "%s%u,%u,%u,%u,%u", k ? ";" : "", ln->x,
                                        ln->y, ln->w, ln->h, ln->dark);
                 if (bl >= sizeof boxes) bl = sizeof boxes - 1;

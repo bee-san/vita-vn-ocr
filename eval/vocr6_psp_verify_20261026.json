@@ -343,7 +343,7 @@
   "B24_L": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 32288316,
+   "us_total": 32288317,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
@@ -354,7 +354,7 @@
   "B24_LV": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 22760999,
+   "us_total": 22761214,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
@@ -365,7 +365,7 @@
   "B24_P": {
    "lines": 40,
    "frames": 4420,
-   "us_total": 21583153,
+   "us_total": 21583162,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 192448,
@@ -376,7 +376,7 @@
   "B24_PV": {
    "lines": 40,
    "frames": 4420,
-   "us_total": 15261659,
+   "us_total": 15261665,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 192448,
@@ -387,7 +387,7 @@
   "MB_64": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 32283649,
+   "us_total": 32283654,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
@@ -398,7 +398,7 @@
   "S32_L": {
    "lines": 150,
    "frames": 8614,
-   "us_total": 56991224,
+   "us_total": 56991223,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 378528,
@@ -409,7 +409,7 @@
   "S32_LV": {
    "lines": 150,
    "frames": 8614,
-   "us_total": 38866115,
+   "us_total": 38866119,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 378528,
@@ -420,7 +420,7 @@
   "S32_P": {
    "lines": 40,
    "frames": 5879,
-   "us_total": 38649033,
+   "us_total": 38649030,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 378528,
@@ -431,7 +431,7 @@
   "S32_PV": {
    "lines": 40,
    "frames": 5879,
-   "us_total": 26441325,
+   "us_total": 26441327,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 378528,
@@ -441,13 +441,13 @@
   }
  },
  "rebased": {
-  "note": "after the rebase onto main 82e531f (vocr6-attn's attention op in runtime/vocr.c): the EBOOTs rebuilt from the merged runtime, both candidates re-read on the development plan's crops and regions in PPSSPP (scalar and VFPU); every item identical to the host; the budget recomputed with the merged code size",
+  "note": "after the rebase onto main 82e531f (vocr6-attn's attention op in runtime/vocr.c): the EBOOTs rebuilt from the merged runtime, both candidates re-read on the development plan's crops and regions in PPSSPP (scalar and VFPU); every item identical to the host; the budget recomputed with the merged code size; EBOOTs rebuilt again after audit N9 (psp/main.c finder-mode checks), same results",
   "candidates": {
    "B24": {
     "all_identical": true,
     "eboots": {
-     "scalar": "672cd2aaf2bce40c2c60acc523aed60dd4dbc5c134c7c06898b1e21acdfa246d",
-     "vfpu": "360c529309b8bf92fa5ed9130ef8fb9210f379e5f50d4c5d0c9c84d1dd6c95f8"
+     "scalar": "49cfd2676eaba47975885c98e008e9781938c99b687f4b2b5e1e3f1e97e31df2",
+     "vfpu": "5db9f5df69941ec645218350a86078c5e603c5efab71e248f647266bbf02e728"
     },
     "sets": {
      "lines:dev": {
@@ -456,7 +456,7 @@
        "text_ok": 1460,
        "logits_ok": 1460,
        "frames": 43957,
-       "us": 240114659,
+       "us": 240129349,
        "finder_us": 0,
        "pixels": 0
       },
@@ -465,7 +465,7 @@
        "text_ok": 1460,
        "logits_ok": 1460,
        "frames": 43957,
-       "us": 173101690,
+       "us": 173099600,
        "finder_us": 0,
        "pixels": 0
       }
@@ -476,8 +476,8 @@
        "text_ok": 627,
        "logits_ok": 627,
        "frames": 34369,
-       "us": 179331302,
-       "finder_us": 3834560,
+       "us": 179324679,
+       "finder_us": 3835117,
        "pixels": 6629949
       },
       "vfpu": {
@@ -485,40 +485,41 @@
        "text_ok": 627,
        "logits_ok": 627,
        "frames": 34369,
-       "us": 127952647,
-       "finder_us": 3846368,
+       "us": 127945721,
+       "finder_us": 3847295,
        "pixels": 6629949
       }
      }
     },
     "budget": {
      "scalar": {
-      "us_per_frame_dev_wd": 5304.18,
+      "us_per_frame_dev_wd": 5304.89,
       "nominal_frames": 153,
-      "finder_us_per_pixel": 0.57837,
-      "emulated_s_box": 0.8365,
-      "est_console_s_box_high": 1.213,
-      "est_console_s_box_low": 0.8365,
+      "finder_us_per_pixel": 0.57845,
+      "emulated_s_box": 0.8366,
+      "est_console_s_box_high": 1.2131,
+      "est_console_s_box_low": 0.8366,
       "memory": {
        "blob": 760208,
        "arena": 192448,
        "code": {
-        "vocr.o": 33823,
+        "vocr.o": 33403,
         "vocr_lines.o": 19084,
         "vocr_lines_refine.o": 7904
        },
+       "code_from": "scalar build",
        "stack_used": 3744,
        "stack": 4096,
        "finder_arena": 25355,
-       "total": 1042918
+       "total": 1042498
       },
       "time_ok": false,
       "memory_ok": true
      },
      "vfpu": {
-      "us_per_frame_dev_wd": 3775.19,
+      "us_per_frame_dev_wd": 3775.12,
       "nominal_frames": 153,
-      "finder_us_per_pixel": 0.58015,
+      "finder_us_per_pixel": 0.58029,
       "emulated_s_box": 0.6027,
       "est_console_s_box_high": 0.8739,
       "est_console_s_box_low": 0.6027,
@@ -530,6 +531,7 @@
         "vocr_lines.o": 19084,
         "vocr_lines_refine.o": 7904
        },
+       "code_from": "vfpu build",
        "stack_used": 3744,
        "stack": 4096,
        "finder_arena": 25355,
@@ -543,8 +545,8 @@
    "S32": {
     "all_identical": true,
     "eboots": {
-     "scalar": "672cd2aaf2bce40c2c60acc523aed60dd4dbc5c134c7c06898b1e21acdfa246d",
-     "vfpu": "360c529309b8bf92fa5ed9130ef8fb9210f379e5f50d4c5d0c9c84d1dd6c95f8"
+     "scalar": "49cfd2676eaba47975885c98e008e9781938c99b687f4b2b5e1e3f1e97e31df2",
+     "vfpu": "5db9f5df69941ec645218350a86078c5e603c5efab71e248f647266bbf02e728"
     },
     "sets": {
      "lines:dev": {
@@ -553,7 +555,7 @@
        "text_ok": 1460,
        "logits_ok": 1460,
        "frames": 58357,
-       "us": 402157028,
+       "us": 402175034,
        "finder_us": 0,
        "pixels": 0
       },
@@ -562,7 +564,7 @@
        "text_ok": 1460,
        "logits_ok": 1460,
        "frames": 58357,
-       "us": 279013173,
+       "us": 279013970,
        "finder_us": 0,
        "pixels": 0
       }
@@ -573,8 +575,8 @@
        "text_ok": 627,
        "logits_ok": 627,
        "frames": 45646,
-       "us": 307758448,
-       "finder_us": 3841757,
+       "us": 307758693,
+       "finder_us": 3844442,
        "pixels": 6629949
       },
       "vfpu": {
@@ -582,40 +584,41 @@
        "text_ok": 627,
        "logits_ok": 627,
        "frames": 45646,
-       "us": 211564361,
-       "finder_us": 3838809,
+       "us": 211566969,
+       "finder_us": 3833794,
        "pixels": 6629949
       }
      }
     },
     "budget": {
      "scalar": {
-      "us_per_frame_dev_wd": 6793.78,
+      "us_per_frame_dev_wd": 6794.3,
       "nominal_frames": 204,
-      "finder_us_per_pixel": 0.57945,
-      "emulated_s_box": 1.411,
-      "est_console_s_box_high": 2.0459,
-      "est_console_s_box_low": 1.411,
+      "finder_us_per_pixel": 0.57986,
+      "emulated_s_box": 1.4111,
+      "est_console_s_box_high": 2.0461,
+      "est_console_s_box_low": 1.4111,
       "memory": {
        "blob": 823568,
        "arena": 378528,
        "code": {
-        "vocr.o": 33823,
+        "vocr.o": 33403,
         "vocr_lines.o": 19084,
         "vocr_lines_refine.o": 7904
        },
+       "code_from": "scalar build",
        "stack_used": 3744,
        "stack": 4096,
        "finder_arena": 25355,
-       "total": 1292358
+       "total": 1291938
       },
       "time_ok": false,
       "memory_ok": true
      },
      "vfpu": {
-      "us_per_frame_dev_wd": 4668.05,
+      "us_per_frame_dev_wd": 4668.12,
       "nominal_frames": 204,
-      "finder_us_per_pixel": 0.57901,
+      "finder_us_per_pixel": 0.57825,
       "emulated_s_box": 0.9773,
       "est_console_s_box_high": 1.4171,
       "est_console_s_box_low": 0.9773,
@@ -627,6 +630,7 @@
         "vocr_lines.o": 19084,
         "vocr_lines_refine.o": 7904
        },
+       "code_from": "vfpu build",
        "stack_used": 3744,
        "stack": 4096,
        "finder_arena": 25355,
@@ -637,7 +641,21 @@
      }
     }
    }
+  },
+  "code_bytes": {
+   "note": "psp-size of the merged runtime's objects, each build rebuilt from clean (make -C psp size [VFPU=1])",
+   "scalar": {
+    "vocr.o": 33403,
+    "vocr_lines.o": 19084,
+    "vocr_lines_refine.o": 7904
+   },
+   "vfpu": {
+    "vocr.o": 33823,
+    "vocr_lines.o": 19084,
+    "vocr_lines_refine.o": 7904
+   }
   }
  },
- "console_test_bundle_ppsspp_note": "the release's 9 apps (rebuilt from the rebased runtime), each in PPSSPP: every item identical to the host"
+ "console_test_bundle_ppsspp_note": "the release's 9 apps (rebuilt from the rebased runtime), each in PPSSPP: every item identical to the host",
+ "note_pre_rebase_budget": "candidates.*.budget (pre-rebase) took every build's code size from the scalar build's psp-size; the VFPU build's vocr.o was 536 B larger (29,279 against 28,743 B); 'rebased' takes each build's own"
 }

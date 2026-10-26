@@ -37,7 +37,7 @@ console.
   48-wide projection of the head input (**r48**: P 96 → 48, re-quantised by `quant16`, then the rows; trained by a
   short head-only distillation, below). A frame that fires gets today's logits, argmax and top-K (r96); one that does
   not gets them over the level-1 classes only.
-- **Runtime switch** `vocr_opts.two_level` (W8I only; 0 = the full head, today's output). Asking for full logits
+- **Runtime switch** `vocr_opts.two_level` (W8I; since #126 also W8F, for the PSP: `docs/vocr6-psp.md`; 0 = the full head, today's output). Asking for full logits
   computes every row. `vocr_extra.esc_score` and `escaped` report the escape per frame and per line.
 - **The exact twin** (`train/head2level.py twolevel_exact`) reproduces the C escape scores, fired frames, argmax and
   top-K bit for bit (`tests/test_head2level.py` on a random-init model; on every frame of 1,030 development crops

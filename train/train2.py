@@ -56,6 +56,10 @@ width and the width clamp (1,020 px at 12, a multiple of the stride) follow it; 
 "stride" and "max_width". Teacher frame targets (kd=) are stride-8 only.
 --guide nrtr adds a training-only Transformer-decoder guidance loss (GTC; train/guide.py) on the
 frame-row features; the decoder is saved as "guide" and never exported.
+--height N (17..32, default 32) trains at another input height: every crop is resized to N rows (the
+runtime reads the height from the blob). The layers are the same at any height from 17 to 32 (they
+collapse it to the 2-row stage), so a checkpoint of one height initialises another (--init); a resume
+must keep it. Checkpoints record "height"; teacher frame targets (kd=) are height-32 only.
 
 Checkpoints are train.py's format (eval/run.py, train/export.py, sweep_eval.py read them).
 A run resumes from <out>/<run>/ckpt_last.pt. Threads: $TORCH_NUM_THREADS (heavy.sh).
@@ -105,6 +109,7 @@ from source_policy import sha256 as file_sha256  # noqa: E402
 from train import UNK, ctc_ok, default_threads, encoder, resize_h  # noqa: E402
 
 H, MAX_W, STRIDE = 32, 1024, 8
+HEIGHTS = range(17, 33)    # the input heights train/model.py's layers collapse to one row
 
 
 def set_geometry(stride):
@@ -116,6 +121,16 @@ def set_geometry(stride):
         raise SystemExit(f"--stride must be 8, 12 or 16, not {stride}")
     STRIDE, MAX_W = stride, 1024 // stride * stride
     return STRIDE, MAX_W
+
+
+def set_height(height):
+    """The run's input height (--height: 17..32; 32 is the released geometry), as the module global every
+    batch, resize, validation set and checkpoint below reads."""
+    global H
+    if height not in HEIGHTS:
+        raise SystemExit(f"--height must be 17..32 (the layers collapse it to one row), not {height}")
+    H = height
+    return H
 # Teacher targets index data/vocab.txt's classes. With another --vocab, KD_REMAP maps each of
 # those classes to the training vocab's (a reduced vocab's <unk> takes the ones it lacks).
 KD_REMAP = None
@@ -629,8 +644,9 @@ def train_scope(model, scope):
 # ----------------------------------------------------------------------------- eval
 
 class ValSet:
-    def __init__(self, name, path, opts, height=H):
+    def __init__(self, name, path, opts, height=None):
         self.name = name
+        self.height = height = H if height is None else height
         z = np.load(path)
         data, offs, shapes = z["data"], z["offsets"], z["shapes"]
         labels = json.loads(str(z["labels"]))
@@ -662,7 +678,7 @@ class ValSet:
         for T, idx in self.groups.items():
             for s in range(0, len(idx), batch):
                 part = idx[s:s + batch]
-                x = np.empty((len(part), 1, H, T * STRIDE), np.float32)
+                x = np.empty((len(part), 1, self.height, T * STRIDE), np.float32)
                 for j, i in enumerate(part):
                     g = self.imgs[i]
                     x[j, 0, :, :g.shape[1]] = g
@@ -745,6 +761,9 @@ def main(argv=None, *, execution_context=None):
                          "stage's DS at stride (2, 2), 12 the 4-row stage's at (2, 3)); sets the CTC input "
                          "lengths, the label-fits-frames filter, the augmentation's minimum width and the "
                          "width clamp (1,020 px at 12); checkpoints record it")
+    ap.add_argument("--height", type=int, default=32,
+                    help="input height in rows (17..32; the layers are the same at every height, so a "
+                         "checkpoint of another height can --init this one); checkpoints record it")
     ap.add_argument("--guide", choices=("none", "nrtr"), default="none",
                     help="nrtr: add a training-only Transformer-decoder guidance loss on the frame-row "
                          "features (GTC); never exported, kept as the checkpoint's 'guide'")
@@ -774,6 +793,10 @@ def main(argv=None, *, execution_context=None):
                          "separately frozen general-VN selector")
     args.freeze_bn_stats |= args.train_scope == "head"
     set_geometry(args.stride)
+    set_height(args.height)
+    if args.height != 32 and any(parse_opts(s.split(":", 3)[3] if s.count(":") >= 3 else "").get(key, "0") != "0"
+                                 for s in args.src for key in ("kd", "kdonly")):
+        raise SystemExit("teacher frame targets are on the height-32 grid: kd=/kdonly= need --height 32")
     if args.stride != 8 and any(parse_opts(s.split(":", 3)[3] if s.count(":") >= 3 else "").get(key, "0") != "0"
                                 for s in args.src for key in ("kd", "kdonly")):
         raise SystemExit("teacher frame targets are on the stride-8 grid: kd=/kdonly= need --stride 8")
@@ -836,7 +859,7 @@ def main(argv=None, *, execution_context=None):
     model = model.to(memory_format=torch.channels_last)
     train_scope(model, args.train_scope)
     print(f"params {sum(p.numel() for p in model.parameters()) / 1e6:.3f}M, classes {len(vocab) + 1}, "
-          f"threads {args.threads}, stride {STRIDE} (width clamp {MAX_W})"
+          f"threads {args.threads}, height {H}, stride {STRIDE} (width clamp {MAX_W})"
           + (f", rep {args.rep} (trained form)" if args.rep else ""), flush=True)
     guide = None
     if args.guide == "nrtr":
@@ -886,6 +909,8 @@ def main(argv=None, *, execution_context=None):
             raise ValueError("resume --rep/--chans differ from checkpoint")
         if int(ck.get("stride") or 8) != args.stride:
             raise ValueError("resume --stride differs from checkpoint")
+        if int(ck.get("height") or 32) != args.height:
+            raise ValueError("resume --height differs from checkpoint")
         if (guide is not None) != ("guide" in ck):
             raise ValueError("resume cannot add or remove --guide")
         if guide is not None:
@@ -913,6 +938,9 @@ def main(argv=None, *, execution_context=None):
             raise ValueError("init checkpoint --chans differ")
         if int(ck.get("stride") or 8) != args.stride:          # same parameters, another frame step
             print(f"init from a stride-{int(ck.get('stride') or 8)} checkpoint into stride {args.stride}",
+                  flush=True)
+        if int(ck.get("height") or 32) != args.height:         # same parameters, another input height
+            print(f"init from a height-{int(ck.get('height') or 32)} checkpoint into height {args.height}",
                   flush=True)
         if guide is not None and "guide" in ck:
             guide.load_state_dict(ck["guide"])              # continue a guided pretrain's decoder

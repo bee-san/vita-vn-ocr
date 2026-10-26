@@ -854,7 +854,7 @@ def cmd_score_b(a):
                     r["chars"], r["chars_all"] = n, na
         if "points" in u:
             status, kinds, _ = PP.line_stats([tuple(b) for b in u["boxes"]], u["points"])
-            r["line_stats"] = {k: status.count(k) for k in ("whole", "cut", "missed")}
+            r["line_stats"] = {k: status.count(k) for k in ("whole", "cut", "missed", "noink")}
             r["line_stats"].update({k: kinds.count(k) for k in ("merged", "junk")})
         rows["units"].append(r)
     doc = {"kind": "vocr6-final-test-b-rows", "set": plan["set"], "plan_sha256": psha,
@@ -1332,8 +1332,8 @@ def build_report(priv, out, suffix):
                 t = table(rs, keys_for(fams, STAGES), cluster=lambda r: r["page"], ident=lambda r: r["uid"],
                           min_clusters=2)
                 if kind == "page":
-                    t["line_stats"] = {k: sum(r["line_stats"][k] for r in rs)
-                                       for k in ("whole", "cut", "missed", "merged", "junk")}
+                    t["line_stats"] = {k: sum(r["line_stats"].get(k, 0) for r in rs)
+                                       for k in ("whole", "cut", "missed", "noink", "merged", "junk")}
                     t["lines"] = sum(r["lines"] for r in rs)
                     t["boxes"] = sum(r["boxes"] for r in rs)
                 rep["path_b"]["pcsg00807_page"][f"{kind}|{v}"] = t

@@ -129,6 +129,34 @@ def c_find(driver, images, finder, flags_of):
     return res
 
 
+def pp_find(driver, images, mode, fix, probe, flags_of):
+    """eval/pagepath_find.c's batch driver (#131; with -DPAGEPATH_FIX, #129's finder fixes): Rubi's line path on a
+    region (the finder, its short-line probe, the per-box refinement with Rubi's 16-line cap) -> [(boxes, dark, rc)]
+    in the form of c_find()."""
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+        for img, fl in zip(images, flags_of):
+            img = np.ascontiguousarray(img, dtype=np.uint8)
+            h, w = img.shape
+            f.write(struct.pack("<8I", w, h, mode, fix, probe, fl, 0, 0))
+            f.write(img.tobytes())
+        path = f.name
+    try:
+        out = subprocess.run([str(driver), path], check=True, capture_output=True, text=True).stdout.splitlines()
+    finally:
+        os.unlink(path)
+    if len(out) != len(images):
+        raise SystemExit(f"pagepath driver returned {len(out)} records for {len(images)} images")
+    res = []
+    for line in out:
+        v = [int(t) for t in line.split()]
+        rc, n = v[0], v[3]
+        if rc != 0:
+            res.append(([], [], rc))
+            continue
+        res.append(([tuple(v[4 + 5 * i:8 + 5 * i]) for i in range(n)], [v[8 + 5 * i] for i in range(n)], 0))
+    return res
+
+
 # ---------------------------------------------------------------- hval plan
 
 def covers(b, lb):
@@ -184,7 +212,10 @@ def hval_plan(args):
                 c = add(img, False, {"set": "hval_clean", "kind": kind, "title": title, "id": m.get("id")})
                 fixed.append({"crop": c, "id": m.get("id"), "title": title, "platform": plat, "kind": kind,
                               "ref": lab, "file": str(p)})
-    driver = build_finder(Path(args.out).parent / "build")
+    if args.driver:          # eval/pagepath_find.c built by eval/pagepath.py build_driver (e.g. "rubi,fix=5")
+        driver = Path(args.driver)
+    else:
+        driver = build_finder(Path(args.out).parent / "build")
     jobs, skipped = [], {"untrusted": 0, "vertical_region": 0, "no_dialogue": 0}
     complete_pages = set()
     for rowfile in sorted(pagepool.glob("*.jsonl")):
@@ -230,7 +261,11 @@ def hval_plan(args):
             x0, y0, x1, y1 = (int(v) * s for v in reg["region"])
             imgs.append(np.ascontiguousarray(grey[y0:y1, x0:x1]))
             info.append((title, r, reg, lines, s))
-    found = c_find(driver, imgs, FINDER_RECOVERY, [REFINE_ALL if i[1]["platform"] == "psp" else 0 for i in info])
+    rflags = [REFINE_ALL if i[1]["platform"] == "psp" else 0 for i in info]
+    if args.driver:
+        found = pp_find(driver, imgs, FINDER_RECOVERY, args.fix, args.probe, rflags)
+    else:
+        found = c_find(driver, imgs, FINDER_RECOVERY, rflags)
     for img, (title, r, reg, lines, s), (boxes, dark, rc) in zip(imgs, info, found):
         variant = reg.get("variant", "base")
         x0, y0 = int(reg["region"][0]) * s, int(reg["region"][1]) * s
@@ -253,6 +288,8 @@ def hval_plan(args):
         units.append(u)
     doc = {"kind": "vocr6-hval-plan", "built": now(), "pools": str(pools), "pagepool": str(pagepool),
            "pages": str(pages), "finder": FINDER_RECOVERY, "refine_psp": REFINE_ALL, "driver_sha256": sha256(driver),
+           "driver_kind": "pagepath_find" if args.driver else "vocr_lines_refine_test",
+           "fix": args.fix if args.driver else 0, "probe": args.probe if args.driver else 0,
            "repo_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                                        text=True).stdout.strip(), "skipped": skipped,
            "crops": crops, "meta": meta, "fixed": fixed, "units": units}
@@ -428,6 +465,12 @@ def rate(rows, path, mask=None):
     return round(100.0 * e.sum() / max(1.0, c.sum()), 4)
 
 
+def seen_units():
+    """The decision metric's train-seen hval units: eval/vocr6_select.py's pinned list (one definition)."""
+    import vocr6_select
+    return vocr6_select.seen_units()
+
+
 def summarize(sc, paths=("rubi", "greedy")):
     s = {}
     for p in paths:
@@ -443,9 +486,13 @@ def summarize(sc, paths=("rubi", "greedy")):
             g = sc["hval_page"]
             plat = np.asarray(g["platform"])
             nj = np.asarray(g["junk"]) == 0
-            d["hval_page"] = rate(g, p, nj)
-            d["hval_page_vita"] = rate(g, p, nj & (plat == "vita"))
-            d["hval_page_psp"] = rate(g, p, nj & (plat == "psp"))
+            seen = seen_units()
+            dec = nj & np.asarray([u not in seen for u in g["unit"]], bool)   # the decision metric (amendment 3)
+            d["hval_page"] = rate(g, p, dec)
+            d["hval_page_vita"] = rate(g, p, dec & (plat == "vita"))
+            d["hval_page_psp"] = rate(g, p, dec & (plat == "psp"))
+            d["hval_page_nomerge"] = rate(g, p, dec & (np.asarray(g["merged"]) == 0))
+            d["hval_page_seen"] = rate(g, p, nj)
             d["hval_page_all"] = rate(g, p)
         if "tv" in sc:
             tv, dn, wd = sc["tv"], sc["dn"], sc["wd"]
@@ -553,6 +600,10 @@ def main():
     p.add_argument("--pools", required=True)
     p.add_argument("--pagepool", required=True)
     p.add_argument("--pages", required=True)
+    p.add_argument("--driver", help="eval/pagepath_find.c's driver (pagepath.py build_driver) instead of the frozen "
+                                    "finder's: Rubi's short-line probe and #129's fixes")
+    p.add_argument("--fix", type=int, default=0, help="with --driver: VOCR_FIX_* flags (5 = COLGAP|JUNK)")
+    p.add_argument("--probe", type=int, default=1, choices=(0, 1), help="with --driver: Rubi's short-line probe")
     p.add_argument("--out", required=True)
     p = sub.add_parser("read")
     p.add_argument("--plan", required=True)

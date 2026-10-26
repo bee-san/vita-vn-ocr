@@ -45,6 +45,9 @@ SEEN_UNITS = Path(os.environ.get("VOCR6_SEEN_UNITS", "/local/home/skerraut/herd-
                                  "plans/hval_seen_units_v1.json"))
 SEEN_SHA256 = os.environ.get("VOCR6_SEEN_SHA256", "574ee0cdeea1cfb2abc232a4f43eacd674cc5bdf1e59d575eb5bf540cf6a2d19")
 _SEEN = {}
+# region units left out of every hval_page component of one comparison (--exclude-units; stage 1 amendment 5: the
+# units arm A's init trained on, for A against B)
+_EXCLUDE = {"units": frozenset()}
 
 
 def seen_units():
@@ -86,6 +89,8 @@ def component(doc, name, path):
                 keep &= np.asarray([u not in seen for u in x["unit"]], bool)
             if name == "hval_page_nomerge":
                 keep &= np.asarray(x["merged"]) == 0
+        if _EXCLUDE["units"]:
+            keep &= np.asarray([u not in _EXCLUDE["units"] for u in x["unit"]], bool)
         cl, keys = np.asarray(x["title"]), x["unit"]
     elif name == "hval_clean":
         x = r["hval_clean"]
@@ -119,6 +124,8 @@ def platform_mask(doc, name, platform):
         m = np.ones(len(x["chars"]), bool)
     else:
         m = np.asarray(x["kind"]) == "line"
+    if name.startswith("hval_page") and _EXCLUDE["units"]:
+        m &= np.asarray([u not in _EXCLUDE["units"] for u in x["unit"]], bool)
     return (np.asarray(x["platform"]) == platform)[m]
 
 
@@ -216,15 +223,22 @@ def main():
     p.add_argument("--y", required=True)
     p.add_argument("--path", default="rubi", choices=("rubi", "greedy"))
     p.add_argument("--out")
+    p.add_argument("--exclude-units", help="a JSON file with {\"units\": [...]}: region units left out of every "
+                                            "hval_page component (e.g. the units arm A's init trained on)")
     p = sub.add_parser("table")
     p.add_argument("--scores", nargs="+", required=True)
     p.add_argument("--runs", nargs="+", required=True)
     p.add_argument("--path", default="rubi", choices=("rubi", "greedy"))
     a = ap.parse_args()
     if a.cmd == "compare":
+        if a.exclude_units:
+            _EXCLUDE["units"] = frozenset(json.loads(Path(a.exclude_units).read_text(encoding="utf-8"))["units"])
         xs = [find_score(a.scores, r) for r in a.x.split(",")]
         ys = [find_score(a.scores, r) for r in a.y.split(",")]
         doc = decide(xs, ys, a.path)
+        if a.exclude_units:
+            doc["excluded_units"] = {"file": a.exclude_units, "n": len(_EXCLUDE["units"]),
+                                     "sha256": hashlib.sha256(Path(a.exclude_units).read_bytes()).hexdigest()}
         txt = json.dumps(doc, ensure_ascii=False, indent=1)
         if a.out:
             Path(a.out).write_text(txt + "\n", encoding="utf-8")

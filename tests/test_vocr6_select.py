@@ -113,3 +113,15 @@ def test_merged_units_report_column():
     e, c, cl, keys = S.component(a, "hval_page_nomerge", "rubi")
     assert len(e) == 4 * 8 - 1 and "T0:3" not in keys
     assert "hval_page_nomerge" in S.compare([a], [a], n_boot=100)
+
+
+def test_excluded_units_leave_every_page_component(monkeypatch):
+    a = doc("a", 0, 0, 0, seed=11)
+    monkeypatch.setitem(S._EXCLUDE, "units", frozenset({"T1:0", "T2:2"}))
+    e, c, cl, keys = S.component(a, "hval_page", "rubi")
+    assert len(e) == 4 * 8 - 2 and "T1:0" not in keys
+    e, c, cl, keys = S.component(a, "hval_page_all", "rubi")
+    assert len(e) == 5 * 8 - 2
+    assert len(S.platform_mask(a, "hval_page", "vita")) == 4 * 8 - 2
+    e, c, cl, keys = S.component(a, "hval_clean", "rubi")
+    assert len(e) == 4 * 8

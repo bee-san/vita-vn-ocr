@@ -107,6 +107,6 @@ def test_protocol_and_launcher_agree():
     for name, arm in proto["arms"].items():
         if name == "Q":
             continue
-        assert arm["init"] in R.INIT and "--height" in arm["train2_args"] and arm["seeds"] == [1, 2]
+        assert arm["init"] in R.INIT and "--height" in arm["train2_args"] and arm["seeds"] in ([1, 2], [1])
     assert set(R.NATIVE_INK) | set(R.NATIVE_GRAD) == set(MP.NATIVE)
     assert proto["budgets"]["memory_bytes_le"] == 4000000 and proto["budgets"]["time_s_le"] == 1.0

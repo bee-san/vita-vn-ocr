@@ -10,7 +10,7 @@ project) in M+ 1p (SIL OFL 1.1, ci/fonts.py) at native PSP sizes (14-17 px) over
 (no screenshot, no game font, no game text):
   lines.bin    LINES single-line crops, ink box + 2 px, grey
   regions.bin  REGIONS 480 x 90 (and smaller) dialogue regions of 2 or 3 lines, for the app's finder mode
-DIR/PSP/GAME/<folder>/ per --eboot (EBOOT.PBP, model.vocr, the pack, expect.txt from the host runtime, vocr.cfg):
+DIR/PSP/GAME/<tag>_<suffix>/ per --eboot (EBOOT.PBP, model.vocr, the pack, expect.txt from the host runtime, vocr.cfg):
   lines, lines_vfpu   the line crops, timed (repeat 3), the model's shipped options
   page, page_vfpu     the regions through the line finder (GRAD) + refinement, then every line (the page path)
   probe64             the 64 MB build (PSP_LARGE_MEMORY): the lines once, plus every memory partition's largest
@@ -34,8 +34,8 @@ sys.path[:0] = [str(HERE), str(ROOT / "runtime")]
 import pack  # noqa: E402
 
 LINES, REGIONS, SEED = 150, 40, 20261026
-FOLDERS = {"lines": ("MODELB_L", -1), "lines_vfpu": ("MODELB_LV", -1), "page": ("MODELB_P", 0),
-           "page_vfpu": ("MODELB_PV", 0), "probe64": ("MODELB_64", -1)}
+FOLDERS = {"lines": ("_L", -1), "lines_vfpu": ("_LV", -1), "page": ("_P", 0), "page_vfpu": ("_PV", 0),
+           "probe64": ("_64", -1)}   # folder = --tag + suffix
 
 
 def corpus():
@@ -114,13 +114,15 @@ def main():
     ap.add_argument("--tile", type=int, default=0)
     ap.add_argument("--head", type=int, default=0)
     ap.add_argument("--font", default="")
+    ap.add_argument("--tag", default="MODELB", help="folder name prefix (PSP/GAME/<tag>_L, ...)")
+    ap.add_argument("--keep", action="store_true", help="add to an existing DIR (another blob's apps)")
     a = ap.parse_args()
     font = a.font or subprocess.run([sys.executable, str(ROOT / "ci" / "fonts.py")], check=True, capture_output=True,
                                     text=True).stdout.strip().splitlines()[-1]
     rng = np.random.default_rng(SEED)
     lines, regions = render(font, rng)
     out = Path(a.out)
-    if out.exists():
+    if out.exists() and not a.keep:
         shutil.rmtree(out)
     src = out / "src"
     for name, crops in (("lines", lines), ("regions", regions)):
@@ -134,7 +136,8 @@ def main():
                             "head": a.head}, "apps": {}}
     for spec in a.eboot:
         kind, eboot = spec.split("=", 1)
-        folder, finder = FOLDERS[kind]
+        suffix, finder = FOLDERS[kind]
+        folder = a.tag + suffix
         p = src / ("regions" if finder >= 0 else "lines")
         args = ["bundle", "--blob", a.blob, "--mode", a.mode, "--pack", str(p), "--out", str(out), "--eboot", eboot,
                 "--name", folder, "--tile", str(a.tile), "--head", str(a.head), "--head-gate", a.head_gate,
@@ -151,7 +154,7 @@ def main():
     shutil.rmtree(src)
     for stray in out.rglob("vocr_lines_refine_test"):
         stray.unlink()
-    (out / "bundle.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    (out / f"bundle_{a.tag}.json").write_text(json.dumps(manifest, indent=1) + "\n")
     print(json.dumps({k: v for k, v in manifest.items() if k != "apps"} | {"apps": list(manifest["apps"])}))
 
 

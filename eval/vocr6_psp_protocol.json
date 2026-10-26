@@ -182,6 +182,16 @@
     "successive halving for stage 1: every arm's seed 1 runs first; an arm whose seed-1 SC exceeds the lowest seed-1 SC among the feasible arms by more than 1.0 point is eliminated without a second seed; every other arm runs seed 2, and decisions.stage1 then reads the surviving arms (mean over 2 seeds)"
    ],
    "why": "B24 seed 1 is worse than VOCR5-S even on the hval titles it trained on (hval lines 1.73% against 1.26%; development fixed lines 4.58% against 1.17%), which points at the depth-0 shape's lost capacity and the move from height 32 rather than at data variety; S18 keeps VOCR5-S's every layer and moves only the input height, to the native PSP crop height, which sweep4 shows fits the time budget at depth 1. Halving keeps second seeds for arms that can still win"
+  },
+  {
+   "n": 4,
+   "date": "2026-10-26T12:47Z (commit time in git), after every arm's seed 1 was scored",
+   "changes": [
+    "futility stop: stage 1 ends at seed 1, stages 2 and 4 (QAT, the final retrain) are not run, and no model B is released under release_rule",
+    "instead, decisions.head is applied to two console-test candidates, S32 (accuracy-first; not time-feasible by budgets.time_rule) and B24 (the best time-feasible arm), whose gated two-level blobs are verified in PPSSPP (release_rule d's method) and timed on the development crops, for the console test; they are published as a console-test pre-release, not as a model release",
+    "psp-test is not read (protected section: it is read for a released blob only)"
+   ],
+   "why": "against VOCR5-S on development (paired VN-cluster 95% intervals): every time-feasible arm is resolved worse on whole dialogue, the best by +3.93 points [+2.63, +5.59] (B24), and on fixed lines (+3.40 [+2.35, +4.75]); the unchanged-shape control S32 only ties VOCR5-S there (+0.04 [-0.24, +0.31], -0.02 [-0.23, +0.16]) while it is resolved better on the hooked titles' hval (page path -0.73 [-1.32, -0.29], lines -0.75 [-1.43, -0.29]). release_rule (a) needs model B resolved better than VOCR5-S on development whole dialogue: no later stage (QAT, the head, twice the steps, 3 seeds) can plausibly move a feasible arm by 3 to 4 points past a target that VOCR5-S's own shape only ties. Stopping can only lead to no release, the conservative outcome"
   }
  ]
 }

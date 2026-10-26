@@ -8,7 +8,10 @@ TABLE.json (written by the scoring step):
   {"baseline": {"dev": RESULT.json, "hval": RESULT.json},              eval/pagepath.py run --finder rubi
    "seen_dev_clusters": ["v12188"],                                     left out of the headline
    "candidates": [{"arm", "seed", "decode": "crop|crop+refine|det|det+refine", "dev": RESULT.json,
-                   "hval": RESULT.json, "vtsp_bytes", "est_ms_333", "est_ms_444", "arena", "c_equal": bool}]}
+                   "hval": RESULT.json, "vtsp_bytes", "est_ms_333", "est_ms_444", "arena", "c_equal": bool}],
+   "rubi_next": {"name": "rubi,fix=1", "dev": RESULT.json, "hval": RESULT.json},     optional (amendments 9, 12)
+   "reports": {NAME: {"dev": RESULT.json, "hval": RESULT.json}}}                     optional, report only
+(eval/textspot6_table.py writes it.)
 
 Each RESULT.json is eval/pagepath.py's (its "units": one row per unit with uid, cluster, platform, errors, chars).
 
@@ -21,6 +24,11 @@ The rule, as registered:
   cost order      VTSP bytes, est. ms @333, arena, decode (crop, crop+refine, det, det+refine), name
   pick            the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen dev is resolved
                   below 0 and hval is not resolved above 0; repeated until none does
+  no qualifier    a negative verdict; the eligible candidate with the lowest unseen-dev CER is named for the research
+                  pre-release
+  Rubi's default  the pick is Rubi's default finder only if, against rubi_next (rubi,fix=1) on the same units,
+                  unseen dev is resolved below 0 and hval is not resolved above 0; else Rubi keeps GRAD + refine
+                  (ocr_finder = grad) with the spotter behind its setting
 Intervals: eval/vocr3_report.cluster_bootstrap (10,000 resamples, seed 0, sorted cluster ids, cluster sums).
 """
 import argparse
@@ -150,6 +158,30 @@ def main(argv=None):
             chain.append({"step": "replaced", "pick": f"{nxt[0]['arm']}|{nxt[0]['decode']}", "dev": nxt[1],
                           "hval": nxt[2]})
             pick = nxt[0]
+    nxt_rec, rubi_default = None, None
+    if tab.get("rubi_next"):
+        rn = tab["rubi_next"]
+        nd, nh = load_rows(rn["dev"], seen), load_rows(rn["hval"])
+        nxt_rec = {"name": rn.get("name"), "dev_cer": cer(nd), "dev_cer_all": cer(load_rows(rn["dev"])),
+                   "hval_cer": cer(nh), "dev_platform": per_platform(nd), "hval_platform": per_platform(nh),
+                   "dev_sha256": sha256_file(rn["dev"]), "hval_sha256": sha256_file(rn["hval"]),
+                   "vs_grad_refine": {"dev": diff(nd, base_dev), "hval": diff(nh, base_hval)}}
+        for c in cands:
+            c["vs_rubi_next"] = {"dev": diff(load_rows(c["_dev"], seen), nd), "hval": diff(load_rows(c["_hval"]), nh)}
+        if pick:
+            v = pick["vs_rubi_next"]
+            ok = resolved_below(v["dev"]) and not resolved_above(v["hval"])
+            rubi_default = {"against": rn.get("name"), "finder": "spotter" if ok else "grad", "dev": v["dev"],
+                            "hval": v["hval"]}
+    reports = {}
+    for name, r in sorted((tab.get("reports") or {}).items()):
+        d, h = load_rows(r["dev"], seen), load_rows(r["hval"])
+        reports[name] = {"dev_cer": cer(d), "dev_cer_all": cer(load_rows(r["dev"])), "hval_cer": cer(h),
+                         "dev_platform": per_platform(d), "hval_platform": per_platform(h),
+                         "vs_grad_refine": {"dev": diff(d, base_dev), "hval": diff(h, base_hval)}}
+    elig = sorted([c for c in cands if c["eligible"]], key=lambda c: (c["dev_cer"], cost_key(c)))
+    best = None if pick or not elig else {"arm": elig[0]["arm"], "decode": elig[0]["decode"],
+                                          "seed": elig[0]["representative_seed"], "dev_cer": elig[0]["dev_cer"]}
     for c in cands:
         c.pop("_dev")
         c.pop("_hval")
@@ -165,7 +197,8 @@ def main(argv=None):
            "candidates": cands, "qualifiers": [f"{c['arm']}|{c['decode']}" for c in quals], "chain": chain,
            "pick": None if pick is None else {"arm": pick["arm"], "decode": pick["decode"],
                                               "seed": pick["representative_seed"]},
-           "verdict": "positive" if pick else "negative"}
+           "verdict": "positive" if pick else "negative", "rubi_next": nxt_rec, "rubi_default": rubi_default,
+           "best_eligible_if_negative": best, "reports": reports}
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     print(f"baseline GRAD + refine: dev {out['baseline']['dev_cer']}% hval {out['baseline']['hval_cer']}%")
     for c in sorted(cands, key=cost_key):
@@ -173,7 +206,7 @@ def main(argv=None):
         print(f"{c['arm']:>20s} {c['decode']:>11s} s{c['representative_seed']} {'E' if c['eligible'] else '-'} "
               f"dev {c['dev_cer']}% ({v['dev']['delta']:+.3f} {v['dev'].get('ci95')}) hval {c['hval_cer']}% "
               f"({v['hval']['delta']:+.3f} {v['hval'].get('ci95')}) {'QUALIFIES' if c['qualifies'] else ''}")
-    print("PICK", out["pick"], "verdict", out["verdict"])
+    print("pick", out["pick"], "verdict", out["verdict"], "rubi default", (rubi_default or {}).get("finder"))
 
 
 if __name__ == "__main__":

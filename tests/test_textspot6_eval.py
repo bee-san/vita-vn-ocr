@@ -70,6 +70,42 @@ def test_hval_resolved_worse_disqualifies(tmp_path):
     assert not r["candidates"][0]["qualifies"] and r["verdict"] == "negative"
 
 
+def test_rubi_default_needs_a_resolved_win_over_rubi_next(tmp_path):
+    n = 30
+    base = result(tmp_path / "b.json", units(n, [10] * n))
+    pick_dev = result(tmp_path / "p.json", units(n, [4] * n))
+    for nxt_e, want in ((8, "spotter"), (4, "grad"), (3, "grad")):
+        nxt = result(tmp_path / f"n{nxt_e}.json", units(n, [nxt_e] * n))
+        table = tmp_path / "t.json"
+        table.write_text(json.dumps({"baseline": {"dev": base, "hval": base},
+                                     "rubi_next": {"name": "rubi,fix=1", "dev": nxt, "hval": nxt},
+                                     "reports": {"rubi,fix=5": {"dev": nxt, "hval": nxt}}, "candidates": [
+            {"arm": "a", "seed": 1, "decode": "crop", "dev": pick_dev, "hval": pick_dev, "vtsp_bytes": 1,
+             "est_ms_333": 1.0, "arena": 1, "c_equal": True}]}))
+        SEL.main(["--table", str(table), "--out", str(tmp_path / "o.json")])
+        r = json.loads((tmp_path / "o.json").read_text())
+        assert r["verdict"] == "positive" and r["rubi_default"]["finder"] == want, (nxt_e, r["rubi_default"])
+        assert r["reports"]["rubi,fix=5"]["dev_cer"] == round(100 * nxt_e / 100, 4)
+        assert r["best_eligible_if_negative"] is None
+
+
+def test_negative_verdict_names_the_best_eligible(tmp_path):
+    n = 30
+    base = result(tmp_path / "b.json", units(n, [10] * n))
+    lvl = result(tmp_path / "l.json", units(n, [10] * n))
+    lo = result(tmp_path / "lo.json", units(n, [9] * 15 + [11] * 15))
+    table = tmp_path / "t.json"
+    table.write_text(json.dumps({"baseline": {"dev": base, "hval": base}, "candidates": [
+        {"arm": "a", "seed": 1, "decode": "det", "dev": lvl, "hval": lvl, "vtsp_bytes": 1, "est_ms_333": 1.0,
+         "arena": 1, "c_equal": True},
+        {"arm": "b", "seed": 1, "decode": "det", "dev": lo, "hval": lvl, "vtsp_bytes": 2, "est_ms_333": 1.0,
+         "arena": 1, "c_equal": False}]}))
+    SEL.main(["--table", str(table), "--out", str(tmp_path / "o.json")])
+    r = json.loads((tmp_path / "o.json").read_text())
+    assert r["verdict"] == "negative" and r["rubi_default"] is None
+    assert r["best_eligible_if_negative"]["arm"] == "a"         # b is not eligible (C differs from the twin)
+
+
 def test_seen_clusters_are_left_out(tmp_path):
     u = units(3, [0, 0, 50])
     p = result(tmp_path / "u.json", u)

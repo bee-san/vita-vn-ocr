@@ -915,6 +915,144 @@
     ],
     "opts": "inv=0.5,fa=0.6"
    }
+  ],
+  "m1_cil": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   },
+   {
+    "name": "cc",
+    "weight": 0.06,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console/*.npz"
+    ],
+    "opts": "inv=0.5"
+   },
+   {
+    "name": "ccj",
+    "weight": 0.04,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console_jitter/*.npz"
+    ],
+    "opts": "inv=0.5"
+   }
   ]
  },
  "mix_notes": {
@@ -924,7 +1062,8 @@
   "m1_t5": "m1 with the hooked source split per title (eval/vocr6_run.py mix_sources per_title) at temperature 0.5: title t gets 0.25 * rows_t^0.5 / sum rows^0.5 instead of its row share",
   "m1_r30": "m1 with the real half scaled to 0.3 and the synthetic half to 0.7 (every source's weight x0.6 / x1.4)",
   "m1_r70": "m1 with the real half scaled to 0.7 and the synthetic half to 0.3 (x1.4 / x0.6)",
-  "m1_fa2": "m1 with every source's finder-augmentation probability doubled (nv/s2 0.15 -> 0.30; the real ink pools and hk 0.3 -> 0.6; the GRAD-crop pools keep none)"
+  "m1_fa2": "m1 with every source's finder-augmentation probability doubled (nv/s2 0.15 -> 0.30; the real ink pools and hk 0.3 -> 0.6; the GRAD-crop pools keep none)",
+  "m1_cil": "m1 with the hooked share split: hk 0.15 + vocr6-finder's console crops of the train pages (finder rubi,fix=5 = F13; console view: Vita as is, PSP 2x) 0.06 whole-line crops (cc, 98,324) + 0.04 jittered boxes (ccj, 304,524); no finder augmentation on them (they are finder crops); hval and guard pages' crops never used"
  },
  "data_pins": {
   "hooked": {
@@ -984,7 +1123,19 @@
     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz": "cbac18a8fdccb068d8cb04432ce7f4b4b4d28cf81132271e24c01c4d5c49b76a",
     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz": "f2c31881d4fee427ec91dce22aaec1f9bbce7ecfdb098638174037e08a73046c"
    }
-  }
+  },
+  "extra_pools": [
+   {
+    "name": "console_crops",
+    "manifest": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/manifest.json",
+    "sha256": "4adb00c98838fc0a2350c700ad4423ff9fd7212aa31d7e72cbcf0b79647b3895",
+    "sources": [
+     "cc",
+     "ccj"
+    ],
+    "what": "vocr6-finder's console crops v1 (data/console_crops.py on its branch; finder rubi,fix=5; sets train/hval/guard, variants base + expanded-8, views console + native, jitter 2); train split only"
+   }
+  ]
  },
  "log_vals": [
   "tvd:/local/home/skerraut/herd-vita-ocr/shared/artifacts/owner-drive-ingest-2/reclaim/pools/teacher_val_dev.npz:n=1000",
@@ -1264,11 +1415,19 @@
      "eval_every": 5000,
      "init": "W15",
      "what": "finder augmentation doubled"
+    },
+    "S2cil": {
+     "run": "v6s2cil_N",
+     "mix": "m1_cil",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "crop-in-the-loop: the finder crops (and jittered boxes) of the train pages, with exact labels"
     }
    },
-   "pending": {
-    "S2cil": "crop-in-the-loop: vocr6-finder's console crops (CROPS_READY: the finder's whole-line crops of the train pages and their jittered variants, labelled from the verified lines) split from the hooked share: hk 0.15 + console 0.06 + console_jitter 0.04 (real half unchanged). Pinned (manifest sha256) when CROPS_READY appears, before its runs; the train pages only (never an hval, guard or test page)"
-   },
+   "pending": {},
    "not_run": {
     "names": "names in/out: names are 647 of the hooked train split's 74,921 horizontal rows (0.9%), the metric is dialogue, and the owner says names do not matter (2026-10-14 13:57Z): no plausible effect on the decision metric",
     "vreflow": "vertical re-flow: 1,567 columns of one title (PCSG00653); the decision metric is horizontal dialogue and VOCR6 ships no vertical model",
@@ -1280,7 +1439,8 @@
     "recipe": "R2 = W15 + every adopted factor. With two or more adopted factors, one confirmation pair (S2all, seeds 1 and 3, every adopted factor combined; mixes compose by applying each factor's change to m1 in the order x2, s6, cil, t5, r, fa2) must itself be adopted over W15; if not, R2 = W15 + the adopted factor with the lowest mean hval_page",
     "report": "every component, per platform (Vita, PSP 2x), per title; slot-hours"
    },
-   "compute": "est. 6 arms x 2 seeds x ~2.4 h = ~29 slot-hours (+ S2cil ~4.8, S2all ~4.8)"
+   "compute": "est. 6 arms x 2 seeds x ~2.4 h = ~29 slot-hours (+ S2cil ~4.8, S2all ~4.8)",
+   "registered_S2cil": "pinned to console crops v1 (manifest sha256 4adb00c98838...) in this commit, before any stage-2 run and any stage-1 score"
   },
   "3": {
    "name": "capacity and training-only aids inside the time budget, one at a time from R2",

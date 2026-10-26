@@ -3103,6 +3103,12 @@
    "chars_read": 27,
    "boxes": 112
   },
+  "F1": {
+   "regions": 66,
+   "regions_with_text": 12,
+   "chars_read": 31,
+   "boxes": 112
+  },
   "F13": {
    "regions": 66,
    "regions_with_text": 10,
@@ -3121,276 +3127,322 @@
    "platform": "psp",
    "chars": 603,
    "base_errors": 30,
+   "F1_errors": 30,
    "F13_errors": 30
   },
   "NPJH00140": {
    "platform": "psp",
    "chars": 4431,
    "base_errors": 1,
+   "F1_errors": 1,
    "F13_errors": 1
   },
   "NPJH50001": {
    "platform": "psp",
    "chars": 6678,
    "base_errors": 12,
+   "F1_errors": 12,
    "F13_errors": 12
   },
   "NPJH50002": {
    "platform": "psp",
    "chars": 4422,
    "base_errors": 28,
+   "F1_errors": 28,
    "F13_errors": 28
   },
   "NPJH50132": {
    "platform": "psp",
    "chars": 3972,
    "base_errors": 90,
+   "F1_errors": 72,
    "F13_errors": 72
   },
   "NPJH50279": {
    "platform": "psp",
    "chars": 1902,
    "base_errors": 87,
+   "F1_errors": 78,
    "F13_errors": 78
   },
   "NPJH50297": {
    "platform": "psp",
    "chars": 3279,
    "base_errors": 156,
+   "F1_errors": 48,
    "F13_errors": 48
   },
   "NPJH50356": {
    "platform": "psp",
    "chars": 4521,
    "base_errors": 131,
+   "F1_errors": 103,
    "F13_errors": 99
   },
   "NPJH50382": {
    "platform": "psp",
    "chars": 5373,
    "base_errors": 31,
+   "F1_errors": 30,
    "F13_errors": 30
   },
   "NPJH50551": {
    "platform": "psp",
    "chars": 816,
    "base_errors": 0,
+   "F1_errors": 0,
    "F13_errors": 0
   },
   "NPJH50621": {
    "platform": "psp",
    "chars": 3783,
    "base_errors": 88,
+   "F1_errors": 88,
    "F13_errors": 79
   },
   "NPJH50641": {
    "platform": "psp",
    "chars": 4071,
    "base_errors": 161,
+   "F1_errors": 70,
    "F13_errors": 70
   },
   "NPJH50649": {
    "platform": "psp",
    "chars": 2412,
    "base_errors": 15,
+   "F1_errors": 9,
    "F13_errors": 9
   },
   "PCSG00007": {
    "platform": "vita",
    "chars": 1383,
    "base_errors": 12,
+   "F1_errors": 12,
    "F13_errors": 12
   },
   "PCSG00146": {
    "platform": "vita",
    "chars": 4218,
    "base_errors": 27,
+   "F1_errors": 27,
    "F13_errors": 27
   },
   "PCSG00352": {
    "platform": "vita",
    "chars": 2292,
    "base_errors": 14,
+   "F1_errors": 14,
    "F13_errors": 14
   },
   "PCSG00367": {
    "platform": "vita",
    "chars": 4152,
    "base_errors": 15,
+   "F1_errors": 6,
    "F13_errors": 6
   },
   "PCSG00380": {
    "platform": "vita",
    "chars": 4731,
    "base_errors": 18,
+   "F1_errors": 6,
    "F13_errors": 6
   },
   "PCSG00468": {
    "platform": "vita",
    "chars": 960,
    "base_errors": 42,
+   "F1_errors": 18,
    "F13_errors": 18
   },
   "PCSG00469": {
    "platform": "vita",
    "chars": 6855,
    "base_errors": 198,
+   "F1_errors": 159,
    "F13_errors": 159
   },
   "PCSG00509": {
    "platform": "vita",
    "chars": 4191,
    "base_errors": 87,
+   "F1_errors": 24,
    "F13_errors": 24
   },
   "PCSG00540": {
    "platform": "vita",
    "chars": 2289,
    "base_errors": 45,
+   "F1_errors": 45,
    "F13_errors": 41
   },
   "PCSG00547": {
    "platform": "vita",
    "chars": 2331,
    "base_errors": 39,
+   "F1_errors": 33,
    "F13_errors": 33
   },
   "PCSG00553": {
    "platform": "vita",
    "chars": 3429,
    "base_errors": 69,
+   "F1_errors": 39,
    "F13_errors": 39
   },
   "PCSG00555": {
    "platform": "vita",
    "chars": 1251,
    "base_errors": 3,
+   "F1_errors": 3,
    "F13_errors": 3
   },
   "PCSG00576": {
    "platform": "vita",
    "chars": 3405,
    "base_errors": 22,
+   "F1_errors": 22,
    "F13_errors": 22
   },
   "PCSG00611": {
    "platform": "vita",
    "chars": 4278,
    "base_errors": 411,
+   "F1_errors": 215,
    "F13_errors": 215
   },
   "PCSG00620": {
    "platform": "vita",
    "chars": 4173,
    "base_errors": 61,
+   "F1_errors": 70,
    "F13_errors": 70
   },
   "PCSG00628": {
    "platform": "vita",
    "chars": 3312,
    "base_errors": 6,
+   "F1_errors": 6,
    "F13_errors": 6
   },
   "PCSG00648": {
    "platform": "vita",
    "chars": 7317,
    "base_errors": 48,
+   "F1_errors": 48,
    "F13_errors": 48
   },
   "PCSG00666": {
    "platform": "vita",
    "chars": 4014,
    "base_errors": 102,
+   "F1_errors": 102,
    "F13_errors": 102
   },
   "PCSG00667": {
    "platform": "vita",
    "chars": 5184,
    "base_errors": 88,
+   "F1_errors": 88,
    "F13_errors": 88
   },
   "PCSG00713": {
    "platform": "vita",
    "chars": 4698,
    "base_errors": 0,
+   "F1_errors": 0,
    "F13_errors": 0
   },
   "PCSG00751": {
    "platform": "vita",
    "chars": 273,
    "base_errors": 9,
+   "F1_errors": 3,
    "F13_errors": 3
   },
   "PCSG00753": {
    "platform": "vita",
    "chars": 2310,
    "base_errors": 355,
+   "F1_errors": 313,
    "F13_errors": 310
   },
   "PCSG00805": {
    "platform": "vita",
    "chars": 4335,
    "base_errors": 30,
+   "F1_errors": 30,
    "F13_errors": 30
   },
   "PCSG00854": {
    "platform": "vita",
    "chars": 3861,
    "base_errors": 2600,
+   "F1_errors": 2581,
    "F13_errors": 335
   },
   "PCSG00866": {
    "platform": "vita",
    "chars": 1170,
    "base_errors": 114,
+   "F1_errors": 39,
    "F13_errors": 39
   },
   "PCSG00876": {
    "platform": "vita",
    "chars": 3234,
    "base_errors": 72,
+   "F1_errors": 45,
    "F13_errors": 45
   },
   "PCSG00914": {
    "platform": "vita",
    "chars": 1791,
    "base_errors": 66,
+   "F1_errors": 60,
    "F13_errors": 60
   },
   "PCSG00917": {
    "platform": "vita",
    "chars": 5067,
    "base_errors": 65,
+   "F1_errors": 17,
    "F13_errors": 17
   },
   "PCSG00918": {
    "platform": "vita",
    "chars": 5115,
    "base_errors": 21,
+   "F1_errors": 9,
    "F13_errors": 9
   },
   "PCSG00935": {
    "platform": "vita",
    "chars": 1665,
    "base_errors": 84,
+   "F1_errors": 36,
    "F13_errors": 36
   },
   "PCSG01110": {
    "platform": "vita",
    "chars": 1029,
    "base_errors": 0,
+   "F1_errors": 0,
    "F13_errors": 0
   },
   "ULJM05383": {
    "platform": "psp",
    "chars": 6936,
    "base_errors": 66,
+   "F1_errors": 33,
    "F13_errors": 33
   },
   "ULJM05674": {
    "platform": "psp",
    "chars": 4959,
    "base_errors": 677,
+   "F1_errors": 677,
    "F13_errors": 677
   }
  },

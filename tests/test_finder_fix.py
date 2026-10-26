@@ -14,6 +14,7 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -46,11 +47,21 @@ def test_frozen_finder_files_unchanged():
         assert hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() == want, rel
 
 
-def test_default_flags():
+def test_default_flags(tmp_path):
     h = (ROOT / "runtime" / "vocr_lines_fix.h").read_text(encoding="utf-8")
     flags = {k: int(v, 16) for k, v in re.findall(r"#define (VOCR_FIX_[A-Z]+) (0x[0-9a-f]+)u", h)}
     assert flags == {"VOCR_FIX_COLGAP": 1, "VOCR_FIX_VALLEY": 2, "VOCR_FIX_JUNK": 4}
-    assert re.search(r"#define VOCR_FIX_DEFAULT VOCR_FIX_COLGAP\b", h)     # JUNK and VALLEY are opt-in
+    if CC is None:
+        pytest.skip("no C compiler")
+    src = tmp_path / "flags.c"                              # the macros' values as the compiler sees them
+    src.write_text('#include <stdio.h>\n#include "vocr_lines_fix.h"\n'
+                   'int main(void) {\n'
+                   '    printf("%u %u\\n", (unsigned)VOCR_FIX_DEFAULT, (unsigned)VOCR_FIX_ALL);\n'
+                   '    return 0;\n}\n')
+    exe = tmp_path / "flags"
+    subprocess.run([CC, "-std=c99", f"-I{ROOT / 'runtime'}", "-o", str(exe), str(src)], check=True)
+    out = subprocess.run([str(exe)], capture_output=True, text=True, check=True).stdout.split()
+    assert out == ["1", "7"]                                # COLGAP alone; JUNK and VALLEY are opt-in
 
 
 @pytest.fixture(scope="module")

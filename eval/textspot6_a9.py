@@ -272,6 +272,49 @@ def load_extra(path):
 
 # ----------------------------------------------------------------------------- measure
 
+FORCE_FLAGS = {1: (32, 2), 2: (64, 4)}   # the driver's record flag and the call's flag of VOCR_TEXTSPOT6_SCALE1 / _2
+
+
+def measure_one6(job):
+    """textspot_a9.measure_one with the scale forced (job[-1] = 1 or 2): the record carries the driver's flag of
+    VOCR_TEXTSPOT6_SCALE1 / _SCALE2, the arenas are vocr_textspot6_frame_arena_bytes_flags and
+    vocr_textspot6_arena_bytes_flags with it; the rest is measure_one's."""
+    import shutil
+    import struct
+    out, q, drv, shape, scale, (w, h), fmt, seed, blob, blob_src, nodark, force = job
+    rec_flag, call_flag = FORCE_FLAGS[force]
+    tag = f"{shape}_{scale}_{w}x{h}_{fmt}"
+    stage = Path(tempfile.mkdtemp(prefix="vtsp-a9-", dir="/tmp"))
+    try:
+        shutil.copy2(drv, stage / drv.name)
+        b = stage / "spot.vtsp"
+        b.write_bytes(blob)
+        batch = stage / "frames.bin"
+        g = A9.frame(seed, w, h)
+        with open(batch, "wb") as f:
+            f.write(struct.pack("<4I", w, h, 1, rec_flag | (2 if nodark else 0)))
+            f.write(g.tobytes())
+        res = {}
+        for mode, k in (("--empty", "dry"), ("--batch", "batch")):
+            res[k] = A9.run_qemu(q, drv, stage, mode, b, batch, out / f"counts_{tag}_{k}.txt",
+                                 out / f"cache_{tag}_{k}.txt", out / "classes.txt")
+        v = res["batch"].split()
+        ar = []
+        for mode in ("--frame-arena", "--arena"):
+            pr = subprocess.run([str(q / "bin/qemu-arm"), "-cpu", "cortex-a9", f"./{drv.name}", mode, "spot.vtsp",
+                                 str(w), str(h), str(call_flag)], capture_output=True, text=True,
+                                stdin=subprocess.DEVNULL, timeout=600, env={}, cwd=stage, check=True)
+            ar.append(int(pr.stdout.strip()))
+        return {"shape": shape, "scale": scale, "half_above": SCALES[scale], "size": [w, h], "format": fmt,
+                "flags": ("VOCR_TEXTSPOT_NO_DARK | " if nodark else "") + f"VOCR_TEXTSPOT6_SCALE{force}",
+                "force": force, "frames": 1, "blob_sha256": hashlib.sha256(blob).hexdigest(), "blob_bytes": len(blob),
+                "blob": blob_src, "frame_sha256": hashlib.sha256(g.tobytes()).hexdigest(),
+                "batch_sha256": sha256(batch), "rc": int(v[0]), "boxes": int(v[1]), "blocks": int(v[2]),
+                "pick": int(v[3]), "truncated": int(v[4]), "frame_arena_bytes": ar[0], "arena_bytes": ar[1]}
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
 def cmd_measure(argv):
     ap = argparse.ArgumentParser(prog="textspot6_a9.py measure")
     ap.add_argument("--out", required=True)
@@ -287,6 +330,8 @@ def cmd_measure(argv):
     ap.add_argument("--vitasdk", default=os.environ.get("VITASDK", ""))
     ap.add_argument("--arm-cc", default="")
     ap.add_argument("--qemu", default="")
+    ap.add_argument("--force", type=int, choices=(1, 2), default=0,
+                    help="the scale forced (VOCR_TEXTSPOT6_SCALE1 / _SCALE2) on every record and arena")
     args = ap.parse_args(argv)
     if args.shapes_json:
         load_extra(args.shapes_json)
@@ -308,7 +353,10 @@ def cmd_measure(argv):
             for wh in sizes:
                 jobs.append((out, q, drv, r, scale, wh, "grey", args.seed, blob, src, args.nodark))
         with cf.ThreadPoolExecutor(args.jobs) as ex:
-            runs = list(ex.map(A9.measure_one, jobs))
+            if args.force:
+                runs = list(ex.map(measure_one6, [(*j, args.force) for j in jobs]))
+            else:
+                runs = list(ex.map(A9.measure_one, jobs))
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     meta = {"kind": "textspot6-a9", "computed": now,
             "method": A9.__doc__.split("\n\n")[1].strip().replace("\n", " "),
@@ -321,7 +369,7 @@ def cmd_measure(argv):
             "cache": A9.A.CACHE_ARGS, "vocr_textspot_o_text_bytes": text, "calibration": A9.CAL, "seed": args.seed,
             "runs": runs, "textspot6": {"argv": W2.portable(["measure", *argv]), "rows": rows,
                                         "shapes": {r: row_shape(r)[0] for r in rows}, "cflags": cflags,
-                                        "nodark": args.nodark}}
+                                        "nodark": args.nodark, "force": args.force}}
     (out / "meta.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(f"{len(runs)} batches measured into {out}")
 
@@ -389,6 +437,8 @@ def cmd_report(argv):
     ap.add_argument("--code-size", default="")
     ap.add_argument("--stack", default="")
     ap.add_argument("--probes", default="", help="a measured directory of T_FULL_PROBE rows (a block of its own)")
+    ap.add_argument("--forced", action="append", default=[],
+                    help="measured directories of --force rows (regions at a forced scale: a block of their own)")
     ap.add_argument("--title", default="")
     args = ap.parse_args(argv)
     labels = ["main"] + [args.also_label[i] if i < len(args.also_label) else f"also{i}" for i in range(len(args.also))]
@@ -476,6 +526,11 @@ def cmd_report(argv):
                                    "macs_960": t["macs"], "ms_333_960": t["ms_per_frame"]["333"],
                                    "ms_444_960": t["ms_per_frame"]["444"], "arena_up_to_960": t["arena_bytes"]}
                                   for t in sorted(tab, key=lambda t: t["ms_per_frame"]["333"])]}
+    if args.forced:
+        for d in args.forced:
+            if json.loads((Path(d) / "meta.json").read_text())["sources_sha256"] != sources:
+                raise SystemExit(f"{d} was measured on other sources")
+        res["forced"] = forced_block(args.forced)
     if args.code_size:
         res["code_size"] = json.loads(Path(args.code_size).read_text(encoding="utf-8"))
     if args.stack:
@@ -487,6 +542,42 @@ def cmd_report(argv):
     print("wrote", args.json)
     if args.md:
         Path(args.md).write_text(md + "\n")
+
+
+def forced_block(dirs):
+    """Regions read at a forced scale (measure --force): per (row, region, build), est. ms at 333 / 444 MHz with the
+    dark pass and without, the exact MACs at the forced scale's network input, the region's arena at that scale
+    (vocr_textspot6_frame_arena_bytes_flags) and the up-to arena of the region's size at it
+    (vocr_textspot6_arena_bytes_flags)."""
+    cells, how = {}, []
+    for d in dirs:
+        meta, tab = table(d)
+        t6 = meta["textspot6"]
+        build = ("Os" if "-Os" in t6["cflags"] else "O2") + (" no_ms" if NO_MS in t6["cflags"] else "")
+        how.append({"dir": W2.portable([str(d)])[0], "argv": t6["argv"], "build": build, "force": t6["force"],
+                    "mode": "nodark" if t6["nodark"] else "dark"})
+        for t in tab:
+            key = (t["shape"], tuple(t["size"]), build, t6["force"])
+            c = cells.setdefault(key, {})
+            c["nodark" if t6["nodark"] else "dark"] = t
+    rows = []
+    for (row, size, build, force), c in sorted(cells.items()):
+        shape, name, tags = row_shape(row)
+        iw, ih = (-(-size[0] // force), -(-size[1] // force))
+        t = c.get("dark") or c.get("nodark")
+        r = {"row": row, "shape": name, "tags": tags, "region": f"{size[0]}x{size[1]}", "build": build,
+             "force": force, "net_input": [iw, ih], "macs": cost_of(dict(shape, tags=tags, base=name), iw, ih)["macs"],
+             "frame_arena_bytes": t["frame_arena_bytes"], "arena_up_to_bytes": t["arena_bytes"],
+             "boxes": t["boxes"], "blob_sha256": t["blob_sha256"]}
+        for mode in ("dark", "nodark"):
+            if mode in c:
+                r[f"ms_333_{mode}"] = c[mode]["ms_per_frame"]["333"]
+                r[f"ms_444_{mode}"] = c[mode]["ms_per_frame"]["444"]
+                r[f"split_333_{mode}"] = {k: round(v["ms_333"], 2) for k, v in c[mode]["split"].items()}
+        rows.append(r)
+    return {"how": ("regions of the given sizes (textspot's pinned procedural frame of that size) read with "
+                    "VOCR_TEXTSPOT6_SCALE<force> as the crop decodes read a unit's region (Rubi: the player's region "
+                    "of a 960 x 544 frame, halved); every time a host estimate"), "measured": how, "rows": rows}
 
 
 TABLE_KEYS = ("shape", "scale", "half_above", "size", "format", "flags", "f", "net_input", "macs", "blob_sha256",
@@ -534,6 +625,15 @@ def markdown(res):
                    f"{_f(g(nm, 'dark', '960x544'))} / {_f(g(nm, 'nodark', '960x544'))} | "
                    f"{r.get('arena', {}).get('960x544', {}).get('up_to', 0):,} | "
                    f"{r.get('arena', {}).get('480x272', {}).get('up_to', 0):,} | {exs} |")
+    fb = res.get("forced")
+    if fb:
+        out += ["", "Regions read at a forced scale (est. ms; arenas exact):", "",
+                "| row | region | build | scale | MACs | @333 / @444 | no dark @333 | frame arena | up-to arena |",
+                "|---|---|---|---:|---:|---:|---:|---:|---:|"]
+        for r in fb["rows"]:
+            out.append(f"| {r['row']} | {r['region']} | {r['build']} | {r['force']} | {r['macs']:,} | "
+                       f"{_f(r.get('ms_333_dark'))} / {_f(r.get('ms_444_dark'))} | {_f(r.get('ms_333_nodark'))} | "
+                       f"{r['frame_arena_bytes']:,} | {r['arena_up_to_bytes']:,} |")
     cs = res.get("code_size")
     if cs:
         out += ["", "| vocr_textspot6.c code (.text, --gc-sections) | bytes |", "|---|---:|"]

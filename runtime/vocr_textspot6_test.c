@@ -24,7 +24,7 @@
  *   vocr_textspot6_test --batch BLOB FILE         one output line per record (below)
  *   vocr_textspot6_test --batch3 BLOB FILE        the same in vocr_textspot3_test's line format (no class fields,
  *                                                 no presence)
- *   vocr_textspot6_test --maps BLOB FILE          the maps the decode reads per record (version 1: the head's;
+ *   vocr_textspot6_test --maps BLOB FILE          the maps the decode reads per record, at its scale flags (version 1: the head's;
  *                                                 versions 2 to 4: the stride-4 maps of the d2s head): a line "X" +
  *                                                 hm * wm cells of K O A1 A2 and (version 4) the T tag maps
  *                                                 (row-major), then a line "rc hm wm"
@@ -38,8 +38,10 @@
  *                                                 network's stream layers; ops and slots 0 for a VTDT network),
  *                                                 then tags and form (0 versions 1-3, 1 a version-4 trunk, 2 a
  *                                                 version-4 multi-scale network)
- *   vocr_textspot6_test --arena BLOB W H          vocr_textspot6_arena_bytes (one integer)
- *   vocr_textspot6_test --frame-arena BLOB W H    vocr_textspot6_frame_arena_bytes (one integer)
+ *   vocr_textspot6_test --arena BLOB W H [FLAGS]  vocr_textspot6_arena_bytes (one integer); with FLAGS (the call's
+ *                                                 flags, e.g. 4 = VOCR_TEXTSPOT6_SCALE2) _arena_bytes_flags
+ *   vocr_textspot6_test --frame-arena BLOB W H [FLAGS]   vocr_textspot6_frame_arena_bytes; with FLAGS
+ *                                                 _frame_arena_bytes_flags
  *   vocr_textspot6_test --arenas BLOB W H ...     per size, one line: frame_arena_bytes arena_bytes
  *   vocr_textspot6_test --multi LIST              the jobs of a list file, one per line ("batch BLOB FILE",
  *                                                 "batch3 BLOB FILE" or "maps BLOB FILE"), in one process, each
@@ -467,6 +469,32 @@ static int arena_checks3(const vocr_textspot6 *m)
     return 0;
 }
 
+/* A forced scale: the up-to arena of a size is that frame's need at the scale and covers every smaller frame read at
+ * it (a grid of sides); bad flags give 0. */
+static int arena_checks_scaled(const vocr_textspot6 *m)
+{
+    static const unsigned side[] = {1, 2, 9, 31, 150, 271, 272, 273, 479, 480, 481, 544, 900, 961, 2048};
+    unsigned n = sizeof(side) / sizeof(side[0]), a, b, c, d, k;
+    for (k = 0; k < 2u; k++) {
+        unsigned fl = k ? VOCR_TEXTSPOT6_SCALE2 : VOCR_TEXTSPOT6_SCALE1;
+        for (a = 0; a < n; a++)
+            for (b = 0; b < n; b++) {
+                size_t up = vocr_textspot6_arena_bytes_flags(m, side[a], side[b], fl);
+                REQUIRE(up == vocr_textspot6_frame_arena_bytes_flags(m, side[a], side[b], fl | VOCR_TEXTSPOT_NO_DARK));
+                if (!up) continue;                /* a VTMS need past its limit */
+                for (c = 0; c <= a; c++)
+                    for (d = 0; d <= b; d++)
+                        REQUIRE(up >= vocr_textspot6_frame_arena_bytes_flags(m, side[c], side[d], fl));
+            }
+    }
+    REQUIRE(vocr_textspot6_arena_bytes_flags(m, 960, 544, 0) == vocr_textspot6_arena_bytes(m, 960, 544));
+    REQUIRE(!vocr_textspot6_arena_bytes_flags(m, 960, 544, VOCR_TEXTSPOT6_SCALE1 | VOCR_TEXTSPOT6_SCALE2));
+    REQUIRE(!vocr_textspot6_arena_bytes_flags(m, 960, 544, 8u) && !vocr_textspot6_arena_bytes_flags(m, 0, 5, 2u));
+    REQUIRE(!vocr_textspot6_arena_bytes_flags(NULL, 5, 5, 2u) &&
+            !vocr_textspot6_arena_bytes_flags(m, VOCR_TEXTSPOT_MAX_SIDE + 1u, 5, 4u));
+    return 0;
+}
+
 static int arg_checks(const vocr_textspot6 *m)
 {
     unsigned char px[16] = {0}, arena[64];
@@ -520,7 +548,7 @@ static int arg_checks(const vocr_textspot6 *m)
         REQUIRE(vocr_textspot6_find_rows(m, &r, 0, big, need, NULL) == VOCR_LINES_E_ARG);
     }
     im.pixels = px; im.width = 4; im.height = 4; im.stride = 4; im.bpp = 1;
-    REQUIRE(vocr_textspot6_maps(m, &im, big, need, NULL, NULL) == VOCR_LINES_E_ARG);
+    REQUIRE(vocr_textspot6_maps(m, &im, 0, big, need, NULL, NULL) == VOCR_LINES_E_ARG);
     free(big);
     REQUIRE(vocr_textspot6_load(NULL, px, sizeof(px)) == VOCR_LINES_E_ARG);
     REQUIRE(vocr_textspot6_load(&bad, NULL, 0) == VOCR_LINES_E_ARG);
@@ -618,8 +646,8 @@ static int selftest(unsigned cases, int nblobs, char **blobs)
         v3 += m.version == VOCR_TEXTSPOT6_VERSION_MS;
         v4 += m.version == VOCR_TEXTSPOT6_VERSION_TAG;
         /* versions 3 and 4 (either form) halve by the height too: the arena depends on both sides */
-        if ((m.version >= VOCR_TEXTSPOT6_VERSION_MS ? arena_checks3(&m) : arena_checks(&m)) || arg_checks(&m) ||
-            damage_checks(blob, n))
+        if ((m.version >= VOCR_TEXTSPOT6_VERSION_MS ? arena_checks3(&m) : arena_checks(&m)) ||
+            arena_checks_scaled(&m) || arg_checks(&m) || damage_checks(blob, n))
             return 1;
         for (e = 0; e < sizeof(edge) / sizeof(edge[0]) && current < cases; e++, current++)
             if (frame(&m, edge[e][0], edge[e][1], below(2) ? 4u : 1u)) return 1;
@@ -723,7 +751,7 @@ static int batch(const char *blob_path, const char *path, int mode, unsigned rep
             MapPrint mp = {0, 0, 4};
             mp.planes = 4u + m.tags;
             printf("X");
-            rc = vocr_textspot6_maps(&m, &im, base, need, print_map_row, &mp);
+            rc = vocr_textspot6_maps(&m, &im, sflags, base, need, print_map_row, &mp);
             printf("\n%d %u %u\n", rc, mp.rows, mp.wm);
         } else if (mode == BENCH) {
             double best = 1e30;
@@ -795,14 +823,21 @@ int main(int argc, char **argv)
         }
         return 0;
     }
-    if (argc == 5 && (!strcmp(argv[1], "--arena") || !strcmp(argv[1], "--frame-arena"))) {
+    if ((argc == 5 || argc == 6) && (!strcmp(argv[1], "--arena") || !strcmp(argv[1], "--frame-arena"))) {
         size_t n = 0;
         unsigned char *b = load_file(argv[2], &n);
         vocr_textspot6 m;
         unsigned w = (unsigned)strtoul(argv[3], NULL, 10), h = (unsigned)strtoul(argv[4], NULL, 10);
+        int up = !strcmp(argv[1], "--arena");
         if (!b || vocr_textspot6_load(&m, b, n)) { fprintf(stderr, "cannot load %s\n", argv[2]); return 2; }
-        printf("%lu\n", (unsigned long)(!strcmp(argv[1], "--arena") ? vocr_textspot6_arena_bytes(&m, w, h)
-                                                                      : vocr_textspot6_frame_arena_bytes(&m, w, h)));
+        if (argc == 6) {
+            unsigned fl = (unsigned)strtoul(argv[5], NULL, 10);
+            printf("%lu\n", (unsigned long)(up ? vocr_textspot6_arena_bytes_flags(&m, w, h, fl)
+                                               : vocr_textspot6_frame_arena_bytes_flags(&m, w, h, fl)));
+        } else {
+            printf("%lu\n", (unsigned long)(up ? vocr_textspot6_arena_bytes(&m, w, h)
+                                               : vocr_textspot6_frame_arena_bytes(&m, w, h)));
+        }
         free(b);
         return 0;
     }
@@ -839,8 +874,8 @@ int main(int argc, char **argv)
         return 0;
     }
     fprintf(stderr, "usage: %s --selftest CASES BLOB... | --batch BLOB FILE | --batch3 BLOB FILE | --maps BLOB FILE |\n"
-                    "       --dry BLOB FILE | --load BLOB... | --info BLOB... | --arena BLOB W H |\n"
-                    "       --frame-arena BLOB W H | --arenas BLOB W H [W H ...] | --multi LIST |\n"
+                    "       --dry BLOB FILE | --load BLOB... | --info BLOB... | --arena BLOB W H [FLAGS] |\n"
+                    "       --frame-arena BLOB W H [FLAGS] | --arenas BLOB W H [W H ...] | --multi LIST |\n"
                     "       --bench BLOB FILE REPS\n",
             argv[0]);
     return 2;

@@ -848,7 +848,8 @@ if (set.pick >= 0) { /* set.blocks[set.pick] is the dialogue block */ }
 - `VOCR_TEXTSPOT6_SCALE1` / `VOCR_TEXTSPOT6_SCALE2` force the scale f (any version; `textspot6_twin.spot(..., scale=f)`):
   a region cut from a frame is read at the scale the blob's rule gives the frame (a half-scale blob reads every region
   of a 960 x 544 console frame halved), as textspot6's crop decodes read a unit's region. The exact arena of a call
-  with flags is `vocr_textspot6_frame_arena_bytes_flags(m, w, h, flags)`.
+  with flags is `vocr_textspot6_frame_arena_bytes_flags(m, w, h, flags)`; every region of a W x H frame read with
+  a SCALE flag fits `vocr_textspot6_arena_bytes_flags(m, W, H, flags)`. `vocr_textspot6_maps` takes the flags too.
 - Arena: version 4 adds the T tag planes to the decode's map row, T int32 per component slot and the head's 4 T more
   channels; versions 1-3 keep `vocr_textspot3.c`'s arenas exactly.
 - Beyond version 4, two fixes of textspot3's audit nits, with the same bits: `pw_sums` and `pw_store` index their cells

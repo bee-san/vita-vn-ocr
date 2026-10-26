@@ -592,9 +592,9 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
         # the scale forced (VOCR_TEXTSPOT6_SCALE1 / _SCALE2, textspot6_twin.spot(..., scale=f)): the other scale
         # than the rule's, or the rule's own; and on a frame of 400 x 200 or more a region cut from it read at the
         # frame's scale, as the crop decodes read a unit's region
-        if rng.random() < forced_p:
-            rule = T6.scale_of(model, g.shape[1], g.shape[0])
-            f = 3 - rule if rng.random() < 0.7 else rule
+        rule = T6.scale_of(model, g.shape[1], g.shape[0])
+        scales = (1, 2) if k == 0 else (3 - rule if rng.random() < 0.7 else rule,) if rng.random() < forced_p else ()
+        for f in scales:                      # both scales on every blob's first frame
             fl = (SCALE1 if f == 1 else SCALE2) | (P.NO_DARK if rng.random() < 0.3 else 0)
             rf = T6.spot(model, img, scale=f)
             forced_cases.append((img, base | fl | int(rng.integers(0, 2))))
@@ -613,11 +613,13 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
     P.write_batch(batch, cases)
     old = v3 and model.version != T6.VERSION_TAG
     sel = [g for g, _, _, _ in imgs][::maps_every] if maps_every else []
+    # the maps at the rule's scale, and (version 4, now and then) at the other scale forced
+    msc = [None if old or rng.random() < 0.7 else 3 - T6.scale_of(model, g.shape[1], g.shape[0]) for g in sel]
     mb = Path(td) / f"{name}_maps.bin"
     fbatch = Path(td) / f"{name}_forced.bin"
     jobs = [("batch", bpath, batch)]
     if sel:
-        P.write_batch(mb, [(g, 0) for g in sel])
+        P.write_batch(mb, [(g, 0 if f is None else SCALE1 if f == 1 else SCALE2) for g, f in zip(sel, msc)])
         jobs.append(("maps", bpath, mb))
     if old:
         jobs.append(("batch3", bpath, batch))
@@ -663,7 +665,7 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
         planes = 4 + model.tags
         for i, g in enumerate(sel):
             rc, hm, wm = map(int, out[2 * i + 1].split())
-            ref = T6.run_maps(model, T6.net_input(model, np.ascontiguousarray(g))[0])
+            ref = T6.run_maps(model, T6.net_input(model, np.ascontiguousarray(g), msc[i])[0])
             vals = np.array(out[2 * i].split()[1:], np.int64)
             ok = rc == 0 and vals.size == planes * hm * wm and (planes, hm, wm) == ref.shape and \
                 (vals.reshape(hm, wm, planes).transpose(2, 0, 1) == ref).all()

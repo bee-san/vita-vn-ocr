@@ -261,6 +261,18 @@ def test_c_forced_scale(drivers, tmp_path):
         if not Q6.is_ms_blob(blob):
             assert run(drivers["vocr_textspot6_test_noms"], "--batch", tmp_path / "b.vtsp",
                        tmp_path / "r.bin").splitlines() == out
+        # the arenas of a forced scale (flags 2 / 4): the rule's own equals the plain function's; every region of
+        # the frame fits the frame's up-to arena at that scale, which is the frame's own need there
+        d = drivers["vocr_textspot6_test"]
+        fl = 2 if rule == 1 else 4
+        assert int(run(d, "--frame-arena", tmp_path / "b.vtsp", 960, 544, fl)) == \
+            int(run(d, "--frame-arena", tmp_path / "b.vtsp", 960, 544))
+        for fl in (2, 4):
+            up = int(run(d, "--arena", tmp_path / "b.vtsp", 960, 544, fl))
+            assert up == int(run(d, "--frame-arena", tmp_path / "b.vtsp", 960, 544, fl)) > 0
+            for w, h in ((900, 150), (333, 97), (61, 47), (960, 300)):
+                assert int(run(d, "--frame-arena", tmp_path / "b.vtsp", w, h, fl)) <= up
+        assert int(run(d, "--frame-arena", tmp_path / "b.vtsp", 960, 544, 6)) == 0
     # both flags are an argument error, as is a flag beyond them
     P.write_batch(tmp_path / "r.bin", [(frame, 32 | 64)])
     (tmp_path / "b.vtsp").write_bytes(blobs[0])

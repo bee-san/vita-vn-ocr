@@ -179,6 +179,13 @@ size_t vocr_textspot6_frame_arena_bytes(const vocr_textspot6 *m, unsigned width,
 size_t vocr_textspot6_frame_arena_bytes_flags(const vocr_textspot6 *m, unsigned width, unsigned height,
                                               unsigned flags);
 
+/* Exact arena bytes for every frame up to max_width x max_height read with these flags: vocr_textspot6_arena_bytes
+ * without a SCALE flag; with one, the max_width x max_height frame's need at that scale (at a fixed scale every
+ * arena size grows with both sides), e.g. every region of a 960 x 544 frame read with VOCR_TEXTSPOT6_SCALE2 fits
+ * vocr_textspot6_arena_bytes_flags(m, 960, 544, VOCR_TEXTSPOT6_SCALE2). 0 as vocr_textspot6_frame_arena_bytes_flags. */
+size_t vocr_textspot6_arena_bytes_flags(const vocr_textspot6 *m, unsigned max_width, unsigned max_height,
+                                        unsigned flags);
+
 /* The spotter on a frame in memory (VOCR_LINES_GREY or VOCR_LINES_RGBA: grey = (77 R + 150 G + 29 B) >> 8), as
  * vocr_textspot_find: flags 0 is synth/textspot6_twin.spot exactly; VOCR_TEXTSPOT_NO_DARK leaves every dark flag 0
  * and reads no box; VOCR_TEXTSPOT6_SCALE1 / _SCALE2 force the scale (textspot6_twin.spot(..., scale=1 or 2)).
@@ -194,13 +201,14 @@ int vocr_textspot6_find(const vocr_textspot6 *m, const VocrLinesImage *im, unsig
 int vocr_textspot6_find_rows(const vocr_textspot6 *m, const VocrLinesRows *src, unsigned flags, void *arena,
                              size_t arena_bytes, VocrTextspot6Set *out);
 
-/* Debug and test hook: runs the network on the frame (halved when the model says so) and calls
- * row(user, i, maps, width) for each row i of the maps the decode reads, in increasing order: the head's own rows
- * for version 1, the stride-4 rows of the d2s head for versions 2 to 4; maps holds the row's K, O, A1 and A2, then
- * (version 4) tag maps 0 .. T - 1, one after the other ([0, width), [width, 2 width), ...: 4 + m->tags planes),
- * valid only during the call. Same arena and return codes as vocr_textspot6_find (without its dark flags). */
-int vocr_textspot6_maps(const vocr_textspot6 *m, const VocrLinesImage *im, void *arena, size_t arena_bytes,
-                        vocr_textspot_map_row row, void *user);
+/* Debug and test hook: runs the network on the frame (halved when the model says so, or as VOCR_TEXTSPOT6_SCALE1 /
+ * _SCALE2 in flags force) and calls row(user, i, maps, width) for each row i of the maps the decode reads, in
+ * increasing order: the head's own rows for version 1, the stride-4 rows of the d2s head for versions 2 to 4; maps
+ * holds the row's K, O, A1 and A2, then (version 4) tag maps 0 .. T - 1, one after the other ([0, width),
+ * [width, 2 width), ...: 4 + m->tags planes), valid only during the call. Same flags, arena and return codes as
+ * vocr_textspot6_find (without its dark flags: VOCR_TEXTSPOT_NO_DARK is implied). */
+int vocr_textspot6_maps(const vocr_textspot6 *m, const VocrLinesImage *im, unsigned flags, void *arena,
+                        size_t arena_bytes, vocr_textspot_map_row row, void *user);
 
 #ifdef __cplusplus
 }

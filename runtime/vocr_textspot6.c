@@ -1028,6 +1028,15 @@ size_t vocr_textspot6_frame_arena_bytes_flags(const vocr_textspot6 *m, unsigned 
     return frame_need(m, width, height, force);
 }
 
+size_t vocr_textspot6_arena_bytes_flags(const vocr_textspot6 *m, unsigned max_width, unsigned max_height,
+                                        unsigned flags)
+{
+    unsigned force = forced(flags);
+    if (!loaded(m) || !side_ok(max_width, max_height) || (flags & ~VOCR_TEXTSPOT6_FLAGS) || force == 3u) return 0;
+    if (!force) return vocr_textspot6_arena_bytes(m, max_width, max_height);
+    return frame_need(m, max_width, max_height, force);   /* at a fixed scale the plans grow with both sides */
+}
+
 size_t vocr_textspot6_arena_bytes(const vocr_textspot6 *m, unsigned max_width, unsigned max_height)
 {
     size_t a, b;
@@ -3027,13 +3036,14 @@ int vocr_textspot6_find_rows(const vocr_textspot6 *m, const VocrLinesRows *src, 
     return spot(m, &s, src->width, src->height, src->bpp, flags, arena, arena_bytes, out, NULL, NULL);
 }
 
-int vocr_textspot6_maps(const vocr_textspot6 *m, const VocrLinesImage *im, void *arena, size_t arena_bytes,
-                        vocr_textspot_map_row row, void *user)
+int vocr_textspot6_maps(const vocr_textspot6 *m, const VocrLinesImage *im, unsigned flags, void *arena,
+                        size_t arena_bytes, vocr_textspot_map_row row, void *user)
 {
     Src s;
     VocrTextspot6Set out;
     if (!image_ok(im) || !row) return VOCR_LINES_E_ARG;
     s.im = im;
     s.rows = NULL;
-    return spot(m, &s, im->width, im->height, im->bpp, VOCR_TEXTSPOT_NO_DARK, arena, arena_bytes, &out, row, user);
+    return spot(m, &s, im->width, im->height, im->bpp, flags | VOCR_TEXTSPOT_NO_DARK, arena, arena_bytes, &out, row,
+                user);
 }

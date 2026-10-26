@@ -81,3 +81,26 @@ def test_seed_only_arms_refuse_other_seeds(monkeypatch, tmp_path):
                                       "--label", "x", "--protocol", str(pp)])
     with pytest.raises(SystemExit, match="seed 2 only"):
         R.main()
+
+
+def test_two_pinned_versions_each_check_their_own_files(tmp_path):
+    pins = {"extra_pools": []}
+    files = {}
+    for v in ("v1", "v2"):
+        d = tmp_path / v / "train"
+        d.mkdir(parents=True)
+        f = d / "T1.npz"
+        f.write_bytes(v.encode())
+        man = tmp_path / v / "manifest.json"
+        man.write_text(json.dumps({"files": {"train/T1.npz": {"sha256": R.sha256(f)}}}))
+        pins["extra_pools"].append({"name": f"cc_{v}", "manifest": str(man), "sha256": R.sha256(man),
+                                    "sources": ["cc"]})
+        files[v] = str(f)
+    rec = R.check_extra_pools(pins, [("cc", 0.1, [files["v2"]], "")], {})
+    assert rec == {"cc_v2_files": 1, "cc_v2_manifest_sha256": pins["extra_pools"][1]["sha256"]}
+    rec = R.check_extra_pools(pins, [("cc", 0.1, [files["v1"], files["v2"]], "")], {})
+    assert rec["cc_v1_files"] == 1 and rec["cc_v2_files"] == 1
+    stray = tmp_path / "other.npz"
+    stray.write_bytes(b"x")
+    with pytest.raises(SystemExit, match="no pinned manifest"):
+        R.check_extra_pools(pins, [("cc", 0.1, [str(stray)], "")], {})

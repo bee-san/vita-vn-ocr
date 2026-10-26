@@ -403,13 +403,16 @@ def compare(args):
            "base": [b["blob_sha256"] for b in bases], "cand_files": args.cand, "base_files": args.base,
            "boot": BOOT, "components": {}}
     for comp in COMPONENTS:
-        cs = [{r["unit"]: r for r in component(c["rows"], comp)} for c in cands]
-        bs = [{r["unit"]: r for r in component(b["rows"], comp)} for b in bases]
-        if not cs[0]:
+        # rows pair by position: every rows file of a plan holds its rows in the plan's order (a page of the hval plan
+        # can hold two regions of one variant under one unit name, so the unit name alone is not a key)
+        seqs = [component(x["rows"], comp) for x in cands + bases]
+        if not seqs[0]:
             continue
-        units = sorted(cs[0])
-        if any(set(c) != set(units) for c in cs + bs):
+        if any([r["unit"] for r in q] != [r["unit"] for r in seqs[0]] for q in seqs):
             raise SystemExit(f"{comp}: the rows files hold different units")
+        keyed = [{f"{i}|{r['unit']}": r for i, r in enumerate(q)} for q in seqs]
+        cs, bs = keyed[:len(cands)], keyed[len(cands):]
+        units = list(cs[0])
         a = {u: (float(np.mean([c[u]["errors"] for c in cs])), cs[0][u]["chars"]) for u in units}
         b = {u: (float(np.mean([x[u]["errors"] for x in bs])), bs[0][u]["chars"]) for u in units}
         vn = {u: cs[0][u]["vn"] for u in units}

@@ -12,8 +12,9 @@
  * min(127, floor((best - second) / n)) over the n cells. Two boxes join a block only when they have one class; the
  * pick is the dialogue (class 0) block of the largest score (-1 when there is none) and presence the largest
  * confidence of a dialogue box (0 when there is none). A version-4 frame is halved when it is wider than half_above
- * or taller than half_above_h (0: never by that side), in both forms. synth/textspot6_twin.py specifies the format
- * (its docstring) and is the bit-exact Python twin of all four versions.
+ * or taller than half_above_h (0: never by that side), in both forms; VOCR_TEXTSPOT6_SCALE1 / _SCALE2 force the scale
+ * instead (any version: a region read at the scale of the frame it was cut from). synth/textspot6_twin.py specifies
+ * the format (its docstring) and is the bit-exact Python twin of all four versions.
  *
  * The flags, limits and error codes are vocr_textspot.h's (VOCR_TEXTSPOT_NO_DARK, VOCR_TEXTSPOT_MAX_BOXES,
  * VOCR_TEXTSPOT_MAX_SIDE, VOCR_TEXTSPOT_E_BLOB, ...). The result types are new (VocrTextspot6Box, VocrTextspot6Block,
@@ -60,6 +61,14 @@ extern "C" {
 #define VOCR_TEXTSPOT6_FORM_NONE 0u     /* versions 1, 2 and 3 */
 #define VOCR_TEXTSPOT6_FORM_TRUNK 1u    /* version 4, a VTDT trunk */
 #define VOCR_TEXTSPOT6_FORM_MS 2u       /* version 4, a VTMS multi-scale network */
+
+/* Flags of vocr_textspot6_find(_rows), beside VOCR_TEXTSPOT_NO_DARK (vocr_textspot.h): the scale f forced instead of
+ * the blob's rule (synth/textspot6_twin.spot(model, img, scale=f)), for a region cut from a frame and read at the
+ * scale the rule gives that frame (every console frame is 960 x 544, so a half-scale blob reads every region of it
+ * halved). One of the two at most; any version. */
+#define VOCR_TEXTSPOT6_SCALE1 0x2u      /* f = 1: the frame (region) read at its own size */
+#define VOCR_TEXTSPOT6_SCALE2 0x4u      /* f = 2: the frame (region) halved by textspot's exact 2x2 mean */
+#define VOCR_TEXTSPOT6_FLAGS 0x7u       /* every defined flag: VOCR_TEXTSPOT_NO_DARK, SCALE1, SCALE2 */
 
 /* A map op of a VTMS network, as loaded (pointers into the blob), with the buffer plan of its output. */
 typedef struct {
@@ -153,20 +162,27 @@ typedef struct {
  * or VOCR_TEXTSPOT_E_BLOB; on an error m is cleared. */
 int vocr_textspot6_load(vocr_textspot6 *m, const void *blob, size_t bytes);
 
-/* Exact arena bytes for every frame up to max_width x max_height: for a version-1 or version-2 blob
- * vocr_textspot3_arena_bytes' number (the width matters only); for version 3 and version 4 the most any frame up to
- * that size needs: the frame of max_width x max_height with each side clamped to half_above / half_above_h where that
- * field is > 0 and the side is larger (read at full size), or the max_width x max_height frame itself when it is
- * halved. 0 for a NULL or unloaded model, a zero side, a side over VOCR_TEXTSPOT_MAX_SIDE, or (a VTMS network) a need
- * over 2^31 - 256 bytes. */
+/* Exact arena bytes for every frame up to max_width x max_height read at the blob's scale (no SCALE flag): for a
+ * version-1 or version-2 blob vocr_textspot3_arena_bytes' number (the width matters only); for version 3 and version
+ * 4 the most any frame up to that size needs: the frame of max_width x max_height with each side clamped to
+ * half_above / half_above_h where that field is > 0 and the side is larger (read at full size), or the max_width x
+ * max_height frame itself when it is halved. 0 for a NULL or unloaded model, a zero side, a side over
+ * VOCR_TEXTSPOT_MAX_SIDE, or (a VTMS network) a need over 2^31 - 256 bytes. */
 size_t vocr_textspot6_arena_bytes(const vocr_textspot6 *m, unsigned max_width, unsigned max_height);
 
-/* Exact arena bytes for a frame of exactly width x height (what the calls check). */
+/* Exact arena bytes for a frame of exactly width x height read at the blob's scale (what the calls check). */
 size_t vocr_textspot6_frame_arena_bytes(const vocr_textspot6 *m, unsigned width, unsigned height);
+
+/* Exact arena bytes for a frame of exactly width x height read with these flags (what the calls check):
+ * vocr_textspot6_frame_arena_bytes without a SCALE flag, else the need at the forced scale. 0 as
+ * vocr_textspot6_frame_arena_bytes, and for undefined flags or both SCALE flags. */
+size_t vocr_textspot6_frame_arena_bytes_flags(const vocr_textspot6 *m, unsigned width, unsigned height,
+                                              unsigned flags);
 
 /* The spotter on a frame in memory (VOCR_LINES_GREY or VOCR_LINES_RGBA: grey = (77 R + 150 G + 29 B) >> 8), as
  * vocr_textspot_find: flags 0 is synth/textspot6_twin.spot exactly; VOCR_TEXTSPOT_NO_DARK leaves every dark flag 0
- * and reads no box. VOCR_LINES_OK, VOCR_LINES_E_ARG (NULL pointer, unloaded model, bad format, stride or flags, a
+ * and reads no box; VOCR_TEXTSPOT6_SCALE1 / _SCALE2 force the scale (textspot6_twin.spot(..., scale=1 or 2)).
+ * VOCR_LINES_OK, VOCR_LINES_E_ARG (NULL pointer, unloaded model, bad format, stride or flags (both SCALE flags), a
  * zero side or one over VOCR_TEXTSPOT_MAX_SIDE) or VOCR_LINES_E_ARENA; on an error out->count, block_count,
  * truncated and presence are 0 and pick -1. The arena is scratch only. */
 int vocr_textspot6_find(const vocr_textspot6 *m, const VocrLinesImage *im, unsigned flags, void *arena,

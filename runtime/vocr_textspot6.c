@@ -184,6 +184,11 @@
  * VOCR_TEXTSPOT6_NO_MS leaves out every VTMS path (parse_ms, ms_graph, the version-3 arena plan, the map-op kernels,
  * the head op and to_f8): the loader refuses version 3 and a version-4 VTMS network; nothing else changes.
  *
+ * VOCR_TEXTSPOT6_SCALE1 / _SCALE2 (any version; textspot6_twin.spot(model, img, scale=f)): f forced to 1 or 2 instead
+ * of the blob's rule, for a region read at the scale of the frame it was cut from. Only f changes: the input (the
+ * 2x2 mean or the grey itself), the network, the decode with that f, the arena plan of that f
+ * (vocr_textspot6_frame_arena_bytes_flags); everything else is the same call's.
+ *
  * Changes from vocr_textspot3.c beyond version 4 (the same bits): pw_sums and pw_store index their cells instead of
  * stepping a pointer past the end of a block after an odd last cell (textspot3's audit, N4); CELL8 asks for the
  * alignment only under __GNUC__ (N5).
@@ -703,13 +708,14 @@ static size_t plane_bytes(unsigned w, const vocr_textspot_layer *L)
     return (size_t)w + 2u * L->dil + BLK * L->stride;
 }
 
-/* The arena layout of a VTDT network (versions 1, 2 and version 4's trunk) for a frame of the given size (sections
- * 8-byte aligned from an aligned base): the height matters only through the scale (version 4). The blocks' scratch
- * (Group) lies over the sections before the candidates, so those span at least its size. With no tag map (versions
- * 1 and 2) it is vocr_textspot3.c's plan exactly. */
-static void plan(const vocr_textspot6 *m, unsigned width, unsigned height, Plan *p)
+/* The arena layout of a VTDT network (versions 1, 2 and version 4's trunk) for a frame of the given size read at the
+ * scale `force` (1 or 2; 0: the blob's rule), sections 8-byte aligned from an aligned base: the height matters only
+ * through the scale (version 4). The blocks' scratch (Group) lies over the sections before the candidates, so those
+ * span at least its size. With no tag map (versions 1 and 2) and the rule's scale it is vocr_textspot3.c's plan
+ * exactly. */
+static void plan(const vocr_textspot6 *m, unsigned width, unsigned height, unsigned force, Plan *p)
 {
-    unsigned i, f = scale_wh(m, width, height), w = f == 2u ? (width + 1u) / 2u : width, maxch = 1;
+    unsigned i, f = force ? force : scale_wh(m, width, height), w = f == 2u ? (width + 1u) / 2u : width, maxch = 1;
     size_t rings = 0;
     p->f = f;
     p->win = w;
@@ -969,10 +975,11 @@ static uint64_t stack_peak(const vocr_textspot6 *m, unsigned win, unsigned hin, 
     return peak;
 }
 
-/* A VTMS network's arena for a fw x fh frame: the candidates at 0, the slots' offsets, the stack. */
-static void plan3(const vocr_textspot6 *m, unsigned fw, unsigned fh, Plan3 *p)
+/* A VTMS network's arena for a fw x fh frame read at the scale `force` (1 or 2; 0: the blob's rule): the candidates
+ * at 0, the slots' offsets, the stack. */
+static void plan3(const vocr_textspot6 *m, unsigned fw, unsigned fh, unsigned force, Plan3 *p)
 {
-    p->f = scale3(m, fw, fh);
+    p->f = force ? force : scale3(m, fw, fh);
     p->win = p->f == 2u ? (fw + 1u) / 2u : fw;
     p->hin = p->f == 2u ? (fh + 1u) / 2u : fh;
     p->slots = up8x((uint64_t)CANDS * sizeof(Cand));
@@ -981,29 +988,44 @@ static void plan3(const vocr_textspot6 *m, unsigned fw, unsigned fh, Plan3 *p)
     if (p->total > MS_LIMIT) p->over = 1;
 }
 
-static size_t frame3(const vocr_textspot6 *m, unsigned width, unsigned height)
+static size_t frame3(const vocr_textspot6 *m, unsigned width, unsigned height, unsigned force)
 {
     Plan3 p;
-    plan3(m, width, height, &p);
+    plan3(m, width, height, force, &p);
     return p.over ? 0u : (size_t)p.total + 7u;
 }
 #endif /* !VOCR_TEXTSPOT6_NO_MS */
 
-/* A frame's need: a VTMS network's plan3, else plan (0 past the VTMS limit). */
-static size_t frame_need(const vocr_textspot6 *m, unsigned width, unsigned height)
+/* A frame's need at the scale `force` (1 or 2; 0: the blob's rule): a VTMS network's plan3, else plan (0 past the
+ * VTMS limit). */
+static size_t frame_need(const vocr_textspot6 *m, unsigned width, unsigned height, unsigned force)
 {
     Plan p;
 #ifndef VOCR_TEXTSPOT6_NO_MS
-    if (is_ms(m)) return frame3(m, width, height);
+    if (is_ms(m)) return frame3(m, width, height, force);
 #endif
-    plan(m, width, height, &p);
+    plan(m, width, height, force, &p);
     return p.total + 7u;
+}
+
+/* The scale the flags force: 1 or 2, 0 for none (the blob's rule), 3 for both (an argument error). */
+static unsigned forced(unsigned flags)
+{
+    return (flags & VOCR_TEXTSPOT6_SCALE1 ? 1u : 0u) | (flags & VOCR_TEXTSPOT6_SCALE2 ? 2u : 0u);
 }
 
 size_t vocr_textspot6_frame_arena_bytes(const vocr_textspot6 *m, unsigned width, unsigned height)
 {
     if (!loaded(m) || !side_ok(width, height)) return 0;
-    return frame_need(m, width, height);
+    return frame_need(m, width, height, 0);
+}
+
+size_t vocr_textspot6_frame_arena_bytes_flags(const vocr_textspot6 *m, unsigned width, unsigned height,
+                                              unsigned flags)
+{
+    unsigned force = forced(flags);
+    if (!loaded(m) || !side_ok(width, height) || (flags & ~VOCR_TEXTSPOT6_FLAGS) || force == 3u) return 0;
+    return frame_need(m, width, height, force);
 }
 
 size_t vocr_textspot6_arena_bytes(const vocr_textspot6 *m, unsigned max_width, unsigned max_height)
@@ -1016,9 +1038,9 @@ size_t vocr_textspot6_arena_bytes(const vocr_textspot6 *m, unsigned max_width, u
         unsigned w1 = m->half_above && max_width > m->half_above ? m->half_above : max_width;
         unsigned h1 = m->half_above_h && max_height > m->half_above_h ? m->half_above_h : max_height;
         if (!side_ok(max_width, max_height)) return 0;
-        a = frame_need(m, w1, h1);
+        a = frame_need(m, w1, h1, 0);
         if (a && scale3(m, max_width, max_height) == 2u) {
-            b = frame_need(m, max_width, max_height);
+            b = frame_need(m, max_width, max_height, 0);
             a = !b ? 0u : b > a ? b : a;
         }
         return a;
@@ -2866,7 +2888,7 @@ NOINLINE static void setup3(Net *t, unsigned char *sc, const StreamLay *L)
 
 /* A VTMS network (version 3, version 4's multi-scale form), up to the decoded candidates: the stream into F8, the map
  * ops, the head into the decode. */
-NOINLINE static int spot3(Net *t, const Src *s, unsigned bpp, void *arena, size_t arena_bytes)
+NOINLINE static int spot3(Net *t, const Src *s, unsigned bpp, unsigned force, void *arena, size_t arena_bytes)
 {
     const vocr_textspot6 *m = t->m;
     Plan3 p;
@@ -2874,7 +2896,7 @@ NOINLINE static int spot3(Net *t, const Src *s, unsigned bpp, void *arena, size_
     StreamLay sl;
     unsigned y, k;
     int rc;
-    plan3(m, t->fw, t->fh, &p);
+    plan3(m, t->fw, t->fh, force, &p);
     if (p.over || arena_bytes < (size_t)p.total + 7u) return VOCR_LINES_E_ARENA;
     t->base = (unsigned char *)arena + ((8u - (unsigned)((uintptr_t)arena & 7u)) & 7u);
     t->f = p.f;
@@ -2920,11 +2942,11 @@ static int spot(const vocr_textspot6 *m, const Src *s, unsigned fw, unsigned fh,
 {
     Plan p;
     Net t;
-    unsigned y, k;
+    unsigned y, k, force = forced(flags);
     int rc;
     clear(out);
     if (!loaded(m) || !side_ok(fw, fh) || (bpp != VOCR_LINES_GREY && bpp != VOCR_LINES_RGBA) || !arena ||
-        (flags & ~VOCR_TEXTSPOT_FLAGS))
+        (flags & ~VOCR_TEXTSPOT6_FLAGS) || force == 3u)
         return VOCR_LINES_E_ARG;
 #ifndef VOCR_TEXTSPOT6_NO_MS
     if (is_ms(m)) {
@@ -2933,12 +2955,12 @@ static int spot(const vocr_textspot6 *m, const Src *s, unsigned fw, unsigned fh,
         t.fh = fh;
         t.hook = hook;
         t.user = user;
-        rc = spot3(&t, s, bpp, arena, arena_bytes);
+        rc = spot3(&t, s, bpp, force, arena, arena_bytes);
         if (rc) return rc;
     } else
 #endif
     {
-        plan(m, fw, fh, &p);
+        plan(m, fw, fh, force, &p);
         if (arena_bytes < p.total + 7u) return VOCR_LINES_E_ARENA;
         t.m = m;
         t.base = (unsigned char *)arena + ((8u - (unsigned)((uintptr_t)arena & 7u)) & 7u);

@@ -231,6 +231,42 @@ def arena(binary, blob_path, w, h, kind="--frame-arena"):
     return int(run(binary, kind, blob_path, w, h))
 
 
+def test_c_forced_scale(drivers, tmp_path):
+    """VOCR_TEXTSPOT6_SCALE1 / _SCALE2 (record flags 32 / 64) give textspot6_twin.spot(..., scale=f) for every
+    version: whole frames at the other scale than the rule's, and regions cut from a 960 x 544 frame read at the
+    frame's scale (eval/textspot6.py's crop decodes); the rule's own scale gives the call without a flag."""
+    rng = np.random.default_rng(17)
+    blobs = (M6.random_blob(TINY_T, 4, 4, n_cal=2)[0], M6.random_blob(TINY_M, 4, 2, n_cal=2)[0],
+             T2.pack(X.random_vtdt("s8_c24n4x2", 4, n_cal=2), 600, 1), T3.pack(M3.random_net(TINY3, 4, n_cal=2),
+                                                                               480, 1, 272),
+             S.pack(TP.random_blob("s4_c4", 4, 2), 0, 1))
+    frame = P.tiled(rng, 960, 544)
+    for i, blob in enumerate(blobs):
+        m = T6.Model(blob)
+        (tmp_path / "b.vtsp").write_bytes(blob)
+        rule = T6.scale_of(m, 960, 544)
+        cases, want = [], []
+        for f in (1, 2):
+            cases.append((frame, 32 if f == 1 else 64))
+            want.append(Q6.twin_line6(T6.spot(m, frame, scale=f)))
+        for x0, y0, w, h in ((30, 380, 900, 150), (0, 0, 333, 97), (500, 200, 61, 47)):
+            region = np.ascontiguousarray(frame[y0:y0 + h, x0:x0 + w])
+            for fl in (1, 2 | 1):                                 # in memory, rows; then NO_DARK
+                cases.append((region, (32 if rule == 1 else 64) | (fl & 1) | (fl & 2)))
+                want.append(Q6.twin_line6(T6.spot(m, region, scale=rule), dark=not fl & 2))
+        P.write_batch(tmp_path / "r.bin", cases)
+        out = run(drivers["vocr_textspot6_test"], "--batch", tmp_path / "b.vtsp", tmp_path / "r.bin").splitlines()
+        assert out == want, i
+        assert out[rule - 1] == Q6.twin_line6(T6.spot(m, frame)), i
+        if not Q6.is_ms_blob(blob):
+            assert run(drivers["vocr_textspot6_test_noms"], "--batch", tmp_path / "b.vtsp",
+                       tmp_path / "r.bin").splitlines() == out
+    # both flags are an argument error, as is a flag beyond them
+    P.write_batch(tmp_path / "r.bin", [(frame, 32 | 64)])
+    (tmp_path / "b.vtsp").write_bytes(blobs[0])
+    assert run(drivers["vocr_textspot6_test"], "--batch", tmp_path / "b.vtsp", tmp_path / "r.bin").split()[0] == "-1"
+
+
 def test_c_arena_of_versions_1_to_3_is_textspot3s(drivers, tmp_path):
     p = tmp_path / "x.vtsp"
     for blob in (S.pack(TP.random_blob("s4_c24n4", 1, 2), 600, 1), T2.pack(X.random_vtdt("s8_c48n4x2", 1, n_cal=2),

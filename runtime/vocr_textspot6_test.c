@@ -49,7 +49,9 @@
  * FILE records: struct.pack("<4I", width, height, bpp, flags), then width * height * bpp pixel bytes (bpp 1 =
  * GREY, 4 = RGBA). Flags: 1 the row-callback form (a callback that poisons each row once the next is asked),
  * 2 VOCR_TEXTSPOT_NO_DARK, 4 a padded stride, 8 an arena at an odd address, 16 an arena of
- * vocr_textspot6_arena_bytes(w, h) (default: exactly vocr_textspot6_frame_arena_bytes(w, h), malloc'd to size).
+ * vocr_textspot6_arena_bytes(w, h) (or the frame's need with the flags when that is more), 32
+ * VOCR_TEXTSPOT6_SCALE1, 64 VOCR_TEXTSPOT6_SCALE2 (default: exactly vocr_textspot6_frame_arena_bytes_flags(w, h,
+ * the call's flags), malloc'd to size).
  * Output per record, one line: rc count block_count pick truncated presence, then x y w h vertical conf dark block
  * tag tconf per box, then x y w h vertical first count tag per block, space separated (--batch3: rc count
  * block_count pick truncated, x y w h vertical conf dark block per box, x y w h vertical first count per block).
@@ -269,12 +271,14 @@ static int frame(const vocr_textspot6 *m, unsigned w, unsigned h, unsigned bpp)
 {
     size_t stride = (size_t)w * bpp, need = vocr_textspot6_frame_arena_bytes(m, w, h);
     size_t most = vocr_textspot6_arena_bytes(m, w, h), big = most + 64u;
+    size_t n1 = vocr_textspot6_frame_arena_bytes_flags(m, w, h, VOCR_TEXTSPOT6_SCALE1);
+    size_t n2 = vocr_textspot6_frame_arena_bytes_flags(m, w, h, VOCR_TEXTSPOT6_SCALE2);
     unsigned pad = 1u + below(9), i, off;
     unsigned char *px = xmalloc(stride * h);
     unsigned char *other = xmalloc((size_t)w * h * (bpp == 1u ? 4u : 1u));
     unsigned char *padded = xmalloc((stride + pad) * h);
     unsigned char *exact = xmalloc(need);
-    unsigned char *arena = xmalloc(big + 8u);
+    unsigned char *arena;
     unsigned char *slots = xmalloc(2u * stride);
     unsigned cap = h + VOCR_TEXTSPOT_MAX_BOXES * h + 8u;
     unsigned *log = (unsigned *)malloc(cap * sizeof(unsigned));
@@ -285,7 +289,11 @@ static int frame(const vocr_textspot6 *m, unsigned w, unsigned h, unsigned bpp)
     cur_w = w;
     cur_h = h;
     cur_bpp = bpp;
-    REQUIRE(px && other && padded && exact && arena && slots && log && need > 7u && most >= need);
+    if (n1 + 64u > big) big = n1 + 64u;      /* a forced scale may need more than the rule's arena */
+    if (n2 + 64u > big) big = n2 + 64u;
+    arena = xmalloc(big + 8u);
+    REQUIRE(px && other && padded && exact && arena && slots && log && need > 7u && most >= need && n1 > 7u &&
+            n2 > 7u);
     draw(px, w, h, stride, bpp);
     im.pixels = px; im.width = w; im.height = h; im.stride = stride; im.bpp = bpp;
 
@@ -311,7 +319,38 @@ static int frame(const vocr_textspot6 *m, unsigned w, unsigned h, unsigned bpp)
     /* without dark flags: the same boxes, every dark flag 0 */
     REQUIRE(vocr_textspot6_find(m, &im, VOCR_TEXTSPOT_NO_DARK, arena + 3, need, &b) == VOCR_LINES_OK &&
             same_set(&a, &b, 0) && well_formed(&b, w, h, 1, m->tags));
-    REQUIRE(vocr_textspot6_find(m, &im, 2u, arena, need, &b) == VOCR_LINES_E_ARG && is_empty(&b));
+    REQUIRE(vocr_textspot6_find(m, &im, 8u, arena, need, &b) == VOCR_LINES_E_ARG && is_empty(&b));
+    REQUIRE(vocr_textspot6_find(m, &im, VOCR_TEXTSPOT6_SCALE1 | VOCR_TEXTSPOT6_SCALE2, arena, big, &b) ==
+            VOCR_LINES_E_ARG && is_empty(&b));
+    REQUIRE(!vocr_textspot6_frame_arena_bytes_flags(m, w, h, VOCR_TEXTSPOT6_SCALE1 | VOCR_TEXTSPOT6_SCALE2) &&
+            !vocr_textspot6_frame_arena_bytes_flags(m, w, h, 8u) &&
+            vocr_textspot6_frame_arena_bytes_flags(m, w, h, VOCR_TEXTSPOT_NO_DARK) == need);
+    {
+        /* the scale forced: the rule's own scale gives the call without the flag; either scale, the exact need of
+         * the flags (one byte short: the arena error), a well-formed set, the row-callback form the same */
+        unsigned sc;
+        int rule = (m->version >= VOCR_TEXTSPOT6_VERSION_MS && ((m->half_above && w > m->half_above) ||
+                    (m->half_above_h && h > m->half_above_h))) ||
+                   (m->version < VOCR_TEXTSPOT6_VERSION_MS && m->half_above && w > m->half_above) ? 2 : 1;
+        for (sc = 1; sc <= 2u; sc++) {
+            unsigned fl = sc == 1u ? VOCR_TEXTSPOT6_SCALE1 : VOCR_TEXTSPOT6_SCALE2;
+            size_t nf = vocr_textspot6_frame_arena_bytes_flags(m, w, h, fl);
+            unsigned char *ex = xmalloc(nf);
+            REQUIRE(ex != NULL && nf > 7u);
+            REQUIRE(vocr_textspot6_find(m, &im, fl, ex, nf, &b) == VOCR_LINES_OK && well_formed(&b, w, h, 0, m->tags));
+            if ((int)sc == rule) REQUIRE(nf == need && same_set(&a, &b, 1));
+            REQUIRE(vocr_textspot6_find(m, &im, fl, ex, nf - 1u, &b) == VOCR_LINES_E_ARENA && is_empty(&b));
+            free(ex);
+            source_init(&s, &im, slots, NULL, 0);
+            rows_of(&src, &im, &s);
+            {
+                VocrTextspot6Set c;
+                REQUIRE(vocr_textspot6_find(m, &im, fl | VOCR_TEXTSPOT_NO_DARK, arena + 5, big, &b) == VOCR_LINES_OK);
+                REQUIRE(vocr_textspot6_find_rows(m, &src, fl | VOCR_TEXTSPOT_NO_DARK, arena, big, &c) ==
+                        VOCR_LINES_OK && same_set(&b, &c, 0) && s.calls == h);
+            }
+        }
+    }
     /* the row-callback form: the same set; rows 0..h-1 once each in order, then each box's rows once */
     source_init(&s, &im, slots, log, cap);
     rows_of(&src, &im, &s);
@@ -657,7 +696,8 @@ static int batch(const char *blob_path, const char *path, int mode, unsigned rep
         unsigned w = rd32(head), h = rd32(head + 4), bpp = rd32(head + 8), flags = rd32(head + 12), i;
         size_t bytes = (size_t)w * h * bpp, stride = (size_t)w * bpp, need;
         unsigned char *px = xmalloc(bytes), *buf = px, *arena, *base;
-        unsigned sflags = (flags & 2u) ? VOCR_TEXTSPOT_NO_DARK : 0u;
+        unsigned sflags = ((flags & 2u) ? VOCR_TEXTSPOT_NO_DARK : 0u) | ((flags & 32u) ? VOCR_TEXTSPOT6_SCALE1 : 0u) |
+                          ((flags & 64u) ? VOCR_TEXTSPOT6_SCALE2 : 0u);
         VocrLinesImage im;
         VocrTextspot6Set d;
         if (!px || fread(px, 1, bytes, f) != bytes) { fprintf(stderr, "truncated batch\n"); return 2; }
@@ -672,7 +712,8 @@ static int batch(const char *blob_path, const char *path, int mode, unsigned rep
             stride = ps;
         }
         im.pixels = buf; im.width = w; im.height = h; im.stride = stride; im.bpp = bpp;
-        need = (flags & 16u) ? vocr_textspot6_arena_bytes(&m, w, h) : vocr_textspot6_frame_arena_bytes(&m, w, h);
+        need = vocr_textspot6_frame_arena_bytes_flags(&m, w, h, sflags);
+        if ((flags & 16u) && vocr_textspot6_arena_bytes(&m, w, h) > need) need = vocr_textspot6_arena_bytes(&m, w, h);
         arena = xmalloc(need + ((flags & 8u) ? 8u : 0u));
         if (!arena) return 2;
         base = arena + ((flags & 8u) ? 1u + w % 7u : 0u);

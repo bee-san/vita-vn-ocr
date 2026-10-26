@@ -845,6 +845,10 @@ if (set.pick >= 0) { /* set.blocks[set.pick] is the dialogue block */ }
 - `-DVOCR_TEXTSPOT6_NO_MS` leaves out every VTMS path (the map ops, their kernels, their arena plan). Versions 3 and 4's
   multi-scale form are then refused at load; versions 1, 2 and 4's trunk give the same bits. `vocr_textspot6` keeps
   one layout in both builds.
+- `VOCR_TEXTSPOT6_SCALE1` / `VOCR_TEXTSPOT6_SCALE2` force the scale f (any version; `textspot6_twin.spot(..., scale=f)`):
+  a region cut from a frame is read at the scale the blob's rule gives the frame (a half-scale blob reads every region
+  of a 960 x 544 console frame halved), as textspot6's crop decodes read a unit's region. The exact arena of a call
+  with flags is `vocr_textspot6_frame_arena_bytes_flags(m, w, h, flags)`.
 - Arena: version 4 adds the T tag planes to the decode's map row, T int32 per component slot and the head's 4 T more
   channels; versions 1-3 keep `vocr_textspot3.c`'s arenas exactly.
 - Beyond version 4, two fixes of textspot3's audit nits, with the same bits: `pw_sums` and `pw_store` index their cells
@@ -911,6 +915,7 @@ Checks: `make check-textspot6` (in `make check`, so in `ci/runtime.sh gcc|clang`
 - strict compiles (also `-DVOCR_NO_NEON`, `-DVOCR_TEXTSPOT6_NO_MS` and both);
 - `tests/textspot6_parity.py` through the sanitized drivers (`TEXTSPOT6_PARITY_OK ...`), on:
   - random version-4 blobs of both forms, wild and graph networks with a tagged head;
+  - the forced scale (`SCALE1` / `SCALE2`) on whole frames and on regions cut from them, every version;
   - probe networks whose maps are designed cell by cell: the twin tests' hand-made maps, the cap's and the sorts'
     tie-breaks, random designed maps (f = 1 and f = 2, halved by the width or the height);
   - version-1, 2 and 3 blobs, against `vocr_textspot3_test` (lines, maps, arenas);

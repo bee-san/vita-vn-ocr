@@ -73,6 +73,7 @@ import textspot6_twin as T6  # noqa: E402
 import textspot_parity as P  # noqa: E402
 
 ONE = 1 << 30
+SCALE1, SCALE2 = 32, 64                     # vocr_textspot6_test's record flags of VOCR_TEXTSPOT6_SCALE1 / _SCALE2
 TINY_T = {"name": "tinyt", "family": "T", "stride": 8, "c0": 4, "c1": 8, "c2": 16, "chans": [16, 16], "dil": [1, 2],
           "block": "sep", "head": "kroa_x2", "half_above": 480}
 TINY_M = M3.m_shape("tinym", 4, 8, 8, [8], [1], [(16, [1]), (16, [2])], 8, 8, 1)
@@ -91,7 +92,7 @@ def t_shapes_all():
         out[k] = dict(v)
     try:
         import textspot6_a9 as A6
-        for k, v in A6.T_FULL.items():
+        for k, v in {**A6.T_FULL, **A6.T_FULL_PROBE}.items():
             out.setdefault(k, dict(v))
     except ImportError:
         pass
@@ -514,7 +515,7 @@ class Coverage:
     def __init__(self):
         self.truncated = self.halved = self.vertical = self.boxes = self.blocks = self.multi = self.empty = 0
         self.tags = [0] * 5
-        self.tconf = self.nopick = self.presence0 = self.mixed = 0
+        self.tconf = self.nopick = self.presence0 = self.mixed = self.forced = 0
 
     def add(self, model, img, r):
         self.truncated += r.truncated
@@ -535,7 +536,8 @@ class Coverage:
         return (f"{self.truncated} truncated, {self.halved} halved, {self.empty} empty, {self.boxes} boxes "
                 f"({self.vertical} vertical; classes {self.tags}; {self.tconf} with tconf > 0) in {self.blocks} blocks "
                 f"({self.multi} of several boxes); {self.mixed} frames of several classes, {self.nopick} with boxes "
-                f"and no dialogue pick, {self.presence0} with boxes and presence 0")
+                f"and no dialogue pick, {self.presence0} with boxes and presence 0; {self.forced} forced-scale "
+                "records (crops included)")
 
 
 def multi(binary, jobs, td, tag):
@@ -555,7 +557,7 @@ def multi(binary, jobs, td, tag):
 
 
 def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None, v3=None, arenas=False,
-                 arena_frames=99):
+                 arena_frames=99, forced_p=0.3):
     """Every frame through C and the twin: (runs, maps, extra runs, mismatches). imgs: [(frame, designed maps or
     None, f, (case name, check) or None)]. noms: the NO_MS driver (a trunk blob's lines must be the full build's).
     v3: vocr_textspot3_test (a version-1, 2 or 3 blob: --batch3, --maps and the arenas must be its own; arenas at 960 x
@@ -564,6 +566,7 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
     bpath = Path(td) / f"{name}.vtsp"
     bpath.write_bytes(blob)
     cases, exp, bad = [], [], []
+    forced_cases, forced_exp = [], []
     for k, (g, mp, f, check) in enumerate(imgs):
         img = TP.to_rgba(g, rng) if rng.random() < 0.5 else g
         r = T6.spot(model, img)
@@ -586,22 +589,49 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
             form = int(rng.integers(0, 2))
             cases.append((img, base | P.NO_DARK | form))
             exp.append((k, f"nodark{form}", line_nd))
+        # the scale forced (VOCR_TEXTSPOT6_SCALE1 / _SCALE2, textspot6_twin.spot(..., scale=f)): the other scale
+        # than the rule's, or the rule's own; and on a frame of 400 x 200 or more a region cut from it read at the
+        # frame's scale, as the crop decodes read a unit's region
+        if rng.random() < forced_p:
+            rule = T6.scale_of(model, g.shape[1], g.shape[0])
+            f = 3 - rule if rng.random() < 0.7 else rule
+            fl = (SCALE1 if f == 1 else SCALE2) | (P.NO_DARK if rng.random() < 0.3 else 0)
+            rf = T6.spot(model, img, scale=f)
+            forced_cases.append((img, base | fl | int(rng.integers(0, 2))))
+            forced_exp.append((k, f"scale{f}", twin_line6(rf, dark=not fl & P.NO_DARK)))
+            cov.forced += 1
+        if g.shape[0] >= 200 and g.shape[1] >= 400 and rng.random() < forced_p:
+            w0, h0 = int(rng.integers(40, g.shape[1] // 2)), int(rng.integers(16, g.shape[0] // 2))
+            x0, y0 = int(rng.integers(0, g.shape[1] - w0)), int(rng.integers(0, g.shape[0] - h0))
+            region = np.ascontiguousarray(img[y0:y0 + h0, x0:x0 + w0])
+            f = T6.scale_of(model, g.shape[1], g.shape[0])
+            rf = T6.spot(model, region, scale=f)
+            forced_cases.append((region, base | (SCALE1 if f == 1 else SCALE2) | int(rng.integers(0, 2))))
+            forced_exp.append((k, f"crop{w0}x{h0}@{f}", twin_line6(rf)))
+            cov.forced += 1
     batch = Path(td) / f"{name}.bin"
     P.write_batch(batch, cases)
     old = v3 and model.version != T6.VERSION_TAG
     sel = [g for g, _, _, _ in imgs][::maps_every] if maps_every else []
     mb = Path(td) / f"{name}_maps.bin"
+    fbatch = Path(td) / f"{name}_forced.bin"
     jobs = [("batch", bpath, batch)]
     if sel:
         P.write_batch(mb, [(g, 0) for g in sel])
         jobs.append(("maps", bpath, mb))
     if old:
         jobs.append(("batch3", bpath, batch))
-    outs = multi(binary, jobs, td, name)
-    got = outs[0]
-    if len(got) != len(cases):
-        return len(cases), 0, 0, [(name, -1, f"{len(got)} output lines for {len(cases)} records", "")]
-    for (k, form, e), g in zip(exp, got):
+    if forced_cases:
+        P.write_batch(fbatch, forced_cases)
+        jobs.append(("batch", bpath, fbatch))
+    outs = dict(zip((m if m != "batch" or i == 0 else "forced" for i, (m, _, _) in enumerate(jobs)),
+                    multi(binary, jobs, td, name)))
+    got = outs["batch"]
+    fgot = outs.get("forced", [])
+    if len(got) != len(cases) or len(fgot) != len(forced_cases):
+        return len(cases), 0, 0, [(name, -1, f"{len(got)} + {len(fgot)} output lines for {len(cases)} + "
+                                             f"{len(forced_cases)} records", "")]
+    for (k, form, e), g in list(zip(exp, got)) + list(zip(forced_exp, fgot)):
         if g != e:
             bad.append((name, k, f"form {form}, shape {imgs[k][0].shape}: C  {g[:400]}", f"py {e[:400]}"))
     extra = 0
@@ -610,12 +640,14 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
         extra += len(other)
         if other != got:
             bad.append((name, -1, "the NO_MS driver prints other lines", ""))
+        if forced_cases and P.run_driver(noms, ["--batch", bpath, fbatch]).splitlines() != fgot:
+            bad.append((name, -1, "the NO_MS driver prints other lines at a forced scale", ""))
     if old:
         b = P.run_driver(v3, ["--batch", bpath, batch]).splitlines()
         extra += len(b)
-        if outs[-1] != b:
+        if outs["batch3"] != b:
             bad.append((name, -1, "--batch3 differs from vocr_textspot3_test --batch", ""))
-        if sel and P.run_driver(v3, ["--maps", bpath, mb]).splitlines() != outs[1]:
+        if sel and P.run_driver(v3, ["--maps", bpath, mb]).splitlines() != outs["maps"]:
             bad.append((name, -1, "--maps differs from vocr_textspot3_test's", ""))
         if arenas:
             sizes = [(960, 544), (480, 272), (600, 7)]
@@ -627,7 +659,7 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
                     bad.append((name, -1, f"arenas {w}x{h}: {a} != vocr_textspot3's {ref}", ""))
     nmaps = 0
     if sel:
-        out = outs[1]
+        out = outs["maps"]
         planes = 4 + model.tags
         for i, g in enumerate(sel):
             rc, hm, wm = map(int, out[2 * i + 1].split())
@@ -638,7 +670,7 @@ def check_frames(binary, name, blob, imgs, rng, td, cov, maps_every=1, noms=None
             nmaps += 1
             if not ok:
                 bad.append((name, i * maps_every, f"maps differ (rc {rc}, {hm}x{wm} vs {ref.shape[1:]})", ""))
-    return len(cases), nmaps, extra, bad
+    return len(cases) + len(forced_cases), nmaps, extra, bad
 
 
 # ---------------------------------------------------------------- the loader

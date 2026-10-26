@@ -50,8 +50,12 @@ def test_expect_file_format(tmp_path):
     path = tmp_path / "expect.txt"
     pack.write_expect(path, [(0x1234abcd, "「テスト」"), (0, "")])
     assert path.read_text(encoding="utf-8") == "1234abcd\t「テスト」\n00000000\t\n"
+    # finder mode (#126): a region's line texts are joined by tabs, which the app's text compare includes;
+    # only a newline would break the one-line-per-crop format
+    pack.write_expect(path, [(1, "a\tb")])
+    assert path.read_text(encoding="utf-8") == "00000001\ta\tb\n"
     with pytest.raises(ValueError):
-        pack.write_expect(path, [(1, "a\tb")])
+        pack.write_expect(path, [(1, "a\nb")])
 
 
 def test_read_pnm_grey_and_rgb(tmp_path):
@@ -107,7 +111,11 @@ def test_boot_uses_private_host_mount_without_replacing_home(tmp_path, monkeypat
 def test_bundle_config_keys_are_the_apps():
     cfg = pack.bundle_cfg("w8f", invert=True, repeat=2, clock=222, tile=16)
     assert set(cfg) <= app_cfg_keys()
-    assert cfg == {"mode": "w8f", "invert": 1, "repeat": 2, "crc": 1, "clock": 222, "wait": 1, "tile": 16, "head": 0}
+    assert cfg == {"mode": "w8f", "invert": 1, "repeat": 2, "crc": 1, "clock": 222, "wait": 1, "tile": 16, "head": 0,
+                   "gate": "off", "two_level": 0, "finder": -1, "refine": 31, "probe": 0}
+    cfg = pack.bundle_cfg("w8f", head_gate="on", two_level=True, finder=0, refine=0, probe=1)   # #126's keys
+    assert set(cfg) <= app_cfg_keys()
+    assert (cfg["gate"], cfg["two_level"], cfg["finder"], cfg["probe"]) == ("on", 1, 0, 1)
 
 
 def test_results_must_carry_per_line_frames(capsys):
@@ -133,11 +141,15 @@ def test_results_must_carry_per_line_frames(capsys):
 
 
 def test_repeat_keeps_the_first_runs_extras():
-    """main.c sets up vocr_extra once per line, outside the repeat loop: the timed repeats pass
-    extra = NULL, and a memset inside the loop would zero the first run's frames and chars."""
-    loop = MAIN_C[MAIN_C.index("for (r = 0; r < runs; r++)"):MAIN_C.index("if (runs > 1) us /=")]
-    assert "memset(&ex" not in loop
-    assert "g_job.ex = r == 0 ? &ex : NULL" in loop
+    """main.c's read_line sets up the first run's vocr_extra (the logits, the frames) once, outside the repeat loop; a
+    memset of it inside the loop would zero the first run's frames. The timed repeats (#126) pass their own zeroed
+    extra (ex_t), so the head gate and the two-level head act on them and their counts can be read back."""
+    end = MAIN_C.index("/* ---------------------------------------------------------------- main */")
+    body = MAIN_C[MAIN_C.index("static void read_line("):end]
+    loop = body[body.index("for (r = 0; r < runs; r++)"):body.index("if (runs > 1) us /=")]
+    assert not re.search(r"memset\(&ex,", loop) and "memset(&ex_t, 0, sizeof ex_t)" in loop
+    assert "g_job.ex = r == 0 ? &ex : &ex_t" in loop
+    assert body.index("memset(&ex, 0, sizeof ex)") < body.index("for (r = 0; r < runs; r++)")
 
 
 def test_app_prints_each_number_from_its_own_buffer():

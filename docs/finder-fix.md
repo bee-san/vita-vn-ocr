@@ -36,10 +36,10 @@ None of these changes what a `--finder` run measures (a cold re-run gives the de
 | hval: other pages of the train titles, 6,327 regions of 46 titles, as the page pool draws them (12-20 px margin) | 3.875% | **3.292%** | −0.583 [−0.926, −0.309]; 25 titles better, 1 worse |
 | … Vita / PSP | 4.528% / 2.705% | 3.902% / 2.199% | −0.626 [−1.107, −0.286] / −0.506 [−1.038, −0.128] |
 | dev: #119's units of 93 other VNs | 3.036% | **2.340%** | −0.696 [−1.262, −0.249]; 9 VNs better, 0 worse |
-| … Vita / PSP | 2.948% / 3.113% | 1.965% / 2.665% | −0.983 [−2.074, −0.163] / −0.448 [−0.947, −0.008] |
+| … Vita / PSP | 2.948% / 3.113% | 1.965% / 2.665% | −0.983 [−2.074, −0.162] / −0.448 [−0.947, −0.008] |
 | hval base units cut tight: the lines' union, 0 px / + 2 px | 2.570% / 2.243% | 1.933% / 1.621% | −0.637 [−1.022, −0.340] / −0.622 [−1.003, −0.330] |
 | dev base units cut 1 px around the ink | 3.110% | 2.123% | −0.986 [−1.852, −0.362] |
-| VOCR5-S, hval / dev | 3.222% / 3.210% | 2.639% / 2.541% | −0.583 [−0.920, −0.311] / −0.669 [−1.220, −0.235] |
+| VOCR5-S, hval / dev | 3.221% / 3.210% | 2.639% / 2.541% | −0.583 [−0.920, −0.311] / −0.669 [−1.220, −0.235] |
 | VOCR5-L, hval / dev | 3.918% / 3.009% | 3.342% / 2.313% | −0.576 [−0.916, −0.303] / −0.696 [−1.262, −0.249] |
 | the test title (Dance with Devils, 2,055 regions; report only, §4) | 1.241% | 0.978% | −0.263 [−0.454, −0.106] (page clusters) |
 
@@ -216,8 +216,13 @@ them together (38 clusters instead of 46) leaves every verdict as it was. The gr
 | COLGAP + JUNK vs COLGAP | −1.395 | [−4.521, −0.004] | [−4.760, −0.004] |
 | COLGAP + JUNK vs Rubi today | −1.978 | [−5.186, −0.377] | [−5.422, −0.378] |
 
-**Development empty regions (eval/linefind's 66, report only).** With COLGAP + JUNK, the same 10 regions read some text
-before and after the fixes, but the characters read fall from 27 to 23 and the boxes from 112 to 100.
+**Development empty regions (eval/linefind's 66, report only).** Rubi today reads 27 characters in 10 of them, from 112
+boxes.
+- With COLGAP + JUNK, the same 10 regions read 23 characters from 100 boxes.
+- With the default, COLGAP, 12 regions read 31 characters from 112 boxes: two regions that read nothing before now
+  read 2 characters each.
+
+The effect is tiny either way. The text-presence gate (#100) is the tool for empty regions.
 
 **The test title** (Dance with Devils, PCSG00807, the corpus's test-split title) was read four times, all after the
 decisions they follow and only to report. Nothing was selected on any of them:

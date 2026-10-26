@@ -436,7 +436,7 @@ def build_driver(cfg, out_dir, cc="gcc"):
     exe = Path(out_dir) / f"pagepath_find_{h.hexdigest()[:16]}"
     if not exe.exists():
         exe.parent.mkdir(parents=True, exist_ok=True)
-        tmp = exe.with_suffix(".tmp")
+        tmp = exe.with_suffix(f".{os.getpid()}.tmp")       # one per process: builds may start together
         subprocess.run([cc, "-std=c99", "-O2", "-ffp-contract=off", "-Wall", "-Wextra", "-Werror", *defs,
                         f"-I{rt}", "-o", str(tmp), *map(str, srcs)], check=True)
         os.replace(tmp, exe)
@@ -580,7 +580,7 @@ def rubi_norm_tool(rubi, out_dir, cc="gcc"):
                         'int main(void) { static char b[1 << 16]; while (fgets(b, sizeof b, stdin)) {\n'
                         '  size_t n = strlen(b); if (n && b[n - 1] == \'\\n\') b[--n] = 0;\n'
                         '  vjo_text_normalize(b, NULL); fputs(b, stdout); fputc(\'\\n\', stdout); } return 0; }\n')
-        tmp = exe.with_suffix(".tmp")
+        tmp = exe.with_suffix(f".{os.getpid()}.tmp")       # one per process: builds may start together
         subprocess.run([cc, "-std=c99", "-O2", f"-I{Path(rubi) / 'core'}", "-o", str(tmp), str(main), str(src)],
                        check=True)
         os.replace(tmp, exe)

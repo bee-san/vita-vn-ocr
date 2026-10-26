@@ -112,22 +112,24 @@ def main():
             doc["test_reads"][arm] = {"finder": r["finder"].get("preset"), "fix": r["finder"].get("fix"),
                                       "filter": r.get("filter", "lines"), "errors": totals(r)["errors"],
                                       "chars": totals(r)["chars"]}
-    for arm in ("base", "F13", "F123"):
+    for arm in ("base", "F1", "F13", "F123"):
         r = load(a.runs, f"{arm}_empty")
         if r:
             doc["empty_regions"][arm] = {"regions": len(r["units"]),
                                          "regions_with_text": sum(1 for u in r["units"] if u["errors"]),
                                          "chars_read": sum(u["errors"] for u in r["units"]),
                                          "boxes": sum(u["boxes"] for u in r["units"])}
-    b, f = load(a.runs, "base_hval"), load(a.runs, "F13_hval")
-    if b and f:
+    b, f, f1 = load(a.runs, "base_hval"), load(a.runs, "F13_hval"), load(a.runs, "F1_hval")
+    if b and f and f1:
         fa = {u["uid"]: u for u in f["units"]}
-        per = defaultdict(lambda: {"platform": "", "chars": 0, "base_errors": 0, "F13_errors": 0})
+        f1a = {u["uid"]: u for u in f1["units"]}
+        per = defaultdict(lambda: {"platform": "", "chars": 0, "base_errors": 0, "F1_errors": 0, "F13_errors": 0})
         for u in b["units"]:
             t = per[u["cluster"]]
             t["platform"] = u["platform"]
             t["chars"] += u["chars"]
             t["base_errors"] += u["errors"]
+            t["F1_errors"] += f1a[u["uid"]]["errors"]
             t["F13_errors"] += fa[u["uid"]]["errors"]
         doc["per_title_hval"] = dict(sorted(per.items()))
     if first:

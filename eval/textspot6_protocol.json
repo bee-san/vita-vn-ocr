@@ -331,6 +331,25 @@
     "eval/textspot6.py": "51ad39e6af09939f731b89d7436f4dcc23b34f995b65df6d9105c19d2b175a99",
     "eval/reproducibility/textspot6-20261026/score_run.sh": "000ac29556129cc6663795bd874d35d3245de7bd2d2b95ec4b66b101d1186e21"
    }
+  },
+  {
+   "id": 10,
+   "utc": "2026-10-26T14:45:23Z",
+   "before": "the selection (seed-1 scores of three arms exist: amendment 9's disclosure and the scoring since)",
+   "what": [
+    "The runtime of record: runtime/vocr_textspot6.c (+ .h, _test.c, .mk) of vocr6-spotter-runtime's branch, merged at 956494e (parity with the twin: large ASan + UBSan runs with gcc and clang, qemu-arm Cortex-A9 parity of the Vita compiler's objects; VOCR_TEXTSPOT6_SCALE1 / _SCALE2; VOCR_TEXTSPOT6_NO_MS). synth/textspot6_twin.py's docstring states the cap's last tie-break (tconf), which the code already used; no code changed.",
+    "The A9 rows of record (estimates): eval/textspot6_a9_20261026.json, -O2 NEON, the default call with the dark pass at 960 x 544: {\"t64n8c16\": {\"vtsp_bytes\": 52176, \"weights_int8\": 40864, \"est_ms_333_960\": 264.2, \"est_ms_444_960\": 198.2}, \"qS4\": {\"vtsp_bytes\": 118096, \"weights_int8\": 102480, \"est_ms_333_960\": 199.1, \"est_ms_444_960\": 149.4}, \"qL5\": {\"vtsp_bytes\": 448304, \"weights_int8\": 416080, \"est_ms_333_960\": 237.0, \"est_ms_444_960\": 177.7}}; every arm is eligible by time (<= 300 ms) and arena (<= 262,144 B).",
+    "The C == twin check of eligibility runs in scoring (score_run.sh step 3: eval/textspot6_parity.py on the dev frames, the dev crops at their frames' scale, textspot's development frames, the hval pages and crops); the three seed-1 runs scored before it get the same check as a separate job.",
+    "sched.py reads extra jobs from RUNS/extra_jobs.txt."
+   ],
+   "pins": {
+    "runtime/vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+    "synth/textspot6_twin.py": "9d47ee7393219eaee0c412b9d29ec094b6f29c3c0ba942f6d5cf4beef5176753",
+    "eval/textspot6_a9_20261026.json": "b7fa271921a37405cb1b23449091036d8ec20213dde67631851e1befdf364717",
+    "eval/textspot6_parity.py": "58a73f6b1a312f111acdeab3370ef9acee991089c3e2135a1606cf1c5cd4b192",
+    "eval/reproducibility/textspot6-20261026/score_run.sh": "626f4f6c6d0af3ddbdaaa17734b618c3d4cca2143bad74a29c0d7e2dea676400",
+    "eval/reproducibility/textspot6-20261026/sched.py": "3145f30963a29ac8d874740b449dc54f0f66d9b041e7b700b1774e02d6964356"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

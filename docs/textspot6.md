@@ -238,6 +238,11 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
    - A report-only row is added: Rubi's next finder, `--finder rubi,fix=5` (#129's COLGAP + JUNK).
    - Rubi's default: the adopted pick becomes the default finder only if it also beats `rubi,fix=5` by the rule's own
      test. Otherwise the spotter ships behind its setting, off by default.
+10. **The runtime and A9 rows of record** (after the seed-1 scores).
+    - The runtime is `runtime/vocr_textspot6.c` (merged at `956494e`). The A9 rows are
+      `eval/textspot6_a9_20261026.json`: t64n8c16 est. 264 ms at 333 MHz, qS4 199 ms, qL5 237 ms. All arms are
+      eligible.
+    - The C == twin check runs in scoring (`eval/textspot6_parity.py`).
 
 ## Results
 

@@ -79,4 +79,6 @@ done
 "$PY" "$REPO/eval/textspot6.py" hval-boxes --spot "$D/spot_hval.jsonl" \
   --shards "$HERD/shared/private/vocr6-spotter/shards_v1" --manifest "$REPO/data/manifests/textspot6_pages_v1.json" \
   --out "$D/hval_boxes.json"
+# 3. the eligibility check: the C runtime against the twin on every development frame and crop (and hval's)
+"$PY" "$REPO/eval/textspot6_parity.py" --blob "$BLOB" --out "$D/parity.json" --workers "$WORKERS"
 echo "score_run finished $NAME $D"

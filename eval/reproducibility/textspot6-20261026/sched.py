@@ -14,6 +14,8 @@ share (vocr6/slots.txt), training and scoring together, so that the share is nev
   only while RUNS/helper_go exists. helper.reserve is removed when vocr6-spotter-runtime.status starts with
   RUNTIME_READY.
 - Every start and end goes to the shared experiment log (vocr6/experiments.jsonl, flock).
+Extra jobs: a line appended to RUNS/extra_jobs.txt (a bash command) is run once, before the scoring and training
+jobs, as a --pre command is (lines already taken are counted in RUNS/extra_jobs.taken).
 Stop: touch RUNS/sched.stop (running jobs finish; nothing new starts).
 """
 import argparse
@@ -148,6 +150,13 @@ def main(argv=None):
         elif go.exists():
             go.unlink()
         stop = (runs / "sched.stop").exists()
+        xf, xt = runs / "extra_jobs.txt", runs / "extra_jobs.taken"
+        if xf.exists():
+            lines = [x for x in xf.read_text().splitlines() if x.strip()]
+            taken = int(xt.read_text().strip() or 0) if xt.exists() else 0
+            if len(lines) > taken:
+                pre.extend(lines[taken:])
+                xt.write_text(f"{len(lines)}\n")
         # launch
         while not stop and len(active) < mine:
             job = None

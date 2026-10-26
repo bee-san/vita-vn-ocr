@@ -182,6 +182,15 @@ def is_japanese_char(c):
     return 0x3040 <= cp <= 0x309F or 0x30A0 <= cp <= 0x30FF or 0x4E00 <= cp <= 0x9FAF
 
 
+PUNCT_LINE = set("…―ー！？!?「」『』、。・～〜")     # display arm P1 (vocr6-lead's set)
+
+
+def punct_line(x):
+    """Display arm P1: a line of Japanese dialogue punctuation only (spaces ignored), at least 2 characters."""
+    t = x.replace(" ", "").replace("\u3000", "")
+    return len(t) >= 2 and all(c in PUNCT_LINE for c in t)
+
+
 class RubiShow:
     """What Rubi shows of a job's lines (protocol amendment 1): the lines read (an empty one adds nothing) joined
     by '\\n' as finish_line joins them; the game worker's core/textnorm.c (vjo_text_normalize_as, flags 0: every
@@ -189,9 +198,10 @@ class RubiShow:
     checkout at RUBI_TEXTNORM_SHA256; then the Shell's core/textfilter.c vjo_filter_lines (non_japanese_filter =
     lines): a line without a kana or kanji goes. Returns the shown lines."""
 
-    def __init__(self, rubi, build_dir):
+    def __init__(self, rubi, build_dir, keep_punct=False):
         import ctypes as C
         import subprocess
+        self.keep_punct = keep_punct            # display arm P1 (punct_line): off is Rubi's filter as it is
         src, hdr = Path(rubi) / "core" / "textnorm.c", Path(rubi) / "core" / "textnorm.h"
         if sha256(src) != RUBI_TEXTNORM_SHA256 or sha256(hdr) != RUBI_TEXTNORM_H_SHA256:
             raise SystemExit(f"{src}: not Rubi main bd130a8's textnorm.c/.h")
@@ -212,7 +222,8 @@ class RubiShow:
 
     def __call__(self, lines):
         text = self.textnorm("\n".join(x for x in lines if x))
-        return [x for x in text.split("\n") if any(is_japanese_char(c) for c in x)]
+        return [x for x in text.split("\n") if any(is_japanese_char(c) for c in x)
+                or (self.keep_punct and punct_line(x))]
 
 
 def dev_units():
@@ -762,6 +773,45 @@ def cmd_blob_report(a):
                           "cv": {s: {k: ps[s]["cv"][k] for k in ks} for s in ps},
                           "greedy": {s: {k: ps[s]["greedy"][k] for k in ks} for s in ps},
                           "vocr5_setting": {s: {k: ps[s].get("vocr5_setting", {}).get(k) for k in ks} for s in ps}}),
+              flush=True)
+
+
+def cmd_display_arm(a):
+    """Display arm P1 (pre-registered in vocr6/experiments.jsonl): Rubi's display rules as they are (X) against X
+    plus keeping punctuation-only lines (Y), on identical decodes at one LM setting. --tiers S,N,L: VOCR5's blobs,
+    S and N with their cascades, L alone; --tiers N with --blob/--dev-cache: another recognizer as N alone."""
+    tiers_l = a.tiers.split(",")
+    cfg = json.loads(a.config)
+    tiers, units = load_all(tiers_l, a.hval_cache)
+    U = units
+    tx = {t: tiers[t].decode(a.lm, lm_opts(cfg)) for t in tiers_l}
+    shows = {"X": RubiShow(a.rubi, PRIV / "build"), "Y": RubiShow(a.rubi, PRIV / "build", keep_punct=True)}
+    models = {}
+    for t in tiers_l:
+        if UP[t] in tiers_l:
+            models[f"{t}+cascade"] = cascade(tx[t], tiers[t].conf, tx[UP[t]], a.cascade_conf)
+        elif len(tiers_l) == 1 or UP[t] is None:
+            models[t] = tx[t]
+    sc_units = [[u.part, u.uid, u.cluster, u.name, u.chars, u.platform] for u in U]
+    sc = Scorer(sc_units)
+    out = {"kind": "vocr6-lm-display-arm", "schema": 1, "created": utc_now(), "arm": "P1 keep punctuation-only lines",
+           "lm": Path(a.lm).name, "lm_sha256": sha256(a.lm), "config": cfg, "cascade_conf": a.cascade_conf,
+           "blobs": {t: sha256(BLOBS[t]) for t in tiers_l}, "name": a.name, "models": {}}
+    for m, texts in models.items():
+        ex = unit_errors(U, texts, shows["X"])
+        ey = unit_errors(U, texts, shows["Y"])
+        changed = int((ex != ey).sum())
+        out["models"][m] = {"X": rounded(sc.scores(ex)), "Y": rounded(sc.scores(ey)), "units_changed": changed,
+                            "units_better": int((ey < ex).sum()), "units_worse": int((ey > ex).sum()),
+                            "Y_minus_X": compare(U, ex, ey)}
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    for m, r in out["models"].items():
+        d = r["Y_minus_X"]
+        print(json.dumps({"model": m, "changed": r["units_changed"], "better": r["units_better"],
+                          "worse": r["units_worse"], **{k: [d[k]["delta_points"], d[k]["ci95"]]
+                                                         for k in ("hc", "hp", "dev", "obj") if k in d}}),
               flush=True)
 
 
@@ -1392,6 +1442,17 @@ def main():
     p.add_argument("--dir", required=True)
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p = sub.add_parser("display-arm")
+    p.add_argument("--tiers", required=True, help="S,N,L (VOCR5's blobs, cascades) or N (with --blob)")
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--dev-cache", action="append", default=[], help="T=FILE: its dev reads (dev-cache)")
+    p.add_argument("--hval-cache", required=True)
+    p.add_argument("--rubi", required=True)
+    p.add_argument("--lm", required=True)
+    p.add_argument("--config", required=True, help="the LM setting, JSON (alpha, beta, flags, gate, bracket)")
+    p.add_argument("--cascade-conf", type=int, default=700)
+    p.add_argument("--name", default="")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("show-cost")
     p.add_argument("--blob", action="append", default=[], help="N=PATH: the recognizer (default VOCR5-N)")
     p.add_argument("--dev-cache", action="append", default=[], help="unused here; accepted for symmetry")
@@ -1480,7 +1541,7 @@ def main():
     cmds = {"tune": cmd_tune, "dev-cache": cmd_dev_cache, "screen": cmd_screen, "hval-units": cmd_hval_units,
             "hval-cache": cmd_hval_cache, "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families,
             "summary": cmd_summary, "checks": cmd_checks, "tables": cmd_tables, "blob-report": cmd_blob_report,
-            "show-cost": cmd_show_cost}
+            "show-cost": cmd_show_cost, "display-arm": cmd_display_arm}
     cmds[a.cmd](a)
 
 

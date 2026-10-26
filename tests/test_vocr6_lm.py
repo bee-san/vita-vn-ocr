@@ -340,3 +340,15 @@ def test_settings_report_picks_the_seed_mean_best():
         assert ps["cv"]["hc"] == 10.0 and ps["greedy"]["hc"] == 40.0 and ps["vocr5_setting"]["hc"] == 30.0
         assert ps["cv_minus_vocr5_setting"]["hc"]["delta_points"] == -20.0
     assert r["by_alpha"]["600"]["config"] == cfgs[1]
+
+def test_display_arm_p1_keeps_punctuation_lines(tmp_path):
+    """Display arm P1: a line of dialogue punctuation only (>= 2 characters, spaces ignored) stays; Rubi's filter as
+    it is drops it; lines of other symbols still go."""
+    assert V.punct_line("……") and V.punct_line("「…… 」") and V.punct_line("！？")
+    assert not V.punct_line("…") and not V.punct_line("Ab12") and not V.punct_line("…a")
+    try:
+        x, y = V.RubiShow(RUBI, tmp_path), V.RubiShow(RUBI, tmp_path, keep_punct=True)
+    except SystemExit:
+        pytest.skip("the Rubi checkout is not at the pinned textnorm.c")
+    assert x(["……", "テスト"]) == ["テスト"] and y(["……", "テスト"]) == ["……", "テスト"]
+    assert y(["Ab12Cd34"]) == [] and y(["＃＃"]) == []

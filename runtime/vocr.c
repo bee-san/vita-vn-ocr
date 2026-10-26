@@ -622,6 +622,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         in_top = out_top;
     }
     off = base + R;
+    if (off > 0xFFFFFFF0u) return VOCR_E_ARG; /* before any offset below is cast to 32 bits */
     /* the attention op (docs/vocr6-attn.md "Arena"): its working set (K and V of every frame, a head batch of queries'
      * Q, scores and outputs, the projections' scratch) overlays the rings, the head's accumulator and state and the
      * transients, all idle between the tiles and the head; the line of z, every frame's bottleneck output, which
@@ -629,7 +630,8 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     if (c->attn) {
         const size_t d = m->op[c->attn].cin, da = m->attn.dim, P = hb, kmax = d > da ? d : da;
         const size_t tp = ((size_t)t_max + 7u) & ~(size_t)7u;
-        size_t w = c->ring_off;
+        const size_t line = al16((size_t)t_max * d * sizeof(float));
+        size_t w = c->ring_off, lo;
         c->att_tp = (uint32_t)tp;
         c->kp_off = (uint32_t)w;
         w += al16(tp * da * sizeof(float));
@@ -645,8 +647,10 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
         if (mode == VOCR_MODE_W8F) w += al16(kmax * 8u * sizeof(float));
         else if (mode == VOCR_MODE_W8I) w += al16(P * kmax * 2u) + al16(P * sizeof(float));
         if (w > 0xFFFFFFF0u) return VOCR_E_ARG;
-        c->line_off = (uint32_t)(off > w ? off : w);
-        off = c->line_off + al16((size_t)t_max * d * sizeof(float));
+        lo = off > w ? off : w;
+        if (line > 0xFFFFFFF0u - lo) return VOCR_E_ARG; /* no wrap of a 32-bit size_t either */
+        c->line_off = (uint32_t)lo;
+        off = lo + line;
     }
     if (off > 0xFFFFFFF0u) return VOCR_E_ARG;
     c->arena_bytes = off;

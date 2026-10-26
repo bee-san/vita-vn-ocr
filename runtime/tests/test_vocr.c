@@ -2044,6 +2044,132 @@ static void test_attn_run_on(size_t (*build)(int), unsigned heads, unsigned dim,
     }
 }
 
+/* plan() keeps 32-bit offsets: an arena over 4 GiB must be refused (vocr_arena_bytes 0), with or without the
+ * attention op, and never wrapped into a small one (the attention's line was placed from a truncated offset before
+ * this was checked first; audit-vocr6-s3-attn). The shapes: height 64, stride 1, max width 8,192 px; a 1 -> 8 stem,
+ * an 8 -> 1,024 pointwise layer on 64 rows, two depthwise 3x3 on 64 rows and five of stride 2 x 1 down to 2 rows, a
+ * 2x1 collapse to 16 channels, [the attention op: 16, 2 heads,] a 6-class head. With 8,192-frame tiles the
+ * depthwise layers' rings alone are over 6 GiB. Zero weights: it is only planned. 64-bit hosts only (on a 32-bit
+ * host these sizes do not fit size_t). */
+static unsigned char big_buf[512u << 10] __attribute__((aligned(16)));
+static size_t big_pos;
+
+static uint32_t big_put(size_t n)
+{
+    const uint32_t off = (uint32_t)big_pos;
+    if (big_pos + n > sizeof big_buf) {
+        fprintf(stderr, "big test blob too large\n");
+        exit(2);
+    }
+    big_pos = (big_pos + n + 15u) & ~(size_t)15u;
+    return off;
+}
+
+/* op record i of big_buf, its zero weights, bias and (int8) scales placed after the table */
+static void big_rec(unsigned i, unsigned type, unsigned flags, unsigned kh, unsigned kw, unsigned sh, unsigned ph,
+                    unsigned pw, unsigned cin, unsigned cout, unsigned hin, unsigned hout, unsigned k, unsigned cout_pad)
+{
+    unsigned char *r = big_buf + 64 + 64 * i;
+    const int mat = type >= 3;
+    const uint32_t wb = (uint32_t)cout_pad * k * (mat ? 1u : 4u);
+    const uint32_t w = big_put(wb), b = big_put(4u * cout_pad), s = mat ? big_put(4u * cout_pad) : 0;
+    memset(r, 0, 64);
+    r[0] = (unsigned char)type;
+    r[1] = (unsigned char)(flags | 4 | (mat ? 8 : 0));
+    r[2] = (unsigned char)kh;
+    r[3] = (unsigned char)kw;
+    r[4] = (unsigned char)sh;
+    r[5] = 1;
+    r[6] = (unsigned char)ph;
+    r[7] = (unsigned char)pw;
+    wr16(r + 8, cin);
+    wr16(r + 10, cout);
+    wr16(r + 12, hin);
+    wr16(r + 14, hout);
+    wr32(r + 16, w);
+    wr32(r + 20, wb);
+    wr32(r + 24, b);
+    wr32(r + 28, s);
+    wr16(r + 32, k);
+    wr16(r + 34, cout_pad);
+}
+
+static size_t build_big_blob(int attn)
+{
+    unsigned char vocab[2 * 7 + 5];
+    const unsigned n_ops = attn ? 13u : 12u;
+    unsigned i, h = 64, op = 0;
+    uint32_t v;
+    memset(big_buf, 0, sizeof big_buf);
+    big_pos = 64 + 64 * n_ops;
+    big_rec(op++, 1, 1, 3, 3, 1, 1, 1, 1, 8, 64, 64, 9, 8);               /* stem 1 -> 8 */
+    big_rec(op++, 3, 1, 1, 1, 1, 0, 0, 8, 1024, 64, 64, 8, 1024);         /* pw 8 -> 1,024 */
+    for (i = 0; i < 2; i++) big_rec(op++, 2, 1, 3, 3, 1, 1, 1, 1024, 1024, 64, 64, 9, 1024);
+    for (i = 0; i < 5; i++, h /= 2) big_rec(op++, 2, 1, 3, 3, 2, 1, 1, 1024, 1024, h, h / 2, 9, 1024);
+    big_rec(op++, 3, 16, 2, 1, 1, 0, 0, 1024, 16, 2, 1, 2048, 16);        /* collapse 2x1 -> 16 */
+    big_rec(op++, 3, 1 | 2, 1, 1, 1, 0, 0, 16, 16, 1, 1, 16, 16);        /* a residual pw (no dw before: fixed below) */
+    big_buf[64 + 64 * (op - 1) + 1] &= (unsigned char)~2u;
+    if (attn) {
+        unsigned char *r = big_buf + 64 + 64 * op;
+        big_rec(op++, 5, 0, 1, 1, 1, 0, 0, 16, 16, 1, 1, 16, 48);
+        r[1] = 4 | 8;
+        wr16(r + 36, 2);
+        wr16(r + 38, 16);
+        wr32(r + 40, big_put(16 * 16));
+        wr32(r + 44, 16 * 16);
+        wr32(r + 48, big_put(4 * 16));
+        wr32(r + 52, big_put(4 * 16));
+    }
+    big_rec(op++, 4, 0, 1, 1, 1, 0, 0, 16, 6, 1, 1, 16, 8);               /* head 16 -> 6 */
+    wr16(vocab, 0);
+    wr16(vocab + 2, 0);
+    for (i = 1; i < 6; i++) {
+        vocab[14 + i - 1] = (unsigned char)('a' + i - 1);
+        wr16(vocab + 2 * (i + 1), i);
+    }
+    v = big_put(sizeof vocab);
+    memcpy(big_buf + v, vocab, sizeof vocab);
+    memcpy(big_buf, "VOCR", 4);
+    wr16(big_buf + 4, 1);
+    wr16(big_buf + 6, 64);
+    wr32(big_buf + 8, (uint32_t)big_pos);
+    wr32(big_buf + 12, 1u);
+    wr16(big_buf + 16, 64);
+    wr16(big_buf + 18, 8192);
+    wr16(big_buf + 20, 1);
+    wr16(big_buf + 22, op);
+    wr32(big_buf + 24, 6);
+    wr32(big_buf + 28, 64);
+    wr32(big_buf + 32, v);
+    wr32(big_buf + 36, 5);
+    wr32(big_buf + 40, crc32_ref(big_buf + 64, big_pos - 64));
+    return big_pos;
+}
+
+static void test_attn_plan_limit(void)
+{
+    vocr_model m;
+    vocr_opts o;
+    size_t base_default = 0, attn_default = 0;
+    int attn;
+    if (sizeof(size_t) < 8) return;
+    for (attn = 0; attn <= 1; attn++) {
+        const size_t n = build_big_blob(attn);
+        CHECK(vocr_load(&m, big_buf, n) == VOCR_OK && (m.attn.dim != 0) == (attn != 0));
+        memset(&o, 0, sizeof o);
+        o.mode = VOCR_MODE_W8I;
+        CHECK(vocr_arena_bytes(&m, &o) > 0); /* the default tile: a sane arena */
+        if (attn) attn_default = vocr_arena_bytes(&m, &o);
+        else base_default = vocr_arena_bytes(&m, &o);
+        o.tile_frames = 8192;
+        CHECK(vocr_arena_bytes(&m, &o) == 0); /* over 4 GiB: refused, not wrapped */
+        o.mode = VOCR_MODE_W8F;              /* W8F too */
+        CHECK(vocr_arena_bytes(&m, &o) == 0);
+    }
+    /* the attention adds its line (8,192 frames x 16 floats) and K, V beyond the small rings of the default tile */
+    CHECK(attn_default >= base_default + 8192u * 16u * 4u);
+}
+
 static size_t build_blob_wide(int int8) { return build_blob_c1(int8, 272); }
 static size_t build_attn_gate_blob(int int8) { return insert_attn(build_blob(int8), 2, 16, 1.0f, 31u); }
 static size_t build_attn_2l_blob(void) { return insert_attn(build_blob_2l(), 2, 16, 1.0f, 37u); }
@@ -2052,6 +2178,7 @@ static size_t build_stem_head_attn_2l_blob(void) { return insert_attn(build_stem
 static void test_attn(void)
 {
     test_attn_load();
+    test_attn_plan_limit();
     /* known answers: this branch's scalar code (host gcc and clang, Cortex-A9 NEON and scalar agree) */
     test_attn_run_on(build_blob, 2, 16, 0xfbb022317fc251fbull);
     test_attn_run_on(build_blob, 1, 32, 0xb53ea1e650e1fa57ull);         /* dim > d: the projections' scratch is sized for dim */

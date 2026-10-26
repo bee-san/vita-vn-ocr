@@ -152,7 +152,7 @@ def main():
             vpath.write_bytes(vb)
             for cfg in a.configs.split(","):
                 mode, tile, head = cfg.split(":")
-                if opts and mode != "w8i":
+                if opts.get("two_level") and mode not in ("w8i", "w8f"):
                     continue
                 for ename, eboot in eboots.items():
                     key = (name, ename, cfg, variant)

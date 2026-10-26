@@ -261,6 +261,99 @@ def misplaced(font, chars):
     return out
 
 
+def shape_vec(font, ch, size=24):
+    """A glyph's ink box padded to a square (so a dash stays a dash) and resized to size x size, unit norm, without
+    centring (so a filled box differs from a hollow one); None for an empty glyph."""
+    g = font.glyph(ch)[0]
+    if g.size <= 1:
+        return None
+    ys, xs = np.nonzero(g > 0.25)
+    if len(xs) < 2:
+        return None
+    g = g[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    h, w = g.shape
+    n = max(h, w)
+    sq = np.zeros((n, n), np.float32)
+    sq[(n - h) // 2:(n - h) // 2 + h, (n - w) // 2:(n - w) // 2 + w] = g
+    v = cv2.resize(sq, (size, size), interpolation=cv2.INTER_AREA).ravel()
+    nv = float(np.linalg.norm(v))
+    return v / nv if nv > 1e-6 else None
+
+
+def cp932_shift(ch, d):
+    """The character d Shift-JIS (cp932) codes away from ch, or None."""
+    try:
+        b = ch.encode("cp932")
+    except UnicodeEncodeError:
+        return None
+    try:
+        t = (int.from_bytes(b, "big") + d).to_bytes(len(b), "big").decode("cp932")
+    except (UnicodeDecodeError, OverflowError):
+        return None
+    return t if len(t) == 1 else None
+
+
+SHIFTS = (-2, -1, 1, 2)
+
+
+def swapped(font, chars, refs, min_run=8, min_gain=0.05, max_gap=2):
+    """The characters of `chars` (symbols, punctuation, Latin and digits: shapes the OCR checks barely read) that
+    `font` draws from a decoder table off by one or two codes (NPJH50649's lt18 draws 」 as 「, ＝ as ÷, ○ as ★
+    ... from 0x8176 on). For each character in Shift-JIS order, its glyph (shape_vec) is compared with the
+    reference glyphs (any of `refs`) of itself and of its neighbours 1-2 codes away; a character whose best match is
+    a neighbour at shift d (by `min_gain` or more) votes for d. A run of `min_run` or more votes for one d, in code
+    order within a Shift-JIS lead byte (single-byte codes form one group; up to `max_gap` other characters between
+    votes), is a shifted table: every
+    character of the run is listed. A single vote is not enough: tiny glyphs (。．) match their neighbours by chance."""
+    rv = {}
+
+    def ref_vec(c):
+        if c not in rv:
+            rv[c] = [v for v in (shape_vec(r, c) for r in refs if r.has(c)) if v is not None]
+        return rv[c]
+    rows = []
+    for c in chars:
+        if c in SPACES or not font.has(c):
+            continue
+        try:
+            code = c.encode("cp932")
+        except UnicodeEncodeError:
+            continue
+        v = shape_vec(font, c)
+        own = ref_vec(c)
+        if v is None or not own:
+            continue
+        o = max(float(v @ r) for r in own)
+        best, gain = 0, 0.0
+        for d in SHIFTS:
+            t = cp932_shift(c, d)
+            if t is not None and ref_vec(t):
+                g = max(float(v @ r) for r in ref_vec(t)) - o
+                if g > gain:
+                    best, gain = d, g
+        vote = best if gain >= min_gain else 0
+        rows.append((len(code), code[0] if len(code) == 2 else 0, int.from_bytes(code, "big"), c, vote))
+    rows.sort()
+    out = []
+    i = 0
+    while i < len(rows):
+        if rows[i][4] == 0:
+            i += 1
+            continue
+        d, lead, j, gap, last = rows[i][4], rows[i][:2], i, 0, i
+        votes = 0
+        while j < len(rows) and rows[j][:2] == lead and gap <= max_gap:
+            if rows[j][4] == d:
+                votes, gap, last = votes + 1, 0, j
+            else:
+                gap += 1
+            j += 1
+        if votes >= min_run:
+            out += [r[3] for r in rows[i:last + 1]]
+        i = last + 1
+    return out
+
+
 def glyph_digests(font_dir):
     """{character: sha1 of its glyph bitmap and its size} of a bitmap font (None for a vector font)."""
     meta = load_meta(font_dir)

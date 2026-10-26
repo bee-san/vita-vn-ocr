@@ -393,3 +393,31 @@ def test_legibility_catches_a_partly_invisible_line(tmp_path, font):
     total = S6.composite(img, cov, 2, 2, st)
     contrast, busy, worst = S6.legibility(img, cov, total, 2, 2, cells)
     assert worst < S6.CFG["min_char_contrast"] <= contrast or contrast < S6.CFG["min_contrast"]
+
+
+def test_shifted_decoder_tables_are_found(tmp_path, font):
+    ref = F6.OutlineFont(font, size=48)
+    letters = "ABCDEFGHIJKLMNOPQRST"
+    good = F6.open_font(atlas_font(tmp_path, font, "T1", "good", px=32, chars=letters))
+    assert F6.swapped(good, letters, [ref]) == []
+    # the same atlas, but every letter from E on shows the glyph of the letter before it (a table off by one)
+    bad = F6.open_font(atlas_font(tmp_path, font, "T2", "bad", px=32, chars=letters))
+    rects = {c: list(bad.chars[c]) for c in letters}
+    for prev, c in zip(letters[3:], letters[4:]):
+        bad.chars[c] = rects[prev]
+    bad._cache.clear()
+    got = set(F6.swapped(bad, letters, [ref]))
+    assert len(got & set(letters[4:])) >= 10 and not got & set(letters[:4])
+    one = F6.open_font(atlas_font(tmp_path, font, "T3", "one", px=32, chars=letters))
+    one.chars["K"] = list(one.chars["J"])                         # a single odd glyph is not a shifted table
+    one._cache.clear()
+    assert F6.swapped(one, letters, [ref]) == []
+
+
+def test_grad_boxes_must_cover_the_line(monkeypatch):
+    grey = np.zeros((200, 400), np.uint8)
+    line = {"ink_v": [50, 100, 250, 30], "text": "x"}             # region: x 38-312, y 88-142
+    monkeypatch.setattr(S6, "find_lines_ex", lambda reg, mode: ([(9, 15, 256, 15)], [0], False))
+    assert S6.grad_boxes(grey, [line], [], 12, 1) == {}              # a 15 px band through a 30 px line: refused
+    monkeypatch.setattr(S6, "find_lines_ex", lambda reg, mode: ([(9, 9, 256, 36)], [0], False))
+    assert S6.grad_boxes(grey, [line], [], 12, 1) == {0: (47, 97, 256, 36)}

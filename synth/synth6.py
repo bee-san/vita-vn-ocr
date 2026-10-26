@@ -77,6 +77,7 @@ CFG = {
     "text": {"pool": 0.40, "hook": 0.25, "target": 0.25, "confusion": 0.10},
     "fullwidth_space": 0.2,     # a 　 after a mid-line ！ or ？ (the cut-line case of #119)
     "crop": {"cell": 0.35, "ink": 0.35, "grad": 0.30},
+    "grad_cover": 0.9,          # a GRAD box must hold this share of its line's ink height (else the ink crop)
     "pad": {"vita": 4, "psp": 2, "psp2x": 4},
     "pad_extra": {"vita": {"top": 0.04, "bottom": 0.06, "left": 0.12, "right": 0.04},
                   "psp": {"top": 0.0, "bottom": 0.02, "left": 0.2, "right": 0.0}},
@@ -140,7 +141,7 @@ class World:
         gg = assets / "glyph_geometry.json"
         if gg.exists():
             for k, v in json.loads(gg.read_text(encoding="utf-8"))["fonts"].items():
-                self.deny.setdefault(k, set()).update(v["misplaced"])
+                self.deny.setdefault(k, set()).update(v["misplaced"] + v.get("swapped", ""))
         self.inventory = {r["font"]: r for r in inv}
         self.cross = {}
         for r in inv:
@@ -747,6 +748,8 @@ def grad_boxes(grey, lines, real, margin, k):
         band = e[3] - e[2]
         if ov[j] < 0.5 * min(b - a, band) or h > 1.6 * (band + 2 * PAD):
             continue
+        if min(y + h, e[3]) - max(y, e[2]) < CFG["grad_cover"] * band:      # a band cut through the glyphs
+            continue
         if e[4] > rx0 + PAD + 1 and abs(x + PAD - e[4]) > 3:
             continue
         if e[5] < rx1 - PAD - 1 and abs(x + w - PAD - e[5]) > 3:
@@ -1067,6 +1070,7 @@ def cmd_manifests(args):
                                                      "placeholder": g["placeholder"], "wrong": g["wrong"],
                                                      "denied": g["suspect"]}
         row["misplaced"] = (gg.get(r["font"]) or {}).get("misplaced")
+        row["swapped"] = (gg.get(r["font"]) or {}).get("swapped")
         row["near_test_font"] = r.get("near_test_font")
         row["drawn"] = not r["excluded"] and (r["glyphs"] or 0) >= 2000 and bool(c and c.get("pass"))
         rows.append(row)
@@ -1120,6 +1124,14 @@ def cmd_glyph_geometry(args):
     cell or not visibly (synth6_fonts.misplaced). The renderer denies them, as it denies the glyph check's."""
     inv = json.loads((Path(args.assets) / "fonts_inventory.json").read_text(encoding="utf-8"))
     vocab = [c for c in VOCAB.read_text(encoding="utf-8").split("\n") if c and c != "〓"]
+    # symbols, punctuation, Latin and digits as text draws them (full-width forms too: labels fold them)
+    shapes = sorted({c for c in vocab if not (0x3040 <= ord(c) <= 0x30FF or 0x4E00 <= ord(c) <= 0x9FFF)}
+                    | {chr(c) for c in range(0xFF01, 0xFF5F)})
+    refs = [F6.open_font(Path(args.harvest) / spec, size=48) for spec in ("SYSTEM-VITA/pvf-jpn0",
+                                                                          "SYSTEM-VITA/pvf-jpn1")]
+    noto = sorted((HERD / "shared" / "data" / "fonts" / "notosansjp").glob("*.ttf"))
+    if noto:
+        refs.append(F6.OutlineFont(noto[0], size=48))
     out = {}
     for r in inv:
         if r["excluded"] or (r["glyphs"] or 0) < 2000:
@@ -1128,13 +1140,15 @@ def cmd_glyph_geometry(args):
         if font.kind == "vector":
             font.set_size(32)
         bad = F6.misplaced(font, vocab)
-        out[r["font"]] = {"misplaced": "".join(bad)}
+        sw = F6.swapped(font, shapes, refs)
+        out[r["font"]] = {"misplaced": "".join(bad), "swapped": "".join(sw)}
     doc = {"kind": "synth6-glyph-geometry", "schema": 1, "rule": F6.misplaced.__doc__.split("\n\n")[0].strip(),
            "fonts": out}
     Path(args.out).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     n = sorted(len(v["misplaced"]) for v in out.values())
+    w = sorted(len(v["swapped"]) for v in out.values())
     print(f"glyph geometry: {len(out)} fonts, {sum(1 for x in n if x)} with misplaced glyphs (median {n[len(n) // 2]}, "
-          f"max {n[-1]}) -> {args.out}", flush=True)
+          f"max {n[-1]}), {sum(1 for x in w if x)} with swapped symbols (max {w[-1]}) -> {args.out}", flush=True)
 
 
 def cmd_assets(args):

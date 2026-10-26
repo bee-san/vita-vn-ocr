@@ -10,6 +10,11 @@
   pack.py expect --blob B.vocr --mode w8f --pack DIR/lines.bin --out DIR/expect_w8f.txt
       per crop: "<CRC-32 of the host runtime's logits, float32 LE, as 8 hex digits>\t<text>",
       from runtime/build/libvocr.so (pyvocr). The PSP app compares every line with it.
+      --head-gate on|score, --two-level: the text is the gated / two-level run's (the app's timed runs, with
+      --repeat >= 1); the CRC stays the full logits' (a run that asks for the logits skips nothing).
+      --finder N [--refine FLAGS]: every crop is a dialogue region (grey or RGBA): the host's C line finder N
+      and refinement (runtime/vocr_lines*.c, built now), then every line read with its dark flag as
+      VOCR_INVERT; the CRC runs over the lines' logits in order, the text is their texts joined by tabs.
   pack.py bundle --blob B.vocr --mode w8f --pack DIR --out OUT [--eboot psp/EBOOT.PBP] [--name VOCR]
       OUT/PSP/GAME/VOCR/: EBOOT.PBP, model.vocr, lines.bin, expect.txt, vocr.cfg; copy OUT/PSP
       to the root of a memory stick (or into PPSSPP's memstick) and start "vocr OCR test".
@@ -95,37 +100,98 @@ def cmd_build(a):
           f"({(out / 'lines.bin').stat().st_size} bytes)")
 
 
-def expected(blob, mode, crops, invert=False, tile=0, head=0):
-    """[(crc32 of the logits, text)] from the host runtime."""
-    from pyvocr import Vocr
-    v = Vocr(blob, mode=mode, tile=tile, head=head)
+FINDER_FLAGS = ("-std=c99", "-O2", "-ffp-contract=off", "-DVOCR_NO_NEON", "-Wall", "-Wextra", "-Werror")
+
+
+def finder_driver(out_dir):
+    """The host build of the line finder + refinement driver (runtime/vocr_lines_refine_test.c), built now."""
+    import subprocess
+    drv = Path(out_dir) / "vocr_lines_refine_test"
+    subprocess.run(["gcc", *FINDER_FLAGS, "-o", str(drv), "runtime/vocr_lines.c", "runtime/vocr_lines_refine.c",
+                    "runtime/vocr_lines_refine_test.c"], check=True, cwd=ROOT)
+    return drv
+
+
+def find_lines_c(driver, regions, finder, flags):
+    """[[(x, y, w, h, dark)] per region]: the C finder `finder` then vocr_refine_lines(flags) on each region
+    (grey or RGBA uint8), as the PSP app's finder mode runs them."""
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+        for img in regions:
+            img = np.ascontiguousarray(img, np.uint8)
+            h, w = img.shape[:2]
+            bpp = 1 if img.ndim == 2 else img.shape[2]
+            f.write(struct.pack("<6I", w, h, bpp, finder, w * bpp, flags))
+            f.write(img.tobytes())
+        path = f.name
+    try:
+        lines = subprocess.run([str(driver), path], check=True, capture_output=True, text=True).stdout.splitlines()
+    finally:
+        os.unlink(path)
+    if len(lines) != len(regions):
+        raise RuntimeError(f"finder driver returned {len(lines)} results for {len(regions)} regions")
     out = []
-    for img in crops:
-        text, logits = v.run(img, logits=True, invert=invert)
-        out.append((zlib.crc32(np.ascontiguousarray(logits, "<f4").tobytes()), text))
+    for ln in lines:
+        v = [int(t) for t in ln.split()]
+        if v[0]:
+            raise RuntimeError(f"finder rc {v[0]}")
+        out.append([tuple(v[5 + 5 * i:10 + 5 * i]) for i in range(v[2])])
+    return out
+
+
+def expected(blob, mode, crops, invert=False, tile=0, head=0, head_gate="off", two_level=False, repeat=1,
+             finder=-1, refine=31, driver=None):
+    """[(crc32 of the logits, text)] from the host runtime, as the PSP app checks them (psp/main.c): the CRC of
+    the first, ungated run's full logits, the text of the last run (gated / two-level when the app repeats)."""
+    from pyvocr import Vocr
+    v = Vocr(blob, mode=mode, tile=tile, head=head, head_gate=head_gate, two_level=int(two_level))
+    fast = repeat >= 1 and (head_gate == "on" or two_level)
+    boxes = find_lines_c(driver, crops, finder, refine) if finder >= 0 else None
+    out = []
+    for i, img in enumerate(crops):
+        if boxes is None:
+            parts = [(img, invert)]
+        else:
+            parts = [(img[y:y + h, x:x + w], bool(d) != bool(invert)) for x, y, w, h, d in boxes[i]]
+        crc, texts = 0, []
+        for crop, inv in parts:
+            text, logits = v.run(np.ascontiguousarray(crop), logits=True, invert=inv)
+            crc = zlib.crc32(np.ascontiguousarray(logits, "<f4").tobytes(), crc)
+            texts.append(v.run(np.ascontiguousarray(crop), invert=inv) if fast else text)
+        out.append((crc, "\t".join(texts)))
     return out
 
 
 def write_expect(path, rows):
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         for crc, text in rows:
-            if "\n" in text or "\t" in text:
-                raise ValueError(f"text with a tab or newline: {text!r}")
+            if "\n" in text:
+                raise ValueError(f"text with a newline: {text!r}")
             f.write(f"{crc:08x}\t{text}\n")
+
+
+def _expected_args(a):
+    driver = finder_driver(Path(a.out).parent if a.cmd == "expect" else Path(a.out)) if a.finder >= 0 else None
+    return dict(invert=a.invert, tile=a.tile, head=a.head, head_gate=a.head_gate, two_level=a.two_level,
+                repeat=a.repeat, finder=a.finder, refine=a.refine, driver=driver)
 
 
 def cmd_expect(a):
     crops = read_pack(a.pack)
-    write_expect(a.out, expected(a.blob, a.mode, crops, a.invert, a.tile, a.head))
-    print(f"{len(crops)} lines ({a.mode}{', inverted' if a.invert else ''}) -> {a.out}")
+    write_expect(a.out, expected(a.blob, a.mode, crops, **_expected_args(a)))
+    print(f"{len(crops)} {'regions' if a.finder >= 0 else 'lines'} ({a.mode}{', inverted' if a.invert else ''}, "
+          f"gate {a.head_gate}, two-level {int(a.two_level)}) -> {a.out}")
 
 
-def bundle_cfg(mode, invert=False, repeat=1, clock=333, tile=0, head=0):
+def bundle_cfg(mode, invert=False, repeat=1, clock=333, tile=0, head=0, head_gate="off", two_level=False,
+               finder=-1, refine=31, probe=0):
     """vocr.cfg of a memory-stick bundle (keys: psp/main.c cfg_set): check the blob's CRC,
     compare every line with expect.txt, wait for START at the end. tile / head 0: the
     runtime's defaults (4 / 16)."""
     return {"mode": mode, "invert": int(invert), "repeat": repeat, "crc": 1, "clock": clock, "wait": 1,
-            "tile": tile, "head": head}
+            "tile": tile, "head": head, "gate": head_gate, "two_level": int(two_level), "finder": finder,
+            "refine": refine, "probe": int(probe)}
 
 
 def cmd_bundle(a):
@@ -138,8 +204,9 @@ def cmd_bundle(a):
     if (src / "lines.jsonl").exists():
         shutil.copyfile(src / "lines.jsonl", app / "lines.jsonl")
     crops = read_pack(app / "lines.bin")
-    write_expect(app / "expect.txt", expected(a.blob, a.mode, crops, a.invert, a.tile, a.head))
-    cfg = bundle_cfg(a.mode, a.invert, a.repeat, a.clock, a.tile, a.head)
+    write_expect(app / "expect.txt", expected(a.blob, a.mode, crops, **_expected_args(a)))
+    cfg = bundle_cfg(a.mode, a.invert, a.repeat, a.clock, a.tile, a.head, a.head_gate, a.two_level, a.finder,
+                     a.refine, a.probe)
     (app / "vocr.cfg").write_text("".join(f"{k}={v}\n" for k, v in cfg.items()), encoding="utf-8")
     print(f"{app}: EBOOT.PBP, model.vocr, {len(crops)} crops, expect.txt ({a.mode}), vocr.cfg")
 
@@ -163,8 +230,8 @@ def main():
     u.add_argument("--out", required=True)
     u.add_argument("--eboot", default=str(HERE / "EBOOT.PBP"))
     u.add_argument("--name", default="VOCR", help="folder under PSP/GAME (default VOCR)")
-    u.add_argument("--repeat", type=int, default=1)
     u.add_argument("--clock", type=int, default=333)
+    u.add_argument("--probe", action="store_true", help="the app reports every memory partition's free block")
     for p in (e, u):
         p.add_argument("--blob", required=True)
         p.add_argument("--mode", default="w8f", choices=["f32", "w8f", "w8i"])
@@ -172,6 +239,12 @@ def main():
     for p in (e, u):
         p.add_argument("--tile", type=int, default=0, help="CTC frames per tile (0: 4)")
         p.add_argument("--head", type=int, default=0, help="frames per head batch (0: 16)")
+        p.add_argument("--head-gate", default="off", choices=["off", "on", "score"])
+        p.add_argument("--two-level", action="store_true")
+        p.add_argument("--repeat", type=int, default=1, help="the app's timed runs per line (expect: its text)")
+        p.add_argument("--finder", type=int, default=-1, choices=[-1, 0, 2, 3],
+                       help="page path: crops are regions, read through this line finder (vocr_lines.h)")
+        p.add_argument("--refine", type=int, default=31, help="vocr_refine_lines flags in finder mode")
     a = ap.parse_args()
     {"build": cmd_build, "expect": cmd_expect, "bundle": cmd_bundle}[a.cmd](a)
 

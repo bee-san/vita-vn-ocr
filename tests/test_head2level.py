@@ -168,10 +168,11 @@ def test_mode_and_trailer_checks(base):
     rng = np.random.default_rng(6)
     esc = random_escape(rng, H2.head_arrays(pblob)["K"])
     blob = make(pblob, 3, esc)
+    Vocr(blob, mode="w8f", two_level=1)              # W8I and W8F (tests/test_gate_w8f.py)
     with pytest.raises((VocrError, ValueError)):     # vocr_arena_bytes() == 0: invalid options
-        Vocr(blob, mode="w8f", two_level=1)          # W8I only
-    with pytest.raises((VocrError, ValueError)):
         Vocr(pblob, mode="w8i", two_level=1)         # no trailer
+    with pytest.raises((VocrError, ValueError)):
+        Vocr(pblob, mode="w8f", two_level=1)
     K = H2.head_arrays(pblob)["K"]                   # the trial's 48-wide rare block: the runtime reads none
     r48 = make(pblob, 3, esc, random_r48(rng, K, H2.head_arrays(pblob)["P"] - 24, 16))
     assert H2.read_trailer(r48)["rare_k"] == 16

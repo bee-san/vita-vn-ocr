@@ -1478,6 +1478,12 @@
      "time": "this commit (see git log); before any S2s6 run",
      "why": "vocr6-synth6 (13:2xZ, audit of PR #133): synth6 v1 has renderer defects (stacked rows, glyphs cut at the frame edge, misplaced middle dots) in about 1.5-2% of crops, 6-15% in a few titles; v1 stays only as the synth6 proof's data",
      "change": "S2s6 uses synth6 v2 (the fixed renderer), pinned by its manifests' sha256 in data_pins when vocr6-synth6 posts SYNTH6_READY v2 and before any S2s6 run; the arm's weights are unchanged (s6v 0.10 + s6x 0.05, other synthetic sources x0.7). Until then the runner refuses S2s6 (mix m1_s6 points at a pending pin)"
+    },
+    {
+     "n": 2,
+     "time": "this commit (see git log); before any combined (S2all / R3) run",
+     "why": "saves one ~4 h round on the critical path (stages 2 and 3 run side by side since stage 3 amendment 1)",
+     "change": "one combined pair replaces stage 2's S2all and stage 3's R3-against-R2 pair: when every stage-2 and stage-3 single arm is decided, R3all = A15 + every adopted stage-2 factor + every adopted stage-3 arm (mixes composed as in stages.2.decision.recipe; arch_extra / train_extra merged; steps 45,000 iff S3long is adopted, else 15,000), seeds 1 and 3. R3all is the recipe iff it is adopted over A15 (decision.adopt) and its mean hval_page is not above the best single adopted arm's; otherwise the best single adopted arm (lowest mean hval_page) is the recipe; with no adopted arm, A15's recipe. With one adopted arm in all, that arm is the recipe without a combined pair"
     }
    ]
   },
@@ -1588,6 +1594,11 @@
      "time": "this commit (see git log); before any stage-3 run",
      "why": "compute: stage 2's slots run at ~1.0 steps/s and S2s6 waits for synth6 v3, so a slot idles; the stage-3 arms change the model or the loss, not the data, so they can be screened on stage 2's base while stage 2 runs",
      "change": "stage 3's arms run now from A15 (mix m1, init v5f_N_seed{seed}; A15's own runs are X) instead of waiting for R2. R3 = R2 + every stage-3 arm adopted over A15, confirmed by one combined pair (R3 against R2, seeds 1 and 3) that must be adopted over R2; if it is not, R3 = R2 + the adopted stage-3 arm with the lowest mean hval_page, confirmed the same way, else R3 = R2. S3attn runs once PR #130 is merged into the runner"
+    },
+    {
+     "n": 2,
+     "time": "this commit (see git log); before any combined run",
+     "change": "see stages.2.amendments[1] (one combined pair R3all for both stages)"
     }
    ]
   },

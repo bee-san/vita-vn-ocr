@@ -301,6 +301,52 @@ def hval_plan(args):
           f"pages {len(by_page)} titles {len({u['title'] for u in units})} skipped {skipped}", flush=True)
 
 
+def dev_plan(args):
+    """#119's development plan with its whole-dialogue units' finder crops cut again by eval/pagepath_find.c (Rubi's
+    line path: the finder, its short-line probe, the per-box refinement on PSP units; --fix: #129's fixes), in the
+    console view only (PSP units 2x bilinear, as #119 and eval/pagepath.py cut them). The fixed lines' crops (tv, dn)
+    are the base plan's, unchanged: they are hand-cut and need no finder."""
+    import cv2
+    units = pickle.load(open(args.units, "rb"))
+    base = pickle.load(open(args.base_plan, "rb"))
+    view = "psp2x"
+    crops, meta = [], []
+    fixed_ix = []
+    for i, c in enumerate(base["fixed_ix"][view]):
+        crops.append(base["crops"][c])
+        meta.append(dict(base["meta"][c], rebuilt_from=c))
+        fixed_ix.append(len(crops) - 1)
+    imgs, scales = [], []
+    for u in units["units"]:
+        img = u["image"]
+        s = 2 if u["kind"] == "psp" else 1
+        if s == 2:
+            img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+        imgs.append(np.ascontiguousarray(img, np.uint8))
+        scales.append(s)
+    found = pp_find(args.driver, imgs, FINDER_RECOVERY, args.fix, args.probe,
+                    [REFINE_ALL if u["kind"] == "psp" else 0 for u in units["units"]])
+    out_units = []
+    for i, (u, img, s, (boxes, dark, rc)) in enumerate(zip(units["units"], imgs, scales, found)):
+        lb = [[q * s for q in ln["box"]] for ln in u["lines"]]
+        cov = [[li for li, b in enumerate(lb) if covers(bx, b)] for bx in boxes]
+        pu = {"u": i, "scale": s, "rc": rc, "boxes": [list(b) for b in boxes], "dark": list(dark), "cov": cov,
+              "finder": []}
+        for bi, ((x, y, w, h), dk) in enumerate(zip(boxes, dark)):
+            crops.append((np.ascontiguousarray(img[y:y + h, x:x + w]), bool(dk)))
+            meta.append({"view": view, "kind": "finder", "u": i, "b": bi})
+            pu["finder"].append(len(crops) - 1)
+        out_units.append(pu)
+    doc = {"kind": "vocr6-dev-plan", "built": now(), "units_sha256": sha256(args.units),
+           "base_plan_sha256": sha256(args.base_plan), "driver_sha256": sha256(args.driver), "fix": args.fix,
+           "probe": args.probe, "fixed_ix": {view: fixed_ix}, "units": {view: out_units}, "crops": crops,
+           "meta": meta}
+    with open(args.out, "wb") as f:
+        pickle.dump(doc, f, protocol=4)
+    print(f"dev plan written: {len(crops)} crops, {len(fixed_ix)} fixed, {len(out_units)} units -> {args.out}",
+          flush=True)
+
+
 # ---------------------------------------------------------------- reading
 
 _W = {}
@@ -607,6 +653,13 @@ def main():
     p.add_argument("--fix", type=int, default=0, help="with --driver: VOCR_FIX_* flags (5 = COLGAP|JUNK)")
     p.add_argument("--probe", type=int, default=1, choices=(0, 1), help="with --driver: Rubi's short-line probe")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("dev-plan")
+    p.add_argument("--units", required=True, help="#119's units.pkl")
+    p.add_argument("--base-plan", required=True, help="#119's plan.pkl (its fixed-line crops are kept)")
+    p.add_argument("--driver", required=True)
+    p.add_argument("--fix", type=int, default=0)
+    p.add_argument("--probe", type=int, default=1, choices=(0, 1))
+    p.add_argument("--out", required=True)
     p = sub.add_parser("read")
     p.add_argument("--plan", required=True)
     p.add_argument("--blob", required=True)
@@ -637,6 +690,8 @@ def main():
         merge_npz(a)
     elif a.cmd == "hval-plan":
         hval_plan(a)
+    elif a.cmd == "dev-plan":
+        dev_plan(a)
     elif a.cmd == "read":
         read(a.plan, a.blob, a.lm, a.out, a.workers, a.head_gate, a.two_level)
     elif a.cmd == "score":

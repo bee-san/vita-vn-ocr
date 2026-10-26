@@ -47,7 +47,9 @@ logits = head(z')
 - **No LayerNorm.** Instead g is a learnt scalar initialised to 0 (ReZero: Bachlechner et al. 2020, arXiv:2003.04887).
   A model fine-tuned from a VOCR5 checkpoint therefore starts as exactly VOCR5: `model.load_state` of a state_dict
   without the block gives bit-identical logits and gradients for every shared parameter (tested), and g's own
-  gradient is non-zero from the first step.
+  gradient is non-zero from the first step. (At g = 0, z' = z + 0: an exact −0 in z would become +0, which no logit
+  can see unless the head's own sum is exactly zero there; W8I's int16 grid maps both to 0. Every tested line and
+  all 24 timing lines read identically.)
 - **Padding.** The batch's right padding (frames ≥ the line's `ceil(w / 8)`) is masked out of the keys in training.
   `train2.py` passes `lengths` to the model. A line read alone (the runtime, train2's validation, `eval/run.py`) has no
   padding.
@@ -205,8 +207,8 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   docs/head2level.md). Small's +28 ms is 23% of the gate's 122 ms.
 - **Large without prefetch credit gets faster (−17 ms).** With the op, the head runs after all the tiles instead of
   between them. Large's weights (2.5 MB) are larger than the 2 MiB L2, so in the cache model the head's 540 KB then
-  stops evicting the convolutions' weights every tile: their L2 misses drop by a quarter to a third, and the head's
-  own cost falls 0.44 → 0.39 ms a frame. With prefetch credit the effect disappears (+34 ms).
+  stops evicting the convolutions' weights every tile: the frame-row and 2-row layers' L2 misses drop by 21-34%, and
+  the head's own cost falls 0.44 → 0.39 ms a frame. With prefetch credit the effect disappears (+34 ms).
 - **This is not an attention gain.** It comes from the head running once per line. A runtime without the op could get
   the same by batching the head over the whole line (`head_frames ≥ t_max`). That is noted here and not measured
   further.

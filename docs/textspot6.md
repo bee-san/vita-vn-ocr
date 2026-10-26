@@ -215,6 +215,11 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
    - The test reads are `eval/textspot6_test.py` (`title`, `clannad`, `tests`), once each.
 5. **Stage 2's teacher** (before any arm's score). It is the M arm whose representative has the lower unseen-dev
    page-path CER in any of the four decodes.
+6. **The page-path benchmark is pinned** (before any arm's score): vocr6-finder's `eval/pagepath.py` and
+   `pagepath_find.c` at PR #131's head `fadc3c6`.
+   - The reference scores posted on #128 used the finder's working copy, which differs only in the module
+     docstring.
+   - They are scored again with the pinned files before the selection.
 
 ## Results
 

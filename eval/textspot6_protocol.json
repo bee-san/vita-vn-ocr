@@ -114,7 +114,7 @@
   "note": "amendment 4: 3 seeds per arm (stage 1 and stage 2)"
  },
  "metrics": {
-  "primary": "page-path dialogue CER through eval/pagepath.py (#129; pinned by an amendment before any score): Rubi's read (VOCR5-N W8I top 8, counter re-decode, beam 8 + the 1 MB LM, cascade N -> L below 0.7, textnorm, the non-Japanese line filter)",
+  "primary": "page-path dialogue CER through eval/pagepath.py (#129; pinned by an amendment before any score): Rubi's read (VOCR5-N W8I top 8, counter re-decode, beam 8 + the 1 MB LM, cascade N -> L below 0.7, textnorm, the non-Japanese line filter) (pinned by amendment 6: PR #131 fadc3c6)",
   "unseen_dev": "#119's 1,161 whole-dialogue units ($A/vocr5-analysis/work/units.pkl, console view); the headline leaves the units of v12188 (seen: hooked title PCSG00576) out; the full set reported",
   "hval": "the page pool's dialogue regions of the hval pages (base / +4 / +8), console view (PSP at 2x)",
   "spotter_boxes": "eval/textspot6.py spot (the whole frame) -> pagepath-boxes: each unit reads the horizontal boxes whose centre lies in its region; decodes det and det+refine",
@@ -252,6 +252,20 @@
    "what": [
     "Stage 2's teacher rule reads every decode amendment 2 registered: the teacher is the stage-1 M arm (base_qS4 or base_qL5) whose representative has the lower unseen-dev page-path dialogue CER in any of its four decodes (crop, crop+refine, det, det+refine; ties: the smaller shape); the teacher model is that representative seed's final.pt. The student is kd_t64n8c16, seeds 1-3 (amendment 4)."
    ]
+  },
+  {
+   "id": 6,
+   "utc": "2026-10-26T11:00:13Z",
+   "before": "every score of a textspot6 arm",
+   "what": [
+    "The page-path benchmark is pinned: vocr6-finder's eval/pagepath.py and eval/pagepath_find.c at PR #131's head fadc3c6 (bee-san/vita-vn-ocr, branch feat/vocr6-pagepath), run from a checkout of main 8a71eec with those two files ($A/vocr6-spotter/pagepath_snap/repo). The reference scores of GRAD + refine and of textspot3's pick (2026-10-26T10:24-10:40Z, posted on #128) used the finder's working copy of 10:22Z, whose eval/pagepath.py differs from the pinned one only in its module docstring (3 lines) and whose pagepath_find.c is identical; they are scored again with the pinned files before the selection, and the selection reads only those."
+   ],
+   "pins": {
+    "eval/pagepath.py": "6053822a32a7f11e8be9bc98405f4ed575cf09bd67805494deb3a38dfe4f1bc8",
+    "eval/pagepath_find.c": "3eed78095987e8742672f181ff4fe86a454f4f7164a3badc310634b864314e78",
+    "pr": "https://github.com/bee-san/vita-vn-ocr/pull/131",
+    "commit": "fadc3c6"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

@@ -1392,7 +1392,8 @@ def headline(rep):
 # ----------------------------------------------------------------------------- markdown
 
 def pct(r):
-    return "-" if not r or r.get("cer") is None else f"{100 * r['errors'] / max(1, r['chars']):.2f}%"
+    return "-" if not r or r.get("cer") is None or not r.get("chars") else \
+        f"{100 * r['errors'] / r['chars']:.2f}%"
 
 
 def ci(c):
@@ -1404,7 +1405,7 @@ def cell(r):
 
 
 def pcell(p):
-    if not p:
+    if not p or p.get("delta") is None:
         return "-"
     return f"{p['delta']:+.2f}" + (f" [{p['ci95'][0]:+.2f}, {p['ci95'][1]:+.2f}]" if p.get("ci95") else "")
 

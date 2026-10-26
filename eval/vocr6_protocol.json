@@ -1136,6 +1136,16 @@
      "ccj"
     ],
     "what": "vocr6-finder's console crops v1 (data/console_crops.py on its branch; finder rubi,fix=5; sets train/hval/guard, variants base + expanded-8, views console + native, jitter 2); train split only"
+   },
+   {
+    "name": "console_crops_v2",
+    "manifest": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/manifest.json",
+    "sha256": "45cbddaa2aa7d5226ea4bf5999b25aee313e977132d58b0f19f49833177e894e",
+    "sources": [
+     "cc",
+     "ccj"
+    ],
+    "what": "vocr6-finder's console crops v2 (vvo main 7766d4a, #136: finder rubi,fix=1 = Rubi's shipped COLGAP default, the required-cell labelling that fixes v1's 63 dim-word labels); sets/variants/views/jitter as v1. Used only by stage 4b's fold-in mix (train + hval + guard pages); every screening arm keeps v1"
    }
   ]
  },
@@ -1659,7 +1669,7 @@
     "gate": "the head gate (#120) and, for N and L, the two-level head (#122) are fit on each shipped blob and adopted or not under those PRs' pre-registered rules (train/headgate.py, train/head2level.py)",
     "ship": "the shipped S/N/L blobs go to a vita-vn-ocr pre-release with SHA256SUMS, docs/vocr6.md, and a Rubi_for_vita PR pinning them"
    },
-   "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools",
+   "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools CLANNAD glyph raster (vocr6-synth6, 2026-10-26): two hooked train titles draw dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised, PCSG00620 Grisaia Spinout (1,696 lines) and PCSG00007 Little Busters! (878 lines): 39,447 glyphs of 1,201 characters; synth6 v3 draws it too (27 fonts, 4.06% of Vita crops). Every VOCR6 model trained on the hooked lines has seen CLANNAD's glyph raster: disclosed with every CLANNAD number",
    "amendments": [
     {
      "n": 1,
@@ -1699,6 +1709,13 @@
       "settings": "alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 (VOCR_LM_BOS), beam 8, top-K 8; cascade under 700 (settings.json of v0.3.7-lm6.1); read --lm-opts alpha=600,beta=2500,flags=1"
      },
      "note": "stage 4a's VOCR5 incumbents are read with the same LM builds and settings on the same plans"
+    },
+    {
+     "n": 4,
+     "time": "this commit (see git log); before any stage-4b run",
+     "why": "the shipped finder is COLGAP alone (#129 amendment 3, #135); crops v1 were cut with COLGAP|JUNK. The 4b retrain should see the crops Rubi's finder makes",
+     "change": "stage 4b's fold-in mix (r3all_fold) takes its cc / ccj sources from console crops v2 (train + hval + guard), pinned in data_pins.extra_pools[console_crops_v2]; 4a and every earlier stage keep v1 (their decisions were made on it). Weights unchanged",
+     "lm_release": "v0.3.7-lm6.2 (vocr6-lm, #137 merged ffb088c) carries the same 1 MB LM bytes as lm6.1 (sha256 41591acc…) with the same settings, so amendment 3's pins stand"
     }
    ],
    "plans": {

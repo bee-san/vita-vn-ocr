@@ -57,8 +57,12 @@ def load_protocol(path):
 
 def arm_spec(proto, stage, arm):
     st = proto["stages"][str(stage)]
+    if "arms" not in st:
+        raise SystemExit(f"stage {stage} has no arms yet (they are filled when the previous stage decides)")
     if arm not in st["arms"]:
         raise SystemExit(f"stage {stage} has no arm {arm} (has {sorted(st['arms'])})")
+    if st["arms"][arm].get("stopped"):
+        raise SystemExit(f"stage {stage} arm {arm} is stopped: {st['arms'][arm]['stopped']}")
     spec = dict(st.get("defaults", {}))
     spec.update(st["arms"][arm])
     spec["tier"] = spec.get("tier", st.get("tier", "N"))
@@ -159,6 +163,8 @@ def check_inputs(proto, spec, sources, seed):
             raise SystemExit(f"VOCR5's pinned pools differ: {r.stdout[-500:]} {r.stderr[-500:]}")
         rec["vocr5_pools_pin_sha256"] = sha256(ROOT / pins["vocr5_pools"]["pin"])
     for m in pins.get("synthetic_manifests", []):
+        if m.get("sha256") and sha256(ROOT / m["manifest"]) != m["sha256"]:
+            raise SystemExit(f"{m['manifest']} differs from the protocol's sha256")
         doc = json.loads((ROOT / m["manifest"]).read_text(encoding="utf-8"))
         bad = [s["file"] for s in doc["shards"] if "bytes" in s and
                os.path.getsize(Path(m["dir"]) / s["file"]) != int(s["bytes"])]

@@ -18,8 +18,9 @@ Plans hold every crop a score reads, built once (the finder does not depend on t
         (tv, dn) and the whole-dialogue units' finder crops (wd: the C finder VOCR_LINES_TEXTBOX_RECOVERY, the
         refinement on PSP units), in the console view (PSP at Adrenaline's 2x bilinear; Vita as is)
   hval  the hooked corpus' screening block (vocr6-ingest's pools and page pool): every hval dialogue and name line as
-        a clean crop (box + pad; PSP cut from the 2x page, Rubi's view of a PSP game) and every complete hval page's
-        whole-dialogue regions (base, +4, +8 px) through the same C finder, in the same view
+        a clean crop (box + pad; PSP cut from the 2x page, Rubi's view of a PSP game) and every trusted hval page's
+        whole-dialogue regions (base, +4, +8 px) through a C finder (plan v1: the frozen one without Rubi's
+        short-line probe; plan v2: Rubi's line path with the probe and #129's fixes), in the same view
 Scores (per row, so selection can resample games): dialogue CER, eval/metrics.norm + Levenshtein for lines and
 train/general_vn_textbox_guard.transcript_score for regions. Rows carry their game (hval: title id; dev: VNDB id).
 """
@@ -179,9 +180,10 @@ def _console_page(rgb, platform):
 
 
 def hval_plan(args):
-    """Clean crops: POOLS/hval/{line,name}[_x2]/<title>.npz (the console view: PSP titles' _x2 files). Regions: the
-    page pool's hval rows that are complete (every renderer box accounted for by a verified line), each whole-dialogue
-    region variant cut from the console frame and run through the C finder."""
+    """Clean crops: POOLS/hval/{line,name}[_x2]/<title>.npz (the console view: PSP titles' _x2 files). Regions: every
+    trusted hval page of the page pool (complete or not: its regions keep every other text box out), each
+    whole-dialogue region variant cut from the console frame and run through the C finder (--driver: Rubi's line
+    path of eval/pagepath_find.c)."""
     import cv2
     pools, pagepool, pages = Path(args.pools), Path(args.pagepool), Path(args.pages)
     crops, meta, fixed, units = [], [], [], []

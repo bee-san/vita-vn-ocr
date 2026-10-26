@@ -1112,7 +1112,9 @@
     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz": "cdf094a8aa06595eb06ee29ebd10325c4f73d64d83613b8683d923a810ced9a2",
     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz": "cbac18a8fdccb068d8cb04432ce7f4b4b4d28cf81132271e24c01c4d5c49b76a",
     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz": "f2c31881d4fee427ec91dce22aaec1f9bbce7ecfdb098638174037e08a73046c"
-   }
+   },
+   "plan_note": "guard_v1.json records the sha256 of the trial plan (df0edc42…, built 09:26Z and replaced by hval_plan_v1 at 09:41Z); recomputed from hval_plan_v1, every guarded copy is identical row for row (audit-vocr6-lead N2)",
+   "coverage_note": "the guard's texts come from the clean hval lines only, and five hooked titles have no VNDB id (PCSG00007, PCSG00468, PCSG00751, PCSG00935, PCSG01110); on pools v1 no copy of a decision-unit line from the same VN remains and no match of 8 or more characters points at those titles (audit-vocr6-lead N3). For pools v2: add the unit lines and a VN-free long-text match"
   },
   "extra_pools": [
    {
@@ -1203,8 +1205,9 @@
    "same_recipe_seeds_junk_free": "-0.04 [-0.12, +0.05], -0.06 [-0.13, +0.01], -0.02 [-0.09, +0.03]",
    "N_to_L": "all units +0.75 [-0.16, +2.60]; junk-free -0.11 [-0.21, -0.02]; clean -0.10 [-0.17, -0.04]; dev -0.21 [-0.34, -0.09]",
    "N_to_S": "all units +0.86 [+0.15, +2.31]; junk-free +0.18 [+0.10, +0.28]",
-   "conclusion": "over all units the page path ranks recognizers by what they read into junk boxes on one title (the same recipe's seeds differ by up to 0.8 points); without the junk units it agrees with the clean crops and the dev score and resolves 0.1-point differences. Junk boxes stay a finder problem (vocr6-finder, T3) and a stage-2 recognizer factor (empty-label negatives), reported as hval_page_all."
-  }
+   "conclusion": "over all units the page path ranks recognizers by what they read into junk boxes on one title (the same recipe's seeds differ by up to 0.8 points); without the junk units it agrees with the clean crops and the dev score and resolves 0.1-point differences. Junk boxes stay a finder problem (vocr6-finder, T3; F13's JUNK fix removes most of them, plan v2: 413 -> 113 junk units); no arm trains empty-label negatives, so hval_page_all only reports them."
+  },
+  "guard_note": "the dev guard's X in stage 1 is one model, the released v5f_N_seed3, the best of VOCR5-N's three seeds on this dev score (1.990 against 2.045 / 2.098): that tilts the guard slightly against every Y (audit-vocr6-lead N12). The dev set's unseen games include v18643 (Haitaka no Psychedelica), the sequel of hooked train title PCSG00468 (v15771): reported as same-series exposure (N5). The dev read includes the test VN v18432's crops, dropped at scoring (N9)"
  },
  "stages": {
   "1": {
@@ -1249,7 +1252,8 @@
       "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
       "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
      },
-     "what": "A at 3x"
+     "what": "A at 3x",
+     "stopped": "stage 1 amendment 4 (compute): not run"
     },
     "B15": {
      "run": "v6s1B15_N",
@@ -1277,7 +1281,8 @@
       "1": "ae010ed7b69dea7c8ff7f1f5e817d604efe09cdd464bb80fe275e96ba2359d42",
       "3": "56dc43e58a072a3a70e94fc80e43a9d88a734cd837c218872af0501e4652ea9c"
      },
-     "what": "B at 3x"
+     "what": "B at 3x",
+     "stopped": "stage 1 amendment 4 (compute): not run"
     },
     "C50": {
      "run": "v6s1C50_N",
@@ -1286,7 +1291,8 @@
      "lr": 0.002,
      "warmup": 1000,
      "eval_every": 10000,
-     "what": "random init, the same mix from the first step (the pretrain's lr 2e-3, 1,000 warm-up steps)"
+     "what": "random init, the same mix from the first step (the pretrain's lr 2e-3, 1,000 warm-up steps)",
+     "stopped": "stage 1 amendment 4 (compute): stopped at 3,800 / 3,200 steps, not scored"
     },
     "C150": {
      "run": "v6s1C150_N",
@@ -1295,7 +1301,8 @@
      "lr": 0.002,
      "warmup": 1000,
      "eval_every": 10000,
-     "what": "C at 3x (the pretrain's length)"
+     "what": "C at 3x (the pretrain's length)",
+     "stopped": "stage 1 amendment 4 (compute): not run"
     }
    },
    "decision": {
@@ -1335,7 +1342,7 @@
      "n": 4,
      "time": "2026-10-26T12:48:45Z (commit 1677de9; an earlier revision said ~12:55Z, written ahead of the clock); before any stage-1 score",
      "why": "compute, measured: Normal runs train at 0.93-1.0 steps/s per slot at load ~80 (A15/B15/C50 since 11:52Z) against the ~1.74 the protocol assumed, and the conductor cut heavy-slots from 15 to 12 at 12:37Z. At that rate C50 is ~15 h and C150 ~45 h per run, A45/B45 ~12.5 h, and stage 2 (14 runs) could not start before ~16:00Z on free slots",
-     "c_family": "stopped at ~2.3k / 1.7k of 50k steps (vocr6-s1-c, both seeds), not scored. Even if amendment 1's rung promoted it, C150 (2 x ~45 h) and a C-based stage 4 (S/N/L x 3 seeds from scratch) do not fit this round's compute, so the rung could not change the round's decision; the freed slots go to stage 2",
+     "c_family": "stopped at 3,800 / 3,200 of 50,000 steps (seeds 1 / 3; killed 13:04:48Z, heavy.log rc 143; no checkpoint: C50 saves at eval steps, every 10,000) (vocr6-s1-c, both seeds), not scored. Even if amendment 1's rung promoted it, C150 (2 x ~45 h) and a C-based stage 4 (S/N/L x 3 seeds from scratch) do not fit this round's compute, so the rung could not change the round's decision; the freed slots go to stage 2",
      "long_budget": "A45 and B45 are not run (vocr6/s1-promote.txt: A45 STOP, B45 STOP). The long-budget question moves to stage 3: S3long (R2 at 45,000 steps, seeds 1 and 3) is run unconditionally there, on the final data mix",
      "stage2_base": "stage 2 starts now from the A family: base A15 (init v5f_N_seed{seed}, A15's runs as X), without waiting for the stage-1 decision. The stage-1 decision is still taken by the registered rule when A15 and B15 are scored. If B15 is adopted over A15 (decision.adopt, A15 as X), R2's adopted factors are applied to B's init and confirmed by one pair (R2 on B, seeds 1 and 3) adopted over B15 before stage 3, and stage 3 starts from the better R2 (decision.adopt); otherwise the A family stays",
      "decision_now": "decision.winner among A15 and B15 (both against VOCR5-N); C reported as stopped"

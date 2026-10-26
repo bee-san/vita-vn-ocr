@@ -1,0 +1,233 @@
+{
+ "kind": "vocr6-final-test-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/125",
+ "label": "vocr6-final-test",
+ "lead": "vocr6-lead",
+ "registered": "this file's first commit on feat/vocr6-final-test (see git log), with the driver eval/reproducibility/vocr6-final/report.sh and eval/vocr6_final_test.py, before this harness read any protected set",
+ "what": "VOCR6 stage 4's final test (eval/vocr6_protocol.json stages.4.final_test, branch feat/vocr6-t1-stages): read once, after every VOCR6 choice, on the blobs chosen to ship with VOCR5 beside them. Report only: no choice changes after it, and nothing here selects, tunes, drops or calibrates anything.",
+ "steps": {
+  "1_register": "this protocol and the driver are committed before any read",
+  "2_validate": "the driver's path (a) on VOCR5 only (report.sh - OUT with PATHS=a): it must reproduce VOCR5's locked numbers exactly (validation below). Path (b) is not read on any protected set in this step; VOCR6 is not read",
+  "3_final_read": "after vocr6-lead's message 'FINAL READ S=<blob> N=<blob> L=<blob>': stage the three blobs (vocr6_final_test.py stage), then report.sh MODELS_DIR OUT once: VOCR6 and VOCR5 on paths (a) and (b), every set. Its attempt record (OUT/attempt.json, created exclusively) refuses a second final read",
+  "4_publish": "OUT/report.json + OUT/report.md, copied to $HERD/shared/artifacts/vocr6-final-test/; the compact report (counts, rates, intervals, hashes; no text of a protected line, no crop) committed as eval/vocr6_final_test_<YYYYMMDD of the read>.json with the markdown as docs/vocr6-final-test.md"
+ },
+ "models": {
+  "VOCR5": {
+   "path_a": {
+    "what": "v0.3.0's plain blobs, the ones VOCR5's locked report read (eval/vocr5_report_spec_20261016.json)",
+    "S": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_S_w8.vocr",
+     "sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"
+    },
+    "N": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_N_w8.vocr",
+     "sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+    },
+    "L": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/release/v0.3.0/VOCR5_L_w8.vocr",
+     "sha256": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3"
+    },
+    "pcsg00807_note": "the hooked test title's path (a) is eval/vocr6_baseline.py's, which read the released gated arms below (docs/vocr6-data.md), so its VOCR5 arms are those"
+   },
+   "gated": {
+    "what": "the released head-gated blobs that Rubi main runs since API 42 (Rubi #307: models[] pins these three); path (b) reads VOCR5 through them, and the hooked test title's path (a) too (eval/vocr6_baseline.py ARMS)",
+    "S": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/head-gate/blobs/VOCR5_S_w8g.vocr",
+     "sha256": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+     "release": "v0.3.5-headgate.1 VOCR5_S_w8g.vocr"
+    },
+    "N": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/head-2level/blobs/VOCR5_N_2Lg_K500_r96.vocr",
+     "sha256": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b",
+     "release": "v0.3.6-head2level.1 VOCR5_N_w8g2.vocr"
+    },
+    "L": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/head-2level/blobs/VOCR5_L_2Lg_K500_r96.vocr",
+     "sha256": "41c3543ff8dddd45dc953a6a5f5d579ef9ca779f0e43196406be59c1d985c5b5",
+     "release": "v0.3.6-head2level.1 VOCR5_L_w8g2.vocr"
+    }
+   },
+   "vertical": {
+    "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/release/v0.3.2-vertical.1/VOCR5_V_w8.vocr",
+    "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+    "use": "eval/vocr6_baseline.py's vertical reader for textspot3's vertical boxes on the test title (path a), for both families: VOCR6 has no vertical model"
+   }
+  },
+  "VOCR6": {
+   "what": "the three blobs vocr6-lead's message FINAL READ S=<blob> N=<blob> L=<blob> names: the blobs chosen to ship (with their head gate / two-level head where stage 4's gate step adopted them)",
+   "staging": "vocr6_final_test.py stage copies them to MODELS_DIR as S.vocr, N.vocr and L.vocr and records each source path, sha256, bytes and whether it holds a head gate and a two-level head (models.json), before any read",
+   "path_a": "each blob as given, read by path (a)'s tools exactly as VOCR5's blobs are (their head gate and two-level head off where the tool has them off: vocr3_report, vocr_cli, clannad_refs; on where eval/vocr6_baseline.py turns them on for VOCR5: the blob's own gate on, its two-level head on N and L when present)",
+   "path_b": "each blob as Rubi runs a pinned blob: the head gate on if the blob holds one, the two-level head on if it holds one (Rubi's ocr_head_gate = on, the default)"
+  }
+ },
+ "sets": {
+  "vita-test": {
+   "manifest": "eval/manifests/vita-test.jsonl",
+   "manifest_sha256": "5fa68d04648c246c1a0fd2966c8c13a8a0a8d49521288d0663a8770518ae1122",
+   "screenshots": "$HERD/shared/artifacts/eval (eval/fetch.py's layout); every screenshot is checked against the manifest's sha256 by path (b)'s plan",
+   "platform": "vita",
+   "fixed_lines": "206 hand-checked lines of 16 VNs (2 uncertain lines are never scored): dialogue = lines without the 'name' style",
+   "whole_dialogue": "the manifest's dialogue regions; a region holding an uncertain line is left out whole (2 regions, 4 lines); 82 regions"
+  },
+  "psp-test": {
+   "manifest": "eval/manifests/psp-test.jsonl",
+   "manifest_sha256": "2b8db0849a42673b72f86d5466439719b2a9f8012c68e3c560fce3374e4076bc",
+   "screenshots": "$HERD/shared/artifacts/eval",
+   "platform": "psp",
+   "fixed_lines": "245 hand-checked lines of 14 VNs",
+   "whole_dialogue": "93 regions"
+  },
+  "pooled_vita_psp": "vita-test and psp-test pooled (VOCR5's headline: 336 dialogue lines, 4,693 reference characters on the fixed lines; 175 regions, 4,635 dialogue characters of whole dialogue); Vita and PSP are always reported apart as well",
+  "clannad": {
+   "work": "owner-drive-ingest's long run (work_dir; read only)",
+   "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+   "lines_sha256": "a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1",
+   "refs_freeze_sha256": "3722602cc854839c590015a6a71835999efb37c8c2c20bc839f54cca0daa2b03",
+   "lines_meta_sha256": "bce0857562b2edc9dd01fdc225a9d2252d6b115e784aaf5ef87893b53bdf051c",
+   "clannad_refs_protocol_sha256": "3b86ca54b6cf88099950c89cbae1e9bd9eca8e5333316d6729fd62ca2be8d5a0",
+   "platform": "vita",
+   "lines": "the frozen Claude references: 3,048 scored line crops (the long run's GRAD line crops, stored processed PNGs, read with invert off) of 2,177 pages; dialogue = the references' own not-name flag (2,052 lines, 33,485 characters), names 996 lines (2,209 characters)",
+   "pages": "path (b) only: a page whose every long-run line is a reference ('ref') or was excluded as holding no text ('r1,r2 skip:notext', an empty reference) has a complete reference; its ROI (the session's lock, [32, 360, 896, 184] of the 960x544 frame, the frame checked against the capture journal's sha256) is the unit. A page with any other excluded line (cut, multi, unsure, ui, no agreement) is left out whole. The reference is the page's long-run lines top to bottom: text outside every long-run GRAD box is in no reference (a limit, below)",
+   "work_dir": "/local/home/skerraut/herd-vita-ocr/shared/private/owner-drive-20261013/clannad-compare"
+  },
+  "pcsg00807": {
+   "title": "Dance with Devils (PCSG00807, VNDB v18432), the hooked corpus' test title",
+   "pools": "pools_dir (manifest sha256 ba95ff2d6c31d2cec7fecbdfaaa516b16deafd2267d11f143e0e400086e21b3c); clean lines: test/line/PCSG00807.npz (sha256 918c487e4fac6215979141e6074323846fb0a55597a7125428290b855a9f8e84), 1,152 dialogue lines, 13,911 reference characters, stored in console polarity (read with invert off); the test split holds no name line",
+   "pagepool": "pagepool_dir (manifest sha256 eab8f07bba1359bf70a0afde454876ef0f8ebe946a17cf510a87c7053e5a116a; PCSG00807.jsonl sha256 680704e39bdd209f06202e015733216f7062b8a04674e3344dbe5dbdb49a3e55): 690 pages, 685 with whole-dialogue regions (base, +4, +8 px; eval/finder_tighten.py's rule, every other text box kept out)",
+   "pages": "pages_dir/PCSG00807/pages/*.png, each checked against the page pool's sha256",
+   "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e",
+   "platform": "vita",
+   "pools_dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1",
+   "pagepool_dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pagepool/v1",
+   "pages_dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pages",
+   "pools_manifest_sha256": "ba95ff2d6c31d2cec7fecbdfaaa516b16deafd2267d11f143e0e400086e21b3c",
+   "pagepool_manifest_sha256": "eab8f07bba1359bf70a0afde454876ef0f8ebe946a17cf510a87c7053e5a116a",
+   "clean_npz_sha256": "918c487e4fac6215979141e6074323846fb0a55597a7125428290b855a9f8e84",
+   "pagepool_title_sha256": "680704e39bdd209f06202e015733216f7062b8a04674e3344dbe5dbdb49a3e55"
+  }
+ },
+ "paths": {
+  "a": {
+   "name": "VOCR5's locked path, as published",
+   "vita_psp_fixed_lines": "eval/vocr3_report.py shared (spec: the arms below, finder grad; pairs VOCR6_T:VOCR5_T): every hand-checked line crop (box + pad, eval/sets.py) through the scalar C W8I runtime built by vocr3_report from runtime/vocr.c, greedy, console polarity (primary; synth/common.line_dark's polarity contract) and native polarity; then eval/vocr5_dialogue.py tables (dialogue = lines without the 'name' style; names; all text; per style), as eval/reproducibility/stride16-20261023/report.sh did",
+   "vita_psp_fixed_lines_lm": "the same crops, console polarity, through runtime/build/vocr_cli with beam 8 and the overlay's 1 MB LM of v0.2.6-ctclm.2 at its 1MB settings: --topk 8 --beam 8 --alpha 500 --beta 3500 --gate 8000 --lm-flags 2 --bracket 8000 (eval/run.py --model cmd:...), as VOCR5's and stride16's lm steps",
+   "vita_psp_whole_dialogue": "vocr3_report shared's whole-dialogue part: every region at base, +4 and +8 native px, the C GRAD finder (mode 0), each crop read greedy with its dark flag, joined in finder order and scored by train/general_vn_textbox_guard.transcript_score: 'body' (no name-styled line) is the dialogue text, 'all' includes names",
+   "clannad": "eval/clannad_refs.py arms --extra NAME=FILE#SHA256 (greedy W8I, invert off, on every stored line crop; a library built now by vocr3_report.build_native) with its own suffix and --into this harness's private directory, then score --suffix --pair VOCR6_T:VOCR5_T (and :Lens); dialogue pairs re-aggregated from the attempt's private per-line errors by eval/stride16_clannad_dialogue.py",
+   "pcsg00807": "eval/vocr6_baseline.py build / read / score on the test split (docs/vocr6-data.md's baseline): clean crops; the C GRAD finder with and without the refinement (VOCR_REFINE_DEFAULT) on every whole-dialogue region, console view; the textspot3 pick on every frame. Each crop: W8I with the blob's head gate on (and its two-level head on N and L when present), top-8, the counter re-decode {6000, 4000}, beam 8 + ctclm.2's 1 MB LM at Rubi's settings of 2026-10-26 (alpha 500, beta 3500, gate 8000, EOS, bracket 8000), the ungated re-read; decodes greedy, rubi and rubi_cascade (a line under 700 read by the next tier up of the same family). Run through vocr6_final_test.py pcsg-a, which sets vocr6_baseline.ARMS to the family's blobs (VOCR5: the released gated arms, its own ARMS; VOCR6: the three staged blobs; VOCR5-V for vertical boxes in both) and nothing else",
+   "arms": "VOCR5_S/N/L (path_a blobs) and VOCR6_S/N/L (the staged blobs); for pcsg00807 the gated VOCR5 arms"
+  },
+  "b": {
+   "name": "Rubi's shipped path at the final read",
+   "resolution": "vocr6_final_test.py rubi-path reads a checkout of bee-san/Rubi_for_vita main taken at the final read (its head recorded) and writes OUT/rubi_path.json before any read: the default LM tier's file (core/vocr_ocr.c lms[] for VJO_VOCR_LM2_NAME, config.c's ocr_lm = 1000k) matched by sha256 to lm_candidates, its settings from that lms[] row and lm_opts(), the cascade threshold, the counter re-decode constants, the head-gate default, the refinement default, the finder fix default and textnorm's sha256. A Rubi value that is not one of the candidates below stops the read (no silent fallback)",
+   "finder": "Rubi's line path on a grey region, eval/pagepath_find.c (a port of Rubi core/vocr_ocr.c's: VOCR_LINES_TEXTBOX_RECOVERY, the short-line probe #194, the per-box refinement with Rubi's 16-line cap) built with -DPAGEPATH_FIX: fix = the finder default Rubi ships, VOCR_FIX_DEFAULT = VOCR_FIX_COLGAP (1, #129 amendment 3; JUNK and VALLEY opt-in). If Rubi main does not pin runtime/vocr_lines_fix.c yet, COLGAP from vita-vn-ocr's runtime/vocr_lines_fix.c (main if #135 merged, else #135's head) all the same, as stage 4 amendment 1 cut stage 4a's plans; if Rubi pins it, that file (sha256 equal to Rubi's cmake/VocrOCR.cmake pin) and Rubi's default. probe 1; refinement VOCR_REFINE_ALL on PSP titles only (ocr_refine_lines = psp); the source files' sha256 recorded",
+   "view": "the console view (what Rubi reads on a Vita): Vita frames as they are; a PSP frame upscaled 2x bilinear (cv2.INTER_LINEAR on the colour frame, then synth/common.to_gray), the regions and line boxes scaled by 2, the +4 / +8 px region variants by 8 / 16 px (eval/pagepath.py's console view)",
+   "line_read": "each crop, as core/vocr_ocr.c finish_line reads it: W8I (runtime/vocr.c through runtime/pyvocr.py), the blob's head gate and two-level head on when it holds them, top-8 extras; a line read as empty stays empty (confidence 1000); the counter re-decode (6000 / 4000); the ungated re-read when the run skipped frames and the re-decode found a counter context, or the two-level head is on and the greedy text holds a full-size カ/ケ before 月所年国条 (read_again); the beam + LM decode over the (re-read, re-decoded) extras with the resolved LM settings; the line's confidence (conf_min x 1000 + 0.5 in float, truncated) from the read used",
+   "cascade": "S -> N -> L within a family: a line whose confidence is under the resolved threshold (700) shows the next tier's reading of the same crop (the same line_read; empty when that tier's greedy text is empty); Large has none. The cascade's time ceiling (ocr_cascade_ms = 2000) is not modelled: every doubtful line is read again",
+   "display": "Rubi's core/textnorm.c (built from the checkout; the counter rule, ー/一, widths, dashes, ellipses, the border-line rule), line by line, then the Shell's non_japanese_filter = lines (a line with no hiragana, katakana or CJK in [U+3040-U+30FF, U+4E00-U+9FAF] goes)",
+   "models": "VOCR5: the gated blobs (models.VOCR5.gated, what Rubi main runs); VOCR6: the staged blobs",
+   "lm_candidates": {
+    "ctclm2_1000k": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/ctc-lm-decode/release_pub2/vocr_lm_o3_1000k.vlm",
+     "sha256": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9",
+     "settings": {
+      "beam": 8,
+      "topk": 8,
+      "alpha": 500,
+      "beta": 3500,
+      "gate": 8000,
+      "flags": 2,
+      "bracket": 8000
+     },
+     "when": "Rubi main still pins ctclm.2's 1 MB LM (Rubi #306 not merged)"
+    },
+    "lm6_1000k": {
+     "file": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.1/vocr_lm6_o3_1000k.vlm",
+     "sha256": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f",
+     "settings": {
+      "beam": 8,
+      "topk": 8,
+      "alpha": 600,
+      "beta": 2500,
+      "gate": 8000,
+      "flags": 1,
+      "bracket": 8000
+     },
+     "when": "Rubi main pins vocr6-lm's game-text 1 MB LM (#137, Rubi #306)"
+    }
+   },
+   "measures": {
+    "vita_psp_fixed_lines": "the hand-checked lines' crops (box + pad, eval/sets.py's rectangle; PSP: that rectangle x2 cut from the 2x frame), grey, invert = synth/common.line_polarity of the grey crop (the console's polarity contract); no finder",
+    "vita_psp_whole_dialogue": "path (a)'s regions and variants through the finder above, scored like path (a) (transcript_score: body = dialogue, all = with names)",
+    "clannad_lines": "path (a)'s 3,048 line crops (stored PNGs, invert off) through line_read, the cascade and the display: the units of VOCR5's CLANNAD numbers, with Rubi's decode",
+    "clannad_pages": "each page with a complete reference (sets.clannad.pages): its ROI through the finder (Vita: no refinement), every crop with its dark flag, joined in box order, transcript_score against the page's reference lines (body = not-name lines)",
+    "pcsg00807_clean": "the test pool's 1,152 clean line crops (invert off) through line_read, the cascade and the display",
+    "pcsg00807_page": "eval/pagepath.py's hooked units of the test split (pagepath.hooked_units: base / +4 / +8 regions with their verified lines), console view, the finder above, scored as pagepath.score_unit (dialogue CER over the joined, normalised texts; line statistics against the renderer's cells). Decomposition (report only): the same units read from their reference boxes plus pad (pagepath's oracle finder)"
+   },
+   "stages_reported": "per measure, besides the shipped text: greedy (the gated recognizer's own greedy text), rubi_tier (line_read of the tier alone, no cascade), rubi_cascade (with the cascade), shipped (rubi_cascade through textnorm and the line filter): report only, for the error decomposition"
+  }
+ },
+ "metrics": {
+  "primary": "dialogue CER: eval/metrics.norm on both sides, Levenshtein distance over reference characters, summed (errors / characters); speaker names a secondary column (fixed lines with the 'name' style; CLANNAD's name references; whole dialogue's 'all' minus 'body')",
+  "secondary": "exact lines (fixed lines and CLANNAD lines); names CER; all-text CER; whole dialogue at +4 / +8 px; line statistics of the page path (whole / cut / missed lines, merged / junk boxes)",
+  "rounding": "tables print 2 decimals from the integer counts; JSON keeps the counts"
+ },
+ "intervals": {
+  "method": "percentile bootstrap, 10,000 resamples, seed 0, numpy default_rng(seed).integers(0, n, (reps, n)) over sorted cluster ids, linear 2.5 / 97.5 percentiles (eval/vocr3_report.py paired_bootstrap / cluster_bootstrap)",
+  "rates": "vita-test, psp-test and pooled: VN clusters (game bootstrap; at least 5 VNs); CLANNAD and the test title (one title each): page clusters; per title: screenshot clusters (vita-test, psp-test) or page clusters",
+  "pairs": "VOCR6_T - VOCR5_T at each tier T, paired over the same units, the same clusters (game bootstrap for vita-test / psp-test / pooled, page bootstrap for CLANNAD and the test title); path (a)'s tools' own line / region intervals are kept beside them",
+  "reading": "an interval that excludes 0 is called resolved; nothing is decided on it"
+ },
+ "seen_flags": {
+  "rule": "every table carries the flags of its set and every per-title row its title's; VOCR6's flags apply to both paths, the LM flags to the decoded columns",
+  "all_models": "every VOCR5 and VOCR6 model trained on the owner's console captures, which include planetarian's PSP port (v34), a Key / Prototype release like CLANNAD's Vita port",
+  "vocr6_training": "38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools (data/manifests/vocr6_hooked/overlap_v1.json seen_by_vocr5); VOCR6 trained on every hooked train title",
+  "vita-test": {
+   "v21789": "Collar x Malice -Unlimited- shares four releases (r57056, r64104, r69311, r69312) with the hooked train title Collar x Malice (PCSG00866, v18160): VOCR6 trained on it, and its text (825 lines) is in the lm6 LMs"
+  },
+  "clannad": "Little Busters! Converted Edition (PCSG00007, v5) and planetarian (ULJM05383, v34) share the Key 10th Memorial BOX (r3748) with CLANNAD (v4): VOCR6 trained on both and their text is in the lm6 LMs; planetarian's PSP port is in the owner captures every model trained on",
+  "pcsg00807": "the test title's VN v18432 is a VOCR5 development-sample VN (4 dev lines; VOCR6's dev comparisons leave it out); no VOCR6 run trained on the title (test split) and the lm6 LMs hold no test-title text",
+  "lm_ctclm2": "ctclm.2's 1 MB LM: its Jiten word list includes the scripts of CLANNAD, 7 of vita-test's 16 games and 1 of psp-test's 14 (their names removed; README, docs/ctc-lm-decode.md)",
+  "lm_lm6": "the lm6 LMs add the hooked train titles' text (docs/vocr6-lm.md on #137): Little Busters!, planetarian, Collar x Malice among them; the Jiten caveat of ctclm.2 still holds",
+  "vocr5_dev_sample": "PCSG00576 (v12188) trains VOCR6 and is a development-sample VN (no protected set)"
+ },
+ "reported": {
+  "headline": "per tier S / N / L: VOCR6 and VOCR5 dialogue CER with intervals and VOCR6 - VOCR5 with its paired interval, on CLANNAD (lines), vita-test + psp-test (fixed lines, pooled; whole dialogue at base) and the test title (clean lines; page path at base), path (b) first, then path (a)",
+  "per_set": "every set and measure above, per path, tier and family: dialogue CER [interval], names, exact lines; Vita and PSP apart where a measure has both; the pairs",
+  "per_title": "vita-test and psp-test: each VN's dialogue CER per tier and family on both paths (fixed lines; whole dialogue at base), with its seen flags",
+  "decomposition": "path (b): greedy -> rubi_tier -> rubi_cascade -> shipped on every measure; the test title's page path against its oracle boxes; CLANNAD's pages against its lines",
+  "resources": "each blob's bytes, sha256, W8I arena (C runtime), head gate / two-level head present",
+  "outputs": "OUT/report.json (public: counts, rates, intervals, hashes, ids of VNs and titles, no text) and OUT/report.md; per-unit rows and every reading under the private directory"
+ },
+ "validation": {
+  "what": "report.sh - OUT with PATHS=a reads VOCR5 only; vocr6_final_test.py validate compares its outputs with the published records and must find them equal (integer counts, rates and intervals); any difference stops the final read until explained in an amendment",
+  "targets": {
+   "fixed_lines": "eval/vocr5_report_20261016.json shared.fixed_line.{console,native}.VOCR5_{S,N,L}.summary: dialogue console pooled 75 / 53 / 37 errors of 4,693 characters (1.60 / 1.13 / 0.79%)",
+   "fixed_lines_lm": "eval/vocr5_dialogue_20261016.json arms.console.VOCR5_{S,N,L}+LM: 54 / 34 / 25 of 4,693 (1.15 / 0.72 / 0.53%), and every other arm entry of VOCR5_{S,N,L}",
+   "whole_dialogue": "eval/vocr5_report_20261016.json shared.dialogue.totals.VOCR5_{S,N,L} and groups: base body 385 / 370 / 328 of 4,635 (8.31 / 7.98 / 7.08%); +4 523 / 495 / 465; +8 556 / 557 / 517",
+   "clannad": "eval/vocr5_clannad_20261016.json scores.systems.VOCR5_{S,N,L}: not-name 463 / 322 / 246 of 33,485 (1.38 / 0.96 / 0.73%), all 738 / 518 / 349 of 35,694",
+   "pcsg00807": "eval/vocr6_baseline_20261026.json sets.test (every tier and decode; timing fields aside): e.g. Normal rubi_cascade clean 17 / 13,911 (0.12%), page GRAD + refine console base 238 / 13,941 (1.71%), textspot3 dialogue 183 / 14,017 (1.31%)"
+  }
+ },
+ "code": {
+  "driver": "eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT (MODELS_DIR '-' and PATHS=a: the validation)",
+  "harness": "eval/vocr6_final_test.py (stage, rubi-path, pcsg-a, plan, read, score-b, validate, report, selftest); tests/test_vocr6_final_test.py for its pure parts",
+  "reused": "eval/vocr3_report.py, eval/run.py, eval/vocr5_dialogue.py, eval/clannad_refs.py, eval/stride16_clannad_dialogue.py, eval/vocr6_baseline.py, eval/pagepath.py, eval/pagepath_find.c, train/general_vn_textbox_guard.py, runtime/pyvocr.py, runtime/vocr.c, runtime/vocr_lm.c, runtime/vocr_post.c, runtime/vocr_lines*.c, runtime/tools/vocr_cli.c",
+  "environment": ".venv-ci (requirements-ci.lock), gcc 11.5 host builds, one heavy.sh slot (5 threads); the private directory is $HERD/shared/private/vocr6-final-test",
+  "selftest": "vocr6_final_test.py selftest, on development data only (the hooked hval block): path (b)'s finder build against vocr6-lead's hval plan v2 (pagepath_find, fix 5, probe 1: every unit's boxes and dark flags), its line read with VOCR5's plain blobs against vocr6-lead's hval dumps of plan v1 (eval/vocr6_score.py read: greedy, beam text, confidence; the cascade, textnorm and filter against vocr6_score.texts), and with the gated arms against eval/vocr6_baseline.py's hval reads (greedy, the re-read's beam text, confidence). No protected set"
+ },
+ "limits": [
+  "Host only: nothing ran on a console. Path (b) is a host model of Rubi's line path (eval/pagepath_find.c's port and core/vocr_ocr.c's finish_line as vocr6_final_test.py reproduces them); the cascade's time ceiling is not modelled",
+  "CLANNAD's references are the long run's GRAD line crops: the page measure's reference holds only text inside some long-run box, so a line every long-run box missed is no reference, and a finder that finds it is charged for it; pages with a cut, multi-line, UI or undecided crop are left out",
+  "The PSP console view is a cv2 bilinear 2x upscale, not an Adrenaline capture",
+  "The test title is one Vita game; its intervals are page bootstraps within it"
+ ],
+ "hygiene": [
+  "Nothing is chosen, tuned or dropped on vita-test, psp-test, CLANNAD or the test title; the final read reports",
+  "The protected sets are read only in step 2 (VOCR5, path (a), to reproduce published numbers) and step 3 (the one final read)",
+  "Harness fixes found by step 2 are committed (and named in the PR) before step 3; none may depend on a protected-set number other than the published VOCR5 numbers being reproduced",
+  "No text of a protected line, crop or screenshot is committed or sent anywhere; public files hold counts, rates, intervals, ids and hashes",
+  "No tool output with an all-caps *_DONE or *_BLOCKED token reaches the agent pane: every step logs to files"
+ ],
+ "amendments": []
+}

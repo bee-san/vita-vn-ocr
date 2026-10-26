@@ -106,5 +106,14 @@
  ],
  "result": "per tier: adopted or not (gate, two-level) with the verdicts and every development and VOCR6-path number with its interval, the gated blob's path, bytes and sha256, and the estimates; written to $HERD/shared/artifacts/vocr6-final-gate/result.json and committed as eval/vocr6_gate_<date>.json (numbers and hashes only: no text of any crop)",
  "rules_kept": "never read, score or open vita-test, psp-test, CLANNAD or PCSG00807's pages; never write under $HERD/shared/artifacts except vocr6-final-gate/; heavy work through heavy.sh within vocr6/slots.txt's share; nothing committed but code, this protocol, tests and numbers",
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "date": "2026-10-26T21:26:13Z",
+   "what": "vocr6_path.lm: the LM per plan, as vocr6-lead's stage-4 fill records it (eval/vocr6_protocol.json stages.4.amendments[2], feat/vocr6-t1-stages 7ecdbb0): the hval reads with the screening build h64_1000k ($HERD/shared/private/vocr6-lm/lm/h64_1000k.vlm, sha256 b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca: the train titles' game text with the hval and guard pages out), the dev reads with the shipped 1 MB LM (v0.3.7-lm6.1 vocr_lm6_o3_1000k.vlm, sha256 41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f), both at alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 (VOCR_LM_BOS), beam 8, top-K 8 (--lm-opts alpha=600,beta=2500,flags=1). This replaces the dry run's one LM for both plans too",
+   "why": "the shipped 1 MB LM was rebuilt with hval's text folded back in (docs/vocr6-lm.md 'Final blobs'), so it would read hval lines from memory and could hide a recognizer difference there; the lead's stage 4 reads hval with the screening build for the same reason",
+   "also": "vocr6_path.reported_beside's stage-4 plans now exist: hval plan v3 (vocr6-lead/plans/hval_plan_v3.pkl, sha256 17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a) and dev plan v2 (vocr6-lead/plans/dev_plan_v2.pkl, sha256 abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e), pinned at feat/vocr6-t1-stages 2dc491e (Rubi's line path with the COLGAP default). The same X / Y comparison is read on them with the same LMs, report only. The pinned kit (8e4c261) refuses an hval plan it does not know, so that report's compare runs with VOCR6_ANY_PLAN=1: v3 holds v1's and v2's 6,327 units in the same order (stages.4 'plans'), so the train-seen units list applies; the lead's later kit (f6b769d) registers v3 the same way",
+   "affects": "no score: no VOCR6-path read of any blob had been made under this protocol (the only run so far, the VOCR5 reproduction of step 2, runs #120's / #122's frozen rules only)"
+  }
+ ]
 }

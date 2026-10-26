@@ -100,8 +100,19 @@ DEV_UNITS = (ART / "vocr5-analysis" / "work" / "units.pkl",
              "73384ae1020608ebbdf45440d8855f8dc793f5068ef05981b71aef75b031cc7b")
 RUBI_NORM = (ART / "vocr6-lead" / "tools" / "rubi_norm",
              "12c2c60ec17d343b8a8ba5be822ca252459018cc5024b91a6cdd332d1e618ae0")
-PATH_LM = ART / "vocr6-lm" / "release" / "v0.3.7-lm6.1" / "vocr_lm6_o3_1000k.vlm"
+# the LM per plan (protocol amendment 1 = vocr6-lead's stages.4 amendment 3): hval with the screening build (the
+# shipped LM holds hval's text), dev with the shipped 1 MB LM; Rubi's settings of v0.3.7-lm6.1
+PATH_LM_HVAL = PRIVATE / "vocr6-lm" / "lm" / "h64_1000k.vlm"
+PATH_LM_DEV = ART / "vocr6-lm" / "release" / "v0.3.7-lm6.1" / "vocr_lm6_o3_1000k.vlm"
+PATH_LM_SHA = {"hval": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+               "dev": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f"}
 PATH_LM_OPTS = "alpha=600,beta=2500,flags=1"
+# vocr6-lead's stage-4 plans (feat/vocr6-t1-stages 2dc491e): the same comparison, report only
+PLANS4 = {
+    "hval4": (ART / "vocr6-lead" / "plans" / "hval_plan_v3.pkl",
+              "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a"),
+    "dev4": (ART / "vocr6-lead" / "plans" / "dev_plan_v2.pkl",
+             "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e")}
 
 # the committed records of #120 and #122 the VOCR5 run is checked against (step 2)
 REF = {"gate_release": ART / "head-gate" / "release", "gate_blobs": ART / "head-gate" / "blobs",
@@ -377,7 +388,8 @@ class Ctx:
                 raise SystemExit(f"{cfg_path}: no run here")
             cfg = {"prefix": args.prefix, "all_vns": bool(args.all_vns), "frozen_only": bool(args.frozen_only),
                    "priv": str(args.priv or PRIVATE / "vocr6-final-gate" / self.out.name), "kit": str(KIT),
-                   "path_lm": str(args.path_lm), "path_lm_opts": args.path_lm_opts, "procs": args.procs,
+                   "path_lm": {"hval": str(args.path_lm_hval), "dev": str(args.path_lm_dev)},
+                   "path_lm_opts": args.path_lm_opts, "plans4": not args.no_plans4, "procs": args.procs,
                    "created": now(), "repo_head": git_head(), "protocol_sha256": sha256(PROTOCOL)}
             self.out.mkdir(parents=True, exist_ok=True)
             cfg_path.write_text(json.dumps(cfg, indent=1) + "\n")
@@ -1313,8 +1325,22 @@ def ensure_path_hygiene(ctx, tier):
         titles = {u["title"] for u in plan["units"]} | {x["title"] for x in plan["fixed"]}
         if TEST_TITLE in titles:
             raise SystemExit(f"the hval plan holds {TEST_TITLE}")
-        return {"hval_titles": len(titles), "test_title_absent": True, "lm": ctx.cfg["path_lm"],
-                "lm_sha256": sha256(ctx.cfg["path_lm"]), "lm_opts": ctx.cfg["path_lm_opts"]}
+        lms = {k: {"path": v, "sha256": sha256(v)} for k, v in ctx.cfg["path_lm"].items()}
+        for k, v in lms.items():
+            if v["sha256"] != PATH_LM_SHA[k] and not os.environ.get("VOCR6_GATE_ANY_LM"):
+                raise SystemExit(f"the {k} LM {v['path']} is not the protocol's (amendment 1)")
+        if ctx.cfg.get("plans4"):
+            for name, (pp, h) in PLANS4.items():
+                if sha256(pp) != h:
+                    raise SystemExit(f"{pp} differs from the protocol's sha256 (amendment 1)")
+                if name == "hval4":
+                    with open(pp, "rb") as f:
+                        p4 = pickle.load(f)
+                    t4 = {u["title"] for u in p4["units"]} | {x["title"] for x in p4["fixed"]}
+                    if TEST_TITLE in t4:
+                        raise SystemExit(f"{pp} holds {TEST_TITLE}")
+        return {"hval_titles": len(titles), "test_title_absent": True, "lm": lms, "lm_opts": ctx.cfg["path_lm_opts"],
+                "plans4": ctx.cfg.get("plans4")}
     return step(ctx, tier, "path_hygiene", run)
 
 
@@ -1327,11 +1353,13 @@ def ensure_dumps(ctx, tier, arm):
         p = arm_parts(arm)
         d = ctx.pdir(tier, "path")
         out = {}
-        for plan, (pp, _) in PATH_PLANS.items():
+        plans = dict(PATH_PLANS, **(PLANS4 if ctx.cfg.get("plans4") else {}))
+        for plan, (pp, _) in plans.items():
             dump = d / f"dump_{plan}_{arm}.json"
             if dump.exists():
                 continue
-            cmd = [PY, "eval/vocr6_score.py", "read", "--plan", pp, "--blob", blob, "--lm", ctx.cfg["path_lm"],
+            lm = ctx.cfg["path_lm"]["hval" if plan.startswith("hval") else "dev"]
+            cmd = [PY, "eval/vocr6_score.py", "read", "--plan", pp, "--blob", blob, "--lm", lm,
                    "--lm-opts", ctx.cfg["path_lm_opts"], "--out", dump, "--workers", ctx.procs]
             if p["gate"]:
                 cmd += ["--head-gate", "on"]
@@ -1344,9 +1372,12 @@ def ensure_dumps(ctx, tier, arm):
     return step(ctx, tier, f"path_{arm}", run)
 
 
-def path_score(ctx, tier, arm, name, up_tier, up_arm):
-    """vocr6_score.py score of the arm's dumps (cascade into up_tier's up_arm dumps) -> OUT/<tier>/path/<dir>/."""
-    sub = ctx.tdir(tier, "path", "X" if name == "X" else arm)
+def path_score(ctx, tier, arm, name, up_tier, up_arm, four=False):
+    """vocr6_score.py score of the arm's dumps (cascade into up_tier's up_arm dumps) -> OUT/<tier>/path/<dir>/ (path4:
+    on vocr6-lead's stage-4 plans, report only)."""
+    hv, dv = ("hval4", "dev4") if four else ("hval", "dev")
+    plans = dict(PATH_PLANS, **PLANS4)
+    sub = ctx.tdir(tier, "path4" if four else "path", "X" if name == "X" else arm)
     out = sub / f"score_{name}.json"
     casc = sub / f"cascade_{name}.json"
     want = {"tier": up_tier, "arm": up_arm}
@@ -1356,15 +1387,15 @@ def path_score(ctx, tier, arm, name, up_tier, up_arm):
         f.unlink(missing_ok=True)
     d = ctx.priv / tier / "path"
     cmd = [PY, "eval/vocr6_score.py", "score", "--name", name, "--blob", ensure_blob(ctx, tier, arm),
-           "--rubi-norm", RUBI_NORM[0], "--hval-plan", PATH_PLANS["hval"][0],
-           "--hval-dump", d / f"dump_hval_{arm}.json",
-           "--dev-plan", PATH_PLANS["dev"][0], "--dev-units", DEV_UNITS[0], "--dev-dump", d / f"dump_dev_{arm}.json",
+           "--rubi-norm", RUBI_NORM[0], "--hval-plan", plans[hv][0],
+           "--hval-dump", d / f"dump_{hv}_{arm}.json",
+           "--dev-plan", plans[dv][0], "--dev-units", DEV_UNITS[0], "--dev-dump", d / f"dump_{dv}_{arm}.json",
            "--exclude-vns", *EXCLUDE_VNS, "--out", out]
     if up_tier:
         u = ctx.priv / up_tier / "path"
-        cmd += ["--hval-cascade-dump", u / f"dump_hval_{up_arm}.json",
-                "--dev-cascade-dump", u / f"dump_dev_{up_arm}.json"]
-    sh(ctx, tier, f"path_score_{name}_{arm}", cmd, cwd=ctx.kit)
+        cmd += ["--hval-cascade-dump", u / f"dump_{hv}_{up_arm}.json",
+                "--dev-cascade-dump", u / f"dump_{dv}_{up_arm}.json"]
+    sh(ctx, tier, f"path_score_{name}_{arm}{'_4' if four else ''}", cmd, cwd=ctx.kit)
     casc.write_text(json.dumps(want) + "\n")
     return sub
 
@@ -1381,28 +1412,38 @@ def vocr6_path(ctx, tier, arm):
     if nt:
         ensure_dumps(ctx, nt, "today")
         ensure_dumps(ctx, nt, up)
-    xs = path_score(ctx, tier, "today", "X", nt, "today")
-    ys = path_score(ctx, tier, arm, "Y", nt, up)
     res = {"x": {"arm": "today", "cascade": None if nt is None else {"tier": nt, "arm": "today"}},
            "y": {"arm": arm, "cascade": None if nt is None else {"tier": nt, "arm": up}}}
-    for path in ("rubi", "greedy"):
-        f = ys / f"compare_{path}.json"
-        if not f.exists():
-            log = ctx.tdir(tier, "logs") / f"path_compare_{arm}.log"
-            with open(log, "ab") as fh:
-                p = subprocess.run([PY, "eval/vocr6_select.py", "compare", "--scores", str(xs), str(ys), "--x", "X",
-                                    "--y", "Y", "--path", path, "--out", str(f)], cwd=ctx.kit, stdout=fh,
-                                   stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
-            if p.returncode:
-                raise SystemExit(f"{tier} {arm}: vocr6_select compare failed; see {log}")
-        doc = json.loads(f.read_text())
-        res[path] = {"total": doc["total"]}
+    for four in ((False, True) if ctx.cfg.get("plans4") else (False,)):
+        xs = path_score(ctx, tier, "today", "X", nt, "today", four)
+        ys = path_score(ctx, tier, arm, "Y", nt, up, four)
+        env = dict(os.environ, VOCR6_ANY_PLAN="1") if four else None     # amendment 1: v3 holds v2's unit ids
+        part = {}
+        for path in ("rubi", "greedy"):
+            f = ys / f"compare_{path}.json"
+            if not f.exists():
+                log = ctx.tdir(tier, "logs") / f"path_compare_{arm}{'_4' if four else ''}.log"
+                with open(log, "ab") as fh:
+                    p = subprocess.run([PY, "eval/vocr6_select.py", "compare", "--scores", str(xs), str(ys), "--x",
+                                        "X", "--y", "Y", "--path", path, "--out", str(f)], cwd=ctx.kit, stdout=fh,
+                                       stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, env=env)
+                if p.returncode:
+                    raise SystemExit(f"{tier} {arm}: vocr6_select compare failed; see {log}")
+            part[path] = {"total": json.loads(f.read_text())["total"]}
+        for name, sub in (("X", xs), ("Y", ys)):
+            sc = json.loads((sub / f"score_{name}.json").read_text())
+            part[f"{name.lower()}_summary"] = sc["summary"]
+            part[f"{name.lower()}_blob_sha256"] = sc["blob_sha256"]
+            part[f"{name.lower()}_hval_plan_sha256"] = sc["hval_plan_sha256"]
+        if four:
+            part["check"] = path_check({"total": part["rubi"]["total"]})
+            res["stage4_plans_report"] = part
+        else:
+            res.update(rubi=part["rubi"], greedy=part["greedy"])
+            res["x"].update(summary=part["x_summary"], blob_sha256=part["x_blob_sha256"])
+            res["y"].update(summary=part["y_summary"], blob_sha256=part["y_blob_sha256"])
     res["check"] = path_check({"total": res["rubi"]["total"]})
     res["not_worse"] = res["check"]["not_worse"]
-    for name, sub in (("X", xs), ("Y", ys)):
-        s = json.loads((sub / f"score_{name}.json").read_text())
-        res[name.lower()]["summary"] = s["summary"]
-        res[name.lower()]["blob_sha256"] = s["blob_sha256"]
     return res
 
 
@@ -1551,6 +1592,12 @@ def summarise_tier(ctx, tier):
                                    "x_summary": v["path"]["x"]["summary"]["rubi"],
                                    "y_summary": v["path"]["y"]["summary"]["rubi"],
                                    "cascade": v["path"]["y"]["cascade"]}
+                if "stage4_plans_report" in v["path"]:
+                    r4 = v["path"]["stage4_plans_report"]
+                    a["vocr6_path"]["stage4_plans_report"] = {"check": r4["check"],
+                                                              "rubi": compact_compare(r4["rubi"]["total"]),
+                                                              "x_summary": r4["x_summary"]["rubi"],
+                                                              "y_summary": r4["y_summary"]["rubi"]}
             s["arms"][arm] = a
     s["estimate"] = dec["estimate"]
     return s
@@ -1736,8 +1783,10 @@ def main():
         p.add_argument("--prefix", default="VOCR6", help="the blobs' names (VOCR5 for the reproduction)")
         p.add_argument("--all-vns", action="store_true", help="score every VN (the reproduction of #120 / #122)")
         p.add_argument("--frozen-only", action="store_true", help="#120's / #122's rules only, no VOCR6 path")
-        p.add_argument("--path-lm", default=str(PATH_LM))
+        p.add_argument("--path-lm-hval", default=str(PATH_LM_HVAL), help="the VOCR6 path's hval LM (amendment 1)")
+        p.add_argument("--path-lm-dev", default=str(PATH_LM_DEV), help="the VOCR6 path's dev LM (amendment 1)")
         p.add_argument("--path-lm-opts", default=PATH_LM_OPTS)
+        p.add_argument("--no-plans4", action="store_true", help="skip the report on vocr6-lead's stage-4 plans")
         p.add_argument("--procs", type=int, default=5)
     p = sub.add_parser("result")
     p.add_argument("--out", required=True)

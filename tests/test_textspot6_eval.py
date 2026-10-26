@@ -106,6 +106,30 @@ def test_negative_verdict_names_the_best_eligible(tmp_path):
     assert r["best_eligible_if_negative"]["arm"] == "a"         # b is not eligible (C differs from the twin)
 
 
+def test_teacher_rule_median_seed_any_decode_tie_smaller(tmp_path):
+    import textspot6_teacher as TT
+    n = 10
+    ev, runs = tmp_path / "eval", tmp_path / "runs"
+
+    def arm(name, dev_by_seed):
+        for s, per_dec in dev_by_seed.items():
+            d = ev / f"{name}_seed{s}"
+            d.mkdir(parents=True)
+            for dec in SEL.DECODES:
+                result(d / f"dev_{dec}.json", units(n, [per_dec.get(dec, 9)] * n))
+                result(d / f"hval_{dec}.json", units(n, [5] * n))
+            (d / "SCORED").write_text("")
+            (runs / f"{name}_seed{s}").mkdir(parents=True)
+            (runs / f"{name}_seed{s}" / "final.pt").write_bytes(name.encode() + bytes([s]))
+    # qS4: det's median seed (seed 3: 4 errors) is its best; qL5: crop's median is 4 too -> the tie goes to qS4
+    arm("base_qS4", {1: {"det": 2}, 2: {"det": 6}, 3: {"det": 4}})
+    arm("base_qL5", {1: {"crop": 4}, 2: {"crop": 1}, 3: {"crop": 7}})
+    out = TT.main(["--eval", str(ev), "--runs", str(runs), "--out", str(tmp_path / "t.json")])
+    assert out["best"]["base_qS4"] == {"dev_cer": 4.0, "decode": "det", "representative_seed": 3}
+    assert out["best"]["base_qL5"] == {"dev_cer": 4.0, "decode": "crop", "representative_seed": 1}
+    assert out["teacher"]["arm"] == "base_qS4" and out["teacher"]["run"] == "base_qS4_seed3"
+
+
 def test_seen_clusters_are_left_out(tmp_path):
     u = units(3, [0, 0, 50])
     p = result(tmp_path / "u.json", u)

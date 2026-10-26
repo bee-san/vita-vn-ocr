@@ -276,6 +276,9 @@ _Running at the time of writing; results are filled in when both runs finish._
   Small (< 1 MB) and Normal (≤ 1.6 MB) have room.
 - **Estimates.** Every millisecond is an estimate from qemu instruction counts with a cache model, calibrated on one
   model (H15) in one game at an assumed 333 MHz. Nothing of this has run on a console.
+- **PSP.** The PSP build (psp-gcc, scalar and `VOCR_PSP_VFPU`) compiles with the op, and the op uses only kernels
+  the PSP paths already run (`mm_f32`, `mm_i16`, `dequant8`, `quant16`). The PPSSPP parity of an attention blob
+  (psp/README.md) was not run here; the PSP model's own work (VOCR6 model B) runs it if it uses the op.
 - **Longer lines.** The op's cost grows with T² per line, the only part of the recognizer that does: a 1,024-px line
   (128 frames) costs about 25 ms in the op (est., N, 333 MHz), against about 12 ms for 640 px.
 - **Turning it off.** The op is part of a blob, not a runtime option: a model trained with it reads z', so it cannot

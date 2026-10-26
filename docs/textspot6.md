@@ -224,6 +224,11 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
    passes: host ctest, both Vita builds with their import, metadata and memory-ledger gates, and `e2e_package.py`
    when packaging changed. Its audit runs in parallel, and its findings become a follow-up PR. The label's 3 slots
    include its helper and auditors.
+8. **Two slots and one scheduler** (before any arm's score). The label has 2 slots from 12:37Z.
+   - `sched.py` runs every heavy job: pending scoring first, then the training plan. It leaves one slot to the
+     runtime helper until the helper's runtime is ready.
+   - `nohook_t64n8c16` becomes a report-only control with 2 seeds. The candidates are `base_t64n8c16`, `base_qS4`,
+     `base_qL5` and stage 2's `kd_t64n8c16`, 3 seeds each.
 
 ## Results
 

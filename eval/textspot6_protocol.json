@@ -74,23 +74,39 @@
   "1": [
    {
     "arm": "base_t64n8c16",
-    "shape": "t64n8c16"
+    "shape": "t64n8c16",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
    },
    {
     "arm": "base_qS4",
-    "shape": "qS4"
+    "shape": "qS4",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
    },
    {
     "arm": "base_qL5",
-    "shape": "qL5"
+    "shape": "qL5",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
    },
    {
     "arm": "nohook_t64n8c16",
-    "shape": "t64n8c16"
-   },
-   {
-    "arm": "base_<full-res T>",
-    "shape": "registered by an amendment with its A9 row, before its runs"
+    "shape": "t64n8c16",
+    "seeds": [
+     1,
+     2
+    ],
+    "role": "report-only control"
    }
   ],
   "2": {
@@ -275,6 +291,20 @@
     "Owner 2026-10-26T11:33Z (prompts/_rules.md, last entry) replaces amendment 4's Rubi merge gate: a Rubi_for_vita PR is merged right after the local gate passes in the clone (host ctest, both Vita builds, normal and debug, with their import, module-metadata and memory-ledger gates, and tools/e2e_package.py when packaging changed), without waiting for GitHub CI; its audit runs in parallel and its findings become a follow-up PR; the release (a test pre-release here) is tagged right after the merge and the Release workflow builds its assets. A PR whose local Vita build or ledger gate fails is never merged.",
     "Slots (vocr6/slots.txt 11:58Z): the label's 3 slots include its runtime helper and its auditors; the training runs take at most 2 once the detached seed-1 run ends, and the third slot is shared through a lock (slot3.lock) by the scoring queue and the helper."
    ]
+  },
+  {
+   "id": 8,
+   "utc": "2026-10-26T12:54:30Z",
+   "before": "every score of a textspot6 arm (the three seed-1 runs are training; nothing is scored)",
+   "what": [
+    "Slots (vocr6-lead 12:37Z; heavy.sh back to 12): the label has 2 slots, its runtime helper and auditors inside them. One process, eval/reproducibility/textspot6-20261026/sched.py, now runs every heavy job of the label: pending scoring first (a finished run is scored before the next training run starts), then the training runs of stage1c_plan.jsonl, at most 2 jobs at once; while RUNS/helper.reserve exists one of the 2 is left to the runtime helper. The three running seed-1 runs (sweeps v1 and v2) are adopted and logged by it; sweep v2 is stopped.",
+    "The nohook arm becomes a report-only control: 2 seeds (1, 2), not a candidate (it measures what the hooked pages buy; with the slot cut its third seed would delay the candidates). The candidates are base_t64n8c16, base_qS4 and base_qL5 (3 seeds each) and stage 2's kd_t64n8c16 (3 seeds).",
+    "stage1c_plan.jsonl: t64n8c16 seed 2, qL5 2, qS4 2, t64n8c16 3, qL5 3, qS4 3, nohook 1, nohook 2."
+   ],
+   "pins": {
+    "eval/reproducibility/textspot6-20261026/sched.py": "62c077d1f550f5d80fe1fb207e85ceb9063a01bd3188296fcf275a0f18e0bb2e",
+    "eval/reproducibility/textspot6-20261026/stage1c_plan.jsonl": "fdec10c5d50c1cd73ff721fd32c3ffe20de6e9c9d776a0b1147f13b5b4004985"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

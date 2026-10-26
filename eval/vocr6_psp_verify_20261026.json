@@ -1,0 +1,443 @@
+{
+ "kind": "vocr6-psp-verify",
+ "ppsspp": "PPSSPPHeadless 1.20.4 (JIT), emulated 333 MHz; times are emulated, not console",
+ "candidates": {
+  "B24": {
+   "blob_sha256": "84a6c0908ef1ca448626dde1a80ce71c47e38a80326cd4d644d6d4034b0047bb",
+   "settings": {
+    "mode": "w8f",
+    "head_gate": "on",
+    "two_level": true,
+    "tile": 16,
+    "head": 64
+   },
+   "eboots": {
+    "scalar": "15d497c45f7f5993985729fb1d48b58e6b8f71a653261bf0498e69a2d55e5829",
+    "vfpu": "c4b95be7e2ebab82ff0b2a88bc39dbcd877bc534253fb7c4e8bc3dda736c1c65"
+   },
+   "all_identical": true,
+   "sets": {
+    "lines:dev": {
+     "plan_sha256": "d936736f728eb66f672fda883720f1fe2f2d03151db9c4714797abae79601b7a",
+     "crops": 1460,
+     "by_component": {
+      "dn": 489,
+      "tv": 410,
+      "wd_grad": 546,
+      "wd_recovery": 15
+     },
+     "scalar": {
+      "items": 1460,
+      "text_ok": 1460,
+      "logits_ok": 1460,
+      "frames": 43957,
+      "us": 240128148,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 192448,
+      "stack_used_max": 3040,
+      "gated": 19027,
+      "escaped": 12455,
+      "us_per_frame": 5462.8
+     },
+     "vfpu": {
+      "items": 1460,
+      "text_ok": 1460,
+      "logits_ok": 1460,
+      "frames": 43957,
+      "us": 171645567,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 192448,
+      "stack_used_max": 3040,
+      "gated": 19027,
+      "escaped": 12455,
+      "us_per_frame": 3904.9
+     }
+    },
+    "lines:hval": {
+     "plan_sha256": "d4324f384f084e3b7fe71bd4d61a9a7986d187b3f96f7a6a8c7172dcaef585d7",
+     "crops": 3205,
+     "by_component": {
+      "hl": 1103,
+      "hp_grad": 2022,
+      "hp_recovery": 80
+     },
+     "scalar": {
+      "items": 3205,
+      "text_ok": 3205,
+      "logits_ok": 3205,
+      "frames": 121500,
+      "us": 624299801,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 192448,
+      "stack_used_max": 3040,
+      "gated": 51695,
+      "escaped": 29361,
+      "us_per_frame": 5138.3
+     },
+     "vfpu": {
+      "items": 3205,
+      "text_ok": 3205,
+      "logits_ok": 3205,
+      "frames": 121500,
+      "us": 439688477,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 192448,
+      "stack_used_max": 3040,
+      "gated": 51695,
+      "escaped": 29361,
+      "us_per_frame": 3618.8
+     }
+    },
+    "regions:dev": {
+     "regions": 627,
+     "scalar": {
+      "items": 627,
+      "text_ok": 627,
+      "logits_ok": 627,
+      "frames": 34369,
+      "us": 179342114,
+      "finder_us": 3840727,
+      "pixels": 6629949,
+      "arena_bytes": 192448,
+      "stack_used_max": 3744,
+      "gated": 15625,
+      "escaped": 8843,
+      "us_per_frame": 5218.1
+     },
+     "vfpu": {
+      "items": 627,
+      "text_ok": 627,
+      "logits_ok": 627,
+      "frames": 34369,
+      "us": 126798266,
+      "finder_us": 3835612,
+      "pixels": 6629949,
+      "arena_bytes": 192448,
+      "stack_used_max": 3744,
+      "gated": 15625,
+      "escaped": 8843,
+      "us_per_frame": 3689.3
+     }
+    },
+    "regions:hval": {
+     "regions": 2403,
+     "scalar": {
+      "items": 2403,
+      "text_ok": 2403,
+      "logits_ok": 2403,
+      "frames": 134453,
+      "us": 688186616,
+      "finder_us": 20830047,
+      "pixels": 37778665,
+      "arena_bytes": 192448,
+      "stack_used_max": 3744,
+      "gated": 56535,
+      "escaped": 31401,
+      "us_per_frame": 5118.4
+     },
+     "vfpu": {
+      "items": 2403,
+      "text_ok": 2403,
+      "logits_ok": 2403,
+      "frames": 134453,
+      "us": 486535260,
+      "finder_us": 20822868,
+      "pixels": 37778665,
+      "arena_bytes": 192448,
+      "stack_used_max": 3744,
+      "gated": 56535,
+      "escaped": 31401,
+      "us_per_frame": 3618.6
+     }
+    }
+   },
+   "budget": {
+    "scalar": {
+     "us_per_frame_dev_wd": 5305.12,
+     "nominal_frames": 153,
+     "finder_us_per_pixel": 0.5793,
+     "emulated_s_box": 0.8367,
+     "est_console_s_box_high": 1.2132,
+     "est_console_s_box_low": 0.8367,
+     "memory": {
+      "blob": 760208,
+      "arena": 192448,
+      "code": {
+       "vocr.o": 28743,
+       "vocr_lines.o": 19084,
+       "vocr_lines_refine.o": 7904
+      },
+      "stack_used": 3744,
+      "stack": 4096,
+      "finder_arena": 25355,
+      "total": 1037838
+     },
+     "time_ok": false,
+     "memory_ok": true
+    },
+    "vfpu": {
+     "us_per_frame_dev_wd": 3741.04,
+     "nominal_frames": 153,
+     "finder_us_per_pixel": 0.57853,
+     "emulated_s_box": 0.5974,
+     "est_console_s_box_high": 0.8662,
+     "est_console_s_box_low": 0.5974,
+     "memory": {
+      "blob": 760208,
+      "arena": 192448,
+      "code": {
+       "vocr.o": 28743,
+       "vocr_lines.o": 19084,
+       "vocr_lines_refine.o": 7904
+      },
+      "stack_used": 3744,
+      "stack": 4096,
+      "finder_arena": 25355,
+      "total": 1037838
+     },
+     "time_ok": true,
+     "memory_ok": true
+    }
+   }
+  },
+  "S32": {
+   "blob_sha256": "975d6b90178c9789f3e5286345714c1a9d8ee71f801e4b48a1206f74aee96198",
+   "settings": {
+    "mode": "w8f",
+    "head_gate": "on",
+    "two_level": true,
+    "tile": 16,
+    "head": 64
+   },
+   "eboots": {
+    "scalar": "15d497c45f7f5993985729fb1d48b58e6b8f71a653261bf0498e69a2d55e5829",
+    "vfpu": "c4b95be7e2ebab82ff0b2a88bc39dbcd877bc534253fb7c4e8bc3dda736c1c65"
+   },
+   "all_identical": true,
+   "sets": {
+    "lines:dev": {
+     "plan_sha256": "d936736f728eb66f672fda883720f1fe2f2d03151db9c4714797abae79601b7a",
+     "crops": 1460,
+     "by_component": {
+      "dn": 489,
+      "tv": 410,
+      "wd_grad": 546,
+      "wd_recovery": 15
+     },
+     "scalar": {
+      "items": 1460,
+      "text_ok": 1460,
+      "logits_ok": 1460,
+      "frames": 58357,
+      "us": 402216536,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 378528,
+      "stack_used_max": 3040,
+      "gated": 37081,
+      "escaped": 6418,
+      "us_per_frame": 6892.3
+     },
+     "vfpu": {
+      "items": 1460,
+      "text_ok": 1460,
+      "logits_ok": 1460,
+      "frames": 58357,
+      "us": 276260504,
+      "finder_us": 0,
+      "pixels": 0,
+      "arena_bytes": 378528,
+      "stack_used_max": 3040,
+      "gated": 37081,
+      "escaped": 6418,
+      "us_per_frame": 4734.0
+     }
+    },
+    "regions:dev": {
+     "regions": 627,
+     "scalar": {
+      "items": 627,
+      "text_ok": 627,
+      "logits_ok": 627,
+      "frames": 45646,
+      "us": 307761165,
+      "finder_us": 3845584,
+      "pixels": 6629949,
+      "arena_bytes": 378528,
+      "stack_used_max": 3744,
+      "gated": 29512,
+      "escaped": 4461,
+      "us_per_frame": 6742.3
+     },
+     "vfpu": {
+      "items": 627,
+      "text_ok": 627,
+      "logits_ok": 627,
+      "frames": 45646,
+      "us": 209413738,
+      "finder_us": 3835064,
+      "pixels": 6629949,
+      "arena_bytes": 378528,
+      "stack_used_max": 3744,
+      "gated": 29512,
+      "escaped": 4461,
+      "us_per_frame": 4587.8
+     }
+    }
+   },
+   "budget": {
+    "scalar": {
+     "us_per_frame_dev_wd": 6794.71,
+     "nominal_frames": 204,
+     "finder_us_per_pixel": 0.58003,
+     "emulated_s_box": 1.4112,
+     "est_console_s_box_high": 2.0462,
+     "est_console_s_box_low": 1.4112,
+     "memory": {
+      "blob": 823568,
+      "arena": 378528,
+      "code": {
+       "vocr.o": 28743,
+       "vocr_lines.o": 19084,
+       "vocr_lines_refine.o": 7904
+      },
+      "stack_used": 3744,
+      "stack": 4096,
+      "finder_arena": 25355,
+      "total": 1287278
+     },
+     "time_ok": false,
+     "memory_ok": true
+    },
+    "vfpu": {
+     "us_per_frame_dev_wd": 4620.41,
+     "nominal_frames": 204,
+     "finder_us_per_pixel": 0.57845,
+     "emulated_s_box": 0.9676,
+     "est_console_s_box_high": 1.403,
+     "est_console_s_box_low": 0.9676,
+     "memory": {
+      "blob": 823568,
+      "arena": 378528,
+      "code": {
+       "vocr.o": 28743,
+       "vocr_lines.o": 19084,
+       "vocr_lines_refine.o": 7904
+      },
+      "stack_used": 3744,
+      "stack": 4096,
+      "finder_arena": 25355,
+      "total": 1287278
+     },
+     "time_ok": false,
+     "memory_ok": true
+    }
+   }
+  }
+ },
+ "console_test_bundle_ppsspp": {
+  "B24_L": {
+   "lines": 150,
+   "frames": 6483,
+   "us_total": 32290787,
+   "text_ok": 150,
+   "logits_ok": 150,
+   "arena_bytes": 192448,
+   "stack_used": 3040,
+   "finder": -1,
+   "memory": "24mb"
+  },
+  "B24_LV": {
+   "lines": 150,
+   "frames": 6483,
+   "us_total": 22549823,
+   "text_ok": 150,
+   "logits_ok": 150,
+   "arena_bytes": 192448,
+   "stack_used": 3040,
+   "finder": -1,
+   "memory": "24mb"
+  },
+  "B24_P": {
+   "lines": 40,
+   "frames": 4420,
+   "us_total": 21583050,
+   "text_ok": 40,
+   "logits_ok": 40,
+   "arena_bytes": 192448,
+   "stack_used": 3744,
+   "finder": 0,
+   "memory": "24mb"
+  },
+  "B24_PV": {
+   "lines": 40,
+   "frames": 4420,
+   "us_total": 15122418,
+   "text_ok": 40,
+   "logits_ok": 40,
+   "arena_bytes": 192448,
+   "stack_used": 3744,
+   "finder": 0,
+   "memory": "24mb"
+  },
+  "MB_64": {
+   "lines": 150,
+   "frames": 6483,
+   "us_total": 32283085,
+   "text_ok": 150,
+   "logits_ok": 150,
+   "arena_bytes": 192448,
+   "stack_used": 3040,
+   "finder": -1,
+   "memory": "large"
+  },
+  "S32_L": {
+   "lines": 150,
+   "frames": 8614,
+   "us_total": 56992428,
+   "text_ok": 150,
+   "logits_ok": 150,
+   "arena_bytes": 378528,
+   "stack_used": 3040,
+   "finder": -1,
+   "memory": "24mb"
+  },
+  "S32_LV": {
+   "lines": 150,
+   "frames": 8614,
+   "us_total": 38462658,
+   "text_ok": 150,
+   "logits_ok": 150,
+   "arena_bytes": 378528,
+   "stack_used": 3040,
+   "finder": -1,
+   "memory": "24mb"
+  },
+  "S32_P": {
+   "lines": 40,
+   "frames": 5879,
+   "us_total": 38651920,
+   "text_ok": 40,
+   "logits_ok": 40,
+   "arena_bytes": 378528,
+   "stack_used": 3744,
+   "finder": 0,
+   "memory": "24mb"
+  },
+  "S32_PV": {
+   "lines": 40,
+   "frames": 5879,
+   "us_total": 26160895,
+   "text_ok": 40,
+   "logits_ok": 40,
+   "arena_bytes": 378528,
+   "stack_used": 3744,
+   "finder": 0,
+   "memory": "24mb"
+  }
+ }
+}

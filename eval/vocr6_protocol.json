@@ -414,7 +414,7 @@
     "name": "s6v",
     "weight": 0.1,
     "globs": [
-     "PENDING: synth6 v2 (stage 2 amendment 1)"
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v3/vita/synth6_vita_000??.npz"
     ],
     "opts": "stream=1,pool=3,inv=0.2"
    },
@@ -422,7 +422,7 @@
     "name": "s6x",
     "weight": 0.05,
     "globs": [
-     "PENDING: synth6 v2 (stage 2 amendment 1)"
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v3/psp2x/synth6_psp2x_000??.npz"
     ],
     "opts": "stream=1,pool=3,inv=0.2"
    }
@@ -1058,7 +1058,7 @@
  "mix_notes": {
   "m1": "VOCR5-N arm F's fine-tune mix (eval/vocr5_run.sh N F) with its real half split in two: VOCR5's pinned real pools at half their weights (0.25) and the hooked corpus' train split (horizontal lines and names; hval and guard pages out) at 0.25. Synthetic half unchanged (nv 0.225 + s2 0.1125 with fa=0.15, s3v3 0.1125, s4 0.05).",
   "m1_x2": "m1 with the hooked PSP titles' lines and names in the Adrenaline view (vocr6-ingest's line_x2 / name_x2: the PSP page upscaled 2x bilinear, cut there) instead of the native 480x272 view; Vita titles (PCSG*) unchanged. Model A only ever sees PSP through Adrenaline",
-  "m1_s6": "m1 with synth6 (vocr6-synth6 shards v2 (stage 2 amendment 1; v1 had renderer defects)): s6v 0.10 + s6x 0.05, the other synthetic sources scaled by 0.7 so the synthetic half stays 0.5 (synth6 = 30% of it)",
+  "m1_s6": "m1 with synth6 (vocr6-synth6 shards v3 (stage 2 amendment 1: v1 had renderer defects, v2 label noise; feat/vocr6-synth6 99aaa7e)): s6v 0.10 + s6x 0.05, the other synthetic sources scaled by 0.7 so the synthetic half stays 0.5 (synth6 = 30% of it)",
   "m1_t5": "m1 with the hooked source split per title (eval/vocr6_run.py mix_sources per_title) at temperature 0.5: title t gets 0.25 * rows_t^0.5 / sum rows^0.5 instead of its row share",
   "m1_r30": "m1 with the real half scaled to 0.3 and the synthetic half to 0.7 (every source's weight x0.6 / x1.4)",
   "m1_r70": "m1 with the real half scaled to 0.7 and the synthetic half to 0.3 (x1.4 / x0.6)",
@@ -1098,6 +1098,16 @@
    {
     "manifest": "data/manifests/synth4_shards_v5631.json",
     "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards"
+   },
+   {
+    "manifest": "data/manifests/synth6_shards_v3_vita.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v3/vita",
+    "sha256": "c844584ad59277210d3247c379d61f8da8723af891e819e124c52ed191bcf50c"
+   },
+   {
+    "manifest": "data/manifests/synth6_shards_v3_psp2x.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v3/psp2x",
+    "sha256": "c48e38b9a53499b9b8272c816933ee2978885eaa356115bf007eb84d39862907"
    }
   ],
   "guarded": {
@@ -1477,7 +1487,8 @@
      "n": 1,
      "time": "this commit (see git log); before any S2s6 run",
      "why": "vocr6-synth6 (13:2xZ, audit of PR #133): synth6 v1 has renderer defects (stacked rows, glyphs cut at the frame edge, misplaced middle dots) in about 1.5-2% of crops, 6-15% in a few titles; v1 stays only as the synth6 proof's data",
-     "change": "S2s6 uses synth6 v2 (the fixed renderer), pinned by its manifests' sha256 in data_pins when vocr6-synth6 posts SYNTH6_READY v2 and before any S2s6 run; the arm's weights are unchanged (s6v 0.10 + s6x 0.05, other synthetic sources x0.7). Until then the runner refuses S2s6 (mix m1_s6 points at a pending pin)"
+     "change": "S2s6 uses synth6 v2 (the fixed renderer), pinned by its manifests' sha256 in data_pins when vocr6-synth6 posts SYNTH6_READY v2 and before any S2s6 run; the arm's weights are unchanged (s6v 0.10 + s6x 0.05, other synthetic sources x0.7). Until then the runner refuses S2s6 (mix m1_s6 points at a pending pin)",
+     "pinned": "synth6 v3 (feat/vocr6-synth6 99aaa7e): data/manifests/synth6_shards_v3_vita.json c844584ad592, data/manifests/synth6_shards_v3_psp2x.json c48e38b9a534"
     },
     {
      "n": 2,

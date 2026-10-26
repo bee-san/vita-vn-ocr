@@ -26,30 +26,43 @@ in `eval/pagepath.py`). The two views are:
 The finder runs through `eval/pagepath.py`'s driver: the finder mode, Rubi's short-line probe, and the refinement on
 PSP titles.
 
-Each box is matched to the region's verified lines by their inked character cells. A cell counts as held by a box
-when the centroid of its high-contrast pixels lies inside the box (`eval/pagepath.ink_points`, GRAD's own contrast
-test).
+Each box is matched to the region's verified lines by their character cells. A cell is inked when it has
+high-contrast pixels (`eval/pagepath.ink_points`, GRAD's own test), and an inked cell counts as held by a box when
+the centroid of those pixels lies inside the box.
+
+Some cells hold a character with no pixel at the line's threshold, such as a word in a dim colour. A box must also
+cover at least half of each such cell (`required_cells`):
+- when the line has one cell per character of its label (89% of lines), every inkless cell of a non-space
+  character;
+- otherwise every inkless cell with weak ink, at half the threshold.
 
 | box | rule | becomes |
 |---|---|---|
-| whole | holds every inked cell of one line and none of another | a crop labelled with the line's text |
-| partial | holds some of one line's cells and none of another | left out: no exact label exists |
-| merged | holds cells of two lines | left out |
-| empty | holds no inked cell and overlaps no renderer text box (name plates, furigana and unverified rows are text) | a negative, labelled "" |
+| whole | holds every inked cell and covers every required cell of one line, and holds or covers none of another | a crop labelled with the line's text |
+| partial | holds or covers some of one line's cells and none of another | left out: no exact label exists |
+| merged | holds or covers cells of two lines | left out |
+| empty | holds no inked cell, covers no required cell and overlaps no renderer text box (name plates, furigana and unverified rows are text) | a negative, labelled "" |
 
 Each whole crop also gets `--jitter` variants (2 by default). Each one is the finder's box moved at random:
 - top and bottom by −0.15 to +0.35 of its height;
 - left and right by −0.3 to +0.8 of its height.
 
-The moves are seeded by the crop. A variant is kept only if it still holds the line's whole ink extent and no other
-line's inked cell. Its dark flag is `synth/common.line_dark`'s, as the finder would give it.
+The moves are seeded by the crop. A variant is kept only if:
+- it still holds the line's whole ink extent and covers its required cells;
+- it holds no other line's inked cell and covers none of its required cells.
+
+Its dark flag is `synth/common.line_dark`'s, as the finder would give it. The rule tests ink centroids, so a
+jittered box can hold part of a neighbouring line's glyphs. In v1, 8.6% of console_jitter crops hold at least 30%
+of some neighbour cell's ink and 1.6% hold at least half of it, against 0.10% and 0.02% of the finder's own crops
+(audit-vocr6-finder-c, a 15,000-crop sample). The label is the main line's.
 
 Crops are stored as the console hands them to the recognizer: integer luma, with a dark-text crop inverted (meta
 `inverted`). Identical crops of one page are stored once.
 
 The pools are written as `OUT/<split>/<pool>/<title>.npz` in `train/train2.py`'s shard format (data, offsets,
 shapes, labels, meta). There are three pools, `console`, `console_jitter` and `console_empty`, each with a `_native`
-twin. A crop whose label has a character outside `data/vocab_vn_5631.txt`, or which `synth/render.crop_ctc_feasible`
+twin. `train/train2.py` keeps no "" label, so the negatives need a blank-target option there before they can be
+trained on. A crop whose label has a character outside `data/vocab_vn_5631.txt`, or which `synth/render.crop_ctc_feasible`
 rejects, goes to `drop_<pool>`. `OUT/manifest.json` records the inputs' sha256, every file's sha256 and crop count,
 and the counts per title and kind.
 
@@ -99,9 +112,34 @@ for a final model retrained with hval folded back in.
   - the 36 most extreme chars-per-width crops, labels right. They are very wide boxes over background, and some are
     cut at the top: real finder output.
 
-The committed `data/console_crops.py` differs from the one that built v1 (sha256 `757f1ecc…`) in two ways only:
-- its last print;
-- its units carry the page's sha256, so that the page check of #135's `eval/pagepath.py` applies.
+**Independent audit** (audit-vocr6-finder-c, its own seeds): 18,012 more random crops re-cut pixel-exact, 280 of 280
+labelled crops and 80 of 80 negatives right by eye, and 4 titles rebuilt byte for byte.
+
+**Known issue: v1 has 44 wrong labels in the train pools S2cil reads** (11 in console, 33 in console_jitter; 0.011% of
+each; 0 in native, hval or guard). v1 was built before the required-cell rule above existed. Each of these crops is
+a finder box that leaves out a word in a dim colour, labelled with the whole line all the same. By title:
+- PCSG00805: 8 + 32;
+- NPJG00016: 2 + 0;
+- PCSG00935: 1 + 1.
+
+The rule now in the script makes such a box partial. On 6 rebuilt titles it changes only PCSG00805 (53 whole crops
+and 210 jittered ones fewer, all splits), NPJG00016, NPJH50641 and PCSG00935 (2-3 whole crops each). PCSG00380, whose
+lines start with an inkless indent cell, and PCSG00753, a ruled-paper background, are byte for byte as before.
+
+Other notes on v1:
+- **The driver.** v1's driver (`e32cd2da…` in the manifest) was compiled from a `vocr_lines_fix.c` (`9fe5427c…`) that
+  differs from #135's committed file only in a comment. A rebuild on #135 has another driver hash and writes the same
+  shards.
+- **Repeats.** There is no de-duplication across pages, unlike vocr6-ingest's line pools. train/console holds 98,324
+  crops of 71,528 distinct (title, label) pairs: mean 1.37, at most 491 copies of one label. console_jitter's mean
+  is 4.27.
+- **The script.** The committed `data/console_crops.py` differs from the one that built v1 (sha256 `757f1ecc…`) in
+  these ways:
+  - the required-cell rule;
+  - the driver is built once before the workers start (they raced on its file on a cold work directory);
+  - `--sets test` is refused;
+  - its units carry the page's sha256, so that the page check of #135's `eval/pagepath.py` applies;
+  - its last print.
 
 ## Reproduce
 

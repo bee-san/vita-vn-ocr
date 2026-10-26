@@ -697,20 +697,15 @@ class Dev:
 
 
 def ensure_dev_lines(ctx):
+    """The C GRAD finder's and the refinement's lines on wd's regions, once per run (eval/head2level_dev.py lines: C ==
+    twin box for box), in the private development directory."""
     d = ctx.priv / "dev"
     d.mkdir(parents=True, exist_ok=True)
-    rec = ctx.out / "dev_lines.json"
-    if rec.exists():
-        return
-    t0 = time.time()
-    log = ctx.out / "dev_lines.log"
-    with open(log, "ab") as f:
-        p = subprocess.run([PY, "eval/head2level_dev.py", "lines", "--cache", str(d)], cwd=ROOT, stdout=f,
-                           stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
-    if p.returncode:
-        raise SystemExit(f"head2level_dev.py lines failed; see {log}")
-    rec.write_text(json.dumps({"wd_lines_sha256": sha256(d / "wd_lines.pkl"), "wall_s": round(time.time() - t0, 1),
-                               "at": now()}, indent=1) + "\n")
+
+    def run():
+        sh(ctx, "dev", "dev_lines", [PY, "eval/head2level_dev.py", "lines", "--cache", d])
+        return {"wd_lines_sha256": sha256(d / "wd_lines.pkl")}
+    return step(ctx, "dev", "dev_lines", run)
 
 
 # ---------------------------------------------------------------- development reads
@@ -1030,6 +1025,26 @@ def frozen_two(ctx, tier, arm):
     nt = NEXT[tier]
     out["cascade"] = None if nt is None else {"tier": nt, "arm": cascade_arm(arm)}
     return out
+
+
+def shipped_cascade(ctx, tier, arm):
+    """Report only (#122's 'mixed'): the tier's decided configuration with Rubi's cascade into the next tier's decided
+    configuration, the mix Rubi ships, against today (today -> today) and the arm's frozen cascade."""
+    import vocr5_select as V
+    nt = NEXT[tier]
+    up = decided_arm(ctx, nt)
+    dev = ctx.dev()
+    tx, conf, _ = arm_texts(ctx, tier, arm)
+    ntx, _, _ = arm_texts(ctx, nt, up, with_cascade=False)
+    shipped = cascade(tx["rubi"], conf, ntx["rubi"])
+    rows = {"today": model_rows(ctx, tier, "today", "rubi_cascade"),
+            "frozen": model_rows(ctx, tier, arm, "rubi_cascade"), "shipped": dev.rows(shipped, ctx.exclude)}
+    comps = dev.components(rows)
+    keep = [i for i, k in enumerate(dev.keys) if dev.vn_of(k) not in ctx.exclude]
+    return {"arm": arm, "next": {"tier": nt, "arm": up}, "report_only": True,
+            "scores": {m: rnd(V.score_of(comps, m), 5) for m in rows},
+            "cascaded_lines": sum(1 for i in keep if conf[i] < CASCADE_CONF),
+            "shipped_vs": {ref: V.compare(comps, [ref], ["shipped"]) for ref in ("today", "frozen")}}
 
 
 def oracle_share(ctx, tier, today_reads, L1):
@@ -1461,6 +1476,8 @@ def decide(ctx, tier):
         if two_final:
             dec["estimate"]["final"]["L1"] = dec["two_level"][two_final]["frozen"]["L1"]
         dec["estimate"]["final"]["effective_macs_per_frame_dev_wd"] = effective_macs(dec["estimate"]["final"], sk)
+    if nt and fa != "today":
+        dec["shipped_cascade"] = shipped_cascade(ctx, tier, fa)
     fb = ensure_blob(ctx, tier, fa)
     fin = ctx.tdir("final")
     name = shipping_name(ctx.prefix, tier, fa)
@@ -1573,11 +1590,11 @@ def one_line(res):
 
 def timing(ctx):
     rows = []
-    for t in TIERS:
+    for t in ("dev",) + TIERS:
         d = ctx.out / t / "steps"
         if d.exists():
             rows += [json.loads(p.read_text()) for p in sorted(d.glob("*.json"))]
-    tot = {t: round(sum(r["slot_hours"] for r in rows if r["tier"] == t), 3) for t in TIERS}
+    tot = {t: round(sum(r["slot_hours"] for r in rows if r["tier"] == t), 3) for t in ("dev",) + TIERS}
     return {"rows": [{k: r[k] for k in ("tier", "step", "start", "end", "wall_s", "slot_hours")} for r in rows],
             "slot_hours": tot, "slot_hours_total": round(sum(tot.values()), 3)}
 
@@ -1683,6 +1700,16 @@ def cmd_check_vocr5(a):
                                  rt["measured"]["nopld"]["saved_pct_nominal_box"]],
                 "projected_pct": [mine["estimate"]["projected"]["saved_pct_nominal_box"],
                                   rt["projected"]["saved_pct_nominal_box"]]}
+    sd = ctx.out / "S" / "decision.json"
+    if sd.exists() and "shipped_cascade" in json.loads(sd.read_text()):
+        mine = json.loads(sd.read_text())["shipped_cascade"]
+        ref = json.loads(REF["two_dev"].read_text())["mixed_cascade"]
+        rep["dev"]["S/shipped_cascade"] = {
+            "scores": [mine["scores"], ref["scores"]],
+            "vs_frozen_gate": [mine["shipped_vs"]["frozen"]["score"], ref["shipped_vs"]["gate"]["score"]],
+            "vs_today": [mine["shipped_vs"]["today"]["score"], ref["shipped_vs"]["today"]["score"]],
+            "equal": (abs(mine["scores"]["shipped"] - ref["scores"]["shipped"]) < 5e-6 and
+                      mine["shipped_vs"]["today"]["score"] == ref["shipped_vs"]["today"]["score"])}
     rep["all_blobs_identical"] = all(v["identical"] for v in rep["blobs"].values())
     rep["all_fits_equal"] = all(v["equal"] for v in rep["fits"].values())
     rep["all_dev_equal"] = all(v["equal"] for v in rep["dev"].values())

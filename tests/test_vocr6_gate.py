@@ -287,7 +287,7 @@ def test_step_runs_once_and_records_slot_hours(tmp_path):
     assert calls == [1] and a["value"] == b["value"] == 3 and a["slots"] == 1
     assert a["slot_hours"] == round(a["wall_s"] / 3600, 4)
     t = G.timing(ctx)
-    assert t["rows"][0]["step"] == "demo" and set(t["slot_hours"]) == set(G.TIERS)
+    assert t["rows"][0]["step"] == "demo" and set(t["slot_hours"]) == {"dev", *G.TIERS}
     again = G.Ctx(tmp_path / "out")                      # the configuration is the first run's
     assert again.exclude == frozenset(G.EXCLUDE_VNS) and again.frozen_only
 

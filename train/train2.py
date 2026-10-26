@@ -1107,7 +1107,7 @@ def main(argv=None, *, execution_context=None):
             vs = " ".join(f"{k} {v[0]:.4f}/{v[1]:.3f}" for k, v in res.items())
             print(f"eval step {step}: {vs} sel {sel:.4f} (best {best:.4f} @ {best_step}) "
                   f"[{time.time() - t1:.0f}s]", flush=True)
-    print("TRAIN_DONE", flush=True)
+    print("training finished", flush=True)   # not an all-caps *_DONE word: agent panes read those as markers
     os._exit(0)   # the stream loaders are daemon threads blocked on full queues
 
 

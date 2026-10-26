@@ -16,7 +16,10 @@ def doc(name, page_err, clean_err, dev_err, titles=8, vns=12, seed=0):
     page = {"unit": [f"{x}:{k}" for x in t for k in range(5)], "title": [x for x in t for _ in range(5)],
             "platform": [("vita" if i % 2 else "psp") for i in range(titles) for _ in range(5)],
             "variant": ["base"] * (5 * titles), "chars": [100] * (5 * titles),
+            "junk": [1 if k == 4 else 0 for _ in t for k in range(5)],
             "errors": {"rubi": list(3 + page_err + rng.integers(0, 2, 5 * titles))}}
+    for i in range(4, 5 * titles, 5):          # the junk unit of each title: a lottery of insertions
+        page["errors"]["rubi"][i] = int(rng.integers(0, 80))
     clean = {"id": [f"{x}:{k}" for x in t for k in range(6)], "title": [x for x in t for _ in range(6)],
              "platform": [("vita" if i % 2 else "psp") for i in range(titles) for _ in range(6)],
              "kind": ["line", "line", "line", "line", "name", "name"] * titles, "chars": [20] * (6 * titles),
@@ -73,3 +76,14 @@ def test_platform_split_and_row_mismatch():
         assert "other rows" in str(e)
     else:
         raise AssertionError("rows of another plan were compared")
+
+
+def test_junk_units_are_out_of_the_decision_metric():
+    a, b = doc("a", 0, 0, 0, seed=7), doc("b", 0, 0, 0, seed=8)
+    e, c, cl, keys = S.component(a, "hval_page", "rubi")
+    assert len(e) == 4 * 8
+    e, c, cl, keys = S.component(a, "hval_page_all", "rubi")
+    assert len(e) == 5 * 8
+    out = S.compare([a], [b], n_boot=2000)
+    width = lambda k: out[k]["ci95"][1] - out[k]["ci95"][0]   # noqa: E731
+    assert width("hval_page") < width("hval_page_all")

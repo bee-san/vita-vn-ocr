@@ -131,6 +131,15 @@ def c_find(driver, images, finder, flags_of):
 
 # ---------------------------------------------------------------- hval plan
 
+def covers(b, lb):
+    """Finder box b = (x, y, w, h) covers reference line box lb = [x0, y0, x1, y1]: vertical overlap of at least half
+    the line's height and some horizontal overlap (reports/vocr5-analysis's rule)."""
+    x, y, w, h = b
+    ov = min(y + h, lb[3]) - max(y, lb[1])
+    hx = min(x + w, lb[2]) - max(x, lb[0])
+    return ov >= 0.5 * max(1, lb[3] - lb[1]) and hx > 0
+
+
 def _console_page(rgb, platform):
     """The frame Rubi reads: a PSP game through Adrenaline is its 480x272 frame shown 2x bilinear on the Vita."""
     import cv2
@@ -224,12 +233,20 @@ def hval_plan(args):
     found = c_find(driver, imgs, FINDER_RECOVERY, [REFINE_ALL if i[1]["platform"] == "psp" else 0 for i in info])
     for img, (title, r, reg, lines, s), (boxes, dark, rc) in zip(imgs, info, found):
         variant = reg.get("variant", "base")
+        x0, y0 = int(reg["region"][0]) * s, int(reg["region"][1]) * s
+        ref = sorted(lines, key=lambda q: (q["box"][1], q["box"][0]))
+        lboxes = [[q["box"][0] * s - x0, q["box"][1] * s - y0, (q["box"][0] + q["box"][2]) * s - x0,
+                   (q["box"][1] + q["box"][3]) * s - y0] for q in ref]
+        cov = [[li for li, lb in enumerate(lboxes) if covers(b, lb)] for b in boxes]
+        hit = {li for c in cov for li in c}
         u = {"title": title, "platform": r["platform"], "page": r["page"], "variant": variant,
              "complete_page": (title, r["page"]) in complete_pages,
              "unit": f"{title}:{r['page']}:{'+'.join(reg['lines'])}:{variant}",
              "region": [int(v) * s for v in reg["region"]],
-             "lines": [{"id": ln["id"], "text": ln["text"], "styles": [] if ln.get("kind") == "line" else ["name"]}
-                       for ln in sorted(lines, key=lambda q: (q["box"][1], q["box"][0]))],
+             "lines": [{"id": ln["id"], "text": ln["text"], "styles": [] if ln.get("kind") == "line" else ["name"],
+                        "box": lb} for ln, lb in zip(ref, lboxes)],
+             "cov": cov, "junk": sum(1 for c in cov if not c), "merged": sum(1 for c in cov if len(c) > 1),
+             "missed": sum(1 for li in range(len(ref)) if li not in hit),
              "rc": rc, "boxes": [list(b) for b in boxes], "dark": list(dark), "finder": []}
         for bi, ((x, y, w, h), dk) in enumerate(zip(boxes, dark)):
             u["finder"].append(add(img[y:y + h, x:x + w], dk, {"set": "hval_page", "unit": u["unit"], "b": bi}))
@@ -348,12 +365,15 @@ def score_hval(plan, dump, cnorm, paths=("rubi", "greedy")):
         clean["chars"].append(len(ref))
         for p in paths:
             clean["errors"][p].append(lev(norm(T[p][f["crop"]]), ref))
-    page = {"unit": [], "title": [], "platform": [], "variant": [], "chars": [], "errors": {p: [] for p in paths}}
+    page = {"unit": [], "title": [], "platform": [], "variant": [], "chars": [], "junk": [], "merged": [],
+            "missed": [], "errors": {p: [] for p in paths}}
     for u in plan["units"]:
         page["unit"].append(u["unit"])
         page["title"].append(u["title"])
         page["platform"].append(u["platform"])
         page["variant"].append(u["variant"])
+        for k in ("junk", "merged", "missed"):
+            page[k].append(int(u.get(k, 0)))
         n = None
         for p in paths:
             e, n = transcript(u["lines"], [T[p][c] for c in u["finder"]])
@@ -422,9 +442,11 @@ def summarize(sc, paths=("rubi", "greedy")):
             d["hval_clean_name"] = rate(h, p, kind == "name")
             g = sc["hval_page"]
             plat = np.asarray(g["platform"])
-            d["hval_page"] = rate(g, p)
-            d["hval_page_vita"] = rate(g, p, plat == "vita")
-            d["hval_page_psp"] = rate(g, p, plat == "psp")
+            nj = np.asarray(g["junk"]) == 0
+            d["hval_page"] = rate(g, p, nj)
+            d["hval_page_vita"] = rate(g, p, nj & (plat == "vita"))
+            d["hval_page_psp"] = rate(g, p, nj & (plat == "psp"))
+            d["hval_page_all"] = rate(g, p)
         if "tv" in sc:
             tv, dn, wd = sc["tv"], sc["dn"], sc["wd"]
             d["tv"] = rate(tv, p, ~np.asarray(tv["name"], bool))

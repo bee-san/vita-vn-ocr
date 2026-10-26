@@ -5,8 +5,10 @@ read once, after every VOCR6 choice, with VOCR5 beside them, on the protected se
 frozen references and the hooked test title PCSG00807 (Dance with Devils). The read reports; it chooses nothing.
 Every number is a host measurement. Nothing ran on a console.
 
-- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae), with two
-  amendments made before any read of the path they touch (91cd103: robustness; 51dd0a6: path (b)'s LM).
+- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae), with three
+  amendments made before any read of the path they touch: robustness (91cd103), path (b)'s LM (51dd0a6), and the check
+  of path (b) against Rubi's own code (f289ea5). The hashes are those of the original commits (tag
+  `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
 
@@ -76,6 +78,18 @@ The shipped path was checked on development data only: the hooked hval block of 
   the filter is equal for all 3,000.
 - **The line read with the released gated blobs:** 3,000 crops per tier against `eval/vocr6_baseline.py`'s reads.
   Greedy text, re-read text and confidence are equal for S, N and L.
+
+**Against Rubi's own code** (`vocr6_final_test.py rubicheck`, `eval/vocr6_final_test_rubicheck_20261026.json`).
+
+- Rubi's host tool `vjo-ocr` (host/ocr_tool.c: `vjo_vocr_ocr_policy`, the game worker's job) was built from Rubi main
+  `cbaa4e3`. It read 331 development regions of the hooked train titles: 6 hval regions a title, plus 55 regions whose
+  verified text holds a counter, the cases of the re-decode and the re-read. It used the models and LM that checkout
+  pins (VOCR5's gated blobs, ctclm.2's 1 MB LM) and its finder (fix 0).
+- Path (b)'s Python model gives the same result at every tier: every box and dark flag, every line's text and greedy
+  text, and every job's text are equal (S / N / L: 543 lines each). The equal lines include 117 / 102 lines the cascade
+  read again and 3 / 9 / 6 re-reads without the head gate.
+- `rubi-path` pins the sha256 of the Rubi functions the model stands for (`paths.b.rubi_functions`: `finish_line`,
+  `read_again`, `read_full`, the probe, the line filter and more). The final read stops if Rubi main's differ.
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.

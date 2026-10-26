@@ -359,14 +359,48 @@ def rubi_functions(rubi):
     src = (rubi / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
     out = {}
     for n in ("line_conf", "counter_redecode", "reread_ungated", "read_full", "kana_counter", "read_again",
-              "finish_line", "probe_short_lines", "probe_contrast"):
+              "finish_line", "probe_short_lines", "probe_contrast", "recognize"):
         f = c_function(src, n)
         out[n] = hashlib.sha256(f.encode()).hexdigest() if f else None
+    f = c_function((rubi / "game_ocr" / "main.c").read_text(encoding="utf-8"), "request_policy")
+    out["game_ocr/main.c:request_policy"] = hashlib.sha256(f.encode()).hexdigest() if f else None
     f = c_function((rubi / "core" / "textfilter.c").read_text(encoding="utf-8"), "line_has_japanese")
     out["textfilter.c:line_has_japanese"] = hashlib.sha256(f.encode()).hexdigest() if f else None
     m = re.search(r"static inline int vjo_is_japanese_char\(uint32_t cp\)\s*\{.*?\n\}",
                   (rubi / "core" / "utf.h").read_text(encoding="utf-8"), re.S)
     out["utf.h:vjo_is_japanese_char"] = hashlib.sha256(m.group(0).encode()).hexdigest() if m else None
+    return out
+
+
+def rubi_job_defaults(rubi):
+    """Amendment 5 (audit F2): the job defaults path (b) assumes, read from a Rubi checkout: {name: (value, ok)}.
+    The finder mode, the text-presence gate off, blank-line skipping off, the non-Japanese line filter on (lines),
+    a cascade time ceiling (ocr_cascade_ms > 0) and the game worker's cascade threshold left to the core's (0), and
+    the line-finder fix default: absent (Rubi does not ship #129's fixes yet) or on (VOCR_FIX_DEFAULT alone)."""
+    rubi = Path(rubi)
+    src = (rubi / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
+    cfg = (rubi / "core" / "config.c").read_text(encoding="utf-8")
+    cfh = (rubi / "core" / "config.h").read_text(encoding="utf-8")
+    gm = (rubi / "game_ocr" / "main.c").read_text(encoding="utf-8")
+    out = {}
+    m = re.search(r"#define VJO_VOCR_FINDER (\w+)", src)
+    out["finder"] = (m.group(1) if m else None, bool(m) and m.group(1) == "VOCR_LINES_TEXTBOX_RECOVERY")
+    gate = re.search(r"c->ocr_text_gate\s*=\s*(\w+)\s*;", cfg)
+    gate_v = gate.group(1) if gate else None
+    if gate_v == "VJO_TEXT_GATE_DEFAULT":
+        gate_v = c_define(cfh, "VJO_TEXT_GATE_DEFAULT")
+    out["ocr_text_gate"] = (gate_v, str(gate_v) == "0")
+    blank = re.search(r"c->ocr_skip_blank_lines\s*=\s*(\w+)\s*;", cfg)
+    out["ocr_skip_blank_lines"] = (blank.group(1) if blank else None, bool(blank) and blank.group(1) == "0")
+    filt = re.search(r"c->non_japanese_filter\s*=\s*(\w+)\s*;", cfg)
+    out["non_japanese_filter"] = (filt.group(1) if filt else None, bool(filt) and filt.group(1) == "VJO_FILTER_LINES")
+    casc = re.search(r"c->ocr_cascade_ms\s*=\s*(\d+)\s*;", cfg)
+    out["ocr_cascade_ms"] = (int(casc.group(1)) if casc else None, bool(casc) and int(casc.group(1)) > 0)
+    gc = c_define(gm, "VJO_GAME_CASCADE_CONF")
+    out["VJO_GAME_CASCADE_CONF"] = (gc, gc == 0)
+    lf = c_define(cfh, "VJO_LINE_FIX_DEFAULT")
+    mapped = "VJO_GAME_OCR_S_LINE_FIX ? (unsigned)VOCR_FIX_DEFAULT" in gm
+    out["line_fix_default"] = (lf, lf is None or (lf == 1 and mapped))
     return out
 
 
@@ -491,6 +525,13 @@ def cmd_rubi_path(a):
                         "textnorm_h_sha256": sha256(rubi / "core" / "textnorm.h")},
            "vocr_pin": {"commit": commit, "files": pins}, "vocr5_in_rubi": models,
            "vocr5_in_rubi_matches_protocol": models == want}
+    # amendment 5 (audit F2): the job defaults path (b) assumes
+    jd = rubi_job_defaults(rubi)
+    doc["job_defaults"] = {k: {"value": v, "ok": ok} for k, (v, ok) in jd.items()}
+    doc["finder"]["rubi_ships_fix"] = jd["line_fix_default"][0] == 1 and "vocr_lines_fix.c" in pins
+    bad = sorted(k for k, (v, ok) in jd.items() if not ok)
+    if bad:
+        raise SystemExit(f"Rubi's job defaults {bad} differ from what path (b) assumes: review and amend")
     # amendment 3: the Rubi functions path (b) models must be the ones rubicheck compared against (else the model of
     # Rubi's line read may be stale: stop before anything is read); VOCR5's pins are recorded (path (b) reads the
     # protocol's gated VOCR5 blobs whatever Rubi pins by then)
@@ -834,11 +875,15 @@ def stage_texts(dumps, family, tier, casc_conf, cnorm):
     up = dumps[(family, nt)]["crops"] if nt else None
     g = [c["g"] for c in own]
     rt = [c["b"] if c["g"] else "" for c in own]
-    rc = [compose(c, up[i] if up else None, casc_conf) for i, c in enumerate(own)]
+    # a cascade read that failed leaves the job tier's reading (finish_line: the primary's reading stays; Rubi then
+    # turns the cascade off for the rest of that job, which is not modelled: it never happened in any read so far)
+    rc = [compose(c, up[i] if up and not up[i].get("error") else None, casc_conf) for i, c in enumerate(own)]
     sh = [t if has_japanese(t) else "" for t in cnorm(rc)]
-    failed = {i for i, c in enumerate(own) if c.get("error") or
-              (up is not None and c["g"] and c["conf"] < casc_conf and up[i].get("error"))}
-    return {"greedy": g, "rubi_tier": rt, "rubi_cascade": rc, "shipped": sh, "failed": failed}
+    failed = {i for i, c in enumerate(own) if c.get("error")}
+    casc_failed = sum(1 for i, c in enumerate(own) if up is not None and c["g"] and c["conf"] < casc_conf and
+                      up[i].get("error"))
+    return {"greedy": g, "rubi_tier": rt, "rubi_cascade": rc, "shipped": sh, "failed": failed,
+            "cascade_failed": casc_failed}
 
 
 def unit_score(u, texts, failed=()):
@@ -875,6 +920,9 @@ def cmd_score_b(a):
         ref = norm(fx["text"])
         r = {k: fx.get(k) for k in ("id", "vn", "title", "page", "platform", "image", "name", "styles")}
         r["chars"] = len(ref)
+        # the line filter's floor (audit F4): a reference line with no Japanese character is deleted by Rubi's
+        # non-Japanese line filter however well it is read
+        r["nojp_chars"] = len(ref) if ref and not has_japanese(fx["text"]) else 0
         r["errors"] = {f"{f}:{t}:{s}": lev("" if fx["crop"] in texts[(f, t)]["failed"] else
                                            norm(texts[(f, t)][s][fx["crop"]]), ref)
                        for f in fams for t in TIERS for s in STAGES}
@@ -883,6 +931,9 @@ def cmd_score_b(a):
         r = {k: u.get(k) for k in ("uid", "kind", "vn", "title", "page", "platform", "image", "variant", "cluster")}
         r["lines"] = len(u["lines"])
         r["boxes"] = len(u["crops"])
+        nojp = [len(norm(ln["text"])) for ln in u["lines"] if "name" not in (ln.get("styles") or []) and
+                norm(ln["text"]) and not has_japanese(ln["text"])]
+        r["nojp_lines"], r["nojp_chars"] = len(nojp), sum(nojp)
         r["errors"], r["errors_all"] = {}, {}
         for f in fams:
             for t in TIERS:
@@ -902,6 +953,7 @@ def cmd_score_b(a):
                      for (f, t), d in dumps.items()},
            "rereads": {f"{f}:{t}": sum(c["reread"] for c in d["crops"]) for (f, t), d in dumps.items()},
            "read_errors": {f"{f}:{t}": sum(1 for c in d["crops"] if c.get("error")) for (f, t), d in dumps.items()},
+           "cascade_read_errors": {f"{f}:{t}": texts[(f, t)]["cascade_failed"] for f in fams for t in TIERS},
            "finder_errors": sum(1 for u in plan["units"] if (u.get("finder") or {}).get("rc")),
            "cascaded": {f"{f}:{t}": sum(1 for c in dumps[(f, t)]["crops"] if c["g"] and c["conf"] < rp["cascade_conf"])
                         for f in fams for t in TIERS if NEXT[t]},
@@ -1087,8 +1139,10 @@ def a_fixed_rows(priv, families):
 
 def a_dialogue_rows(priv, families):
     """Whole dialogue of path (a): vocr3_report's per region-variant units (body = dialogue; all with names)."""
+    import sets
     rep = json.loads((Path(priv) / "a" / "shared" / "report.json").read_text(encoding="utf-8"))["shared"]
     units = rep["dialogue"]["units"]
+    titles = {r["vn"]: r.get("title") for s in ("vita-test", "psp-test") for r in sets.read_manifest(s)}
     rows = {}
     for f in families:
         for t in TIERS:
@@ -1096,7 +1150,7 @@ def a_dialogue_rows(priv, families):
                 img = u["unit"].split("|", 1)[1].split("@")[0]
                 r = rows.setdefault((u["unit"], u["variant"]), {
                     "id": f"{u['unit']}|{u['variant']}", "set": u["set"], "vn": u["vn"], "platform": u["platform"],
-                    "variant": u["variant"], "image": img, "chars": u["body_full_chars"],
+                    "title": titles.get(u["vn"]), "variant": u["variant"], "image": img, "chars": u["body_full_chars"],
                     "chars_all": u["all_full_chars"], "errors": {}, "errors_all": {}})
                 r["errors"][f"{f}:{t}:greedy"] = u["body_full_errors"]
                 r["errors_all"][f"{f}:{t}:greedy"] = u["all_full_errors"]
@@ -1255,7 +1309,22 @@ def region_tables(rows, families, stages, cluster):
                 out[f"{g}|{v}|dialogue"] = table(rs, keys, cluster=cluster, ident=lambda r: r["id"])
                 out[f"{g}|{v}|all"] = table(rs, keys, chars_key="chars_all", err_key="errors_all", cluster=cluster,
                                             ident=lambda r: r["id"])
+                nm = [dict(r, chars_names=r["chars_all"] - r["chars"],
+                           errors_names={k: r["errors_all"][k] - r["errors"][k] for k in keys}) for r in rs]
+                if sum(r["chars_names"] for r in nm):
+                    out[f"{g}|{v}|names"] = table(nm, keys, chars_key="chars_names", err_key="errors_names",
+                                                  cluster=cluster, ident=lambda r: r["id"])
     return out
+
+
+def filter_floor(rows, chars_key="chars"):
+    """Audit F4: the reference characters on lines with no Japanese character, which Rubi's non-Japanese line filter
+    deletes however well they are read; an upper bound on a region or page measure (such a line read in one crop
+    with another line is kept), exact on fixed lines. Computed from the references alone."""
+    chars = sum(r.get("nojp_chars", 0) for r in rows)
+    lines = sum(r.get("nojp_lines", 1 if r.get("nojp_chars") else 0) for r in rows)
+    total = sum(r[chars_key] for r in rows)
+    return {"lines": lines, "chars": chars, "points": round(100 * chars / total, 4) if total else None}
 
 
 def per_title(rows, families, stages, image_key="image"):
@@ -1376,9 +1445,27 @@ def build_report(priv, out, suffix):
                     t["lines"] = sum(r["lines"] for r in rs)
                     t["boxes"] = sum(r["boxes"] for r in rs)
                 rep["path_b"]["pcsg00807_page"][f"{kind}|{v}"] = t
-        rep["path_b"]["reads"] = {s: {k: b[s][k] for k in ("dumps", "rereads", "cascaded", "read_errors",
-                                                           "finder_errors",
-                                                      "finder", "inputs")} for s in SETS_B}
+        rep["path_b"]["reads"] = {s: {k: b[s].get(k) for k in ("dumps", "rereads", "cascaded", "read_errors",
+                                                               "cascade_read_errors", "finder_errors", "finder",
+                                                               "inputs")} for s in SETS_B}
+        dlg = lambda r: not r.get("name")  # noqa: E731
+        rep["path_b"]["filter_floor"] = {
+            "clannad_lines": filter_floor(sub(cfx, dlg)),
+            "clannad_pages": filter_floor(cpu),
+            "vita_psp_fixed_lines": filter_floor(sub(fx, dlg)),
+            "vita-test_fixed_lines": filter_floor(sub(fx, lambda r: dlg(r) and r["set"] == "vita-test")),
+            "psp-test_fixed_lines": filter_floor(sub(fx, lambda r: dlg(r) and r["set"] == "psp-test")),
+            "vita_psp_whole_dialogue_base": filter_floor(sub(ru, lambda r: r["variant"] == "base")),
+            "pcsg00807_clean": filter_floor(pfx),
+            "pcsg00807_page_base": filter_floor(sub(pu, lambda r: r["kind"] == "page" and r["variant"] == "base")),
+            "note": "reference characters on dialogue lines with no hiragana, katakana or CJK character: Rubi's "
+                    "non-Japanese line filter deletes them however they are read (exact on line measures, an upper "
+                    "bound on region and page measures); the same for both families"}
+    vp = Path(out) / "validation.json"
+    if vp.exists():
+        v = json.loads(vp.read_text(encoding="utf-8"))
+        rep["validation"] = {"all_equal": v["all_equal"], "checks": len(v["checks"]),
+                             "equal": sum(c["equal"] for c in v["checks"]), "at": v.get("at")}
     rep["headline"] = headline(rep)
     rep["seen_per_title"] = {s: {vn: seen_of(proto, vn, s) for vn in {r["vn"] for r in fixed if r["set"] == s}
                                  if seen_of(proto, vn, s)} for s in ("vita-test", "psp-test")}
@@ -1460,13 +1547,21 @@ def seen_note(kind, lm=None):
     return " (seen flags: " + ", ".join(keys) + ")"
 
 
-def md_measure(title, tbl, stage, note=""):
+def floor_line(fl, bound=False):
+    if not fl or fl.get("points") is None:
+        return []
+    return [f"Line-filter floor: {fl['lines']:,} reference line(s), {fl['chars']:,} characters "
+            f"({fl['points']:.2f} points{', an upper bound' if bound else ''}) hold no Japanese character; Rubi's "
+            "non-Japanese line filter deletes them however they are read (both families alike).", ""]
+
+
+def md_measure(title, tbl, stage, note="", floor=None, bound=False):
     md = [f"**{title}**{note}", "", "| tier | VOCR5 | VOCR6 | VOCR6 - VOCR5 (points) |", "|---|---|---|---|"]
     for t in TIERS:
         md.append(f"| {t} | {cell(tbl['rates'].get(f'VOCR5:{t}:{stage}'))} | "
                   f"{cell(tbl['rates'].get(f'VOCR6:{t}:{stage}'))} | {pcell(tbl['pairs'].get(f'{t}:{stage}'))} |")
     md.append("")
-    return md
+    return md + floor_line(floor, bound)
 
 
 def markdown(rep, proto):
@@ -1476,15 +1571,32 @@ def markdown(rep, proto):
           "95% intervals: game (VN) bootstrap for vita-test / psp-test, page bootstrap for CLANNAD and the test title; "
           "VOCR6 - VOCR5 paired over the same units. Host measurements; nothing ran on a console.", ""]
     m = rep["models"]["tiers"]
-    md += ["| tier | VOCR6 blob | sha256 | bytes | head gate | two-level |", "|---|---|---|---:|---|---|"]
+    res = (rep.get("path_a") or {}).get("tool_outputs", {}).get("resources", {})
+    md += ["| tier | VOCR6 blob | sha256 | bytes | W8I arena (VOCR6 / VOCR5) | head gate | two-level |",
+           "|---|---|---|---:|---|---|---|"]
     for t in TIERS:
         e = m[t]
-        md.append(f"| {t} | `{e['file']}` | `{e['sha256'][:16]}…` | {e['bytes']:,} | {e['head_gate']} | "
+        ar6, ar5 = (res.get(f"VOCR6_{t}") or {}).get("arena_w8i"), (res.get(f"VOCR5_{t}") or {}).get("arena_w8i")
+        arena = f"{ar6:,} / {ar5:,} B" if ar6 and ar5 else "-"
+        md.append(f"| {t} | `{e['file']}` | `{e['sha256'][:16]}…` | {e['bytes']:,} | {arena} | {e['head_gate']} | "
                   f"{e['two_level']} |")
     md.append("")
+    v = rep.get("validation")
+    if v:
+        md += [f"VOCR5 on path (a) against its published records, in this read: {v['equal']} of {v['checks']} checks "
+               f"equal ({'all equal' if v['all_equal'] else 'NOT all equal: see validation.json'}).", ""]
     if rep.get("rubi_path"):
         rp = rep["rubi_path"]
-        md += [f"Path (b) is Rubi main `{rp['rubi_head'][:7]}`: LM `{Path(rp['lm']['file']).name}` "
+        rm = rp["lm"].get("rubi_main") or {}
+        ships_lm, ships_fix = bool(rm.get("equal_to_pinned")), bool(rp["finder"].get("rubi_ships_fix"))
+        what = ("Rubi main `{h}`'s shipped line path" if ships_lm and ships_fix else
+                "Rubi main `{h}`'s line read with the protocol's pinned "
+                + " and ".join(x for x, ok in (("LM", ships_lm), ("finder fix", ships_fix)) if not ok)
+                + " (Rubi main " + "; ".join(x for x in (
+                    None if ships_lm else f"pins the LM {rm.get('candidate') or rm.get('sha256', '')[:12]}",
+                    None if ships_fix else "does not ship #129's COLGAP fix yet") if x) + ")").format(
+                        h=rp["rubi_head"][:7])
+        md += [f"Path (b) is {what}: LM `{Path(rp['lm']['file']).name}` "
                f"({rp['lm']['candidate']}; alpha {rp['lm']['settings']['alpha']}, beta {rp['lm']['settings']['beta']}, "
                f"flags {rp['lm']['settings']['flags']}), cascade under {rp['cascade_conf']}, finder TEXTBOX_RECOVERY + "
                f"short-line probe + fix {rp['finder']['fix']} (COLGAP; source {rp['finder']['source']['tree']} "
@@ -1495,18 +1607,25 @@ def markdown(rep, proto):
     b = rep.get("path_b") or {}
     if b:
         md += ["### Path (b): Rubi's shipped path", ""]
-        md += md_measure("CLANNAD, 2,052 dialogue lines (the frozen line crops)", b["clannad_lines"]["dialogue"],
-                         "shipped", seen_note("clannad", "lm_lm6"))
-        md += md_measure("CLANNAD pages (Rubi's finder on the ROI; pages with a complete reference)",
-                         b["clannad_pages"]["dialogue"], "shipped", seen_note("clannad", "lm_lm6"))
-        md += md_measure("vita-test + psp-test fixed lines, dialogue", b["vita_psp_fixed_lines"]["pooled|dialogue"],
-                         "shipped", seen_note("vita_psp", "lm_lm6"))
-        md += md_measure("vita-test + psp-test whole dialogue (base)",
-                         b["vita_psp_whole_dialogue"]["pooled|base|dialogue"], "shipped",
-                         seen_note("vita_psp", "lm_lm6"))
-        md += md_measure("PCSG00807 clean lines", b["pcsg00807_clean"], "shipped", seen_note("pcsg00807", "lm_lm6"))
-        md += md_measure("PCSG00807 page path (base regions)", b["pcsg00807_page"]["page|base"], "shipped",
-                         seen_note("pcsg00807", "lm_lm6"))
+        ff = b.get("filter_floor") or {}
+        t = b["clannad_lines"]["dialogue"]
+        md += md_measure(f"CLANNAD, {t['units']:,} dialogue lines (the frozen line crops)", t, "shipped",
+                         seen_note("clannad", "lm_lm6"), ff.get("clannad_lines"))
+        t = b["clannad_pages"]["dialogue"]
+        md += md_measure(f"CLANNAD, {t['units']:,} pages (Rubi's finder on the ROI; pages with a complete reference)",
+                         t, "shipped", seen_note("clannad", "lm_lm6"), ff.get("clannad_pages"), True)
+        t = b["vita_psp_fixed_lines"]["pooled|dialogue"]
+        md += md_measure(f"vita-test + psp-test fixed lines, {t['units']:,} dialogue lines", t, "shipped",
+                         seen_note("vita_psp", "lm_lm6"), ff.get("vita_psp_fixed_lines"))
+        t = b["vita_psp_whole_dialogue"]["pooled|base|dialogue"]
+        md += md_measure(f"vita-test + psp-test whole dialogue, {t['units']:,} base regions", t, "shipped",
+                         seen_note("vita_psp", "lm_lm6"), ff.get("vita_psp_whole_dialogue_base"), True)
+        t = b["pcsg00807_clean"]
+        md += md_measure(f"PCSG00807 clean lines ({t['units']:,})", t, "shipped", seen_note("pcsg00807", "lm_lm6"),
+                         ff.get("pcsg00807_clean"))
+        t = b["pcsg00807_page"]["page|base"]
+        md += md_measure(f"PCSG00807 page path, {t['units']:,} base regions", t, "shipped",
+                         seen_note("pcsg00807", "lm_lm6"), ff.get("pcsg00807_page_base"), True)
     a = rep["path_a"]
     md += ["### Path (a): VOCR5's locked path", ""]
     md += md_measure("CLANNAD dialogue lines (greedy)", a["clannad_lines"]["dialogue"], "greedy", seen_note("clannad"))
@@ -1520,7 +1639,8 @@ def markdown(rep, proto):
                      seen_note("pcsg00807", "lm_ctclm2"))
     md += md_measure("PCSG00807 page GRAD + refine (base, rubi_cascade)", a["pcsg00807"]["page_refine_console_base"],
                      "rubi_cascade", seen_note("pcsg00807", "lm_ctclm2"))
-    md += ["## Vita and PSP apart", ""]
+    md += ["## Vita and PSP apart", "", "Seen flags: all_models, vocr6_training, vita-test; the decoded rows also "
+           "lm_lm6 (path b) or lm_ctclm2 (path a's + LM).", ""]
     hdr = "| measure | tier | " + " | ".join(f"{s} VOCR5 | {s} VOCR6 | {s} Δ" for s in ("vita-test", "psp-test")) + \
           " |"
     md += [hdr, "|---|---|" + "---|" * 6]
@@ -1540,11 +1660,16 @@ def markdown(rep, proto):
                           pcell(tb["pairs"].get(f"{t}:{stage}"))]
             md.append(f"| {tag} | {t} | " + " | ".join(cells) + " |")
     md.append("")
-    md += ["## Names (secondary)", "", "| measure | tier | VOCR5 | VOCR6 | Δ |", "|---|---|---|---|---|"]
+    md += ["## Names (secondary)", "", "Seen flags as in the headline tables of each set.", "",
+           "| measure | tier | VOCR5 | VOCR6 | Δ |", "|---|---|---|---|---|"]
     for path, tb, stage, tag in (("b", (b.get("vita_psp_fixed_lines") or {}).get("pooled|names"), "shipped",
                                   "(b) vita+psp fixed lines"),
+                                 ("b", (b.get("vita_psp_whole_dialogue") or {}).get("pooled|base|names"), "shipped",
+                                  "(b) vita+psp whole dialogue base"),
                                  ("b", (b.get("clannad_lines") or {}).get("names"), "shipped", "(b) CLANNAD lines"),
                                  ("a", a["vita_psp_fixed_lines"].get("pooled|names"), "greedy", "(a) vita+psp fixed"),
+                                 ("a", a["vita_psp_whole_dialogue"].get("pooled|base|names"), "greedy",
+                                  "(a) vita+psp whole dialogue base"),
                                  ("a", a["clannad_lines"]["names"], "greedy", "(a) CLANNAD lines")):
         if not tb:
             continue
@@ -1554,6 +1679,8 @@ def markdown(rep, proto):
     md.append("")
     if b:
         md += ["## Path (b) decomposition (dialogue CER)", "",
+               "Seen flags as in the headline tables; the decoded stages also lm_lm6. The shipped stage includes the "
+               "line filter's floor (headline tables).", "",
                "| measure | family | tier | greedy | + counter / LM (tier alone) | + cascade | "
                "shipped (textnorm, filter) |",
                "|---|---|---|---|---|---|---|"]
@@ -1575,7 +1702,8 @@ def markdown(rep, proto):
                    f"{b['pcsg00807_page']['page|base']['boxes']:,} boxes, {ls['merged']:,} merged, {ls['junk']:,} "
                    "junk."]
         md.append("")
-    md += ["## Per title (vita-test, psp-test; dialogue)", ""]
+    md += ["## Per title (vita-test, psp-test; dialogue)", "", "Intervals per title are in report.json. 'seen': the "
+           "title's own flag (seen_flags.vita-test); every title also carries all_models and vocr6_training.", ""]
     for path, key, stage in (("b", "vita_psp_fixed_lines_per_title", "shipped"),
                              ("b", "vita_psp_whole_dialogue_per_title", "shipped"),
                              ("a", "vita_psp_fixed_lines_per_title", "greedy"),
@@ -1972,6 +2100,10 @@ def cmd_rubicheck(a):
     fsrc = finder_sources(work / "finder_src")
     exe, _ = build_finder(work / "finder_src", work / "bin")
     fix = int(a.fix)
+    # a Rubi with #129's fixes (API 44, Rubi #330): vjo-ocr --line-fix on is VOCR_FIX_DEFAULT (audit F2)
+    if fix and fix != fsrc["fix_default"]:
+        raise SystemExit(f"--fix {fix}: rubicheck compares Rubi's default fix ({fsrc['fix_default']}) or none")
+    line_fix_arg = ["--line-fix", "on"] if fix else []
     rts = {}
     for t in TIERS:
         gate, two = blob_heads(md / names[t])
@@ -2031,8 +2163,8 @@ def cmd_rubicheck(a):
                 lp.unlink()
             argv = [str(a.vjo_ocr), "--backend", "vocr", "--model", names[t], "--lm", lm_name, "--counters", "on",
                     "--head-gate", "on", "--two-level", "on", "--refine", "on" if r["platform"] == "psp" else "off",
-                    "--lines", str(lp)] + (["--cascade", names[nt]] if nt else []) + [str(md), str(W), str(H),
-                                                                                     str(rp)]
+                    "--lines", str(lp)] + (["--cascade", names[nt]] if nt else []) + line_fix_arg + \
+                [str(md), str(W), str(H), str(rp)]
             out = subprocess.run(argv, capture_output=True, timeout=600)
             theirs = read_jsonl(lp) if lp.exists() else []
             text = out.stdout.decode("utf-8")[:-1] if out.returncode == 0 else None

@@ -11,7 +11,14 @@
 #   RUBI        a bee-san/Rubi_for_vita checkout of main for path (b) (default: a fresh clone of main in the private
 #               directory, taken at the start of the final read, before anything is read)
 #   RESUME=1    continue an attempt a harness failure stopped: the attempt record stays, a resume record is
-#               appended (time, repo head), and every step whose output exists is not run again
+#               appended (time, repo head), and every step whose output exists is not run again. What a stopped step
+#               needs before a resume (audit N1): a_shared: remove $PRIV/a/shared (vocr3_report writes its private
+#               parts exclusively before shared.json); a_clannad_arms: remove $PRIV/clannad/arms.<suffix>.* and
+#               native.<suffix>; a_clannad_score: no resume (clannad_refs' score.<suffix>.attempt.json is its own
+#               once-guard: a failure there needs an amendment); every other step: nothing (its output file is written
+#               last, or the step rebuilds what it needs)
+# One final read only (audit F1): a final attempt refuses to start while another final attempt record exists under
+# $HERD/shared/private/vocr6-final-test/*/ (whatever its OUT name); the same for a second validation.
 # Run it through heavy.sh (one slot, 5 threads). Each step writes its own log under the private directory; nothing of
 # a step's output reaches the terminal but this script's one-line notes (no protected text, no completion token).
 set -euo pipefail
@@ -42,7 +49,16 @@ step() {   # step NAME OUTPUT CMD...: run CMD (its output to the step's private 
   if [ -e "$output" ]; then echo "$(date -u +%FT%TZ) step $name: $output exists, not run again" >> "$LOG"; return 0; fi
   if ! "$@" > "$PRIV/logs/$name.log" 2>&1; then note "step $name FAILED (log: $PRIV/logs/$name.log)"; exit 3; fi
 }
-# the attempt record: one validation and one final read, each refused a second time (RESUME=1 continues one)
+# the attempt record: one validation and one final read, each refused a second time (RESUME=1 continues one),
+# whatever the OUT name (audit F1)
+for other in "$HERD"/shared/private/vocr6-final-test/*/attempt.json; do
+  [ -e "$other" ] || continue
+  [ "$(dirname "$other")" = "$PRIV" ] && continue
+  if "$PY" -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('mode') == sys.argv[2] else 1)" \
+      "$other" "$MODE"; then
+    echo "another $MODE attempt exists: $other (one $MODE read only; RESUME=1 with its OUT continues it)"; exit 2
+  fi
+done
 if [ -e "$PRIV/attempt.json" ]; then
   [ "${RESUME:-0}" = 1 ] || { echo "$PRIV/attempt.json exists: this read has run (RESUME=1 continues it)"; exit 2; }
   echo "{\"resumed\": \"$(date -u +%FT%TZ)\", \"repo_head\": \"$(git rev-parse HEAD)\"}" >> "$PRIV/resumes.jsonl"

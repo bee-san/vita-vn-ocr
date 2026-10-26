@@ -5,9 +5,14 @@ read once, after every VOCR6 choice, with VOCR5 beside them, on the protected se
 frozen references and the hooked test title PCSG00807 (Dance with Devils). The read reports; it chooses nothing.
 Every number is a host measurement. Nothing ran on a console.
 
-- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae), with four
-  amendments made before any read of the path they touch: robustness (91cd103), path (b)'s LM (51dd0a6), the check
-  of path (b) against Rubi's own code (f289ea5), and the CLANNAD glyph-raster disclosure (amendment 4). The hashes are those of the original commits (tag
+- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae). Five
+  amendments followed, each before any read of the path it touches:
+  - 91cd103: robustness;
+  - 51dd0a6: path (b)'s LM;
+  - f289ea5: the check of path (b) against Rubi's own code;
+  - 841f293: the CLANNAD glyph-raster disclosure;
+  - amendment 5: audit-vocr6-final-test's fixes (one final read under any OUT name, Rubi's job defaults checked,
+    the line filter's floor beside path (b)'s headline). The hashes are those of the original commits (tag
   `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
@@ -64,7 +69,8 @@ What else matched:
 - The intervals.
 
 The finder driver of the PCSG00807 path is identical to the baseline's. Its scalar library is not, because #130 changed
-`runtime/vocr.c` after the baseline ran; the scores are equal anyway, and the file records both hashes.
+`runtime/vocr.c` after the baseline ran. That library is only hashed, not used by any read, and the scores are equal;
+the file records both hashes.
 
 ## Path (b) checked on development data
 
@@ -77,7 +83,8 @@ The shipped path was checked on development data only: the hooked hval block of 
   Greedy text, beam text and confidence are equal for N and L, and the shipped text after N's cascade to L, textnorm and
   the filter is equal for all 3,000.
 - **The line read with the released gated blobs:** 3,000 crops per tier against `eval/vocr6_baseline.py`'s reads.
-  Greedy text, re-read text and confidence are equal for S, N and L.
+  Greedy text, the shown text and confidence are equal for S, N and L. None of those sampled crops was read again
+  without the gate; rubicheck below covers the re-read.
 
 **Against Rubi's own code** (`vocr6_final_test.py rubicheck`, `eval/vocr6_final_test_rubicheck_20261026.json`).
 
@@ -89,7 +96,27 @@ The shipped path was checked on development data only: the hooked hval block of 
   text, and every job's text are equal (S / N / L: 543 lines each). The equal lines include 117 / 102 lines the cascade
   read again and 3 / 9 / 6 re-reads without the head gate.
 - `rubi-path` pins the sha256 of the Rubi functions the model stands for (`paths.b.rubi_functions`: `finish_line`,
-  `read_again`, `read_full`, the probe, the line filter and more). The final read stops if Rubi main's differ.
+  `read_again`, `read_full`, `recognize`, `request_policy`, the probe, the line filter and more). It also checks Rubi's
+  job defaults (`paths.b.job_defaults`): the finder mode, text gate off, blank lines kept, the line filter on, the
+  cascade, and the line-fix default. The final read stops if Rubi main differs; a change needs review, rubicheck again
+  and an amendment.
+- Rubi #306 merged during the wait (Rubi main `796168e`). Rubi main now ships the pinned LM itself, and its line-read
+  functions are unchanged. Rubi #330 (the COLGAP fix in Rubi, API 44) is open. It changes `recognize` and
+  `request_policy`, so a merge before the read stops it: rubicheck runs again with `--fix 1`, then an amendment.
+
+**Not modelled.**
+
+- Rubi's memory fallbacks: a game without the memory for the LM or the cascade runs without them.
+- Trusted hooks that answer without OCR (Rubi API 43).
+- The cascade's time ceiling.
+
+On CLANNAD's pages, a reading on an empty box is never charged: the 133 pages without a reference line and the 207 with
+an incomplete reference are left out.
+
+**The line filter's floor.** Some reference lines hold no hiragana, katakana or CJK character. Rubi's non-Japanese line
+filter deletes them however well they are read. The report prints this floor beside every path (b) measure, computed
+from the references alone. It is the same for VOCR5 and VOCR6. On CLANNAD it is 26 of 33,485 dialogue characters; on
+PCSG00807's clean lines 26 of 13,911 (audit-vocr6-final-test's count).
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.
@@ -120,5 +147,6 @@ PATHS=a eval/reproducibility/vocr6-final/report.sh - $A/vocr6-final-test/validat
 eval/reproducibility/vocr6-final/report.sh MODELS_DIR $A/vocr6-final-test/final-<date>           # once
 ```
 
-Run each through `$HERD/heavy.sh` in one slot. Readings, plans and per-unit rows stay in
+Run each through `$HERD/heavy.sh` in one slot. A final read refuses to start while another final attempt record exists.
+`RESUME=1` continues a stopped read; report.sh's header says what each step needs first. Readings, plans and per-unit rows stay in
 `$HERD/shared/private/vocr6-final-test/`. The repository holds counts, rates, intervals and hashes only.

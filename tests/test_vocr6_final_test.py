@@ -216,6 +216,41 @@ static __attribute__((noinline)) int probe(Stream *s, VocrLineSet *set)
     assert all(SHA.match(v) for v in ref.values())
 
 
+def test_rubi_job_defaults(tmp_path):
+    r = tmp_path / "rubi"
+    for d in ("core", "game_ocr"):
+        (r / d).mkdir(parents=True)
+    (r / "core" / "vocr_ocr.c").write_text("#ifndef VJO_VOCR_FINDER\n"
+                                           "#define VJO_VOCR_FINDER VOCR_LINES_TEXTBOX_RECOVERY\n")
+    cfg = ("    c->non_japanese_filter = VJO_FILTER_LINES;\n    c->ocr_skip_blank_lines = 0;\n"
+           "    c->ocr_cascade_ms = 2000;\n    c->ocr_text_gate = VJO_TEXT_GATE_DEFAULT;\n")
+    (r / "core" / "config.c").write_text(cfg)
+    (r / "core" / "config.h").write_text("#define VJO_TEXT_GATE_DEFAULT 0\n")
+    (r / "game_ocr" / "main.c").write_text("#define VJO_GAME_CASCADE_CONF 0u\n")
+    got = F.rubi_job_defaults(r)
+    assert all(ok for _, ok in got.values()) and got["line_fix_default"][0] is None
+    # #330's form: the fix on by default, mapped to VOCR_FIX_DEFAULT
+    (r / "core" / "config.h").write_text("#define VJO_TEXT_GATE_DEFAULT 0\n#define VJO_LINE_FIX_DEFAULT 1\n")
+    (r / "game_ocr" / "main.c").write_text("#define VJO_GAME_CASCADE_CONF 0u\np->line_fix = (r->speed & "
+                                           "VJO_GAME_OCR_S_LINE_FIX ? (unsigned)VOCR_FIX_DEFAULT : 0u);\n")
+    assert F.rubi_job_defaults(r)["line_fix_default"] == (1, True)
+    # a default that path (b) does not model is refused
+    (r / "core" / "config.h").write_text("#define VJO_TEXT_GATE_DEFAULT 1\n#define VJO_LINE_FIX_DEFAULT 2\n")
+    got = F.rubi_job_defaults(r)
+    assert not got["ocr_text_gate"][1] and not got["line_fix_default"][1]
+    (r / "core" / "config.c").write_text(cfg.replace("2000", "0").replace("VJO_FILTER_LINES", "VJO_FILTER_NONE"))
+    got = F.rubi_job_defaults(r)
+    assert not got["ocr_cascade_ms"][1] and not got["non_japanese_filter"][1]
+
+
+def test_filter_floor():
+    rows = [{"chars": 10, "nojp_chars": 0}, {"chars": 6, "nojp_chars": 6}, {"chars": 4}]
+    assert F.filter_floor(rows) == {"lines": 1, "chars": 6, "points": 30.0}
+    units = [{"chars": 20, "nojp_lines": 2, "nojp_chars": 5}, {"chars": 30, "nojp_lines": 0, "nojp_chars": 0}]
+    assert F.filter_floor(units) == {"lines": 2, "chars": 5, "points": 10.0}
+    assert F.filter_floor([])["points"] is None
+
+
 def test_vocr_pins_and_defines():
     cmake = ("set(VJO_VOCR_COMMIT " + "a" * 40 + ")\nset(_vocr_pins\n  vocr.c " + "b" * 64 + "\n  vocr_lines_fix.c "
              + "c" * 64 + ")\n")
@@ -293,9 +328,10 @@ def test_stage_texts_and_failed_units():
     assert st["rubi_tier"] == ["AB", "CD", "", ""]
     assert st["rubi_cascade"] == ["AB", "CE", "", ""]            # the doubtful line shows Large's reading
     assert st["failed"] == {3}
-    # a cascade read that failed fails the line it replaces
+    # a cascade read that failed leaves the job tier's own reading (Rubi's finish_line), counted
     dumps[("VOCR6", "L")]["crops"][1]["error"] = "VocrError"
-    assert F.stage_texts(dumps, "VOCR6", "N", 700, lambda t: list(t))["failed"] == {1, 3}
+    st2 = F.stage_texts(dumps, "VOCR6", "N", 700, lambda t: list(t))
+    assert st2["failed"] == {3} and st2["rubi_cascade"][1] == "CD" and st2["cascade_failed"] == 1
     # Large: no cascade
     assert F.stage_texts(dumps, "VOCR6", "L", 700, lambda t: list(t))["rubi_cascade"] == ["AX", "CE", "X", ""]
     u = {"lines": [{"text": "あい", "styles": []}, {"text": "う", "styles": ["name"]}], "crops": [0, 1]}

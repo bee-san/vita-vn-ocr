@@ -174,7 +174,7 @@
    },
    "rubi_functions": {
     "rubi": "bee-san/Rubi_for_vita main cbaa4e3 (2026-10-26; #328's re-read fixes included)",
-    "what": "sha256 of the C functions path (b)'s Python model of Rubi's line read stands for (core/vocr_ocr.c line_conf, counter_redecode, reread_ungated, read_full, kana_counter, read_again, finish_line, probe_short_lines, probe_contrast; core/textfilter.c line_has_japanese; core/utf.h vjo_is_japanese_char), from the checkout vocr6_final_test.py rubicheck compared the model with; rubi-path stops the final read if Rubi main's differ",
+    "what": "sha256 of the C functions path (b)'s Python model of Rubi's line read stands for (core/vocr_ocr.c line_conf, counter_redecode, reread_ungated, read_full, kana_counter, read_again, finish_line, probe_short_lines, probe_contrast, recognize (the order finder, text gate, short-line probe, refinement; amendment 5); game_ocr/main.c request_policy (the job's policy from the request; amendment 5); core/textfilter.c line_has_japanese; core/utf.h vjo_is_japanese_char), from the checkout vocr6_final_test.py rubicheck compared the model with; rubi-path stops the final read if Rubi main's differ",
     "sha256": {
      "line_conf": "9ac6be1f5649489735861e58628a6f464b5423ca3e5d210f975523291914f211",
      "counter_redecode": "8041f9623a8ee26c5b9cac7f6ccaa723a384d4d850c7c5da77f8fceea66b6ca9",
@@ -185,10 +185,13 @@
      "finish_line": "f2122df4a9f4c411d9f892e878d7814f17275ccf0be39a065837e02821339b8d",
      "probe_short_lines": "69166bfaa40d5ee07a2a23bdd326b0cd5f96f9ca6217872052d4d1f83f87c8e4",
      "probe_contrast": "ab8ccd3d8e2184fe6371cd637e24bf30542f9dd7b8f7ab8404b9fee1a30cc124",
+     "recognize": "299861ca8861601eb14d9e96cd342a2ad2b0abbf7165e63cc966b413b14716d3",
+     "game_ocr/main.c:request_policy": "e40e387499f54e73bcca82a9bb41193346f684ca74bf8048f9a73c5178023148",
      "textfilter.c:line_has_japanese": "4f6a289bdf5613b6efccba8b179491bcb49ab702f0bb45519f566a5c83d3f9fa",
      "utf.h:vjo_is_japanese_char": "a15bd002b98bd2186efeee74045eaaa531c7a002aba76cf20e9d16aa7a349302"
     }
-   }
+   },
+   "job_defaults": "amendment 5 (audit F2): rubi-path reads Rubi's job defaults and stops unless they are what path (b) models: VJO_VOCR_FINDER = VOCR_LINES_TEXTBOX_RECOVERY; ocr_text_gate off (VJO_TEXT_GATE_DEFAULT 0); ocr_skip_blank_lines off; non_japanese_filter = lines; ocr_cascade_ms > 0 (2000); VJO_GAME_CASCADE_CONF 0 (the core's 700); ocr_line_fix's default absent (Rubi does not ship #129's fixes yet: path (b) runs COLGAP all the same, as stage 4 amendment 1 registered, and the report says so) or on (VJO_LINE_FIX_DEFAULT 1 -> VOCR_FIX_DEFAULT = COLGAP)"
   }
  },
  "metrics": {
@@ -246,7 +249,10 @@
   "Host only: nothing ran on a console. Path (b) is a host model of Rubi's line path (eval/pagepath_find.c's port and core/vocr_ocr.c's finish_line as vocr6_final_test.py reproduces them); the cascade's time ceiling is not modelled",
   "CLANNAD's references are the long run's GRAD line crops: the page measure's reference holds only text inside some long-run box, so a line every long-run box missed is no reference, and a finder that finds it is charged for it; pages with a cut, multi-line, UI or undecided crop are left out",
   "The PSP console view is a cv2 bilinear 2x upscale, not an Adrenaline capture",
-  "The test title is one Vita game; its intervals are page bootstraps within it"
+  "The test title is one Vita game; its intervals are page bootstraps within it",
+  "Rubi's memory fallbacks are not modelled: a game without the memory for the LM or the cascade runs without them (game_ocr/main.c check_with_lm); path (b) is the job with both",
+  "Trusted hooks answering without OCR (Rubi API 43, hook_trust) are not modelled: path (b) is Rubi's OCR",
+  "CLANNAD's 133 pages without a reference line (and its 207 pages with an incomplete reference) are left out of the page measure, so a reading on an empty box is never charged there"
  ],
  "hygiene": [
   "Nothing is chosen, tuned or dropped on vita-test, psp-test, CLANNAD or the test title; the final read reports",
@@ -293,6 +299,19 @@
    "changes": [
     "seen_flags.clannad_glyph_raster: disclosed with every CLANNAD number (the report prints every seen flag)",
     "the selftest's reference scorer (eval/vocr6_score.py) is loaded from feat/vocr6-t1-stages fb077e7, the version the recorded selftest read (sha256 808b49ee...), whatever main holds; no read changes"
+   ]
+  },
+  {
+   "n": 5,
+   "time": "this commit (see git log); before any path (b) read and before the final read",
+   "why": "audit-vocr6-final-test (reports/audit-vocr6-final-test.md, MERGE_OK with five fixes before the read: F1-F5) and its nits",
+   "changes": [
+    "F1: report.sh refuses a second final attempt (and a second validation) under any OUT name: any other $HERD/shared/private/vocr6-final-test/*/attempt.json of the same mode stops it",
+    "F2: rubi-path checks Rubi's job defaults (paths.b.job_defaults) and pins two more functions (recognize, request_policy: paths.b.rubi_functions, from the same checkout cbaa4e3 rubicheck compared; the nine earlier pins unchanged); rubicheck passes --line-fix on to vjo-ocr when Rubi ships #129's fixes (rerun with --fix 1 before the read if Rubi #330 merges)",
+    "F3: the report says whether path (b) is Rubi main's shipped line path or Rubi's line read with the protocol's pinned LM / finder fix (rubi_path.lm.rubi_main, finder.rubi_ships_fix)",
+    "F4: the line filter's floor beside every path (b) headline measure: the reference characters on dialogue lines with no Japanese character, which Rubi's filter deletes however they are read (from the references alone; exact on line measures, an upper bound on region and page measures)",
+    "N2: a cascade read that fails leaves the job tier's reading (as finish_line does), counted (cascade_read_errors); before, it blanked the unit",
+    "N3-N5, N8: seen flags named in every section, path (a)'s whole-dialogue titles, whole-dialogue names (all - body), the W8I arenas in the blob table, counts from the tables, the in-read VOCR5 validation in the report; N1: what a resume of each step needs, in report.sh; N6-N7: docs and limits"
    ]
   }
  ]

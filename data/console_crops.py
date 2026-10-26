@@ -9,8 +9,9 @@ from the verified lines they hold, as a pool for crop-in-the-loop training.
 For every page of the chosen splits that has dialogue regions (the page pool's regions, eval/finder_tighten's rule),
 every chosen region variant and view (console: Vita frames as they are, a PSP frame upscaled 2x bilinear as
 Adrenaline shows it; native: every frame at its own size, PSP only), the finder (eval/pagepath.py's --finder SPEC,
-e.g. `rubi,fix=5`, #129's default) returns its line boxes exactly as Rubi cuts them (TEXTBOX_RECOVERY, the short-line
-probe, the refinement on PSP titles). Each box is matched to the region's verified lines by their character cells.
+e.g. `rubi,fix=1`) returns its line boxes exactly as Rubi cuts them (TEXTBOX_RECOVERY, the short-line
+probe, the refinement on PSP titles; `rubi,fix=1` is Rubi's default since #129's amendment 3, v1 was cut with
+`rubi,fix=5`). Each box is matched to the region's verified lines by their character cells.
 A cell is inked when it has high-contrast pixels (eval/pagepath.ink_points, GRAD's own test: its point is their
 centroid). A box must also cover at least half of every inkless cell that is a character all the same, a word in a
 dim colour whose contrast is under the line's threshold (required_cells: with one cell per character of the label,

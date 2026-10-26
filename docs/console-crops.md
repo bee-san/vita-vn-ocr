@@ -71,8 +71,17 @@ and the counts per title and kind.
 
 ## v1 (2026-10-26)
 
-- **Finder:** `rubi,fix=5`, #129's adopted default (`VOCR_FIX_DEFAULT` = COLGAP | JUNK, `runtime/vocr_lines_fix.c`,
-  PR #135).
+- **Finder:** `rubi,fix=5`, COLGAP + JUNK (`runtime/vocr_lines_fix.c`, PR #135).
+  - That was #129's default when v1 was built, before #129's amendment 3. Since then the default is COLGAP alone
+    (`fix=1`), because JUNK drops text lines in regions drawn tight.
+  - On the page pool's regions, which keep a margin, JUNK does not change the labelled crops.
+    audit-vocr6-finder-f rebuilt 3 titles at `fix=1`:
+    - PCSG00935: all files are identical.
+    - PCSG00854, JUNK's ornament title: the same whole boxes and identical whole crops. There are more empty boxes
+      (232 → 1,102, 996 of them on renderer text boxes, so not negatives) and more negatives (20 → 102), and other
+      jitter draws where box indices shift.
+    - NPJG00016: 1 console and 5 native whole crops differ.
+  - A v2 is cut with `fix=1`, Rubi's default, or with vocr6-spotter's spotter if #129's amendment 2 selects it.
 - **Input:** page pool v1 (`eab8f07b…`, splits `417df3d7…`), sets train / hval / guard, variants base and
   expanded-8, both views.
 - **Build:** 7 minutes for the 46 titles with dialogue regions, 5 processes.
@@ -118,17 +127,23 @@ for a final model retrained with hval folded back in.
 **Independent audit** (audit-vocr6-finder-c, its own seeds): 18,012 more random crops re-cut pixel-exact, 280 of 280
 labelled crops and 80 of 80 negatives right by eye, and 4 titles rebuilt byte for byte.
 
-**Known issue: v1 has 63 wrong labels in its train pools** (0.013%; none in hval or guard), counted by two audits:
-- 12 in console and 44 in console_jitter, the pools S2cil reads;
+**Known issue: v1 has 63 wrong labels in its train pools**, 0.011% of their 552,500 whole and jittered crops, and none
+in hval or guard. Two audits counted them:
+- 12 in console and 44 in console_jitter, the pools S2cil reads (56 of 402,848, 0.014%);
 - 3 in console_native and 4 in console_jitter_native.
 
 v1 was built before the required-cell rule above existed. Each of these crops is a finder box that leaves out a
 character in a dim colour, or more than half of its cell, labelled with the whole line all the same. They are in
-PCSG00805, NPJG00016, PCSG00935 and NPJH50297. The lists are `missing_chars.json` (audit-vocr6-finder-c) and
-`v1_extra_wrong.json` (audit-vocr6-finder-d).
+PCSG00805, NPJG00016, PCSG00935 and NPJH50297. The lists are:
+- audit-vocr6-finder-c's `missing_chars.json`: 44;
+- audit-vocr6-finder-d's `v1_extra_wrong.json`: its 19 entries with reason `own_uncovered`. Its other 4 entries are
+  jittered native crops whose labels are right: their own box covers the character, and only their finder box does
+  not.
 
-The rule now in the script makes such a box partial. I rebuilt 8 titles with it, on #135's finder. Only the three
-titles with dim words change, all in the train split:
+The rule now in the script makes such a box partial. Over the whole pool it removes 67 crops: the 63, and 4 jittered
+crops of their finder boxes. By title that is PCSG00805 45, NPJG00016 12, NPJH50297 5 and PCSG00935 5
+(audit-vocr6-finder-f's scan of every v1 crop). I rebuilt 8 titles with it, on #135's finder. Only the three among
+them with dim words change, all in the train split:
 - PCSG00805: 45 crops fewer;
 - NPJG00016: 12 fewer;
 - PCSG00935: 5 fewer.
@@ -141,9 +156,14 @@ for byte v1's. Unchanged are:
 - PCSG00380, whose lines start with an inkless indent cell;
 - PCSG00469, with centred lines.
 
-A first version of the rule, which required every weak-ink extra cell, would have dropped 2,581 correct crops of
-those titles (PCSG00713 −12%; audit-vocr6-finder-d B1). Its limit: on a line with more cells than characters, a
-single dim character next to a clean extra cell is not caught.
+A first version of the rule required every weak-ink extra cell. It would have dropped 2,581 correct crops pool-wide,
+in 14 titles; PCSG00713 alone would have lost 12% (audit-vocr6-finder-d B1).
+
+The rule's limit is a count. On a line with k more cells than characters, none of its n weak-ink inkless cells is
+required unless n > k. So up to k dim characters on such a line are not required, wherever they sit, and k reaches
+9 on centred lines. On v1's boxes this happens nowhere: audit-vocr6-finder-f viewed all 490 cells the count leaves
+unrequired, and every one is blank (an indent, a centring cell, a trailing or a full-width-space cell, with box
+texture or art as its weak "ink").
 
 Other notes on v1:
 - **The driver.** v1's driver (`e32cd2da…` in the manifest) was compiled from a `vocr_lines_fix.c` (`9fe5427c…`) that
@@ -169,8 +189,8 @@ Other notes on v1:
 ```sh
 A=$HERD/shared/artifacts
 data/console_crops.py build --pagepool $A/vocr6-ingest/pagepool/v1 --pages $A/vocr6-ingest/pages \
-  --finder rubi,fix=5 --sets train,hval,guard --variants base,expanded-8 --views console,native --jitter 2 \
-  --procs 5 --out $A/vocr6-finder/crops/v2    # a new pool: never write into the pinned v1
+  --finder rubi,fix=1 --sets train,hval,guard --variants base,expanded-8 --views console,native --jitter 2 \
+  --procs 5 --out $A/vocr6-finder/crops/v2    # Rubi's default finder; a new pool: never write into the pinned v1
 ```
 
 `tests/test_console_crops.py` builds a pool from procedural pages through the same driver. No game data is used.

@@ -235,7 +235,7 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   - a cancel at every poll;
   - known-answer hashes (host gcc and clang and Cortex-A9 NEON and scalar under qemu give the same);
   - the gate and two-level suites on attention blobs.
-- **`tests/test_vocr6_attn.py` (17 tests, CI's pytest).**
+- **`tests/test_vocr6_attn.py` (21 tests, CI's pytest).**
   - the model: off = no block, initialisation, refused shapes, gate 0 = old logits and gradients, masking;
   - `train2.py --attn` from an old checkpoint, with resume and the refused combinations;
   - the export's folds and sizes;
@@ -243,7 +243,8 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   - gate 0 through the C runtime equals the blob without the op;
   - the arena mirror over 7 tilings × widths × modes;
   - the head gate and the two-level head on z';
-  - the checkpoint tools.
+  - the checkpoint tools;
+  - VOCR5-S/N/L's checkpoints still export to the v0.3.0 blobs (local only), and the committed cost records.
 - **The tools.** `vita/a9_layers.py` names the op and phase 103. `eval/vocr6_attn_cost.py` checks that VOCR5-S/N/L
   re-export to the released blobs and that the adopted speed blobs rebuild byte for byte.
 

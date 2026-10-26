@@ -146,6 +146,68 @@
   "one dev VN is seen (v12188, hooked PCSG00576); the headline leaves it out",
   "the dev regions were drawn by people: the region-assisted page path gives the spotter GRAD + refine's region; the whole-frame tagged path is reported beside it"
  ],
- "amendments": [],
- "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)"
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-26T09:54:41Z",
+   "before": "every textspot6 training run and every score of a textspot6 arm",
+   "what": [
+    "The hooked page shards: data/manifests/textspot6_pages_v1.json (synth/textspot6_pages.py at the frozen code, vocr6-ingest's post-audit page pool v1 with every file's sha256 in the manifest): train 50,243 pages (121 shards; positives dialogue 81,542, name 7,809, notdlg 34,336; 146,968 ignore areas), hval 2,191, guard 2,337; 32 untrusted pages left out; test pages never read. MeikiOCR ran on all 54,803 non-test pages (det_thr 0.2).",
+    "Stage 1's shapes are registered: t64n8c16 (T, half_above 480), qS4 and qL5 (M, 480 / 272).",
+    "The sweep: eval/reproducibility/textspot6-20261026/sweep.py and stage1_plan.jsonl (8 runs: base_t64n8c16, base_qL5, base_qS4, nohook_t64n8c16, seeds 1 and 2), at most 2 runs at once (the label's 2 slots), from a detached worktree at this amendment's commit.",
+    "Speed probe (200 steps, 5 threads, 1 loader worker, before QAT): t64n8c16 291.9 ms/step, qL5 256.8, qS4 212.6; the loader waits about 5 ms per step. Stage 1 is about 19 slot-hours."
+   ],
+   "pins": {
+    "data/manifests/textspot6_pages_v1.json": "b5185b4694579910c74906b9fcca67c763fcb510b225074ee0025605ee9461ab",
+    "eval/reproducibility/textspot6-20261026/sweep.py": "004e807be0d4229609fae26b40fef51ac65a0c6e9b44c31d9db9c49c8bd4c8fc",
+    "eval/reproducibility/textspot6-20261026/stage1_plan.jsonl": "87759176e0374678f71028a0c3c4876dc6e26f2252de2650fe44cd52dbdd531c",
+    "train/textspot6_train.py": "8e576ea38d6aa039edbe93e8fa5e444d9cb9b267ed9a5b86b75f52d2a711aba8",
+    "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+    "train/textspot6_shapes.py": "e2f060e7cd3fa58b240dcf3a740731f05e1a9c4c130f34be974e6902bd63901d",
+    "synth/textspot6_twin.py": "f3b0d9697f6c889d19852caec0a3d9678491cb5f6ae7b087d52cc96889e49688",
+    "synth/textspot6_pages.py": "593aeb75433319216983c4c50c38c1fab46090c527ba629a61ad68ab5c3fd00d"
+   },
+   "probes": {
+    "t64n8c16": {
+     "finished": "2026-10-26T09:51:57Z",
+     "name": "base_t64n8c16_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 291.9,
+     "ms_per_step_median": 289.71,
+     "ms_waiting_for_data": 5.48,
+     "threads": 5,
+     "startup_s": 12.1
+    },
+    "qS4": {
+     "finished": "2026-10-26T09:53:53Z",
+     "name": "base_qS4_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 212.63,
+     "ms_per_step_median": 209.94,
+     "ms_waiting_for_data": 4.76,
+     "threads": 5,
+     "startup_s": 9.8
+    },
+    "qL5": {
+     "finished": "2026-10-26T09:52:49Z",
+     "name": "base_qL5_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 256.81,
+     "ms_per_step_median": 253.73,
+     "ms_waiting_for_data": 5.06,
+     "threads": 5,
+     "startup_s": 12.3
+    }
+   }
+  }
+ ],
+ "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",
+ "shapes": {
+  "registered": [
+   "t64n8c16",
+   "qS4",
+   "qL5"
+  ],
+  "note": "stage 1's shapes (train/textspot6_shapes.CANDIDATES); the full-resolution T arm is registered by a later amendment with its A9 row on runtime/vocr_textspot6.c, before its runs"
+ }
 }

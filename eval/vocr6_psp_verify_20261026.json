@@ -343,29 +343,29 @@
   "B24_L": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 32290787,
+   "us_total": 32288316,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
-   "stack_used": 3040,
+   "stack_used": 3080,
    "finder": -1,
    "memory": "24mb"
   },
   "B24_LV": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 22549823,
+   "us_total": 22760999,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
-   "stack_used": 3040,
+   "stack_used": 3080,
    "finder": -1,
    "memory": "24mb"
   },
   "B24_P": {
    "lines": 40,
    "frames": 4420,
-   "us_total": 21583050,
+   "us_total": 21583153,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 192448,
@@ -376,7 +376,7 @@
   "B24_PV": {
    "lines": 40,
    "frames": 4420,
-   "us_total": 15122418,
+   "us_total": 15261659,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 192448,
@@ -387,40 +387,40 @@
   "MB_64": {
    "lines": 150,
    "frames": 6483,
-   "us_total": 32283085,
+   "us_total": 32283649,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 192448,
-   "stack_used": 3040,
+   "stack_used": 3080,
    "finder": -1,
    "memory": "large"
   },
   "S32_L": {
    "lines": 150,
    "frames": 8614,
-   "us_total": 56992428,
+   "us_total": 56991224,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 378528,
-   "stack_used": 3040,
+   "stack_used": 3080,
    "finder": -1,
    "memory": "24mb"
   },
   "S32_LV": {
    "lines": 150,
    "frames": 8614,
-   "us_total": 38462658,
+   "us_total": 38866115,
    "text_ok": 150,
    "logits_ok": 150,
    "arena_bytes": 378528,
-   "stack_used": 3040,
+   "stack_used": 3080,
    "finder": -1,
    "memory": "24mb"
   },
   "S32_P": {
    "lines": 40,
    "frames": 5879,
-   "us_total": 38651920,
+   "us_total": 38649033,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 378528,
@@ -431,7 +431,7 @@
   "S32_PV": {
    "lines": 40,
    "frames": 5879,
-   "us_total": 26160895,
+   "us_total": 26441325,
    "text_ok": 40,
    "logits_ok": 40,
    "arena_bytes": 378528,
@@ -638,5 +638,6 @@
     }
    }
   }
- }
+ },
+ "console_test_bundle_ppsspp_note": "the release's 9 apps (rebuilt from the rebased runtime), each in PPSSPP: every item identical to the host"
 }

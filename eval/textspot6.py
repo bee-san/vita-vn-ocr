@@ -120,6 +120,30 @@ def dev_units(path=DEV_UNITS):
     return pickle.load(open(path, "rb"))["units"]
 
 
+def true_region(u, originals):
+    """A development unit's region in its frame's native px: its "region" when its image fills it; for a unit cut
+    from inside that region (vocr6-finder's dev_tight: 1 px around the ink, its "region" left as the original's),
+    the one place where its image lies, pixel for pixel, in the original unit's image (originals: unit id ->
+    [original units])."""
+    x0, y0, x1, y1 = u["region"]
+    h, w = u["image"].shape
+    if (y1 - y0, x1 - x0) == (h, w):
+        return tuple(u["region"])
+    hits = set()
+    for ou in originals.get(u["unit"], []):
+        if list(ou["region"]) != list(u["region"]):
+            continue
+        im = ou["image"]
+        for dy in range(im.shape[0] - h + 1):
+            for dx in range(im.shape[1] - w + 1):
+                if (im[dy:dy + h, dx:dx + w] == u["image"]).all():
+                    hits.add((dx, dy))
+    if len(hits) != 1:
+        raise SystemExit(f"{u['unit']} ({u['variant']}): its image lies {len(hits)} times in the original unit's")
+    dx, dy = hits.pop()
+    return (x0 + dx, y0 + dy, x0 + dx + w, y0 + dy + h)
+
+
 def dev_frame_key(u):
     return f"{u['shot']}|{u['src_kind']}|{round(float(u['scale']), 6)}|{u['kind']}"
 
@@ -283,10 +307,15 @@ def cmd_pagepath_boxes(args):
         out = frame_boxes(rows, args.decode, args.tags)
     elif args.set == "dev":
         by = {r["frame"]: r for r in rows}
+        originals = None
+        if args.units:
+            originals = defaultdict(list)
+            for ou in dev_units():
+                originals[ou["unit"]].append(ou)
         for i, u in enumerate(dev_units(args.units or DEV_UNITS)):
             r = by[dev_frame_key(u)]
             s = 2 if u["kind"] == "psp" else 1
-            reg = tuple(v * s for v in u["region"])
+            reg = tuple(v * s for v in (true_region(u, originals) if args.units else u["region"]))
             out.append({"unit": f"dev:{i}:{u['unit']}:{u['variant']}",
                         "boxes": region_boxes(decoded(r, args.decode), reg, args.tags)})
     else:
@@ -321,9 +350,8 @@ def crop_jobs(set_name, units_path=None, pages=PAGES):
 
     from common import to_gray
     if set_name == "dev":
-        path = units_path or DEV_UNITS
-        dims = {k["frame"]: (g.shape[1], g.shape[0]) for k, g in dev_frames(path)}     # console-view frame sizes
-        for i, u in enumerate(dev_units(path)):
+        dims = {k["frame"]: (g.shape[1], g.shape[0]) for k, g in dev_frames()}     # console-view frame sizes
+        for i, u in enumerate(dev_units(units_path or DEV_UNITS)):
             img = u["image"]
             if u["kind"] == "psp":
                 img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)

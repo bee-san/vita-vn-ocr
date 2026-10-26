@@ -10,19 +10,26 @@ For every page of the chosen splits that has dialogue regions (the page pool's r
 every chosen region variant and view (console: Vita frames as they are, a PSP frame upscaled 2x bilinear as
 Adrenaline shows it; native: every frame at its own size, PSP only), the finder (eval/pagepath.py's --finder SPEC,
 e.g. `rubi,fix=5`, #129's default) returns its line boxes exactly as Rubi cuts them (TEXTBOX_RECOVERY, the short-line
-probe, the refinement on PSP titles). Each box is matched to the region's verified lines by their inked character
-cells (eval/pagepath.ink_points: the centroid of each cell's high-contrast pixels):
-  whole    the box holds every inked cell of one line and none of another: label = the line's text
-  partial  the box holds some of one line's inked cells and none of another: left out (a cell whose ink centroid
-           lies outside the box can still show in it, so no exact label can be given)
-  empty    the box holds no inked cell and overlaps no renderer text box of the page (furigana rows, name plates,
-           unverified rows are text): label "" (a negative: a frame, an icon, scenery)
-  merged   the box holds cells of two lines: left out
+probe, the refinement on PSP titles). Each box is matched to the region's verified lines by their character cells.
+A cell is inked when it has high-contrast pixels (eval/pagepath.ink_points, GRAD's own test: its point is their
+centroid). A box must also cover at least half of every inkless cell that is a character all the same, a word in a
+dim colour whose contrast is under the line's threshold (required_cells: with one cell per character of the label,
+an inkless non-space character's cell; otherwise an inkless cell with weak ink, at half the threshold):
+  whole    the box holds every inked cell and covers every required cell of one line, and holds or covers none of
+           another: label = the line's text
+  partial  the box holds or covers some of one line's cells and none of another: left out (a cell whose ink
+           centroid lies outside the box can still show in it, so no exact label can be given)
+  empty    the box holds no inked cell, covers no required cell and overlaps no renderer text box of the page
+           (furigana rows, name plates, unverified rows are text): label "" (a negative: a frame, an icon, scenery;
+           train/train2.py keeps no "" label, so a blank-target option is needed before they can be trained on)
+  merged   the box holds or covers cells of two lines: left out
 Each whole crop also gets `--jitter` variants: the box moved by random amounts (top and bottom -0.15 to +0.35 of its
 height, left and right -0.3 to +0.8 of its height, seeded by the crop), kept only when it still holds the line's
-whole ink extent (the bounding box of its cells' high-contrast pixels) and no other line's inked cell, clipped to
-the region; its dark flag is synth/common.line_dark's. Neighbouring lines' fragments may show in it, as they do in
-the finder's own boxes.
+whole ink extent (the bounding box of its cells' high-contrast pixels) and covers its required cells, and holds no
+other line's inked cell and covers none of its required cells, clipped to the region; its dark flag is
+synth/common.line_dark's. The rule tests ink centroids, so a jittered box can hold part of a neighbouring line's
+glyphs: in v1 8.6% of console_jitter crops hold at least 30% of some neighbour cell's ink and 1.6% at least half of
+it, against 0.10% and 0.02% of the finder's own crops (audit-vocr6-finder-c, a 15,000-crop sample).
 
 Crops are stored as the console hands them to the recognizer: integer luma, a dark-text crop inverted (the finder's
 dark flag, as Rubi's VOCR_INVERT; meta `inverted`). Identical crops of one page (the same pixels and polarity from
@@ -32,8 +39,8 @@ pages at 480x272. A crop whose label has a character outside data/vocab_vn_5631.
 synth/render.crop_ctc_feasible rejects, goes to the matching drop_<pool> pool instead. OUT/manifest.json records
 the inputs' and every file's sha256 and the counts.
 
-Everything read and written here is the owner's private, copyrighted game data: it stays under $HERD and is never
-committed.
+The test split is never cut (--sets refuses it). Everything read and written here is the owner's private,
+copyrighted game data: it stays under $HERD and is never committed.
 """
 import argparse
 import hashlib
@@ -89,28 +96,76 @@ def ink_extents(img, cells, boxes):
     return out
 
 
+SPACES = frozenset(" \u3000\t")
+
+
+def required_cells(img, cells, boxes, texts, points):
+    """Per reference line the inkless cells a box must cover to take the line's label (audit-vocr6-finder-c F1):
+    cells with no ink point (ink_points' None: no pixel at the line's threshold, max(40, 2/5 of the 99th percentile
+    of the 3x3 contrast in the line's box)) that hold a character all the same, such as a word in a dim colour.
+    With one cell per character of the text, the inkless cells of non-space characters; otherwise the inkless cells
+    with weak ink (2 or more pixels at or above max(16, half the threshold)). [[x0, y0, x1, y1]] per line."""
+    H, W = img.shape
+    c = PP.contrast3(img)
+    out = []
+    for cl, b, text, pl in zip(cells, boxes, texts, points):
+        bx0, by0 = max(0, int(b[0])), max(0, int(b[1]))
+        bx1, by1 = min(W, int(np.ceil(b[0] + b[2]))), min(H, int(np.ceil(b[1] + b[3])))
+        sub = c[by0:by1, bx0:bx1]
+        t = max(40, 2 * int(np.percentile(sub, 99)) // 5) if sub.size else 255
+        weak = max(16, t // 2)
+        mapped = len(text) == len(cl)
+        need = []
+        for ci, (cell, p) in enumerate(zip(cl, pl)):
+            if p is not None:
+                continue
+            if mapped:
+                if text[ci] in SPACES:
+                    continue
+            else:
+                xa, ya = max(0, int(np.floor(cell[0]))), max(0, int(np.floor(cell[1])))
+                xb, yb = min(W, int(np.ceil(cell[2]))), min(H, int(np.ceil(cell[3])))
+                if xb <= xa or yb <= ya or int((c[ya:yb, xa:xb] >= weak).sum()) < 2:
+                    continue
+            need.append([float(v) for v in cell])
+        out.append(need)
+    return out
+
+
+def covers(box, cell, frac=0.5):
+    """The box (x, y, w, h) covers at least `frac` of the cell [x0, y0, x1, y1]'s area."""
+    x, y, w, h = box[:4]
+    x0, y0, x1, y1 = cell
+    iw, ih = min(x + w, x1) - max(x, x0), min(y + h, y1) - max(y, y0)
+    area = (x1 - x0) * (y1 - y0)
+    return iw > 0 and ih > 0 and area > 0 and iw * ih >= frac * area
+
+
 def overlaps(box, xyxy):
     x, y, w, h = box
     return min(x + w, xyxy[2]) > max(x, xyxy[0]) and min(y + h, xyxy[3]) > max(y, xyxy[1])
 
 
-def classify(box, points):
-    """(kind, line index, [cell indices]) of a finder box against the region's inked cell points."""
+def classify(box, points, need=None):
+    """(kind, line index, [cell indices]) of a finder box against the region's inked cell points and the cells it
+    must also cover (required_cells; none when `need` is None)."""
+    need = need if need is not None else [[] for _ in points]
     held = []
     for li, pl in enumerate(points):
         idx = [ci for ci, p in enumerate(pl) if p is not None and PP.inside(box, p)]
-        if idx:
-            held.append((li, idx))
+        cov = sum(1 for cell in need[li] if covers(box, cell))
+        if idx or cov:
+            held.append((li, idx, cov))
     if not held:
         return "empty", None, []
     if len(held) > 1:
         return "merged", None, []
-    li, idx = held[0]
+    li, idx, cov = held[0]
     inked = [ci for ci, p in enumerate(points[li]) if p is not None]
-    return ("whole" if len(idx) == len(inked) else "partial"), li, idx
+    return ("whole" if len(idx) == len(inked) and cov == len(need[li]) else "partial"), li, idx
 
 
-def jitter_boxes(box, ink, avoid_pts, W, H, n, seed):
+def jitter_boxes(box, ink, avoid_pts, W, H, n, seed, need=(), avoid_cells=()):
     x, y, w, h = box
     rng = np.random.default_rng(seed)
     out = []
@@ -126,19 +181,20 @@ def jitter_boxes(box, ink, avoid_pts, W, H, n, seed):
         jb = (x0, y0, x1 - x0, y1 - y0)
         if jb == tuple(box) or jb in out:
             continue
-        holds = ink is not None and x0 <= ink[0] and y0 <= ink[1] and x1 >= ink[2] and y1 >= ink[3]
-        if holds and not any(PP.inside(jb, p) for p in avoid_pts):
+        holds = ((ink is not None or need) and (ink is None or (x0 <= ink[0] and y0 <= ink[1] and x1 >= ink[2] and
+                                                                  y1 >= ink[3]))
+                 and all(covers(jb, cell) for cell in need))
+        if holds and not any(PP.inside(jb, p) for p in avoid_pts) and not any(covers(jb, c) for c in avoid_cells):
             out.append(jb)
     return out
 
 
 def title_job(args):
-    (tid, pagepool, pages_dir, spec, sets, variants, views, jitter, work, max_pages) = args
+    (tid, pagepool, pages_dir, spec, sets, variants, views, jitter, exe, dmeta, max_pages) = args
     from common import line_dark
     from render import crop_ctc_feasible
     vocab = {c for c in VOCAB.read_text(encoding="utf-8").split("\n") if c and c != UNK}
-    cfg = PP.parse_finder(spec)
-    exe, dmeta = PP.build_driver(cfg, Path(work) / "bin")
+    cfg = PP.parse_finder(spec)              # the driver itself was built once, before the workers (cmd_build)
     rows = PP.read_jsonl(Path(pagepool) / f"{tid}.jsonl")
     if max_pages:
         rows = rows[:max_pages]
@@ -182,8 +238,7 @@ def title_job(args):
             x, y, w, h = box
             c = np.ascontiguousarray(img[y:y + h, x:x + w])
             c = (255 - c) if dark else c
-            key = (u["page"], hashlib.blake2b(c.tobytes() + bytes(c.shape[:1]), digest_size=12).hexdigest(),
-                   c.shape, pool)
+            key = (u["page"], hashlib.blake2b(c.tobytes(), digest_size=12).hexdigest(), c.shape, pool)
             if key in seen:
                 counts[f"{view}:{pool}:duplicate"] += 1
                 return
@@ -205,11 +260,12 @@ def title_job(args):
             H, W = img.shape
             cells, rboxes = PP.ref_geometry(u, s, o)
             points = PP.ink_points(img, cells, rboxes)
+            need = required_cells(img, cells, rboxes, [ln["text"] for ln in u["lines"]], points)
             ink = ink_extents(img, cells, rboxes)
             ox, oy = o
             text_boxes = [[b[0] * s - ox, b[1] * s - oy, b[2] * s - ox, b[3] * s - oy] for b in u["text_boxes"]]
             for bi, (x, y, w, h, dark) in enumerate(bx):
-                kind, li, idx = classify((x, y, w, h), points)
+                kind, li, idx = classify((x, y, w, h), points, need)
                 counts[f"{view}:box:{kind}"] += 1
                 if kind in ("merged", "partial"):
                     continue
@@ -224,8 +280,10 @@ def title_job(args):
                 meta = {"kind": kind, "line": line["id"]}
                 store(u, img, (x, y, w, h), dark, label, "console", meta)
                 avoid = [p for lj, pl in enumerate(points) if lj != li for p in pl if p is not None]
+                avoid_cells = [cell for lj, cl in enumerate(need) if lj != li for cell in cl]
                 seed = int(hashlib.sha256(f"{u['uid']}:{view}:{bi}".encode()).hexdigest()[:8], 16)
-                for k, jb in enumerate(jitter_boxes((x, y, w, h), ink[li], avoid, W, H, jitter, seed)):
+                for k, jb in enumerate(jitter_boxes((x, y, w, h), ink[li], avoid, W, H, jitter, seed, need[li],
+                                                    avoid_cells)):
                     jd = line_dark(img, jb)
                     store(u, img, jb, jd, label, "console_jitter", dict(meta, jitter=k + 1, finder_box=[x, y, w, h]))
 
@@ -265,9 +323,13 @@ def cmd_build(a):
     man = json.loads((Path(a.pagepool) / "manifest.json").read_text(encoding="utf-8"))
     titles = sorted(man["titles"]) if not a.titles else a.titles.split(",")
     sets, variants, views = set(a.sets.split(",")), set(a.variants.split(",")), a.views.split(",")
+    if "test" in sets:
+        raise SystemExit("console crops never cut the test split (--sets)")
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    jobs = [(t, a.pagepool, a.pages, a.finder, sets, variants, views, a.jitter, a.work, a.max_pages)
+    # the finder's driver, compiled once before the workers start (they would race on its file otherwise)
+    exe, dmeta = PP.build_driver(PP.parse_finder(a.finder), Path(a.work) / "bin")
+    jobs = [(t, a.pagepool, a.pages, a.finder, sets, variants, views, a.jitter, str(exe), dmeta, a.max_pages)
             for t in titles]
     doc = {"schema": SCHEMA, "kind": "vocr6-console-crops", "finder": a.finder, "sets": sorted(sets),
            "variants": sorted(variants), "views": views, "jitter": a.jitter,

@@ -808,6 +808,117 @@ Checks: `make check-textspot3` (in `make check`, so in `ci/runtime.sh gcc|clang`
 
 `tests/test_textspot3_runtime.py` adds the arenas and the `--batch` contract.
 
+## Tagged spotter for VTSP versions 1-4 (`vocr_textspot6.c`)
+
+**No console build links it yet.** It is the runtime of textspot6's tagged spotter (issue #128): version 4 gives every
+box a class (dialogue, speaker name, choice, UI text, scene text). `synth/textspot6_twin.py` specifies the format and
+is the bit-exact twin of all four versions; `train/textspot6_model.py` writes version-4 blobs.
+
+`vocr_textspot3.c` copied (not linked) with VTSP version 4 added:
+
+- **Versions 1-3** run exactly as `vocr_textspot3.c`: the same boxes, blocks, order, pick, truncated and dark flags,
+  and the same arena sizes (the parity runs both drivers on every version-1, 2 and 3 batch), with every class 0,
+  every tconf 0 and presence the largest box confidence.
+- **Version 4**: a VTSP header with the tag count T (1..4) in byte 19, then a VTDT trunk (version 2's) or a VTMS
+  network (version 3's) whose d2s head has 16 + 4 T channels: channel 16 + T (2 dy + dx) + t is tag map t of the
+  sub-cell (dy, dx). A multi-scale head needs 16 + 4 T a multiple of 8 (T = 2 or 4). Both forms halve a frame wider
+  than `half_above` or taller than `half_above_h`.
+  - The decode reads 4 + T maps at stride 4. A box's class is the largest of class 0's score 0 and class t + 1's sum
+    of tag map t over its kernel cells (the lowest class on a tie); `tconf` = min(127, (best - second) / cells).
+  - Two boxes join a block only when they have one class. The pick is the dialogue (class 0) block of the largest
+    score (-1 without one). `presence` is the largest confidence of a dialogue box (0 without one).
+
+```c
+#include "vocr_textspot6.h"
+
+static vocr_textspot6 ts;                          /* points into the blob; .version 1-4, .tags, .form */
+int rc = vocr_textspot6_load(&ts, blob, bytes);    /* VOCR_TEXTSPOT_E_BLOB if refused */
+size_t need = vocr_textspot6_arena_bytes(&ts, 960, 544);   /* every frame up to 960 x 544 */
+static VocrTextspot6Set set;                       /* boxes with .tag and .tconf, blocks with .tag, .presence */
+rc = vocr_textspot6_find(&ts, &im, 0, arena, need, &set);   /* or vocr_textspot6_find_rows(&ts, &src, 0, ...) */
+if (set.pick >= 0) { /* set.blocks[set.pick] is the dialogue block */ }
+```
+
+- The calls, flags (`VOCR_TEXTSPOT_NO_DARK`), return codes, row-callback contract and limits are `vocr_textspot.h`'s;
+  the result types are new (`VocrTextspot6Box`, `VocrTextspot6Block`, `VocrTextspot6Set`). C99, no allocation, no
+  recursion, no global state, integer only; NEON and scalar give the same bits.
+- `-DVOCR_TEXTSPOT6_NO_MS` leaves out every VTMS path (the map ops, their kernels, their arena plan). Versions 3 and 4's
+  multi-scale form are then refused at load; versions 1, 2 and 4's trunk give the same bits. `vocr_textspot6` keeps
+  one layout in both builds.
+- Arena: version 4 adds the T tag planes to the decode's map row, T int32 per component slot and the head's 4 T more
+  channels; versions 1-3 keep `vocr_textspot3.c`'s arenas exactly.
+- Beyond version 4, two fixes of textspot3's audit nits, with the same bits: `pw_sums` and `pw_store` index their cells
+  instead of stepping a pointer past a block's end (N4), and `CELL8` asks for the alignment only under `__GNUC__` (N5).
+
+- Stack (gcc `-fcallgraph-info=su`, every frame static; `eval/textspot6_a9.py stack`):
+
+  | build | find | find_rows | find without the dark pass | load | `_maps` (test hook) |
+  |---|---:|---:|---:|---:|---:|
+  | Vita -O2 | 2,720 | 2,712 | 2,008 | 256 | 4,416 |
+  | Vita -O2, NO_MS | 2,720 | 2,712 | 1,136 | 128 | 4,416 |
+  | Vita -Os | 2,696 | 2,688 | 1,936 | 228 | 4,384 |
+  | Vita -Os, NO_MS | 2,696 | 2,688 | 1,032 | 132 | 4,384 |
+  | PSP -O2 -G0 | 2,624 | 2,624 | 1,816 | 112 | 4,312 |
+  | PSP -O2 -G0, NO_MS | 2,624 | 2,624 | 1,024 | 64 | 4,312 |
+  | PSP -Os -G0 | 2,632 | 2,632 | 1,784 | 120 | 4,320 |
+  | PSP -Os -G0, NO_MS | 2,632 | 2,632 | 936 | 64 | 4,320 |
+
+  The peak runs through `vocr_line_dark`'s histograms, as in textspot3 (2,712 B at Vita `-O2`).
+- Code (`.text` of the spotter's own sections kept by a `--gc-sections` link of a caller of load, both arenas, find
+  and find_rows; `eval/textspot6_a9.py codesize`, VitaSDK gcc 15.2 / psp-gcc 15.2):
+
+  | build | `vocr_textspot6.c` | with `-DVOCR_TEXTSPOT6_NO_MS` |
+  |---|---:|---:|
+  | VitaSDK Thumb-2 `-O2` (NEON) | 24,892 B | 12,956 B |
+  | VitaSDK Thumb-2 `-O2 -DVOCR_NO_NEON` | 21,260 B | 11,744 B |
+  | VitaSDK Thumb-2 `-Os` (NEON) | 20,254 B | 10,660 B |
+  | VitaSDK Thumb-2 `-Os -DVOCR_NO_NEON` | 16,852 B | 9,280 B |
+  | psp-gcc `-O2 -G0` (object) | 33,292 B | 18,436 B |
+  | psp-gcc `-Os -G0` (object) | 28,208 B | 15,216 B |
+
+  `vocr_textspot3.c` is 23,880 / 19,452 B (Vita `-O2` / `-Os` NEON); version 4 adds the tag decode, and
+  `-DVOCR_TEXTSPOT6_NO_MS` drops the map ops, their kernels and their plan (`vocr_textspot2.c` is 11,844 / 9,746 B).
+
+Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`):
+- the method is textspot's, on this file's Vita code: random version-4 blobs with 4 tags and the pinned frames;
+- ms @333 = high bound x 1.0007; ms @444 = that x 333/444; the default call (dark pass included);
+- these are **estimates**: nothing of it has run on a console.
+
+| shape (scale) | VTSP B | MACs / 960x544 | 960x544 @333 / @444 | no dark @333 | 480x272 @333 / @444 | `-Os` @333 (NO_MS) | arena up to 960x544 | the tags @333 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `t64n4c16` (half above 480) | 28,624 | 48.7 M | 160.3 / 120.2 ms | 154.6 ms | 152.3 / 114.2 ms | 170.6 (170.6) ms | 132,927 | +4.7 ms (vs textspot3's row +2.5) |
+| `t48n8c16d8` (half above 480) | 33,472 | 53.6 M | 185.9 / 139.5 ms | 180.7 ms | 177.8 / 133.4 ms | 197.8 (197.8) ms | 241,887 | +4.9 ms (vs textspot3's row +3.2) |
+| `t64n8c16` (half above 480) | 52,176 | 86.8 M | 264.3 / 198.2 ms | 258.4 ms | 255.7 / 191.8 ms | 282.4 (282.4) ms | 244,607 | +6.7 ms (vs textspot3's row +3.4) |
+| `t24n6c16` (full) | 10,520 | 65.3 M | 290.8 / 218.1 ms | 288.6 ms | 79.3 / 59.5 ms | 306.8 (306.8) ms | 166,047 | +18.0 ms |
+| `t32n4c16` (full) | 11,056 | 72.5 M | 289.8 / 217.4 ms | 287.2 ms | 79.6 / 59.7 ms | 307.9 (307.9) ms | 141,663 | +15.5 ms |
+| `t48n2c16` (full, added) | 11,488 | 80.6 M | 293.6 / 220.2 ms | 291.0 ms | 78.3 / 58.7 ms | 311.5 (311.5) ms | 106,335 | +19.0 ms |
+| `t40n3c16` (full, added) | 11,936 | 80.8 M | 302.7 / 227.0 ms | 300.5 ms | 81.9 / 61.4 ms | 321.7 (321.7) ms | 147,391 | +19.2 ms |
+| `t32n6c16` (full) | 14,960 | 93.9 M | 357.8 / 268.3 ms | 355.4 ms | 97.7 / 73.2 ms | 380.6 (380.6) ms | 204,095 | +14.5 ms |
+| `t48n4c16` (full) | 18,816 | 125.2 M | 414.6 / 311.0 ms | 412.0 ms | 111.4 / 83.5 ms | 437.0 (437.0) ms | 186,975 | +18.1 ms |
+| `qS4` (480 / 272) | 118,096 | 76.7 M | 199.4 / 149.6 ms | 191.3 ms | 189.2 / 141.9 ms | 215.4 ms | 256,247 | +3.8 ms (vs textspot3's row +4.3) |
+| `qM4` (480 / 272) | 248,304 | 97.7 M | 222.8 / 167.1 ms | 214.9 ms | 212.5 / 159.4 ms | 244.5 ms | 256,247 | +6.1 ms (vs textspot3's row +6.2) |
+| `qL5` (480 / 272) | 448,304 | 108.9 M | 237.0 / 177.7 ms | 229.2 ms | 226.8 / 170.1 ms | 261.6 ms | 256,247 | +4.9 ms (vs textspot3's row +5.2) |
+
+- "the tags": the tagged row minus the same shape's version-2 (T) or version-3 (M) blob on this runtime; textspot3's
+  rows of record (`eval/textspot3_a9_t_20261021.json` on `vocr_textspot2.c`, `eval/textspot3_a9_20261021.json` on
+  `vocr_textspot3.c`) differ from those version-2/3 rows by -3.3 .. +0.5 ms. The head's 16 more channels cost most
+  of it; the 4 tag planes of the decode the rest (5 ms of a full-resolution frame's 960 x 544 / 4^2 cells).
+- "full": half_above 0, a 960 x 544 frame read whole; `t32n6c16` and `t48n4c16` are far above 300 ms, so
+  `t48n2c16` and `t40n3c16` were added (of six candidates measured once at 960 x 544, the two of 40-48 channels
+  nearest 300 ms).
+
+Checks: `make check-textspot6` (in `make check`, so in `ci/runtime.sh gcc|clang` with ASan + UBSan):
+- strict compiles (also `-DVOCR_NO_NEON`, `-DVOCR_TEXTSPOT6_NO_MS` and both);
+- `tests/textspot6_parity.py` through the sanitized drivers (`TEXTSPOT6_PARITY_OK ...`), on:
+  - random version-4 blobs of both forms, wild and graph networks with a tagged head;
+  - probe networks whose maps are designed cell by cell: the twin tests' hand-made maps, the cap's and the sorts'
+    tie-breaks, random designed maps (f = 1 and f = 2, halved by the width or the height);
+  - version-1, 2 and 3 blobs, against `vocr_textspot3_test` (lines, maps, arenas);
+- the C loaders (the NO_MS one too) against the twin's refusals, field mutants and damage;
+- the drivers' self-tests.
+
+`tests/test_textspot6_runtime.py` adds the twin tests' maps through C, the arenas and the `--batch` contract.
+
 ## Text-presence gate (`vocr_textgate.c`)
 
 The gate of issue #100 (`docs/textgate.md`): does a region hold text at all? It runs a VTDT blob (#97's layout,

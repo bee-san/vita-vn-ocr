@@ -58,7 +58,8 @@
  "recipe": "train/train2.py fine-tune: batch 96, lr 1.2e-3, warmup 500, cosine to 0.05, wd 0.01, EMA 0.999, 5 threads, vocab data/vocab_4987_proof.txt (VOCR5-S's), --height and the arm's shape, from the arm's init; --val hv (the PSP hval lines, logged only: the final checkpoint is the run); screening 10,000 steps, final 20,000 steps",
  "init": {
   "S_d0c2": "train/modelb_init.py --depth 0 --ctx 2 of VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt (exports to VOCR5_S_w8.vocr, sha256 f175bfcb...)",
-  "S_d0c1": "the same with --ctx 1"
+  "S_d0c1": "the same with --ctx 1",
+  "S_d1c2": "VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt itself (exports to VOCR5_S_w8.vocr)"
  },
  "arms": {
   "B24": {
@@ -100,6 +101,14 @@
     1,
     2
    ]
+  },
+  "S32": {
+   "init": "S_d1c2",
+   "train2_args": "--width 1.0 --depth 1 --ctx 2 --height 32",
+   "seeds": [
+    1
+   ],
+   "note": "diagnostic control, not selectable (est. about 2.4 s per nominal box): VOCR5-S's own shape through the same recipe, which separates the recipe's effect from the shape change's"
   }
  },
  "scoring": {
@@ -137,6 +146,14 @@
     "if vocr6-synth6 writes SYNTH6_READY with PSP-native shards before the stage-2 decision, a stage-2b arm S6 runs: the stage-2 recipe with those shards as source s6 (stream=1, pool=3, inv=0.2) at weight 0.125, taken from s2 and s3 (0.0625 each), 2 seeds, adopted under decisions.stage2's rule against the stage-2 recipe; otherwise S6 is not run, and that is reported"
    ],
    "why": "(1) the time budget needs the gate and the two-level head, so the released model is the gated one and the rule must score that form; (2) tiling is a speed/memory setting with no effect on outputs; (3) the task asks for synth6's PSP-native renders once they exist, which they do not yet"
+  },
+  {
+   "n": 2,
+   "date": "2026-10-26T10:43Z (commit time in git), after B24 seed 1 was scored",
+   "changes": [
+    "a diagnostic control arm S32 (1 seed): VOCR5-S's shape (depth 1, ctx 2, H 32) from VOCR5-S's own checkpoint through the screening recipe; not selectable (not time-feasible); no decision rule reads it"
+   ],
+   "why": "B24 seed 1 reads development PSP fixed lines at 4.58% against VOCR5-S's 1.17% (whole dialogue 10.42% against 6.49%; hval lines 1.73% against 1.26%). The control tells whether the screening recipe and data or the shape change (depth 0, input height) cost that, before any further arm is designed"
   }
  ]
 }

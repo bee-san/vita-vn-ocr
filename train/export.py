@@ -22,12 +22,12 @@ Blob format, version 1 (little-endian; every section 16-byte aligned):
    32  u32 vocab offset      36  u32 vocab UTF-8 bytes  40  u32 CRC-32 of bytes [64, end)
    44  u32 parameter count   48  u8[16] first 16 bytes of the checkpoint's SHA-256
   op table: one 64-byte record per op, in execution order
-    0 u8 type (1 CONV with one input channel, 2 DW depthwise, 3 PW pointwise, 4 HEAD)
+    0 u8 type (1 CONV with one input channel, 2 DW depthwise, 3 PW pointwise, 4 HEAD, 5 ATTN)
     1 u8 flags (1 ReLU, 2 residual add, 4 bias, 8 int8 weights, 16 row collapse)
     2 u8 kh  3 u8 kw  4 u8 stride h  5 u8 stride w  6 u8 pad h  7 u8 pad w
     8 u16 cin  10 u16 cout  12 u16 rows in  14 u16 rows out
    16 u32 weights offset  20 u32 weights bytes  24 u32 bias offset  28 u32 scales offset
-   32 u16 K (reduction length)  34 u16 cout padded to a multiple of 8  36..63 zero
+   32 u16 K (reduction length)  34 u16 cout padded to a multiple of 8  36..63 zero (ATTN: below)
   weights
     CONV  f32 [kh*kw][cout]            DW  f32 [kh*kw][c]
     PW / HEAD  f32 or i8 [cout_pad/8][K][8], K = cin (or rows_in*cin with row collapse,
@@ -37,6 +37,18 @@ Blob format, version 1 (little-endian; every section 16-byte aligned):
 
 A residual PW adds the input of the depthwise op right before it. The runtime's
 activation layout is [column][row][channel] with channels innermost.
+
+ATTN (VOCR6 stage 3, docs/vocr6-attn.md: train/model.py GlobalAttn, train2.py --attn 1): one light global
+self-attention layer over the line's frames, at most one, right before the head, on one row with cin = cout = d:
+  z' = z + O(concat_h softmax(Q_h K_h^T) V_h)
+The record's own matrix is QKV, a PW's layout with K = d and cout_pad = 3 dim rows: Q (1 / sqrt(dim / heads) folded in),
+K, V; bias f32[3 dim] (K's rows 0), int8 scales as a PW's. flags: bias (always) and int8. Then
+   36 u16 heads   38 u16 dim (a multiple of 8 per head)   40 u32 O weights offset   44 u32 O weights bytes
+   48 u32 O bias offset   52 u32 O scales offset (int8)   56..63 zero
+O is f32 or i8 [d/8][dim][8] with the learnt residual gate folded in (O = g O_trained, bias g b), bias f32[d]. The
+runtime keeps every frame's z, runs the projections in the blob's mode and the scores, softmax and weighted sums in
+float32, then the head on z'. A runtime that predates the op refuses such a blob (an unknown type); a blob without
+it is byte for byte what this exporter wrote before the op existed.
 
 An optional head gate section (VOCG) may follow the blob at its 16-byte aligned end; train/headgate.py writes
 and documents it (docs/headgate.md). read_blob() reports it as "gate" (None without one).
@@ -55,9 +67,9 @@ from pathlib import Path
 import numpy as np
 
 MAGIC, VERSION, HEADER_BYTES, OP_BYTES = b"VOCR", 1, 64, 64
-T_CONV, T_DW, T_PW, T_HEAD = 1, 2, 3, 4
+T_CONV, T_DW, T_PW, T_HEAD, T_ATTN = 1, 2, 3, 4, 5
 F_RELU, F_RES, F_BIAS, F_INT8, F_COLLAPSE = 1, 2, 4, 8, 16
-TYPE_NAME = {T_CONV: "conv", T_DW: "dw", T_PW: "pw", T_HEAD: "head"}
+TYPE_NAME = {T_CONV: "conv", T_DW: "dw", T_PW: "pw", T_HEAD: "head", T_ATTN: "attn"}
 MODE_F32, MODE_W8F, MODE_W8I = 1, 2, 3
 MODE_NAME = {MODE_F32: "f32", MODE_W8F: "w8f", MODE_W8I: "w8i"}
 DENORMAL = 1e-30          # weights smaller than this are flushed to zero
@@ -132,6 +144,9 @@ def model_ops(model, height):
         else:
             raise ValueError(f"unsupported feature module {type(m).__name__}")
     add(model.bottleneck, None, relu=False)
+    if getattr(model, "attn", None) is not None:
+        assert h == 1, "the attention block runs on the frame row"
+        ops.append(attn_op(model.attn))
     add(model.head, None, relu=False, head=True)
     for i, op in enumerate(ops):
         if op["res"]:
@@ -139,6 +154,24 @@ def model_ops(model, height):
             assert d["type"] == T_DW and (d["sh"], d["sw"]) == (1, 1) and d["h_in"] == d["h_out"] \
                 and d["cin"] == op["cin"] == op["cout"], f"op {i}: unsupported residual"
     return ops
+
+
+def attn_op(a):
+    """The runtime op of a GlobalAttn (train/model.py), float64: the QKV matrix [3 dim][d] with 1 / sqrt(dh) folded
+    into Q's rows and bias (K has none: its bias rows are 0), O [d][dim] and its bias with the gate g folded in."""
+    import torch
+    with torch.no_grad():
+        s = 1.0 / np.sqrt(a.dh)
+        wq, bq = a.q.weight.double()[:, :, 0, 0] * s, a.q.bias.double() * s
+        wk, bk = a.k.weight.double()[:, :, 0, 0], torch.zeros(a.dim, dtype=torch.float64)
+        wv, bv = a.v.weight.double()[:, :, 0, 0], a.v.bias.double()
+        g = a.gate.double().reshape(())
+        wo, bo = a.o.weight.double()[:, :, 0, 0] * g, a.o.bias.double() * g
+    d = wq.shape[1]
+    return dict(type=T_ATTN, kh=1, kw=1, sh=1, sw=1, ph=0, pw=0, cin=d, cout=d, h_in=1, h_out=1, relu=False,
+                res=False, collapse=False, heads=a.heads, attn_dim=a.dim,
+                w=torch.cat([wq, wk, wv]).numpy(), bias=torch.cat([bq, bk, bv]).numpy(),
+                o_w=wo.numpy(), o_bias=bo.numpy())
 
 
 def load_checkpoint(path, height=None):
@@ -155,6 +188,8 @@ def load_checkpoint(path, height=None):
         arch["chans"] = tuple(int(c) for c in ck["chans"])
     if ck.get("stride"):                    # the CTC frame step (train2.py --stride; absent = 8)
         arch["stride"] = int(ck["stride"])
+    from model import attn_arch
+    arch.update(attn_arch(ck))              # the attention block (train2.py --attn 1; absent = none)
     model = TinyVNOCR(n_classes, width=float(ck.get("width", 1.0)), bottleneck=bottleneck, **arch)
     model.load_state_dict(sd)
     model.eval()
@@ -189,6 +224,36 @@ def default_max_width(stride, limit=1024):
     return limit // stride * stride
 
 
+def _attn_record(op, int8, put):
+    """The ATTN op's arrays through put() (QKV weights, scales, bias, then O's) and its 64-byte record (format in the
+    module docstring). Returns (record, stored values, weights flushed to zero)."""
+    d, dim, heads = op["cin"], int(op["attn_dim"]), int(op["heads"])
+    if op["cout"] != d or dim % heads or (dim // heads) % 8 or d % 8:
+        raise ValueError(f"attention op: cin = cout = {d} (x8), dim {dim} in {heads} heads of a multiple of 8")
+    if np.asarray(op["w"]).shape != (3 * dim, d) or np.asarray(op["o_w"]).shape != (d, dim):
+        raise ValueError("attention op: QKV [3 dim][d] and O [d][dim]")
+    offs, flushed = [], 0
+    for w, b in ((op["w"], op["bias"]), (op["o_w"], op["o_bias"])):
+        w = np.asarray(w, np.float64).astype(np.float32)
+        tiny = (np.abs(w) < DENORMAL) & (w != 0)
+        flushed += int(tiny.sum())
+        w[tiny] = 0
+        rows = w.shape[0]
+        if int8:
+            q, scale = quantize_rows(w)
+            w_off, w_bytes = put(_pack_matrix(q, rows))
+            s_off, _ = put(scale)
+        else:
+            (w_off, w_bytes), s_off = put(_pack_matrix(w, rows)), 0
+        b_off, _ = put(np.asarray(b, np.float64).astype(np.float32))
+        offs.append((w_off, w_bytes, b_off, s_off, w.size + rows))
+    (qw, qwb, qb, qs, nq), (ow, owb, ob, os_, no) = offs
+    flags = F_BIAS | (F_INT8 if int8 else 0)
+    rec = struct.pack("<8B4H4I2H2H4I8x", T_ATTN, flags, 1, 1, 1, 1, 0, 0, d, d, 1, 1, qw, qwb, qb, qs, d, 3 * dim,
+                      heads, dim, ow, owb, ob, os_)
+    return rec, nq + no, flushed
+
+
 def build_blob(ops, vocab, height, int8=False, max_width=None, source_sha=b""):
     """The blob of `ops`. max_width None = default_max_width(the ops' stride): 1,024 for every
     stride-8 or stride-16 model; a max_width that is not a multiple of the stride is refused."""
@@ -214,6 +279,11 @@ def build_blob(ops, vocab, height, int8=False, max_width=None, source_sha=b""):
     records, n_params, flushed, stride = [], 0, 0, 1
     for op in ops:
         t = op["type"]
+        if t == T_ATTN:
+            rec, n, nf = _attn_record(op, int8, put)
+            records.append(rec)
+            n_params, flushed = n_params + n, flushed + nf
+            continue
         flags = (F_RELU if op["relu"] else 0) | (F_RES if op["res"] else 0) | \
                 (F_COLLAPSE if op["collapse"] else 0)
         cout = op["cout"]
@@ -292,6 +362,21 @@ def read_blob(data):
                   w_bytes=w_bytes)
         if t in (T_CONV, T_DW):
             op["w"] = np.frombuffer(data, "<f4", k * cout, w_off).reshape(k, cout).T.copy()
+        elif t == T_ATTN:                  # QKV: cout_pad = 3 dim rows; then O (module docstring)
+            heads, dim, ow_off, _, ob_off, os_off = struct.unpack_from("<2H4I", data, ops_off + OP_BYTES * i + 36)
+            dt = np.int8 if op["int8"] else np.dtype("<f4")
+
+            def mat(off, rows, kk):
+                return np.frombuffer(data, dt, rows * kk, off).reshape(rows // 8, kk, 8).transpose(0, 2, 1) \
+                    .reshape(rows, kk).copy()
+            op.update(heads=heads, attn_dim=dim, w=mat(w_off, cout_pad, k), o_w=mat(ow_off, cout, dim),
+                      o_bias=np.frombuffer(data, "<f4", cout, ob_off).copy())
+            if op["int8"]:
+                op["scale"] = np.frombuffer(data, "<f4", cout_pad, s_off).copy()
+                op["o_scale"] = np.frombuffer(data, "<f4", cout, os_off).copy()
+            op["bias"] = np.frombuffer(data, "<f4", cout_pad, b_off).copy()
+            ops.append(op)
+            continue
         else:
             dt = np.int8 if op["int8"] else np.dtype("<f4")
             packed = np.frombuffer(data, dt, cout_pad * k, w_off).reshape(cout_pad // 8, k, 8)
@@ -316,15 +401,32 @@ def dequant(op):
     return op["w"]
 
 
-def macs_per_frame(blob):
+def attn_parts(op):
+    """A read_blob ATTN op's two matrices as pointwise-op dicts (w [rows][K], scale with int8, bias, no ReLU):
+    QKV (3 dim rows on the frame's d inputs: Q, K, V) and O (d rows on the dim attention outputs)."""
+    def part(w, scale, bias):
+        p = dict(w=w, bias=bias, int8=op["int8"], relu=False, res=False, collapse=False, cout=w.shape[0],
+                 k=w.shape[1], type=T_PW)
+        if op["int8"]:
+            p["scale"] = scale
+        return p
+    return part(op["w"], op.get("scale"), op["bias"]), part(op["o_w"], op.get("o_scale"), op["o_bias"])
+
+
+def macs_per_frame(blob, frames=None):
     """Multiply-accumulates the runtime does per CTC frame (the blob's stride of input columns):
-    a line of width W costs ceil(W / stride) times this. Returns (total, head)."""
+    a line of width W costs ceil(W / stride) times this. Returns (total, head). An attention op counts its
+    projections (QKV and O: (3 + 1) dim d per frame); its scores and weighted sums cost 2 T dim more per frame on a
+    line of T frames, added when `frames` = T is given."""
     S, s, tot, head = blob["stride"], 1, 0, 0
     for op in blob["ops"]:
         s *= op["sw"]
         cols = S // s                                   # output columns per frame
         if op["type"] in (T_CONV, T_DW):
             macs = cols * op["h_out"] * op["cout"] * op["kh"] * op["kw"]
+        elif op["type"] == T_ATTN:
+            macs = cols * (op["k"] * op["cout_pad"] + op["attn_dim"] * op["cout"]) + \
+                (2 * int(frames) * op["attn_dim"] if frames else 0)
         else:
             macs = cols * (1 if op["collapse"] else op["h_in"]) * op["k"] * op["cout"]
         tot += macs
@@ -345,7 +447,9 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
     default_tile(stride) and 16; tile >= max_width / stride = whole line); mode 0 = the blob's
     default (f32 for float blobs, w8f for int8); head_gate as vocr_opts.head_gate (0 off, 1 on,
     2 score: w8i and a blob with a gate); two_level: None, or the blob's VOC2 trailer as
-    train/head2level.read_trailer returns it (vocr_opts.two_level = 1, W8I)."""
+    train/head2level.read_trailer returns it (vocr_opts.two_level = 1, W8I). A blob with an attention op adds the
+    line of z (t_max x d floats) and, where it outgrows the idle rings, accumulator and transients it overlays, the
+    attention's working set (K and V of t_max frames, a head batch of queries: docs/vocr6-attn.md)."""
     ops, S, H0 = blob["ops"], blob["stride"], blob["height"]
     if any(op["kw"] < op["sw"] for op in ops):     # vocr_load refuses such a blob (kw >= sw)
         raise ValueError("an op narrower than its width stride (kw < sw)")
@@ -423,7 +527,22 @@ def plan_arena(blob, max_width=0, tile=0, head=0, mode=0, head_gate=0, two_level
         trans.append(_align(tin) + _align(tout) + _align(scratch))
     if head_gate:                            # the gate's scratch: a tile's frames in int16, scales, hidden units
         trans.append(_align(F * k_head * 2) + _align(F * 4) + _align(F * blob["gate"]["hidden"] * 4))
-    return persistent + max(trans)
+    total = persistent + max(trans)
+    attn = [op for op in ops if op["type"] == T_ATTN]
+    if attn:                                 # runtime/vocr.c plan(): docs/vocr6-attn.md "Arena"
+        a = attn[0]
+        d, da, tp, P = a["cin"], a["attn_dim"], _align(t_max, 8), hb
+        kmax = max(d, da)
+        # the attention's working set (K and V of every frame, a query chunk's Q, scores and outputs, the
+        # projections' scratch) overlays the rings, the head's accumulator and the transients, which are idle
+        # between the tiles and the head; the line of z (every frame's bottleneck output) comes after both
+        w = _align(8 * H0) + 2 * _align(tp * da * 4) + 2 * _align(P * da * 4) + _align(P * tp * 4)
+        if mode == MODE_W8F:
+            w += _align(kmax * 8 * 4)
+        elif mode == MODE_W8I:
+            w += _align(P * kmax * 2) + _align(P * 4)
+        total = max(total, w) + _align(t_max * d * 4)
+    return total
 
 
 # ---------------------------------------------------------------- CLI
@@ -459,11 +578,12 @@ def main():
         macs, head = macs_per_frame(b)
         g = b["gate"]
         gate = None if not g else {"bytes": g["bytes"], "hidden": g["hidden"], "t": float(g["t"])}
+        attn = next(({"heads": op["heads"], "dim": op["attn_dim"]} for op in b["ops"] if op["type"] == T_ATTN), None)
+        frames = {w: -(-w // b["stride"]) for w in map(int, args.widths.split(","))}
         print(json.dumps({"blob": str(args.info), "bytes": b["bytes"], "params": b["params"], "gate": gate,
-                          "classes": b["n_classes"], "height": b["height"], "ops": len(b["ops"]),
+                          "attn": attn, "classes": b["n_classes"], "height": b["height"], "ops": len(b["ops"]),
                           "macs_per_frame": macs, "head_macs_per_frame": head,
-                          "macs_per_line": {w: macs * -(-w // b["stride"])
-                                            for w in map(int, args.widths.split(","))},
+                          "macs_per_line": {w: macs_per_frame(b, t)[0] * t for w, t in frames.items()},
                           "tile": args.tile or default_tile(b["stride"]), "head": args.head or 16,
                           "arena": rows}))
 

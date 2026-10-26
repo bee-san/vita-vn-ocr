@@ -182,7 +182,7 @@ class TinyTorch(Recognizer):
 
         import torch
 
-        from model import TinyVNOCR
+        from model import TinyVNOCR, attn_arch
         torch.set_num_threads(threads())
         ck = torch.load(path, map_location="cpu", weights_only=False)
         self.vocab = [c if len(c) == 1 else UNK for c in ck["vocab"]]
@@ -190,6 +190,7 @@ class TinyTorch(Recognizer):
         accepted = inspect.signature(TinyVNOCR).parameters
         kw = {k: ck[k] for k in ("width", "bottleneck", "depth", "ctx", "ctx_k", "chans")
               if ck.get(k) is not None and k in accepted}
+        kw.update(attn_arch(ck))            # the attention block (train2.py --attn 1); absent: none
         self.model = TinyVNOCR(len(self.vocab) + 1, **kw)
         self.model.load_state_dict(ck["model"])
         self.model.eval()

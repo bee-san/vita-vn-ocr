@@ -187,3 +187,275 @@ def test_train2_attn_from_an_old_checkpoint_resumes_and_records_the_block(tmp_pa
         train2.main(["--run", "p", "--init", str(tmp_path / "old.pt"), *argv, "--steps", "2"])
     ck0 = torch.load(tmp_path / "runs/p/ckpt_last.pt", map_location="cpu", weights_only=False)
     assert "attn" not in ck0 and not any(k.startswith("attn.") for k in ck0["model"])
+
+
+# ----------------------------------------------------------------------------- export and the C runtime
+
+def attn_model(seed=3, gate=0.7, dim=48, heads=2, vocab=VOCAB, blank_bias=None):
+    """A random-init attention model (width 0.25, bottleneck 96) with random BN, a peaked softmax (Q, K x 3) and,
+    with blank_bias, a blank-heavy head (the blank wins about that share of frames, as a trained model's do)."""
+    from torch import nn
+    torch.manual_seed(seed)
+    m = TinyVNOCR(len(vocab) + 1, width=0.25, attn=1, attn_dim=dim, attn_heads=heads).eval()
+    with torch.no_grad():
+        for mod in m.modules():
+            if isinstance(mod, nn.BatchNorm2d):
+                mod.running_var.uniform_(0.5, 2.0)
+                mod.running_mean.uniform_(-0.2, 0.2)
+                mod.weight.uniform_(0.5, 1.5)
+                mod.bias.uniform_(-0.5, 0.5)
+            if isinstance(mod, nn.Conv2d):
+                nn.init.normal_(mod.weight, 0, (2.0 / mod.weight[0].numel()) ** 0.5)
+        m.attn.q.weight.mul_(3.0)
+        m.attn.k.weight.mul_(3.0)
+        m.attn.gate.fill_(gate)
+        if blank_bias is not None:
+            lg = m(torch.rand(8, 1, 32, 256, generator=torch.Generator().manual_seed(8)) * 2 - 1)
+            m.head.bias[0] += float(torch.quantile((lg[:, :, 1:].max(2).values - lg[:, :, 0]).flatten(), blank_bias))
+    return m
+
+
+def blob_of(m, int8, vocab=VOCAB):
+    import export
+    return export.build_blob(export.model_ops(m, 32), vocab, 32, int8, 1024, b"")[0]
+
+
+def crops(n, seed=0):
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n):
+        h, w = int(rng.integers(14, 48)), int(rng.integers(6, 700))
+        g = rng.integers(0, 256, (h, w), dtype=np.uint8)
+        g[:, rng.integers(0, w, size=max(1, w // 3))] //= 3
+        out.append(g)
+    return out
+
+
+def x_of(g, H=32):
+    import cv2
+    h, w = g.shape
+    nw = max(8, min(1024, int(round(w * H / h))))
+    r = cv2.resize(g, (nw, H), interpolation=cv2.INTER_LINEAR)
+    W = (nw + 7) // 8 * 8
+    return np.concatenate([r, np.repeat(r[:, -1:], W - nw, 1)], 1).astype(np.float32) / 127.5 - 1.0
+
+
+MODES = {"f32": False, "w8f": True, "w8i": True}
+
+
+def test_export_folds_the_scale_and_the_gate():
+    import export
+    m = attn_model(gate=-0.6, dim=48, heads=3)
+    b = export.read_blob(blob_of(m, False))
+    a = [op for op in b["ops"] if op["type"] == export.T_ATTN]
+    assert len(a) == 1 and b["ops"][-2] is a[0] and b["ops"][-1]["type"] == export.T_HEAD
+    a = a[0]
+    assert (a["heads"], a["attn_dim"], a["cin"], a["cout"], a["k"], a["cout_pad"]) == (3, 48, 96, 96, 96, 144)
+    s = 1 / np.sqrt(16)
+    wq, wk, wv = (getattr(m.attn, n).weight.detach().double().numpy()[:, :, 0, 0] for n in "qkv")
+    np.testing.assert_array_equal(a["w"], np.concatenate([wq * s, wk, wv]).astype(np.float32))
+    np.testing.assert_array_equal(a["bias"][48:96], 0)                     # K: no bias
+    np.testing.assert_array_equal(a["bias"][:48], (m.attn.q.bias.detach().double().numpy() * s).astype(np.float32))
+    wo, g = m.attn.o.weight.detach().double().numpy()[:, :, 0, 0], float(m.attn.gate)     # g: float32(-0.6)
+    np.testing.assert_array_equal(a["o_w"], (wo * g).astype(np.float32))
+    np.testing.assert_array_equal(a["o_bias"], (m.attn.o.bias.detach().double().numpy() * g).astype(np.float32))
+    plain = export.read_blob(blob_of(_without_attn(m), False))
+    assert b["params"] == plain["params"] + 144 * 96 + 144 + 96 * 48 + 96
+    macs, plain_macs = export.macs_per_frame(b)[0], export.macs_per_frame(plain)[0]
+    assert macs == plain_macs + 4 * 48 * 96 and export.macs_per_frame(b, 80)[0] == macs + 2 * 80 * 48
+    q = export.read_blob(blob_of(m, True))
+    a8 = [op for op in q["ops"] if op["type"] == export.T_ATTN][0]
+    assert a8["int8"] and a8["w"].dtype == np.int8 and a8["o_w"].dtype == np.int8 and len(a8["o_scale"]) == 96
+    extra = 64 + (144 * 96 + 8 * 144) + (96 * 48 + 8 * 96)            # the record, QKV and O with scales and biases
+    assert len(blob_of(m, True)) == len(blob_of(_without_attn(m), True)) + extra
+
+
+def _without_attn(m):
+    """The same model without its attention block (every other weight shared)."""
+    p = TinyVNOCR(m.head.out_channels, **{k: v for k, v in m.arch.items() if not k.startswith("attn")}).eval()
+    p.load_state_dict({k: v for k, v in m.state_dict().items() if not k.startswith("attn.")})
+    return p
+
+
+def test_gate_zero_reads_as_the_model_without_the_block():
+    """The export of a block at gate 0 (a fine-tune's start) gives the C logits of the model without it, bit for bit,
+    in every mode, though its blob carries the op."""
+    from pyvocr import Vocr
+    m = attn_model(gate=0.0)
+    p = _without_attn(m)
+    for mode, int8 in MODES.items():
+        a, b = Vocr(blob_of(m, int8), mode=mode), Vocr(blob_of(p, int8), mode=mode)
+        assert a.arena_bytes > b.arena_bytes
+        for g in crops(12, 1):
+            ta, la = a.run(g, logits=True)
+            tb, lb = b.run(g, logits=True)
+            assert ta == tb and np.array_equal(la.view(np.uint32), lb.view(np.uint32)), mode
+
+
+@pytest.mark.parametrize("dim,heads", [(48, 2), (96, 2), (32, 4)])
+def test_c_equals_the_twin_and_pytorch(dim, heads):
+    import vocr_ref
+    from pyvocr import Vocr
+
+    import export
+    m = attn_model(dim=dim, heads=heads)
+    for mode, int8 in MODES.items():
+        data = blob_of(m, int8)
+        b = export.read_blob(data)
+        rts = [Vocr(data, mode=mode, tile=t, head=h) for t, h in ((0, 0), (1, 1), (3, 7), (16, 2), (128, 128))]
+        for g in crops(8, dim + heads):
+            x = x_of(g)
+            exact = vocr_ref.forward(b, x, mode)
+            outs = [rt.run(g, logits=True) for rt in rts]
+            for text, lg in outs:
+                assert np.array_equal(lg.view(np.uint32), exact.view(np.uint32)), mode
+                assert text == outs[0][0]
+            if mode == "f32":
+                with torch.no_grad():
+                    ref = m(torch.from_numpy(x)[None, None])[:, 0].numpy()
+                assert np.abs(outs[0][1] - ref).max() <= 1e-3 * max(1.0, np.abs(ref).max())
+
+
+def test_arena_mirror_and_the_line():
+    """vocr_arena_bytes == export.plan_arena over widths, tiles, batches and modes; the line of z grows with
+    max_width (t_max x 96 floats) and nothing else of it does."""
+    from pyvocr import Vocr
+
+    import export
+    m = attn_model()
+    for mode, int8 in MODES.items():
+        data = blob_of(m, int8)
+        b = export.read_blob(data)
+        mid = {"f32": export.MODE_F32, "w8f": export.MODE_W8F, "w8i": export.MODE_W8I}[mode]
+        for t, h, mw in ((0, 0, 0), (1, 1, 0), (2, 3, 256), (5, 7, 640), (16, 16, 1000), (128, 128, 1024), (4, 16, 8)):
+            rt = Vocr(data, mode=mode, tile=t, head=h, max_width=mw)
+            assert rt.arena_bytes == export.plan_arena(b, mw, t, h, mid), (mode, t, h, mw)
+    big = attn_model(dim=96)
+    plain = export.read_blob(blob_of(_without_attn(big), True))
+    b = export.read_blob(blob_of(big, True))
+    for mw in (256, 640, 1024):
+        # this model's rings are small, so the working set (K, V of max_width / 8 frames) can outgrow them
+        assert export.plan_arena(b, mw, 0, 0, export.MODE_W8I) >= export.plan_arena(plain, mw, 0, 0, export.MODE_W8I) \
+            + mw // 8 * 96 * 4
+
+
+@pytest.fixture(scope="module")
+def gated_attn():
+    """An attention blob (blank-heavy head) and a head gate fit on its own z' frames (a few steps), median threshold."""
+    from pyvocr import Vocr
+
+    import headgate as HG
+    base = blob_of(attn_model(seed=4, blank_bias=0.6), True)
+    rt = Vocr(base, mode="w8i")
+    xs, ys = [], []
+    for g in crops(20, 5):
+        rt.run(g, head_in=True)
+        xs.append(rt.last_head_in.copy())
+        ys.append(rt.last_best == 0)
+    x, y = np.concatenate(xs), np.concatenate(ys)
+    assert 0.2 < y.mean() < 0.95
+    old = dict(HG.FIT)
+    HG.FIT.update(epochs=2, batch=512)
+    try:
+        f = HG.fit_float(x, y)
+    finally:
+        HG.FIT.clear()
+        HG.FIT.update(old)
+    params = HG.quantise(f["w1"], f["b1"], f["w2"], f["b2"])
+    t = np.float32(np.median(HG.gate_scores(params, x)))
+    return base, HG.append_gate(base, params, t), params, t
+
+
+def test_head_gate_reads_z_prime(gated_attn):
+    """With the attention op the head's input is z': the C gate scores equal the twin's on vocr_extra.head_in, and
+    head_gate on equals the ungated read with the skipped frames as blanks, at several tilings."""
+    from pyvocr import Vocr
+
+    import export
+    import headgate as HG
+    base, blob, params, t = gated_attn
+    assert HG.read_gate(blob)["k"] == 96 and export.read_blob(blob)["gate"]["hidden"] == 16
+    a = Vocr(base, mode="w8i")
+    vocab = [a.class_text(c) for c in range(a.n_classes)]
+    skipped = frames = 0
+    for tile, head in ((0, 0), (1, 1), (3, 7), (16, 4)):
+        on = Vocr(blob, mode="w8i", head_gate="on", tile=tile, head=head)
+        sc = Vocr(blob, mode="w8i", head_gate="score", tile=tile, head=head)
+        assert on.arena_bytes == export.plan_arena(export.read_blob(blob), 0, tile, head, export.MODE_W8I, 1)
+        for i, g in enumerate(crops(10, 6)):
+            k = (1, 3, 8)[i % 3]
+            x = a.run_topk(g, k, head_in=True)
+            s = sc.run_topk(g, k, head_in=True, gate_score=True)
+            tw = HG.gate_scores(params, x["head_in"])
+            assert np.array_equal(s["head_in"], x["head_in"]) and np.array_equal(s["gate_score"].view(np.uint32),
+                                                                                 tw.view(np.uint32))
+            sim = HG.simulate(x, tw > t, vocab)
+            y = on.run_topk(g, k)
+            assert y["text"] == sim["text"] and y["gated"] == sim["gated"]
+            assert np.array_equal(y["best"], sim["best"]) and np.array_equal(y["topc"], sim["topc"])
+            assert np.array_equal(y["topv"].view(np.uint32), sim["topv"].view(np.uint32))
+            skipped += sim["gated"]
+            frames += len(tw)
+    assert 0.2 < skipped / frames < 0.8
+
+
+def test_two_level_reads_z_prime():
+    """The two-level head on an attention blob: its rows permuted, a random escape; the C escape scores, fired
+    frames, argmax and top-K equal train/head2level.py's twin on the head's input z'."""
+    from pyvocr import Vocr
+
+    import export
+    import head2level as H2
+    vocab = [chr(0x4E00 + i) for i in range(120)]
+    m = attn_model(seed=6, vocab=vocab)
+    with torch.no_grad():
+        m.head.bias.normal_(0, 1.0)
+        m.head.bias[0] += 2.0
+    blob = blob_of(m, True, vocab)
+    rng = np.random.default_rng(2)
+    pblob = H2.permute_blob(blob, np.concatenate([[0], 1 + rng.permutation(len(vocab))]))
+    head = H2.head_arrays(pblob)
+    w1 = rng.normal(0, 0.3, size=(16, head["K"] + 2))
+    q, scale = export.quantize_rows(w1[:, :head["K"]])
+    esc = dict(q=q, scale=scale.astype(np.float32), bias=rng.normal(0, 0.5, 16).astype(np.float32),
+               wl1=rng.normal(0, 0.05, 16).astype(np.float32), wb0=rng.normal(0, 0.05, 16).astype(np.float32),
+               w2=rng.normal(0, 0.5, 16).astype(np.float32), b2=np.float32(0.1), t=np.float32(0.0))
+    two_blob = H2.attach(pblob, H2.write_trailer(pblob, 3, esc))
+    two = H2.read_trailer(two_blob)
+    full, rt = Vocr(pblob, mode="w8i"), Vocr(two_blob, mode="w8i", two_level=1)
+    assert rt.arena_bytes == export.plan_arena(export.read_blob(two_blob), 1024, 0, 0, 3, two_level=two)
+    fired = frames = 0
+    for g in crops(12, 7):
+        full.run(g, head_in=True)
+        tw = H2.twolevel_exact(full.last_head_in, head, two, topk=8)
+        out = rt.run_topk(g, 8, esc=True)
+        assert np.array_equal(out["esc"], tw["score"]) and out["escaped"] == int(tw["fire"].sum())
+        assert np.array_equal(out["best"], tw["best"]) and np.array_equal(out["topc"], tw["topc"])
+        assert np.array_equal(out["topv"], tw["topv"])
+        fired += int(tw["fire"].sum())
+        frames += len(tw["fire"])
+    assert 0 < fired < frames
+
+
+def test_checkpoint_tools_rebuild_the_block(tmp_path):
+    """export.load_checkpoint, pyvocr's from_checkpoint and eval's TinyTorch read an attention checkpoint."""
+    import backends
+    from pyvocr import Vocr
+
+    import export
+    vocab = [chr(0x3042 + i) for i in range(40)]
+    m = attn_model(vocab=vocab)
+    ck = {"model": m.state_dict(), "vocab": vocab, "width": 0.25, "bottleneck": 96, "height": 32,
+          "attn": 1, "attn_dim": 48, "attn_heads": 2}
+    torch.save(ck, tmp_path / "a.pt")
+    m2, v2, h2 = export.load_checkpoint(tmp_path / "a.pt")
+    assert m2.attn is not None and v2 == vocab and h2 == 32
+    rt = Vocr.from_checkpoint(tmp_path / "a.pt", int8=False, mode="f32")
+    tt = backends.TinyTorch(tmp_path / "a.pt")
+    assert tt.model.attn is not None
+    g = crops(1, 9)[0]
+    x = x_of(g)
+    with torch.no_grad():
+        ref = m(torch.from_numpy(x)[None, None])[:, 0].numpy()
+    _, lg = rt.run(g, logits=True)
+    assert np.abs(lg - ref).max() <= 1e-3 * max(1.0, np.abs(ref).max())

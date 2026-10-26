@@ -28,7 +28,14 @@ UPPER = 0.05
 PY = str(ROOT / ".venv/bin/python")
 
 
-def run(*args):
+REUSE = False
+
+
+def run(*args, out=None):
+    """One step; with --reuse a step whose output file exists is skipped (its inputs are unchanged by construction)."""
+    if REUSE and out is not None and Path(out).exists():
+        print("= reuse", out, flush=True)
+        return
     print("+", " ".join(map(str, args))[:300], flush=True)
     subprocess.run([PY, *map(str, args)], check=True, cwd=ROOT)
 
@@ -37,28 +44,32 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("run_dir")
     ap.add_argument("--lines", type=int, default=12000)
+    ap.add_argument("--reuse", action="store_true", help="keep the fit and the reads already written")
     a = ap.parse_args()
+    global REUSE
+    REUSE = a.reuse
     rd = Path(a.run_dir)
     rec = json.loads((rd / "run_record.json").read_text())
     blob = Path(rec["blob"])
     hd = rd / "head"
     hd.mkdir(exist_ok=True)
     perm = hd / "permuted.vocr"
-    run(ROOT / "train/modelb_head.py", "permute", "--blob", blob, "--rank", A / "rank_psp.json", "--out", perm)
+    run(ROOT / "train/modelb_head.py", "permute", "--blob", blob, "--rank", A / "rank_psp.json", "--out", perm,
+        out=perm)
     srcs = [str(A / "pools/console/train/*.npz")] + [str(A / f"pools/native/{n}_psp.npz") for n in
                                                      ("nat_grad", "nat_ref", "dntv_grad", "dntv_ref", "dnst_grad",
                                                       "dnst_ref")] + \
         [str(P / f"{n}_psp.npz") for n in ("own_grad", "own_ref")]
     feats = hd / "features.npz"
     run(ROOT / "train/modelb_head.py", "features", "--blob", perm, "--sources", *srcs, "--lines", a.lines,
-        "--out", feats)
-    run(ROOT / "train/modelb_head.py", "fit", "--blob", perm, "--features", feats, "--out", hd)
+        "--out", feats, out=feats)
+    run(ROOT / "train/modelb_head.py", "fit", "--blob", perm, "--features", feats, "--out", hd, out=hd / "fit.json")
     reads = {"plain": (perm, []), "gate": (hd / "gated.vocr", ["--head-gate", "on"]),
              "gate2": (hd / "gated2.vocr", ["--head-gate", "on", "--two-level"])}
     for name, (b, opts) in reads.items():
         for plan in ("dev", "hval"):
             run(ROOT / "eval/modelb_eval.py", "read", "--plan", A / f"eval/{plan}_plan.pkl", "--blob", b, "--mode",
-                "w8f", *opts, "--out", hd / f"{plan}_{name}.json")
+                "w8f", *opts, "--out", hd / f"{plan}_{name}.json", out=hd / f"{plan}_{name}.json")
     # the permuted plain blob reads exactly as the run's own blob (a permutation changes no logit)
     same = (json.loads((hd / "dev_plain.json").read_text())["totals"] ==
             json.loads((rd / "dev.json").read_text())["totals"])

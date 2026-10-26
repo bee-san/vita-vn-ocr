@@ -840,7 +840,7 @@ def cmd_shards(args):
             total += n
             print(f"shard {idx}: {n} lines from {regions} regions ({errors} errors) in {dt:.0f}s "
                   f"(total {total}, {time.time() - t0:.0f}s)", flush=True)
-    print("SHARDS_DONE", flush=True)
+    print("shards finished", flush=True)
 
 
 def cmd_manifest(args):

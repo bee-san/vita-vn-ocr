@@ -273,7 +273,8 @@ def test_rows_leave_out_the_excluded_vns():
 # ---------------------------------------------------------------- steps, messages, the protocol
 
 class _Args:
-    prefix, all_vns, frozen_only, path_lm, path_lm_opts, procs = "VOCR6", False, True, "lm", "", 5
+    prefix, all_vns, frozen_only, path_lm_hval, path_lm_dev, path_lm_opts, procs = "VOCR6", False, True, "a", "b", "", 5
+    no_plans4 = False
 
     def __init__(self, priv):
         self.priv = str(priv)
@@ -316,6 +317,10 @@ def test_protocol_matches_the_driver():
     assert G.TEST_TITLE in proto["vocr6_path"]["plan_hygiene"]
     assert proto["decision"]["order"].startswith("Large, then Normal, then Small")
     assert G.TWO_LEVEL_TIERS == tuple(proto["two_level"]["tiers"])
+    a1 = proto["amendments"][0]                         # the LM per plan and the stage-4 plans' report
+    assert a1["n"] == 1 and all(h in a1["what"] for h in G.PATH_LM_SHA.values())
+    assert all(h in a1["also"] for _, h in G.PLANS4.values())
+    assert G.PATH_LM_OPTS in a1["what"]
 
 
 def test_completion_tokens_never_printed():

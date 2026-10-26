@@ -1,0 +1,607 @@
+{
+ "kind": "synth6-shards",
+ "schema": 1,
+ "sets": {
+  "vita": {
+   "kind": "synth6-recipe",
+   "schema": 1,
+   "view": "vita",
+   "seed": 20261028,
+   "per_shard": 10000,
+   "cfg": {
+    "generator": "synth6",
+    "version": 1,
+    "matched": 0.55,
+    "placement": {
+     "rows": 0.8,
+     "scene": 0.1,
+     "scene_box": 0.1
+    },
+    "lines": [
+     0.45,
+     0.35,
+     0.15,
+     0.05
+    ],
+    "name": 0.35,
+    "text": {
+     "pool": 0.4,
+     "hook": 0.25,
+     "target": 0.25,
+     "confusion": 0.1
+    },
+    "fullwidth_space": 0.2,
+    "crop": {
+     "cell": 0.35,
+     "ink": 0.35,
+     "grad": 0.3
+    },
+    "grad_cover": 0.9,
+    "pad": {
+     "vita": 4,
+     "psp": 2,
+     "psp2x": 4
+    },
+    "pad_extra": {
+     "vita": {
+      "top": 0.04,
+      "bottom": 0.06,
+      "left": 0.12,
+      "right": 0.04
+     },
+     "psp": {
+      "top": 0.0,
+      "bottom": 0.02,
+      "left": 0.2,
+      "right": 0.0
+     }
+    },
+    "region_margin": {
+     "vita": 12,
+     "psp": 6,
+     "psp2x": 12
+    },
+    "adrenaline": {
+     "bilinear": 0.8,
+     "nearest": 0.15,
+     "bicubic": 0.05
+    },
+    "cross_size": [
+     0.9,
+     1.12
+    ],
+    "accent": 0.5,
+    "style_jitter": {
+     "rgb": 10,
+     "alpha": 0.12,
+     "drop_halo": 0.05,
+     "drop_shadow": 0.05
+    },
+    "borrow_style": 0.12,
+    "spacing_jitter": 0.6,
+    "y_jitter": 1,
+    "scene_band": [
+     0.06,
+     0.72
+    ],
+    "min_label": 1,
+    "min_contrast": 60,
+    "max_busy": 45,
+    "min_char_contrast": 40,
+    "scene_box_alpha": [
+     0.8,
+     1.0
+    ],
+    "page_tries": 4
+   },
+   "code_sha256": {
+    "synth6.py": "832b79a9dc32e64a472a334f92c30a8ba1d8cea73a5b8105db782490ac5dd34f",
+    "synth6_fonts.py": "15efc160742b07fd43f521ed75825eeb9eed31b5927f2ad9f972c2f4cccb2fab",
+    "synth6_assets.py": "45d7028f9c6d0ea5bac632538262c50be5478d6b303de51a429b2c89db093ff1",
+    "synth6_text.py": "86caf9879ade8bf5b1f19fd835e7e788c80833c2c12f931e1d8f1f732850bb13",
+    "synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
+    "common.py": "b04a0d05aef37f3ba13e2977bd985862f00178ffab478bca4299f538df2b3a6e"
+   },
+   "vocab": "data/vocab_vn_5631.txt",
+   "vocab_sha256": "22216fc5ac73160f941548b7e7acff6024fe4e27fb8b6eb2081afe98041c74f0",
+   "assets": {
+    "titles_sha256": "0bcfc82ce4e61fc4637bc4c5764168a9976caca8809467f7aee146687c28059d",
+    "hooktext_sha256": "c9d2eafd7eecd254479a3028c95bf40d5f9c499c1aebd810d48037eb4432f3c7",
+    "real_counts_sha256": "552ffc3a2424a3ed118ae6d396cabfe84dcd74e49511d19e5167eb75d15c49cb",
+    "fonts_inventory_sha256": "921dcf4d03075b587bfde60007ae3dc97d2e33bb3c2d96e7baf8e852ea1fdf22",
+    "font_check_sha256": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
+    "glyph_check_sha256": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
+    "glyph_geometry_sha256": "5efd45441a94d3fee638a540d19249ea2225cf0ca5e8153127ee7abe5e93fd48",
+    "test_text_sha256": "a5e030cf8fb48113cdc17c5b75f4005e45750119da6b8a9a680e0a1d11abb906",
+    "hval_text_sha256": "24d9551bae272e2844e03cc108e48b30868788a5b3883d9e8931d19fbd68e0d8",
+    "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e"
+   },
+   "titles": [
+    "PCSG00007",
+    "PCSG00146",
+    "PCSG00352",
+    "PCSG00367",
+    "PCSG00380",
+    "PCSG00468",
+    "PCSG00469",
+    "PCSG00509",
+    "PCSG00540",
+    "PCSG00547",
+    "PCSG00553",
+    "PCSG00555",
+    "PCSG00576",
+    "PCSG00611",
+    "PCSG00620",
+    "PCSG00628",
+    "PCSG00648",
+    "PCSG00666",
+    "PCSG00667",
+    "PCSG00713",
+    "PCSG00751",
+    "PCSG00753",
+    "PCSG00805",
+    "PCSG00854",
+    "PCSG00866",
+    "PCSG00876",
+    "PCSG00914",
+    "PCSG00917",
+    "PCSG00918",
+    "PCSG00935",
+    "PCSG01110"
+   ],
+   "cross_faces": 128,
+   "cross_fonts": 293,
+   "text": {
+    "pools": {
+     "aozora_dialogue": {
+      "file": "aozora_dialogue.train.txt",
+      "sha256": "81c3fe6570d2a6ef1cf30e1da6e1198d805120a49140e801aba6a83ddb6c8ff5",
+      "lines": 399943,
+      "class": "open"
+     },
+     "narikiri": {
+      "file": "narikiri.train.txt",
+      "sha256": "c6492a1eaf93c3bb303fe54759b0cb546c5f1616cef1dc161088e2120113b2ba",
+      "lines": 399832,
+      "class": "grey"
+     },
+     "aratako_dsv3": {
+      "file": "aratako_dsv3.train.txt",
+      "sha256": "345866dad525db1baf6d780ebbb2361ad2084687dff20ca5b89daca3df253a19",
+      "lines": 399960,
+      "class": "open"
+     },
+     "aratako_gpt4omini": {
+      "file": "aratako_gpt4omini.train.txt",
+      "sha256": "ae6bb22fe351f2c9e499fa074b53d3c98d0cc97c558526cdf50790bd412ec09d",
+      "lines": 399973,
+      "class": "nc"
+     },
+     "opensubtitles": {
+      "file": "opensubtitles.train.txt",
+      "sha256": "efe79bc19565e776f98a79d6003ab5f63bb7a1c96879c6edb62ebbce68f6bbe3",
+      "lines": 391948,
+      "class": "grey"
+     },
+     "jesc": {
+      "file": "jesc.train.txt",
+      "sha256": "08c0ec3f4ca2441b5c273df4b7a6135d7940d89f946ef1d1bbdd6e56fed5d22d",
+      "lines": 392513,
+      "class": "open"
+     },
+     "tatoeba": {
+      "file": "tatoeba.train.txt",
+      "sha256": "5f7322923c2c41d18b9515905a03f61a6d31448b3fe71fefe444e77a444ca6f3",
+      "lines": 237530,
+      "class": "open"
+     },
+     "nucc": {
+      "file": "nucc.train.txt",
+      "sha256": "29115769e61038746bb1c23d99b5d6329fbf71d82e61be1bf7bdf9ce5879d828",
+      "lines": 100600,
+      "class": "nc"
+     },
+     "jdd": {
+      "file": "jdd.train.txt",
+      "sha256": "b7612307e69c2f1f3b1445ca41432facfe2d293d7ad6e9056b32d5151c2f469d",
+      "lines": 39595,
+      "class": "nc"
+     },
+     "bsd": {
+      "file": "bsd.train.txt",
+      "sha256": "7049dadadf69ecd69a367f71cb2d2506f6471d361bd0554d4dae325c8d15617d",
+      "lines": 20564,
+      "class": "nc"
+     },
+     "wiktionary": {
+      "file": "wiktionary.train.txt",
+      "sha256": "2e2fd71b2bd2c76e02bf3a69ed5e3ddeefa51ad67cb8adf5fe13deb9d8368e7a",
+      "lines": 50774,
+      "class": "open"
+     },
+     "wikiquote": {
+      "file": "wikiquote.train.txt",
+      "sha256": "8c5a52b3692c84db63abb3ff02ed383b935bf45fda4ba1d04f25fdfea2675ff4",
+      "lines": 18637,
+      "class": "open"
+     },
+     "aozora_narration": {
+      "file": "aozora_narration.train.txt",
+      "sha256": "2b75f33bf57279c23d511b271eb3a65773de601c7b2501f885502454f5cdaa94",
+      "lines": 399949,
+      "class": "open"
+     },
+     "wiki": {
+      "file": "wiki.train.txt",
+      "sha256": "9c18dd18fb604bfe7555c7ccd1758a7233f7bcbdde5ecb462a2b047e887ea81b",
+      "lines": 399993,
+      "class": "open"
+     }
+    },
+    "contexts": "16f15ae70d3339c421d3748971de62a6df5c2cbd288b2dcec4d0fa5d5546bfc2",
+    "names": "4aa76da50328146dd11e14096b7c1b2d99a54a7f693df1b513da8900cf773d44",
+    "names_dropped_excluded": 255,
+    "targets": "15bd0f42ba2db5016d55af5e9a7409967ebed7e08475b7684d472297c99253bb",
+    "lists": "d1a821a4a0b6e56222bbe6ef8d8db6ebd1dfcaf3fad5997f271e19a14a0e2d14"
+   },
+   "versions": {
+    "numpy": "2.4.6",
+    "opencv": "5.0.0"
+   }
+  }
+ },
+ "shards": [
+  {
+   "set": "vita",
+   "file": "synth6_vita_00000.npz",
+   "bytes": 93387247,
+   "sha256": "f88df858616e5362b7776a6c2d829e9c1116b9f20f855db2a38156acf9fb70b4",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00001.npz",
+   "bytes": 93652488,
+   "sha256": "6ccabe9c86bcd46e53e8b496b1eceff7951e8929444cc2b9496aaf94b0771e19",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00002.npz",
+   "bytes": 92695574,
+   "sha256": "18dc9cc7c80632591109bf718552ecbe64ed827d4a4e7419ab1c63632525c7bc",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00003.npz",
+   "bytes": 91536395,
+   "sha256": "94878499fba1c1201e5837691a647cf0d0c4e80b77a92179c617099d14b656a8",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00004.npz",
+   "bytes": 92692758,
+   "sha256": "e2ccf7b386f9972f5e58612777eb173592b33f37da394843978554e44ac176a7",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00005.npz",
+   "bytes": 93374609,
+   "sha256": "f3c363c204aabbec0528f52ee2ee8c00862aa81477de0fba6af92051f39a0826",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00006.npz",
+   "bytes": 92882723,
+   "sha256": "07c418f6929b5a5a1672954d75886ff0a3793d9cd15b65a80d396dff9e31e6b7",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00007.npz",
+   "bytes": 93473317,
+   "sha256": "37386874a4e944972bd53f80668696f47bec4da9ba14af647b972001ebdd5524",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00008.npz",
+   "bytes": 92164708,
+   "sha256": "fe7c05e8624aa99c05b06f8424cb3bacd57d8aaf69e24a1e1d7cea1eed05878e",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00009.npz",
+   "bytes": 91756833,
+   "sha256": "e14b1a4eabe059ad69f61d9525539c35c850eaab57fa3633f90377c08aa6a475",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00010.npz",
+   "bytes": 92242147,
+   "sha256": "40b1f2131e20cb343ddc63d45bd29b1ba11d7ffe77bb778138a6b239a6e9d288",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00011.npz",
+   "bytes": 92600855,
+   "sha256": "43c601cfb04f553c801843e254aeaf62d5a2f1a182e2772066e6e8a8c4631421",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00012.npz",
+   "bytes": 93131799,
+   "sha256": "93dbd3fa66f59847bbb9decd57476e54b9d80ac222e5d2b419607cac9303721e",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00013.npz",
+   "bytes": 92405480,
+   "sha256": "f2ee2e652b0e763ad20a0eb2ab70635efc807c984cdfa9163dafdea45d205e43",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00014.npz",
+   "bytes": 93946734,
+   "sha256": "0c08f9261956ca4149a5691b2203dc6b7378f7ac6253ad1e1c3c79332ff6d717",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00015.npz",
+   "bytes": 92574920,
+   "sha256": "d85b93cf9c78e37c082ac943ec15cbfd2ebdfae2833bce57fefea6958c0369bc",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00016.npz",
+   "bytes": 91685666,
+   "sha256": "1dbb7216b84b3e9df357cce0362505886d237c260d78d523e2710a1909188764",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00017.npz",
+   "bytes": 91908099,
+   "sha256": "30f80ae75404650e12024bf9e346cfb9aeb19d3e3c09335ff94c216f27dfb465",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00018.npz",
+   "bytes": 92479255,
+   "sha256": "1344cc266b08616290403e5a6156fd2b4e7d3e071a8996fd90762efd03ef67b1",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00019.npz",
+   "bytes": 92646369,
+   "sha256": "6eb533710c6aa70eb2510527605418f7890b5c711f825592bc85ccf096aa074f",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00020.npz",
+   "bytes": 92646053,
+   "sha256": "b3558d4af9a934d66f79ec5addca903d00f0b5983055d6a5cc99137c7a12f442",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00021.npz",
+   "bytes": 93380252,
+   "sha256": "8fddbbd1f330165adc014f6211a350094c5a75fef471145480290876e4d60435",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00022.npz",
+   "bytes": 91408348,
+   "sha256": "f661f4c5f83263044586474c8a39d497583688808be261c134679469e6cbb57c",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00023.npz",
+   "bytes": 91750737,
+   "sha256": "e05552826b0af0d9b68abd9acf078d95d63fd48d44e19caad083481fa66c33f4",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00024.npz",
+   "bytes": 93425610,
+   "sha256": "87ae1e0522b0dddf3a4d6515f484778d7a0a20ced17e168c5f507da49cc9d3fe",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00025.npz",
+   "bytes": 92469031,
+   "sha256": "f47c2c7d554608033e72958162dd89491bc8fba8d4adeef6824c4beb8f267627",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00026.npz",
+   "bytes": 93710575,
+   "sha256": "c1944d84c5a6183363b7d66dce3e5ed608be431233617336718cb0dc6997e93f",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00027.npz",
+   "bytes": 93995444,
+   "sha256": "ae06adb8a5600b3aa3bd0a550b5ce36172731fe58277a01ceb81d16bb35caca7",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00028.npz",
+   "bytes": 93123100,
+   "sha256": "340425c5a1291875fb65e988501ec2cfc33fa0c921173841e0594fbe2fc01e54",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00029.npz",
+   "bytes": 92910175,
+   "sha256": "356b678503c15dd50219e1c56a226433145fc7734add7fa4dde1d1b28c8318c8",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00030.npz",
+   "bytes": 92311321,
+   "sha256": "988157a59f05e910ecc687c85c7b900fd30ec887ec906e76025c814e67eae671",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00031.npz",
+   "bytes": 92858932,
+   "sha256": "a80888f01541ee76a6556019ec453d8817b6dedef45c3a225e30d38358d2363f",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00032.npz",
+   "bytes": 92669448,
+   "sha256": "98263bdd99d68a9f4654bed263d45382e4775ecc72ebec8dbb2febd27cd16c94",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00033.npz",
+   "bytes": 91844227,
+   "sha256": "603ed6bb0e9d7a10672c1640e3ab2a80643390fea11a66f22890fd7655383fe9",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00034.npz",
+   "bytes": 92962687,
+   "sha256": "64340f7ed42c28eca7bc9c9c414136380a44125859fde09b8213d0102032dae4",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00035.npz",
+   "bytes": 92227930,
+   "sha256": "3df413c7bd8ece3f0c2cea1d9dab436421c1a2eaf6e1984eeb7b0e4ec8be5c2c",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00036.npz",
+   "bytes": 92150452,
+   "sha256": "2c40cf0a58648ea493e2a1664538a96fde233c9b048a8242e39fea6bdc5db978",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00037.npz",
+   "bytes": 92687565,
+   "sha256": "859ec802825ae10ceeacb33dda30d3c0a86fc4af27bd9ff0b84bc568ccfb57c9",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00038.npz",
+   "bytes": 92447167,
+   "sha256": "3ab656b2729e04baf9918e829498fbd2ecc9243c792987cc9a81675da349c4cc",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00039.npz",
+   "bytes": 93610143,
+   "sha256": "f77ae979c54bb34bdce51c67e9442402cb507c57789227abbcda564a88d3464a",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00040.npz",
+   "bytes": 92053066,
+   "sha256": "3a4eb789f361262578938d5fc3d0ec26fca8033e6ad849b24704a623281442f6",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00041.npz",
+   "bytes": 92786805,
+   "sha256": "45941dec1704f48a4eaf277699f6f9650835844d7cd21adb39f728186d236663",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00042.npz",
+   "bytes": 91961646,
+   "sha256": "6d755d8c8a7d227b7cd48c1e9954f677a27ff3fc26bedbb941cd880f377189fd",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00043.npz",
+   "bytes": 92207977,
+   "sha256": "4aaf7cf343fcce1c673e634c2c01d00b8ddc7f41674d8940f92a64a3b9a874f5",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00044.npz",
+   "bytes": 92475001,
+   "sha256": "c6f1a21d3664f54153d94044d145028e8b57ef742b3cfcce293eecdc5f32a17b",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00045.npz",
+   "bytes": 92738609,
+   "sha256": "c3e57579ce222b06e66b3362ea65bbee3441c67262a0a7547cdc1298150a4e1f",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00046.npz",
+   "bytes": 92124795,
+   "sha256": "f41b26ed64dfa98a359819776fd9b50605c80348e90542078ebd31c2b0a128ee",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00047.npz",
+   "bytes": 92677771,
+   "sha256": "1e66fc1fcd2c3bef2f09b930412bf6f72591f3d5187eebba2d716da9e32af4fd",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00048.npz",
+   "bytes": 92763263,
+   "sha256": "7565d2817d7d48a823c1db85e09233bc02d3a8fc169cb83861fa35c0886a4794",
+   "samples": 10000
+  },
+  {
+   "set": "vita",
+   "file": "synth6_vita_00049.npz",
+   "bytes": 91918134,
+   "sha256": "ff7bb1a34d1472e3754cb3b9e9fb1f1358b533f57aced67dc952bd8e03689c4b",
+   "samples": 10000
+  }
+ ],
+ "samples": 500000,
+ "bytes": 4631534240
+}

@@ -8,7 +8,7 @@
  * --stdin fits eval/run.py: --model 'cmd:runtime/build/vocr_cli MODEL.vocr --stdin'.
  *
  * opts: --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N
- *       --two-level        the two-level head of a blob with a VOC2 trailer (vocr_opts.two_level; W8I)
+ *       --two-level        the two-level head of a blob with a VOC2 trailer (vocr_opts.two_level; W8I or W8F)
  *       --invert           read every crop as 255 - grey (VOCR_INVERT: dark text)
  *       --logits OUT.bin   per line: u32 frames, u32 classes, float32 logits
  *       --input-out OUT.bin  per line: u32 height, u32 padded width, u32 width, then the

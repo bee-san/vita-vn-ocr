@@ -354,14 +354,34 @@ def rare_logits(q, sx, rare):
     return mm_exact(q2, s2, rare["r_q"], rare["r_scale"], rare["r_bias"])
 
 
-def twolevel_exact(x, head, two, topk=8):
+def mm_w8f_exact(x, w, scale, bias):
+    """vocr.c's W8F head rows (dequant8 + mm_f32): x [P][K] float32, w int8 [N][K] -> [P][N] float32, with
+    w_f = float(q) * scale and y = bias, then y = y + w_f[k] * x[k] for k = 0 .. K - 1 (each step rounded)."""
+    x = np.asarray(x, F32)
+    wf = (np.asarray(w, F32) * np.asarray(scale, F32)[:, None]).astype(F32)
+    y = np.broadcast_to(np.asarray(bias, F32) if bias is not None else np.zeros(len(wf), F32),
+                        (len(x), len(wf))).copy()
+    for k in range(x.shape[1]):
+        y = (y + (wf[:, k][None, :] * x[:, k][:, None]).astype(F32)).astype(F32)
+    return y
+
+
+def twolevel_exact(x, head, two, topk=8, mode="w8i"):
     """runtime/vocr.c run_head2 on head inputs x [F][K] float32: per frame the score, fired, argmax (first maximum
     over the computed classes) and the top-K (values decreasing, ties: the lower class first). head: head_arrays of
-    the permuted blob; two: read_trailer. Returns dict(score, fire, best, topv, topc, blank)."""
+    the permuted blob; two: read_trailer; mode "w8i" or "w8f" (the head rows' arithmetic; the escape reads the
+    int16-quantised input in both). Returns dict(score, fire, best, topv, topc, blank)."""
+    if mode not in ("w8i", "w8f"):
+        raise ValueError("the two-level head runs in w8i or w8f")
     q, sx = quant16_exact(x)
     V = head["V"]
     L1 = 8 * two["l1_blocks"]
-    lg1 = mm_exact(q, sx, head["q"][:L1], head["scale"][:L1], head["bias"][:L1])
+
+    def rows(sel, a, b):
+        if mode == "w8f":
+            return mm_w8f_exact(np.asarray(x, F32)[sel], head["q"][a:b], head["scale"][a:b], head["bias"][a:b])
+        return mm_exact(q[sel], sx[sel], head["q"][a:b], head["scale"][a:b], head["bias"][a:b])
+    lg1 = rows(slice(None), 0, L1)
     l1, b0 = level1_inputs(lg1, L1)
     s = escape_score(q, sx, l1, b0, two["esc"])
     fire = s > two["esc"]["t"]
@@ -370,8 +390,10 @@ def twolevel_exact(x, head, two, topk=8):
     full[:, :L1] = lg1
     if fire.any():
         if two["rare"] is None:
-            r = mm_exact(q[fire], sx[fire], head["q"][L1:], head["scale"][L1:], head["bias"][L1:])
+            r = rows(fire, L1, V)
         else:
+            if mode != "w8i":
+                raise ValueError("the rare block is a W8I trial only")
             r = rare_logits(q[fire], sx[fire], two["rare"])[:, :V - L1]
         full[np.nonzero(fire)[0], L1:] = r
     best = full.argmax(1)                                  # first maximum

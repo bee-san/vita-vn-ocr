@@ -1,13 +1,17 @@
 # psp/Makefile - the PSP EBOOT test app (vocr_test) and the PSP build of runtime/vocr.c.
 #
 #   make -C psp                 EBOOT.PBP: runtime/vocr.c + main.c, Allegrex, -O2 -G0, scalar FPU path
-#   make -C psp size            code size of vocr.o and its worst-case stack chain (stack.py)
+#   make -C psp VFPU=1          the same with the VFPU matrix products (opt-in)
+#   make -C psp LARGEMEM=1      PSP_LARGE_MEMORY = 1: on a 64 MB PSP (2000 / 3000 / Go) the app gets the
+#                               larger user partition (about 52 MB instead of 24 MB); ignored on a PSP-1000
+#   make -C psp size            code size of vocr.o and the line finder, and vocr.o's worst-case stack chain
 #   make -C psp clean
 #
 # PSPDEV defaults to psp/tools/pspdev (scripts/fetch_pspdev.sh). vocr.c gets the runtime's
 # strict flags (C99, -Werror, -ffp-contract=off so a*b+c is never fused: the PSP build must
-# compute the host's bits). PSP_LARGE_MEMORY=0: the app gets the 24 MB user partition every
-# PSP has, PSP-1000 included, so what it measures is the PSP-1000 budget.
+# compute the host's bits). Without LARGEMEM=1 the app gets the 24 MB user partition every
+# PSP has, so what it measures is the smallest PSP's budget. The line finder and its refinement
+# (runtime/vocr_lines.c, vocr_lines_refine.c) are linked for the app's finder mode (main.c).
 
 PSPDEV ?= $(abspath tools/pspdev)
 export PATH := $(PSPDEV)/bin:$(PATH)
@@ -15,7 +19,7 @@ PSPSDK = $(PSPDEV)/psp/sdk
 PYTHON ?= python3
 
 TARGET = vocr_test
-OBJS = main.o vocr.o
+OBJS = main.o vocr.o vocr_lines.o vocr_lines_refine.o
 INCDIR = ../runtime
 WARN = -std=c99 -ffp-contract=off -Wall -Wextra -Werror -Wshadow -Wpointer-arith \
        -Wstrict-prototypes -Wmissing-prototypes
@@ -23,14 +27,21 @@ CFLAGS = -O2 -G0 $(WARN) -isystem $(PSPSDK)/include -isystem $(PSPDEV)/psp/inclu
 # VFPU=1: the float matrix products on the VFPU (runtime/vocr.c, VOCR_PSP_VFPU); opt-in
 ifeq ($(VFPU),1)
 CFLAGS += -DVOCR_PSP_VFPU
-PSP_EBOOT_TITLE = vocr OCR test (VFPU)
+TITLE_BASE = vocr OCR test (VFPU)
 else
-PSP_EBOOT_TITLE = vocr OCR test
+TITLE_BASE = vocr OCR test
+endif
+ifeq ($(LARGEMEM),1)
+PSP_LARGE_MEMORY = 1
+CFLAGS += -DVOCR_PSP_LARGE_MEMORY
+PSP_EBOOT_TITLE = $(TITLE_BASE) 64MB
+else
+PSP_LARGE_MEMORY = 0
+PSP_EBOOT_TITLE = $(TITLE_BASE)
 endif
 VOCR_FLAGS = -Wpedantic -Wcast-align -fstack-usage -fcallgraph-info=su
 LIBS = -lpsppower
 BUILD_PRX = 1
-PSP_LARGE_MEMORY = 0
 EXTRA_TARGETS = EBOOT.PBP
 EXTRA_CLEAN = vocr.su vocr.ci main.su main.ci
 
@@ -44,11 +55,18 @@ endif
 vocr.o: ../runtime/vocr.c ../runtime/vocr.h
 	$(CC) $(CFLAGS) $(VOCR_FLAGS) -c -o $@ $<
 
-main.o: main.c ../runtime/vocr.h
+vocr_lines.o: ../runtime/vocr_lines.c ../runtime/vocr_lines.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+vocr_lines_refine.o: ../runtime/vocr_lines_refine.c ../runtime/vocr_lines_refine.h ../runtime/vocr_lines_rows.h \
+                     ../runtime/vocr_lines.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+main.o: main.c ../runtime/vocr.h ../runtime/vocr_lines.h ../runtime/vocr_lines_refine.h
 
 .PHONY: size
-size: vocr.o
-	psp-size vocr.o
+size: vocr.o vocr_lines.o vocr_lines_refine.o
+	psp-size vocr.o vocr_lines.o vocr_lines_refine.o
 	$(PYTHON) stack.py vocr.ci
 
 # host tool: the D-cache misses of vocr_run() (cachesim.c); not part of the PSP build

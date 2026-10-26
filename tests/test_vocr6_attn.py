@@ -459,3 +459,40 @@ def test_checkpoint_tools_rebuild_the_block(tmp_path):
         ref = m(torch.from_numpy(x)[None, None])[:, 0].numpy()
     _, lg = rt.run(g, logits=True)
     assert np.abs(lg - ref).max() <= 1e-3 * max(1.0, np.abs(ref).max())
+
+
+RELEASED = {"S": ("v5f_S_seed2", "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d"),
+            "N": ("v5f_N_seed3", "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"),
+            "L": ("v5f_L_seed2", "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3")}
+
+
+@pytest.mark.parametrize("tier", list(RELEASED))
+def test_the_release_checkpoints_still_export_to_the_released_blobs(tier):
+    """Local only (the VOCR5 run checkpoints under $HERD): with the attention op in the exporter, VOCR5-S/N/L re-export
+    to the v0.3.0 blobs byte for byte (vocr5-assets.json's sha256)."""
+    import hashlib
+
+    import export
+    herd = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
+    ck = herd / "shared/artifacts/vocr5-train/runs" / RELEASED[tier][0] / "ckpt_step15000.pt"
+    if not ck.exists():
+        pytest.skip(f"no checkpoint {ck}")
+    m, vocab, h = export.load_checkpoint(ck)
+    blob = export.build_blob(export.model_ops(m, h), vocab, h, True, None, hashlib.sha256(ck.read_bytes()).digest())[0]
+    assert hashlib.sha256(blob).hexdigest() == RELEASED[tier][1]
+
+
+def test_committed_cost_records():
+    """The sizes and time records docs/vocr6-attn.md quotes: the deltas it states, and estimates marked as such."""
+    s = json.loads((ROOT / "eval/vocr6_attn_sizes_20261026.json").read_text())
+    t = json.loads((ROOT / "eval/vocr6_attn_time_20261026.json").read_text())
+    for tier in "SNL":
+        d = s["tiers"][tier]["delta"]
+        assert (d["train_params"], d["blob_w8_bytes"], d["macs_per_frame"], d["macs_per_frame_T80"]) == \
+            (37153, 40000, 36864, 52224)
+        assert d["arena"]["w8i"] == {"256": 12288, "640": 30720, "1024": 49152}
+        assert s["tiers"][tier]["today"]["release_identical"] and s["tiers"][tier]["today"]["speed_identical"]
+        for basis in ("nopld", "pld"):
+            assert t["tiers"][tier][basis]["pack_texts_identical"]
+    assert t["estimates_are_not_measurements"] and t["scale"] == 1.000676
+    assert t["tiers"]["N"]["nopld"]["nominal_box_ms_333"] == {"ref": 758.4, "attn": 793.5, "delta": 35.1}

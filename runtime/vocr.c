@@ -21,8 +21,9 @@
 
 /* Phase markers for the per-layer cycle profile (vita/a9_layers.py): built with
  * -DVOCR_PROF=name, vocr_run() calls name(id) as each phase starts: id = the op's index for its
- * step (the head's for run_head), VOCR_PROF_SRC for the input columns, VOCR_PROF_GATE for the head
- * gate's per-tile step, VOCR_PROF_RUN for the rest. Without VOCR_PROF they compile to nothing, so
+ * step (the head's for run_head; the attention op's for its projections), VOCR_PROF_SRC for the input columns,
+ * VOCR_PROF_GATE for the head gate's per-tile step, VOCR_PROF_ATTN for the attention's scores, softmax and
+ * weighted sums, VOCR_PROF_RUN for the rest. Without VOCR_PROF they compile to nothing, so
  * the console build has none. */
 #ifdef VOCR_PROF
 void VOCR_PROF(unsigned id);
@@ -30,7 +31,7 @@ void VOCR_PROF(unsigned id);
 #else
 #define VOCR_MARK(id) ((void)0)
 #endif
-enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101, VOCR_PROF_GATE = 102 };
+enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101, VOCR_PROF_GATE = 102, VOCR_PROF_ATTN = 103 };
 
 enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4, T_ATTN = 5 };
 /* VOCR_PREFETCH(p): a cache hint for the line at p (PLD on ARM), which never changes a result:
@@ -2263,6 +2264,7 @@ static int attn_line(const vocr_ctx *c, unsigned T, vocr_extra *ex)
         if (c->mode == VOCR_MODE_W8I) quant16(zc, d, d, n, qx, sx);
         for (cb = 0; cb < NB; cb++)
             mat_block(c, op->w, op->q, op->scale, op->bias, cb, d, zc, d, qx, sx, n, qc + cb * 8u, da, NULL, 0, wf);
+        VOCR_MARK(VOCR_PROF_ATTN);
         for (h = 0; h < nh; h++) {
             const float *kh = kp + (size_t)h * (tp / 8u) * dh * 8u;
             unsigned kb;
@@ -2272,6 +2274,7 @@ static int attn_line(const vocr_ctx *c, unsigned T, vocr_extra *ex)
             for (cb = h * dh / 8u; cb < (h + 1u) * dh / 8u; cb++)
                 mm_f32(vp + (size_t)cb * tp * 8u, NULL, sc, tp, T, n, ac + cb * 8u, da, NULL, 0, 0);
         }
+        VOCR_MARK(c->attn);
         if (c->mode == VOCR_MODE_W8I) quant16(ac, da, da, n, qx, sx);
         for (cb = 0; cb < d / 8u; cb++)
             mat_block(c, a->o_w, a->o_q, a->o_scale, a->o_bias, cb, da, ac, da, qx, sx, n, zc + cb * 8u, d,

@@ -13,8 +13,10 @@
              host's C finder + runtime: the page path end to end
       DIR/verify.json: per build and set, lines / regions, text and logit matches, emulated us and frames, the
       finder's emulated us, the arena and the stack the app measured. Exit status 1 if anything differs.
-  modelb_verify.py budget --verify DIR/verify.json --blob B.vocr --size SIZE.txt --height H --out BUDGET.json
-      the protocol's budgets: memory (blob + arena + code from `make -C psp size` + stack + the finder's arena for a
+  modelb_verify.py budget --verify DIR/verify.json --blob B.vocr --size SIZE.txt [--size-vfpu SIZE_VFPU.txt] --height H
+                          --out BUDGET.json
+      the protocol's budgets: memory (blob + arena + code from `make -C psp size` (the VFPU build's from `make -C psp
+      size VFPU=1`, --size-vfpu; without it the scalar build's, noted) + stack + the finder's arena for a
       480 x 272 screen) and the est. console seconds per nominal box (1.45 x (per-frame emulated time on the dev
       whole-dialogue finder crops x the nominal box's frames + the finder's emulated time per pixel x 480 x 90))
 
@@ -202,7 +204,7 @@ def cmd_budget(a):
     if sha256(a.blob) != v["blob_sha256"]:
         raise SystemExit("the verify record is of another blob")
     proto = json.loads((ROOT / "eval/vocr6_psp_protocol.json").read_text())
-    code = code_bytes(a.size)
+    codes = {"scalar": code_bytes(a.size), "vfpu": code_bytes(a.size_vfpu) if a.size_vfpu else None}
     res = {"blob": a.blob, "blob_sha256": v["blob_sha256"], "settings": {k: v[k] for k in
                                                                          ("mode", "head_gate", "two_level", "tile",
                                                                           "head")}, "builds": {}}
@@ -222,13 +224,16 @@ def cmd_budget(a):
         arena = v["sets"]["lines:dev"][build]["arena_bytes"]
         stack = max(s[build]["stack_used_max"] for s in v["sets"].values() if build in s)
         stack_r = int(math.ceil(stack / 4096) * 4096)
+        code = codes.get(build) or codes["scalar"]
         mem = blob_bytes + arena + sum(code.values()) + stack_r + FINDER_ARENA_480x272
         res["builds"][build] = {
             "us_per_frame_dev_wd": round(us_frame, 2), "nominal_frames": frames,
             "finder_us_per_pixel": round(finder_us_px, 5),
             "emulated_s_box": round(emu, 4), "est_console_s_box_high": round(FACTOR_HIGH * emu, 4),
             "est_console_s_box_low": round(emu, 4),
-            "memory": {"blob": blob_bytes, "arena": arena, "code": code, "stack_used": stack, "stack": stack_r,
+            "memory": {"blob": blob_bytes, "arena": arena, "code": code,
+                       "code_from": "vfpu build" if build == "vfpu" and codes["vfpu"] else "scalar build",
+                       "stack_used": stack, "stack": stack_r,
                        "finder_arena": FINDER_ARENA_480x272, "total": mem},
             "time_ok": FACTOR_HIGH * emu <= proto["budgets"]["time_s_le"],
             "memory_ok": mem <= proto["budgets"]["memory_bytes_le"]}
@@ -261,6 +266,7 @@ def main():
     b.add_argument("--verify", required=True)
     b.add_argument("--blob", required=True)
     b.add_argument("--size", required=True, help="`make -C psp size` output")
+    b.add_argument("--size-vfpu", default="", help="`make -C psp size VFPU=1` output (the VFPU build's code)")
     b.add_argument("--height", type=int, required=True)
     b.add_argument("--out", required=True)
     a = ap.parse_args()

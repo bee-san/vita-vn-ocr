@@ -101,7 +101,8 @@ hooked pages buy.
 | `nohook_t64n8c16` | as `base_t64n8c16` without hooked pages | what the hooked pages buy |
 
 **Stage 2** (a fixed rule read from stage 1's median seeds): `kd_t64n8c16`, distilled from the stage-1 M arm with
-the lowest unseen-dev page-path dialogue CER (its median seed's final model), seeds 1 and 2.
+the lowest unseen-dev page-path dialogue CER (its median seed's final model), seeds 1 and 2 (1-3 and every decode
+since amendments 4 and 5).
 
 ### Metrics
 
@@ -212,6 +213,8 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
      is the median seed.
    - The label has 3 slots. `sweep.py --cap-file` holds the number of training runs, and the third slot scores.
    - The test reads are `eval/textspot6_test.py` (`title`, `clannad`, `tests`), once each.
+5. **Stage 2's teacher** (before any arm's score). It is the M arm whose representative has the lower unseen-dev
+   page-path CER in any of the four decodes.
 
 ## Results
 

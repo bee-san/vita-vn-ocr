@@ -130,6 +130,25 @@ def test_teacher_rule_median_seed_any_decode_tie_smaller(tmp_path):
     assert out["teacher"]["arm"] == "base_qS4" and out["teacher"]["run"] == "base_qS4_seed3"
 
 
+def test_sched_adopt_specs_score_log_and_plan(tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "textspot6_sched", ROOT / "eval" / "reproducibility" / "textspot6-20261026" / "sched.py")
+    SC = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(SC)
+    assert SC.parse_adopt("base_qS4_seed2:123") == ("adopted", "base_qS4_seed2", 123)
+    assert SC.parse_adopt("score:base_qL5_seed2:45") == ("ascore", "base_qL5_seed2", 45)
+    assert SC.parse_adopt("pre:fix1:6") == ("apre", "fix1", 6)
+    log = tmp_path / "score_x.log"
+    log.write_text("pagepath run: wrote x\nscore_run finished x /d\n\n")
+    assert SC.score_log_ok(log)
+    log.write_text("pagepath run: wrote x\nTraceback\n")
+    assert not SC.score_log_ok(log) and not SC.score_log_ok(tmp_path / "none.log")
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text('{"run": "a"}\n\n{"run": "b"}\n')
+    assert [r["run"] for r in SC.load_plan(plan)] == ["a", "b"]
+
+
 def test_seen_clusters_are_left_out(tmp_path):
     u = units(3, [0, 0, 50])
     p = result(tmp_path / "u.json", u)

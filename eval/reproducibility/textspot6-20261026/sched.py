@@ -2,13 +2,18 @@
 """textspot6's scheduler (docs/textspot6.md, amendment 8): ONE process runs the label's heavy jobs within its slot
 share (vocr6/slots.txt), training and scoring together, so that the share is never exceeded and never idle.
 
-  sched.py --runs RUNS --plan PLAN.jsonl --cap-file CAP [--adopt NAME:PID ...] [--pre CMD ...]
+  sched.py --runs RUNS --plan PLAN.jsonl --cap-file CAP [--adopt [KIND:]NAME:PID ...] [--pre CMD ...]
 
 - Jobs: every pending scoring job first (a finished run, i.e. one with done.json, that has no OUT/<run>/SCORED or
   FAILED marker; the --pre commands before them), then the training runs of PLAN in order (sweep.py's command, through
   heavy.sh, restarted from scratch with the same seed after a crash, at most 3 attempts).
 - At most CAP jobs at once (an integer read from CAP before each launch). An adopted run (--adopt NAME:PID: a trainer
-  started by an earlier sweep) counts as a job until its process exits; its run_end is then logged.
+  started by an earlier sweep) counts as a job until its process exits; its run_end is then logged. An earlier
+  scheduler's running scoring job (score:NAME:PID) is adopted the same way, and its run is marked SCORED when its log
+  (OUT/logs/score_NAME.log) ends with score_run.sh's last line, else FAILED; a running extra job (pre:LABEL:PID)
+  counts until it exits.
+- PLAN is re-read whenever it changes: the runs not started yet are taken in the file's order, and a run taken out
+  of the file is not started (the order of a live plan can change between restarts' worth of runs).
 - The runtime helper's window: while RUNS/helper.reserve exists, the scheduler keeps one slot of the share free for
   vocr6-spotter-runtime and writes RUNS/helper_go (removed otherwise). The helper runs one heavy job at a time, and
   only while RUNS/helper_go exists. helper.reserve is removed when the helper's status file starts with its ready
@@ -73,6 +78,27 @@ class Job:
         return not alive(self.pid)
 
 
+def load_plan(path):
+    return [json.loads(x) for x in Path(path).read_text().splitlines() if x.strip()]
+
+
+def parse_adopt(spec):
+    """--adopt NAME:PID (a trainer), score:NAME:PID (a scoring job), pre:LABEL:PID (an extra job) ->
+    (job kind, name, pid)."""
+    head, _, pid = spec.rpartition(":")
+    kind, _, name = head.partition(":") if head.startswith(("score:", "pre:")) else ("", "", head)
+    return {"": "adopted", "score": "ascore", "pre": "apre"}[kind], name, int(pid)
+
+
+def score_log_ok(log):
+    """An adopted scoring job finished when its log's last line is score_run.sh's last line."""
+    try:
+        lines = [x for x in Path(log).read_text(errors="replace").splitlines() if x.strip()]
+    except OSError:
+        return False
+    return bool(lines) and lines[-1].startswith("score_run finished")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--runs", required=True)
@@ -86,14 +112,16 @@ def main(argv=None):
     runs, out = Path(a.runs), Path(a.out)
     (runs / "logs").mkdir(parents=True, exist_ok=True)
     (out / "logs").mkdir(parents=True, exist_ok=True)
-    plan = [json.loads(x) for x in Path(a.plan).read_text().splitlines() if x.strip()]
+    plan_path = Path(a.plan)
+    plan, plan_mtime = load_plan(plan_path), plan_path.stat().st_mtime
     plan_names = {r["run"] for r in plan}
     meta = {r["run"]: r for r in plan}
     active = []
     for spec in a.adopt:
-        name, pid = spec.rsplit(":", 1)
-        active.append(Job("adopted", name, pid=int(pid)))
-        explog({"kind": "note", "what": f"sched.py adopts the running trainer {name} (pid {pid}) of an earlier sweep"})
+        kind, name, pid = parse_adopt(spec)
+        active.append(Job(kind, name, pid=pid))
+        what = {"adopted": "trainer", "ascore": "scoring job", "apre": "extra job"}[kind]
+        explog({"kind": "note", "what": f"sched.py adopts the running {what} {name} (pid {pid}) of an earlier sweep"})
     pre = list(a.pre)
     started = {j.name for j in active}
     failed_score = set()
@@ -101,6 +129,12 @@ def main(argv=None):
     heavy = ["env", f"HEAVY_SLOTS={SW.HEAVY_SLOTS}", str(HERD / "heavy.sh")]
     print(f"{utc()} sched start: {len(plan)} planned runs, {len(active)} adopted, {len(pre)} pre jobs", flush=True)
     while True:
+        # a changed plan
+        if plan_path.stat().st_mtime != plan_mtime:
+            plan, plan_mtime = load_plan(plan_path), plan_path.stat().st_mtime
+            plan_names |= {r["run"] for r in plan}
+            meta.update({r["run"]: r for r in plan})
+            print(f"{utc()} plan re-read: {[r['run'] for r in plan]}", flush=True)
         # reap
         for j in list(active):
             if not j.done():
@@ -124,8 +158,9 @@ def main(argv=None):
                     attempts[j.name] = attempts.get(j.name, 1) + 1
                     if attempts[j.name] <= 3:
                         started.discard(j.name)
-            elif j.kind == "score":
-                ok = j.proc.returncode == 0
+            elif j.kind in ("score", "ascore"):
+                ok = (j.proc.returncode == 0 if j.kind == "score"
+                      else score_log_ok(out / "logs" / f"score_{j.name}.log"))
                 if ok:
                     (out / j.name).mkdir(parents=True, exist_ok=True)
                     (out / j.name / "SCORED").write_text(utc() + "\n")
@@ -134,8 +169,9 @@ def main(argv=None):
                     (out / j.name).mkdir(parents=True, exist_ok=True)
                     (out / j.name / "FAILED").write_text(utc() + "\n")
                 print(f"{utc()} score {j.name} ended ok={ok}", flush=True)
-            elif j.kind == "pre":
-                print(f"{utc()} pre job ended rc={j.proc.returncode}: {j.name}", flush=True)
+            elif j.kind in ("pre", "apre"):
+                rc = j.proc.returncode if j.kind == "pre" else "adopted"
+                print(f"{utc()} pre job ended rc={rc}: {j.name}", flush=True)
         # the helper's window
         reserve = runs / "helper.reserve"
         if reserve.exists():
@@ -175,7 +211,7 @@ def main(argv=None):
                     name = d.name
                     if (out / name / "SCORED").exists() or (out / name / "FAILED").exists() or name in failed_score:
                         continue
-                    if any(j.kind == "score" and j.name == name for j in active):
+                    if any(j.kind in ("score", "ascore") and j.name == name for j in active):
                         continue
                     log = out / "logs" / f"score_{name}.log"
                     cmd = [*heavy, "timeout", "10800", "env", f"PAGEPATH={a.pagepath}", f"OUT={out}", str(SCORE),

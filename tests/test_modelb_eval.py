@@ -94,6 +94,20 @@ def test_compare_mean_over_seeds(tmp_path):
         ME.compare(B)
 
 
+def test_compare_pairs_rows_by_position(tmp_path):
+    """Two rows under one unit name (a page with two regions of one variant) both count."""
+    rows_b = _rows([2, 0]) + [dict(_rows([4])[0], unit="wd_grad|0")]
+    rows_c = _rows([1, 0]) + [dict(_rows([0])[0], unit="wd_grad|0")]
+    for name, rows in (("b", rows_b), ("c", rows_c)):
+        (tmp_path / f"{name}.json").write_text(json.dumps({"blob_sha256": name * 64, "rows": rows}))
+
+    class A:
+        cand, base, out = [str(tmp_path / "c.json")], [str(tmp_path / "b.json")], str(tmp_path / "o.json")
+    ME.compare(A)
+    c = json.loads(Path(A.out).read_text())["components"]["wd_grad"]
+    assert c["units"] == 3 and c["chars"] == 60 and abs(c["delta"] - 100 * (1 - 6) / 60) < 1e-6
+
+
 def test_namelike_rule():
     assert ME.namelike("佐藤") and not ME.namelike("「佐藤」") and not ME.namelike("こんにちはさようなら")
 

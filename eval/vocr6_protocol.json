@@ -1166,7 +1166,7 @@
    "v18432"
   ],
   "dev_exclude_why": "v12188 is the hooked train title PCSG00576 (seen); v18432 is the hooked test title PCSG00807 (Dance with Devils), kept out of selection",
-  "check": "the dev part reproduces reports/vocr5-analysis's VOCR5-N console-view numbers exactly: crops identical (6,424), no-cascade tv 0.65 / dn 0.6601 / wd 3.2606, with the cascade 0.5125 / 0.6241 / 3.0169",
+  "check": "the dev part reproduces #119's stored VOCR5-N console-view reads exactly (reports/vocr5-analysis.md's work/upper_bounds.json): on its 6,424 crops (identical), greedy tv 0.775 / dn 0.9842 / wd 3.6783 (#119's greedy|psp2x) and beam without textnorm or the line filter 0.65 / 0.6601 / 3.4076 (#119's beam|psp2x); with Rubi's textnorm and line filter, this kit's rubi path, 0.65 / 0.6601 / 3.2606. The kit has no cascade while screening; #119's cascade figures (0.5125 / 0.6241 / 3.0169) are its own and are not reproduced here (audit-vocr6-lead F4, -b F8)",
   "hval_plan_note": "2,097 of 2,193 hval pages (46 titles; 2 pages with a label in doubt have no regions), 6,327 region units (base/+4/+8), 3,184 clean crops (3,170 dialogue, 14 names); PSP in the 2x console view",
   "hval_plan_v1": {
    "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/hval_plan_v1.pkl",

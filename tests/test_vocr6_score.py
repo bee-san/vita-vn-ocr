@@ -125,3 +125,25 @@ def test_exposed_units_are_same_vn_label_matches():
     t2v = {"T1": "v1", "T2": "v2"}
     rows = [("あいう", "v1"), ("くけ", "v1"), ("あいう", "v9"), ("", "v2")]
     assert X.exposed_units(units, t2v, rows) == ["u1", "u3"]
+
+
+def test_cascade_reads_low_confidence_lines_from_the_next_tier():
+    dump = {"crops": [{"g": "あい", "b": "あい", "cmin": 0.9}, {"g": "かき", "b": "かき", "cmin": 0.5},
+                      {"g": "", "b": "さ", "cmin": 0.1}, {"g": "た", "b": "た", "cmin": 0.6995}]}
+    up = {"crops": [{"g": "x", "b": "あう", "cmin": 1}, {"g": "け", "b": "かけ", "cmin": 1},
+                    {"g": "し", "b": "し", "cmin": 1}, {"g": "", "b": "ち", "cmin": 1}]}
+    ident = lambda ts: list(ts)   # noqa: E731
+    assert V.texts(dump, "rubi", ident) == ["あい", "かき", "", "た"]
+    # crop 1 (0.5) and crop 3 (0.6995 -> 700 after rounding? int(699.5 + 0.5) = 700: not under) ; crop 2 has no greedy
+    assert V.texts(dump, "rubi", ident, up) == ["あい", "かけ", "", "た"]
+    up["crops"][3]["g"] = "ち"
+    dump["crops"][3]["cmin"] = 0.69
+    assert V.texts(dump, "rubi", ident, up)[3] == "ち"
+
+
+def test_lm_opts_override():
+    o = V.lm_opts_of("alpha=600,beta=2500,flags=1")
+    assert o["alpha"] == 600 and o["beta"] == 2500 and o["flags"] == 1 and o["gate"] == V.LM_OPTS["gate"]
+    import pytest
+    with pytest.raises(SystemExit):
+        V.lm_opts_of("nonsense=1")

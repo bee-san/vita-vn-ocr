@@ -1598,7 +1598,7 @@ static float *at(const vocr_ctx *c, uint32_t off) { return (float *)(void *)(c->
 /* exp(x) for x <= 0 in float arithmetic only (no libm): 2^(x / ln 2), the integer part from the float
  * exponent bits, 2^f for f in [0, 1) from its degree-6 Taylor polynomial (relative error < 2e-5).
  * x is clamped at -30, so every value stays a normal float. The confidence and the attention op's softmax use it
- * (softmax_row). lm/vlm.py's exp_neg and runtime/tests/vocr_ref.py's exp_neg_exact are the same arithmetic. */
+ * (softmax_row). train/headgate.py's exp_neg and runtime/tests/vocr_ref.py's exp_neg_exact are the same arithmetic. */
 static float exp_neg(float x)
 {
     union { float f; uint32_t u; } p2;

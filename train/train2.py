@@ -782,6 +782,8 @@ def main(argv=None, *, execution_context=None):
         raise ValueError("--source-policy does not accept --val/--select; evaluate retained checkpoints with the "
                          "separately frozen general-VN selector")
     args.freeze_bn_stats |= args.train_scope == "head"
+    if args.attn and args.train_scope == "head":   # the head scope would freeze the block at gate 0: a silent no-op
+        raise SystemExit("--attn 1 trains the attention block; --train-scope head would leave it frozen at gate 0")
     set_geometry(args.stride)
     if args.stride != 8 and any(parse_opts(s.split(":", 3)[3] if s.count(":") >= 3 else "").get(key, "0") != "0"
                                 for s in args.src for key in ("kd", "kdonly")):

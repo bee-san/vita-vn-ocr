@@ -185,6 +185,9 @@ def test_train2_attn_from_an_old_checkpoint_resumes_and_records_the_block(tmp_pa
         train2.main(["--run", "r0", "--init", str(tmp_path / "runs/r/ckpt_last.pt"), *argv, "--steps", "1"])
     with pytest.raises(Exited):                          # --attn 0 from the old checkpoint: no attention keys
         train2.main(["--run", "p", "--init", str(tmp_path / "old.pt"), *argv, "--steps", "2"])
+    with pytest.raises(SystemExit, match="train-scope head"):   # the head scope would leave the block frozen at 0
+        train2.main(["--run", "h", "--init", str(tmp_path / "old.pt"), *attn, *argv, "--train-scope", "head",
+                     "--steps", "1"])
     ck0 = torch.load(tmp_path / "runs/p/ckpt_last.pt", map_location="cpu", weights_only=False)
     assert "attn" not in ck0 and not any(k.startswith("attn.") for k in ck0["model"])
 

@@ -322,7 +322,7 @@ over the line's frames. Nothing changes for the caller: `vocr_load` parses it (`
 - A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`).
 - Cost (estimates, VitaSDK gcc `-O2`, NEON, docs/vocr6-attn.md): about 0.066 ms a frame for the projections plus
   0.0010 ms × T for the scores on a line of T frames at 333 MHz (+35 ms per nominal 3-line box for VOCR5-N's shape);
-  `vocr.o` grows from 23,267 to 25,971 B (scalar 18,295 to 21,075 B); no malloc.
+  `vocr.o` grows from 23,267 to 25,979 B (scalar 18,295 to 21,079 B; psp-gcc 28,091 to 32,603 B); no malloc.
 - Twin and tests: `runtime/tests/vocr_ref.py attn_exact` is bit-exact; `parity.py --fixture --attn 1` (run by
   `make check` through the sanitized CLI, and by `make parity-arm`), `tests/test_vocr6_attn.py` and
   `tests/test_vocr.c` check it.

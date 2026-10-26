@@ -112,9 +112,10 @@ The full layout is in `train/export.py`'s docstring. In short:
 - **API.** `vocr_model.attn` (heads, dim, O's arrays; dim 0 = none) and nine `vocr_ctx` plan fields are new. ARM
   32-bit: `sizeof(vocr_model)` goes from 1,848 to 1,872 B and `sizeof(vocr_ctx)` from 2,012 to 2,048 B. `vocr_opts`
   and `vocr_extra` are unchanged.
-- **Code and stack.** `vocr.o` grows from 23,267 to 25,971 B (+2,704 B; VitaSDK gcc `-O2`, NEON). The scalar build
-  goes from 18,295 to 21,075 B, and psp-gcc `-O2 -G0` from 28,091 to 32,579 B (VFPU build 28,607 to 33,003 B). `attn_line` is inlined into `vocr_run`, whose frame grows from 592 to 600 B. The deepest
-  chain (`vocr_run` → `run_head` → `mm_i16`) stays the longest.
+- **Code and stack.** `vocr.o` grows from 23,267 to 25,979 B (+2,712 B; VitaSDK gcc `-O2`, NEON). The scalar build
+  goes from 18,295 to 21,079 B, and psp-gcc `-O2 -G0` from 28,091 to 32,603 B (VFPU build 28,607 to 33,027 B). `attn_line` is inlined into `vocr_run`, whose frame grows from 592 to 600 B (scalar 592 to 616 B).
+  The deepest chain is still `vocr_arena_bytes` → `plan()` (2,736 → 2,800 B, a local `vocr_ctx`); `vocr_run`'s
+  deepest (→ `run_head` → `mm_i16`) goes from 2,528 to 2,536 B.
 
 ### The head gate and the two-level head
 
@@ -207,7 +208,7 @@ ocr-speed's method, as docs/vocr5.md, docs/headgate.md and docs/head2level.md us
   docs/head2level.md). Small's +28 ms is 23% of the gate's 122 ms.
 - **Large without prefetch credit gets faster (−17 ms).** With the op, the head runs after all the tiles instead of
   between them. Large's weights (2.5 MB) are larger than the 2 MiB L2, so in the cache model the head's 540 KB then
-  stops evicting the convolutions' weights every tile: the frame-row and 2-row layers' L2 misses drop by 21-34%, and
+  stops evicting the convolutions' weights every tile: the 2-row and frame-row pointwise layers' L2 misses drop by 21-34%, and
   the head's own cost falls 0.44 → 0.39 ms a frame. With prefetch credit the effect disappears (+34 ms).
 - **This is not an attention gain.** It comes from the head running once per line. A runtime without the op could get
   the same by batching the head over the whole line (`head_frames ≥ t_max`). That is noted here and not measured

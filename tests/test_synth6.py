@@ -150,7 +150,7 @@ def test_measure_finds_outline_shadow_and_polarity(font):
 
 
 def test_rows_and_free_rows():
-    boxes = [(100, 400, 500, 30), (100, 440, 300, 30), (130, 401, 400, 30), (100, 480, 200, 30)] * 3
+    boxes = [(100, 400, 500, 30), (100, 440, 300, 30), (130, 401, 400, 30), (100, 480, 200, 30)] * 8
     rows = A6.cluster_rows(boxes)
     assert [r["y0"] for r in sorted(rows, key=lambda r: r["y0"])] == [400, 440, 480]
     lay = A6.layout_of([{"kind": "line", "box": list(b)} for b in boxes])
@@ -200,10 +200,10 @@ def test_composite_and_legibility(tmp_path, font):
     core = cov >= 0.999
     assert np.allclose(img[2:2 + cov.shape[0], 2:2 + cov.shape[1]][core], 250.0, atol=0.5)
     assert total.max() >= 1.0 - 1e-6 and (total > cov + 0.5).any()             # the halo drew outside the glyphs
-    assert S6.legibility(img, cov, total, 2, 2) > 150
+    assert S6.legibility(img, cov, total, 2, 2)[0] > 150
     flat = np.full_like(img, 245.0)
     t2 = S6.composite(flat, cov, 2, 2, {"fill": np.array([250, 250, 250], np.float32), "halo": None, "shadow": None})
-    assert S6.legibility(flat, cov, t2, 2, 2) < S6.CFG["min_contrast"]
+    assert S6.legibility(flat, cov, t2, 2, 2)[0] < S6.CFG["min_contrast"]
 
 
 # ----------------------------------------------------------------------------- one region and a shard

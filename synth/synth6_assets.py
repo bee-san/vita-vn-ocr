@@ -87,16 +87,17 @@ def cluster_rows(boxes, tol=4):
     return sorted(out, key=lambda r: -r["count"])
 
 
-def layout_of(lines, min_share=0.01):
+def layout_of(lines, min_share=0.02, min_lines=8):
     """The title's dialogue rows and name rows from its verified horizontal lines (train pages): rows holding at
-    least `min_share` of the kind's lines, in screen order."""
+    least `min_lines` lines and `min_share` of the kind's lines (a layout the game uses, not a stray box), in
+    screen order."""
     out = {}
     for kind in ("line", "name"):
         bx = [tuple(r["box"]) for r in lines if r["kind"] == kind and not r.get("vertical")]
         if not bx:
             out[kind] = []
             continue
-        rows = [r for r in cluster_rows(bx) if r["count"] >= max(3, min_share * len(bx))]
+        rows = [r for r in cluster_rows(bx) if r["count"] >= max(min_lines, min_share * len(bx))]
         out[kind] = sorted(rows, key=lambda r: r["y0"])
     return out
 

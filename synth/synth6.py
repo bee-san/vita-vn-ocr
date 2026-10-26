@@ -89,6 +89,7 @@ CFG = {
     "scene_band": [0.06, 0.72],  # scene placements' text top, as a share of the frame height
     "min_label": 1,
     "min_contrast": 60,         # luma levels between the fill and its surround (legibility)
+    "max_busy": 45,             # luma sd around unframed text (no halo or shadow of half opacity)
     "scene_box_alpha": [0.8, 1.0],
     "page_tries": 4,            # pages tried for a free dialogue row before a scene placement
 }
@@ -587,36 +588,41 @@ def draw_text_line(img, font, s, scale, spacing, x0, y, style, kind):
     # place so that the quads' top sits on the row's top y
     ox_, oy_ = int(round(x0 - m)), int(round(y - qy0))
     total = composite(img, cov, ox_, oy_, style)
-    contrast = legibility(img, cov, total, ox_, oy_)
+    contrast, busy = legibility(img, cov, total, ox_, oy_)
+    framed = any((style.get(k) or {}).get("alpha", 0.0) >= 0.5 for k in ("halo", "shadow"))
     ys, xs = np.nonzero(total > 0.1)
     ink = None if not len(xs) else [int(xs.min()) + ox_, int(ys.min()) + oy_, int(xs.max() - xs.min() + 1),
                                     int(ys.max() - ys.min() + 1)]
     cell = [int(math.floor(qx0)) + ox_, int(math.floor(qy0)) + oy_, int(math.ceil(qx1 - qx0)),
             int(math.ceil(qy1 - qy0))]
-    return {"text": s, "kind": kind, "cell": cell, "ink": ink, "contrast": contrast}
+    return {"text": s, "kind": kind, "cell": cell, "ink": ink, "contrast": contrast, "busy": busy,
+            "legible": bool(contrast >= CFG["min_contrast"] and (framed or busy <= CFG["max_busy"]))}
 
 
 def legibility(img, cov, total, x, y):
-    """The drawn line's luma contrast: the glyphs' fill core against the pixels just outside everything drawn
-    (fill, halo, shadow), medians, after compositing. A line under CFG min_contrast is not cropped."""
+    """(contrast, busy) of a drawn line after compositing: the luma contrast of the glyphs' fill core against the
+    pixels just outside everything drawn (fill, halo, shadow), or against the halo where one is drawn (medians);
+    and the luma spread (sd) of those outside pixels. A line under CFG min_contrast, or over CFG max_busy without
+    a halo or shadow of at least half opacity, is not cropped: real games keep text legible."""
     H, W_ = img.shape[:2]
     h, w = cov.shape
     x0, y0, x1, y1 = max(0, x), max(0, y), min(W_, x + w), min(H, y + h)
     if x1 <= x0 or y1 <= y0:
-        return 0.0
+        return 0.0, 255.0
     sl = (slice(y0 - y, y1 - y), slice(x0 - x, x1 - x))
     lum = 0.299 * img[y0:y1, x0:x1, 0] + 0.587 * img[y0:y1, x0:x1, 1] + 0.114 * img[y0:y1, x0:x1, 2]
     core = cov[sl] >= 0.8
     drawn = total[sl] > 0.08
     ring = cv2.dilate(drawn.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~drawn
     if core.sum() < 8 or ring.sum() < 8:
-        return 0.0
+        return 0.0, 255.0
     fill = float(np.median(lum[core]))
+    busy = float(lum[ring].std())
     if total[sl][~core & drawn].size and (total[sl] - cov[sl]).max() > 0.3:      # a halo: fill against it
         halo = (total[sl] > 0.3) & ~(cov[sl] > 0.1)
         if halo.sum() >= 8:
-            return max(abs(fill - float(np.median(lum[ring]))), abs(fill - float(np.median(lum[halo]))))
-    return abs(fill - float(np.median(lum[ring])))
+            return max(abs(fill - float(np.median(lum[ring]))), abs(fill - float(np.median(lum[halo])))), busy
+    return abs(fill - float(np.median(lum[ring]))), busy
 
 
 # ----------------------------------------------------------------------------- views and crops
@@ -715,7 +721,7 @@ def extract(rng, img, lines, meta):
         if len(lab) < CFG["min_label"] or set(lab) <= SKIP_LABELS or \
                 not W.text.clean_label(lab, ln.get("source")):
             continue
-        if ln.get("ink_v") is None or ln.get("contrast", 255.0) < CFG["min_contrast"]:
+        if ln.get("ink_v") is None or not ln.get("legible", True):
             continue
         kind = mode
         if mode == "grad" and i in grads:
@@ -739,7 +745,7 @@ def extract(rng, img, lines, meta):
         m = {k2: v for k2, v in meta.items() if k2 != "real_boxes"}
         m.update(kind=ln["kind"], crop=kind, crop_mode=mode, dark=int(dark), inverted=int(dark), box=box,
                  ink=ln["ink_v"], cell=ln["cell_v"], source=ln.get("source"), focus=ln.get("focus"),
-                 contrast=round(float(ln.get("contrast", 0.0)), 1))
+                 contrast=round(float(ln.get("contrast", 0.0)), 1), busy=round(float(ln.get("busy", 0.0)), 1))
         out.append((crop, lab, m))
     return out
 

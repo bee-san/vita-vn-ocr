@@ -1,7 +1,7 @@
 {
  "kind": "vocr6-lm-dev",
  "schema": 1,
- "created": "2026-10-26T14:08:30Z",
+ "created": "2026-10-26T14:55:52Z",
  "issue": 127,
  "protocol_sha256": "961fcec652299631ec57212279e8cc98a6452f620adfccda6ce59e0151c596c8",
  "tiers": {
@@ -26450,6 +26450,50 @@
       }
      }
     }
+   }
+  }
+ ],
+ "pagepath_check": [
+  {
+   "hval_all": {
+    "old_cer": 3.875,
+    "new_cer": 2.227,
+    "delta_points": -1.6477,
+    "ci95": [
+     -5.1362,
+     -0.0726
+    ],
+    "clusters": 46
+   },
+   "hval_without_PCSG00854": {
+    "old_cer": 2.33,
+    "new_cer": 2.205,
+    "delta_points": -0.1248,
+    "ci95": [
+     -0.1992,
+     -0.0575
+    ],
+    "clusters": 45
+   },
+   "dev_all": {
+    "old_cer": 3.036,
+    "new_cer": 3.137,
+    "delta_points": 0.1006,
+    "ci95": [
+     -0.1834,
+     0.4643
+    ],
+    "clusters": 93
+   },
+   "dev_without_v21004": {
+    "old_cer": 3.072,
+    "new_cer": 3.037,
+    "delta_points": -0.0354,
+    "ci95": [
+     -0.2271,
+     0.1656
+    ],
+    "clusters": 92
    }
   }
  ],

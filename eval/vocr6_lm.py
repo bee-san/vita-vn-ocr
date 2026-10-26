@@ -709,7 +709,8 @@ def cmd_summary(a):
         part, path = rest.rsplit("_", 1)
         (out["tiers"] if path == "shown" else out["original_path"]).setdefault(tier, {})[part] = doc
     for key, files in (("screen", a.screen), ("memorisation", a.memo), ("lexicon", a.lexicon),
-                       ("final_check", a.final_check), ("sensitivity", a.sensitivity)):
+                       ("final_check", a.final_check), ("sensitivity", a.sensitivity),
+                       ("pagepath_check", a.pagepath_check)):
         out[key] = [json.loads(Path(x).read_text(encoding="utf-8")) for x in files]
     out["shipped"] = json.loads(Path(a.shipped).read_text(encoding="utf-8")) if a.shipped else None
     import finder_tighten as FT
@@ -1068,6 +1069,7 @@ def main():
     p.add_argument("--lexicon", action="append", default=[])
     p.add_argument("--final-check", action="append", default=[])
     p.add_argument("--sensitivity", action="append", default=[])
+    p.add_argument("--pagepath-check", action="append", default=[], help="the #129 benchmark check (report)")
     p.add_argument("--shipped")
     p.add_argument("--out", required=True)
     p = sub.add_parser("tables")

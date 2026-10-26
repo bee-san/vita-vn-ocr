@@ -1675,6 +1675,30 @@
      "why": "compute: a 45k recipe at every tier (Large ~18 h per run) and a separate N confirmation round put ~1.5 days on the critical path",
      "budget": "stage 4 trains at 15,000 steps. R3all (stages.2.amendments[1]) is composed without S3long. If S3long is adopted over A15, stage 4c retrains the shipped recipe at 45,000 steps for every adopted tier (seed 1 with hval folded in, as 4b) and replaces the 4b blob in a follow-up release iff it is adopted over the 4b blob on the shipped path (decision.adopt, 4b as X, one pair; dev not resolved worse)",
      "confirmation": "R3all's confirmation pair at N (seeds 1 and 3, plan v2, against A15) doubles as stage 4a's Normal runs: stage 4a's S and L runs (seeds 1-3) and N seed 2 start with it, on R3all's recipe. If the confirmation fails, the fallback recipe (stages.2.amendments[1]) is run at every tier as 4a, and the runs on R3all are reported only"
+    },
+    {
+     "n": 3,
+     "time": "this commit (see git log); before any stage-4 read",
+     "why": "vocr6-lm's shipped 1 MB LM (v0.3.7-lm6.1) was rebuilt with hval's text folded back in (docs/vocr6-lm.md 'Final blobs'), so it would read hval lines from memory",
+     "lm": {
+      "hval": {
+       "path": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lm/lm/h64_1000k.vlm",
+       "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca",
+       "what": "the screening build h64_1000k (game text of the train titles, hval and guard pages out)"
+      },
+      "dev": {
+       "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.1/vocr_lm6_o3_1000k.vlm",
+       "sha256": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f",
+       "what": "the shipped 1 MB LM (v0.3.7-lm6.1), as Rubi ships it"
+      },
+      "final_test": {
+       "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.1/vocr_lm6_o3_1000k.vlm",
+       "sha256": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f",
+       "what": "the shipped LM (no test title's or CLANNAD's text in it)"
+      },
+      "settings": "alpha 600, beta 2500, gate 8000, bracket 8000, flags 1 (VOCR_LM_BOS), beam 8, top-K 8; cascade under 700 (settings.json of v0.3.7-lm6.1); read --lm-opts alpha=600,beta=2500,flags=1"
+     },
+     "note": "stage 4a's VOCR5 incumbents are read with the same LM builds and settings on the same plans"
     }
    ]
   },

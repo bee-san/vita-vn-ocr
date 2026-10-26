@@ -147,8 +147,8 @@ class Vocr:
     def __init__(self, blob, mode="auto", tile=0, head=0, max_width=0, lib=None, check_crc=True, head_gate="off",
                  two_level=0):
         """head_gate: "off", "on" (skip the head on the frames the blob's gate calls blank) or "score" (compute
-        the gate's scores only); "on" and "score" need mode w8i and a blob with a gate (docs/headgate.md).
-        two_level: 1 runs the two-level head of a blob with a VOC2 trailer (mode w8i; docs/head2level.md)."""
+        the gate's scores only); "on" and "score" need a blob with a gate, in any mode (docs/headgate.md).
+        two_level: 1 runs the two-level head of a blob with a VOC2 trailer (mode w8i or w8f; docs/head2level.md)."""
         self.lib = lib if lib is not None else load_lib()
         data = Path(blob).read_bytes() if isinstance(blob, (str, Path)) else bytes(blob)
         self._blob = _aligned(len(data))

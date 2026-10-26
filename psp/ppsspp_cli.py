@@ -8,13 +8,17 @@
 vocr_cli's options, with the same meaning and output formats (runtime/tools/vocr_cli.c):
   --mode auto|f32|w8f|w8i  --tile N  --head N  --max-width N  --invert  --crc
   --logits OUT.bin  --input-out OUT.bin  --repeat N  --arena W[,W...]
+  --head-gate on|score|off  --two-level
 so it drops in wherever vocr_cli does:
   runtime/tests/parity.py --ckpt CKPT --set psp-test --cli "python psp/ppsspp_cli.py"
   eval/run.py --model 'cmd:python psp/ppsspp_cli.py v1_w8.vocr --mode w8i --stdin' --set psp-test
 Own options: --ppsspp PATH ($PPSSPP, default psp/tools/ppsspp/PPSSPPHeadless), --eboot PATH
 ($PSP_EBOOT, default psp/EBOOT.PBP), --timeout S ($PPSSPP_TIMEOUT, default 3600, wall clock),
 --cpu jit|ir|interp (PPSSPP's CPU core, default jit), --clock MHz (default 333), --stack-kb N,
---stats OUT.json (the app's stats.json), --keep DIR (keep the app directory there).
+--stats OUT.json (the app's stats.json), --keep DIR (keep the app directory there),
+--finder N (the page path: every input is a dialogue region, read by the line finder N of vocr_lines.h,
+0 GRAD, 2 TEXTBOX, 3 TEXTBOX_RECOVERY, then --refine FLAGS, default 31; one output line per region, its
+lines' texts joined by tabs), --probe (the app reports every memory partition's largest free block).
 
 Every call boots the EBOOT once, with a private directory mounted on host0: through
 PPSSPP's --root option. The caller's HOME and memory stick are preserved. The texts, logits and preprocessed
@@ -83,6 +87,11 @@ def parse_args(argv):
     ap.add_argument("--input-out")
     ap.add_argument("--repeat", type=int, default=0)
     ap.add_argument("--arena")
+    ap.add_argument("--head-gate", default="off", choices=["off", "on", "score"])
+    ap.add_argument("--two-level", action="store_true")
+    ap.add_argument("--finder", type=int, default=-1, choices=[-1, 0, 2, 3])
+    ap.add_argument("--refine", type=int, default=31)
+    ap.add_argument("--probe", action="store_true")
     ap.add_argument("--pack")
     ap.add_argument("--stdin", action="store_true")
     ap.add_argument("--ppsspp", default=os.environ.get("PPSSPP", str(HERE / "tools" / "ppsspp" / "PPSSPPHeadless")))
@@ -109,7 +118,9 @@ def make_cfg(a):
     """The app's vocr.cfg (psp/main.c, cfg_set) for vocr_cli-style options."""
     cfg = {"mode": a.mode, "tile": a.tile, "head": a.head, "max_width": a.max_width,
            "invert": int(a.invert), "crc": int(a.crc), "repeat": a.repeat, "clock": a.clock,
-           "stack_kb": a.stack_kb, "wait": 0, "expect": "", "pack": "lines.bin"}
+           "stack_kb": a.stack_kb, "wait": 0, "expect": "", "pack": "lines.bin",
+           "gate": a.head_gate, "two_level": int(a.two_level), "finder": a.finder, "refine": a.refine,
+           "probe": int(a.probe)}
     if a.logits:
         cfg["logits"] = "logits.bin"
     if a.input_out:

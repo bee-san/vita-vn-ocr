@@ -126,8 +126,9 @@ def test_c_loader(base, gated):
     assert Vocr(blob, mode="w8i").has_gate and not Vocr(base, mode="w8i").has_gate
     with pytest.raises(ValueError):                       # ON needs a blob with a gate
         Vocr(base, mode="w8i", head_gate="on")
-    with pytest.raises(ValueError):                       # and W8I
-        Vocr(blob, mode="w8f", head_gate="on")
+    with pytest.raises(ValueError):                       # in any mode (tests/test_gate_w8f.py: W8F and F32)
+        Vocr(base, mode="w8f", head_gate="on")
+    assert Vocr(blob, mode="w8f", head_gate="on").has_gate
     assert C.sizeof(C.c_uint) == 4
 
 
@@ -199,8 +200,12 @@ def test_arena_mirror(gated):
         for hg in (0, 1, 2):
             rt = Vocr(blob, mode="w8i", tile=tile, head=head, max_width=mw, head_gate=hg)
             assert rt.arena_bytes == export.plan_arena(b, mw, tile, head, export.MODE_W8I, hg), (tile, head, mw, hg)
-    with pytest.raises(ValueError):
-        export.plan_arena(b, 0, 0, 0, export.MODE_W8F, 1)
+    with pytest.raises(ValueError):                       # no gate in the blob
+        export.plan_arena(export.read_blob(export_base(blob)), 0, 0, 0, export.MODE_W8F, 1)
+
+
+def export_base(blob):
+    return HG.base_of(blob)
 
 
 def test_twin_against_float(gated):

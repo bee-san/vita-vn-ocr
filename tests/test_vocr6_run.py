@@ -70,3 +70,14 @@ def test_extra_pool_files_are_checked_against_their_manifest(tmp_path):
     f.write_bytes(b"other")
     with pytest.raises(SystemExit, match="not in"):
         R.check_extra_pools(pins, sources, {})
+
+
+def test_seed_only_arms_refuse_other_seeds(monkeypatch, tmp_path):
+    proto = {"stages": {"4": {"seeds": [1, 2, 3], "arms": {"F4L_s2": {"run": "v6f4_L", "tier": "L", "seed_only": 2,
+                                                                       "mix": "m", "steps": 10, "init": "/x"}}}}}
+    pp = tmp_path / "p.json"
+    pp.write_text(json.dumps(proto))
+    monkeypatch.setattr(sys, "argv", ["vocr6_run.py", "command", "--stage", "4", "--arm", "F4L_s2", "--seed", "1",
+                                      "--label", "x", "--protocol", str(pp)])
+    with pytest.raises(SystemExit, match="seed 2 only"):
+        R.main()

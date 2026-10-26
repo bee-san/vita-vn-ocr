@@ -431,5 +431,5 @@ def build(hooked, pages_root, splits_path, harvest, out, workers=4, titles=None,
             tt += [r["text"] for r in read_jsonl_zst(lf)]
     (out / "test_text.json").write_text(json.dumps({"titles": test, "lines": tt}, ensure_ascii=False) + "\n",
                                         encoding="utf-8")
-    print(f"BUILD_DONE {len(infos)} titles -> {out}", flush=True)
+    print(f"assets built: {len(infos)} titles -> {out}", flush=True)
     return doc

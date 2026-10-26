@@ -171,6 +171,16 @@ def test_test_filter_blocks_test_title_text():
     assert tf.ok("今日はいい天気ですね。")
 
 
+def test_word_lines_skip_exclusion_markers():
+    import synth6_text as T6
+    t = T6.Text6.__new__(T6.Text6)
+    t.R = type("R", (), {"exclusions": {"markers": {"有紀寧", "朋也"}}})()
+    t.words = {"寧": [("有紀寧", 1.0), ("丁寧", 0.5)], "也": [("朋也", 1.0)]}
+    rng = np.random.default_rng(0)
+    assert all("有紀寧" not in t.word_line(rng, "寧") for _ in range(50))
+    assert t.word_line(rng, "也") is None
+
+
 def test_wrap_hangs_closing_marks(tmp_path, font):
     f = F6.open_font(atlas_font(tmp_path, font, "T", "bm"))
     adv = f.glyph("あ")[3]

@@ -155,7 +155,11 @@ class Text6:
         return int(rng.choice(len(p), p=p))
 
     def word_line(self, rng, ch, kind="dialogue"):
-        ws = self.words.get(ch)
+        """A Jiten VN word holding ch in a short carrier sentence (synth4's carriers), or None. A word holding an
+        exclusion marker (CLANNAD's character names and title; the Jiten list covers CLANNAD's script) is never
+        used, as in synth4's context4."""
+        markers = self.R.exclusions["markers"]
+        ws = [(w, v) for w, v in self.words.get(ch, ()) if not (markers and S3.marked(w, markers))]
         if not ws:
             return None
         x = np.array([v for _, v in ws], np.float64) ** 0.5

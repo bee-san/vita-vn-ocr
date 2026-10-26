@@ -350,6 +350,17 @@
     "eval/reproducibility/textspot6-20261026/score_run.sh": "626f4f6c6d0af3ddbdaaa17734b618c3d4cca2143bad74a29c0d7e2dea676400",
     "eval/reproducibility/textspot6-20261026/sched.py": "3145f30963a29ac8d874740b449dc54f0f66d9b041e7b700b1774e02d6964356"
    }
+  },
+  {
+   "id": 11,
+   "utc": "2026-10-26T14:56:53Z",
+   "before": "the selection (scheduling only; no arm, seed, recipe or rule changes)",
+   "what": [
+    "The remaining stage-1 runs in a new order, the M arms' seeds first so that stage 2's teacher (amendment 5) is known sooner: stage1d_plan.jsonl = qS4 seed 2, qL5 3, qS4 3, t64n8c16 3, nohook 1, nohook 2 (t64n8c16 seed 2 and qL5 seed 2 are already launched). The label obtains 1-2 of its 2 slots (heavy.sh 12/12 busy)."
+   ],
+   "pins": {
+    "eval/reproducibility/textspot6-20261026/stage1d_plan.jsonl": "81f3dc762224f7d999b7af750f2831d140d9af636f4623ea95d147b0edb432e2"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

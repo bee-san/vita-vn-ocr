@@ -3,6 +3,7 @@
 
   modelb_eval.py dev-plan --out DEV.pkl
   modelb_eval.py hval-plan --pools POOLS --pagepool PAGEPOOL --pages PAGES --out HVAL.pkl
+  modelb_eval.py psptest-plan --data EVAL_DATA --out PSPTEST.pkl    (protected: once, after the release decision)
   modelb_eval.py read --plan PLAN.pkl --blob B.vocr [--mode w8f] [--head-gate on] [--two-level] --out ROWS.json
   modelb_eval.py compare --cand ROWS.json [ROWS.json ...] --base ROWS.json [...] --out CMP.json
 
@@ -20,6 +21,11 @@ Plans hold every crop a score reads, cut once (the line finder does not depend o
         name as a clean crop (box + pad, console view, as stored), hp = every hval PSP page's whole-dialogue regions
         (the page pool's regions: verified horizontal dialogue with every other renderer box kept out, on pages with
         no label in doubt) through the same finder paths; a region's reference is its lines' verified text
+  psptest  psp-test (protected; eval/manifests/psp-test.jsonl), native: pt = its certain lines as eval/run.py crops
+        them (box + 2 px), in the console view (rv: synth/common.line_polarity's dark crops inverted) and the screen
+        view (rvn), names tagged by eval's `name` style; pw = its whole-dialogue regions (eval/vocr3_report
+        .dialogue_regions: regions holding an uncertain line excluded) at base, +4 and +8 px through the same finder
+        paths (components pt, pt_names, pw_grad, pw_recovery)
 Rows: per fixed line, errors = Levenshtein(norm(pred), norm(ref)), chars = len(norm(ref)); per region,
 train/general_vn_textbox_guard.transcript_score's whole-transcript alignment (every finder line read with its dark
 flag as VOCR_INVERT). Rows carry their cluster (dev: the VNDB id; hval: the title id) and frame counts (the time
@@ -73,7 +79,8 @@ REFINE = 0x1F                                 # VOCR_REFINE_DEFAULT
 VARIANTS = ("base", "expanded-4", "expanded-8")
 PUNCT = set("「」『』。、！？!?…―（）")
 BOOT = {"reps": 10000, "seed": 0, "min_clusters": 5}
-COMPONENTS = ("wd_grad", "wd_recovery", "fixed", "tv", "dn", "names", "hl", "hl_names", "hp_grad", "hp_recovery")
+COMPONENTS = ("wd_grad", "wd_recovery", "fixed", "tv", "dn", "names", "hl", "hl_names", "hp_grad", "hp_recovery",
+              "pt", "pt_names", "pw_grad", "pw_recovery")
 
 
 def sha256(path):
@@ -275,6 +282,45 @@ def hval_plan(args):
     print(summary(plan))
 
 
+def psptest_plan(args):
+    """psp-test, native, read once after the release decision (eval/vocr6_psp_protocol.json 'protected')."""
+    import fetch
+    import sets
+    import vocr3_report as R
+
+    from common import line_polarity, to_gray
+    driver = build_finder(Path(args.out).parent / "build")
+    data = fetch.data_dir(args.data)
+    lines, cache = sets.load("psp-test", data)
+    rows = []
+    for ln in lines:
+        g = to_gray(ln.crop_rgb)
+        dark = bool(line_polarity(g))
+        for view in ("rv", "rvn"):
+            gg = 255 - g if (view == "rv" and dark) else g
+            rows.append({"comp": "pt", "unit": f"pt|{ln.id}|{view}", "vn": ln.vn, "view": view,
+                         "crops": [(np.ascontiguousarray(gg), False)], "ref": ln.text, "name": "name" in ln.styles})
+    regs, excluded = R.dialogue_regions("psp-test", data)
+    regions = []
+    for reg in regs:
+        img = to_gray(cache.get(reg["path"]))
+        dims = [img.shape[1], img.shape[0]]
+        for variant, pad in R.VARIANTS.items():
+            x, y, w, h = R.expand(reg["region"], pad, dims)
+            regions.append({"unit": f"pw|{reg['region_id']}", "vn": reg["vn"], "variant": variant,
+                            "image": np.ascontiguousarray(img[y:y + h, x:x + w]),
+                            "lines": [{"text": x_["text"], "styles": x_["styles"]} for x_ in reg["lines"]
+                                      if "name" not in x_["styles"]]})
+    regions = [r for r in regions if r["lines"]]
+    rows += [dict(r, comp=r["comp"].replace("wd_", "pw_")) for r in region_rows("wd", regions, driver)]
+    plan = {"kind": "modelb-plan", "name": "psptest", "built": now(), "rows": rows,
+            "inputs": {"manifest_sha256": sha256(ROOT / "eval/manifests/psp-test.jsonl"), "excluded": excluded},
+            "finder_driver_sha256": sha256(driver), "finders": FINDERS, "refine": REFINE}
+    with open(args.out, "wb") as f:
+        pickle.dump(plan, f, protocol=4)
+    print(summary(plan))
+
+
 def summary(plan):
     from collections import Counter
     c = Counter(r["comp"] for r in plan["rows"])
@@ -325,7 +371,9 @@ def component(rows, comp):
         return [r for r in rows if r["comp"] in ("tv", "dn") and r["name"]]
     if comp == "hl_names":
         return [r for r in rows if r["comp"] == "hl" and r["name"]]
-    if comp in ("tv", "dn", "hl"):
+    if comp == "pt_names":
+        return [r for r in rows if r["comp"] == "pt" and r["name"]]
+    if comp in ("tv", "dn", "hl", "pt"):
         return [r for r in rows if r["comp"] == comp and not r["name"]]
     return [r for r in rows if r["comp"] == comp]
 
@@ -386,6 +434,9 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("dev-plan")
     d.add_argument("--out", required=True)
+    t = sub.add_parser("psptest-plan")
+    t.add_argument("--data", default="")
+    t.add_argument("--out", required=True)
     h = sub.add_parser("hval-plan")
     h.add_argument("--pools", required=True)
     h.add_argument("--pagepool", required=True)
@@ -403,7 +454,8 @@ def main():
     c.add_argument("--base", nargs="+", required=True)
     c.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"dev-plan": dev_plan, "hval-plan": hval_plan, "read": read, "compare": compare}[a.cmd](a)
+    {"dev-plan": dev_plan, "hval-plan": hval_plan, "psptest-plan": psptest_plan, "read": read,
+     "compare": compare}[a.cmd](a)
 
 
 if __name__ == "__main__":

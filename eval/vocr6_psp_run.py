@@ -165,7 +165,7 @@ def main():
     wall = time.time() - t0
     if a.probe:
         shutil.rmtree(rdir, ignore_errors=True)
-        print(f"PROBE_DONE {run} {wall:.0f} s")
+        print(f"probe complete: {run} {wall:.0f} s")
         return
     ck = rdir / "ckpt_last.pt"
     blob = rdir / f"{run}_w8.vocr"
@@ -196,7 +196,7 @@ def main():
                     "eval/vocr6_psp_protocol.json"}
     log(rec)
     (rdir / "run_record.json").write_text(json.dumps(rec, indent=1) + "\n")
-    print(f"RUN_DONE {run} SC {sc:.4f} hp {hv['hp_grad']['cer']} wd {dev['wd_grad']['cer']} "
+    print(f"run complete: {run} SC {sc:.4f} hp {hv['hp_grad']['cer']} wd {dev['wd_grad']['cer']} "
           f"fixed {dev['fixed']['cer']}")
 
 

@@ -179,21 +179,31 @@ def check_inputs(proto, spec, sources, seed):
 
 
 def check_extra_pools(pins, sources, rec):
-    """Another track's pools (data_pins.extra_pools, e.g. vocr6-finder's console crops): the manifest by sha256,
-    then every file a source of this run uses against the manifest's own sha256 (paths relative to the manifest)."""
+    """Another track's pools (data_pins.extra_pools, e.g. vocr6-finder's console crops v1 and v2): each manifest by
+    sha256, then every file of a source the pins name against the manifest whose directory holds it (one version may
+    be pinned beside another: a file is checked against its own version's manifest, and a file under none fails)."""
+    pinned = []
     for pin in pins.get("extra_pools", []):
         mpath = Path(pin["manifest"])
         if sha256(mpath) != pin["sha256"]:
             raise SystemExit(f"{mpath} differs from the protocol's sha256 (data_pins.extra_pools)")
         listed = {str((mpath.parent / q).resolve()): (h["sha256"] if isinstance(h, dict) else h)
                   for q, h in json.loads(mpath.read_text(encoding="utf-8"))["files"].items()}
-        mine = [f for name, _, files, _ in sources if name in pin["sources"] for f in files]
-        for f in mine:
-            want = listed.get(str(Path(f).resolve()))
+        pinned.append((pin, mpath.parent.resolve(), listed))
+    names = {s for pin, _, _ in pinned for s in pin["sources"]}
+    for name, _, files, _ in sources:
+        if name not in names:
+            continue
+        for f in files:
+            fp = Path(f).resolve()
+            own = [(pin, listed) for pin, root, listed in pinned if name in pin["sources"] and fp.is_relative_to(root)]
+            if not own:
+                raise SystemExit(f"{f} (source {name}) lies under no pinned manifest's directory")
+            pin, listed = own[0]
+            want = listed.get(str(fp))
             if want is None or sha256(f) != want:
-                raise SystemExit(f"{f} is not in {mpath} with this sha256")
-        if mine:
-            rec[f"{pin['name']}_files"] = len(mine)
+                raise SystemExit(f"{f} is not in {pin['manifest']} with this sha256")
+            rec[f"{pin['name']}_files"] = rec.get(f"{pin['name']}_files", 0) + 1
             rec[f"{pin['name']}_manifest_sha256"] = pin["sha256"]
     return rec
 

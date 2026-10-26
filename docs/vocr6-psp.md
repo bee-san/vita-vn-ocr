@@ -15,7 +15,7 @@ Under the PSP's time budget, no recognizer reached VOCR5-S's accuracy on PSP gam
 - **VOCR5-S's own shape is accurate but slow.** The control S32 is VOCR5-S fine-tuned on the same PSP data at its own shape.
   - It ties VOCR5-S on unseen PSP games: whole dialogue +0.04 [−0.24, +0.31], fixed lines −0.02 [−0.23, +0.16].
   - It is resolved better on the 15 hooked titles' hval: page path −0.73 [−1.32, −0.29], lines −0.75 [−1.43, −0.29].
-  - It needs an est. 2.05 s per nominal box on the scalar build (1.40 s with the VFPU), with the head gate and two-level head. It is not time-feasible.
+  - It needs an est. 2.05 s per nominal box on the scalar build (1.42 s with the VFPU), with the head gate and two-level head. It is not time-feasible.
 - **What costs accuracy.** Lowering the input height costs the most: from 32 to 24 rows +2.1 points of whole dialogue on top of depth 0 (B32 → B24), and to 18-20 rows +4.6. Dropping the stride-1 DS blocks (depth 0) costs +1.9 at height 32 (B32).
 - **The runs stopped early.** Stage 1 stopped after every arm's first seed (protocol amendment 4). No later stage could plausibly close a 3-4 point gap to a target that VOCR5-S's own shape only ties. Stopping can only lead to no release.
 
@@ -164,13 +164,14 @@ The budget, estimated on the development whole-dialogue crops' own frame mix (`p
 
 | candidate | build | µs / frame (dev whole dialogue) | nominal box, emulated | est. console s per nominal box (× 1.45) | memory in all |
 |---|---|---:|---:|---:|---:|
-| B24 | scalar | 5,305 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,037,838 B |
-| B24 | VFPU | 3,741 | 0.597 s | 0.87 (VFPU unverified on a console) | 1,038,374 B |
-| S32 | scalar | 6,795 | 1.411 s | **2.05** | 1,287,278 B |
-| S32 | VFPU | 4,620 | 0.968 s | 1.40 (VFPU unverified on a console) | 1,287,814 B |
+| B24 | scalar | 5,304 | 0.837 s | **1.21** (over the 1.0 s budget) | 1,042,918 B |
+| B24 | VFPU | 3,775 | 0.603 s | 0.87 (VFPU unverified on a console) | about 1,043,454 B |
+| S32 | scalar | 6,794 | 1.411 s | **2.05** | 1,292,358 B |
+| S32 | VFPU | 4,668 | 0.977 s | 1.42 (VFPU unverified on a console) | about 1,292,894 B |
 
 - **B24 is not time-feasible either.** The feasibility rule assumed the escape fires on 20% of the kept frames; on B24's development crops it fires on 47%. Its scalar estimate is 1.21 s, not 0.93 s.
-- **Memory is far inside the budget.** B24 needs 1,037,838 B in all: the blob with its gate and trailer 760,208, arena 192,448, code 55,731 (vocr.o 28,743, vocr_lines.o 19,084, vocr_lines_refine.o 7,904), stack 4,096 (3,744 used) and the finder's arena 25,355. The VFPU build's vocr.o is 29,279 B.
+- **Memory is far inside the budget.** B24 needs 1,042,918 B in all: the blob with its gate and trailer 760,208, arena 192,448, code 60,811 (vocr.o 33,823 with main's attention op since the rebase, vocr_lines.o 19,084, vocr_lines_refine.o 7,904), stack 4,096 (3,744 used) and the finder's arena 25,355. The VFPU build's vocr.o is about 536 B larger.
+- **The table is measured on the merged runtime.** After the rebase onto main's attention op, the EBOOTs were rebuilt and both candidates re-read on the development crops and regions: every item is still identical to the host (`eval/vocr6_psp_verify_20261026.json` "rebased"). The hval rows above are pre-rebase; neither blob has an attention op, so the host reads them unchanged.
 
 ## Reproduce
 

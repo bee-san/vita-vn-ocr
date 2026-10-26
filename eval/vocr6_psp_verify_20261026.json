@@ -439,5 +439,204 @@
    "finder": 0,
    "memory": "24mb"
   }
+ },
+ "rebased": {
+  "note": "after the rebase onto main 82e531f (vocr6-attn's attention op in runtime/vocr.c): the EBOOTs rebuilt from the merged runtime, both candidates re-read on the development plan's crops and regions in PPSSPP (scalar and VFPU); every item identical to the host; the budget recomputed with the merged code size",
+  "candidates": {
+   "B24": {
+    "all_identical": true,
+    "eboots": {
+     "scalar": "672cd2aaf2bce40c2c60acc523aed60dd4dbc5c134c7c06898b1e21acdfa246d",
+     "vfpu": "360c529309b8bf92fa5ed9130ef8fb9210f379e5f50d4c5d0c9c84d1dd6c95f8"
+    },
+    "sets": {
+     "lines:dev": {
+      "scalar": {
+       "items": 1460,
+       "text_ok": 1460,
+       "logits_ok": 1460,
+       "frames": 43957,
+       "us": 240114659,
+       "finder_us": 0,
+       "pixels": 0
+      },
+      "vfpu": {
+       "items": 1460,
+       "text_ok": 1460,
+       "logits_ok": 1460,
+       "frames": 43957,
+       "us": 173101690,
+       "finder_us": 0,
+       "pixels": 0
+      }
+     },
+     "regions:dev": {
+      "scalar": {
+       "items": 627,
+       "text_ok": 627,
+       "logits_ok": 627,
+       "frames": 34369,
+       "us": 179331302,
+       "finder_us": 3834560,
+       "pixels": 6629949
+      },
+      "vfpu": {
+       "items": 627,
+       "text_ok": 627,
+       "logits_ok": 627,
+       "frames": 34369,
+       "us": 127952647,
+       "finder_us": 3846368,
+       "pixels": 6629949
+      }
+     }
+    },
+    "budget": {
+     "scalar": {
+      "us_per_frame_dev_wd": 5304.18,
+      "nominal_frames": 153,
+      "finder_us_per_pixel": 0.57837,
+      "emulated_s_box": 0.8365,
+      "est_console_s_box_high": 1.213,
+      "est_console_s_box_low": 0.8365,
+      "memory": {
+       "blob": 760208,
+       "arena": 192448,
+       "code": {
+        "vocr.o": 33823,
+        "vocr_lines.o": 19084,
+        "vocr_lines_refine.o": 7904
+       },
+       "stack_used": 3744,
+       "stack": 4096,
+       "finder_arena": 25355,
+       "total": 1042918
+      },
+      "time_ok": false,
+      "memory_ok": true
+     },
+     "vfpu": {
+      "us_per_frame_dev_wd": 3775.19,
+      "nominal_frames": 153,
+      "finder_us_per_pixel": 0.58015,
+      "emulated_s_box": 0.6027,
+      "est_console_s_box_high": 0.8739,
+      "est_console_s_box_low": 0.6027,
+      "memory": {
+       "blob": 760208,
+       "arena": 192448,
+       "code": {
+        "vocr.o": 33823,
+        "vocr_lines.o": 19084,
+        "vocr_lines_refine.o": 7904
+       },
+       "stack_used": 3744,
+       "stack": 4096,
+       "finder_arena": 25355,
+       "total": 1042918
+      },
+      "time_ok": true,
+      "memory_ok": true
+     }
+    }
+   },
+   "S32": {
+    "all_identical": true,
+    "eboots": {
+     "scalar": "672cd2aaf2bce40c2c60acc523aed60dd4dbc5c134c7c06898b1e21acdfa246d",
+     "vfpu": "360c529309b8bf92fa5ed9130ef8fb9210f379e5f50d4c5d0c9c84d1dd6c95f8"
+    },
+    "sets": {
+     "lines:dev": {
+      "scalar": {
+       "items": 1460,
+       "text_ok": 1460,
+       "logits_ok": 1460,
+       "frames": 58357,
+       "us": 402157028,
+       "finder_us": 0,
+       "pixels": 0
+      },
+      "vfpu": {
+       "items": 1460,
+       "text_ok": 1460,
+       "logits_ok": 1460,
+       "frames": 58357,
+       "us": 279013173,
+       "finder_us": 0,
+       "pixels": 0
+      }
+     },
+     "regions:dev": {
+      "scalar": {
+       "items": 627,
+       "text_ok": 627,
+       "logits_ok": 627,
+       "frames": 45646,
+       "us": 307758448,
+       "finder_us": 3841757,
+       "pixels": 6629949
+      },
+      "vfpu": {
+       "items": 627,
+       "text_ok": 627,
+       "logits_ok": 627,
+       "frames": 45646,
+       "us": 211564361,
+       "finder_us": 3838809,
+       "pixels": 6629949
+      }
+     }
+    },
+    "budget": {
+     "scalar": {
+      "us_per_frame_dev_wd": 6793.78,
+      "nominal_frames": 204,
+      "finder_us_per_pixel": 0.57945,
+      "emulated_s_box": 1.411,
+      "est_console_s_box_high": 2.0459,
+      "est_console_s_box_low": 1.411,
+      "memory": {
+       "blob": 823568,
+       "arena": 378528,
+       "code": {
+        "vocr.o": 33823,
+        "vocr_lines.o": 19084,
+        "vocr_lines_refine.o": 7904
+       },
+       "stack_used": 3744,
+       "stack": 4096,
+       "finder_arena": 25355,
+       "total": 1292358
+      },
+      "time_ok": false,
+      "memory_ok": true
+     },
+     "vfpu": {
+      "us_per_frame_dev_wd": 4668.05,
+      "nominal_frames": 204,
+      "finder_us_per_pixel": 0.57901,
+      "emulated_s_box": 0.9773,
+      "est_console_s_box_high": 1.4171,
+      "est_console_s_box_low": 0.9773,
+      "memory": {
+       "blob": 823568,
+       "arena": 378528,
+       "code": {
+        "vocr.o": 33823,
+        "vocr_lines.o": 19084,
+        "vocr_lines_refine.o": 7904
+       },
+       "stack_used": 3744,
+       "stack": 4096,
+       "finder_arena": 25355,
+       "total": 1292358
+      },
+      "time_ok": false,
+      "memory_ok": true
+     }
+    }
+   }
+  }
  }
 }

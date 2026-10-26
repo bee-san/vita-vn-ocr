@@ -1,0 +1,68 @@
+{
+ "kind": "vocr6-psp-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/126",
+ "frozen": "at its commit time in git, before any model B training run started and before any model B run was scored on any development or hval set. Not runs: the PPSSPP speed sweeps of random-init shapes (psp/modelb_sweep.py; no training), the VOCR5-S baseline reads of the development and hval plans, and the training-speed probe (at most 400 steps per shape, no checkpoint kept, nothing scored)",
+ "goal": "Model B: a recognizer that runs on a 64 MB PSP (2000/3000/Go) at native 480x272, as accurate as possible within est. 1 s per nominal 3-line box at 333 MHz on the scalar build and 4 MB of OCR memory, released only under the success rule below",
+ "budgets": {
+  "memory_bytes_le": 4000000,
+  "memory_terms": "exact bytes from the PSP build: int8 blob (with its gate section and VOC2 trailer) + W8F arena at the shipped tile + vocr.o + vocr_lines.o + vocr_lines_refine.o code (psp-size) + the worker stack measured in PPSSPP (rounded up to 4 KB) + vocr_lines_arena_bytes(480, 272); an estimate of a real PSP until a 64 MB PSP measures it",
+  "time_s_le": 1.0,
+  "time_rule": "est. console seconds per nominal PSP box = 1.45 x the PPSSPP-emulated time of the box's recognition plus the finder on a 480 x 90 dialogue region (psp/README.md's upper console factor for scalar W8F), scalar build, W8F, at 333 MHz",
+  "nominal_box": "3 lines of 320 input columns at the median native PSP finder crop height of 19 px (text-height: refine on, p50 19 px): 3 x ceil(round(320 x H / 19) / 8) frames at input height H (H 24: 153; H 20: 129; H 32: 204), the same frame-time mix (gate skip share, escape share) as the model's development whole-dialogue reads",
+  "screening_feasibility": "an arm is selectable only if its shape's est. box time, from the PPSSPP sweep's per-frame costs (backbone, gate, level-1 head + escape, rare rows) at the trained model's development blank-argmax share x 0.9 as the gate's skip share and an escape share of 0.20 of the kept frames, is at most 1.0 s"
+ },
+ "data": {
+  "never": "the 2x (Adrenaline) view; any dev_sample VN (eval/manifests/reserved.json); vita-test, psp-test, CLANNAD; any hooked test title (index.json split test)",
+  "hooked": "vocr6-ingest pools v1 (artifacts/vocr6-ingest/pools/v1, manifest.json; splits_v1.json): the 15 PSP train titles with verified lines (NPJH50127 has none). Screening runs train on split train only (guard and hval out); final runs add guard and hval_fold",
+  "sources": {
+   "hk": {"what": "hooked PSP verified lines as ink crops: train/{line,name,furimain}/<PSP title>.npz", "opts": "kd=0,inv=0.5,fa=0.3", "weight": 0.15},
+   "hc": {"what": "console crops of the hooked PSP train pages (data/modelb_pools.py console: VOCR_LINES_GRAD + vocr_refine_lines(VOCR_REFINE_DEFAULT) at native size, each finder line paired with a verified line and kept only when it holds 40% of every non-blank character cell of that line and no other line's row): artifacts/vocr6-psp/pools/console/train/*.npz", "opts": "kd=0,inv=0.5", "weight": 0.15},
+   "npi": {"what": "VOCR5's pinned real pools cut to their native PSP rows (meta kind psp), ink crops: tt, tvt, rd, rvt, nat_ink, dntv_ink, dnst_ink, own_ink, own_m4, own_m8 (data/modelb_pools.py native)", "opts": "kd=0,inv=0.5,fa=0.3", "weight": 0.14},
+   "npg": {"what": "the same pools' native PSP GRAD crops and their refined copies: nat_grad, nat_ref, dntv_grad, dntv_ref, dnst_grad, dnst_ref, own_grad, own_ref", "opts": "kd=0,inv=0.5", "weight": 0.06},
+   "nv": {"what": "VOCR5-S's synthetic recipe C, as its fine-tune: nvsynth", "opts": "stream=1,pool=3,inv=0.2,fa=0.15", "weight": 0.25},
+   "s2": {"what": "synth2 shards 0-38", "opts": "stream=1,pool=3,inv=0.2,fa=0.15", "weight": 0.125},
+   "s3": {"what": "synth3 v2 (data/manifests/synth3_shards_v2.json)", "opts": "stream=1,pool=3,inv=0.2", "weight": 0.125}
+  },
+  "final_adds": "hk += guard/{line,name,furimain} and hval_fold/{line,name,furimain} of the PSP titles; hc += console/guard and console/hval",
+  "weights_why": "VOCR5's real half (0.5) and its fine-tune's synthetic half for Small; the real half split 0.3 hooked (15 titles, exact labels) / 0.2 VOCR5's native PSP rows (about 250 VNs), so title variety is not drowned by the hooked titles' volume"
+ },
+ "recipe": "train/train2.py fine-tune: batch 96, lr 1.2e-3, warmup 500, cosine to 0.05, wd 0.01, EMA 0.999, 5 threads, vocab data/vocab_4987_proof.txt (VOCR5-S's), --height and the arm's shape, from the arm's init; --val hv (the PSP hval lines, logged only: the final checkpoint is the run); screening 10,000 steps, final 20,000 steps",
+ "init": {
+  "S_d0c2": "train/modelb_init.py --depth 0 --ctx 2 of VOCR5-S's run v5f_S_seed2 ckpt_step15000.pt (exports to VOCR5_S_w8.vocr, sha256 f175bfcb...)",
+  "S_d0c1": "the same with --ctx 1"
+ },
+ "arms": {
+  "B24": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 24", "seeds": [1, 2]},
+  "B20": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 20", "seeds": [1, 2]},
+  "B24c1": {"init": "S_d0c1", "train2_args": "--width 1.0 --depth 0 --ctx 1 --height 24", "seeds": [1, 2]},
+  "B32": {"init": "S_d0c2", "train2_args": "--width 1.0 --depth 0 --ctx 2 --height 32", "seeds": [1, 2], "note": "the height-32 reference of the shape (the issue's 'measure both'); est. too slow at stride 8, so not selectable"},
+  "Q": {"what": "stage 2: the stage-1 winner's recipe with --qat 0.7 (int8 weight fake quantisation from 70% of the steps)", "seeds": [1, 2]}
+ },
+ "scoring": {
+  "tool": "eval/modelb_eval.py read (the C runtime through pyvocr, W8F, greedy) on the frozen plans: dev (artifacts/vocr6-psp/eval/dev_plan.pkl) and hval (hval_plan.pkl); the int8 blob of the run's final EMA checkpoint (train/export.py --int8)",
+  "components": "wd_grad = development native PSP whole-dialogue regions through GRAD + refine (primary); fixed = development tv + dn PSP dialogue lines, both views; hp_grad = hval PSP regions through GRAD + refine; hl = hval PSP lines; wd_recovery, hp_recovery, names: report only",
+  "screening_score": "SC = 0.5 x hp_grad + 0.25 x wd_grad + 0.25 x fixed (CER points), mean over the arm's seeds"
+ },
+ "decisions": {
+  "stage1": "among the selectable arms (budgets.screening_feasibility; B32 is not), the lowest SC wins; if two arms' SC differ by less than 0.05 points, the faster (fewer est. ms per box) wins",
+  "stage2": "Q is adopted iff its mean SC is lower than the stage-1 winner's and its wd_grad and fixed (each, the paired VN-cluster interval of the mean over seeds of Q - winner) are not entirely above 0",
+  "head": "the finalist's gate (train/headgate.py's method: 16 hidden units, fit on the W8F head inputs of training-side console crops, a frame labelled blank when its W8F argmax is the blank, VN-split calibration, eps 1e-3) and two-level head (level 1 = the blank and the 503 most frequent classes of the model B training labels, data/modelb_pools.py rank; escape 16 hidden units at recall 0.999) are kept iff, on the development components wd_grad and fixed, gated + two-level minus the plain blob has paired VN-cluster intervals with upper bounds at most +0.05 points; otherwise the gate alone is tried under the same rule; a model without them is not time-feasible and is not released",
+  "final": "the finalist recipe retrained with the final data (3 seeds: 1, 2, 3; 20,000 steps); the released seed is the one with the lowest development score D = 0.5 x wd_grad + 0.5 x fixed (ties to the lower seed)"
+ },
+ "release_rule": {
+  "a": "development wd_grad: the paired VN-cluster 95% interval (10,000 resamples, seed 0) of the mean over the final's 3 seeds of model B - VOCR5-S lies entirely below 0 (VOCR5-S read in W8I and W8F, the lower of the two; they are equal on the plan)",
+  "b": "development fixed: the same interval is not entirely above 0",
+  "c": "budgets.memory_bytes_le and budgets.time_s_le hold for the released blob, measured as budgets says",
+  "d": "the PSP build in PPSSPPHeadless (scalar and VFPU) returns the host runtime's text and logits bit for bit on every crop of the development plan and the hval plan",
+  "else": "nothing is released; the result is reported on #126"
+ },
+ "protected": "psp-test is read once, after the release decision is committed, report only (fixed lines and whole dialogue, native, the released blob and VOCR5-S); vita-test and CLANNAD are not read (model B reads PSP only)",
+ "hygiene": [
+  "no arm, recipe, weight, threshold, pool or step count is chosen on psp-test, vita-test or CLANNAD",
+  "the hooked pools' hval and guard pages leave every screening run; final runs add them back (vocr6-common.md)",
+  "in-run evaluations are logged only; every run is its final checkpoint",
+  "every run is logged in /local/home/skerraut/herd-synth3/vocr6/experiments.jsonl"
+ ],
+ "amendments": []
+}

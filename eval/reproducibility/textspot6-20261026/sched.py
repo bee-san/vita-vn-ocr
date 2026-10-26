@@ -11,8 +11,8 @@ share (vocr6/slots.txt), training and scoring together, so that the share is nev
   started by an earlier sweep) counts as a job until its process exits; its run_end is then logged.
 - The runtime helper's window: while RUNS/helper.reserve exists, the scheduler keeps one slot of the share free for
   vocr6-spotter-runtime and writes RUNS/helper_go (removed otherwise). The helper runs one heavy job at a time, and
-  only while RUNS/helper_go exists. helper.reserve is removed when vocr6-spotter-runtime.status starts with
-  RUNTIME_READY.
+  only while RUNS/helper_go exists. helper.reserve is removed when the helper's status file starts with its ready
+  word: helper.reserve may hold "STATUS_PATH READY_WORD" (default: vocr6-spotter-runtime.status, RUNTIME_READY).
 - Every start and end goes to the shared experiment log (vocr6/experiments.jsonl, flock).
 Extra jobs: a line appended to RUNS/extra_jobs.txt (a bash command) is run once, before the scoring and training
 jobs, as a --pre command is (lines already taken are counted in RUNS/extra_jobs.taken).
@@ -138,10 +138,14 @@ def main(argv=None):
                 print(f"{utc()} pre job ended rc={j.proc.returncode}: {j.name}", flush=True)
         # the helper's window
         reserve = runs / "helper.reserve"
-        if reserve.exists() and HELPER_STATUS.exists() and \
-                HELPER_STATUS.read_text().strip().startswith("RUNTIME_READY"):
-            reserve.unlink()
-            explog({"kind": "note", "what": "sched.py: the runtime helper reported RUNTIME_READY; its slot returns"})
+        if reserve.exists():
+            spec = reserve.read_text().split()
+            hstat = Path(spec[0]) if spec else HELPER_STATUS
+            ready = spec[1] if len(spec) > 1 else "RUNTIME_READY"
+            if hstat.exists() and hstat.read_text().strip().startswith(ready):
+                reserve.unlink()
+                explog({"kind": "note",
+                        "what": f"sched.py: the helper ({hstat.name}) reported {ready}; its slot returns"})
         cap = read_cap(a.cap_file, 0)
         mine = cap - (1 if reserve.exists() else 0)
         go = runs / "helper_go"

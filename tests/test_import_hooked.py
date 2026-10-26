@@ -347,7 +347,9 @@ def test_hval_targets_guard_copies_and_the_tall_band(tmp_path):
     hval copy of a guard line is screened but in no final pool; a tall furigana band is cut off and its page gets no
     region, while a normal furigana line keeps its band and gets a furimain copy."""
     a, b, c = [40, 200, 90, 18], [40, 200, 90, 18], [40, 200, 90, 18]
-    tall = {"furigana": True, "box_main": [40, 182, 90, 18]}             # band 22 px over an 18-px line: 1.2x
+    # band 22 px over an 18-px line (1.2x); the record cites both renderer boxes, so only the tall-band rules can
+    # make its page incomplete and keep it out of the regions
+    tall = {"furigana": True, "box_main": [40, 182, 90, 18], "box_index": [1, 2]}
     small = {"furigana": True, "box_main": [40, 208, 90, 18]}            # band 8 px: 0.44x, real ruby
     spec = {1: ([("あいうえお", a, {})], None),                           # train
             2: ([("かきくけこ", b, {})], None),                           # guard

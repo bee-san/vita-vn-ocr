@@ -237,12 +237,16 @@ rule is re-applied to this data.
     near-duplicate threshold, but the audit found visual duplicates among them, and a model may have learnt the
     text. Normal reads the screening set without them at 0.357% (0.364% with them).
 - **The hval page path** reads every hval page, so it is not deduplicated against train.
-  - 118 of its 2,109 base regions hold one of the 128 hval lines whose duplicate cluster has a train copy: 916 of
-    the 54,157 reference characters (1.7%).
+  - 118 of its 2,109 base regions hold one of the 128 hval lines whose duplicate cluster has a train copy. Those
+    lines are 916 of the 54,157 reference characters (1.7%); the 118 regions that hold them are 1,980 (3.7%). The
+    seen regions are concentrated: 46% of NPJH50297's hval page characters, 36% of PCSG01110's, 31% of NPJH00140's
+    and 13% of PCSG00753's.
   - 9 hval pages are byte-identical to a train or guard page, and 141 have the same page text as one.
   - The results file scores the page path on the regions without such a line too (`refine|console|base|unseen`):
-    Normal reads them at 4.76%, against 5.18% for all regions. VOCR6's page-path screening should use that key, and
-    finder or spotter work should also leave out hval pages identical to a train page.
+    Normal reads them (52,177 characters) at 4.76%, against 5.18% for all regions.
+  - That key is this scorer's. #129's shared page-path benchmark (`eval/pagepath.py`) takes every hval page with
+    regions and has no such filter yet; it needs the same flag before VOCR6 screens on it (a follow-up for its owner
+    and vocr6-lead). Finder or spotter work should also leave out the hval pages identical to a train page.
 - **The screening share.** While screening, hval + guard + test hold out 9.41% of the pages. When CLANNAD's hooked
   pages arrive as a test title, that share will pass 10%. Final models hold out the test titles only: 1.24% plus
   CLANNAD.
@@ -355,7 +359,7 @@ Of the 5,142 kanji of `data/vocab_vn_5631.txt`, 2,587 occur on the training side
 So the real data covers about half of the output vocab's kanji, and about 900 of them fewer than 10 times. The rest
 needs synthesis in the harvested game fonts (T2, synth6). `stats_v1.json` lists the absent and the rare kanji.
 
-## Baseline: VOCR5 as shipped (`eval/vocr6_baseline.py`)
+## Baseline: VOCR5 as released (`eval/vocr6_baseline.py`)
 
 **The arms** are the released files, sha256-checked. They hold the head gate and the two-level head that #120 and
 #122 adopted. Rubi_for_vita's main still pins v0.3.0's plain blobs, so these arms are VOCR5 as released, not yet as
@@ -446,7 +450,7 @@ scored separately (hval Normal: 0 errors on 40 characters).
       122 errors.
     - PCSG00611 loses text in three ways:
       - two …… rows the finder does not find (40 errors);
-      - 9 lines lose their head (64 characters) and 4 their tail (32). On lines with a wide inner gap of full-width
+      - 9 lines lose their head (64 characters) and 3 their tail (28). On lines with a wide inner gap of full-width
         spaces between two sentences, GRAD + refine keeps the part on one side of the gap and drops the other (viewed
         on page 001146);
       - 6 more whole lines lost or garbled (23 characters).
@@ -521,8 +525,9 @@ variant and scale, per title, with intervals, plus the dev components and the re
 
 ## Training throughput on this host (`train/bench_train2.py`, `eval/vocr6_throughput_20261026.json`)
 
-This host has no GPU (torch 2.5.1+cpu): 64 AMD EPYC 9R14 cores, 246 GB of RAM, 15 heavy slots of 5 threads since
-10:18Z (12 before).
+This host has no GPU (torch 2.5.1+cpu): 64 AMD EPYC 9R14 cores, 246 GB of RAM, and heavy slots of 5 threads. There
+were 12 slots before 10:18Z, 15 from 10:18Z, and 12 again since 12:37Z: the conductor measured the box past its knee
+at 15 slots (`$HERD/heavy-slots`).
 
 **The method.**
 
@@ -548,7 +553,7 @@ This host has no GPU (torch 2.5.1+cpu): 64 AMD EPYC 9R14 cores, 246 GB of RAM, 1
 |---|---:|---:|
 | 31-41 (09:39Z) | 1.76 | 1.58 |
 | 58-65 (the audit's rerun, 11:26Z) | 1.40 | 1.99 |
-| 79-87 (12:35Z, 15 heavy slots busy) | 0.90 | 3.10 |
+| 79-87 (12:49-12:56Z, all 15 heavy slots busy) | 0.90 | 3.10 |
 
 **VOCR5's own runs on this host,** measured over each run's whole log, evaluations included:
 
@@ -557,7 +562,7 @@ This host has no GPU (torch 2.5.1+cpu): 64 AMD EPYC 9R14 cores, 246 GB of RAM, 1
 - Large at 1.31 and 1.25.
 
 The fine-tune benches agree with VOCR5's fine-tunes. The Normal pretrain bench (2.08 steps/s) is 19% faster than
-VOCR5's real pretrain (1.75), which ran on a busier box. The hooked-only arm is slower per step because its lines are
+VOCR5's real pretrain (1.75): that rate includes its evaluations, and the box's load during it was not recorded. The hooked-only arm is slower per step because its lines are
 wider (mean batch width 452 px against 410 px for the
 mix), and compute grows with width.
 
@@ -571,9 +576,9 @@ mix), and compute grows with width.
   - A 150k-step Normal pretrain costs about 24 slot-hours on a partly loaded box (VOCR5's took 23 h), and up to
     about 2x that on a full one.
   - Three seeds of a Normal fine-tune arm cost about 7-14 slot-hours.
-- **The whole box** (an estimate): 15 slots make about 1.2 M Normal fine-tune steps a day at the full-box rate
-  (0.90 steps/s), shared by every VOCR6 track (`vocr6/slots.txt`). The 1.40 rate at load 58-65 would give 1.8 M at
-  15 slots and 1.45 M at 12; the box ran fuller than that today.
+- **The whole box** (an estimate): at today's 12 slots and load around 60, about 1.45 M Normal fine-tune steps a
+  day (1.40 steps/s per slot), shared by every VOCR6 track (`vocr6/slots.txt`). 15 slots at load around 80 gave less
+  in total (0.90-1.0 steps/s per slot, about 1.2-1.3 M a day), which is why the conductor went back to 12.
 
 ## Reproduce
 
@@ -604,7 +609,7 @@ $PY data/hooked_audit.py tables --index data/manifests/vocr6_hooked/index.json -
 ```
 
 The benchmark commands are in `eval/vocr6_throughput_20261026.json` `commands`. Run every heavy step through
-`HEAVY_SLOTS=15 $HERD/heavy.sh`. The import took a few minutes per pass in one slot,
+`$HERD/heavy.sh` (its slot count comes from `$HERD/heavy-slots`). The import took a few minutes per pass in one slot,
 and the baseline's reads 0.3-8 minutes per tier and set. The pinned v1 files have these sha256:
 
 - `pools/v1/manifest.json`: `ba95ff2d6c31d2ce…`

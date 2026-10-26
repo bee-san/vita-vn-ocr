@@ -277,7 +277,7 @@ def finish(args, proto, st, spec):
            "score_file": str(scores / f"score_{name}.json"), "at": now(),
            "notes": "W8I + Rubi per-line decode (no cascade); final step; dev without the hooked titles' VNs"}
     explog(rec)
-    print("RUN_DONE", name, json.dumps(rec["summary"]["rubi"]), flush=True)
+    print("run finished:", name, json.dumps(rec["summary"]["rubi"]), flush=True)
 
 
 def main():

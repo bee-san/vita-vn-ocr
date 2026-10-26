@@ -74,7 +74,7 @@ def main():
                               "rows_in": len(labels), "rows_out": len(keep), "dropped_by_vn": dict(dropped)}
         print(f"{name}: {len(labels)} -> {len(keep)} rows ({dict(dropped)})", flush=True)
     Path(a.record).write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("GUARD_DONE", a.record)
+    print("guard written:", a.record)
 
 
 if __name__ == "__main__":

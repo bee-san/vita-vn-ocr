@@ -210,19 +210,22 @@ def cmd_budget(a):
         wd = v["sets"]["lines:dev"][build]["by_component"]["wd_grad"]
         us_frame = wd["us"] / wd["frames"]
         regs = v["sets"].get("regions:dev", {}).get(build)
-        finder_us_px = regs["finder_us"] / regs["pixels"] if regs and regs["pixels"] else None
+        if not regs or not regs["pixels"]:
+            raise SystemExit(f"{build}: the verify record has no dev regions (finder mode): the box estimate needs the "
+                             "finder's measured time; run modelb_verify.py run with --regions dev")
+        finder_us_px = regs["finder_us"] / regs["pixels"]
         frames = nominal_frames(a.height)
         rx, ry = NOMINAL["region"]
         rec_us = us_frame * frames
-        fin_us = finder_us_px * rx * ry if finder_us_px is not None else None
-        emu = (rec_us + (fin_us or 0)) / 1e6
+        fin_us = finder_us_px * rx * ry
+        emu = (rec_us + fin_us) / 1e6
         arena = v["sets"]["lines:dev"][build]["arena_bytes"]
         stack = max(s[build]["stack_used_max"] for s in v["sets"].values() if build in s)
         stack_r = int(math.ceil(stack / 4096) * 4096)
         mem = blob_bytes + arena + sum(code.values()) + stack_r + FINDER_ARENA_480x272
         res["builds"][build] = {
             "us_per_frame_dev_wd": round(us_frame, 2), "nominal_frames": frames,
-            "finder_us_per_pixel": round(finder_us_px, 5) if finder_us_px else None,
+            "finder_us_per_pixel": round(finder_us_px, 5),
             "emulated_s_box": round(emu, 4), "est_console_s_box_high": round(FACTOR_HIGH * emu, 4),
             "est_console_s_box_low": round(emu, 4),
             "memory": {"blob": blob_bytes, "arena": arena, "code": code, "stack_used": stack, "stack": stack_r,

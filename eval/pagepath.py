@@ -628,6 +628,8 @@ def oracle_boxes(u, s, origin):
 
 def cmd_run(a):
     from common import line_dark
+    if a.lm_opts:                       # another LM setting (vocr6-lm, #127); the default is Rubi's lm_opts()
+        LM_OPTS.update(json.loads(a.lm_opts))
     units, umeta = load_units(a.units)
     if a.set:
         units = [u for u in units if u["set"] in a.set.split(",")]
@@ -859,6 +861,7 @@ def main(argv=None):
     g.add_argument("--frame-boxes")
     p.add_argument("--models", required=True, help="directory with VOCR5_{S,N,L}_w8.vocr")
     p.add_argument("--lm", required=True)
+    p.add_argument("--lm-opts", help='JSON: vocr_lm_opts fields that differ from Rubi\'s, e.g. {"alpha": 600}')
     p.add_argument("--rubi", help="a Rubi_for_vita checkout (core/textnorm.c); without it no textnorm")
     p.add_argument("--tier", default="N", choices=("S", "N", "L"))
     p.add_argument("--no-cascade", action="store_true")

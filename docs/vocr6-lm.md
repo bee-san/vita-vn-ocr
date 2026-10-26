@@ -38,6 +38,9 @@ CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (D
 - **The dictionary-aware variant does not help.** A word bonus from JMdict's headwords ranked by Jiten (the files
   Rubi ships) is worse than the plain LM at every setting tried, so it is not built for the console. Its cost
   would be 0.23-2.5 MB more memory and about 200 trie lookups per line (estimates).
+- **On the shared page-path benchmark** (#129, Rubi's actual finder, report only): hval 3.88% → 2.23% (without
+  PCSG00854: 2.33% → 2.21%, resolved); unseen-game dev 3.04% → 3.14%, not resolved. One VN's box-border junk line
+  accounts for that rise (without it: 3.07% → 3.04%).
 - **On the original line path nothing passes.** Without Rubi's display rules (amendment 1), the junk lines drive
   the selection toward reading fewer characters, and no tier's choice meets the rule.
 
@@ -199,6 +202,26 @@ Vita and PSP (VOCR5-N + cascade, CER %):
 - **Final blobs.** The shipped blobs were rebuilt with hval folded back in (`hook_final`). On dev they are not
   resolved worse than the screening builds at the shipped setting: 1 MB N −0.006 points (−0.024 to +0.010), 4 MB N
   +0.001 (−0.010 to +0.011). hval cannot score them, since its text is now in them.
+
+### On the shared page-path benchmark (#129, report only)
+
+`eval/pagepath.py` reads whole dialogue with Rubi's actual finder: TEXTBOX_RECOVERY with its short-line probe, and
+the refinement on PSP titles. The rule above used VOCR5's GRAD and GRAD + refine regions. This run is VOCR5-N with
+its cascade: the incumbent against the shipped 1 MB setting, `--lm-opts '{"alpha": 600, "beta": 2500, "flags": 1}'`.
+hval uses the screening build `h64_1000k`, since the shipped blob holds hval's text; the dev units (#119's) use the
+shipped blob. The setting was chosen in-sample on this round's own hval, so the hval number here is optimistic.
+
+| units | incumbent | new | difference, points (95% interval) |
+|---|---:|---:|---|
+| hval, 46 titles | 3.875% | 2.227% | −1.65 (−5.14 to −0.07) |
+| hval without PCSG00854 | 2.330% | 2.205% | −0.12 (−0.20 to −0.06) |
+| dev (#119's units, 93 VNs) | 3.036% | 3.137% | +0.10 (−0.18 to +0.46) |
+| dev without v21004 | 3.072% | 3.037% | −0.04 (−0.23 to +0.17) |
+
+v21004 is the mirror image of PCSG00854. Its box border is read as a junk line, and the old LM spelt it with ー and
+ニ, which Rubi's border rule drops. The new one spells it as 35 ー, which the rule keeps, because it reads as a
+pause: +35 errors in one unit. Both junk lines come from the finder; a finder that leaves box borders out
+(vocr6-finder) removes both effects.
 
 ### Held-out cross-entropy (the screen)
 

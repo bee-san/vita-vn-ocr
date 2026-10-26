@@ -1606,7 +1606,7 @@ def markdown(rep, proto):
     md += ["## Headline", ""]
     b = rep.get("path_b") or {}
     if b:
-        md += ["### Path (b): Rubi's shipped path", ""]
+        md += ["### Path (b): Rubi's line path (what of it Rubi main ships: above)", ""]
         ff = b.get("filter_floor") or {}
         t = b["clannad_lines"]["dialogue"]
         md += md_measure(f"CLANNAD, {t['units']:,} dialogue lines (the frozen line crops)", t, "shipped",

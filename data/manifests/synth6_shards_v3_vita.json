@@ -6,7 +6,7 @@
    "kind": "synth6-recipe",
    "schema": 1,
    "view": "vita",
-   "seed": 20261027,
+   "seed": 20261028,
    "per_shard": 10000,
    "cfg": {
     "generator": "synth6",
@@ -36,6 +36,7 @@
      "ink": 0.35,
      "grad": 0.3
     },
+    "grad_cover": 0.9,
     "pad": {
      "vita": 4,
      "psp": 2,
@@ -94,8 +95,8 @@
     "page_tries": 4
    },
    "code_sha256": {
-    "synth6.py": "001e7a497261baf7a6b508d71458b315a8fd57d39ae9dfc4b397bb1cd26b81b2",
-    "synth6_fonts.py": "a6ceaeb6f57971d6bec88adb5401625175018286c313a493a961b677e99be858",
+    "synth6.py": "832b79a9dc32e64a472a334f92c30a8ba1d8cea73a5b8105db782490ac5dd34f",
+    "synth6_fonts.py": "15efc160742b07fd43f521ed75825eeb9eed31b5927f2ad9f972c2f4cccb2fab",
     "synth6_assets.py": "45d7028f9c6d0ea5bac632538262c50be5478d6b303de51a429b2c89db093ff1",
     "synth6_text.py": "86caf9879ade8bf5b1f19fd835e7e788c80833c2c12f931e1d8f1f732850bb13",
     "synth3.py": "834c4ad7995d9f62770e0e95223aea5077665b779385a0d6b9ce572d32b14fc9",
@@ -110,7 +111,7 @@
     "fonts_inventory_sha256": "921dcf4d03075b587bfde60007ae3dc97d2e33bb3c2d96e7baf8e852ea1fdf22",
     "font_check_sha256": "99205a3dcd30891764897ca4be69adfeb8a49c15d1b45028024616910f3b5df6",
     "glyph_check_sha256": "109ef9e56cd4ace0526ec5f1ad303a5a889e328683f39358bfe613ce2a2f59f8",
-    "glyph_geometry_sha256": "9584a5e1131e60077e0b232cbf6aec05c2b856269fc5639cd3d5e72bf75aa2d6",
+    "glyph_geometry_sha256": "5efd45441a94d3fee638a540d19249ea2225cf0ca5e8153127ee7abe5e93fd48",
     "test_text_sha256": "a5e030cf8fb48113cdc17c5b75f4005e45750119da6b8a9a680e0a1d11abb906",
     "hval_text_sha256": "24d9551bae272e2844e03cc108e48b30868788a5b3883d9e8931d19fbd68e0d8",
     "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e"
@@ -253,354 +254,354 @@
   {
    "set": "vita",
    "file": "synth6_vita_00000.npz",
-   "bytes": 93537421,
-   "sha256": "b38ab8634401a95b5b6256e2305bfc5ae64a2cfba4a02a9de12629d338904f9f",
+   "bytes": 93387247,
+   "sha256": "f88df858616e5362b7776a6c2d829e9c1116b9f20f855db2a38156acf9fb70b4",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00001.npz",
-   "bytes": 92867732,
-   "sha256": "46061c83e20fd8f8f8b9c554b4943e9e1b0cc157b27f14929c3d3fc598169bca",
+   "bytes": 93652488,
+   "sha256": "6ccabe9c86bcd46e53e8b496b1eceff7951e8929444cc2b9496aaf94b0771e19",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00002.npz",
-   "bytes": 92740670,
-   "sha256": "6d40eac174abc4ef3877af468b38d63cc6866788b0fc0fab2436844ad89e9227",
+   "bytes": 92695574,
+   "sha256": "18dc9cc7c80632591109bf718552ecbe64ed827d4a4e7419ab1c63632525c7bc",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00003.npz",
-   "bytes": 92839821,
-   "sha256": "0e15549c840ed918aaffa5737aaf5b0b4bd8c58d35a74411fbd65dcd4cfb0205",
+   "bytes": 91536395,
+   "sha256": "94878499fba1c1201e5837691a647cf0d0c4e80b77a92179c617099d14b656a8",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00004.npz",
-   "bytes": 91799476,
-   "sha256": "7f6bfd138e4406b9f5bab52d63755d3d71a922cbfc2fd3d1c7308a463a2af181",
+   "bytes": 92692758,
+   "sha256": "e2ccf7b386f9972f5e58612777eb173592b33f37da394843978554e44ac176a7",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00005.npz",
-   "bytes": 92918730,
-   "sha256": "7e47cbb0764b69726f64f2d76ffdbb2a47547642f3abf517c76352f3f1c79889",
+   "bytes": 93374609,
+   "sha256": "f3c363c204aabbec0528f52ee2ee8c00862aa81477de0fba6af92051f39a0826",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00006.npz",
-   "bytes": 93555273,
-   "sha256": "76e77af41db7ea8739692bccc1e89a7e54978897a4c9b7a7f598a09591ee85d8",
+   "bytes": 92882723,
+   "sha256": "07c418f6929b5a5a1672954d75886ff0a3793d9cd15b65a80d396dff9e31e6b7",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00007.npz",
-   "bytes": 92048614,
-   "sha256": "1f483abef7e7a202d14476decf73bebba4e2921ac4f0f3b73d6dc6d989c04fd2",
+   "bytes": 93473317,
+   "sha256": "37386874a4e944972bd53f80668696f47bec4da9ba14af647b972001ebdd5524",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00008.npz",
-   "bytes": 91893004,
-   "sha256": "1cc4d24f577ea0cb2ab33e6facbdeacdfc19400813bb6e4f5dc8d21b94152015",
+   "bytes": 92164708,
+   "sha256": "fe7c05e8624aa99c05b06f8424cb3bacd57d8aaf69e24a1e1d7cea1eed05878e",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00009.npz",
-   "bytes": 93412400,
-   "sha256": "4b1fecc5bc81f124a26249732b9c81bcc142add740be9d0852ffb5f6bbd3807e",
+   "bytes": 91756833,
+   "sha256": "e14b1a4eabe059ad69f61d9525539c35c850eaab57fa3633f90377c08aa6a475",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00010.npz",
-   "bytes": 93231460,
-   "sha256": "ee36b91413f3f14849e8cdbcbd0ee7dd4f82e31fa8d45d2d256f868fbf640ea9",
+   "bytes": 92242147,
+   "sha256": "40b1f2131e20cb343ddc63d45bd29b1ba11d7ffe77bb778138a6b239a6e9d288",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00011.npz",
-   "bytes": 91755921,
-   "sha256": "3fcbc6d306b45a2c764ace11d805842a262893d1bba5a3ab12e2fb5dbbc92799",
+   "bytes": 92600855,
+   "sha256": "43c601cfb04f553c801843e254aeaf62d5a2f1a182e2772066e6e8a8c4631421",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00012.npz",
-   "bytes": 92782534,
-   "sha256": "b98aa76f4f7478deeaed80a158b2650638a4232ff3880937b4d178aafbca68a6",
+   "bytes": 93131799,
+   "sha256": "93dbd3fa66f59847bbb9decd57476e54b9d80ac222e5d2b419607cac9303721e",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00013.npz",
-   "bytes": 92503441,
-   "sha256": "7847da42c2da72a715e857e5061776101e1f944b73418d6d39aa5a8e4b5420fa",
+   "bytes": 92405480,
+   "sha256": "f2ee2e652b0e763ad20a0eb2ab70635efc807c984cdfa9163dafdea45d205e43",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00014.npz",
-   "bytes": 93496676,
-   "sha256": "c605afd0ca2dd32d774491e38b4de5e8cb6a16f54bd79094c1dcc607c4092e3a",
+   "bytes": 93946734,
+   "sha256": "0c08f9261956ca4149a5691b2203dc6b7378f7ac6253ad1e1c3c79332ff6d717",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00015.npz",
-   "bytes": 92134135,
-   "sha256": "1d00799cfa8418ed98ff6a6b60558509d791404612b259a6385771b739afd1cd",
+   "bytes": 92574920,
+   "sha256": "d85b93cf9c78e37c082ac943ec15cbfd2ebdfae2833bce57fefea6958c0369bc",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00016.npz",
-   "bytes": 91835424,
-   "sha256": "9793c0322b2e8d6fda1a2ddfc046d2d73ba4ac4634157cacb0488a3e1611e8c8",
+   "bytes": 91685666,
+   "sha256": "1dbb7216b84b3e9df357cce0362505886d237c260d78d523e2710a1909188764",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00017.npz",
-   "bytes": 92688890,
-   "sha256": "2a4c54e3c038058a141ad34f699c5eb2fb97faa78b3200ee3453447b76a6dcbd",
+   "bytes": 91908099,
+   "sha256": "30f80ae75404650e12024bf9e346cfb9aeb19d3e3c09335ff94c216f27dfb465",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00018.npz",
-   "bytes": 93263782,
-   "sha256": "81f7eac53c1f66228913b767b0fbdafcb7d7322b13338292599fc908cb548953",
+   "bytes": 92479255,
+   "sha256": "1344cc266b08616290403e5a6156fd2b4e7d3e071a8996fd90762efd03ef67b1",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00019.npz",
-   "bytes": 92149737,
-   "sha256": "5ffb8ddf09939968ed5bf2d41069ecfb4639a956885c7a3ef504fbca932be265",
+   "bytes": 92646369,
+   "sha256": "6eb533710c6aa70eb2510527605418f7890b5c711f825592bc85ccf096aa074f",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00020.npz",
-   "bytes": 92718610,
-   "sha256": "7b26330b7658c670c2325d5cb02bc64b9b2ee64f2345165fc81684fdc64dbc5b",
+   "bytes": 92646053,
+   "sha256": "b3558d4af9a934d66f79ec5addca903d00f0b5983055d6a5cc99137c7a12f442",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00021.npz",
-   "bytes": 92669939,
-   "sha256": "c266011cf7e052dd5d1e8fdeaa6bf28073b0d2dc51e99e04f9a0c50097e473f0",
+   "bytes": 93380252,
+   "sha256": "8fddbbd1f330165adc014f6211a350094c5a75fef471145480290876e4d60435",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00022.npz",
-   "bytes": 91514896,
-   "sha256": "691b67e3811f8e7cda67cb225aabbb06e1ff59dccf9d97b81d0fb13bbb589d33",
+   "bytes": 91408348,
+   "sha256": "f661f4c5f83263044586474c8a39d497583688808be261c134679469e6cbb57c",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00023.npz",
-   "bytes": 92633407,
-   "sha256": "2ba02da519b6330118d4a179b598217f48abf73fc7f958b70cbf520e1bc8285b",
+   "bytes": 91750737,
+   "sha256": "e05552826b0af0d9b68abd9acf078d95d63fd48d44e19caad083481fa66c33f4",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00024.npz",
-   "bytes": 92936434,
-   "sha256": "c8d0a20837014ca6c7af549bb9a4a3b8904ff77c4a756e6598a073dbc6a43cf2",
+   "bytes": 93425610,
+   "sha256": "87ae1e0522b0dddf3a4d6515f484778d7a0a20ced17e168c5f507da49cc9d3fe",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00025.npz",
-   "bytes": 92600866,
-   "sha256": "51707353a89823ca92187fc4064ef477129aa3fe812942bfdc7b14047f2b7be8",
+   "bytes": 92469031,
+   "sha256": "f47c2c7d554608033e72958162dd89491bc8fba8d4adeef6824c4beb8f267627",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00026.npz",
-   "bytes": 91941085,
-   "sha256": "642578e27cd1924cfe894c2b87e2475c968e86a76017773281d0eec7278d6826",
+   "bytes": 93710575,
+   "sha256": "c1944d84c5a6183363b7d66dce3e5ed608be431233617336718cb0dc6997e93f",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00027.npz",
-   "bytes": 91747823,
-   "sha256": "a25214a522ab1ba4dea0bd03aeb480819ff44db4d15988d2f6774e78a9692ae3",
+   "bytes": 93995444,
+   "sha256": "ae06adb8a5600b3aa3bd0a550b5ce36172731fe58277a01ceb81d16bb35caca7",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00028.npz",
-   "bytes": 90715961,
-   "sha256": "fac34391eeca0f193a82217a41f04a75c315850e363a23b4e08ef586408f11a7",
+   "bytes": 93123100,
+   "sha256": "340425c5a1291875fb65e988501ec2cfc33fa0c921173841e0594fbe2fc01e54",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00029.npz",
-   "bytes": 92515208,
-   "sha256": "b2c4f552184b6b4c209e134f86a488d6e40cf9a556018dba97dd4b66374497e8",
+   "bytes": 92910175,
+   "sha256": "356b678503c15dd50219e1c56a226433145fc7734add7fa4dde1d1b28c8318c8",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00030.npz",
-   "bytes": 92164772,
-   "sha256": "3f7de524e159aa330ba0ce2b78e9d5b33644efbbc0707ff06aa6b27f53aca78e",
+   "bytes": 92311321,
+   "sha256": "988157a59f05e910ecc687c85c7b900fd30ec887ec906e76025c814e67eae671",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00031.npz",
-   "bytes": 92627937,
-   "sha256": "b61b592d68f320710611f67a23c0df99fda8009cd43d7711032cd99011f74ad7",
+   "bytes": 92858932,
+   "sha256": "a80888f01541ee76a6556019ec453d8817b6dedef45c3a225e30d38358d2363f",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00032.npz",
-   "bytes": 91894723,
-   "sha256": "c3e41aea088fc5394f897d2349c52c1a711fa3aec75b6c0ec9030735eab6f8f3",
+   "bytes": 92669448,
+   "sha256": "98263bdd99d68a9f4654bed263d45382e4775ecc72ebec8dbb2febd27cd16c94",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00033.npz",
-   "bytes": 92284490,
-   "sha256": "071253810ff2a09802684bf16cc7909e94a4335c012cbf4b103b04ff52de332b",
+   "bytes": 91844227,
+   "sha256": "603ed6bb0e9d7a10672c1640e3ab2a80643390fea11a66f22890fd7655383fe9",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00034.npz",
-   "bytes": 93292985,
-   "sha256": "310d954b8d8b5ed449345e2b7281553bf5bcb3d9e2374e21d2eb09054bb9ff51",
+   "bytes": 92962687,
+   "sha256": "64340f7ed42c28eca7bc9c9c414136380a44125859fde09b8213d0102032dae4",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00035.npz",
-   "bytes": 91839247,
-   "sha256": "8632f3d02dcb7e97f1adf605e48376fc80ca25ca758785e411a7e3360755084a",
+   "bytes": 92227930,
+   "sha256": "3df413c7bd8ece3f0c2cea1d9dab436421c1a2eaf6e1984eeb7b0e4ec8be5c2c",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00036.npz",
-   "bytes": 92174616,
-   "sha256": "fe22810fc198aff87aad1a78c6959eb0d5d600a5c5b65a8634ad1449095deeca",
+   "bytes": 92150452,
+   "sha256": "2c40cf0a58648ea493e2a1664538a96fde233c9b048a8242e39fea6bdc5db978",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00037.npz",
-   "bytes": 92738507,
-   "sha256": "4e0afceda236025c7809b176522b68ba28c539cfd70c7cc14d28b59fed1da5d0",
+   "bytes": 92687565,
+   "sha256": "859ec802825ae10ceeacb33dda30d3c0a86fc4af27bd9ff0b84bc568ccfb57c9",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00038.npz",
-   "bytes": 91350815,
-   "sha256": "9a45aa7dc36c406b651a9fb53c815be124f255cc8e05555021b9f6d07a96e836",
+   "bytes": 92447167,
+   "sha256": "3ab656b2729e04baf9918e829498fbd2ecc9243c792987cc9a81675da349c4cc",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00039.npz",
-   "bytes": 92540952,
-   "sha256": "9703a31f6e5e2cbdbd75e25fffa07a3f0bca005526d2fdb58c7b0b0402aed0bd",
+   "bytes": 93610143,
+   "sha256": "f77ae979c54bb34bdce51c67e9442402cb507c57789227abbcda564a88d3464a",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00040.npz",
-   "bytes": 92713271,
-   "sha256": "9ad43152151f604fb51bffb456834ff0f7e93883e70d83727830b7493e93dddb",
+   "bytes": 92053066,
+   "sha256": "3a4eb789f361262578938d5fc3d0ec26fca8033e6ad849b24704a623281442f6",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00041.npz",
-   "bytes": 92176734,
-   "sha256": "48f13bf2c439afd2d1702a48c25759b56b7d99709f4357783abacd8feabc30ea",
+   "bytes": 92786805,
+   "sha256": "45941dec1704f48a4eaf277699f6f9650835844d7cd21adb39f728186d236663",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00042.npz",
-   "bytes": 92490640,
-   "sha256": "f94c309d1fca763757929427407d604d177f0a2924075ec4e566d0a3f29995e0",
+   "bytes": 91961646,
+   "sha256": "6d755d8c8a7d227b7cd48c1e9954f677a27ff3fc26bedbb941cd880f377189fd",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00043.npz",
-   "bytes": 92427729,
-   "sha256": "b3c567b4a640c4d4f0855163dbff79ab26bcf760098dd89db7823fece092d15f",
+   "bytes": 92207977,
+   "sha256": "4aaf7cf343fcce1c673e634c2c01d00b8ddc7f41674d8940f92a64a3b9a874f5",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00044.npz",
-   "bytes": 93053406,
-   "sha256": "d03c60aab5d7c83de059ef12217ebc128773bd8ff93ea7e69a3a77820d83bf3c",
+   "bytes": 92475001,
+   "sha256": "c6f1a21d3664f54153d94044d145028e8b57ef742b3cfcce293eecdc5f32a17b",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00045.npz",
-   "bytes": 92748237,
-   "sha256": "f666219b8a49dcef1f3a529d75400d44f8450f607f5450b6b5a323b574732bda",
+   "bytes": 92738609,
+   "sha256": "c3e57579ce222b06e66b3362ea65bbee3441c67262a0a7547cdc1298150a4e1f",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00046.npz",
-   "bytes": 92616733,
-   "sha256": "42a6913ee53c5096387a3822b70fc9cc3db8c8a64f895791964649383d535fb4",
+   "bytes": 92124795,
+   "sha256": "f41b26ed64dfa98a359819776fd9b50605c80348e90542078ebd31c2b0a128ee",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00047.npz",
-   "bytes": 92880843,
-   "sha256": "4f78578c94215158dfbccaa6600fbbc33966983f05896e5d274b3eea83956b8e",
+   "bytes": 92677771,
+   "sha256": "1e66fc1fcd2c3bef2f09b930412bf6f72591f3d5187eebba2d716da9e32af4fd",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00048.npz",
-   "bytes": 92699651,
-   "sha256": "870d7c49fe5446ea6e2e90c0925bc2d0ee75bade8cf8cc9f066fd5aafa4c1e39",
+   "bytes": 92763263,
+   "sha256": "7565d2817d7d48a823c1db85e09233bc02d3a8fc169cb83861fa35c0886a4794",
    "samples": 10000
   },
   {
    "set": "vita",
    "file": "synth6_vita_00049.npz",
-   "bytes": 92361326,
-   "sha256": "21d7cf876c46cad920abbcb3783a0c9bdcf9bf359676d071a0f043ff7aebc05c",
+   "bytes": 91918134,
+   "sha256": "ff7bb1a34d1472e3754cb3b9e9fb1f1358b533f57aced67dc952bd8e03689c4b",
    "samples": 10000
   }
  ],
  "samples": 500000,
- "bytes": 4624526984
+ "bytes": 4631534240
 }

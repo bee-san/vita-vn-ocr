@@ -3,7 +3,7 @@
  "schema": 1,
  "issue": "https://github.com/bee-san/vita-vn-ocr/issues/125",
  "plan": "plans/vocr6-plan.md section 7 (herd-synth3); prompts/vocr6-common.md",
- "registered": "2026-10-26T09:55Z (stage 1); stage 1 amendment 1 2026-10-26T11:55Z (before any stage-1 run)",
+ "registered": "2026-10-26T09:55Z (stage 1); stage 1 amendment 1 2026-10-26T11:46Z (before any stage-1 run)",
  "lead": "vocr6-lead",
  "tiers": {
   "S": {
@@ -164,10 +164,767 @@
     ],
     "opts": "inv=0.5,fa=0.3"
    }
+  ],
+  "m1_x2": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.25,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/PCSG*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line_x2/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/PCSG*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name_x2/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   }
+  ],
+  "m1_s6": [
+   {
+    "name": "nv",
+    "weight": 0.1575,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.07875,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.07875,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.035,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.25,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   },
+   {
+    "name": "s6v",
+    "weight": 0.1,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v1/vita/synth6_vita_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s6x",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v1/psp2x/synth6_psp2x_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   }
+  ],
+  "m1_t5": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.25,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3",
+    "per_title": 0.5
+   }
+  ],
+  "m1_r30": [
+   {
+    "name": "nv",
+    "weight": 0.315,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1575,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1575,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.07,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.045,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0311271,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0213729,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0176481,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0048519,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0039123,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0035877,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   }
+  ],
+  "m1_r70": [
+   {
+    "name": "nv",
+    "weight": 0.135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.0675,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.0675,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.03,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.105,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0525,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0726299,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0498701,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0411789,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0113211,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0091287,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0083713,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.35,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   }
+  ],
+  "m1_fa2": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.3"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.3"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.6"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.6"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.6"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.6"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.6"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.25,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.6"
+   }
   ]
  },
  "mix_notes": {
-  "m1": "VOCR5-N arm F's fine-tune mix (eval/vocr5_run.sh N F) with its real half split in two: VOCR5's pinned real pools at half their weights (0.25) and the hooked corpus' train split (horizontal lines and names; hval and guard pages out) at 0.25. Synthetic half unchanged (nv 0.225 + s2 0.1125 with fa=0.15, s3v3 0.1125, s4 0.05)."
+  "m1": "VOCR5-N arm F's fine-tune mix (eval/vocr5_run.sh N F) with its real half split in two: VOCR5's pinned real pools at half their weights (0.25) and the hooked corpus' train split (horizontal lines and names; hval and guard pages out) at 0.25. Synthetic half unchanged (nv 0.225 + s2 0.1125 with fa=0.15, s3v3 0.1125, s4 0.05).",
+  "m1_x2": "m1 with the hooked PSP titles' lines and names in the Adrenaline view (vocr6-ingest's line_x2 / name_x2: the PSP page upscaled 2x bilinear, cut there) instead of the native 480x272 view; Vita titles (PCSG*) unchanged. Model A only ever sees PSP through Adrenaline",
+  "m1_s6": "m1 with synth6 (vocr6-synth6 shards v1, pinned by data/manifests/synth6_shards_v1_{vita,psp2x}.json = feat/vocr6-synth6 04f8740): s6v 0.10 + s6x 0.05, the other synthetic sources scaled by 0.7 so the synthetic half stays 0.5 (synth6 = 30% of it)",
+  "m1_t5": "m1 with the hooked source split per title (eval/vocr6_run.py mix_sources per_title) at temperature 0.5: title t gets 0.25 * rows_t^0.5 / sum rows^0.5 instead of its row share",
+  "m1_r30": "m1 with the real half scaled to 0.3 and the synthetic half to 0.7 (every source's weight x0.6 / x1.4)",
+  "m1_r70": "m1 with the real half scaled to 0.7 and the synthetic half to 0.3 (x1.4 / x0.6)",
+  "m1_fa2": "m1 with every source's finder-augmentation probability doubled (nv/s2 0.15 -> 0.30; the real ink pools and hk 0.3 -> 0.6; the GRAD-crop pools keep none)"
  },
  "data_pins": {
   "hooked": {
@@ -179,7 +936,7 @@
    "pool_tag": "hooked-v1",
    "splits": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/splits_v1.json",
    "splits_sha256": "417df3d784cbd2cf762c4418d682089560131951d645b5f5b202a510f246261e",
-   "what": "vocr6-ingest's pools v1 (post-audit, 09:21Z): train split only (hval and guard pages out); horizontal line + name pools, native crops in console polarity"
+   "what": "vocr6-ingest's pools v1 (post-audit, 09:21Z): train split only (hval and guard pages out); horizontal line + name pools, native crops in console polarity; stage 2's m1_x2 uses the train split's line_x2 / name_x2 pools of the same manifest"
   },
   "vocr5_pools": {
    "pin": "eval/vocr5_pools.sha256",
@@ -202,6 +959,16 @@
    {
     "manifest": "data/manifests/synth4_shards_v5631.json",
     "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards"
+   },
+   {
+    "manifest": "data/manifests/synth6_shards_v1_vita.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v1/vita",
+    "sha256": "76905d1ab60857f7208ca011de5f350ba68ca33e80f40c44c759f1a202b53ee2"
+   },
+   {
+    "manifest": "data/manifests/synth6_shards_v1_psp2x.json",
+    "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-synth6/shards/v1/psp2x",
+    "sha256": "ca1b251215e432efd48d37cf3165b5dc4711ff3ae11f7b83f90479a29652357f"
    }
   ],
   "guarded": {
@@ -392,7 +1159,7 @@
    "amendments": [
     {
      "n": 1,
-     "time": "2026-10-26T11:55Z",
+     "time": "2026-10-26T11:46Z (commit 2b7ac9d 11:46:35Z; an earlier revision of this file said 11:55Z, written ahead of the clock)",
      "before": "any stage-1 run started (the experiment log has no stage-1 line; the only numbers seen are the VOCR5 incumbents' in decision.page_metric_evidence)",
      "why": "compute: C150 costs ~48 of stage 1's ~102 slot-hours, and stage 2 needs slots while the 45k runs train; the plan asks for Hyperband-style early stopping with enough warm-up for the fresh-init arm (vocr6-lead prompt, step 2)",
      "c_rung": "C150 (seeds 1, 3) runs only if C50 is in contention after both C50 seeds are scored: mean hval_page(C50) - min(mean hval_page(A15), mean hval_page(B15)) <= +0.50 points AND mean dev(C50) - dev(VOCR5-N) <= +0.75 points (means over seeds 1, 3; rubi path). Otherwise family C stops at 50k (its numbers are reported) and decision.winner is taken over A45 and B45 only. The thresholds are set from the prior evidence on longer schedules: VOCR3's 4x longer FL10 pretrain gave -0.85 development points (docs/vocr3.md); train2's longer fine-tune was not better (docs/train2.md, F15b)",
@@ -400,6 +1167,104 @@
      "order": "A15 and B15 first (both seeds), then A45 and B45; C50 from the start on its own slots"
     }
    ]
+  },
+  "2": {
+   "name": "data factors, one at a time from W15",
+   "tier": "N",
+   "seeds": [
+    1,
+    3
+   ],
+   "registered": "2026-10-26T12:1xZ (this commit), before any stage-2 run and before any stage-1 score",
+   "defaults": {
+    "mix": "m1",
+    "batch": 96,
+    "final_lr": 0.05,
+    "wd": 0.01,
+    "ema": 0.999
+   },
+   "base": {
+    "arm": "W15",
+    "rule": "stage 1 amendment 1's pipelining: the better of A15 and B15 (lowest mean hval_page whose dev interval against VOCR5-N does not lie above 0); 'init': 'W15' is filled with that arm's init per seed (a mechanical fill, recorded with the stage-1 decision), and W15's own runs (seeds 1, 3) are X of every comparison",
+    "filled": null
+   },
+   "arms": {
+    "S2x2": {
+     "run": "v6s2x2_N",
+     "mix": "m1_x2",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "PSP hooked lines in the Adrenaline 2x view"
+    },
+    "S2s6": {
+     "run": "v6s2s6_N",
+     "mix": "m1_s6",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "synth6 on (game-font synthesis)"
+    },
+    "S2t5": {
+     "run": "v6s2t5_N",
+     "mix": "m1_t5",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "per-title temperature 0.5 for the hooked lines"
+    },
+    "S2r30": {
+     "run": "v6s2r30_N",
+     "mix": "m1_r30",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "real share 30%"
+    },
+    "S2r70": {
+     "run": "v6s2r70_N",
+     "mix": "m1_r70",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "real share 70%"
+    },
+    "S2fa2": {
+     "run": "v6s2fa2_N",
+     "mix": "m1_fa2",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "W15",
+     "what": "finder augmentation doubled"
+    }
+   },
+   "pending": {
+    "S2cil": "crop-in-the-loop: vocr6-finder's console crops (CROPS_READY: the finder's whole-line crops of the train pages and their jittered variants, labelled from the verified lines) split from the hooked share: hk 0.15 + console 0.06 + console_jitter 0.04 (real half unchanged). Pinned (manifest sha256) when CROPS_READY appears, before its runs; the train pages only (never an hval, guard or test page)"
+   },
+   "not_run": {
+    "names": "names in/out: names are 647 of the hooked train split's 74,921 horizontal rows (0.9%), the metric is dialogue, and the owner says names do not matter (2026-10-14 13:57Z): no plausible effect on the decision metric",
+    "vreflow": "vertical re-flow: 1,567 columns of one title (PCSG00653); the decision metric is horizontal dialogue and VOCR6 ships no vertical model",
+    "aug_pack": "the plan's augmentation pack is covered by S2fa2 (finder context: borders, neighbour glyphs, furigana, scenery) and S2cil's jitter (real finder boxes moved); polarity is already 0.5 on real lines; small glyphs: the PSP down-up resize (12%). A new augmentation (cut edges, leading icons) is a stage-3 item if S2cil leaves crop errors"
+   },
+   "decision": {
+    "factor": "each arm Y against W15 (X), seed pairs (1,1), (3,3): decision.adopt",
+    "exclusive": "S2r30 and S2r70 are levels of one factor: if both are adopted, the one with the lower mean hval_page",
+    "recipe": "R2 = W15 + every adopted factor. With two or more adopted factors, one confirmation pair (S2all, seeds 1 and 3, every adopted factor combined; mixes compose by applying each factor's change to m1 in the order x2, s6, cil, t5, r, fa2) must itself be adopted over W15; if not, R2 = W15 + the adopted factor with the lowest mean hval_page",
+    "report": "every component, per platform (Vita, PSP 2x), per title; slot-hours"
+   },
+   "compute": "est. 6 arms x 2 seeds x ~2.4 h = ~29 slot-hours (+ S2cil ~4.8, S2all ~4.8)"
   }
  },
  "incumbents": {

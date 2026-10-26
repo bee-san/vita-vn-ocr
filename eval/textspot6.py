@@ -283,7 +283,7 @@ def cmd_pagepath_boxes(args):
         out = frame_boxes(rows, args.decode, args.tags)
     elif args.set == "dev":
         by = {r["frame"]: r for r in rows}
-        for i, u in enumerate(dev_units()):
+        for i, u in enumerate(dev_units(args.units or DEV_UNITS)):
             r = by[dev_frame_key(u)]
             s = 2 if u["kind"] == "psp" else 1
             reg = tuple(v * s for v in u["region"])
@@ -321,8 +321,9 @@ def crop_jobs(set_name, units_path=None, pages=PAGES):
 
     from common import to_gray
     if set_name == "dev":
-        dims = {k["frame"]: (g.shape[1], g.shape[0]) for k, g in dev_frames()}     # console-view frame sizes
-        for i, u in enumerate(dev_units()):
+        path = units_path or DEV_UNITS
+        dims = {k["frame"]: (g.shape[1], g.shape[0]) for k, g in dev_frames(path)}     # console-view frame sizes
+        for i, u in enumerate(dev_units(path)):
             img = u["image"]
             if u["kind"] == "psp":
                 img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
@@ -373,7 +374,7 @@ def cmd_spot_crop(args):
     meta = {"blob": str(args.blob), "blob_sha256": hashlib.sha256(blob).hexdigest(), "set": args.set,
             "decode": f"crop{'+refine' if args.decode == 'detref' else ''}", "units": len(jobs),
             "scale": "the frame's (amendment 3): textspot6_twin.spot(scale=scale_of(frame width, frame height))",
-            "units_file": str(args.units) if args.units else str(DEV_UNITS), "twin": "synth/textspot6_twin.spot",
+            "units_file": str(args.units or DEV_UNITS), "twin": "synth/textspot6_twin.spot",
             "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     Path(str(out).replace(".jsonl", ".meta.json")).write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
     print(f"textspot6 spot-crop finished: {args.set} {len(jobs)} units {time.time() - t0:.0f} s -> {out}", flush=True)
@@ -579,10 +580,11 @@ def main(argv=None):
     b.add_argument("--out", required=True)
     b.add_argument("--tags", default="all", choices=("all", "dialogue"))
     b.add_argument("--decode", default="det", choices=("det", "detref"))
+    b.add_argument("--units", help="dev: another development-units pickle (default: #119's units.pkl)")
     e = sub.add_parser("spot-crop")
     e.add_argument("--blob", required=True)
     e.add_argument("--set", required=True, choices=("hval", "dev"))
-    e.add_argument("--units", help="hval: eval/pagepath.py units' file")
+    e.add_argument("--units", help="hval: eval/pagepath.py units' file; dev: another units pickle")
     e.add_argument("--out", required=True)
     e.add_argument("--decode", default="det", choices=("det", "detref"))
     e.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "5")))

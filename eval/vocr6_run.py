@@ -335,6 +335,8 @@ def main():
     seeds = st.get("seeds")
     if seeds and a.seed not in seeds:
         raise SystemExit(f"seed {a.seed} is not one of stage {a.stage}'s ({seeds})")
+    if spec.get("seed_only") and a.seed != int(spec["seed_only"]):
+        raise SystemExit(f"arm {a.arm} runs seed {spec['seed_only']} only")
     if a.cmd == "command":
         a.dry_run = True
         train(a, proto, st, spec)

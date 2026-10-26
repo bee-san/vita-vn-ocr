@@ -191,6 +191,18 @@ def dev_plan(args):
         rows += [dict(r, unit=f"{Path(f).stem}|{r['unit']}") for r in
                  fixed_rows("dn", c, lab, mt, ids, lambda i, mt=mt: mt[i]["vn"],
                             lambda i, mt=mt: "name" in (mt[i].get("styles") or []))]
+    rows += region_rows("wd", dev_regions(), driver)
+    plan = {"kind": "modelb-plan", "name": "dev", "built": now(), "rows": rows,
+            "inputs": {Path(p).name: sha256(p) for p in [DEV["tv"], *DEV["dn"], *DEV["wd"]]},
+            "finder_driver_sha256": sha256(driver), "finders": FINDERS, "refine": REFINE}
+    with open(args.out, "wb") as f:
+        pickle.dump(plan, f, protocol=4)
+    print(summary(plan))
+
+
+def dev_regions():
+    """The development sample's native PSP whole-dialogue regions: VOCR5's cohorts tv_dlg, and the dn_dlg frames
+    tv_dlg does not hold (finder-tighten's pooling), every variant: [{unit, vn, variant, image (grey), lines}]."""
     regions = []
     for f in DEV["wd"]:
         check(f)
@@ -206,20 +218,40 @@ def dev_plan(args):
             regions.append({"unit": f"{name}|{u['unit']}", "vn": u["vn"], "variant": u["variant"],
                             "image": u["image"], "lines": [{"text": ln["text"], "styles": ln.get("styles", [])}
                                                            for ln in u["lines"]]})
-    rows += region_rows("wd", regions, driver)
-    plan = {"kind": "modelb-plan", "name": "dev", "built": now(), "rows": rows,
-            "inputs": {Path(p).name: sha256(p) for p in [DEV["tv"], *DEV["dn"], *DEV["wd"]]},
-            "finder_driver_sha256": sha256(driver), "finders": FINDERS, "refine": REFINE}
-    with open(args.out, "wb") as f:
-        pickle.dump(plan, f, protocol=4)
-    print(summary(plan))
+    return regions
+
+
+def hval_regions(pagepool, pages):
+    """The hooked corpus' hval PSP whole-dialogue regions (the page pool's regions of pages with no label in doubt),
+    every variant, cut from the page in grey: [{unit, vn (the title id), variant, image, lines}]."""
+    import cv2
+
+    from common import to_gray
+    regions = []
+    for f in sorted(Path(pagepool).glob("*.jsonl")):
+        for ln in open(f, encoding="utf-8"):
+            p = json.loads(ln)
+            if p.get("platform") != "psp" or p.get("split") != "hval" or p.get("untrusted"):
+                continue
+            text_of = {x["id"]: x["text"] for x in p["lines"]}
+            img = None
+            for r in p.get("regions", []):
+                if r["variant"] not in VARIANTS or not r["lines"] or any(i not in text_of for i in r["lines"]):
+                    continue
+                if img is None:
+                    path = Path(pages) / p["image"]
+                    if sha256(path) != p["image_sha256"]:
+                        raise SystemExit(f"{path}: sha256 differs from the page record")
+                    img = to_gray(cv2.cvtColor(cv2.imread(str(path), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB))
+                x0, y0, x1, y1 = r["region"]
+                regions.append({"unit": f"{p['title_id']}:{p['page']}", "vn": p["title_id"], "variant": r["variant"],
+                                "image": np.ascontiguousarray(img[y0:y1, x0:x1]),
+                                "lines": [{"text": text_of[i], "styles": []} for i in r["lines"]]})
+    return regions
 
 
 def hval_plan(args):
     """The PSP hval rows from vocr6-ingest's pools (POOLS/hval/{line,name}/<title>.npz) and page pool."""
-    import cv2
-
-    from common import to_gray
     driver = build_finder(Path(args.out).parent / "build")
     rows = []
     pools = Path(args.pools)
@@ -231,26 +263,7 @@ def hval_plan(args):
             rows += [dict(r, comp="hl", unit=f"hl|{pool}|{r['unit']}") for r in
                      fixed_rows("hl", crops, labels, meta, ids, lambda i, t=title: t, lambda i, n=is_name: n,
                                 views=("rv",))]
-    regions = []
-    for f in sorted(Path(args.pagepool).glob("*.jsonl")):
-        for ln in open(f, encoding="utf-8"):
-            p = json.loads(ln)
-            if p.get("platform") != "psp" or p.get("split") != "hval" or p.get("untrusted"):
-                continue
-            text_of = {x["id"]: x["text"] for x in p["lines"]}
-            img = None
-            for r in p.get("regions", []):
-                if r["variant"] not in VARIANTS or not r["lines"] or any(i not in text_of for i in r["lines"]):
-                    continue
-                if img is None:
-                    path = Path(args.pages) / p["image"]
-                    if sha256(path) != p["image_sha256"]:
-                        raise SystemExit(f"{path}: sha256 differs from the page record")
-                    img = to_gray(cv2.cvtColor(cv2.imread(str(path), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB))
-                x0, y0, x1, y1 = r["region"]
-                regions.append({"unit": f"{p['title_id']}:{p['page']}", "vn": p["title_id"], "variant": r["variant"],
-                                "image": np.ascontiguousarray(img[y0:y1, x0:x1]),
-                                "lines": [{"text": text_of[i], "styles": []} for i in r["lines"]]})
+    regions = hval_regions(args.pagepool, args.pages)
     rows += [dict(r, comp=r["comp"].replace("wd_", "hp_")) for r in region_rows("wd", regions, driver)]
     plan = {"kind": "modelb-plan", "name": "hval", "built": now(), "rows": rows,
             "inputs": {"pools": str(pools), "pagepool": str(args.pagepool),

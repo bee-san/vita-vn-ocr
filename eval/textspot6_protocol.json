@@ -149,7 +149,7 @@
   "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
   "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
   "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, a normal Rubi PR merged after CI + memory ledger + audit MERGE_OK, a Rubi test pre-release and test issue, an off-switch defaulting to the measured best (amendment 4)",
-  "rubi_default": "the adopted pick is Rubi's default finder only if, against rubi,fix=5 (#135) on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (amendment 9)"
+  "rubi_default": "the adopted pick is Rubi's default finder only if, against rubi,fix=1 (#129 amendment 3) on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (amendments 9, 12)"
  },
  "test": {
   "read_once_after": "the selection commit",
@@ -361,6 +361,15 @@
    "pins": {
     "eval/reproducibility/textspot6-20261026/stage1d_plan.jsonl": "81f3dc762224f7d999b7af750f2831d140d9af636f4623ea95d147b0edb432e2"
    }
+  },
+  {
+   "id": 12,
+   "utc": "2026-10-26T15:25:07Z",
+   "before": "the selection (the rule and its candidates are unchanged)",
+   "what": [
+    "Rubi's next finder default is GRAD + refine with COLGAP alone, eval/pagepath.py --finder rubi,fix=1 (vocr6-finder, #129 amendment 3: JUNK deletes text lines in tight regions, #135's audit), not rubi,fix=5. Amendment 9's report row and its Rubi-default test are against rubi,fix=1; rubi,fix=5 stays as one more report row.",
+    "Report-only robustness rows for the pick (and the baselines): vocr6-finder's tight-region units ($A/vocr6-finder/units_v1/hval_tight.jsonl: 0 px around the ink; hval_tight2.jsonl: 2 px; dev_tight.pkl: 1 px), the regions a player draws tight to the text."
+   ]
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

@@ -243,6 +243,12 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
       `eval/textspot6_a9_20261026.json`: t64n8c16 est. 264 ms at 333 MHz, qS4 199 ms, qL5 237 ms. All arms are
       eligible.
     - The C == twin check runs in scoring (`eval/textspot6_parity.py`).
+11. **Scheduling** (no rule change): the remaining stage-1 runs, the M arms' seeds first (`stage1d_plan.jsonl`), so
+    that stage 2's teacher is known sooner.
+12. **Rubi's next finder is `rubi,fix=1`** (#129 amendment 3: COLGAP alone). JUNK deletes text lines in tight
+    regions, so `rubi,fix=1` replaces `rubi,fix=5` in amendment 9's row and test, and fix=5 stays as a report row.
+    The pick and the baselines are also read on vocr6-finder's tight-region units (0, 2 and 1 px around the ink),
+    report only.
 
 ## Results
 

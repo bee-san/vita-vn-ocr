@@ -55,3 +55,18 @@ def test_repo_protocol_stage3_arms_name_the_base():
     assert st["base"]["arm"] == "R2"
     for arm in st["arms"].values():
         assert arm["init"] == "R2" and arm["mix"] == "R2"
+
+
+def test_extra_pool_files_are_checked_against_their_manifest(tmp_path):
+    (tmp_path / "train").mkdir()
+    f = tmp_path / "train" / "T1.npz"
+    f.write_bytes(b"crops")
+    man = tmp_path / "manifest.json"
+    man.write_text(json.dumps({"files": {"train/T1.npz": {"sha256": R.sha256(f), "crops": 1}}}))
+    pins = {"extra_pools": [{"name": "cc", "manifest": str(man), "sha256": R.sha256(man), "sources": ["cc"]}]}
+    sources = [("cc", 0.1, [str(f)], "")]
+    rec = R.check_extra_pools(pins, sources, {})
+    assert rec["cc_files"] == 1
+    f.write_bytes(b"other")
+    with pytest.raises(SystemExit, match="not in"):
+        R.check_extra_pools(pins, sources, {})

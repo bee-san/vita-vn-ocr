@@ -385,9 +385,24 @@ def lm_opts(cfg):
 _W = {}
 
 
-def _init(tiers, hval_dir, rubi=None):
+def _init(tiers, hval_dir, rubi=None, both=False):
     _W["tiers"], _W["units"] = load_all(tiers, hval_dir)
     _W["show"] = RubiShow(rubi, PRIV / "build") if rubi else None
+    _W["both"] = both
+
+
+def path_errors(units, tiers, tx, thrs):
+    """{(tier, thr | "none"): unit errors} on the amended path (Rubi's display rules) when a RubiShow is loaded, and
+    with --both also on the original path under keys "raw:<tier>"."""
+    out = {}
+    paths = [("", _W["show"])] + ([("raw:", None)] if _W["show"] is not None and _W["both"] else [])
+    for pre, show in paths:
+        for t in tiers:
+            out[(pre + t, "none")] = unit_errors(units, tx[t], show)
+            if UP[t] in tiers:
+                for thr in thrs:
+                    out[(pre + t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr), show)
+    return out
 
 
 def load_all(tiers, hval_dir):
@@ -406,15 +421,8 @@ def _tune_one(job):
     lm, cfg, thrs = job
     tiers, units = _W["tiers"], _W["units"]
     opts = lm_opts(cfg)
-    show = _W["show"]
     tx = {t: tiers[t].decode(lm, opts) for t in tiers}
-    out = {}
-    for t in tiers:
-        out[(t, "none")] = unit_errors(units, tx[t], show)
-        if UP[t] in tiers:
-            for thr in thrs:
-                out[(t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr), show)
-    return cfg, out
+    return cfg, path_errors(units, tiers, tx, thrs)
 
 
 def cmd_tune(a):
@@ -425,7 +433,8 @@ def cmd_tune(a):
     lm_path = None if lm in ("", "none") else lm
     cfgs = grid_configs(grid) if lm_path else [{"alpha": 0, "beta": 0}]
     t0 = time.time()
-    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(tiers, a.hval_cache, a.rubi)) as pool:
+    with mp.get_context("fork").Pool(a.procs, initializer=_init,
+                                     initargs=(tiers, a.hval_cache, a.rubi, a.both)) as pool:
         res = pool.map(_tune_one, [(lm_path, c, thrs) for c in cfgs], chunksize=1)
     _init(tiers, a.hval_cache)
     units = _W["units"]
@@ -537,18 +546,22 @@ def rounded(d, n=4):
 def cmd_select(a):
     """The protocol's cross-validated selection and rule for one LM tier (module docstring)."""
     proto = json.loads(Path(a.protocol).read_text(encoding="utf-8"))
+    pre = "raw:" if a.path == "raw" else ""
     inc_meta, inc = load_tune(a.incumbent)
     greedy_meta, greedy = load_tune(a.greedy)
+    inc = {k[len(pre):]: v for k, v in inc.items() if k.startswith(pre) and (pre or not k.startswith("raw:"))}
+    greedy = {k[len(pre):]: v for k, v in greedy.items() if k.startswith(pre) and (pre or not k.startswith("raw:"))}
     units = inc_meta["units"]
     sc = Scorer(units)
     U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
     for u, x in zip(U, units):
         u.chars = x[4]
     thrs = [int(t) for t in proto["grid"]["cascade_conf_selectable"]]
-    need = {f"{m}|{t}" for m in ("N", "S") for t in thrs} | {"L|none"}
+    need = {f"{pre}{m}|{t}" for m in ("N", "S") for t in thrs} | {f"{pre}L|none"}
     lms = []
     for p in a.tune:
         meta, errs = load_tune(p, need)
+        errs = {k[len(pre):]: v for k, v in errs.items()}
         if meta["units"] != units:
             raise SystemExit(f"{p}: other units than the incumbent's")
         lms.append((meta, errs))
@@ -579,7 +592,7 @@ def cmd_select(a):
 
     inc_key = {"N": f"N|{proto['incumbent']['cascade_conf']}", "S": f"S|{proto['incumbent']['cascade_conf']}",
                "L": "L|none"}
-    out = {"kind": "vocr6-lm-select", "schema": 1, "created": utc_now(), "tier": a.tier,
+    out = {"kind": "vocr6-lm-select", "schema": 1, "created": utc_now(), "tier": a.tier, "path": a.path,
            "protocol_sha256": sha256(a.protocol), "incumbent": {"lm": inc_meta["lm"], "sha256": inc_meta["lm_sha256"],
                                                                 "config": inc_meta["configs"][0]},
            "units": {p: int(sc.mask(p).sum()) for p in PARTS}, "clusters": {
@@ -624,8 +637,8 @@ def cmd_select(a):
         Uk, e_inc_n[keep], cv_units["N"][keep]).get("hp")}
     # the cascade thresholds beyond the selectable ones, at the in-sample LM and setting (report only)
     i, j, _ = choice[None]
-    _, all_thr = load_tune(a.tune[i], {f"N|{t}" for t in lms[i][0]["cascade"]})
-    out["cascade_report"] = {str(t): rounded(sc.scores(all_thr[f"N|{t}"][j])) for t in lms[i][0]["cascade"]}
+    _, all_thr = load_tune(a.tune[i], {f"{pre}N|{t}" for t in lms[i][0]["cascade"]})
+    out["cascade_report"] = {str(t): rounded(sc.scores(all_thr[f"{pre}N|{t}"][j])) for t in lms[i][0]["cascade"]}
     r = {m: out["models"][m]["cv_minus_incumbent"] for m in ("N", "S", "L")}
 
     def worse(c):
@@ -687,17 +700,10 @@ def _lex_one(job):
     words = [tuple(lm.token_of(ch) for ch in w) for w, _ in LX.load(lex_path, lx["max_rank"])]
     lexi = vlm.Lexicon([w for w in words if vlm.UNK not in w], lx.get("max_len", 8))
     opts = lm_opts(cfg)
-    show = _W["show"]
     tx, stats = {}, {}
     for t in tiers:
         tx[t], stats[t] = decode_py(tiers[t], lm, opts, lexi, lx["bonus"])
-    out = {}
-    for t in tiers:
-        out[(t, "none")] = unit_errors(units, tx[t], show)
-        if UP[t] in tiers:
-            for thr in thrs:
-                out[(t, thr)] = unit_errors(units, cascade(tx[t], tiers[t].conf, tx[UP[t]], thr), show)
-    return lx, out, stats, len(lexi.words)
+    return lx, path_errors(units, tiers, tx, thrs), stats, len(lexi.words)
 
 
 def cmd_lex_tune(a):
@@ -709,7 +715,8 @@ def cmd_lex_tune(a):
     name, _, lm = a.lm.partition("=")
     lxs = grid_configs(grid)
     t0 = time.time()
-    with mp.get_context("fork").Pool(a.procs, initializer=_init, initargs=(tiers, a.hval_cache, a.rubi)) as pool:
+    with mp.get_context("fork").Pool(a.procs, initializer=_init,
+                                     initargs=(tiers, a.hval_cache, a.rubi, a.both)) as pool:
         res = pool.map(_lex_one, [(lm, cfg, a.lexicon, lx, thrs) for lx in lxs], chunksize=1)
     _init(tiers, a.hval_cache)
     units = _W["units"]
@@ -879,6 +886,7 @@ def main():
     p.add_argument("--tiers", default="S,N,L")
     p.add_argument("--hval-cache")
     p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
+    p.add_argument("--both", action="store_true", help="with --rubi: the original path's errors too (raw:<tier>)")
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("screen")
@@ -894,6 +902,7 @@ def main():
     p.add_argument("--tiers", default="S,N,L")
     p.add_argument("--hval-cache")
     p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
+    p.add_argument("--both", action="store_true", help="with --rubi: the original path's errors too (raw:<tier>)")
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("select")
@@ -902,6 +911,8 @@ def main():
     p.add_argument("--incumbent", required=True, help="tune file of the incumbent LM at Rubi's setting")
     p.add_argument("--greedy", required=True, help="tune file of --lm greedy=none")
     p.add_argument("--tune", action="append", required=True, help="tune files of the tier's recipes")
+    p.add_argument("--path", choices=("shown", "raw"), default="shown",
+                   help="shown: Rubi's display rules (amendment 1; the decision); raw: the original line path")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,

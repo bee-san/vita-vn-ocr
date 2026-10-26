@@ -1,7 +1,7 @@
 {
  "kind": "vocr6-lm-protocol",
  "schema": 1,
- "created": "2026-10-26T09:55:00Z",
+ "created": "2026-10-26T09:14:00Z",
  "issue": "https://github.com/bee-san/vita-vn-ocr/issues/127",
  "tracking": "https://github.com/bee-san/vita-vn-ocr/issues/125",
  "question": "Does a character LM built with the hooked train titles' own text (and decoder settings retuned on the hooked hval set and VOCR5's development cohorts) read dialogue better than Rubi's shipped LM (v0.2.6-ctclm.2) through Rubi's line path, per LM tier?",
@@ -204,12 +204,24 @@
  "amendments": [
   {
    "n": 1,
-   "time": "2026-10-26T10:20:00Z",
+   "time": "2026-10-26T10:05:00Z",
    "change": "the line path ends with what Rubi shows by default, for every part (tv, dn, wd, hc, hp) and every arm, the incumbent's included: the lines read (an empty one adds nothing) joined by a line break as finish_line joins them; Rubi_for_vita core/textnorm.c (main bd130a8, sha256 3fa19017..., built for the host) with flags 0, every rule, the border rule included (non_japanese_filter = lines, the default, runs it); then the Shell's core/textfilter.c vjo_filter_lines (non_japanese_filter = lines): a line without a kana or kanji goes (eval/vocr6_lm.py RubiShow, --rubi)",
    "why": "these are part of the text a Rubi user sees. Without them, one title whose dialogue box has a decoration the finder reads as lines of junk (PCSG00854: '1010...'-like lines; its incumbent page-path CER is 140%, about half of all hval page-path errors) drives the setting selection toward reading fewer characters: the in-sample choices sat at the grid's lowest per-character bonus (beta 1.0 nat) with alpha 0.6-0.7, and hc and the dev score were worse than the incumbent's, i.e. the objective was rewarding fewer junk characters, which Rubi's own filter drops anyway",
    "seen_before": "the in-sample objective and part scores (tv, dn, wd, hc, hp) of greedy, the incumbent and 7 of the 14 1000k recipes under the original line path (logs/tune3.log, /tmp/sum3.py); no cross-validated estimate, interval or rule outcome had been computed",
    "unchanged": "sets, grid, objective, cross-validation, bootstrap, rule, arms",
    "reporting": "the original line path's results (in-sample and cross-validated, the same rule) are reported beside the amended ones; the decision follows the amended path; a report-only sensitivity drops titles whose incumbent page-path CER is above 50%"
+  },
+  {
+   "n": 2,
+   "time": "2026-10-26T10:22:14Z",
+   "why": "conductor notes of 2026-10-26 10:17Z and 10:18Z (owner directive in prompts/vocr6-common.md): an LM built from game hook text stores verbatim script fragments, so its gain must be measured against an LM without game text; the game-text LM may ship if it is measurably better on the page path (the unseen-game dev sets and hval), pruned to the smallest order/size that keeps the gain. Not data-driven: recorded before any cross-validated estimate, interval or rule outcome on the amended line path",
+   "families": {
+    "A": "no game text: the public corpora and Jiten lists only (repro = ctclm.2's blob, v6b, v6brl = v6b with --recut lines)",
+    "B": "with game text: A's recipes plus the hooked train titles' lines (hook_train:W, with or without --recut)"
+   },
+   "change": "per LM tier, the cross-validated selection and the rule (a)-(d) run on each family on its own (family A over A's recipes, family B over B's), each against the incumbent. Then: B ships instead of A iff B passes (a)-(d) and, B's cross-validated errors minus A's (the paired difference of the two families' cross-validated choices): hp resolved better (95% interval entirely below 0), the objective 0.5 hp + 0.5 dev resolved better, the dev score not resolved worse, and neither S nor L resolved worse on hp or the dev score. Otherwise A ships if it passes (a)-(d); if neither does, the incumbent stays",
+   "pruning": "B keeps order 3 unless a higher order is resolved better under the same comparison; for the shipped B, the report gives its n-gram order, entries and thresholds, the kept n-grams that exist only because of the game text, and the longest verbatim spans of its training lines that greedy continuation reproduces, beside A's LM on the same lines and both on held-out lines",
+   "unchanged": "sets, line path (amendment 1), grid, objective, cross-validation, bootstrap, the rule (a)-(d)"
   }
  ]
 }

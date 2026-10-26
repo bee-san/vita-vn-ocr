@@ -698,7 +698,7 @@ def settings_report(units, greedy, errs, configs, ref=None, key="N|none"):
     pick = {f: int(np.argmin(mean_obj(f))) for f in (0, 1, None)}
     out = {"key": key, "seeds": seeds, "configs": len(configs),
            "chosen": {"fold0": configs[pick[0]], "fold1": configs[pick[1]], "in_sample": configs[pick[None]]},
-           "ref": ref, "per_seed": {}, "by_alpha": {}}
+           "vocr5_setting": ref, "per_seed": {}, "by_alpha": {}}
     j_ref = configs.index(ref) if ref in configs else None
     for s in seeds:
         g = greedy[s]
@@ -708,9 +708,9 @@ def settings_report(units, greedy, errs, configs, ref=None, key="N|none"):
                "cv_minus_greedy": compare(U, g, e_cv), "in_sample_minus_greedy": compare(U, g, e_in)}
         if j_ref is not None:
             e_ref = errs[s][j_ref]
-            rep["ref"] = rounded(sc.scores(e_ref))
-            rep["ref_minus_greedy"] = compare(U, g, e_ref)
-            rep["cv_minus_ref"] = compare(U, e_ref, e_cv)
+            rep["vocr5_setting"] = rounded(sc.scores(e_ref))
+            rep["vocr5_setting_minus_greedy"] = compare(U, g, e_ref)
+            rep["cv_minus_vocr5_setting"] = compare(U, e_ref, e_cv)
         out["per_seed"][s] = rep
     allm = mean_obj(None)
     hc = np.mean([sc.scores(errs[s])["hc"] for s in seeds], axis=0)
@@ -725,7 +725,8 @@ def cmd_blob_report(a):
     """settings_report over tune runs of one recognizer's seeds: --run SEED=DIR (each DIR holds greedy.npz and one
     <lm>.npz per --lm NAME[:alpha,beta,flags], the ref setting)."""
     runs = dict(r.split("=", 1) for r in a.run)
-    out = {"kind": "vocr6-lm-blob-settings", "schema": 1, "created": utc_now(), "key": a.key, "runs": {}, "lms": {}}
+    out = {"kind": "vocr6-lm-blob-settings", "schema": 1, "created": utc_now(), "name": a.name, "key": a.key,
+           "runs": {}, "lms": {}}
     greedy, units = {}, None
     for s, d in runs.items():
         meta, e = load_tune(Path(d) / "greedy.npz", {a.key})
@@ -733,7 +734,7 @@ def cmd_blob_report(a):
         if meta["units"] != units:
             raise SystemExit(f"{d}: other units")
         greedy[s] = e[a.key][0]
-        out["runs"][s] = {"dir": str(d), "blobs": meta["blobs"]}
+        out["runs"][s] = {"tune": Path(d).name, "blobs": meta["blobs"]}
     for spec in a.lm:
         name, _, r = spec.partition(":")
         ref = None
@@ -751,6 +752,8 @@ def cmd_blob_report(a):
             lm_sha = meta["lm_sha256"]
             errs[s] = e[a.key]
         out["lms"][name] = {"lm_sha256": lm_sha, **settings_report(units, greedy, errs, cfgs, ref, a.key)}
+    import finder_tighten as FT
+    FT.assert_public(out)
     Path(a.out).write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     ks = ("hc", "hp", "dev", "obj")
     for name, r in out["lms"].items():
@@ -758,7 +761,50 @@ def cmd_blob_report(a):
         print(json.dumps({"lm": name, "in_sample": r["chosen"]["in_sample"],
                           "cv": {s: {k: ps[s]["cv"][k] for k in ks} for s in ps},
                           "greedy": {s: {k: ps[s]["greedy"][k] for k in ks} for s in ps},
-                          "ref": {s: {k: ps[s].get("ref", {}).get(k) for k in ks} for s in ps}}), flush=True)
+                          "vocr5_setting": {s: {k: ps[s].get("vocr5_setting", {}).get(k) for k in ks} for s in ps}}),
+              flush=True)
+
+
+def cmd_show_cost(a):
+    """What Rubi's display rules alone do to a recognizer's greedy text on hval (no LM): hc and hp errors without
+    and with them (RubiShow), and the clean lines they drop whole, by the reference's character classes. Counts
+    only. A greedy arm scored without the rules against an LM arm scored with them mixes the two effects."""
+    import unicodedata
+    units, reads = hval_load(a.hval_cache, ["N"])
+    greedy = {k: o["text"] for k, o in reads["N"]}
+    show = RubiShow(a.rubi, PRIV / "build")
+    out = {"kind": "vocr6-lm-show-cost", "schema": 1, "created": utc_now(), "blob_sha256": sha256(BLOBS["N"]),
+           "parts": {}, "dropped_clean_lines": {"lines": 0, "ref_chars": 0, "classes": {}, "by_title": {}}}
+    for part in ("hc", "hp"):
+        us = [u for u in units if u.part == part]
+        raw = sum(u.errors(greedy, None) for u in us)
+        shown = sum(u.errors(greedy, show) for u in us)
+        ch = sum(u.chars for u in us)
+        out["parts"][part] = {"units": len(us), "chars": ch, "errors_raw": raw, "errors_shown": shown,
+                              "cer_raw": round(100 * raw / ch, 4), "cer_shown": round(100 * shown / ch, 4)}
+    dr = out["dropped_clean_lines"]
+    for u in units:
+        if u.part != "hc":
+            continue
+        ref, keys = u.segs[0]
+        lines = tuple(t for t in (greedy[k] for k in keys) if t)
+        if not lines or show(lines) or not ref:
+            continue
+        kinds = set()
+        for c in ref:
+            nm = unicodedata.name(c, "")
+            jp = ("HIRAGANA" in nm or "KATAKANA" in nm or "CJK UNIFIED" in nm) and c != "ー"
+            kinds.add("kana/kanji" if jp else "latin/digit" if c.isascii() and c.isalnum() else "punctuation/symbol")
+        key = "+".join(sorted(kinds))
+        dr["lines"] += 1
+        dr["ref_chars"] += len(ref)
+        dr["classes"][key] = dr["classes"].get(key, 0) + 1
+        dr["by_title"][u.cluster] = dr["by_title"].get(u.cluster, 0) + 1
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"parts": out["parts"], "dropped": {k: dr[k] for k in ("lines", "ref_chars", "classes")}}),
+          flush=True)
 
 
 def cmd_families(a):
@@ -1346,7 +1392,14 @@ def main():
     p.add_argument("--dir", required=True)
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p = sub.add_parser("show-cost")
+    p.add_argument("--blob", action="append", default=[], help="N=PATH: the recognizer (default VOCR5-N)")
+    p.add_argument("--dev-cache", action="append", default=[], help="unused here; accepted for symmetry")
+    p.add_argument("--hval-cache", required=True)
+    p.add_argument("--rubi", required=True, help="a Rubi checkout at the pinned core/textnorm.c")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("blob-report")
+    p.add_argument("--name", default="", help="what the runs are (e.g. the recognizer's name)")
     p.add_argument("--run", action="append", required=True, help="SEED=DIR of one seed's tune runs")
     p.add_argument("--lm", action="append", required=True, help="NAME[:alpha,beta,flags] (the reference setting)")
     p.add_argument("--key", default="N|none")
@@ -1426,7 +1479,8 @@ def main():
     set_blobs(getattr(a, "blob", None), getattr(a, "dev_cache", None))
     cmds = {"tune": cmd_tune, "dev-cache": cmd_dev_cache, "screen": cmd_screen, "hval-units": cmd_hval_units,
             "hval-cache": cmd_hval_cache, "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families,
-            "summary": cmd_summary, "checks": cmd_checks, "tables": cmd_tables, "blob-report": cmd_blob_report}
+            "summary": cmd_summary, "checks": cmd_checks, "tables": cmd_tables, "blob-report": cmd_blob_report,
+            "show-cost": cmd_show_cost}
     cmds[a.cmd](a)
 
 

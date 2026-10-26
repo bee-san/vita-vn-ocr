@@ -337,6 +337,6 @@ def test_settings_report_picks_the_seed_mean_best():
     assert r["chosen"] == {"fold0": cfgs[1], "fold1": cfgs[1], "in_sample": cfgs[1]}
     for s in ("1", "3"):
         ps = r["per_seed"][s]
-        assert ps["cv"]["hc"] == 10.0 and ps["greedy"]["hc"] == 40.0 and ps["ref"]["hc"] == 30.0
-        assert ps["cv_minus_ref"]["hc"]["delta_points"] == -20.0
+        assert ps["cv"]["hc"] == 10.0 and ps["greedy"]["hc"] == 40.0 and ps["vocr5_setting"]["hc"] == 30.0
+        assert ps["cv_minus_vocr5_setting"]["hc"]["delta_points"] == -20.0
     assert r["by_alpha"]["600"]["config"] == cfgs[1]

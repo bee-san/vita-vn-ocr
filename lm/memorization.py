@@ -14,8 +14,9 @@ For each blob:
   line's next character, again and again: the run of characters it reproduces before the first miss. Reported:
   the longest run over every start (the longest verbatim span greedy continuation recovers), the distribution of
   each line's longest run, and the share of characters predicted exactly as the next one. On TRAIN.txt (the text
-  the blob was built from) and on HELD.txt (lines it never saw: held-out lines of the same games) - the gap
-  between the two is what the blob memorised rather than generalised.
+  the blob was built from) and on HELD.txt (the lines of held-out pages of the same games) - the gap between the
+  two is what the blob memorised rather than generalised. Held-out pages are not unseen text: a line repeated
+  across pages can be in both (hval: 251 of 3,302 lines, docs/vocr6-lm.md), which narrows the gap.
 The JSON holds counts, never text. The tie of an argmax goes to the lower token.
 """
 import argparse

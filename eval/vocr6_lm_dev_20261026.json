@@ -1,7 +1,7 @@
 {
  "kind": "vocr6-lm-dev",
  "schema": 1,
- "created": "2026-10-26T14:55:52Z",
+ "created": "2026-10-26T16:54:25Z",
  "issue": 127,
  "protocol_sha256": "961fcec652299631ec57212279e8cc98a6452f620adfccda6ce59e0151c596c8",
  "tiers": {
@@ -26573,6 +26573,574 @@
    "bytes": 3603552,
    "sha256": "a65841b5bdce3e3123b2d1e712deb857fb577cbd2fd8667e8fb06ab35d368335",
    "flags_name": "VOCR_LM_BOS"
+  }
+ },
+ "checks": {
+  "kind": "vocr6-lm-checks",
+  "schema": 1,
+  "created": "2026-10-26T16:48:41Z",
+  "audit": "audit-vocr6-lm (F1-F3, F5, N1, N6)",
+  "f2_4mb_tier": {
+   "N": {
+    "4mb_game_text_minus_1mb_game_text": {
+     "hc": {
+      "delta_points": 0.0098,
+      "ci95": [
+       -0.0238,
+       0.0429
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": 0.176,
+      "ci95": [
+       -0.0231,
+       0.5873
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": -0.0024,
+      "ci95": [
+       -0.0536,
+       0.0491
+      ]
+     },
+     "obj": {
+      "delta_points": 0.0868,
+      "ci95": [
+       -0.023,
+       0.2948
+      ]
+     }
+    },
+    "1mb_game_text_minus_4mb_incumbent": {
+     "hc": {
+      "delta_points": -0.0588,
+      "ci95": [
+       -0.103,
+       -0.0134
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": -0.6321,
+      "ci95": [
+       -1.9663,
+       -0.0049
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": 0.0144,
+      "ci95": [
+       -0.0547,
+       0.0843
+      ]
+     },
+     "obj": {
+      "delta_points": -0.3088,
+      "ci95": [
+       -0.9762,
+       0.0168
+      ]
+     }
+    }
+   },
+   "S": {
+    "4mb_game_text_minus_1mb_game_text": {
+     "hc": {
+      "delta_points": -0.0176,
+      "ci95": [
+       -0.0542,
+       0.0201
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": -0.0739,
+      "ci95": [
+       -0.1846,
+       -0.0087
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": -0.0558,
+      "ci95": [
+       -0.1339,
+       0.0226
+      ]
+     },
+     "obj": {
+      "delta_points": -0.0649,
+      "ci95": [
+       -0.132,
+       -0.0097
+      ]
+     }
+    },
+    "1mb_game_text_minus_4mb_incumbent": {
+     "hc": {
+      "delta_points": -0.0294,
+      "ci95": [
+       -0.0892,
+       0.024
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": -0.2773,
+      "ci95": [
+       -0.8717,
+       0.0301
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": 0.0805,
+      "ci95": [
+       -0.0349,
+       0.2045
+      ]
+     },
+     "obj": {
+      "delta_points": -0.0984,
+      "ci95": [
+       -0.4108,
+       0.0822
+      ]
+     }
+    }
+   },
+   "L": {
+    "4mb_game_text_minus_1mb_game_text": {
+     "hc": {
+      "delta_points": -0.0176,
+      "ci95": [
+       -0.0511,
+       0.0132
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": 0.1708,
+      "ci95": [
+       -0.0273,
+       0.5767
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": -0.0389,
+      "ci95": [
+       -0.1035,
+       0.0255
+      ]
+     },
+     "obj": {
+      "delta_points": 0.066,
+      "ci95": [
+       -0.0481,
+       0.2748
+      ]
+     }
+    },
+    "1mb_game_text_minus_4mb_incumbent": {
+     "hc": {
+      "delta_points": -0.0294,
+      "ci95": [
+       -0.0645,
+       0.0085
+      ],
+      "clusters": 46
+     },
+     "hp": {
+      "delta_points": -0.6423,
+      "ci95": [
+       -1.9653,
+       -0.0242
+      ],
+      "clusters": 46
+     },
+     "dev": {
+      "delta_points": 0.0296,
+      "ci95": [
+       -0.0441,
+       0.1054
+      ]
+     },
+     "obj": {
+      "delta_points": -0.3063,
+      "ci95": [
+       -0.9666,
+       0.017
+      ]
+     }
+    }
+   }
+  },
+  "f3_seen_hval": {
+   "hval_lines": 3302,
+   "hval_lines_verbatim_in_hook_train": 251,
+   "hval_lines_byte_identical_to_a_hook_train_line": 251,
+   "hp_regions": 6327,
+   "hp_regions_seen": 837,
+   "hp_units": 12654,
+   "hp_units_seen": 1674,
+   "hp_seen_line_char_share": 0.042,
+   "hc_units": 3170,
+   "hc_units_seen": 165,
+   "by_tier": {
+    "1000k": {
+     "without_seen": {
+      "hc": {
+       "delta_points": -0.0843,
+       "ci95": [
+        -0.1378,
+        -0.0294
+       ],
+       "clusters": 46
+      },
+      "hp": {
+       "delta_points": -0.7917,
+       "ci95": [
+        -2.3823,
+        -0.0455
+       ],
+       "clusters": 46
+      },
+      "dev": {
+       "delta_points": -0.0253,
+       "ci95": [
+        -0.0987,
+        0.0408
+       ]
+      },
+      "obj": {
+       "delta_points": -0.4085,
+       "ci95": [
+        -1.2032,
+        -0.0249
+       ]
+      }
+     },
+     "without_seen_and_PCSG00854": {
+      "hc": {
+       "delta_points": -0.0865,
+       "ci95": [
+        -0.142,
+        -0.0299
+       ],
+       "clusters": 45
+      },
+      "hp": {
+       "delta_points": -0.1009,
+       "ci95": [
+        -0.1841,
+        -0.0289
+       ],
+       "clusters": 45
+      },
+      "dev": {
+       "delta_points": -0.0253,
+       "ci95": [
+        -0.0987,
+        0.0408
+       ]
+      },
+      "obj": {
+       "delta_points": -0.0631,
+       "ci95": [
+        -0.118,
+        -0.0142
+       ]
+      }
+     }
+    },
+    "4000k": {
+     "without_seen": {
+      "hc": {
+       "delta_points": -0.0462,
+       "ci95": [
+        -0.1001,
+        0.0077
+       ],
+       "clusters": 46
+      },
+      "hp": {
+       "delta_points": -0.4999,
+       "ci95": [
+        -1.5254,
+        -0.0114
+       ],
+       "clusters": 46
+      },
+      "dev": {
+       "delta_points": 0.012,
+       "ci95": [
+        -0.048,
+        0.0709
+       ]
+      },
+      "obj": {
+       "delta_points": -0.244,
+       "ci95": [
+        -0.7616,
+        0.0101
+       ]
+      }
+     },
+     "without_seen_and_PCSG00854": {
+      "hc": {
+       "delta_points": -0.0474,
+       "ci95": [
+        -0.1035,
+        0.0086
+       ],
+       "clusters": 45
+      },
+      "hp": {
+       "delta_points": -0.0527,
+       "ci95": [
+        -0.1167,
+        0.0007
+       ],
+       "clusters": 45
+      },
+      "dev": {
+       "delta_points": 0.012,
+       "ci95": [
+        -0.048,
+        0.0709
+       ]
+      },
+      "obj": {
+       "delta_points": -0.0204,
+       "ci95": [
+        -0.0635,
+        0.0202
+       ]
+      }
+     }
+    }
+   }
+  },
+  "f5_names_by_flags": {
+   "key": "N|700",
+   "lms": {
+    "h64_1000k": {
+     "a600 b2500 f0": {
+      "dn": 2.8014,
+      "tv": 3.0129
+     },
+     "a600 b2500 f1": {
+      "dn": 2.8862,
+      "tv": 3.1923
+     },
+     "a600 b2500 f2": {
+      "dn": 4.584,
+      "tv": 2.977
+     },
+     "a600 b2500 f3": {
+      "dn": 4.6689,
+      "tv": 3.0129
+     }
+    },
+    "repro_1000k": {
+     "a600 b2500 f0": {
+      "dn": 2.8014,
+      "tv": 3.0846
+     },
+     "a600 b2500 f1": {
+      "dn": 2.8862,
+      "tv": 3.0488
+     },
+     "a600 b2500 f2": {
+      "dn": 4.0747,
+      "tv": 3.1564
+     },
+     "a600 b2500 f3": {
+      "dn": 4.1596,
+      "tv": 3.1205
+     }
+    },
+    "inc_1000k": {
+     "a500 b3500 f2": {
+      "dn": 8.6587,
+      "tv": 2.9053
+     }
+    }
+   }
+  },
+  "f5_ngrams_vs_no_game_text": {
+   "vocr_lm6_o3_1000k.vlm": {
+    "baseline": "v6b_1000k.vlm",
+    "bigrams": 66123,
+    "trigrams": 130260,
+    "not_kept_by_baseline": {
+     "2": 9385,
+     "3": 42193
+    },
+    "share": 0.2626,
+    "trigram_share": 0.3239,
+    "count_thresholds": {
+     "vocr_lm6_o3_1000k.vlm": [
+      1,
+      136,
+      136
+     ],
+     "v6b_1000k.vlm": [
+      1,
+      50,
+      50
+     ]
+    }
+   },
+   "vocr_lm6_o3_4000k.vlm": {
+    "baseline": "v6brl_4000k.vlm",
+    "bigrams": 199552,
+    "trigrams": 648198,
+    "not_kept_by_baseline": {
+     "2": 13797,
+     "3": 150406
+    },
+    "share": 0.1937,
+    "trigram_share": 0.232,
+    "count_thresholds": {
+     "vocr_lm6_o3_4000k.vlm": [
+      1,
+      11,
+      11
+     ],
+     "v6brl_4000k.vlm": [
+      1,
+      8,
+      8
+     ]
+    }
+   }
+  },
+  "n1_pagepath_dropped_vns": {
+   "old": {
+    "units": 21,
+    "errors": 0,
+    "chars": 450,
+    "all_chars": 25854,
+    "by_vn": {
+     "v12188": 18,
+     "v18432": 3
+    }
+   },
+   "new": {
+    "units": 21,
+    "errors": 0,
+    "chars": 450,
+    "all_chars": 25854,
+    "by_vn": {
+     "v12188": 18,
+     "v18432": 3
+    }
+   }
+  },
+  "n6_without_v18643": {
+   "1000k": {
+    "v18643_units": 74,
+    "wd": {
+     "delta_points": -0.0425,
+     "ci95": [
+      -0.149,
+      0.05
+     ],
+     "clusters": 90
+    },
+    "dev": {
+     "delta_points": -0.026,
+     "ci95": [
+      -0.1032,
+      0.0413
+     ]
+    },
+    "obj": {
+     "delta_points": -0.3741,
+     "ci95": [
+      -1.094,
+      -0.0247
+     ]
+    }
+   },
+   "4000k": {
+    "v18643_units": 74,
+    "wd": {
+     "delta_points": 0.0081,
+     "ci95": [
+      -0.0893,
+      0.0998
+     ],
+     "clusters": 90
+    },
+    "dev": {
+     "delta_points": 0.0125,
+     "ci95": [
+      -0.0511,
+      0.071
+     ]
+    },
+    "obj": {
+     "delta_points": -0.2218,
+     "ci95": [
+      -0.6861,
+      0.0104
+     ]
+    }
+   }
+  },
+  "seen_titles": {
+   "PCSG00866": {
+    "hook_train": {
+     "lines": 825,
+     "chars": 12249
+    },
+    "hook_final": {
+     "lines": 896,
+     "chars": 13244
+    },
+    "hval_units": {
+     "hc": 28,
+     "hp": 126
+    },
+    "why": "Collar x Malice (v18160): shares a release with vita-test's Collar x Malice -Unlimited- (v21789)"
+   },
+   "ULJM05383": {
+    "hook_train": {
+     "lines": 2467,
+     "chars": 43940
+    },
+    "hook_final": {
+     "lines": 2672,
+     "chars": 47775
+    },
+    "hval_units": {
+     "hc": 124,
+     "hp": 438
+    },
+    "why": "planetarian (v34): shares a release with CLANNAD"
+   },
+   "PCSG00007": {
+    "hook_train": {
+     "lines": 594,
+     "chars": 9362
+    },
+    "hook_final": {
+     "lines": 648,
+     "chars": 10292
+    },
+    "hval_units": {
+     "hc": 26,
+     "hp": 132
+    },
+    "why": "Little Busters! Converted Edition (v5, unmapped in its metadata): shares a release with CLANNAD"
+   }
   }
  }
 }

@@ -16,6 +16,13 @@ CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (D
   lines and get new decoder settings. 0.5 MB and 2 MB keep ctclm.2 and its settings: the pre-registered rule
   adopted nothing there. The new blobs are no larger than the ones they replace (982,320 B against 987,600 B;
   3,603,552 B against 3,781,072 B).
+- **The owner's condition, and the ruling on it.** The VOCR6 rules (under the owner's directive of 2026-10-26
+  10:17Z) let a game-text LM ship "if it's measurably better on the page path (unseen-game dev sets AND hval)". The
+  new LMs are resolved better on hval and level on the unseen-game dev sets, at both tiers. So the condition holds if
+  it means plan section 7's adoption rule, and not if it means a resolved gain on each set. The conductor, who wrote
+  the rule, ruled at 16:38Z (audit-vocr6-lm B1) that it means plan section 7's pre-registered rule: "better on hval
+  and not worse on the unseen-game dev sets (game-bootstrap 95% interval)". Both tiers meet it ("The owner's
+  condition" below).
 - **New settings for the adopted tiers.** LM weight 0.6 (was 0.5) and a per-character bonus of 2.5 nats (was 3.5).
   The start-of-line context is on and the end-of-line term is off (`VOCR_LM_BOS`, was `VOCR_LM_EOS`). The cascade
   threshold stays 700.
@@ -33,8 +40,10 @@ CLANNAD, vita-test, psp-test, the fresh native test, or the hooked test title (D
   cross-validated: at 1 MB, page path −0.54 points (−1.53 to −0.07), clean lines −0.10 (−0.14 to −0.05) and dev
   score −0.01 (−0.09 to +0.06); at 4 MB, −0.45 (−1.32 to −0.04), −0.06 (−0.11 to −0.02) and −0.05 (−0.09 to −0.01).
 - **What the game-text LM keeps.** It is order 3, so no stored fragment is longer than 3 characters. 1.5% of the
-  1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. Greedy continuation recovers at most
-  12 characters of a real line (a title in its own game), against 10 for the LM without game text.
+  1 MB blob's bigrams and trigrams (7.7% at 4 MB) occur only in the game text. 26% of them (19% at 4 MB) are ones
+  the same recipe without game text does not keep: the game counts also lift public n-grams over the pruning
+  threshold. Apart from runs of one repeated small kana (up to 22 characters), greedy continuation recovers at most
+  12 characters of a training line (a game's title in its own text), against 10 for the LM without game text.
 - **The dictionary-aware variant does not help.** A word bonus from JMdict's headwords ranked by Jiten (the files
   Rubi ships) is worse than the plain LM at every setting tried, so it is not built for the console. Its cost
   would be 0.23-2.5 MB more memory and about 200 trie lookups per line (estimates).
@@ -61,6 +70,42 @@ serves every model, as before. The decoder workspace is 41,632 B for VOCR5-N/L a
 640-px line (`docs/ctc-lm-decode.md`). The blobs are smaller, so their one-time load is not longer. Rubi needs a code
 change, because its `lm_opts()` uses one LM weight and one flag set for every tier; the Rubi PR makes both per tier.
 
+## The owner's condition
+
+The owner's directive of 2026-10-26 10:17Z was "ship it if accuracy is good. i dont want to decide anything". The
+VOCR6 rules the conductor wrote under it say, of this round, in full: "LM from game hook text: allowed. Ship it if
+it's measurably better on the page path (unseen-game dev sets AND hval), and still build the no-game-text variant to
+measure the gain. Prune to the smallest order/size that keeps the gain (less verbatim script, less memory);
+attribution as for the models trained on game data."
+
+What was measured per set, new − incumbent in points (95% cluster-bootstrap interval), VOCR5-N with its cascade,
+cross-validated, Rubi's display path. Bold: the interval is entirely below 0.
+
+| | 1 MB `vocr_lm6_o3_1000k` | 4 MB `vocr_lm6_o3_4000k` |
+|---|---|---|
+| hval page path | **−0.72 (−2.15 to −0.05)** | **−0.46 (−1.38 to −0.01)** |
+| hval page path without PCSG00854 | **−0.10 (−0.17 to −0.03)** | **−0.05 (−0.11 to −0.002)** |
+| hval clean lines | **−0.08 (−0.14 to −0.03)** | −0.05 (−0.10 to +0.004) |
+| unseen-game dev, whole dialogue | −0.04 (−0.14 to +0.05) | +0.01 (−0.08 to +0.10) |
+| unseen-game dev score | −0.03 (−0.10 to +0.04) | +0.01 (−0.05 to +0.07) |
+| unseen-game dev, #129 benchmark (Rubi's finder) | +0.10 (−0.18 to +0.46) | not run |
+| objective (0.5 hp + 0.5 dev score) | **−0.37 (−1.09 to −0.02)** | −0.22 (−0.69 to +0.01) |
+| objective without PCSG00854 | **−0.06 (−0.11 to −0.01)** | −0.02 (−0.06 to +0.02) |
+| game text − no game text (B − A), dev score | −0.01 (−0.09 to +0.06) | **−0.05 (−0.09 to −0.01)** |
+
+- **Read as "measurably better on each set":** not met at either tier. hval is resolved better; the unseen-game dev
+  sets are level, with no resolved gain or loss.
+- **Read as plan section 7's adoption rule** ("better on hval page-path dialogue CER AND not worse on the
+  unseen-game dev sets"), which the same rules name for every VOCR6 decision and which this round's (a) and (b)
+  encode: met at both tiers.
+- **The ruling.** The audit (audit-vocr6-lm, B1) left the reading to the rule's author. The conductor ruled at
+  2026-10-26 16:38Z that the bullet means plan section 7's rule, frozen before any score: "better on hval and not
+  worse on the unseen-game dev sets (game-bootstrap 95% interval)". Both tiers ship, 4 MB included ("users only get
+  it by choosing 4000k"); 0.5 MB and 2 MB stay ctclm.2. The ruling is in `vocr6/experiments.jsonl`, on #125 and in
+  the VOCR6 rules.
+- **In one line:** better on held-out pages of the hooked games, level on unseen games (no measurable gain or
+  loss); measured on development data on the host.
+
 ## How it was measured
 
 - **Models.** VOCR5-S/N/L (v0.3.0), W8I through the C runtime, head gate off (what Rubi main runs), top-8 extras.
@@ -78,7 +123,12 @@ change, because its `lm_opts()` uses one LM weight and one flag set for every ti
   - hval: the ingest's screening pages (`splits_v1.json`, 4% of each train title's pages in blocks with 15-page
     guard bands). hc is its verified dialogue lines (3,170); hp is its whole-dialogue regions through GRAD and
     GRAD + refine (12,654 region reads of 46 titles). PSP pages are in the Adrenaline view, upscaled 2× bilinear.
-  - The LMs screened on hval never saw hval or guard pages (`lm/hook_text.py --keep train`).
+  - The LMs screened on hval never saw hval or guard pages (`lm/hook_text.py --keep train`). Text repeats across
+    pages, though. 837 of the 6,327 hval regions (13%; 1,674 of the 12,654 region reads) and 165 of the 3,170 clean
+    lines (5.2%) hold a line whose text (`eval/metrics.norm`) is also a train line. Those lines are 4.2% of the page
+    path's reference characters; PCSG01110 has 90% of its page-path characters in such regions. Without those units
+    the 1 MB result stands: hval page path −0.79 (−2.38 to −0.05), and −0.10 (−0.18 to −0.03) without PCSG00854 as
+    well. At 4 MB, without both, it is no longer resolved: −0.05 (−0.12 to +0.001).
 - **Score.** Dialogue CER. The dev score is 0.25 tv + 0.25 dn + 0.5 wd (VOCR5's). The objective is 0.5 hp + 0.5 dev
   score. Intervals: 10,000-resample cluster bootstraps (VNs for dev, titles for hval).
 - **Selection.** Per LM tier, over each family's recipes, the grid (alpha 0.3-0.8, beta 1.0-5.0 nats, flags
@@ -90,11 +140,21 @@ change, because its `lm_opts()` uses one LM weight and one flag set for every ti
   - (d) bytes and workspace within Rubi's limits.
 - **Amendment 1** (10:05Z, before any cross-validated number). Add Rubi's display rules to the line path. On the
   original path, PCSG00854's junk lines made up about half of all hval page-path errors and pulled the in-sample
-  choice to the grid's lowest per-character bonus, with clean lines and dev worse.
+  choice to the grid's lowest per-character bonus, with clean lines and dev worse. Seen before it, all in-sample:
+  its record lists tune3's grid; tune1 (09:22-09:28Z, dev only, original path) had also given in-sample dev scores
+  over the whole grid for greedy, the incumbent, ctclm.2's 1 MB LM retuned and nine new 1 MB recipes (eight with
+  game text).
 - **Amendment 2** (10:22Z, conductor and owner directive). Decide two families separately: A without game text, B
   with it. B ships instead of A only if, cross-validated, B − A is resolved better on hp and on the objective, the
   dev score is not resolved worse, and S and L are not resolved worse. B stays at order 3 unless a higher order is
-  resolved better.
+  resolved better. Its record lists nothing seen before it. On the amended path, tune4 had given the in-sample
+  objectives of greedy, the four incumbents and the no-game-text rebuild of ctclm.2's 1 MB recipe (10:09-10:13Z),
+  and the first no-game-text recipe's grid (`v6b_1000k`) had just finished (10:17:46Z). No game-text recipe had
+  been decoded on that path (the first, 10:31:00Z), and no cross-validated number existed for either amendment (the
+  first selection, 13:15:27Z).
+- **Two protocol dates were corrected without a note** in amendment 2's commit: `created` 09:55:00Z → 09:14:00Z,
+  and amendment 1's `time` 10:20:00Z → 10:05:00Z. Both originals were later than the commits that carried them
+  (09:16:54Z, 10:06:50Z). Nothing the rule reads changed.
 
 ## Results
 
@@ -183,8 +243,11 @@ Vita and PSP (VOCR5-N + cascade, CER %):
 | 4000k | psp | 0.552 | 0.490 | 3.223 | 3.204 |
 <!-- /table:platform -->
 
-- **Names (secondary).** devnative's speaker names read much better with the start-of-line context: 8.66% → 2.89%
-  (VOCR5-N, 1 MB, in-sample). teacher_val's name-like lines are slightly worse (2.91% → 3.19%).
+- **Names (secondary).** devnative's speaker names read much better: 8.66% → 2.89% (VOCR5-N, 1 MB, in-sample).
+  The gain comes from the retune with the end-of-line term off, not from the game text or the start-of-line
+  context. At the shipped weight and bonus, the flags none / BOS / EOS / both give 2.80 / 2.89 / 4.58 / 4.67% with
+  the game-text LM, and 2.80 / 2.89 / 4.07 / 4.16% with ctclm.2's. teacher_val's name-like lines are slightly worse
+  (2.91% → 3.19%).
 - **Cascade threshold (report only).** At the shipped 1 MB setting, the objective is 3.13 / 3.08 / 3.06 / 3.03 /
   3.02 at thresholds 500 / 600 / 700 / 800 / 900. A higher threshold re-reads more lines, and Rubi's 2 s ceiling
   bounds that time, so 700 stays.
@@ -218,6 +281,11 @@ shipped blob. The setting was chosen in-sample on this round's own hval, so the 
 | dev (#119's units, 93 VNs) | 3.036% | 3.137% | +0.10 (−0.18 to +0.46) |
 | dev without v21004 | 3.072% | 3.037% | −0.04 (−0.23 to +0.17) |
 
+The intervals are a 10,000-resample bootstrap over titles and VNs of the two runs' rows
+(`select_extra/pagepath_check.json`), not `pagepath.py compare`'s, which differ in the third digit (hval −5.09 to
+−0.08). #119's dev units include 21 of the two VNs this round's rule leaves out (v12188: 18, v18432: 3). Both arms
+read them with 0 errors, so only the denominators move (450 of 25,854 reference characters).
+
 v21004 is the mirror image of PCSG00854. Its box border is read as a junk line, and the old LM spelt it with ー and
 ニ, which Rubi's border rule drops. The new one spells it as 35 ー, which the rule keeps, because it reads as a
 pause: +35 errors in one unit. Both junk lines come from the finder; a finder that leaves box borders out
@@ -250,7 +318,8 @@ the recipes; decisions come only from decoding.
 
 Measured with `lm/memorization.py`. Stored n-grams are checked against the public text the builder reads (the five
 corpora, their visual-line re-cut and the Jiten words). Greedy runs are measured on the hooked train lines the blobs
-were built from, and on hval's lines. A greedy run starts at a position of a line and follows the LM's own most
+were built from, and on hval's lines. Those are lines of held-out pages, not unseen text: 251 of hval's 3,302 lines
+(7.6%) are also train lines, verbatim. A greedy run starts at a position of a line and follows the LM's own most
 probable next character for as long as it matches the line.
 
 | LM | game text | stored bigrams / trigrams | of them only in the game text | longest greedy run on its own training lines | lines with a run of ≥ 8 / ≥ 12 / ≥ 20 | longest run on held-out lines |
@@ -264,21 +333,39 @@ probable next character for as long as it matches the line.
 | shipped `vocr_lm6_o3_4000k` | ×16 | 199,552 / 648,198 | 4,156 / 61,011 | 22 | 116 / 4 / 1 | (hval is in its text) |
 
 - **What is kept.** Order 3 stores no fragment longer than 3 characters. The fragments found only in the game text
-  are 1.5% of the shipped 1 MB blob's bigrams and trigrams, and 7.7% of the 4 MB blob's, which prunes less.
+  are 1.5% of the shipped 1 MB blob's bigrams and trigrams, and 7.7% of the 4 MB blob's, which prunes less. That
+  is not how much of the blob the game text changed. 26% of the 1 MB blob's bigrams and trigrams (51,578 of 196,383;
+  trigrams alone 32%) are not kept by the same recipe without game text (`v6b_1000k`), and 19% of the 4 MB blob's
+  (164,203 of 847,750) are not kept by `v6brl_4000k`. The game counts lift public n-grams over the pruning
+  threshold, and they raise the threshold itself (136 against 50 at 1 MB, 11 against 8 at 4 MB).
 - **What greedy continuation recovers.** The longest runs of the shipped blobs are a repeated small kana (ぁ × 22,
   ぇ × 14-15) and a game's title inside its own text (12 characters). No other training line gives a run of 12 or
   more; the LMs without game text reach 10, on common phrases. On held-out lines of the same games, the screening
   builds reach at most 10, as the LMs without game text reach 9.
-- **Pruning.** Order 3 is the smallest order the decoder uses, and order 4 was not resolved better (4 MB, above).
-  The byte budgets are Rubi's tiers, no larger than before.
+- **Pruning: order.** Order 3 is the smallest order built in this round and in ctclm.2's. The decoder accepts
+  orders 2-6 (`runtime/vocr_lm.c`, `lm/vlm.py`); order 2 was not tried. Order 4 was not resolved better (4 MB,
+  above).
+- **Pruning: size.** The byte budgets are Rubi's tiers, no larger than before.
   - The 1 MB blob's count threshold is 136 (ctclm.2: 49). A trigram the public text does not have stays only if it
     occurs at least three times in the game's distinct lines (64 each).
   - The 4 MB blob's threshold is 11 at weight 16, so it keeps every trigram of the game text.
+  - At the 4 MB tier, the 3.6 MB game-text blob is not better than the 1 MB one. VOCR5-N, the selections'
+    cross-validated errors on the same units, 4 MB − 1 MB: hval page path +0.18 (−0.02 to +0.59), dev score −0.00
+    (−0.05 to +0.05), objective +0.09 (−0.02 to +0.30). L is level too; only S is better with the 4 MB blob
+    (objective −0.07, −0.13 to −0.01).
+  - The 1 MB blob against the 4 MB incumbent: hval page path −0.63 (−1.97 to −0.005), dev score +0.01 (−0.06 to
+    +0.08).
+  - The 4 MB blob holds 10× the 1 MB one's game-only bigrams and 24× its trigrams (4,156 / 61,011 against 416 /
+    2,551). The conductor's ruling ships it under the same rule as the 1 MB one, since users get it only by
+    choosing the 4000k tier.
 
 **Licence.** The blobs stay CC BY-SA 4.0, as their open sources (Jiten, JESC) require. The game text enters only as
 character n-gram counts, as the recognizers' weights carry what they learnt from the owner's screenshots, and the
-release's `ATTRIBUTION.md` discloses it in the same way (owner directive of 2026-10-26: "LM from game hook text:
-allowed"). The games' text belongs to its publishers, and no running text is in the blobs.
+release's `ATTRIBUTION.md` discloses it in the same way. The VOCR6 rule of 2026-10-26: "LM from game hook text:
+allowed. Ship it if it's measurably better on the page path (unseen-game dev sets AND hval) [...]; attribution as
+for the models trained on game data." The LMs are better on hval and level on the unseen-game dev sets. They ship
+under the conductor's ruling of 16:38Z that this means plan section 7's rule ("The owner's condition", above). The
+games' text belongs to its publishers, and no running text is in the blobs.
 
 ## The dictionary-aware variant
 
@@ -300,8 +387,10 @@ in `lm/vlm.py`'s Python twin of the decoder (`decode(lexicon=…)`), on the ship
 
 ## For Rubi
 
-- New files: `vocr_lm6_o3_1000k.vlm` and `vocr_lm6_o3_4000k.vlm` (pre-release v0.3.7-lm6.1, CC BY-SA 4.0, with
-  `ATTRIBUTION.md`, `SHA256SUMS` and the settings).
+- New files: `vocr_lm6_o3_1000k.vlm` and `vocr_lm6_o3_4000k.vlm` (pre-release v0.3.7-lm6.2, CC BY-SA 4.0, with
+  `ATTRIBUTION.md`, `SHA256SUMS` and the settings), cut from this PR's merge. v0.3.7-lm6.1 holds the same blobs. It
+  went out from this PR's branch before the audit, with an `ATTRIBUTION.md` that missed Little Busters!, and is
+  superseded.
 - The 0.5 and 2 MB tiers keep ctclm.2's files and settings.
 - `core/vocr_ocr.c`: the LM table carries each tier's alpha, beta and flags.
 
@@ -326,7 +415,11 @@ for t in S N L; do .venv-ci/bin/python eval/vocr6_lm.py hval-cache --tier $t --d
 bash $A/select_all.sh        # select (families A, B; both paths) and families, per tier
 .venv-ci/bin/python lm/memorization.py report --lm NAME=LM.vlm ... --train TEXT --heldout HELD --public PUBLIC --out MEMO.json
 .venv-ci/bin/python eval/vocr6_lm.py lex-tune --lm ... --config SETTING --lexicon LEX.tsv --grid LEXGRID ...
-.venv-ci/bin/python eval/vocr6_lm.py summary ... --out eval/vocr6_lm_dev_20261026.json
+.venv-ci/bin/python eval/vocr6_lm.py checks --select-dir $P/select --priv $P --hval-cache $P/hval_rubi \
+  --pagepool $I/pagepool/v1 --tune4 $P/tune4 --lm-dir $P/lm --final-dir $P/final --pagepath $A/pagepath \
+  --out $P/select_extra/checks.json     # the audit's re-derived numbers (the JSON's checks block)
+.venv-ci/bin/python eval/vocr6_lm.py summary ... --checks $P/select_extra/checks.json \
+  --out eval/vocr6_lm_dev_20261026.json
 .venv-ci/bin/python eval/vocr6_lm.py tables --json eval/vocr6_lm_dev_20261026.json --doc docs/vocr6-lm.md
 ```
 
@@ -340,10 +433,22 @@ LM and the harness do not depend on the recognizer.
 - **The hval pages are the train titles' own games.** The LM saw other passages of the same games, so hval
   measures "a game the LM knows". The unseen-game dev cohorts show no resolved gain or loss.
 - **The dev references are labelled by engine agreement plus an assistant reviewer**, not hand-checked.
-- **Two-fold cross-validation with a 216-setting grid is noisy.** At 0.5 and 2 MB the folds chose different
-  settings, which is why nothing was adopted there. An in-sample choice would look better than the
-  cross-validated numbers show.
-- **Seen titles.** Collar x Malice (v18160) is a vita-test game and a hooked train title, so its text is in the
-  new LMs. planetarian (v34) shares a release with CLANNAD. Any vita-test, psp-test or CLANNAD score decoded with
-  these LMs must disclose that, and the Jiten caveat of `docs/ctc-lm-decode.md` still holds.
+- **Two-fold cross-validation with a 216-setting grid is noisy.** The two folds chose different recipes or settings
+  at every tier, in both families. What failed at 0.5 and 2 MB is the rule (rule table). At 0.5 MB, B missed (a),
+  (b) and (c), and A missed (a). At 2 MB, B missed (a) and (c), and A missed (a), (b) and (c). An in-sample choice
+  would look better than the cross-validated numbers show.
+- **Seen titles.** Three hooked train titles are related to a protected set, and their text is in the new LMs:
+  - Little Busters! Converted Edition (PCSG00007; VNDB v5 by title, unmapped in its metadata) shares a release
+    with CLANNAD. 594 of its lines (9,362 characters) are in the screening text, 648 (10,292) in the shipped blobs.
+  - planetarian (ULJM05383, v34) shares a release with CLANNAD: 2,467 lines (2,672 in the shipped blobs).
+  - Collar x Malice (PCSG00866, v18160) shares a release with vita-test's Collar x Malice -Unlimited- (v21789):
+    825 lines (896).
+
+  Any vita-test, psp-test or CLANNAD score decoded with these LMs must disclose them. The Jiten caveat of
+  `docs/ctc-lm-decode.md` still holds. The protocol's `seen_flags` (frozen) list only the last two, and call
+  Collar x Malice a vita-test game.
+- **A seen series in dev.** Haitaka no Psychedelica (v18643, 74 dev units) is of the same series as a hooked train
+  title, Kokuchou no Psychedelica (PCSG00468, v15771 by title, unmapped in its metadata). So the unseen-game dev set
+  holds one VN of a series whose text is in the LMs. Without it the dev score difference is unchanged: −0.03 (−0.10
+  to +0.04) at 1 MB, +0.01 (−0.05 to +0.07) at 4 MB.
 - **No console run.** Every time and memory figure for the console is an estimate.

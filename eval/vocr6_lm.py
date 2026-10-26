@@ -68,6 +68,11 @@ UP = {"S": "N", "N": "L", "L": None}
 K = 8
 EXCLUDE_DEV_VNS = {"v12188": "a hooked train title (PCSG00576): its text is in the new LMs",
                    "v18432": "a hooked test title (PCSG00807, Dance with Devils)"}
+# hooked train titles whose text is in the new LMs and which relate to a protected set (vocr6-common: flag as seen)
+SEEN_TITLES = {
+    "PCSG00866": "Collar x Malice (v18160): shares a release with vita-test's Collar x Malice -Unlimited- (v21789)",
+    "ULJM05383": "planetarian (v34): shares a release with CLANNAD",
+    "PCSG00007": "Little Busters! Converted Edition (v5, unmapped in its metadata): shares a release with CLANNAD"}
 WD = ("tv_dlg", "dn_dlg")
 N_BOOT = 10000
 SEEDS = {"tv": 0, "dn": 1, "wd": 2, "hp": 3, "hc": 4}
@@ -697,6 +702,157 @@ def cmd_families(a):
                       "N_dev": cmp["N"]["dev"]}))
 
 
+def _cv_units(path):
+    """(units as Unit objects, the .cv.npz arrays) of a select output's cross-validated errors."""
+    z = np.load(path)
+    units = json.loads(str(z["units"]))
+    U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    return units, U, z
+
+
+def _sub_compare(U, ex, ey, drop):
+    keep = np.flatnonzero(~drop)
+    return compare([U[i] for i in keep], ex[keep], ey[keep])
+
+
+def cmd_checks(a):
+    """The audit's checks (audit-vocr6-lm F1-F3, F5, N1, N6), recomputed from the private outputs; counts, rates and
+    ids only. f2: the 4 MB game-text LM against the 1 MB one at the 4 MB tier, and the 1 MB one against the 4 MB
+    incumbent (the selections' cross-validated errors, same units). f3: hval units holding a line that is verbatim
+    (eval/metrics.norm) a hook_train line, and the shipped choices against the incumbent without them. f5: speaker-name
+    CER by line flags at the shipped alpha and beta (tune4: the screening game-text recipe and ctclm.2's rebuild), and
+    the share of the shipped blobs' bigrams and trigrams that the same recipe without game text does not keep. n1: the
+    #129 dev run's units of the two dropped VNs. n6: the dev score without v18643, the sequel of a hooked title.
+    seen: the hooked titles flagged seen, with their exported lines and hval units."""
+    from memorization import as_chars, kept_ngrams
+    from vlm import LM
+    sel, P = Path(a.select_dir), Path(a.priv)
+    files = {"1000k": sel / "1000k_B_shown.json.cv.npz", "4000k": sel / "4000k_B3_shown.json.cv.npz"}
+    out = {"kind": "vocr6-lm-checks", "schema": 1, "created": utc_now(), "audit": "audit-vocr6-lm (F1-F3, F5, N1, N6)"}
+    keys = ("hc", "hp", "dev", "obj")
+    u1, U, z1 = _cv_units(files["1000k"])
+    u4, _, z4 = _cv_units(files["4000k"])
+    if u1 != u4:
+        raise SystemExit("the 1 MB and 4 MB selections scored other units")
+    out["f2_4mb_tier"] = {m: {"4mb_game_text_minus_1mb_game_text": {k: v for k, v in
+                                                                   compare(U, z1[f"cv_{m}"], z4[f"cv_{m}"]).items()
+                                                                   if k in keys},
+                              "1mb_game_text_minus_4mb_incumbent": {k: v for k, v in
+                                                                    compare(U, z4[f"inc_{m}"], z1[f"cv_{m}"]).items()
+                                                                    if k in keys}}
+                          for m in ("N", "S", "L")}
+    # f3: verbatim train lines in hval
+    train = {norm(x) for x in (P / "text" / "hook_train.txt").read_text(encoding="utf-8").splitlines()} - {""}
+    raw = (P / "text" / "hook_train.txt").read_text(encoding="utf-8").splitlines()
+    held = [x for x in (P / "text" / "hval_lines.txt").read_text(encoding="utf-8").splitlines() if x]
+    raw_set = set(raw)
+    held_raw_seen = sum(x in raw_set for x in held)
+    regs, ch_all, ch_seen = [], 0, 0
+    for f in sorted(Path(a.pagepool).glob("*.jsonl")):          # cmd_hval_units' region order
+        for line in f.read_text(encoding="utf-8").splitlines():
+            pg = json.loads(line)
+            if pg["split"] != "hval" or not pg["regions"]:
+                continue
+            text = {ln["id"]: norm(ln["text"]) for ln in pg["lines"]}
+            for r in pg["regions"]:
+                t = [text[i] for i in r["lines"]]
+                hit = [x in train for x in t]
+                ch_all += sum(len(x) for x in t)
+                ch_seen += sum(len(x) for x, h in zip(t, hit) if h)
+                regs.append((pg["title_id"], r["variant"], any(hit)))
+    hv = pickle.loads((Path(a.hval_cache) / "units.pkl").read_bytes())
+    hc_seen = {x[1] for x in hv if x[0] == "hc" and x[4][0][0] in train}
+    hp_idx = [i for i, u in enumerate(u1) if u[0] == "hp"]
+    if len(hp_idx) != 2 * len(regs):
+        raise SystemExit("hp units are not the page pool's regions x 2 finder modes")
+    seen = np.zeros(len(u1), bool)
+    for j, i in enumerate(hp_idx):
+        tid, variant, hit = regs[j % len(regs)]
+        if u1[i][2] != tid or u1[i][1].split("|")[2] != variant:
+            raise SystemExit("hp units out of the page pool's order")
+        seen[i] = hit
+    for i, u in enumerate(u1):
+        if u[0] == "hc":
+            seen[i] = u[1] in hc_seen
+    hc = np.array([u[0] == "hc" for u in u1])
+    j854 = np.array([u[2] == "PCSG00854" for u in u1])
+    f3 = {"hval_lines": len(held), "hval_lines_verbatim_in_hook_train": sum(norm(x) in train for x in held),
+          "hval_lines_byte_identical_to_a_hook_train_line": held_raw_seen,
+          "hp_regions": len(regs), "hp_regions_seen": int(sum(r[2] for r in regs)),
+          "hp_units": len(hp_idx), "hp_units_seen": int(seen[hp_idx].sum()),
+          "hp_seen_line_char_share": round(ch_seen / ch_all, 4),
+          "hc_units": int(hc.sum()), "hc_units_seen": int(seen[hc].sum()), "by_tier": {}}
+    for t, f in files.items():
+        _, UU, z = _cv_units(f)
+        f3["by_tier"][t] = {
+            "without_seen": {k: v for k, v in _sub_compare(UU, z["inc_N"], z["cv_N"], seen).items() if k in keys},
+            "without_seen_and_PCSG00854": {k: v for k, v in _sub_compare(UU, z["inc_N"], z["cv_N"], seen | j854).items()
+                                           if k in keys}}
+    out["f3_seen_hval"] = f3
+    # f5: names by flags
+    names = {}
+    for nm in ("h64_1000k", "repro_1000k", "inc_1000k"):
+        meta, e = load_tune(Path(a.tune4) / f"{nm}.npz", {"N|700"})
+        sc = Scorer(meta["units"])
+        rows = {}
+        for j, c in enumerate(meta["configs"]):
+            if nm == "inc_1000k" or (c["alpha"] == 600 and c["beta"] == 2500):
+                rows[f"a{c['alpha']} b{c['beta']} f{c['flags']}"] = {
+                    p: round(float(sc.cer(e["N|700"][j], p, name=True)), 4) for p in ("dn", "tv")}
+        names[nm] = rows
+    out["f5_names_by_flags"] = {"key": "N|700", "lms": names}
+    grams = {}
+    for blob, base in ((Path(a.final_dir) / "vocr_lm6_o3_1000k.vlm", Path(a.lm_dir) / "v6b_1000k.vlm"),
+                       (Path(a.final_dir) / "vocr_lm6_o3_4000k.vlm", Path(a.lm_dir) / "v6brl_4000k.vlm")):
+        g = {}
+        for q in (blob, base):
+            lm = LM(q.read_bytes())
+            k = kept_ngrams(lm)
+            g[q] = {o: {as_chars(lm, x) for x in k[o]} for o in (2, 3)}
+        n = {o: len(g[blob][o]) for o in (2, 3)}
+        d = {o: len(g[blob][o] - g[base][o]) for o in (2, 3)}
+        th = {q.name: json.loads(q.with_suffix(".json").read_text(encoding="utf-8")).get("chosen_thresholds")
+              for q in (blob, base)}
+        grams[blob.name] = {"baseline": base.name, "bigrams": n[2], "trigrams": n[3],
+                            "not_kept_by_baseline": d, "share": round((d[2] + d[3]) / (n[2] + n[3]), 4),
+                            "trigram_share": round(d[3] / n[3], 4), "count_thresholds": th}
+    out["f5_ngrams_vs_no_game_text"] = grams
+    # n1: the #129 dev run's units of the dropped VNs
+    n1 = {}
+    for arm in ("old", "new"):
+        rows = [json.loads(x) for x in (Path(a.pagepath) / f"{arm}_dev.rows.jsonl").read_text().splitlines()]
+        drop = [r for r in rows if r["cluster"] in EXCLUDE_DEV_VNS]
+        n1[arm] = {"units": len(drop), "errors": sum(r["errors"] for r in drop),
+                   "chars": sum(r["chars"] for r in drop), "all_chars": sum(r["chars"] for r in rows),
+                   "by_vn": {v: sum(r["cluster"] == v for r in drop) for v in sorted(EXCLUDE_DEV_VNS)}}
+    out["n1_pagepath_dropped_vns"] = n1
+    n6 = {}
+    for t, f in files.items():
+        uu, UU, z = _cv_units(f)
+        m = np.array([u[2] == "v18643" for u in uu])
+        n6[t] = {"v18643_units": int(m.sum()), **{k: v for k, v in _sub_compare(UU, z["inc_N"], z["cv_N"], m).items()
+                                                  if k in ("dev", "wd", "obj")}}
+    out["n6_without_v18643"] = n6
+    seen_t = {}
+    for name in ("hook_train", "hook_final"):
+        j = json.loads((P / "text" / f"{name}.json").read_text(encoding="utf-8"))
+        for tid in SEEN_TITLES:
+            c = j["titles"][tid]["counts"]
+            seen_t.setdefault(tid, {})[name] = {"lines": c["kept"], "chars": c["chars"]}
+    for tid in SEEN_TITLES:
+        seen_t[tid]["hval_units"] = {p: sum(1 for x in hv if x[0] == p and x[2] == tid) for p in ("hc", "hp")}
+        seen_t[tid]["why"] = SEEN_TITLES[tid]
+    out["seen_titles"] = seen_t
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    ks = ("hp_units_seen", "hc_units_seen", "hval_lines_verbatim_in_hook_train")
+    print(json.dumps({"f2_N": out["f2_4mb_tier"]["N"]["4mb_game_text_minus_1mb_game_text"]["obj"],
+                      "f3": {k: f3[k] for k in ks}}), flush=True)
+
+
 def cmd_summary(a):
     """The committed result (eval/vocr6_lm_dev_<date>.json): every selection, the family comparisons, the screens,
     the dictionary variant, the memorisation report and the shipped blobs. Counts, rates, hashes, ids only."""
@@ -713,6 +869,8 @@ def cmd_summary(a):
                        ("pagepath_check", a.pagepath_check)):
         out[key] = [json.loads(Path(x).read_text(encoding="utf-8")) for x in files]
     out["shipped"] = json.loads(Path(a.shipped).read_text(encoding="utf-8")) if a.shipped else None
+    if a.checks:
+        out["checks"] = json.loads(Path(a.checks).read_text(encoding="utf-8"))
     import finder_tighten as FT
     FT.assert_public(out)
     Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -1071,6 +1229,17 @@ def main():
     p.add_argument("--sensitivity", action="append", default=[])
     p.add_argument("--pagepath-check", action="append", default=[], help="the #129 benchmark check (report)")
     p.add_argument("--shipped")
+    p.add_argument("--checks", help="the checks command's output (the audit's re-derived numbers)")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("checks")
+    p.add_argument("--select-dir", required=True)
+    p.add_argument("--priv", required=True, help="the private dir: text/hook_train.txt, hval_lines.txt, *.json")
+    p.add_argument("--hval-cache", required=True)
+    p.add_argument("--pagepool", required=True)
+    p.add_argument("--tune4", required=True)
+    p.add_argument("--lm-dir", required=True)
+    p.add_argument("--final-dir", required=True)
+    p.add_argument("--pagepath", required=True, help="the #129 benchmark runs (old/new_dev.rows.jsonl)")
     p.add_argument("--out", required=True)
     p = sub.add_parser("tables")
     p.add_argument("--json", required=True)
@@ -1101,9 +1270,10 @@ def main():
                    help="shown: Rubi's display rules (amendment 1; the decision); raw: the original line path")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
-     "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families, "summary": cmd_summary,
-     "tables": cmd_tables}[a.cmd](a)
+    cmds = {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
+            "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families, "summary": cmd_summary,
+            "checks": cmd_checks, "tables": cmd_tables}
+    cmds[a.cmd](a)
 
 
 if __name__ == "__main__":

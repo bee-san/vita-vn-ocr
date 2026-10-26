@@ -237,8 +237,24 @@ def test_rubi_show(tmp_path):
         pytest.skip("the Rubi checkout is not at the pinned textnorm.c")
     assert sh(["ーニーーーーニーニーーーー"]) == []                       # the border rule (R08d)
     assert sh(["テキスト", "ーニーーーニー"]) == ["テキスト"]
-    assert sh(["2Gf1010101010I0U", "「しかも"]) == ["「しかも"]              # the Shell's non-Japanese filter
+    assert sh(["Ab12Cd34Ef56", "「これはテスト"]) == ["「これはテスト"]      # the Shell's non-Japanese filter
     assert sh(["", "あ", ""]) == ["あ"] and sh(["コ一一"]) == ["コーー"] and sh(["一二三"]) == ["一二三"]
+
+
+def test_sub_compare_is_compare_on_the_kept_units():
+    """checks' sensitivity helper: dropping units equals comparing the kept units alone."""
+    rng = np.random.default_rng(0)
+    units = []
+    for i in range(60):
+        part = ("tv", "dn", "wd", "hc", "hp")[i % 5]
+        u = V.Unit(part, f"u{i}", f"c{i % 12}", False, [], "vita")
+        u.chars = 10
+        units.append(u)
+    x, y = rng.integers(0, 4, 60), rng.integers(0, 4, 60)
+    drop = np.zeros(60, bool)
+    drop[::7] = True
+    keep = np.flatnonzero(~drop)
+    assert V._sub_compare(units, x, y, drop) == V.compare([units[i] for i in keep], x[keep], y[keep])
 
 
 def _fake_tune(path, units, configs, errs, lm="x", lm_path=None, cascade=(500, 600, 700)):

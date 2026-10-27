@@ -281,7 +281,8 @@ Each amendment is dated in `eval/textspot6_protocol.json` and precedes the runs 
     | det | 1.307 / 1.474% | (running) |
 
     The run was moved aside at 13:42:37Z, and amendment 9 was committed at 13:45:05Z. Amendment 16 also records the
-    code of record and the other items under "Disclosures found after the protocol".
+    code of record and the other items under "Disclosures found after the protocol". Two of its items were corrected
+    in place before the merge (its `revised` note): the full-resolution T arm's reason and the code of record.
 
 ## Results
 
@@ -351,10 +352,13 @@ The seed column gives the representative's seed, then the unseen-dev CER of seed
   - hval: the det decodes of all four arms, and `base_qL5` det+refine, are resolved lower (upper ends −0.004 to
     −0.07).
 - **textspot3's released pick** (51,008 B; trained on synthetic frames and meiki labels, no hooked page) reads as
-  well as any textspot6 arm. Its crop decode is the only spotter row of the study whose unseen-dev interval lies
-  below 0 (the finder rows `rubi,fix=1` and `rubi,fix=5` are resolved below GRAD + refine too). It is one released
-  model and was not a textspot6 candidate (no median seed); its selection read textspot's development frames, which
-  cover 74 of these 92 VNs.
+  well as any textspot6 arm. Its crop decode is the only row of the table above whose unseen-dev interval lies below
+  0 against GRAD + refine (the finder rows `rubi,fix=1` and `rubi,fix=5` are resolved below it too). Four single
+  textspot6 seeds, none of them a representative, also lie below 0: `base_qL5` seed 2 crop
+  (−1.80 [−4.44, −0.04]) and det (−1.84 [−4.50, −0.08]), `base_qS4` seed 1 crop (−1.76 [−4.37, −0.03]) and
+  `kd_t64n8c16` seed 1 det (−1.81 [−4.40, −0.07]) (the tables record's `runs`). textspot3's pick is one released
+  model, not a textspot6 candidate (no median seed); its selection read textspot's development frames, which cover
+  74 of these 92 VNs.
 - The per-title (hval) and per-VN (dev) rows of the research release, beside GRAD + refine's and `rubi,fix=1`'s,
   are in `eval/textspot6_tables_20261027.json` (`per_title`).
 
@@ -466,8 +470,8 @@ All values are CER in % unless marked F1.
     driver on test frames).
 
   Textspot's stored arms reproduce their committed records. The readers are textspot's library, rebuilt from
-  d214a05 (hash-checked). It reads the same as today's runtime: 600 of 600 development line reads in my check, and
-  in the PR's audit 1,148 of 1,148 (all 574 base-variant development line crops in both polarities).
+  d214a05 (hash-checked). It reads the same as today's runtime: the PR's audit read all 574 base-variant development
+  line crops in both polarities with both libraries, and 1,148 of 1,148 readings are the same.
 
 ### Disclosures found after the protocol
 
@@ -498,9 +502,10 @@ All values are CER in % unless marked F1.
   `vocr_textspot3_test` on every version 1-3 batch). The file is pinned, so the wording is corrected here.
 - **Not run:**
   - the oracle baseline (each reference line's own box), a report row, dropped for slot time;
-  - the full-resolution T arm (the stage-1 table's `base_<T full-res>`), never registered. The full-resolution T
-    shapes' A9 rows are 290.1-410.1 ms per frame at 333 MHz (`half_above` 0): the fastest is within 10 ms of the
-    300 ms ceiling and the others are over it. With 2 slots, amendment 8 listed the candidates without it.
+  - the full-resolution T arm (the stage-1 table's `base_<T full-res>`), never registered. With 2 slots, amendment 8
+    listed the candidates without it. Its shapes' A9 rows (`half_above` 0, per 960×544 frame at 333 MHz) are:
+    - t32n4c16 290.1, t24n6c16 290.6 and t48n2c16 293.4 ms: under the 300 ms ceiling, det+refine's charge included;
+    - t40n3c16 303.3, t32n6c16 358.8 and t48n4c16 410.1 ms: over it.
 
 ### Code of record
 
@@ -509,15 +514,16 @@ Each record was made from the commit below. The hashes are the first 8 hex digit
 
 | records | commit | `eval/textspot6.py` | scoring script |
 |---|---|---|---|
-| seed-1 runs: page path, tsdev, hval boxes (13:45-14:40Z) | 5eaffd6 | 51ad39e6 | `score_run.sh` 000ac295 |
-| seed-1 runs' parity; the `rubi,fix=1` baseline | 135d821 | 51ad39e6 | `score_run.sh` c68b2b4e |
-| seeds 2-3, kd, nohook: scores and parity | d83274d | b98a47e4 | `score_run.sh` c68b2b4e |
+| baselines `grad_refine`, `grad_refine_fix5`, `textspot3_pick` (13:45-14:12Z); seed-1 runs: page path, tsdev, hval boxes (13:45-14:40Z) | 5eaffd6 | 51ad39e6 | `score_run.sh` 000ac295 |
+| seed-1 runs' parity (16:00-16:11Z) | 135d821 | 51ad39e6 | `textspot6_parity.py` 58a73f6b |
+| the `rubi,fix=1` baseline (16:57Z); seeds 2-3, kd, nohook: scores and parity | d83274d | b98a47e4 | `score_run.sh` c68b2b4e |
 | teacher; selection | fd57f02; ac2aaeb | | `textspot6_teacher.py` bb6fed3b; `textspot6_select.py` ead6859d |
 | tight rows; the research blob's hval parity | d3e73f4 / f50746a | 53d795b9 | `score_tight.sh` f9dd2de9 |
 | test reads: title; tests and CLANNAD | d3e73f4; f50746a | | `textspot6_test.py` 6d2e4ade; 0af5c5f9 |
 
 Between those versions `eval/textspot6.py` only had its helpers refactored (outputs checked equal) and an opt-in
-`--units` added. The PR's audit re-scored `kd_t64n8c16_seed2` end to end with the head's code and an empty reading
+`--units` added. Every parity record was made with `eval/textspot6_parity.py` 58a73f6b. The head's version
+(97f0a5a1) differs only by the first audit's F1 fix: `dev-crop` reads #119's units, whatever `--units` names. The PR's audit re-scored `kd_t64n8c16_seed2` end to end with the head's code and an empty reading
 cache; the units, boxes, spot files, tsdev and hval-box records came out identical.
 
 ### Cost (estimates; nothing has run on a console)

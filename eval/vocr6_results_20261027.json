@@ -1820,6 +1820,670 @@
     "dev_not_resolved_worse": true
    },
    "adopt_y": false
+  },
+  "s4c_N": {
+   "stage": "4c",
+   "arm": "4c-N",
+   "plan": "shipped",
+   "what": "4b's recipe at 45,000 steps, hval in, into 4c-L (vs the shipped 4b-N into 4b-L)",
+   "x": [
+    "v6f4h_N_seed1"
+   ],
+   "y": [
+    "v6f4c_N_seed1"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.014,
+     "ci95": [
+      -0.055,
+      0.023
+     ],
+     "cer_x": 0.8927,
+     "cer_y": 0.8791
+    },
+    "hval_clean": {
+     "delta_points": -0.041,
+     "ci95": [
+      -0.085,
+      -0.008
+     ],
+     "cer_x": 0.2958,
+     "cer_y": 0.2547
+    },
+    "hval_page_all": {
+     "delta_points": 0.05,
+     "ci95": [
+      -0.04,
+      0.211
+     ],
+     "cer_x": 1.524,
+     "cer_y": 1.5744
+    },
+    "hval_page_seen": {
+     "delta_points": -0.016,
+     "ci95": [
+      -0.054,
+      0.016
+     ],
+     "cer_x": 1.374,
+     "cer_y": 1.3577
+    },
+    "hval_page_nomerge": {
+     "delta_points": -0.024,
+     "ci95": [
+      -0.062,
+      0.01
+     ],
+     "cer_x": 0.5108,
+     "cer_y": 0.4869
+    },
+    "tv": {
+     "delta_points": -0.064,
+     "ci95": [
+      -0.191,
+      0.048
+     ],
+     "cer_x": 0.4713,
+     "cer_y": 0.4076
+    },
+    "dn": {
+     "delta_points": -0.1,
+     "ci95": [
+      -0.324,
+      0.08
+     ],
+     "cer_x": 0.4988,
+     "cer_y": 0.3991
+    },
+    "wd": {
+     "delta_points": -0.043,
+     "ci95": [
+      -0.166,
+      0.077
+     ],
+     "cer_x": 2.4169,
+     "cer_y": 2.3736
+    },
+    "dev": {
+     "delta_points": -0.063,
+     "ci95": [
+      -0.148,
+      0.02
+     ]
+    }
+   },
+   "pairs": {
+    "v6f4h_N_seed1->v6f4c_N_seed1": {
+     "hval_page": -0.014,
+     "hval_clean": -0.041,
+     "dev": -0.063
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": false,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": true
+   },
+   "adopt_y": false
+  },
+  "s4c_L": {
+   "stage": "4c",
+   "arm": "4c-L",
+   "plan": "shipped",
+   "what": "4b's recipe at 45,000 steps, hval in (vs the shipped 4b-L)",
+   "x": [
+    "v6f4h_L_seed1"
+   ],
+   "y": [
+    "v6f4c_L_seed1"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.016,
+     "ci95": [
+      -0.057,
+      0.025
+     ],
+     "cer_x": 0.8832,
+     "cer_y": 0.8676
+    },
+    "hval_clean": {
+     "delta_points": -0.033,
+     "ci95": [
+      -0.081,
+      0.0
+     ],
+     "cer_x": 0.2782,
+     "cer_y": 0.2449
+    },
+    "hval_page_all": {
+     "delta_points": 0.06,
+     "ci95": [
+      -0.041,
+      0.224
+     ],
+     "cer_x": 1.5129,
+     "cer_y": 1.5732
+    },
+    "hval_page_seen": {
+     "delta_points": -0.016,
+     "ci95": [
+      -0.056,
+      0.023
+     ],
+     "cer_x": 1.3642,
+     "cer_y": 1.3485
+    },
+    "hval_page_nomerge": {
+     "delta_points": -0.026,
+     "ci95": [
+      -0.062,
+      0.006
+     ],
+     "cer_x": 0.5012,
+     "cer_y": 0.4754
+    },
+    "tv": {
+     "delta_points": -0.115,
+     "ci95": [
+      -0.269,
+      0.014
+     ],
+     "cer_x": 0.5096,
+     "cer_y": 0.3949
+    },
+    "dn": {
+     "delta_points": -0.1,
+     "ci95": [
+      -0.267,
+      0.06
+     ],
+     "cer_x": 0.5113,
+     "cer_y": 0.4115
+    },
+    "wd": {
+     "delta_points": 0.016,
+     "ci95": [
+      -0.114,
+      0.137
+     ],
+     "cer_x": 2.3736,
+     "cer_y": 2.3894
+    },
+    "dev": {
+     "delta_points": -0.046,
+     "ci95": [
+      -0.132,
+      0.034
+     ]
+    }
+   },
+   "pairs": {
+    "v6f4h_L_seed1->v6f4c_L_seed1": {
+     "hval_page": -0.016,
+     "hval_clean": -0.033,
+     "dev": -0.046
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": false,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": true
+   },
+   "adopt_y": false
+  },
+  "s4d_r": {
+   "stage": "4d",
+   "arm": "4d-r",
+   "plan": "shipped",
+   "what": "Small with VOCR5's real pools back at full weight (mix r3all_v5r) vs the released VOCR5-S",
+   "x": [
+    "VOCR5-S",
+    "VOCR5-S",
+    "VOCR5-S"
+   ],
+   "y": [
+    "v6f4dr_S_seed1",
+    "v6f4dr_S_seed2",
+    "v6f4dr_S_seed3"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.133,
+     "ci95": [
+      -0.188,
+      -0.085
+     ],
+     "cer_x": 1.1773,
+     "cer_y": 1.0445
+    },
+    "hval_clean": {
+     "delta_points": -0.124,
+     "ci95": [
+      -0.186,
+      -0.072
+     ],
+     "cer_x": 0.5231,
+     "cer_y": 0.399
+    },
+    "hval_page_all": {
+     "delta_points": 0.275,
+     "ci95": [
+      -0.172,
+      1.196
+     ],
+     "cer_x": 1.7603,
+     "cer_y": 2.035
+    },
+    "hval_page_seen": {
+     "delta_points": -0.134,
+     "ci95": [
+      -0.194,
+      -0.082
+     ],
+     "cer_x": 1.6613,
+     "cer_y": 1.5273
+    },
+    "hval_page_nomerge": {
+     "delta_points": -0.131,
+     "ci95": [
+      -0.185,
+      -0.083
+     ],
+     "cer_x": 0.758,
+     "cer_y": 0.627
+    },
+    "tv": {
+     "delta_points": 0.072,
+     "ci95": [
+      -0.018,
+      0.174
+     ],
+     "cer_x": 0.7261,
+     "cer_y": 0.7983
+    },
+    "dn": {
+     "delta_points": 0.15,
+     "ci95": [
+      -0.004,
+      0.337
+     ],
+     "cer_x": 0.5612,
+     "cer_y": 0.7108
+    },
+    "wd": {
+     "delta_points": 0.041,
+     "ci95": [
+      -0.067,
+      0.148
+     ],
+     "cer_x": 2.7043,
+     "cer_y": 2.745
+    },
+    "dev": {
+     "delta_points": 0.076,
+     "ci95": [
+      0.005,
+      0.149
+     ]
+    }
+   },
+   "pairs": {
+    "VOCR5-S->v6f4dr_S_seed1": {
+     "hval_page": -0.169,
+     "hval_clean": -0.125,
+     "dev": 0.113
+    },
+    "VOCR5-S->v6f4dr_S_seed2": {
+     "hval_page": -0.118,
+     "hval_clean": -0.102,
+     "dev": 0.079
+    },
+    "VOCR5-S->v6f4dr_S_seed3": {
+     "hval_page": -0.112,
+     "hval_clean": -0.145,
+     "dev": 0.036
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": true,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": false
+   },
+   "adopt_y": false
+  },
+  "s4d_l": {
+   "stage": "4d",
+   "arm": "4d-l",
+   "plan": "shipped",
+   "what": "Small, R3 at half the learning rate (6e-4) vs the released VOCR5-S",
+   "x": [
+    "VOCR5-S",
+    "VOCR5-S",
+    "VOCR5-S"
+   ],
+   "y": [
+    "v6f4dl_S_seed1",
+    "v6f4dl_S_seed2",
+    "v6f4dl_S_seed3"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.128,
+     "ci95": [
+      -0.189,
+      -0.074
+     ],
+     "cer_x": 1.1773,
+     "cer_y": 1.0492
+    },
+    "hval_clean": {
+     "delta_points": -0.134,
+     "ci95": [
+      -0.196,
+      -0.081
+     ],
+     "cer_x": 0.5231,
+     "cer_y": 0.3892
+    },
+    "hval_page_all": {
+     "delta_points": 0.275,
+     "ci95": [
+      -0.176,
+      1.192
+     ],
+     "cer_x": 1.7603,
+     "cer_y": 2.035
+    },
+    "hval_page_seen": {
+     "delta_points": -0.133,
+     "ci95": [
+      -0.198,
+      -0.078
+     ],
+     "cer_x": 1.6613,
+     "cer_y": 1.528
+    },
+    "hval_page_nomerge": {
+     "delta_points": -0.126,
+     "ci95": [
+      -0.187,
+      -0.073
+     ],
+     "cer_x": 0.758,
+     "cer_y": 0.6318
+    },
+    "tv": {
+     "delta_points": 0.076,
+     "ci95": [
+      -0.022,
+      0.195
+     ],
+     "cer_x": 0.7261,
+     "cer_y": 0.8025
+    },
+    "dn": {
+     "delta_points": 0.1,
+     "ci95": [
+      -0.042,
+      0.258
+     ],
+     "cer_x": 0.5612,
+     "cer_y": 0.6609
+    },
+    "wd": {
+     "delta_points": 0.039,
+     "ci95": [
+      -0.078,
+      0.151
+     ],
+     "cer_x": 2.7043,
+     "cer_y": 2.7437
+    },
+    "dev": {
+     "delta_points": 0.064,
+     "ci95": [
+      -0.009,
+      0.138
+     ]
+    }
+   },
+   "pairs": {
+    "VOCR5-S->v6f4dl_S_seed1": {
+     "hval_page": -0.149,
+     "hval_clean": -0.133,
+     "dev": 0.055
+    },
+    "VOCR5-S->v6f4dl_S_seed2": {
+     "hval_page": -0.118,
+     "hval_clean": -0.118,
+     "dev": 0.047
+    },
+    "VOCR5-S->v6f4dl_S_seed3": {
+     "hval_page": -0.117,
+     "hval_clean": -0.151,
+     "dev": 0.09
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": true,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": true
+   },
+   "adopt_y": true
+  },
+  "s4d_lh": {
+   "stage": "4d-fold",
+   "arm": "4d-l fold-in",
+   "plan": "shipped",
+   "what": "4d-l with hval folded in (into the shipped 4b-N) vs its 4a sibling seed 1 (into v6s2cil_N_seed1)",
+   "x": [
+    "v6f4dl_S_seed1"
+   ],
+   "y": [
+    "v6f4dlh_S_seed1"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.004,
+     "ci95": [
+      -0.061,
+      0.043
+     ],
+     "cer_x": 1.0282,
+     "cer_y": 1.0241
+    },
+    "hval_clean": {
+     "delta_points": -0.031,
+     "ci95": [
+      -0.073,
+      0.004
+     ],
+     "cer_x": 0.3899,
+     "cer_y": 0.3585
+    },
+    "hval_page_all": {
+     "delta_points": -0.007,
+     "ci95": [
+      -0.063,
+      0.037
+     ],
+     "cer_x": 1.6698,
+     "cer_y": 1.6625
+    },
+    "hval_page_seen": {
+     "delta_points": -0.001,
+     "ci95": [
+      -0.053,
+      0.042
+     ],
+     "cer_x": 1.5085,
+     "cer_y": 1.5072
+    },
+    "hval_page_nomerge": {
+     "delta_points": 0.014,
+     "ci95": [
+      -0.02,
+      0.047
+     ],
+     "cer_x": 0.6102,
+     "cer_y": 0.6238
+    },
+    "tv": {
+     "delta_points": -0.089,
+     "ci95": [
+      -0.207,
+      0.036
+     ],
+     "cer_x": 0.7643,
+     "cer_y": 0.6752
+    },
+    "dn": {
+     "delta_points": -0.075,
+     "ci95": [
+      -0.207,
+      0.029
+     ],
+     "cer_x": 0.6485,
+     "cer_y": 0.5736
+    },
+    "wd": {
+     "delta_points": 0.0,
+     "ci95": [
+      -0.175,
+      0.154
+     ],
+     "cer_x": 2.7515,
+     "cer_y": 2.7515
+    },
+    "dev": {
+     "delta_points": -0.041,
+     "ci95": [
+      -0.137,
+      0.049
+     ]
+    }
+   },
+   "pairs": {
+    "v6f4dl_S_seed1->v6f4dlh_S_seed1": {
+     "hval_page": -0.004,
+     "hval_clean": -0.031,
+     "dev": -0.041
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": false,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": true
+   },
+   "adopt_y": false
+  },
+  "s4d_report_SvsV5S_up4cN": {
+   "stage": "4d-report",
+   "arm": "Small in the follow-up's cascade",
+   "plan": "shipped",
+   "what": "report only: the new Small vs VOCR5-S, both cascading into 4c-N",
+   "x": [
+    "VOCR5-S_up4cN"
+   ],
+   "y": [
+    "v6f4dlh_S_seed1_up4cN"
+   ],
+   "total": {
+    "hval_page": {
+     "delta_points": -0.064,
+     "ci95": [
+      -0.117,
+      0.006
+     ],
+     "cer_x": 1.0424,
+     "cer_y": 0.9787
+    },
+    "hval_clean": {
+     "delta_points": -0.08,
+     "ci95": [
+      -0.135,
+      -0.029
+     ],
+     "cer_x": 0.4232,
+     "cer_y": 0.3428
+    },
+    "hval_page_all": {
+     "delta_points": -0.07,
+     "ci95": [
+      -0.121,
+      -0.007
+     ],
+     "cer_x": 1.6988,
+     "cer_y": 1.6286
+    },
+    "hval_page_seen": {
+     "delta_points": -0.07,
+     "ci95": [
+      -0.124,
+      -0.001
+     ],
+     "cer_x": 1.5269,
+     "cer_y": 1.4573
+    },
+    "hval_page_nomerge": {
+     "delta_points": -0.064,
+     "ci95": [
+      -0.117,
+      0.007
+     ],
+     "cer_x": 0.6408,
+     "cer_y": 0.5768
+    },
+    "tv": {
+     "delta_points": 0.0,
+     "ci95": [
+      -0.067,
+      0.074
+     ],
+     "cer_x": 0.6752,
+     "cer_y": 0.6752
+    },
+    "dn": {
+     "delta_points": 0.012,
+     "ci95": [
+      -0.105,
+      0.115
+     ],
+     "cer_x": 0.5736,
+     "cer_y": 0.5861
+    },
+    "wd": {
+     "delta_points": 0.075,
+     "ci95": [
+      -0.015,
+      0.171
+     ],
+     "cer_x": 2.3933,
+     "cer_y": 2.4681
+    },
+    "dev": {
+     "delta_points": 0.041,
+     "ci95": [
+      -0.016,
+      0.099
+     ]
+    }
+   },
+   "pairs": {
+    "VOCR5-S_up4cN->v6f4dlh_S_seed1_up4cN": {
+     "hval_page": -0.064,
+     "hval_clean": -0.08,
+     "dev": 0.041
+    }
+   },
+   "checks": {
+    "hval_page_ci_below_zero": false,
+    "every_pair_hval_page_below_zero": true,
+    "dev_not_resolved_worse": true
+   },
+   "adopt_y": false
   }
  },
  "runs": {
@@ -2546,6 +3210,237 @@
      "dev": null
     }
    },
+   "v6f4c_N_seed1": {
+    "summary": {
+     "hval_page": 0.8791,
+     "hval_page_vita": 0.4774,
+     "hval_page_psp": 1.6642,
+     "hval_clean_dlg": 0.2547,
+     "hval_page_all": 1.5744,
+     "hval_page_seen": 1.3577,
+     "tv": 0.4076,
+     "dn": 0.3991,
+     "wd": 2.3736,
+     "dev_score": 1.3885
+    },
+    "blob_sha256": "c8ce844ed0a637eb5d263dff7837d846bd2a520278da3b74c49c5ee33eaa24c9",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4c_L_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4c_L_seed1.json"
+    }
+   },
+   "v6f4c_L_seed1": {
+    "summary": {
+     "hval_page": 0.8676,
+     "hval_page_vita": 0.4754,
+     "hval_page_psp": 1.6342,
+     "hval_clean_dlg": 0.2449,
+     "hval_page_all": 1.5732,
+     "hval_page_seen": 1.3485,
+     "tv": 0.3949,
+     "dn": 0.4115,
+     "wd": 2.3894,
+     "dev_score": 1.3963
+    },
+    "blob_sha256": "be5a8e4f3280b58edc8398616ce5068f9803551407fbc9a843c0a2963584b7b2",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": null,
+     "dev": null
+    }
+   },
+   "v6f4dr_S_seed1": {
+    "summary": {
+     "hval_page": 1.0086,
+     "hval_page_vita": 0.5256,
+     "hval_page_psp": 1.9526,
+     "hval_clean_dlg": 0.3977,
+     "hval_page_all": 1.66,
+     "hval_page_seen": 1.5013,
+     "tv": 0.7389,
+     "dn": 0.7732,
+     "wd": 2.8185,
+     "dev_score": 1.7873
+    },
+    "blob_sha256": "13ea5f419f300de3015464e26dcfa7f5e1cac56ad7a485fb8dee1bd1533479ac",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6s2cil_N_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6s2cil_N_seed1.json"
+    }
+   },
+   "v6f4dr_S_seed2": {
+    "summary": {
+     "hval_page": 1.0594,
+     "hval_page_vita": 0.5963,
+     "hval_page_psp": 1.9646,
+     "hval_clean_dlg": 0.4212,
+     "hval_page_all": 2.2213,
+     "hval_page_seen": 1.536,
+     "tv": 0.7771,
+     "dn": 0.6983,
+     "wd": 2.7673,
+     "dev_score": 1.7525
+    },
+    "blob_sha256": "3ce92376fff4e445deba7f42db80728f973fdfc6665d6b10f2a276918dcadf3c",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4_N_seed2.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4_N_seed2.json"
+    }
+   },
+   "v6f4dr_S_seed3": {
+    "summary": {
+     "hval_page": 1.0655,
+     "hval_page_vita": 0.5707,
+     "hval_page_psp": 2.0327,
+     "hval_clean_dlg": 0.3781,
+     "hval_page_all": 2.2238,
+     "hval_page_seen": 1.5446,
+     "tv": 0.879,
+     "dn": 0.6609,
+     "wd": 2.6492,
+     "dev_score": 1.7096
+    },
+    "blob_sha256": "6794674ff3faae8b7aab1b37ba1b5bd7276e0b48b57a44dd4a190036f3c49834",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6s2cil_N_seed3.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6s2cil_N_seed3.json"
+    }
+   },
+   "v6f4dl_S_seed1": {
+    "summary": {
+     "hval_page": 1.0282,
+     "hval_page_vita": 0.5133,
+     "hval_page_psp": 2.0347,
+     "hval_clean_dlg": 0.3899,
+     "hval_page_all": 1.6698,
+     "hval_page_seen": 1.5085,
+     "tv": 0.7643,
+     "dn": 0.6485,
+     "wd": 2.7515,
+     "dev_score": 1.729
+    },
+    "blob_sha256": "219770d9e7ad52d6b59c0f2aabb35dc63a4f4a6f4123be12dfa963d1bbeb7ea9",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6s2cil_N_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6s2cil_N_seed1.json"
+    }
+   },
+   "v6f4dl_S_seed2": {
+    "summary": {
+     "hval_page": 1.0594,
+     "hval_page_vita": 0.5871,
+     "hval_page_psp": 1.9827,
+     "hval_clean_dlg": 0.4055,
+     "hval_page_all": 2.2256,
+     "hval_page_seen": 1.5374,
+     "tv": 0.8408,
+     "dn": 0.6485,
+     "wd": 2.6964,
+     "dev_score": 1.7205
+    },
+    "blob_sha256": "ca15148424da89baee76eb74ecb4656e68b8ef7842237ee8a9b2feac710341cf",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4_N_seed2.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4_N_seed2.json"
+    }
+   },
+   "v6f4dl_S_seed3": {
+    "summary": {
+     "hval_page": 1.0601,
+     "hval_page_vita": 0.5727,
+     "hval_page_psp": 2.0127,
+     "hval_clean_dlg": 0.3722,
+     "hval_page_all": 2.2096,
+     "hval_page_seen": 1.538,
+     "tv": 0.8025,
+     "dn": 0.6859,
+     "wd": 2.783,
+     "dev_score": 1.7636
+    },
+    "blob_sha256": "b7956b185021c8a997c7d7c1f925f34627a89b3a029d3bb1ba950c84ffbe7f8d",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6s2cil_N_seed3.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6s2cil_N_seed3.json"
+    }
+   },
+   "v6f4dlh_S_seed1": {
+    "summary": {
+     "hval_page": 1.0241,
+     "hval_page_vita": 0.5194,
+     "hval_page_psp": 2.0107,
+     "hval_clean_dlg": 0.3585,
+     "hval_page_all": 1.6625,
+     "hval_page_seen": 1.5072,
+     "tv": 0.6752,
+     "dn": 0.5736,
+     "wd": 2.7515,
+     "dev_score": 1.688
+    },
+    "blob_sha256": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4h_N_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4h_N_seed1.json"
+    }
+   },
+   "VOCR5-S_up4cN": {
+    "summary": {
+     "hval_page": 1.0424,
+     "hval_page_vita": 0.5666,
+     "hval_page_psp": 1.9726,
+     "hval_clean_dlg": 0.4232,
+     "hval_page_all": 1.6988,
+     "hval_page_seen": 1.5269,
+     "tv": 0.6752,
+     "dn": 0.5736,
+     "wd": 2.3933,
+     "dev_score": 1.5088
+    },
+    "blob_sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4c_N_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4c_N_seed1.json"
+    }
+   },
+   "v6f4dlh_S_seed1_up4cN": {
+    "summary": {
+     "hval_page": 0.9787,
+     "hval_page_vita": 0.4897,
+     "hval_page_psp": 1.9346,
+     "hval_clean_dlg": 0.3428,
+     "hval_page_all": 1.6286,
+     "hval_page_seen": 1.4573,
+     "tv": 0.6752,
+     "dn": 0.5861,
+     "wd": 2.4681,
+     "dev_score": 1.5494
+    },
+    "blob_sha256": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2",
+    "hval_plan_sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
+    "dev_plan_sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e",
+    "cascade": {
+     "hval": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_hval4_v6f4c_N_seed1.json",
+     "dev": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/scores4/dump_dev4_v6f4c_N_seed1.json"
+    }
+   },
    "VOCR5-S_up6N": {
     "summary": {
      "hval_page": 1.0655,
@@ -2591,6 +3486,23 @@
   }
  },
  "shipped_blobs": {
+  "S": {
+   "run": "v6f4dlh_S_seed1",
+   "bytes": 819792,
+   "sha256": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2"
+  },
+  "N": {
+   "run": "v6f4c_N_seed1",
+   "bytes": 1185632,
+   "sha256": "c8ce844ed0a637eb5d263dff7837d846bd2a520278da3b74c49c5ee33eaa24c9"
+  },
+  "L": {
+   "run": "v6f4c_L_seed1",
+   "bytes": 2473696,
+   "sha256": "be5a8e4f3280b58edc8398616ce5068f9803551407fbc9a843c0a2963584b7b2"
+  }
+ },
+ "shipped_blobs_v0.4.0": {
   "N": {
    "run": "v6f4h_N_seed1",
    "bytes": 1185632,
@@ -2600,6 +3512,63 @@
    "run": "v6f4h_L_seed1",
    "bytes": 2473696,
    "sha256": "d32744ca9de9413cce6b5728a84319aa7b04040022bab3a4cf9e451544c031e2"
+  }
+ },
+ "follow_up_gate": {
+  "protocol_sha256": "491e386558af660e98e80719550fe4b2fc62cd8e89f175766883ffc2e787111e",
+  "repo_head": "0d3dffe47238b49f8ba9b8f4a241002d90f58e78",
+  "tiers": {
+   "L": {
+    "gate": null,
+    "two_level": "2L",
+    "final_arm": "2L",
+    "blob": {
+     "name": "VOCR6_L_w8_2l.vocr",
+     "sha256": "65310013e8f990886e4e8097b2fe55eb98cdf082d7193eea510601fc0ac26c82",
+     "bytes": 2475680
+    },
+    "arena_w8i_1024": 262480,
+    "est_box_ms": {
+     "plain_333": 2073.1,
+     "plain_444": 1624.3,
+     "shipped_333": 1879.5,
+     "shipped_444": 1469.7
+    }
+   },
+   "N": {
+    "gate": "gate_e4",
+    "two_level": "2Lg_e4",
+    "final_arm": "2Lg_e4",
+    "blob": {
+     "name": "VOCR6_N_w8g2.vocr",
+     "sha256": "107cf084cc0c1a3a61ce4c3f9b9cf6b31d6dff80f0a1bdb94afd3f7ee9ae3bc9",
+     "bytes": 1189408
+    },
+    "arena_w8i_1024": 184448,
+    "est_box_ms": {
+     "plain_333": 918.1,
+     "plain_444": 713.8,
+     "shipped_333": 773.6,
+     "shipped_444": 605.4
+    }
+   },
+   "S": {
+    "gate": null,
+    "two_level": null,
+    "final_arm": "today",
+    "blob": {
+     "name": "VOCR6_S_w8.vocr",
+     "sha256": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2",
+     "bytes": 819792
+    },
+    "arena_w8i_1024": 124832,
+    "est_box_ms": {
+     "plain_333": 626.7,
+     "plain_444": 495.2,
+     "shipped_333": 626.7,
+     "shipped_444": 495.2
+    }
+   }
   }
  },
  "measured_on": "the host (W8I int8 blobs through the C runtime); nothing ran on a console"

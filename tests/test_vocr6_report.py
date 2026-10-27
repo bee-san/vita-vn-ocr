@@ -17,6 +17,12 @@ def test_stage4_tables_are_rendered_from_the_records():
         assert block in DOC, block.splitlines()[0]
 
 
+def test_follow_up_tables_are_rendered_from_the_records():
+    """Stages 4c and 4d (the follow-up, v0.4.1-vocr6.2): every table of docs/vocr6.md's follow-up section."""
+    for block in VR.follow_up_tables(REC).strip().split("\n\n"):
+        assert block in DOC, block.splitlines()[0]
+
+
 def test_every_screening_decision_row_shows_the_records_numbers():
     rows = [ln for ln in DOC.splitlines() if ln.startswith("| ")]
     for name, d in REC["decisions"].items():
@@ -29,7 +35,7 @@ def test_every_screening_decision_row_shows_the_records_numbers():
 
 def test_the_adoption_verdicts_follow_the_rule():
     for name, d in REC["decisions"].items():
-        if d["stage"] == "4b":
+        if d["stage"] in ("4b", "4c", "4d-fold", "4d-report"):      # checks against a sibling, and a report
             continue
         t = d["total"]
         rule = (t["hval_page"]["ci95"][1] < 0 and all(p["hval_page"] < 0 for p in d["pairs"].values())
@@ -44,6 +50,15 @@ def test_the_decided_tiers():
     assert {D["s2_S2cil"]["adopt_y"]} == {True}
     assert not any(D[n]["adopt_y"] for n in ("s2_S2t5", "s2_S2x2", "s2_S2s6", "s2_S2r70", "s2_S2r30", "s2_S3attn",
                                              "s2_S3rep"))
+    # the follow-up: S3long adopted, so 4c replaces 4b where it is not resolved worse on dev (amendment 6); 4d-l
+    # adopted over VOCR5-S, 4d-r not, and 4d-l's fold-in not resolved worse than its 4a sibling (amendment 7)
+    assert D["s2_S3long"]["adopt_y"] is True
+    assert all(not D[f"s4c_{t}"]["total"]["dev"]["ci95"][0] > 0 for t in "NL")
+    assert (D["s4d_l"]["adopt_y"], D["s4d_r"]["adopt_y"]) == (True, False)
+    assert not D["s4d_lh"]["total"]["dev"]["ci95"][0] > 0
+    assert D["s4d_lh"]["y"] == ["v6f4dlh_S_seed1"] and D["s4d_lh"]["x"] == ["v6f4dl_S_seed1"]
+    assert {t: b["run"] for t, b in REC["shipped_blobs"].items()} == {"S": "v6f4dlh_S_seed1", "N": "v6f4c_N_seed1",
+                                                                      "L": "v6f4c_L_seed1"}
 
 
 README = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -70,14 +85,21 @@ def test_every_screening_row_shows_the_records_means_and_verdict():
 
 
 def test_the_summary_and_the_readme_show_the_shipped_numbers():
-    R, D = REC["runs"]["shipped"], REC["decisions"]
-    for t in ("N", "L"):
-        x = R[D[f"s4_{t}"]["x"][0]]["summary"]
-        y = _mean("shipped", D[f"s4_{t}"]["y"], "hval_page")
-        hp = f"{x['hval_page']:.3f} → {y:.3f}%"
-        ship = R[D[f"s4_H{t}"]["y"][0]]["summary"]
-        dev = f"{x['dev_score']:.3f} → {ship['dev_score']:.3f}"
-        assert hp in DOC and hp in README, (t, hp)
-        row = [ln for ln in README.splitlines() if ln.startswith(f"| [`VOCR6_{t}_w8_2l.vocr`]")]
-        assert len(row) == 1 and hp in row[0] and dev in row[0], (t, dev)
-        assert f"{REC['shipped_blobs'][t]['bytes'] + {'N': 1984, 'L': 1984}[t]:,} B" in row[0], t
+    """The README's VOCR6 table: one row per tier for the follow-up's shipped blob (v0.4.1-vocr6.2's release name),
+    with its bytes and arena, the held-out hval evidence (stage 4a's means for N and L, 4d-l's for S, against the
+    released VOCR5 tier) and the shipped set's development score against VOCR5's."""
+    R, D, G = REC["runs"]["shipped"], REC["decisions"], REC["follow_up_gate"]["tiers"]
+    held = {"S": D["s4d_l"], "N": D["s4_N"], "L": D["s4_L"]}
+    ship = {"S": "v6f4dlh_S_seed1_up4cN", "N": "v6f4c_N_seed1", "L": "v6f4c_L_seed1"}
+    for t in "SNL":
+        d = held[t]
+        x = R[d["x"][0]]["summary"]
+        hp = f"{x['hval_page']:.3f} → {_mean('shipped', d['y'], 'hval_page'):.3f}%"
+        dev = f"{x['dev_score']:.3f} → {R[ship[t]]['summary']['dev_score']:.3f}"
+        assert hp in DOC or t == "S", (t, hp)
+        name = "VOCR6.2_" + G[t]["blob"]["name"][len("VOCR6_"):]
+        row = [ln for ln in README.splitlines() if ln.startswith(f"| [`{name}`]")]
+        assert len(row) == 1 and hp in row[0] and dev in row[0], (t, hp, dev)
+        assert f"{G[t]['blob']['bytes']:,} B" in row[0] and f"{G[t]['arena_w8i_1024']:,} B" in row[0], t
+        if G[t]["final_arm"] == "today":                 # no head section adopted: the plain blob ships
+            assert G[t]["blob"]["sha256"] == REC["shipped_blobs"][t]["sha256"], t

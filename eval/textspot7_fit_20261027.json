@@ -2431,5 +2431,68 @@
     }
    ]
   }
+ },
+ "D": {
+  "set": "hval",
+  "runs": [
+   "base_t64n8c16_seed1",
+   "kd_t64n8c16_seed2",
+   "base_qS4_seed2",
+   "base_qL5_seed1"
+  ],
+  "per_run": {
+   "base_t64n8c16_seed1": {
+    "plain": 2116,
+    "chars": 162471,
+    "assign": 2116,
+    "join5": 2035,
+    "join10": 2017,
+    "extend": 1877,
+    "tighten": 2301
+   },
+   "kd_t64n8c16_seed2": {
+    "plain": 2164,
+    "chars": 162471,
+    "assign": 2164,
+    "join5": 2059,
+    "join10": 2044,
+    "extend": 2128,
+    "tighten": 2327
+   },
+   "base_qS4_seed2": {
+    "plain": 2552,
+    "chars": 162471,
+    "assign": 2552,
+    "join5": 2508,
+    "join10": 2478,
+    "extend": 2560,
+    "tighten": 2652
+   },
+   "base_qL5_seed1": {
+    "plain": 2121,
+    "chars": 162471,
+    "assign": 2121,
+    "join5": 2111,
+    "join10": 2102,
+    "extend": 1796,
+    "tighten": 2233
+   }
+  },
+  "pooled": {
+   "plain": 8953,
+   "assign": 8953,
+   "join5": 8713,
+   "join10": 8641,
+   "extend": 8361,
+   "tighten": 9513
+  },
+  "kept": [
+   "join10",
+   "extend"
+  ],
+  "D": "join10,extend",
+  "reproduced_plain": true,
+  "note": "each step alone added to the plain det decode, page-path dialogue errors on hval (6,327 units, 162,471 characters per run), pooled over the four representatives; kept when lower than plain; of the two joins the one with fewer errors. The plain decode through --boxes reproduces textspot6's stored det rows unit for unit (checked). D = join10 then extend, the same for every representative",
+  "created": "2026-10-27T07:58:30Z"
  }
 }

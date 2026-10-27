@@ -1,0 +1,59 @@
+{
+ "kind": "textspot7-final",
+ "schema": 1,
+ "issue": 128,
+ "what": "the pick's final weights (rule.with_pick): base_t64n8c16's recipe and seed retrained on the hooked pool's train + guard + hval",
+ "run": {
+  "name": "final_base_t64n8c16_seed1",
+  "recipe": "base",
+  "shape": "t64n8c16",
+  "seed": 1,
+  "hook_splits": "train,guard,hval",
+  "hooked_pages": 54771,
+  "hooked_titles": 48,
+  "steps": 30000,
+  "started": "2026-10-27T08:46:13Z",
+  "finished": "2026-10-27T12:17:11Z",
+  "wall_seconds": 12675.0,
+  "trained_from_commit": "f62c2e88dd2c72e2a67fed868085e132c9d43a0d",
+  "working_tree_modified": []
+ },
+ "blob": {
+  "name": "textspot7_t64_w8.vtsp",
+  "bytes": 52176,
+  "sha256": "78330f96c9e02646b2108b896cc035544e70fbb7d9fd896981bcf2f9ab365a3e",
+  "vtsp_version": 4,
+  "form": "trunk"
+ },
+ "parity": {
+  "spotter": {
+   "dev": {
+    "records": 354,
+    "equal": 354,
+    "all_equal": true
+   },
+   "dev-crop": {
+    "records": 1161,
+    "equal": 1161,
+    "all_equal": true
+   },
+   "tsdev": {
+    "records": 188,
+    "equal": 188,
+    "all_equal": true
+   }
+  },
+  "spotter_all_equal": true,
+  "runtime_sources_sha256": "b5b0930aaf01c5c2a879ee9529e14eeb0709cc2ab1043900174824e176d386f7",
+  "post_pass_on_its_dev_boxes": {
+   "steps": [
+    "join10",
+    "extend"
+   ],
+   "equal": true,
+   "differ": 0
+  },
+  "post_pass_units": 1161
+ },
+ "release": "v0.3.9-textspot7.1"
+}

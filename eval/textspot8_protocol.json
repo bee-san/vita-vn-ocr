@@ -195,6 +195,16 @@
    "rule.rubi_default": "the pick becomes Rubi's default line picker (GRAD, rubi,fix=1, as the fallback) iff, against rubi,fix=1 on the same units: hval page-path dialogue CER is resolved below 0 AND unseen dev is not resolved above 0 AND the confirmation set is not resolved above 0 (95% cluster intervals); otherwise it ships behind a setting that is off by default",
    "cross_line": "if vocr6-spotter3's textspot7 pick would also be a default under this test, vocr6-lead sets the order (vocr6-spotter3 keeps its own registered clause: its pick ships opt-in)",
    "unchanged": "eligibility, representative, beats_grad_refine, the confirmation guard, the pick"
+  },
+  {
+   "n": 6,
+   "utc": "2026-10-27T12:50:23Z",
+   "before": "any read of the student with a VOCR6 recognizer (after the dev / hval and confirmation records)",
+   "title": "the VOCR6 recognizer guard (vocr6-lead, 2026-10-27 ~12:50Z)",
+   "why": "Rubi will run VOCR6 (v0.4.0-vocr6.1) as the recognizer: the pick must not be worse than rubi,fix=1 there either",
+   "guard": "the pick's boxes and rubi,fix=1's (the pinned page path's finder) read with VOCR6-N as the tier and VOCR6-L as its cascade (v0.4.0-vocr6.1's plain _w8 blobs, staged at $A/vocr6-lead/release/assets/, sha256 in vocr6-assets.json; the shipped _w8_2l blobs add the two-level head, which vocr6-final-gate measured at +0.000 to +0.006 points), Rubi's LM settings for VOCR6 (vocr6-lead's shipped path: alpha 600, beta 2500, flags 1; dev with the shipped 1 MB game-text LM v0.3.7-lm6.1 vocr_lm6_o3_1000k.vlm, hval with the screening build h64_1000k, as vocr6-lead reads hval), through the pinned eval/pagepath.py; on unseen dev (without v12188) and hval: pick - rubi,fix=1 must not be resolved above 0 on either; else the pick does not ship as Rubi's default. A VOCR6-L tier row (no cascade) is report only",
+   "applies_to": "the screening pick (t8_t64n8c16 seed 3, crop) now and the final retrained blob again before the Rubi PR",
+   "rule": "otherwise unchanged"
   }
  ],
  "corrections": [

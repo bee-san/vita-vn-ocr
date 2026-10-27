@@ -114,5 +114,18 @@
   "private": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-final-lm/ (reads, tune files)",
   "log": "vocr6/experiments.jsonl: this preregistration, each run, the decision"
  },
- "compute": "one heavy slot (vocr6/slots.txt vocr6-final-lm = 1 once the final blobs exist), 5 threads: dev / hval / counter reads per blob, then one tune per LM tier (arm b's grid, arm c's cells, greedy), then select"
+ "compute": "one heavy slot (vocr6/slots.txt vocr6-final-lm = 1 once the final blobs exist), 5 threads: dev / hval / counter reads per blob, then one tune per LM tier (arm b's grid, arm c's cells, greedy), then select",
+ "amendments":[
+  {
+   "n": 1,
+   "time": "2026-10-27T04:21Z (this commit; before any final blob existed or was read)",
+   "why": "audit-vocr6-lm-rubi F6 / F7, relayed by vocr6-lm and vocr6-rubi-ship: Rubi runs the gated blobs (w8g for S, w8g2 for N and L) with ocr_head_gate = on, while every LM number so far (#137, #141, this protocol's reads) used ungated blobs with the gate off; and on a crafted counter line the 1 MB tier's loss of the small ke follows its settings (600 / 2500 / BOS), not its blob",
+   "adds": [
+    "report only, decides nothing: when a setting changes at any tier, the new setting and the shipped one are also decoded on gate-on reads of the gated final blobs (vocr6-final-gate's), read as Rubi reads them (eval/vocr6_final_lm.py gated-cache: ocr_head_gate = on, its counter-context re-read, core/vocr_ocr.c read_again), and both are reported, so the combination that ships has been measured",
+    "report only: Rubi 0.9.8 as it ships today, gate on (VOCR5_S_w8g, VOCR5_N_w8g2, VOCR5_L_w8g2 of v0.3.6-head2level.1, lm6.2's 1 MB LM at 600 / 2500 / BOS, cascade under 700) against the same path gate off on v0.3.0's blobs (vocr6-lead's burst of 04:08Z)",
+    "the counter set's kept count and CER per LM tier at the shipped setting and at arm b's in-sample choice are reported for every job tier (already in reports; restated for Rubi's 「九ヶ月です」 expectation)"
+   ],
+   "unchanged": "the arms, metric, guards and rule"
+  }
+ ]
 }

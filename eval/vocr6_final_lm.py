@@ -621,6 +621,124 @@ def cmd_continuity(a):
     print(json.dumps(out["arms"]), flush=True)
 
 
+# ---------------------------------------------------------------- gate-on reads (report only)
+
+KANA_COUNTER = re.compile("[カケ][月所年国条]")      # Rubi core/vocr_ocr.c kana_counter: full-size カ / ケ before one
+READ_KEYS = ("text", "topv", "topc", "blank", "conf_min", "frames")
+_G = {}
+
+
+def _ginit(blob, two):
+    from pyvocr import Vocr
+    kw = {"two_level": 1} if two else {}
+    _G["rt"] = Vocr(str(blob), mode="w8i", max_width=1024, head_gate="on", **kw)
+    _G["two"] = bool(two)
+
+
+def rubi_read(rt, two, img, inv, counter=(6000, 4000)):
+    """One crop read as Rubi reads it with ocr_head_gate = on (core/vocr_ocr.c finish_line, read_again): the gated
+    (and, with two, two-level) run; when its run skipped something (frames the gate skipped; with two, frames that
+    ran the frequent rows only) and either its counter re-decode finds a counter context or (two) its greedy text
+    holds a full-size カ / ケ before a counter character, the line is read again with the full head (ungated) and that
+    reading stands. Returns (read, re_read)."""
+    o = rt.run_topk(img, K, invert=inv)
+    if o["text"]:
+        _, st = rt.redecode(o, *counter)
+        skipped = o["gated"] > 0 or (two and o["escaped"] + o["gated"] < o["frames"])
+        if skipped and (st["contexts"] or (two and KANA_COUNTER.search(o["text"]))):
+            o2 = rt.run_topk(img, K, invert=inv, ungated=True)
+            return {x: o2[x] for x in READ_KEYS}, True
+    return {x: o[x] for x in READ_KEYS}, False
+
+
+def _gwork(job):
+    k, img, inv = job
+    r, again = rubi_read(_G["rt"], _G["two"], np.ascontiguousarray(img), bool(inv))
+    return k, r, again
+
+
+def cmd_gated_cache(a):
+    """Report only: one gated blob's reads of the dev cohorts, the hval crops and the counter set as Rubi reads them
+    with ocr_head_gate = on (rubi_read), in dev-cache / hval-cache / counter-cache's formats (private)."""
+    import headgate_eval as HE
+    from pyvocr import Vocr
+
+    def has_two_level(blob):
+        try:
+            Vocr(str(blob), mode="w8i", max_width=1024, two_level=1)
+            return True
+        except ValueError:
+            return False
+    two = has_two_level(a.blob) if a.two_level == "auto" else a.two_level == "on"
+    if not Vocr(str(a.blob), mode="w8i", max_width=1024).has_gate:
+        raise SystemExit(f"{a.blob}: no head gate in this blob")
+    bs, stem = sha256(a.blob), Path(a.blob).stem
+    out = {}
+    t0 = time.time()
+    fixed = HE.fixed_rows()
+    wd, ident, flags = HE.wd_lines(Path(a.dev_out).parent / "build")
+    rd = HE.reads(fixed, wd)
+    keys = HE.row_keys([k for k, _, _ in rd], fixed)
+    crops = pickle.loads((Path(a.hval_dir) / "crops.pkl").read_bytes())
+    _, rows = counter_units(a.synth)
+    groups = {"dev": [(keys[i], img, inv) for i, (_, img, inv) in enumerate(rd)],
+              "hval": [(k, g, inv) for k, (g, inv) in crops.items()],
+              "cs": [(("cs", r["id"]), r["img"], False) for r in rows]}
+    with mp.get_context("fork").Pool(a.procs, initializer=_ginit, initargs=(a.blob, two)) as pool:
+        for g, jobs in groups.items():
+            res = {k: (r, again) for k, r, again in pool.imap_unordered(_gwork, jobs, chunksize=16)}
+            out[g] = ([(k, res[k][0]) for k, _, _ in jobs], sum(v[1] for v in res.values()))
+    base = {"tier": a.tier, "blob": str(a.blob), "blob_sha256": bs, "head_gate": "on", "two_level": two,
+            "counter_reread": "rubi core/vocr_ocr.c read_again at 6000 / 4000", "created": utc_now()}
+    Path(a.dev_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.dev_out).write_bytes(pickle.dumps(dict(base, reads=out["dev"][0], rereads=out["dev"][1],
+                                                  meta={"reads": len(rd), "flags": flags}), protocol=4))
+    (Path(a.hval_dir) / f"reads_{a.tier}.{stem}.pkl").write_bytes(
+        pickle.dumps(dict(base, reads=out["hval"][0], rereads=out["hval"][1]), protocol=4))
+    Path(a.counter_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.counter_out).write_bytes(pickle.dumps(dict(base, reads=out["cs"][0], rereads=out["cs"][1],
+                                                      synth_sha256=sha256(a.synth)), protocol=4))
+    print(json.dumps({"tier": a.tier, "blob_sha256": bs, "two_level": two, "seconds": round(time.time() - t0, 1),
+                      "reads": {g: len(v[0]) for g, v in out.items()}, "rereads": {g: v[1] for g, v in out.items()}}),
+          flush=True)
+
+
+def cmd_compare_runs(a):
+    """Report only: two tune files over the same units (e.g. gate-on reads against gate-off reads), at one setting
+    each (its index in the file's configs), per job path: scores, the paired differences y - x and the counter set."""
+    import finder_tighten as FT
+    mx, ex_, kx_ = load_tune(a.x)
+    my, ey_, ky_ = load_tune(a.y)
+    if mx["units"] != my["units"]:
+        raise SystemExit("the two tune files scored other units")
+    units = mx["units"]
+    sc = V.Scorer(units)
+    U = [V.Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    cs_idx = np.array([u[0] == "cs" for u in units])
+    cs = [u for u in U if u.part == "cs"]
+    cfg = json.loads(a.config)
+    jx, jy = mx["configs"].index(cfg), my["configs"].index(cfg)
+    out = {"kind": "vocr6-final-lm-compare-runs", "created": utc_now(), "what": a.what, "config": cfg,
+           "x": {"tune": Path(a.x).name, "tiers": mx["tiers"]}, "y": {"tune": Path(a.y).name, "tiers": my["tiers"]},
+           "paths": {}}
+    for key in sorted(set(ex_["b"]) & set(ey_["b"])):
+        e0, e1 = ex_["b"][key][jx], ey_["b"][key][jy]
+        k0, k1 = kx_["b"][key][jx], ky_["b"][key][jy]
+        out["paths"][key] = {"x": V.rounded(sc.scores(e0)), "y": V.rounded(sc.scores(e1)),
+                             "y_minus_x": V.compare(U, e0, e1),
+                             "units_changed": int((e0 != e1)[~cs_idx].sum()),
+                             "counter": cs_compare([u.cluster for u in cs], [u.chars for u in cs], e0[cs_idx],
+                                                   e1[cs_idx], k0, k1)}
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    for key, r in out["paths"].items():
+        d = r["y_minus_x"]
+        print(key, json.dumps({k: [d[k]["delta_points"], d[k]["ci95"]] for k in ("hc", "hp", "dev", "obj") if k in d}),
+              "counter kept", r["counter"]["kept"], "errors", r["counter"]["errors"], flush=True)
+
+
 # ---------------------------------------------------------------- summary (result.json, tables)
 
 def _pt(c):
@@ -725,9 +843,24 @@ def main():
     p.add_argument("--select", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--md")
+    p = sub.add_parser("gated-cache")
+    p.add_argument("--tier", required=True)
+    p.add_argument("--blob", required=True, help="a gated blob (w8g / w8g2)")
+    p.add_argument("--two-level", choices=("auto", "on", "off"), default="auto")
+    p.add_argument("--hval-dir", required=True)
+    p.add_argument("--dev-out", required=True)
+    p.add_argument("--counter-out", required=True)
+    p.add_argument("--synth", default=str(SYNTH))
+    p.add_argument("--procs", type=int, default=5)
+    p = sub.add_parser("compare-runs")
+    p.add_argument("--x", required=True)
+    p.add_argument("--y", required=True)
+    p.add_argument("--config", required=True, help="the setting (JSON), present in both files' configs")
+    p.add_argument("--what", default="")
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"counter-cache": cmd_counter_cache, "tune": cmd_tune, "select": cmd_select, "continuity": cmd_continuity,
-     "summary": cmd_summary}[a.cmd](a)
+     "summary": cmd_summary, "gated-cache": cmd_gated_cache, "compare-runs": cmd_compare_runs}[a.cmd](a)
 
 
 if __name__ == "__main__":

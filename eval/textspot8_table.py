@@ -41,11 +41,16 @@ def extra_rows(name, arm, seed, ev, run, det, crop):
     par = json.loads((ev / "parity.json").read_text(encoding="utf-8")) if (ev / "parity.json").exists() else {}
 
     def ok(*files):
+        """the spotter's parity and every named record: textspot8_ctx's ("all_equal") or textspot7's D parity
+        ({"post": {"equal": ...}})."""
         out = bool(par.get("all_equal"))
         for f in files:
             if not (ev / f).exists():
                 return None
-            out = out and bool(json.loads((ev / f).read_text(encoding="utf-8")).get("all_equal"))
+            doc = json.loads((ev / f).read_text(encoding="utf-8"))
+            eq = doc["all_equal"] if "all_equal" in doc else all(v.get("equal") for v in doc.values()
+                                                                 if isinstance(v, dict) and "equal" in v)
+            out = out and bool(eq)
         return out
     rows = []
     base = {"arm": arm, "seed": seed, "run": name, "shape": shape, "vtsp_bytes": blob.stat().st_size,
@@ -62,10 +67,11 @@ def extra_rows(name, arm, seed, ev, run, det, crop):
         rows.append(dict(base, decode="det+D", dev=str(ev / "dev_det+D.json"), hval=str(ev / "hval_det+D.json"),
                          est_ms_333=round(r["ms_333"] + dms, 1), est_ms_444=round((r["ms_333"] + dms) * 333 / 444, 1),
                          arena=int(r["arena"]), c_equal=ok("parity_D_dev.json", "parity_D_hval.json"), d_ms_333=dms))
+    dms_fd = json.loads(dcost.read_text(encoding="utf-8"))["max_one_ms_333"] if dcost.exists() else None
     for dec in ("F", "F+D"):
         if (ev / f"dev_{dec}.json").exists():
             r = det[shape]
-            ms = r["ms_333"] + GRAD_MS_333
+            ms = r["ms_333"] + GRAD_MS_333 + (dms_fd or 0.0 if dec == "F+D" else 0.0)
             rows.append(dict(base, decode=dec, dev=str(ev / f"dev_{dec}.json"), hval=str(ev / f"hval_{dec}.json"),
                              est_ms_333=round(ms, 1), est_ms_444=round(ms * 333 / 444, 1), arena=int(r["arena"]),
                              c_equal=None))

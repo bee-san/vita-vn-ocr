@@ -58,6 +58,12 @@ FSET=-; PUBLISH=$A/vocr6-final-test; RUBI_HEAD=-; EARLIER=-
 if [ "$MODE" = final ]; then
   FIN=$("$PY" "$H" finalist --models "$MODELS" --priv "$PRIV") || { echo "not a final read of a registered finalist set"; exit 2; }
   IFS=$'\t' read -r FSET PUBLISH RUBI_HEAD EARLIER <<< "$FIN"
+  [ "$(realpath -m "$PUBLISH")" != "$OUT" ] || { echo "OUT is the finalist set's publish directory: give another OUT"; exit 2; }
+  if [ -e "$PRIV/attempt.json" ] && ! "$PY" -c "import json, sys; a = json.load(open(sys.argv[1])); \
+m = json.load(open(sys.argv[2])); sys.exit(0 if a.get('models') == {t: e['sha256'] for t, e in m['tiers'].items()} \
+else 1)" "$PRIV/attempt.json" "$MODELS/models.json"; then
+    echo "$PRIV/attempt.json names other blobs than $MODELS/models.json"; exit 2
+  fi
 else
   for other in "$HERD"/shared/private/vocr6-final-test/*/attempt.json; do
     [ -e "$other" ] || continue

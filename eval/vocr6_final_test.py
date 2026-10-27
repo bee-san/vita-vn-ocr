@@ -560,6 +560,9 @@ def cmd_rubi_path(a):
     rd = proto["paths"]["b"].get("runtime_differences") or {}
     rec_path = ROOT / rd["check"]["record"] if rd.get("check") else None
     record = json.loads(rec_path.read_text(encoding="utf-8")) if rec_path and rec_path.exists() else None
+    if record is not None and (sha256(rec_path) != rd["check"].get("record_sha256") or
+                               record.get("rubi_vocr_commit") != commit):
+        record = None                          # not the registered record, or another Rubi pin: accept nothing
     rdiff = runtime_differences(pins, checkout, rd.get("files") or {}, record)
     if rdiff["refused"]:
         raise SystemExit(f"Rubi pins runtime files {rdiff['refused']} that differ from this checkout's: review and "

@@ -466,6 +466,7 @@ def test_driver_script_is_safe():
     # amendment 9: a final read goes through the finalist-set guard and publishes to its set's directory
     assert '"$H" finalist --models "$MODELS" --priv "$PRIV"' in sh
     assert 'cp "$OUT/report.json" "$OUT/report.md" "$PUBLISH/"' in sh and '"$A/vocr6-final-test/"' not in sh
+    assert 'OUT is the finalist set\'s publish directory' in sh and "names other blobs than" in sh    # the review's
 
 
 # ----------------------------------------------------------------------------- amendment 9

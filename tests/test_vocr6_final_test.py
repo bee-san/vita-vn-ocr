@@ -377,6 +377,45 @@ def test_final_record_is_the_one_read():
         assert r["finder_errors"] == 0 and not any(r["read_errors"].values()), s
 
 
+def test_follow_up_record_is_its_one_read():
+    """The follow-up's read (amendment 9): one final attempt of the registered set v0.4.1-vocr6.2, on the committed
+    protocol (no amendment since the read), at the registered Rubi head, VOCR5's path (a) equal to its records, no
+    read or finder error; its compare pairs it with the earlier read unit for unit (VOCR5 alike in every unit), and
+    every compared rate is the one each read's own report shows."""
+    import hashlib
+    rec = json.loads((ROOT / "eval" / "vocr6_final_test_followup_20261027.json").read_text(encoding="utf-8"))
+    cmp_ = json.loads((ROOT / "eval" / "vocr6_final_test_followup_compare_20261027.json").read_text(encoding="utf-8"))
+    old = json.loads((ROOT / "eval" / "vocr6_final_test_20261027.json").read_text(encoding="utf-8"))
+    fs = PROTO["finalist_sets"]["v0.4.1-vocr6.2"]
+    proto = hashlib.sha256((ROOT / "eval" / "vocr6_final_test_protocol.json").read_bytes()).hexdigest()
+    assert rec["attempt"]["mode"] == "final" and rec["attempt"]["models"] == fs["models"]
+    assert rec["protocol_sha256"] == rec["attempt"]["protocol_sha256"] == proto
+    assert rec["rubi_path"]["rubi_head"] == fs["rubi_head"] and rec["validation"]["all_equal"] is True
+    for s, r in rec["path_b"]["reads"].items():
+        assert r["finder_errors"] == 0 and not any(r["read_errors"].values()), s
+    F.assert_public(rec)
+    F.assert_public(cmp_)
+    assert (cmp_["this"]["set"], cmp_["earlier"]["set"]) == ("v0.4.1-vocr6.2", "v0.4.0-vocr6.1")
+    assert cmp_["this"]["attempt"] == rec["attempt"] and cmp_["earlier"]["attempt"] == old["attempt"]
+    keys = {"b|clannad_lines": "clannad_lines", "b|clannad_pages": "clannad_pages",
+            "b|vita_psp_fixed_lines": "vita_psp_fixed_lines",
+            "b|vita_psp_whole_dialogue_base": "vita_psp_whole_dialogue_base", "b|pcsg00807_clean": "pcsg00807_clean",
+            "b|pcsg00807_page_base": "pcsg00807_page", "a|clannad_lines": "clannad_lines",
+            "a|vita_psp_fixed_lines": "vita_psp_fixed_lines", "a|vita_psp_fixed_lines_lm": "vita_psp_fixed_lines_lm",
+            "a|vita_psp_whole_dialogue_base": "vita_psp_whole_dialogue_base", "a|pcsg00807_clean": "pcsg00807_clean",
+            "a|pcsg00807_page_refine_base": "pcsg00807_page"}
+    assert set(cmp_["measures"]) == set(keys)
+    for name, m in cmp_["measures"].items():
+        assert m["same_units"] and m["vocr5_units_differ"] == 0, name
+        path = "path_" + name[0]
+        for t in "SNL":
+            h, ho, e = rec["headline"][path][keys[name]][t], old["headline"][path][keys[name]][t], m["tiers"][t]
+            assert (e["this"]["errors"], e["this"]["chars"]) == (h["VOCR6"]["errors"], h["VOCR6"]["chars"]), name
+            assert e["vocr5"]["errors"] == h["VOCR5"]["errors"] == ho["VOCR5"]["errors"], name
+            assert e["earlier"]["errors"] == ho["VOCR6"]["errors"], name
+            assert e["this_minus_vocr5"]["ci95"] == h["VOCR6_minus_VOCR5"]["ci95"], name
+
+
 def test_assert_public():
     F.assert_public({"rates": {"VOCR6:S:shipped": {"cer": 1.0, "errors": 1, "chars": 100}}, "ids": ["a"]})
     for k in ("text", "pred", "preds", "g", "b", "ref"):

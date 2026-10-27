@@ -228,6 +228,60 @@ What the read shows:
   6.02 → 9.78%, +3.76 [+2.54, +5.07]. vita-test + psp-test's fixed name lines are +1.05 [+0.00, +2.38], an interval
   whose lower bound is 0.
 
+## The follow-up's read (v0.4.1-vocr6.2, 2026-10-27 20:03-20:50Z)
+
+The follow-up (vocr6-lead's stages 4c and 4d, `docs/vocr6.md`) is a new finalist set, so its protected sets are read
+once for it. **Amendment 9** (committed before the read, after an independent pre-read review) made that possible:
+- **One read per registered finalist set.** The protocol's `finalist_sets` lists v0.4.0-vocr6.1 (read above) and
+  v0.4.1-vocr6.2. report.sh refuses a set that is not registered and a set read before, under any OUT name.
+- **The earlier read's path.** The follow-up reads path (b) at the earlier read's Rubi head, `892cfb9`. Rubi main's
+  later changes to the pinned functions (#373, #358, #379) were reviewed, not re-pinned: at Rubi's defaults they
+  leave the line read alone. Rubi main's spotter default (#396) is not modelled.
+- **The runtime.** Rubi pins vita-vn-ocr `f8a1856`'s `runtime/vocr.c` and `vocr.h`, while this checkout holds #138's,
+  which adds W8F paths. `vocr6_final_test.py runtimecheck` read 4,000 development crops (vocr6-lead's hval and dev
+  plans) through path (b)'s line read with both builds, for all 7 blobs path (b) reads, and found every crop equal
+  (`eval/vocr6_final_test_runtimecheck_20261027.json`). rubi-path accepts exactly those two files' pairs, with that
+  record.
+- **The comparison.** `vocr6_final_test.py compare` pairs this read with the earlier one unit by unit. VOCR5 read
+  every unit of every headline measure exactly as before (0 units differ), so the two reads share one path.
+
+| tier | blob | sha256 | what it is |
+|---|---|---|---|
+| S | `VOCR6.2_S_w8.vocr` (gate driver: `VOCR6_S_w8.vocr`) | `864bbd19…` | VOCR6 Small (stage 4d), plain: the gate rule kept no gate |
+| N | `VOCR6.2_N_w8g2.vocr` (`VOCR6_N_w8g2.vocr`) | `107cf084…` | VOCR6 Normal (stage 4c), head gate at ε = 1e-4 + two-level head |
+| L | `VOCR6.2_L_w8_2l.vocr` (`VOCR6_L_w8_2l.vocr`) | `65310013…` | VOCR6 Large (stage 4c), two-level head |
+
+One attempt, at repo `27e0126`, with VOCR5 beside the blobs on both paths. VOCR5's path (a) equals its published
+records, 29 of 29 checks. There were no read errors and no finder errors.
+
+Records:
+- `eval/vocr6_final_test_followup_20261027.json`: every measure;
+- `eval/vocr6_final_test_followup_compare_20261027.json`: the pairing with the earlier read;
+- the full tables: `docs/vocr6-final-test-report-followup-20261027.md` and `docs/vocr6-final-test-compare-followup-20261027.md`.
+
+Path (b), dialogue CER, VOCR5 → v0.4.1, with v0.4.1 − VOCR5 and v0.4.1 − v0.4.0 in points [paired 95% interval]:
+
+| set | S | N | L |
+|---|---|---|---|
+| CLANNAD, 2,052 lines | 0.73 → 0.47% (**−0.26** [−0.35, −0.18]; **−0.21** [−0.30, −0.12]) | 0.66 → 0.33% (**−0.33** [−0.41, −0.24]; **−0.10** [−0.17, −0.04]) | 0.60 → 0.31% (**−0.29** [−0.37, −0.21]; −0.05 [−0.10, +0.01]) |
+| CLANNAD, 1,837 pages (finder) | 5.84 → 5.75% (−0.09 [−0.28, +0.10]; **−0.41** [−0.61, −0.21]) | 5.94 → 5.81% (−0.13 [−0.31, +0.05]; **+0.33** [+0.19, +0.48]) | 6.19 → 5.67% (**−0.52** [−0.71, −0.32]; **+0.27** [+0.13, +0.41]) |
+| vita + psp-test fixed lines, 336 | 0.68 → 0.58% (−0.11 [−0.33, +0.11]; **−0.23** [−0.46, −0.04]) | 0.49 → 0.36% (−0.13 [−0.33, +0.04]; −0.13 [−0.26, +0.00]) | 0.47 → 0.40% (−0.06 [−0.18, +0.04]; −0.02 [−0.14, +0.11]) |
+| vita + psp-test whole dialogue, 175 regions | 3.04 → 3.02% (−0.02 [−0.45, +0.45]; −0.24 [−0.58, +0.06]) | 2.83 → 2.70% (−0.13 [−0.55, +0.27]; +0.06 [−0.33, +0.48]) | 2.72 → 2.68% (−0.04 [−0.47, +0.39]; +0.15 [−0.17, +0.52]) |
+| PCSG00807 clean lines, 1,152 | 0.27 → 0.21% (**−0.06** [−0.11, −0.01]; −0.03 [−0.06, +0.00]) | 0.26 → 0.19% (**−0.06** [−0.12, −0.02]; −0.01 [−0.04, +0.00]) | 0.22 → 0.19% (**−0.04** [−0.08, −0.01]; −0.02 [−0.05, +0.00]) |
+| PCSG00807 page path, 685 regions | 0.85 → 0.85% (+0.00 [−0.06, +0.07]; +0.01 [−0.04, +0.07]) | 0.84 → 0.80% (−0.04 [−0.08, +0.01]; +0.00 [−0.03, +0.03]) | 0.81 → 0.79% (−0.02 [−0.05, +0.00]; −0.01 [−0.04, +0.00]) |
+
+What the read shows:
+- **Small (now VOCR6)** is better than VOCR5-S or level everywhere. v0.4.0's Small lost on CLANNAD's pages through its
+  cascade (+0.32); the follow-up's Small does not (−0.09).
+- **Normal and Large** read CLANNAD's lines better than v0.4.0's VOCR6 but its pages worse (+0.33 / +0.27, resolved),
+  though still better than VOCR5 or level on the pages. The stage table places the page loss before the cascade: Large's
+  greedy pages are level with v0.4.0's (6.07 / 6.10%), and its counter + LM stage gains less (6.03 / 5.78%).
+- **vita-test + psp-test** are level against VOCR5 on path (b) at every tier. vita-test is better (Small −0.25, Normal
+  −0.33, resolved); psp-test is not. On path (a) with ctclm.2's LM, psp-test's Normal is resolved worse: +0.26 [+0.04,
+  +0.51].
+- **Names** (secondary): path (b)'s CLANNAD names improve for Normal and Large (−2.94, −5.12) and are level for Small
+  (+0.45 [−0.64, +1.52]). On path (a), greedy, CLANNAD's Normal names are resolved worse: +2.35 [+0.27, +4.49].
+
 ## Seen flags (every table carries them)
 
 - Every VOCR5 and VOCR6 model trained on the owner's console captures, which include planetarian's PSP port.
@@ -249,8 +303,13 @@ What the read shows:
 PATHS=a eval/reproducibility/vocr6-final/report.sh - $A/vocr6-final-test/validation-<date>  # VOCR5, path (a)
 .venv-ci/bin/python eval/vocr6_final_test.py stage --s S.vocr --n N.vocr --l L.vocr --out MODELS_DIR
 eval/reproducibility/vocr6-final/report.sh MODELS_DIR $A/vocr6-final-test/final-<date>           # once
+# a later finalist set (amendment 9): registered in the protocol first, with its runtime check
+.venv-ci/bin/python eval/vocr6_final_test.py runtimecheck --rubi RUBI_AT_ITS_HEAD --models MODELS_DIR --work W \
+    --out eval/vocr6_final_test_runtimecheck_<date>.json
+eval/reproducibility/vocr6-final/report.sh MODELS_DIR $A/<label>/final-<name>                   # once per set
 ```
 
-Run each through `$HERD/heavy.sh` in one slot. A final read refuses to start while another final attempt record exists.
-`RESUME=1` continues a stopped read; report.sh's header says what each step needs first. Readings, plans and per-unit rows stay in
+Run each through `$HERD/heavy.sh` in one slot. A final read refuses a finalist set that the protocol does not register
+or that has a final attempt record already (amendment 9; before it, any second final read). `RESUME=1` continues a
+stopped read of its own set; report.sh's header says what each step needs first. Readings, plans and per-unit rows stay in
 `$HERD/shared/private/vocr6-final-test/`. The repository holds counts, rates, intervals and hashes only.

@@ -110,5 +110,191 @@
    "arena": 256247
   }
  },
- "context": "the console measured the GRAD finder's compute at 23-24 ms for an 883x112 region (v0.8.0-test.1, docs/finder-tighten.md); the same high-bound method gives 20-42 ms at 333 MHz there, so the high bound used by the rule is conservative for the finder"
+ "context": "the console measured the GRAD finder's compute at 23-24 ms for an 883x112 region (v0.8.0-test.1, docs/finder-tighten.md); the same high-bound method gives 20-42 ms at 333 MHz there, so the high bound used by the rule is conservative for the finder",
+ "t7": {
+  "what": "runtime/vocr_textspot7.c on #119's 387 base dev regions (each unit's spotter boxes, console view): _FD = D's post-pass (join10, extend) and F+D's choice; _F = the region assignment and F's choice. The mean over the 387 regions and each of the five largest regions alone",
+  "rows": {
+   "base_qL5_seed1_F": {
+    "mean_ms_333": 0.0015,
+    "five_largest_ms_333": [
+     0.011,
+     0.011,
+     0.01,
+     0.013,
+     0.011
+    ],
+    "max_ms_333": 0.013,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "9953c877c361790e2c5d786421b6434656cb0005f09241971ca46a851ce675dd",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "base_qL5_seed1_FD": {
+    "mean_ms_333": 4.2912,
+    "five_largest_ms_333": [
+     33.472,
+     33.41,
+     15.149,
+     16.855,
+     12.568
+    ],
+    "max_ms_333": 33.472,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "83eff4827657f0f91f231f033a210400eef2e2dc63ce5255a7d22ead1c8546e4",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "base_qS4_seed2_F": {
+    "mean_ms_333": 0.0015,
+    "five_largest_ms_333": [
+     0.011,
+     0.011,
+     0.01,
+     0.014,
+     0.011
+    ],
+    "max_ms_333": 0.014,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "9953c877c361790e2c5d786421b6434656cb0005f09241971ca46a851ce675dd",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "base_qS4_seed2_FD": {
+    "mean_ms_333": 4.3121,
+    "five_largest_ms_333": [
+     32.127,
+     32.096,
+     14.529,
+     16.37,
+     13.726
+    ],
+    "max_ms_333": 32.127,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "83eff4827657f0f91f231f033a210400eef2e2dc63ce5255a7d22ead1c8546e4",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "base_t64n8c16_seed1_F": {
+    "mean_ms_333": 0.0012,
+    "five_largest_ms_333": [
+     0.011,
+     0.011,
+     0.009,
+     0.01,
+     0.008
+    ],
+    "max_ms_333": 0.011,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "9953c877c361790e2c5d786421b6434656cb0005f09241971ca46a851ce675dd",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "base_t64n8c16_seed1_FD": {
+    "mean_ms_333": 4.2928,
+    "five_largest_ms_333": [
+     31.518,
+     32.049,
+     14.373,
+     16.374,
+     13.174
+    ],
+    "max_ms_333": 32.049,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "83eff4827657f0f91f231f033a210400eef2e2dc63ce5255a7d22ead1c8546e4",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "kd_t64n8c16_seed2_F": {
+    "mean_ms_333": 0.0015,
+    "five_largest_ms_333": [
+     0.011,
+     0.017,
+     0.01,
+     0.014,
+     0.011
+    ],
+    "max_ms_333": 0.017,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "9953c877c361790e2c5d786421b6434656cb0005f09241971ca46a851ce675dd",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   },
+   "kd_t64n8c16_seed2_FD": {
+    "mean_ms_333": 4.313,
+    "five_largest_ms_333": [
+     32.29,
+     32.532,
+     14.722,
+     16.45,
+     13.785
+    ],
+    "max_ms_333": 32.532,
+    "units": 387,
+    "sources_sha256": {
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/pagepath_snap135/repo/runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/runtime/vocr_textspot7.c": "83eff4827657f0f91f231f033a210400eef2e2dc63ce5255a7d22ead1c8546e4",
+     "/local/home/skerraut/herd-synth3/clones/vocr6-spotter3/eval/textspot7_a9_driver.c": "624dbb09e89ef3f4ba042cf0cbf65fef87385933fae98226b628fcbc02890a01"
+    }
+   }
+  },
+  "first_code": {
+   "note": "the first C contrast pass (9 reads per pixel, contrast_at) gave these rows before the row-separable rewrite (same output: C == twin re-checked on every dev and hval unit); the rule reads the final code's rows above",
+   "max_ms_333": {
+    "base_t64n8c16_seed1_FD": 95.1,
+    "kd_t64n8c16_seed2_FD": 96.08,
+    "base_qS4_seed2_FD": 95.45,
+    "base_qL5_seed1_FD": 98.8
+   },
+   "mean_ms_333": {
+    "base_t64n8c16_seed1_FD": 12.525,
+    "kd_t64n8c16_seed2_FD": 12.591,
+    "base_qS4_seed2_FD": 12.595,
+    "base_qL5_seed1_FD": 12.529
+   }
+  }
+ },
+ "arena": {
+  "vocr_lines_arena_bytes(960, 544)": 83323,
+  "vocr_refine_arena_bytes(960, 544)": 72391,
+  "vocr_textspot7_arena_bytes(960, 544)": 72391,
+  "note": "host build of the pinned runtime; the post-pass needs the larger of the refinement's arena and EXTEND's 2 x (960 + 2) row bytes"
+ }
 }

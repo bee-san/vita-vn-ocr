@@ -71,8 +71,8 @@ typedef struct {
  * VOCR_T7_E_ARG. */
 int vocr_textspot7_choose(const VocrT7Box *s, unsigned ns, const VocrT7Box *g, unsigned ng, const VocrT7Params *p);
 
-/* Arena bytes vocr_textspot7_post needs for a region up to max_width x max_height (the refinement's, for TIGHTEN;
- * 0 without it is enough). */
+/* Arena bytes vocr_textspot7_post needs for a region up to max_width x max_height with EXTEND or TIGHTEN (the
+ * larger of the refinement's arena and EXTEND's two row buffers); without either step no arena is read. */
 size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height);
 
 /* The region (x0, y0) - (x1, y1) (frame pixels, x1 > x0, y1 > y0) of the frame boxes fb[0..n) as line boxes in

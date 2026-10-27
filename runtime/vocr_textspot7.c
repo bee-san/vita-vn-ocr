@@ -187,9 +187,18 @@ int vocr_textspot7_choose(const VocrT7Box *s, unsigned ns, const VocrT7Box *g, u
 
 /* ----------------------------------------------------------------------------- D */
 
+/* EXTEND's row buffers: the 3-row column max and min of a row's columns (with one column each side). */
+static size_t extend_bytes(unsigned max_width)
+{
+    return 2u * ((size_t)max_width + 2u);
+}
+
 size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height)
 {
-    return vocr_refine_arena_bytes(max_width, max_height);
+    size_t r = vocr_refine_arena_bytes(max_width, max_height), e = extend_bytes(max_width);
+    if (!max_width || !max_height)
+        return 0;
+    return r > e ? r : e;
 }
 
 static int same_row6(const VocrT7Box *a, const VocrT7Box *b)
@@ -252,17 +261,43 @@ static int contrast_at(const VocrLinesImage *im, int x, int y)
     return mx - mn;
 }
 
-static int ink_threshold(const VocrLinesImage *im, const VocrT7Box *b)
+/* The 3 x 3 contrast of row y at columns [x0, x1) into the histogram, edges replicated: the column max and min
+ * over rows y - 1 .. y + 1 once per column (x0 - 1 .. x1, clamped), then each pixel's 3 columns of them. The same
+ * values as contrast_at, for a fraction of the reads. buf holds 2 (x1 - x0 + 2) bytes. */
+static void row_hist(const VocrLinesImage *im, int y, int x0, int x1, unsigned char *buf, unsigned long *hist)
+{
+    int W = (int)im->width, H = (int)im->height, n = x1 - x0 + 2, c, x;
+    const unsigned char *r0 = im->pixels + (size_t)imax(y - 1, 0) * im->stride;
+    const unsigned char *r1 = im->pixels + (size_t)y * im->stride;
+    const unsigned char *r2 = im->pixels + (size_t)imin(y + 1, H - 1) * im->stride;
+    unsigned char *vmx = buf, *vmn = buf + n;
+    for (c = 0; c < n; c++) {
+        int xx = imin(imax(x0 - 1 + c, 0), W - 1);
+        unsigned a = r0[xx], b = r1[xx], d = r2[xx];
+        unsigned mx = a > b ? a : b, mn = a < b ? a : b;
+        vmx[c] = (unsigned char)(mx > d ? mx : d);
+        vmn[c] = (unsigned char)(mn < d ? mn : d);
+    }
+    for (x = 0; x < x1 - x0; x++) {
+        unsigned mx = vmx[x], mn = vmn[x];
+        if (vmx[x + 1] > mx) mx = vmx[x + 1];
+        if (vmx[x + 2] > mx) mx = vmx[x + 2];
+        if (vmn[x + 1] < mn) mn = vmn[x + 1];
+        if (vmn[x + 2] < mn) mn = vmn[x + 2];
+        hist[mx - mn]++;
+    }
+}
+
+static int ink_threshold(const VocrLinesImage *im, const VocrT7Box *b, unsigned char *buf)
 {
     unsigned long hist[256], k, cum = 0;
     unsigned long n = (unsigned long)b->w * (unsigned long)b->h;
-    int x, y, v;
+    int y, v;
     if (!n)
         return 255;
     memset(hist, 0, sizeof hist);
     for (y = b->y; y < b->y + b->h; y++)
-        for (x = b->x; x < b->x + b->w; x++)
-            hist[contrast_at(im, x, y)]++;
+        row_hist(im, y, b->x, b->x + b->w, buf, hist);
     k = (99ul * (n - 1ul)) / 100ul;
     for (v = 0; v < 256; v++) {
         cum += hist[v];
@@ -281,7 +316,7 @@ static int inked(const VocrLinesImage *im, const VocrT7Box *b, int x, int t)
     return 0;
 }
 
-static void extend(const VocrLinesImage *im, VocrT7Box *b, unsigned n)
+static void extend(const VocrLinesImage *im, VocrT7Box *b, unsigned n, unsigned char *buf)
 {
     VocrT7Box orig[VOCR_T7_MAX_BOXES];
     unsigned i, k;
@@ -290,7 +325,7 @@ static void extend(const VocrLinesImage *im, VocrT7Box *b, unsigned n)
     for (i = 0; i < n; i++) {
         const VocrT7Box *o = &orig[i];
         int x = o->x, w = o->w, h = o->h;
-        int t = ink_threshold(im, o), reach = (3 * h) / 2, gapmax = h / 2;
+        int t = ink_threshold(im, o, buf), reach = (3 * h) / 2, gapmax = h / 2;
         int pad = imax(2, (15 * h + 50) / 100);
         int stop = W, stopl = 0, last, gap, X, x0 = x, x1 = x + w;
         for (k = 0; k < n; k++) {
@@ -375,7 +410,7 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
         if (!region || !region->pixels || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
             (int)region->height != H || region->stride < region->width)
             return VOCR_T7_E_ARG;
-        if ((steps & VOCR_T7_TIGHTEN) && arena_bytes < vocr_textspot7_arena_bytes(region->width, region->height))
+        if (!arena || arena_bytes < vocr_textspot7_arena_bytes(region->width, region->height))
             return VOCR_T7_E_ARENA;
     }
     for (i = 0; i < n; i++) {
@@ -409,7 +444,7 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
     else if (steps & VOCR_T7_JOIN5)
         join(out, &m, 5);
     if (steps & VOCR_T7_EXTEND)
-        extend(region, out, m);
+        extend(region, out, m, (unsigned char *)arena);
     if (steps & VOCR_T7_TIGHTEN) {
         int rc = tighten(region, out, m, arena, arena_bytes);
         if (rc != VOCR_T7_OK)

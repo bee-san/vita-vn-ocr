@@ -167,7 +167,8 @@ def dev_regions():
 def tools_of(a):
     vitasdk = a.vitasdk or os.environ.get("VITASDK") or str(ART / "vita" / "vitasdk")
     arm_cc = a.arm_cc or os.environ.get("ARM_CC") or (str(ARM_CC) if ARM_CC.exists() else A.default_arm_cc())
-    q = Path(a.qemu) if a.qemu else A.default_qemu()
+    q = Path(a.qemu) if a.qemu else (ART / "vita" / "qemu" if (ART / "vita" / "qemu" / "bin" / "qemu-arm").exists()
+                                     else A.default_qemu())
     return vitasdk, arm_cc, q
 
 

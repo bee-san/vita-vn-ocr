@@ -128,6 +128,12 @@ int main(int argc, char **argv)
             for (i = 0; i < (int)m; i++)
                 printf(" %d %d %d %d %d %u", out[i].x, out[i].y, out[i].w, out[i].h, out[i].conf, out[i].dark);
             printf("\n");
+        } else if (kind == 4) {   /* arena sizes: w h steps -> "A <image form> <rows form>" */
+            int v[3];
+            if (rd(f, v, 3))
+                return 3;
+            printf("A %zu %zu\n", vocr_textspot7_arena_bytes_steps((unsigned)v[0], (unsigned)v[1], (unsigned)v[2]),
+                   vocr_textspot7_rows_arena_bytes_steps((unsigned)v[0], (unsigned)v[1], (unsigned)v[2]));
         } else {
             return 4;
         }

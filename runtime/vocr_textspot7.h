@@ -76,6 +76,10 @@ int vocr_textspot7_choose(const VocrT7Box *s, unsigned ns, const VocrT7Box *g, u
  * larger of the refinement's arena and EXTEND's two row buffers); without either step no arena is read. */
 size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height);
 
+/* The same for one step set: TIGHTEN needs the refinement's arena, EXTEND 2 (max_width + 2) bytes, the other steps
+ * none (textspot7's pick, JOIN10 | EXTEND: 1,924 B at 960 px). */
+size_t vocr_textspot7_arena_bytes_steps(unsigned max_width, unsigned max_height, unsigned steps);
+
 /* The region (x0, y0) - (x1, y1) (frame pixels, x1 > x0, y1 > y0) of the frame boxes fb[0..n) as line boxes in
  * region pixels, out[0..*n_out) (out holds VOCR_T7_MAX_BOXES). region: its pixels, x1 - x0 by y1 - y0, grey (read
  * by EXTEND and TIGHTEN only; may be NULL without them). Returns VOCR_T7_OK, VOCR_T7_E_ARG or VOCR_T7_E_ARENA. */
@@ -86,6 +90,9 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
 /* Arena bytes vocr_textspot7_post_rows needs for a region max_width wide (any height) with EXTEND or TIGHTEN: the
  * larger of the refinement's arena (vocr_refine_arena_bytes(max_width, max_height)) and EXTEND's three rows. */
 size_t vocr_textspot7_rows_arena_bytes(unsigned max_width, unsigned max_height);
+
+/* The same for one step set: TIGHTEN needs the refinement's arena, EXTEND 3 max_width bytes (2,880 B at 960 px). */
+size_t vocr_textspot7_rows_arena_bytes_steps(unsigned max_width, unsigned max_height, unsigned steps);
 
 /* vocr_textspot7_post for a region read row by row (vocr_lines_rows.h), as a caller that streams the frame (Rubi's
  * game worker) has it: the same boxes for the same pixels, or VOCR_LINES_E_SOURCE when a row could not be read.

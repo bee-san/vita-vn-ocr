@@ -1113,12 +1113,13 @@ textspot7's two per-region steps for a text spotter's boxes (issue #128, `docs/t
   large enough part inside), clips them, joins boxes of one row (`VOCR_T7_JOIN5` / `_JOIN10`), grows each box over
   the ink at its ends (`VOCR_T7_EXTEND`, the page path's ink threshold) and cuts its rows to the text band
   (`VOCR_T7_TIGHTEN`, `vocr_lines_refine.c`). textspot7's pick uses `JOIN10 | EXTEND`.
-  - Region: grey; the arena is `vocr_textspot7_arena_bytes(w, h)` (72,391 B at 960x544: the refinement's).
+  - Region: grey. The arena is `vocr_textspot7_arena_bytes_steps(w, h, steps)`: TIGHTEN needs the refinement's arena
+    (72,391 B at 960x544) and EXTEND 2 (w + 2) bytes; the pick's `JOIN10 | EXTEND` needs 1,924 B at 960 px.
   - Est. 4.3 ms per mean development region and at most 33.5 ms on the largest (A9 cycle model,
     `eval/textspot7_a9_20261027.json`).
 - `vocr_textspot7_post_rows(...)` is the same post-pass over a row source (`vocr_lines_rows.h`), for a caller that
   streams the frame. EXTEND reads each box's rows (one above and one below included) twice, top to bottom. Its
-  arena is `vocr_textspot7_rows_arena_bytes(w, h)`.
+  arena is `vocr_textspot7_rows_arena_bytes_steps(w, h, steps)` (3 w bytes for EXTEND: 2,880 B at 960 px).
 - C99, no allocation, no recursion, no global state, integer only. Checks: `make check-textspot7` (strict compiles,
   then the sanitized driver `vocr_textspot7_test.c` through `tests/textspot7_parity.py`: the choice, the post-pass and
   its row-streamed form against the twin on random inputs) and `tests/test_textspot7.py`.

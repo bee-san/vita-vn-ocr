@@ -193,12 +193,21 @@ static size_t extend_bytes(unsigned max_width)
     return 2u * ((size_t)max_width + 2u);
 }
 
-size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height)
+size_t vocr_textspot7_arena_bytes_steps(unsigned max_width, unsigned max_height, unsigned steps)
 {
-    size_t r = vocr_refine_arena_bytes(max_width, max_height), e = extend_bytes(max_width);
+    size_t r = 0, e = 0;
     if (!max_width || !max_height)
         return 0;
+    if (steps & VOCR_T7_TIGHTEN)
+        r = vocr_refine_arena_bytes(max_width, max_height);
+    if (steps & VOCR_T7_EXTEND)
+        e = extend_bytes(max_width);
     return r > e ? r : e;
+}
+
+size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height)
+{
+    return vocr_textspot7_arena_bytes_steps(max_width, max_height, VOCR_T7_STEPS);
 }
 
 static int same_row6(const VocrT7Box *a, const VocrT7Box *b)
@@ -410,7 +419,7 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
         if (!region || !region->pixels || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
             (int)region->height != H || region->stride < region->width)
             return VOCR_T7_E_ARG;
-        if (!arena || arena_bytes < vocr_textspot7_arena_bytes(region->width, region->height))
+        if (!arena || arena_bytes < vocr_textspot7_arena_bytes_steps(region->width, region->height, steps))
             return VOCR_T7_E_ARENA;
     }
     for (i = 0; i < n; i++) {
@@ -576,12 +585,21 @@ static int extend_one_rows(RowWin *w, const VocrT7Box *o, int stop, int stopl, V
     return VOCR_T7_OK;
 }
 
-size_t vocr_textspot7_rows_arena_bytes(unsigned max_width, unsigned max_height)
+size_t vocr_textspot7_rows_arena_bytes_steps(unsigned max_width, unsigned max_height, unsigned steps)
 {
-    size_t r = vocr_refine_arena_bytes(max_width, max_height), e = 3u * (size_t)max_width;
+    size_t r = 0, e = 0;
     if (!max_width || !max_height)
         return 0;
+    if (steps & VOCR_T7_TIGHTEN)
+        r = vocr_refine_arena_bytes(max_width, max_height);
+    if (steps & VOCR_T7_EXTEND)
+        e = 3u * (size_t)max_width;
     return r > e ? r : e;
+}
+
+size_t vocr_textspot7_rows_arena_bytes(unsigned max_width, unsigned max_height)
+{
+    return vocr_textspot7_rows_arena_bytes_steps(max_width, max_height, VOCR_T7_STEPS);
 }
 
 int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
@@ -596,7 +614,7 @@ int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, in
         if (!region || !region->row || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
             (int)region->height != H)
             return VOCR_T7_E_ARG;
-        if (!arena || arena_bytes < vocr_textspot7_rows_arena_bytes(region->width, region->height))
+        if (!arena || arena_bytes < vocr_textspot7_rows_arena_bytes_steps(region->width, region->height, steps))
             return VOCR_T7_E_ARENA;
     }
     rc = vocr_textspot7_post(fb, n, x0, y0, x1, y1, NULL, steps & (VOCR_T7_ASSIGN | VOCR_T7_JOIN5 | VOCR_T7_JOIN10),

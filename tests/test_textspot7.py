@@ -209,6 +209,14 @@ def test_c_post_rows_equals_post(driver):
     assert E.run_c(driver, recs3) == E.run_c(driver, recs2)
 
 
+def test_c_arena_sizes(driver):
+    out = E.run_c(driver, [E.i32(4, 960, 544, 2 | 8), E.i32(4, 960, 544, 31), E.i32(4, 960, 544, 4)])
+    assert out[0] == "A 1924 2880"                                      # JOIN10 | EXTEND: row bytes only
+    img, rows = (int(v) for v in out[1].split()[1:])
+    assert img == rows == 72391                                         # TIGHTEN: the refinement's arena
+    assert out[2] == "A 0 0"                                            # JOIN10 alone reads no pixel
+
+
 def test_c_rejects_bad_input(driver):
     recs = [E.i32(1, 7, 0, 0, 0, 0, 0)]                          # an unknown mode, no boxes
     assert E.run_c(driver, recs) == ["C E-1"]

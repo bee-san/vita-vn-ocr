@@ -254,8 +254,9 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
 
 - **All three qualifiers pass the confirmation condition** (not resolved worse than `rubi,fix=1`). On these fresh
   games they are all lower, and t64 and qL5 are resolved lower.
-- **The gain spreads over VNs.** For the pick, 20 VNs get better, 6 worse and 15 are level against `rubi,fix=1`. One
-  VN (a translucent text box) goes 282 → 73 errors; without it the pick is still lower.
+- **One VN carries much of the gain again.** For the pick, 20 VNs get better, 6 worse and 15 are level against
+  `rubi,fix=1`, but v12571 alone goes 282 → 73 errors. Without it (report only), the pick reads 1.49% against
+  `rubi,fix=1`'s 2.44%: −0.95 [−1.99, +0.09], not resolved. qL5 D stays resolved without it: −1.49 [−2.56, −0.59].
 - **D adds** −0.50 points to the plain det decode here (t64: 2.42 → 1.92), as it did on dev and hval.
 
 ### The decision

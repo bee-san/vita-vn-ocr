@@ -5,7 +5,7 @@ read once, after every VOCR6 choice, with VOCR5 beside them, on the protected se
 frozen references and the hooked test title PCSG00807 (Dance with Devils). The read reports; it chooses nothing.
 Every number is a host measurement. Nothing ran on a console.
 
-- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae). Five
+- **Protocol:** `eval/vocr6_final_test_protocol.json`, committed before this harness read anything (d02f0ae). Eight
   amendments followed, each before any read of the path it touches:
   - 91cd103: robustness;
   - 51dd0a6: path (b)'s LM;
@@ -17,8 +17,10 @@ Every number is a host measurement. Nothing ran on a console.
     against Rubi's own code, and the audit's optional nits;
   - 5c9c23c: Rubi #330 (API 50), which ships #129's COLGAP fix by default: re-pinned and re-checked; Rubi's
     pinned runtime files must equal this checkout's;
-  - 05a23e1: the audit's optional nits N11-N16. The hashes are those of the original commits (tag
-  `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
+  - 05a23e1: the audit's optional nits N11-N16.
+
+  The hashes of the first four are those of the original commits (tag `vocr6-final-test-history-20261026a`); the
+  branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
 
@@ -150,9 +152,68 @@ checkout's, so path (b) reads with Rubi's runtime code.
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.
 
-## Results
+## Results (the final read, 2026-10-27 10:05-11:00Z)
 
-Filled in by the final read: `eval/vocr6_final_test_<date>.json` and the tables below.
+vocr6-lead's `FINAL READ` named the blobs that ship:
+
+| tier | blob | sha256 | what it is |
+|---|---|---|---|
+| S | `VOCR5_S_w8g.vocr` | `76a1bc5d…` | VOCR5-S with its head gate: stage 4 did not adopt VOCR6 Small |
+| N | `VOCR6_N_w8_2l.vocr` | `929652e3…` | VOCR6 Normal with the two-level head, no gate |
+| L | `VOCR6_L_w8_2l.vocr` | `b051fd4f…` | VOCR6 Large with the two-level head, no gate |
+
+How the read ran:
+
+- One attempt, at repo `4cb9d46`, with VOCR5 beside the blobs on both paths.
+- Path (b) is Rubi main `892cfb9`'s shipped line path: lm6 1000k at 600 / 2500 / BOS, COLGAP, `ocr_vertical = auto`,
+  the cascade S → N → L, textnorm and the line filter. `892cfb9` passed every rubi-path pin.
+- VOCR5's path (a) again equals its published records, 29 of 29 checks.
+- No read errors and no finder errors.
+
+Records:
+
+- `eval/vocr6_final_test_20261027.json`: every measure, with counts, rates and intervals.
+- `docs/vocr6-final-test-report-20261027.md`: the full tables (per title, Vita and PSP apart, names, path (b)'s
+  stages).
+
+Dialogue CER, VOCR5 → VOCR6, and VOCR6 − VOCR5 in points [paired 95% interval]:
+
+| set | S | N | L |
+|---|---|---|---|
+| **path (b)**: CLANNAD, 2,052 lines | 0.73 → 0.68% (−0.05 [−0.12, +0.02]) | 0.66 → 0.44% (**−0.22** [−0.30, −0.15]) | 0.60 → 0.36% (**−0.24** [−0.31, −0.17]) |
+| CLANNAD, 1,837 pages (finder) | 5.84 → 6.16% (**+0.32** [+0.14, +0.50]) | 5.94 → 5.47% (**−0.46** [−0.63, −0.30]) | 6.19 → 5.40% (**−0.78** [−0.97, −0.60]) |
+| vita + psp-test fixed lines, 336 | 0.68 → 0.81% (+0.13 [−0.09, +0.41]) | 0.49 → 0.49% (+0.00 [−0.20, +0.18]) | 0.47 → 0.43% (−0.04 [−0.19, +0.10]) |
+| vita + psp-test whole dialogue, 175 regions | 3.04 → 3.26% (+0.22 [−0.11, +0.61]) | 2.83 → 2.63% (−0.19 [−0.51, +0.11]) | 2.72 → 2.52% (−0.19 [−0.55, +0.15]) |
+| PCSG00807 clean lines, 1,152 | 0.27 → 0.24% (−0.03 [−0.07, +0.01]) | 0.26 → 0.21% (**−0.05** [−0.10, −0.01]) | 0.22 → 0.21% (−0.01 [−0.06, +0.02]) |
+| PCSG00807 page path, 685 regions | 0.85 → 0.84% (−0.01 [−0.05, +0.02]) | 0.84 → 0.80% (−0.04 [−0.08, +0.01]) | 0.81 → 0.80% (−0.01 [−0.04, +0.02]) |
+| **path (a)**: CLANNAD lines, greedy | 1.38 → 1.38% | 0.96 → 0.50% (**−0.46** [−0.57, −0.35]) | 0.73 → 0.31% (**−0.42** [−0.51, −0.34]) |
+| vita + psp-test fixed lines, greedy | 1.60 → 1.60% | 1.13 → 0.83% (−0.30 [−0.73, +0.02]) | 0.79 → 0.53% (**−0.26** [−0.49, −0.07]) |
+| the same, beam + ctclm.2's 1 MB LM | 1.15 → 1.15% | 0.72 → 0.70% (−0.02 [−0.28, +0.21]) | 0.53 → 0.49% (−0.04 [−0.20, +0.11]) |
+| vita + psp-test whole dialogue (GRAD) | 8.31 → 8.31% | 7.98 → 7.21% (**−0.78** [−1.15, −0.38]) | 7.08 → 6.86% (−0.22 [−0.52, +0.11]) |
+| PCSG00807 clean lines (Rubi cascade) | 0.14 → 0.17% (+0.02 [−0.03, +0.07]) | 0.12 → 0.08% (−0.04 [−0.11, +0.01]) | 0.07 → 0.06% (−0.01 [−0.07, +0.05]) |
+| PCSG00807 page GRAD + refine | 1.66 → 1.65% (−0.01 [−0.07, +0.04]) | 1.71 → 1.68% (−0.03 [−0.10, +0.04]) | 1.67 → 1.66% (−0.01 [−0.07, +0.05]) |
+
+Bold marks an interval that excludes 0. The intervals are a game bootstrap for vita-test and psp-test and a page
+bootstrap for CLANNAD and PCSG00807.
+
+What the read shows:
+
+- **Normal and Large on CLANNAD.** VOCR6 is resolved better on both paths. On Rubi's path, line errors fall by a third
+  for Normal (0.66 → 0.44%) and by two fifths for Large (0.60 → 0.36%), and page errors fall too. Every VOCR6 model has seen CLANNAD's glyph raster
+  (the seen flags below), so this is not a measure on an unseen font.
+- **Normal and Large on vita-test and psp-test.** On Rubi's path they are level with VOCR5: every interval includes 0.
+  Greedy (path (a)), Large's fixed lines and Normal's whole dialogue are resolved better. With an LM most of that gain
+  goes, on both paths.
+- **Vita and PSP apart** (path (b), fixed lines):
+  - vita-test: N −0.21 [−0.56, +0.05], L −0.17 [−0.40, +0.00];
+  - psp-test: N +0.22 [+0.00, +0.41], L +0.09 [−0.12, +0.30].
+
+  On path (a) with the LM, psp-test's Normal is resolved worse (+0.30 [+0.12, +0.53]).
+- **PCSG00807.** Every tier is within 0.05 points of VOCR5. On path (b), Normal's clean lines are resolved better.
+- **Small.** The shipped Small is VOCR5-S, so path (a) reads the same weights in both columns, apart from PCSG00807's
+  Rubi-cascade decode. On path (b) its column differs only through the cascade, which now goes to VOCR6 Normal. That
+  makes CLANNAD's pages worse (+0.32 [+0.14, +0.50]); most of the difference arises after the cascade, in textnorm and
+  the line filter (the report's stage table). Elsewhere, Small is within the noise.
 
 ## Seen flags (every table carries them)
 

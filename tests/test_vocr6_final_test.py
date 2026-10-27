@@ -350,6 +350,29 @@ def test_vocr_pins_and_defines():
     assert F.c_define("#define VJO_VOCR_COUNTER_TAU 6000\n", "VJO_VOCR_COUNTER_TAU") == 6000
 
 
+def test_committed_records_are_public():
+    """Every committed record of this harness holds counts, rates, intervals, ids and hashes only."""
+    recs = sorted(p for p in (ROOT / "eval").glob("vocr6_final_test_*.json")
+                  if p.name != "vocr6_final_test_protocol.json")
+    assert len(recs) >= 5
+    for p in recs:
+        F.assert_public(json.loads(p.read_text(encoding="utf-8")))
+
+
+def test_final_record_is_the_one_read():
+    """The final read's record: one final attempt, on the committed protocol (unchanged since the read), the blobs
+    vocr6-lead's FINAL READ named, VOCR5's path (a) equal to its published records, no read or finder error."""
+    import hashlib
+    rec = json.loads((ROOT / "eval" / "vocr6_final_test_20261027.json").read_text(encoding="utf-8"))
+    proto = hashlib.sha256((ROOT / "eval" / "vocr6_final_test_protocol.json").read_bytes()).hexdigest()
+    assert rec["attempt"]["mode"] == "final" and rec["protocol_sha256"] == rec["attempt"]["protocol_sha256"] == proto
+    assert {t: h[:8] for t, h in rec["attempt"]["models"].items()} == {"S": "76a1bc5d", "N": "929652e3",
+                                                                       "L": "b051fd4f"}
+    assert rec["validation"]["all_equal"] is True
+    for s, r in rec["path_b"]["reads"].items():
+        assert r["finder_errors"] == 0 and not any(r["read_errors"].values()), s
+
+
 def test_assert_public():
     F.assert_public({"rates": {"VOCR6:S:shipped": {"cer": 1.0, "errors": 1, "chars": 100}}, "ids": ["a"]})
     for k in ("text", "pred", "preds", "g", "b", "ref"):

@@ -1,0 +1,82 @@
+{
+ "at": "2026-10-26T19:29:17Z",
+ "finder": {
+  "driver": {
+   "driver_sha256": "59a33cbf7af15397189d985a9142f7e0f907cd6c97bf3fa4bb3c13884545b69b",
+   "sources_sha256": "2efa268c3d47742ec613330c17f90760dd87ebe7db08e3c6e5c928c6b8d3b8c5"
+  },
+  "fix": 5,
+  "identical": 6327,
+  "plan_driver_sha256": "89e7a0e8d366ab3c33e67d657cfad62f71447bda5162e3fa5e672285f441c90e",
+  "probe": 1,
+  "units": 6327
+ },
+ "finder_source": {
+  "commit": "476a70a21be282a4354a9954b67c306b16900271",
+  "files": {
+   "pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+   "vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+   "vocr_lines.h": "4f768c9a7aaa1f9e3b8f16990be23c3b098b675cf6316df7eb20dc6198b9f37d",
+   "vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+   "vocr_lines_fix.h": "d28af14903e1604006edbb75dc5d939ac845651220fa661c0e7fc7a1cec9efe4",
+   "vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+   "vocr_lines_refine.h": "66fe3b716193d835e9ab1d614d71ad8e19de70db5ac8ec0f09b8e027b260dc6b",
+   "vocr_lines_rows.h": "60967239238df1ecca767e95c9c752f4c0b9efba097a59034ae2326717ad3465"
+  },
+  "fix_default": 1,
+  "fix_flags": {
+   "VOCR_FIX_COLGAP": 1,
+   "VOCR_FIX_JUNK": 4,
+   "VOCR_FIX_VALLEY": 2
+  },
+  "tree": "origin/feat/vocr6-finder-fix"
+ },
+ "gated": {
+  "L": {
+   "baseline_rereads": 0,
+   "conf_equal": 3000,
+   "crops": 3000,
+   "differ_kana_rule": 0,
+   "greedy_equal": 3000,
+   "reread_equal": 3000,
+   "text_equal": 3000
+  },
+  "N": {
+   "baseline_rereads": 0,
+   "conf_equal": 3000,
+   "crops": 3000,
+   "differ_kana_rule": 0,
+   "greedy_equal": 3000,
+   "reread_equal": 3000,
+   "text_equal": 3000
+  },
+  "S": {
+   "baseline_rereads": 0,
+   "conf_equal": 3000,
+   "crops": 3000,
+   "differ_kana_rule": 0,
+   "greedy_equal": 3000,
+   "reread_equal": 3000,
+   "text_equal": 3000
+  }
+ },
+ "kind": "vocr6-final-test-selftest",
+ "note": "development data only (the hooked hval block); vocr6_final_test.py selftest: path (b)'s finder build against vocr6-lead's hval plan v2, its line read with VOCR5's plain blobs against vocr6-lead's hval dumps (eval/vocr6_score.py on feat/vocr6-t1-stages), with the released gated blobs against eval/vocr6_baseline.py's hval reads",
+ "plain": {
+  "L": {
+   "beam_equal": 3000,
+   "conf_equal": 3000,
+   "greedy_equal": 3000,
+   "rereads": 0
+  },
+  "N": {
+   "beam_equal": 3000,
+   "conf_equal": 3000,
+   "greedy_equal": 3000,
+   "rereads": 0
+  },
+  "crops": 3000,
+  "shipped_equal": 3000
+ },
+ "repo_head": "51dd0a61def0c63aba11c9494fe05bd8181f451d"
+}

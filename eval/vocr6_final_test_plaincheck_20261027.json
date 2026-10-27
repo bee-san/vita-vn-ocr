@@ -1,0 +1,44 @@
+{
+ "all_equal": true,
+ "at": "2026-10-27T11:23:04Z",
+ "crops": 3000,
+ "data": "development: vocr6-lead's hval plan v1 (hval crops of the hooked train titles)",
+ "kind": "vocr6-final-test-plaincheck",
+ "plan_sha256": "dfefdd96c0f4c6596f964189a996dd719e35f7dde941fabc61f15cf0e743c8ff",
+ "repo_head": "d80b236c06f66561174720205c17f8dd76174bdb",
+ "tiers": {
+  "L": {
+   "conf_equal": 3000,
+   "frames": 153949,
+   "greedy_equal": 3000,
+   "logits_equal": 3000,
+   "plain": "v6f4h_L_seed1_w8.vocr",
+   "plain_sha256": "d32744ca9de9413cce6b5728a84319aa7b04040022bab3a4cf9e451544c031e2",
+   "shipped": "VOCR6_L_w8_2l.vocr",
+   "shipped_sha256": "b051fd4f3abe6451927d74b1d1209f44a3072ab755ee9e1b9363368f00feb45b",
+   "topk_text_equal": 3000
+  },
+  "N": {
+   "conf_equal": 3000,
+   "frames": 153949,
+   "greedy_equal": 3000,
+   "logits_equal": 3000,
+   "plain": "v6f4h_N_seed1_w8.vocr",
+   "plain_sha256": "11a306c3f66020ef2ea3aa20cac67f4eb8f5e45a2f59ca7811eda50a17c80dcd",
+   "shipped": "VOCR6_N_w8_2l.vocr",
+   "shipped_sha256": "929652e33da10fee3b7bd3991a557e8bbf1a16fba83eb5775bbd0298ab65c4d6",
+   "topk_text_equal": 3000
+  },
+  "S": {
+   "conf_equal": 3000,
+   "frames": 153949,
+   "greedy_equal": 3000,
+   "logits_equal": 3000,
+   "plain": "VOCR5_S_w8.vocr",
+   "plain_sha256": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d",
+   "shipped": "VOCR5_S_w8g.vocr",
+   "shipped_sha256": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+   "topk_text_equal": 3000
+  }
+ }
+}

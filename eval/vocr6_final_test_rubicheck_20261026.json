@@ -1,0 +1,53 @@
+{
+ "all_equal": true,
+ "counter_candidates": 55,
+ "differences": [],
+ "finder_source": "checkout",
+ "fix": 0,
+ "lm": "vocr_lm_o3_1000k.vlm",
+ "lm_settings": {
+  "alpha": 500,
+  "beam": 8,
+  "beta": 3500,
+  "bracket": 8000,
+  "flags": 2,
+  "gate": 8000,
+  "topk": 8
+ },
+ "note": "development data only (hooked train titles' hval and train regions; no protected set): vocr6_final_test.py rubicheck, path (b)'s finder (fix 0, as this Rubi checkout runs it) and line read against Rubi's own host tool vjo-ocr built from that checkout, with the models and LM it pins (VOCR5's gated blobs, ctclm.2's 1 MB LM); per tier: boxes, dark flags, each line's text and greedy text, and the job's text",
+ "regions": 331,
+ "rubi_head": "cbaa4e3c8c44337386e3f88afff1f7613534a703",
+ "sampled": 331,
+ "tiers": {
+  "L": {
+   "boxes_equal": 331,
+   "cascaded": 0,
+   "greedy_equal": 543,
+   "job_text_equal": 331,
+   "line_text_equal": 543,
+   "lines": 543,
+   "regions": 331,
+   "rereads": 6
+  },
+  "N": {
+   "boxes_equal": 331,
+   "cascaded": 102,
+   "greedy_equal": 543,
+   "job_text_equal": 331,
+   "line_text_equal": 543,
+   "lines": 543,
+   "regions": 331,
+   "rereads": 9
+  },
+  "S": {
+   "boxes_equal": 331,
+   "cascaded": 117,
+   "greedy_equal": 543,
+   "job_text_equal": 331,
+   "line_text_equal": 543,
+   "lines": 543,
+   "regions": 331,
+   "rereads": 3
+  }
+ }
+}

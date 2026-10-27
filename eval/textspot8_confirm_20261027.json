@@ -1,0 +1,325 @@
+{
+ "kind": "textspot8-confirmation",
+ "computed": "2026-10-27T12:48:08Z",
+ "protocol_sha256": "17260b4d1f5477b0b91102280d9800e894c57f6e1468716e68f3674da7f2709d",
+ "dev_record_sha256": "163e5fc28398e741e8f74f6d80388ccf37d1ccab66326c2f599a6220726bd99a",
+ "units": {
+  "file": "vocr6-spotter3's frozen confirmation units (private)",
+  "sha256": "afc93c818ba29dfa3f96177feeb7c3fac32645c219f53a2cc0f96f898e41de89",
+  "public_manifest": "eval/textspot7_confirm_units_v1.json (feat/textspot7 3781f2f)",
+  "vns": 41,
+  "units": 516,
+  "base_regions": 172
+ },
+ "baselines": {
+  "rubi,fix=1": {
+   "cer": 4.2908,
+   "source": "vocr6-spotter3's stored read (eval/confirm_grad_refine_fix1/confirm.json), same pins",
+   "sha256": "dce7efb2c157895e0ccb32bdc4155fb372aea2e8a1126d1f94c8dea5aaf7952c"
+  },
+  "GRAD + refine": {
+   "cer": 5.0095,
+   "sha256": "13f2d92bb0f350efd944488861ae707bd80c646ccaae229c410f20788e902287"
+  }
+ },
+ "read_once": {
+  "attempt_utc": "2026-10-27T12:45:44Z",
+  "complete_utc": "2026-10-27T12:46:46Z"
+ },
+ "qualifiers": {
+  "crop": {
+   "seed": 3,
+   "cer": 1.8601,
+   "by_platform": {
+    "psp": 1.993,
+    "vita": 0.6438
+   },
+   "line_recall": 0.9625,
+   "box_precision": 0.9516,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -5.694843,
+     -0.299134
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.4308
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -6.437039,
+     -0.717604
+    ],
+    "dropped_resamples": 0,
+    "delta": -3.1494
+   },
+   "vns_better_worse_level_vs_fix1": [
+    17,
+    12,
+    12
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "2baae000e876872d3ff8ffab8a6cd595f128b9181a360b096b9c46a358cf1ca8"
+  },
+  "crop+refine": {
+   "seed": 1,
+   "cer": 1.8953,
+   "by_platform": {
+    "psp": 2.032,
+    "vita": 0.6438
+   },
+   "line_recall": 0.9604,
+   "box_precision": 0.9615,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -5.404051,
+     -0.344311
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.3955
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -6.163157,
+     -0.787291
+    ],
+    "dropped_resamples": 0,
+    "delta": -3.1142
+   },
+   "vns_better_worse_level_vs_fix1": [
+    20,
+    9,
+    12
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "06db206addd65fd37a22c1b13e75993acca651dc55f6caadb681664bdaf54692"
+  },
+  "ctx": {
+   "seed": 1,
+   "cer": 2.2828,
+   "by_platform": {
+    "psp": 2.3681,
+    "vita": 1.5021
+   },
+   "line_recall": 0.9479,
+   "box_precision": 0.9676,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -5.356881,
+     0.210748
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.008
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -6.052814,
+     -0.262957
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.7267
+   },
+   "vns_better_worse_level_vs_fix1": [
+    13,
+    15,
+    13
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "d2967a805804fdb3bd4ad79f932bf9b57b91b711e5ad443c423792bd79332019"
+  },
+  "det": {
+   "seed": 1,
+   "cer": 3.1001,
+   "by_platform": {
+    "psp": 3.1809,
+    "vita": 2.3605
+   },
+   "line_recall": 0.9281,
+   "box_precision": 0.976,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -4.014107,
+     1.103793
+    ],
+    "dropped_resamples": 0,
+    "delta": -1.1907
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -4.76562,
+     0.521246
+    ],
+    "dropped_resamples": 0,
+    "delta": -1.9094
+   },
+   "vns_better_worse_level_vs_fix1": [
+    18,
+    11,
+    12
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "e0a379ab96450c8eed9d4291576ecc72f5d83d1b9984b00332877b1addade113"
+  },
+  "det+refine": {
+   "seed": 1,
+   "cer": 3.3256,
+   "by_platform": {
+    "psp": 3.4076,
+    "vita": 2.5751
+   },
+   "line_recall": 0.925,
+   "box_precision": 0.9719,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -3.823965,
+     1.356978
+    ],
+    "dropped_resamples": 0,
+    "delta": -0.9653
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -4.55289,
+     0.773995
+    ],
+    "dropped_resamples": 0,
+    "delta": -1.6839
+   },
+   "vns_better_worse_level_vs_fix1": [
+    13,
+    13,
+    15
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "484f718a03781ac5be5ff5ebbe1b64ee15f3f3e33b69cfee479988445a873e13"
+  },
+  "det+D": {
+   "seed": 2,
+   "cer": 2.1842,
+   "by_platform": {
+    "psp": 2.3994,
+    "vita": 0.2146
+   },
+   "line_recall": 0.9875,
+   "box_precision": 0.9814,
+   "vs_rubi_fix1": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -5.199893,
+     0.134329
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.1067
+   },
+   "vs_grad_refine": {
+    "clusters": 41,
+    "min_clusters": 5,
+    "reps": 10000,
+    "seed": 0,
+    "ci95": [
+     -5.910616,
+     -0.357562
+    ],
+    "dropped_resamples": 0,
+    "delta": -2.8253
+   },
+   "vns_better_worse_level_vs_fix1": [
+    18,
+    6,
+    17
+   ],
+   "guard_not_resolved_worse": true,
+   "result_sha256": "881600df9e574e3f7ea9c7296e8edec392816fbed63984ac369115132c123bba"
+  }
+ },
+ "pick": {
+  "arm": "t8_t64n8c16",
+  "decode": "crop",
+  "seed": 3,
+  "rule": "the cheapest qualifier (cost order) that meets the confirmation guard"
+ },
+ "rubi_default": {
+  "rule": "amendment 5: against rubi,fix=1, hval resolved below 0, unseen dev not resolved above 0, confirmation not resolved above 0",
+  "hval": {
+   "delta": -1.9782,
+   "clusters": 46,
+   "min_clusters": 5,
+   "reps": 10000,
+   "seed": 0,
+   "ci95": [
+    -5.383188,
+    -0.108689
+   ],
+   "dropped_resamples": 0
+  },
+  "dev": {
+   "delta": -1.3907,
+   "clusters": 92,
+   "min_clusters": 5,
+   "reps": 10000,
+   "seed": 0,
+   "ci95": [
+    -3.958137,
+    0.159946
+   ],
+   "dropped_resamples": 0
+  },
+  "confirmation": {
+   "clusters": 41,
+   "min_clusters": 5,
+   "reps": 10000,
+   "seed": 0,
+   "ci95": [
+    -5.694843,
+    -0.299134
+   ],
+   "dropped_resamples": 0,
+   "delta": -2.4308
+  },
+  "pass": true,
+  "finder": "spotter"
+ },
+ "verdict": "positive"
+}

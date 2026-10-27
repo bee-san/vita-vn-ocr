@@ -133,3 +133,63 @@ def test_shift_boxes(tmp_path):
     E8.cmd_shift_boxes(type("A", (), {"rows": str(rows), "dx": 0, "dy": -2, "out": str(out)}))
     got = json.loads(out.read_text())
     assert got["boxes"] == [[10, 12, 100, 16, 0], [0, 1, 50, 2, 1]]
+
+
+def _result(errors, chars=100, vns=("v1", "v2", "v3", "v4", "v5", "v6")):
+    units = []
+    for i, (vn, e) in enumerate(zip(vns, errors)):
+        units.append({"uid": f"u{i}", "cluster": vn, "platform": "vita" if i % 2 else "psp", "errors": e,
+                      "chars": chars, "lines": 2, "boxes": 2, "whole": 2, "cut": 0, "missed": 0, "merged": 0,
+                      "junk": 0})
+    return {"units": units}
+
+
+def test_report_pair_spread_and_summary():
+    import textspot8_report as R
+    a, b = _result([0, 1, 0, 2, 1, 0]), _result([5, 6, 4, 7, 5, 6])
+    p = R.pair(R.units_of(a), R.units_of(b))
+    assert p["delta"] == pytest.approx(100 * (4 - 33) / 600, abs=1e-4) and p["ci95"][1] < 0
+    s = R.spread(R.units_of(a), R.units_of(b))
+    assert s["better"] == 6 and s["worse"] == 0 and s["gains"][0][0] in {"v2", "v6", "v4"}
+    sm = R.summary(R.units_of(a))
+    assert sm["cer"] == pytest.approx(100 * 4 / 600, abs=1e-3) and sm["line_recall"] == 1.0
+    assert R.units_of(a, exclude=("v1",))[0]["cluster"] == "v2"
+
+
+def test_select_default_rule_amendment5():
+    import textspot8_select as S8
+    below = {"ci95": [-2.0, -0.1]}
+    straddle = {"ci95": [-2.0, 0.2]}
+    above = {"ci95": [0.1, 0.5]}
+    assert S8.default_t8({"hval": below, "dev": straddle})            # hval resolved better, dev not worse
+    assert not S8.default_t8({"hval": straddle, "dev": below})        # hval not resolved better
+    assert not S8.default_t8({"hval": below, "dev": above})           # dev resolved worse
+    assert S8.S6.DECODES[:3] == ("crop", "crop+refine", "ctx")
+
+
+def test_table_extra_rows(tmp_path):
+    import textspot8_table as T8
+    ev, run = tmp_path / "ev", tmp_path / "run"
+    (ev / "a9" / "out").mkdir(parents=True)
+    run.mkdir()
+    (run / "run.json").write_text(json.dumps({"shape": {"name": "t64n8c16"}}))
+    (run / "final.vtsp").write_bytes(b"\0" * 52176)
+    (ev / "parity.json").write_text(json.dumps({"all_equal": True}))
+    for f in ("dev_ctx.json", "hval_ctx.json", "dev_det+D.json", "hval_det+D.json", "dev_F+D.json", "hval_F+D.json"):
+        (ev / f).write_text("{}")
+    (ev / "parity_ctx_dev.json").write_text(json.dumps({"all_equal": True}))
+    (ev / "parity_ctx_hval.json").write_text(json.dumps({"all_equal": True}))
+    (ev / "parity_D_dev.json").write_text(json.dumps({"post": {"equal": True}}))
+    (ev / "parity_D_hval.json").write_text(json.dumps({"post": {"equal": False}}))
+    (ev / "a9" / "out" / "a9_t7_D.json").write_text(json.dumps({"max_one_ms_333": 33.0}))
+    det = {"t64n8c16": {"ms_333": 264.2, "ms_444": 198.2, "arena": 244607}}
+    rows = {r["decode"]: r for r in T8.extra_rows("n", "t8", 1, ev, run, det, det)}
+    assert rows["ctx"]["c_equal"] is True and rows["ctx"]["est_ms_333"] == 264.2
+    assert rows["det+D"]["est_ms_333"] == 297.2 and rows["det+D"]["c_equal"] is False
+    assert rows["F+D"]["est_ms_333"] == round(264.2 + T8.GRAD_MS_333 + 33.0, 1) and "F" not in rows
+
+
+def test_ctx_grown_region():
+    import textspot8_ctx as C
+    assert C.grown((10, 20, 110, 60), 48, 960, 544) == (0, 0, 158, 108)
+    assert C.grown((900, 500, 950, 540), 48, 960, 544) == (852, 452, 960, 544)

@@ -170,6 +170,13 @@ How the read ran:
 - VOCR5's path (a) again equals its published records, 29 of 29 checks.
 - No read errors and no finder errors.
 
+Path (a) reads the shipped blobs as given, with their heads off in vocr3_report, vocr_cli and clannad_refs. vocr6-lead
+also named the plain blobs (`v6f4h_N_seed1_w8.vocr`, `v6f4h_L_seed1_w8.vocr`, and v0.3.0's `VOCR5_S_w8.vocr`). On
+development data the two read the same: `eval/vocr6_final_test.py plaincheck` on 3,000 crops of vocr6-lead's hval
+plan v1 (153,949 frames) finds every tier equal on every crop: the greedy text, conf_min, the top-8 and blank
+logits, and the top-8 class texts in order (`eval/vocr6_final_test_plaincheck_20261027.json`). That is expected: the
+two-level blob only permutes the head's rows, and the gated one only adds a section.
+
 Records:
 
 - `eval/vocr6_final_test_20261027.json`: every measure, with counts, rates and intervals.

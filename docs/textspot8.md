@@ -298,6 +298,25 @@ same pins.
   rest of the screen. No dialogue box appears on any of the 25 text-free frames.
 - **hval boxes** against the verified lines (F1, seed 3): Vita 0.860, PSP 2x 0.949, PSP native 0.935.
 
+### Empty regions (report only)
+
+eval/linefind's 66 development and 25 report text-free regions (textgate's set), read with the crop decode as Rubi
+reads a region (`eval/textspot8_empty.py`). The share is the regions given no line at all:
+
+| finder | development: no line | report: no line |
+|---|---:|---:|
+| GRAD + refine (textgate's record) | 5 / 66 | |
+| textspot6 base_t64n8c16 s1 | 62 / 66 | 25 / 25 |
+| textspot6 research release (qS4) | 57 / 66 | 25 / 25 |
+| student s1 / s2 / **s3** | 39 / 30 / **39** of 66 | 19 / 21 / **18** of 25 |
+
+- The student leaves fewer empty regions empty than textspot6 did: 59% against 86-94%. Its tight-region and zoom
+  windows probably taught it to box more faint marks, but that was not checked.
+- It still does far better than GRAD + refine (8%). That is why its Rubi path does not fall back to GRAD when it finds
+  no line: on the measured sets with text it returns a line in every unit (0 of 1,161 dev, 6,327 hval and 516
+  confirmation units without a box), so a fallback on "no line" would only bring GRAD's junk back to empty regions.
+- The text gate (#100, opt-in) stays a GRAD-path option.
+
 ### Spinners and page cursors (report only)
 
 276 dev units (the regions where an icon drawn 0.35 line heights after the last line's end lies inside the region),

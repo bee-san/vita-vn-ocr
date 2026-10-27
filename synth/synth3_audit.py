@@ -38,7 +38,10 @@ def main():
     ap.add_argument("--sheet")
     herd = Path(os.environ.get("HERD", "/local/home/skerraut/herd-vita-ocr"))
     ap.add_argument("--font", default=str(herd / "shared/data/fonts/notosansjp/NotoSansJP[wght].ttf"))
+    ap.add_argument("--keys", default="platform,crop,cat,raster,kind,layout",
+                    help="meta keys to report strata for (synth6: platform,view,crop,kind,mode,placement,font_kind)")
     args = ap.parse_args()
+    keys = [k for k in args.keys.split(",") if k]
     import backends
     paths = sorted(glob.glob(args.shards))
     rng = np.random.default_rng(args.seed)
@@ -72,8 +75,7 @@ def main():
         e = lev(pred, ref)
         r.update(pred=pred, errors=e, chars=len(ref))
         m = r["meta"]
-        for k in ("all", f"platform:{m.get('platform')}", f"crop:{m.get('crop')}", f"cat:{m.get('cat')}",
-                  f"raster:{str(m.get('raster', ''))[:5]}", f"kind:{m.get('kind')}", f"layout:{m.get('layout')}"):
+        for k in ["all"] + [f"{key}:{str(m.get(key, ''))[:5] if key == 'raster' else m.get(key)}" for key in keys]:
             s = strata[k]
             s[0] += e
             s[1] += len(ref)

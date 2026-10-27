@@ -1,0 +1,616 @@
+{
+ "kind": "vocr6-psp-stage1-seed1",
+ "comparator": "VOCR5-S (v0.3.0), W8F = W8I on the plans",
+ "arms": {
+  "B20": {
+   "run": "mb_B20_seed1",
+   "blob_sha256": "d4cbafaa81ac0562dd7e336b649cf2cf5dff506892e75fc2958780c47f632f25",
+   "blob_bytes": 756432,
+   "SC": 11.2583,
+   "hval_cer": {
+    "clean_lines": 3.4952,
+    "page_grad_refine": 12.3749,
+    "page_recovery_refine": 12.8856
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 12.9361,
+    "native_psp_fixed_dialogue": 7.3474,
+    "native_psp_wd_recovery_refine": 14.1856,
+    "native_psp_names": 32.4416
+   },
+   "blank_share_dev_wd": 0.5064,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 6.449982,
+      "vn_ci95": [
+       4.492676,
+       8.735628
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 6.174267,
+      "vn_ci95": [
+       4.372432,
+       8.368418
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 6.399422,
+      "vn_ci95": [
+       4.447249,
+       8.678226
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 25.389105,
+      "vn_ci95": [
+       20.857288,
+       30.210669
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 4.738815,
+      "vn_ci95": [
+       2.310086,
+       7.766626
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": 2.231457,
+      "vn_ci95": [
+       1.55999,
+       3.050147
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 4.783521,
+      "vn_ci95": [
+       2.329431,
+       7.858492
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "B24": {
+   "run": "mb_B24_seed1",
+   "blob_sha256": "836f8f2b4683d848ee1d5ce1d048eeb53596c9efd56297c667c76a32a3a0657f",
+   "blob_bytes": 756432,
+   "SC": 8.6872,
+   "hval_cer": {
+    "clean_lines": 1.7305,
+    "page_grad_refine": 9.8783,
+    "page_recovery_refine": 10.37
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 10.4153,
+    "native_psp_fixed_dialogue": 4.577,
+    "native_psp_wd_recovery_refine": 11.6576,
+    "native_psp_names": 22.9572
+   },
+   "blank_share_dev_wd": 0.5826,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 3.929216,
+      "vn_ci95": [
+       2.629345,
+       5.585564
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 3.403833,
+      "vn_ci95": [
+       2.347116,
+       4.750808
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 3.871434,
+      "vn_ci95": [
+       2.571589,
+       5.533097
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 15.904669,
+      "vn_ci95": [
+       11.718033,
+       20.462828
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 2.242168,
+      "vn_ci95": [
+       0.921963,
+       3.968973
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": 0.466784,
+      "vn_ci95": [
+       0.025807,
+       0.927306
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 2.26796,
+      "vn_ci95": [
+       0.944211,
+       4.007792
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "B24c1": {
+   "run": "mb_B24c1_seed1",
+   "blob_sha256": "39a186a950d9631e2462ff717fd002f8b2990d5cd79b7982363c9b7fd28dee09",
+   "blob_bytes": 713296,
+   "SC": 9.7675,
+   "hval_cer": {
+    "clean_lines": 2.5104,
+    "page_grad_refine": 10.5901,
+    "page_recovery_refine": 11.0647
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 11.831,
+    "native_psp_fixed_dialogue": 6.0586,
+    "native_psp_wd_recovery_refine": 13.0589,
+    "native_psp_names": 25.8755
+   },
+   "blank_share_dev_wd": 0.5689,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 5.34489,
+      "vn_ci95": [
+       3.929204,
+       7.017189
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 4.885437,
+      "vn_ci95": [
+       3.534552,
+       6.537077
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 5.272662,
+      "vn_ci95": [
+       3.855974,
+       6.93548
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 18.822957,
+      "vn_ci95": [
+       14.580753,
+       23.366645
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 2.954022,
+      "vn_ci95": [
+       1.446186,
+       4.922471
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": 1.246656,
+      "vn_ci95": [
+       0.965082,
+       1.540142
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 2.962619,
+      "vn_ci95": [
+       1.453693,
+       4.933079
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "B32": {
+   "run": "mb_B32_seed1",
+   "blob_sha256": "7f8c640083c5bee6379f4e8d51088d4048d2c57b89fb955a693f73b698d0d5e2",
+   "blob_bytes": 756432,
+   "SC": 6.6942,
+   "hval_cer": {
+    "clean_lines": 1.0076,
+    "page_grad_refine": 7.8854,
+    "page_recovery_refine": 8.372
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 8.3568,
+    "native_psp_fixed_dialogue": 2.6493,
+    "native_psp_wd_recovery_refine": 9.6641,
+    "native_psp_names": 15.5642
+   },
+   "blank_share_dev_wd": 0.6831,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 1.870711,
+      "vn_ci95": [
+       1.142447,
+       2.753007
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 1.476096,
+      "vn_ci95": [
+       0.893522,
+       2.250364
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 1.877934,
+      "vn_ci95": [
+       1.14829,
+       2.767335
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 8.511673,
+      "vn_ci95": [
+       5.766844,
+       11.37158
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 0.249321,
+      "vn_ci95": [
+       -0.175781,
+       0.78537
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": -0.256162,
+      "vn_ci95": [
+       -0.756453,
+       0.122581
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 0.269954,
+      "vn_ci95": [
+       -0.15328,
+       0.801261
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "S18": {
+   "run": "mb_S18_seed1",
+   "blob_sha256": "bc48d0a087271a19012c9c00cac4f9891655c1aced4b6916f31be9c783c7b813",
+   "blob_bytes": 819792,
+   "SC": 11.2315,
+   "hval_cer": {
+    "clean_lines": 3.5009,
+    "page_grad_refine": 12.3594,
+    "page_recovery_refine": 12.9612
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 12.9866,
+    "native_psp_fixed_dialogue": 7.2208,
+    "native_psp_wd_recovery_refine": 14.2001,
+    "native_psp_names": 30.5447
+   },
+   "blank_share_dev_wd": 0.4605,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 6.500542,
+      "vn_ci95": [
+       4.500427,
+       8.843917
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 6.047588,
+      "vn_ci95": [
+       4.219981,
+       8.32478
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 6.413868,
+      "vn_ci95": [
+       4.42394,
+       8.767378
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 23.492218,
+      "vn_ci95": [
+       19.18524,
+       28.157426
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 4.72334,
+      "vn_ci95": [
+       2.21951,
+       7.830107
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": 2.237149,
+      "vn_ci95": [
+       1.499333,
+       3.066789
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 4.859177,
+      "vn_ci95": [
+       2.252273,
+       8.099363
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "S18c1": {
+   "run": "mb_S18c1_seed1",
+   "blob_sha256": "cd8436e20a11006d4e85ab4f08c5c535a431865fb98c06f755d15dd445d46ee6",
+   "blob_bytes": 776656,
+   "SC": 11.7427,
+   "hval_cer": {
+    "clean_lines": 4.11,
+    "page_grad_refine": 12.8082,
+    "page_recovery_refine": 13.3275
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 13.225,
+    "native_psp_fixed_dialogue": 8.1295,
+    "native_psp_wd_recovery_refine": 14.4312,
+    "native_psp_names": 33.5117
+   },
+   "blank_share_dev_wd": 0.4446,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 6.738895,
+      "vn_ci95": [
+       4.802438,
+       9.052508
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": 6.956378,
+      "vn_ci95": [
+       5.034978,
+       9.261705
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 6.644998,
+      "vn_ci95": [
+       4.706822,
+       8.966424
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 26.459144,
+      "vn_ci95": [
+       21.657974,
+       31.930745
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": 5.172117,
+      "vn_ci95": [
+       2.621747,
+       8.376255
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": 2.846246,
+      "vn_ci95": [
+       1.968547,
+       3.817512
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": 5.22542,
+      "vn_ci95": [
+       2.638396,
+       8.481764
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  },
+  "S32": {
+   "run": "mb_S32_seed1",
+   "blob_sha256": "c71ce5035fe5990a137c3ce449db714a3e04744b9e67b7f6b47f0715d8793995",
+   "blob_bytes": 819792,
+   "SC": 5.3736,
+   "hval_cer": {
+    "clean_lines": 0.518,
+    "page_grad_refine": 6.9105,
+    "page_recovery_refine": 7.373
+   },
+   "dev_cer": {
+    "native_psp_wd_grad_refine": 6.5222,
+    "native_psp_fixed_dialogue": 1.1511,
+    "native_psp_wd_recovery_refine": 7.8512,
+    "native_psp_names": 7.1012
+   },
+   "blank_share_dev_wd": 0.6895,
+   "vs_VOCR5S": {
+    "dev": {
+     "wd_grad": {
+      "delta": 0.036114,
+      "vn_ci95": [
+       -0.240872,
+       0.313916
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "fixed": {
+      "delta": -0.022031,
+      "vn_ci95": [
+       -0.232904,
+       0.161491
+      ],
+      "units": 1276,
+      "clusters": 31
+     },
+     "wd_recovery": {
+      "delta": 0.065005,
+      "vn_ci95": [
+       -0.209466,
+       0.349524
+      ],
+      "units": 627,
+      "clusters": 55
+     },
+     "names": {
+      "delta": 0.048638,
+      "vn_ci95": [
+       -1.314384,
+       1.373626
+      ],
+      "units": 628,
+      "clusters": 29
+     }
+    },
+    "hval": {
+     "hp_grad": {
+      "delta": -0.72561,
+      "vn_ci95": [
+       -1.321206,
+       -0.290971
+      ],
+      "units": 2403,
+      "clusters": 15
+     },
+     "hl": {
+      "delta": -0.745716,
+      "vn_ci95": [
+       -1.430615,
+       -0.286282
+      ],
+      "units": 1096,
+      "clusters": 15
+     },
+     "hp_recovery": {
+      "delta": -0.729048,
+      "vn_ci95": [
+       -1.335675,
+       -0.288589
+      ],
+      "units": 2403,
+      "clusters": 15
+     }
+    }
+   }
+  }
+ },
+ "note": "paired by row position (eval/modelb_eval.py compare): the hval plan holds 9 units named twice (two regions of one variant on one page)"
+}

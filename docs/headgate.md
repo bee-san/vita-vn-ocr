@@ -56,7 +56,7 @@ the layout).
 - `vocr_opts.head_gate` is `VOCR_HEAD_GATE_OFF` by default: today's output, arena and code path. The gate-off
   instruction count on the Vita build is 0.13-0.34% below main's (the top-K rows' offsets are now computed once per
   batch, not per class block).
-- `VOCR_HEAD_GATE_ON` needs W8I and a gated blob, else `VOCR_E_MODE`. `VOCR_HEAD_GATE_SCORE` computes the scores
+- `VOCR_HEAD_GATE_ON` needs a gated blob, else `VOCR_E_MODE`. Since #126 (model B for the PSP, `docs/vocr6-psp.md`) it runs in every mode: the gate's own arithmetic is the same in each, and a skipped frame's blank logit is the run's head arithmetic. Everything measured here is W8I. `VOCR_HEAD_GATE_SCORE` computes the scores
   only. A run that asks for the logits, or sets `vocr_extra.ungated`, skips nothing.
 - API and checks: [runtime/README.md](../runtime/README.md), "Skipping the output head on blank frames".
 

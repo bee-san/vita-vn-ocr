@@ -607,6 +607,30 @@
     "runtime/vocr.c": "83cb778c482853d43bd2c361818793efdb9e9dcb50a6fff3c14f9fcf2e39ffda",
     "runtime/vocr.h": "a2fbed39216433dff01a44dd8b3ed0838c613f2aee4afe16a652dd2d3429297e"
    }
+  },
+  {
+   "id": 11,
+   "utc": "2026-10-26T12:33:24Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change (as amendments 8-10): runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with, gained VOCR6 stage 3's attention op (#125, docs/vocr6-attn.md: op type 5, which a blob without it never reaches) on top of amendment 10's runtime. A blob without the op, which is every blob these protocols read, runs bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes and runtime/tests/parity.py's bit-exact model are unchanged, and main's and this runtime give identical logits, text and arena on VOCR5-S/N/L (W8F, W8I), the gated and two-level blobs"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+    "runtime/vocr.h": "c9670efd980a993f98307e6093ca17c7595f64a09c11a3d4c7bb6cea84993de5"
+   }
+  },
+  {
+   "id": 12,
+   "utc": "2026-10-26T17:35:04Z",
+   "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
+   "what": [
+    "A harness file re-pinned, not a textspot3 change (as amendments 8-11): runtime/vocr.c and runtime/vocr.h, the recognizer the scores read text with, gained #126's head gate in W8F and F32 and two-level head in W8F (model B for the PSP; docs/vocr6-psp.md) on top of amendment 11's attention op: vocr_opts.head_gate is accepted in every mode with a gated blob and vocr_opts.two_level in W8I and W8F; a skipped frame's blank logit and the two-level head's rows use the run's own head arithmetic. W8I runs and every run with both options off (every textspot path) are bit for bit as before: runtime/tests/test_vocr.c's known-answer logit hashes are unchanged, and its gate and two-level tests now also run in W8F (and the gate in F32) against references read in the same mode"
+   ],
+   "sources_sha256": {
+    "runtime/vocr.c": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+    "runtime/vocr.h": "0b43a90131acd955326c879d8f71e011607ab94d704be93dc8df1951ee44d371"
+   }
   }
  ],
  "shapes": {

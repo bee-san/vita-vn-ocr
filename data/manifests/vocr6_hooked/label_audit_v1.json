@@ -1,0 +1,309 @@
+{
+ "kind": "vocr6-hooked-label-audit",
+ "reviewer_kind": "assistant",
+ "lines": 320,
+ "strata": {
+  "all": {
+   "ok": 315,
+   "wrong": 5
+  },
+  "furigana": {
+   "ok": 37,
+   "wrong": 3
+  },
+  "glyph_cells": {
+   "ok": 100
+  },
+  "image_rows": {
+   "ok": 98,
+   "wrong": 2
+  },
+  "name": {
+   "ok": 40
+  },
+  "platform:psp": {
+   "ok": 118
+  },
+  "platform:vita": {
+   "ok": 197,
+   "wrong": 5
+  },
+  "ruby": {
+   "ok": 20
+  },
+  "title:NPJG00016": {
+   "ok": 8
+  },
+  "title:NPJH00140": {
+   "ok": 5
+  },
+  "title:NPJH50001": {
+   "ok": 8
+  },
+  "title:NPJH50002": {
+   "ok": 14
+  },
+  "title:NPJH50132": {
+   "ok": 11
+  },
+  "title:NPJH50279": {
+   "ok": 8
+  },
+  "title:NPJH50297": {
+   "ok": 5
+  },
+  "title:NPJH50356": {
+   "ok": 3
+  },
+  "title:NPJH50382": {
+   "ok": 7
+  },
+  "title:NPJH50551": {
+   "ok": 14
+  },
+  "title:NPJH50621": {
+   "ok": 8
+  },
+  "title:NPJH50641": {
+   "ok": 10
+  },
+  "title:NPJH50649": {
+   "ok": 8
+  },
+  "title:PCSG00007": {
+   "ok": 7
+  },
+  "title:PCSG00146": {
+   "ok": 17
+  },
+  "title:PCSG00352": {
+   "ok": 12
+  },
+  "title:PCSG00367": {
+   "ok": 5
+  },
+  "title:PCSG00380": {
+   "ok": 3
+  },
+  "title:PCSG00468": {
+   "ok": 8
+  },
+  "title:PCSG00469": {
+   "ok": 9
+  },
+  "title:PCSG00509": {
+   "ok": 9
+  },
+  "title:PCSG00540": {
+   "ok": 14,
+   "wrong": 1
+  },
+  "title:PCSG00547": {
+   "ok": 5
+  },
+  "title:PCSG00553": {
+   "ok": 5
+  },
+  "title:PCSG00555": {
+   "ok": 7
+  },
+  "title:PCSG00576": {
+   "ok": 2
+  },
+  "title:PCSG00611": {
+   "ok": 2
+  },
+  "title:PCSG00620": {
+   "ok": 3
+  },
+  "title:PCSG00628": {
+   "ok": 13,
+   "wrong": 1
+  },
+  "title:PCSG00648": {
+   "ok": 12
+  },
+  "title:PCSG00653": {
+   "ok": 20
+  },
+  "title:PCSG00666": {
+   "ok": 2
+  },
+  "title:PCSG00667": {
+   "ok": 4
+  },
+  "title:PCSG00713": {
+   "ok": 4
+  },
+  "title:PCSG00751": {
+   "ok": 5
+  },
+  "title:PCSG00753": {
+   "ok": 2
+  },
+  "title:PCSG00805": {
+   "ok": 3
+  },
+  "title:PCSG00807": {
+   "wrong": 3,
+   "ok": 2
+  },
+  "title:PCSG00854": {
+   "ok": 2
+  },
+  "title:PCSG00866": {
+   "ok": 4
+  },
+  "title:PCSG00876": {
+   "ok": 2
+  },
+  "title:PCSG00914": {
+   "ok": 3
+  },
+  "title:PCSG00917": {
+   "ok": 5
+  },
+  "title:PCSG00918": {
+   "ok": 2
+  },
+  "title:PCSG00935": {
+   "ok": 2
+  },
+  "title:PCSG01110": {
+   "ok": 2
+  },
+  "title:ULJM05383": {
+   "ok": 7
+  },
+  "title:ULJM05674": {
+   "ok": 2
+  },
+  "vertical": {
+   "ok": 20
+  }
+ },
+ "wrong_rate_ci95": {
+  "all": [
+   0.00669,
+   0.03605
+  ],
+  "furigana": [
+   0.02584,
+   0.19865
+  ],
+  "glyph_cells": [
+   0.0,
+   0.03699
+  ],
+  "image_rows": [
+   0.0055,
+   0.07001
+  ],
+  "name": [
+   0.0,
+   0.08762
+  ],
+  "platform:psp": [
+   0.0,
+   0.03153
+  ],
+  "platform:vita": [
+   0.01062,
+   0.05663
+  ],
+  "ruby": [
+   0.0,
+   0.16113
+  ],
+  "vertical": [
+   0.0,
+   0.16113
+  ]
+ },
+ "not_ok": [
+  {
+   "line": "S04:1",
+   "id": "PCSG00540:000998:line2",
+   "stratum": "image_rows",
+   "verdict": "wrong",
+   "note": "label leads with 「 drawn left of the crop (image_rows uncited_lead_cells); class of 9 such records dropped as label_doubt"
+  },
+  {
+   "line": "S05:1",
+   "id": "PCSG00628:000234:line2",
+   "stratum": "image_rows",
+   "verdict": "wrong",
+   "note": "same class as S04:1 (uncited lead 「 outside the crop); now dropped as label_doubt"
+  },
+  {
+   "line": "S06:12",
+   "id": "PCSG00807:000365:line3",
+   "stratum": "furigana",
+   "verdict": "wrong",
+   "note": "PCSG00807 (test): the furigana band holds an unlabelled short dialogue line (band 1.4-1.6x the text height; 5 such lines, no ruby record); now cut at box_main and the page left out of page-path regions"
+  },
+  {
+   "line": "S07:4",
+   "id": "PCSG00807:000036:line3",
+   "stratum": "furigana",
+   "verdict": "wrong",
+   "note": "PCSG00807 tall band (unlabelled line above); fixed by the tall-band rule"
+  },
+  {
+   "line": "S07:16",
+   "id": "PCSG00807:000335:line3",
+   "stratum": "furigana",
+   "verdict": "wrong",
+   "note": "PCSG00807 tall band; fixed"
+  }
+ ],
+ "sample": {
+  "seed": 20261026,
+  "quota": {
+   "image_rows": 100,
+   "furigana": 40,
+   "name": 40,
+   "ruby": 20,
+   "vertical": 20,
+   "glyph_cells": 100
+  },
+  "drawn_from": "the pools before the audit fixes (pools/v1_pre_audit); 48 of the 49 titles (NPJH50127 has no verified line)",
+  "sheets": 16,
+  "lines_per_sheet": 20,
+  "view": "each crop in screen polarity at 28 px tall, its label under it (BIZ UDGothic), <= 1280 px; zooms and page context where unsure"
+ },
+ "fixes": {
+  "label_doubt": {
+   "records": 10,
+   "rule": "image_rows rows with count.uncited_lead_cells and a label opening with a bracket (drawn left of the box), or a label opening with a closing bracket; dropped (import_hooked.label_doubt)",
+   "audit_lines": [
+    "S04:1",
+    "S05:1"
+   ]
+  },
+  "tall_band": {
+   "records": 5,
+   "titles": [
+    "PCSG00807"
+   ],
+   "rule": "a furigana band above box_main at least 0.9x the main text's height is an unlabelled text line: the crop is cut at box_main, the page gets no page-path region (import_hooked.tall_band)",
+   "audit_lines": [
+    "S06:12",
+    "S07:4",
+    "S07:16"
+   ]
+  }
+ },
+ "post_fix_check": {
+  "pools": "pools/v1 (manifest sha256 ba95ff2d6c31d2cec7fecbdfaaa516b16deafd2267d11f143e0e400086e21b3c)",
+  "identical_crop_and_label": 315,
+  "recut_and_viewed_correct": 3,
+  "dropped": 2,
+  "wrong_after_fixes": 0,
+  "of": 318,
+  "wrong_rate_ci95_wilson": [
+   0.0,
+   0.0119
+  ]
+ }
+}

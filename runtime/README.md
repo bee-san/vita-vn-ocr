@@ -1,6 +1,6 @@
 # runtime: the recognizer in plain C
 
-`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks. So is the text-presence gate (`vocr_textgate.c`, issue #100, `docs/textgate.md`): `make check-textgate`. The stroke split (`vocr_lines_split.c`, issue #98, `docs/translucent-box.md`) is a second optional step between the finder and the refinement, for text over translucent boxes and busy scenes; flags 0 leave the lines unchanged, it is not a default (its pre-registered rule did not adopt it), and `make check-split` runs its checks.
+`vocr.h` and `vocr.c` run `train/model.py` checkpoints on the console. `train/export.py` turns a checkpoint into a weights blob. The dialogue line finder that feeds it lives next to it (`vocr_lines.c`, `docs/linefind.md`); the two share nothing but naming. `make check` runs the checks of both. An optional refinement of the finder's boxes (`vocr_lines_refine.c`: `vocr_refine_lines` / `vocr_refine_lines_rows`, called after the finder with its arena; flags 0 leave the lines unchanged) is described with its measurements in `docs/finder-tighten.md`; `make check-lines` runs its self-test and its parity with `synth/lines_refine.py`. The learned text detector (`vocr_textdet.c`, issue #96, `docs/textdet.md`) is a finder mode behind a flag; it has its own section below, and `make check-textdet` runs its checks. So is the text-presence gate (`vocr_textgate.c`, issue #100, `docs/textgate.md`): `make check-textgate`. The stroke split (`vocr_lines_split.c`, issue #98, `docs/translucent-box.md`) is a second optional step between the finder and the refinement, for text over translucent boxes and busy scenes; flags 0 leave the lines unchanged, it is not a default (its pre-registered rule did not adopt it), and `make check-split` runs its checks. The finder with #129's fixes (`vocr_lines_fix.c`, `vocr_lines_fix.h`, `docs/finder-fix.md`) is the same finder with a `fix` argument (`vocr_find_lines_fix` / `vocr_find_lines_fix_rows`, the same arena): fix 0 gives `vocr_lines.c` / `vocr_lines_rows.c`'s lines bit for bit, `VOCR_FIX_DEFAULT` (COLGAP; JUNK and VALLEY are opt-in) is the measured default, and `make check-lines-fix` runs its checks.
 
 - C99. The runtime uses no `malloc` and nothing from libc except `memcpy`, `memset` and `<math.h>` (on 32-bit ARM, also libgcc's integer-division helpers; see the porting notes).
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
@@ -232,7 +232,7 @@ threshold. With the gate on, a frame scoring above the threshold skips the head 
 
 ```c
 opts.mode = VOCR_MODE_W8I;
-opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;   /* ON needs W8I and a gate */
+opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;   /* ON needs a gate (any mode) */
 size_t need = vocr_arena_bytes(&model, &opts);      /* + 48 B for VOCR5 at the default tile and batch */
 rc = vocr_init(&ctx, &model, &opts, arena, need);
 rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose head was skipped */
@@ -249,6 +249,12 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.gated: frames whose he
   gated top-K (`vocr_post_stats.contexts`): the re-decode looks at blank frames' top-K, which a skipped frame does not
   offer (docs/headgate.md, "Counters").
 - `vocr_extra.head_in` (frames × K floats) returns the head's input per frame, for fitting a gate.
+- In W8F and F32 too (#126, model B for the PSP, whose fastest mode is W8F): the gate's own arithmetic is the same in
+  every mode (the head's input quantised to int16, layer 1 through `mm_i16`), and a skipped frame's blank logit is the
+  run's own head arithmetic (W8F: the head's first block dequantised once per tile, then `mm_f32`), computed only when
+  the caller keeps the top-K. W8I runs are unchanged bit for bit. `tests/test_gate_w8f.py` checks the C library against
+  the twin in W8F and F32 at several tilings; a W8F gate adds the dequantised block (K × 8 floats) to the gate's
+  scratch (`train/export.plan_arena` mirrors it).
 - A blob without the section loads as before; an older runtime reads a gated blob as the plain version-1 blob (it
   reads only the header's byte count). `vocr_load` rejects a damaged section's structure, `vocr_check_crc` its
   content; `export.py --info` and `headgate.py info` print it.
@@ -276,7 +282,7 @@ rare block (`rare_k` and its offsets non-zero; rejected, docs/head2level.md) is 
 ```c
 opts.mode = VOCR_MODE_W8I;
 opts.head_gate = vocr_has_gate(&model) ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;
-opts.two_level = (unsigned)vocr_has_two_level(&model);   /* needs W8I and a trailer, else VOCR_E_MODE */
+opts.two_level = (unsigned)vocr_has_two_level(&model);   /* needs W8I or W8F and a trailer, else VOCR_E_MODE */
 size_t need = vocr_arena_bytes(&model, &opts);      /* + 1,456 B for VOCR5 at the default tile and batch */
 rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that also ran level 2 */
 ```
@@ -285,6 +291,10 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   frame the gate does not skip; the escape decides which of them also run level 2, the other rows, packed into one
   batch. A frame that fires gets today's logits, argmax and top-K bit for bit; one that does not gets them over the
   level-1 classes. A block whose 8 logits cannot change a frame's state is not scanned per class.
+- W8F (#126): level 1 and level 2 are W8F's head rows (`dequant8` + `mm_f32`, as the full head), the escape reads the
+  head's input quantised to int16 as in W8I, and the fired frames' float inputs are packed to the front of the
+  accumulator. The W8F head scratch then also holds the escape's int16 input. `tests/test_gate_w8f.py` checks the C
+  library against `train/head2level.py twolevel_exact(mode="w8f")` bit for bit, alone and with the gate.
 - `two_level = 0` (a zeroed `vocr_opts`) runs the full head on the permuted rows: today's output. A run that asks for
   the logits, or sets `vocr_extra.ungated`, runs the full head too (and the gate skips nothing). A caller should read
   a line again with `ungated = 1` when its reading holds a full-size カ or ケ before 月 所 年 国 条, where the escape may
@@ -304,6 +314,28 @@ rc = vocr_run(&ctx, &img, text, sizeof text, &ex);  /* ex.escaped: frames that a
   C library (with the gate, several tilings; a rare-block trailer refused); `tests/test_vocr.c` (ASan/UBSan, Cortex-A9 NEON and scalar
   under qemu) checks the trailer's validation and the runs against its own reference. CLI: `vocr_cli --two-level`;
   Python: `Vocr(blob, mode="w8i", two_level=1)`, `run_topk(..., esc=True)`.
+
+### The attention op (VOCR6 stage 3)
+
+[docs/vocr6-attn.md](../docs/vocr6-attn.md) (#125): a blob from a `train2.py --attn 1` model carries one light global
+self-attention layer (op type 5) between the bottleneck and the head: z' = z + O(concat_h softmax(Q_h K_h^T) V_h)
+over the line's frames. Nothing changes for the caller: `vocr_load` parses it (`vocr_model.attn.dim != 0`),
+`vocr_arena_bytes` plans for it and `vocr_run` runs it.
+
+- The line is streamed in tiles up to the bottleneck, as before, but every frame's bottleneck output is kept (the
+  arena grows by `max_width / stride × 96 × 4` B: +49,152 B at 1,024 px); then the attention runs over the whole line,
+  its projections in the blob's mode (f32, W8F, W8I) and its scores, softmax (the runtime's own `exp_neg`) and weighted
+  sums in float32; then the head streams over z' with the gate and the two-level head as usual (their input is z').
+- K, V and a head batch's queries overlay the rings and the head's buffers, idle at that point. The output is the
+  same for every tile and head batch size, scalar and NEON. The cancel callback is also polled per chunk of the
+  attention and per tile of the head after it.
+- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`).
+- Cost (estimates, VitaSDK gcc `-O2`, NEON, docs/vocr6-attn.md): about 0.066 ms a frame for the projections plus
+  0.0010 ms × T for the scores on a line of T frames at 333 MHz (+35 ms per nominal 3-line box for VOCR5-N's shape);
+  `vocr.o` grows from 23,267 to 25,979 B (scalar 18,295 to 21,079 B; psp-gcc 28,091 to 32,603 B); no malloc.
+- Twin and tests: `runtime/tests/vocr_ref.py attn_exact` is bit-exact; `parity.py --fixture --attn 1` (run by
+  `make check` through the sanitized CLI, and by `make parity-arm`), `tests/test_vocr6_attn.py` and
+  `tests/test_vocr.c` check it.
 
 ### Counters and cut lines (`vocr_post.h`, `vocr_lines_widen.h`)
 
@@ -399,7 +431,7 @@ python train/export.py --ckpt models/v1/ckpt_best.pt --out v1_w8.vocr --int8
 python train/export.py --info v1_w8.vocr          # sizes and arena bytes at 256/640/1024
 ```
 
-It folds BatchNorm into the convolutions (in float64) and maps the model to five op types: one-input-channel conv (the stem), depthwise conv, pointwise conv (including the 2×1 height collapse as a pointwise over two rows), and the head. With `--int8`, every pointwise and head matrix becomes symmetric per-channel int8.
+It folds BatchNorm into the convolutions (in float64) and maps the model to five op types: one-input-channel conv (the stem), depthwise conv, pointwise conv (including the 2×1 height collapse as a pointwise over two rows), and the head. With `--int8`, every pointwise and head matrix becomes symmetric per-channel int8. A `train2.py --attn 1` model adds a sixth, the attention op before the head (its Q, K, V and O matrices int8 too; "The attention op" above).
 
 The blob is version 1:
 - a 64-byte header: magic `VOCR`, version, sizes, a CRC-32 and the checkpoint's SHA-256 prefix;

@@ -27,7 +27,8 @@
 #                         eval/charbox.py), then the
 #                         recognizer's: C unit tests and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan),
-#                         plus the same parity on stride-16 and stride-12 fixture models
+#                         plus the same parity on stride-16 and stride-12 fixture models and on one
+#                         with the attention op (docs/vocr6-attn.md)
 #   make check-all        check with gcc and clang, plus strict release builds of both
 #   make arm              static Cortex-A9 CLIs for qemu-arm: NEON and scalar
 #   make check-arm        the C unit tests as Cortex-A9 NEON and scalar builds, under qemu-arm
@@ -101,9 +102,10 @@ $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
-       check-textspot3 check-textspot6 check-post check-widen check-charbox check-vocr
+       check-textspot3 check-textspot6 check-post check-widen check-charbox check-vocr check-lines-fix
 
 include vocr_lines.mk
+include vocr_lines_fix.mk
 include vocr_lines_split.mk
 include vocr_textdet.mk
 include vocr_textgate.mk
@@ -127,6 +129,10 @@ check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_che
 	      --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(OUT)/parity_report_s$$s.json" > /dev/null \
 	  || { echo "stride-$$s fixture parity failed: $(OUT)/parity_report_s$$s.json"; exit 1; }; \
 	  echo "stride-$$s fixture parity: PARITY_OK"; done
+	$(PYTHON) tests/parity.py --fixture --attn 1 --n 24 --tile-lines 12 \
+	    --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(OUT)/parity_report_attn.json" > /dev/null \
+	  || { echo "attention fixture parity failed: $(OUT)/parity_report_attn.json"; exit 1; }
+	@echo "attention fixture parity: PARITY_OK"
 
 check-all:
 	$(MAKE) --no-print-directory clean

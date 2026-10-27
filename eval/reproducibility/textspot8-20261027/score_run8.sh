@@ -66,7 +66,7 @@ done
 "$PY" "$REPO/eval/textspot6.py" hval-boxes --spot "$D/spot_hval.jsonl" \
   --shards "$HERD/shared/private/vocr6-spotter/shards_v1" --manifest "$REPO/data/manifests/textspot6_pages_v1.json" \
   --out "$D/hval_boxes.json"
-"$PY" "$REPO/eval/textspot6_parity.py" --blob "$BLOB" --out "$D/parity.json" --sets dev,dev-crop,tsdev \
+"$PY" "$REPO/eval/textspot6_parity.py" --blob "$BLOB" --out "$D/parity.json" --sets dev,dev-crop,tsdev --units "$UNITS_DEV" \
   --cbin "$OUT/cbuild6" --workers "$WORKERS"
 date -u +%FT%TZ > "$D/SCORED"
 echo "score_run8 finished $NAME $D"

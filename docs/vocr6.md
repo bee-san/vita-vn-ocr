@@ -13,8 +13,8 @@ stays VOCR5-S. Every number here was measured on the host. Console times are est
   checked on Rubi's shipped path, with three seeds.
 - **Normal and Large on the hooked games' pages** (hval, held out): 1.008 → 0.936% and 0.990 → 0.917% dialogue CER,
   both resolved better. On other games they are level: -0.038 and +0.026 points on VOCR5's development score.
-- **Small** read the hooked pages better too (-0.134), but other games' fixed lines a little worse (+0.070,
-  resolved), so it was not adopted.
+- **Small** read the hooked pages better too (-0.134), but VOCR5's development score on other games a little worse
+  (+0.070 [+0.004, +0.138], resolved; no part of it resolved alone), so it was not adopted.
 - **What ships** (pre-release v0.4.0-vocr6.1): `VOCR6_N_w8_2l.vocr` (1,187,616 B) and `VOCR6_L_w8_2l.vocr`
   (2,475,680 B). They have VOCR5's shapes, with #122's two-level head appended; the head gate was rejected on
   VOCR6's logits. Est. 0.79 s and 1.87 s per 3-line box on one 333 MHz A9 core, about 30 and 80 ms more than VOCR5
@@ -41,8 +41,9 @@ was the same at every stage (`decision.adopt`):
 - **Intervals** are 95% bootstrap intervals with 10,000 resamples, clustered by title (hval) or by VN (dev).
 
 **The shipped form decides.** Each candidate was exported to the int8 W8I blob and read through the C runtime, with
-Rubi's per-line decode (greedy plus top-8, the counter re-decode, beam 8 with the 1 MB LM, textnorm and the
-non-Japanese filter). Stages 1-3 read without the cascade. Stage 4 read Rubi's whole shipped path: the COLGAP finder
+Rubi's per-line decode (greedy plus top-8, the counter re-decode, beam 8 with a 1 MB LM, textnorm and the non-Japanese
+filter). Stages 1-3 used ctclm.2's 1 MB LM at 500 / 3500 / EOS (Rubi's setting then); stage 4 used lm6's game-text 1 MB
+LM at 600 / 2500 / BOS (Rubi's now). Stages 1-3 read without the cascade. Stage 4 read Rubi's whole shipped path: the COLGAP finder
 default with its short-line probe (#135), the 1 MB game-text LM at alpha 600 / beta 2500 / BOS (#137), and the cascade
 S -> N -> L. The cascade is read without Rubi's per-job time ceiling (`ocr_cascade_ms`, 2,000 ms by default), as #119
 read it: every line whose greedy confidence is under 0.7 is re-read by the next tier, so the numbers show the
@@ -131,7 +132,7 @@ decode, with no cascade. CER is in percent; differences are in CER points with 9
 | S2fa2 | finder augmentation x2 | 1.091 (seed 1) | 0.417 | 2.069 (3.48%) | +0.003 (seed-1 pair) | -0.024 (seed-1 pair) | 3.2 | not (the every-pair condition failed; seed 3 not run) |
 | S3attn | one global attention layer (#130) | 1.059 | 0.398 | 2.054 (3.47%) | -0.017 [-0.049, +0.014] | -0.006 [-0.088, +0.085] | 6.5 | not |
 | S3rep | RepCBR branches, training only | 1.097 | 0.403 | 2.001 (3.28%) | +0.021 [-0.005, +0.048] | -0.059 [-0.134, +0.011] | 9.5 | not |
-| S3long | A15 at 45,000 steps | 1.034 (seed 1) | 0.370 | 2.046 (3.47%) | -0.054 [-0.089, -0.021] (seed 1) | -0.047 [-0.195, +0.138] (seed 1) | 9.3 | seed 3 running (ends ~14Z); decides stage 4c only |
+| S3long | A15 at 45,000 steps | 1.033 | 0.373 | 2.028 (3.40%) | -0.043 [-0.077, -0.014] | -0.033 [-0.116, +0.065] | 19.7 | **adopted** (decides stage 4c only) |
 
 - **Not run.** Names in or out: names are 0.9% of rows, and the owner crops them out. Vertical re-flow: one title,
   and no vertical model this round. Width/depth: a wider model needs a fresh 150k-step pretrain per seed, outside this
@@ -139,8 +140,9 @@ decode, with no cascade. CER is in percent; differences are in CER points with 9
   compute; its prior at weight 1.0 was +3.08 at 5k steps.
 - **S2s6** (synth6 v3, the harvested game fonts) has the biggest dev gain, -0.121 points, but its hval interval
   reaches +0.001, so it is not adopted.
-- **S3long** decides stage 4c only (amendment 6): a 45k-step retrain of the shipped tiers. It replaces a shipped blob
-  only if S3long's two held-out seeds pass the rule and the 4c blob is not resolved worse on dev.
+- **S3long** (3x the steps) is adopted over A15 on both seeds: hval page -0.043 [-0.077, -0.014], seed pairs -0.054
+  and -0.032, dev -0.033 [-0.116, +0.065]. It decides stage 4c only (amendment 6): a 45k-step retrain of the
+  shipped tiers, which replaces a shipped blob only if it is not resolved worse on dev than that blob.
 
 ## Stage 4: the shipped tiers (2026-10-27)
 
@@ -301,8 +303,8 @@ Intervals: games (vita-test, psp-test) or pages (CLANNAD, Dance with Devils), pa
   - their whole dialogue 7.98 → 7.21% (Normal, -0.78 [-1.15, -0.38]) and 7.08 → 6.86% (Large).
 
   With beam + ctclm.2's 1 MB LM, the fixed lines are level: 0.72 → 0.70% and 0.53 → 0.49%.
-- **Vita and PSP apart** (path b, fixed lines): vita-test improves (Normal -0.21 [-0.56, +0.05], Large
-  -0.17 [-0.40, +0.00]). psp-test does not (Normal +0.22 [+0.00, +0.41], Large +0.09 [-0.12, +0.30]). On path (a)
+- **Vita and PSP apart** (path b, fixed lines): vita-test is better in point (Normal -0.21 [-0.56, +0.05], Large
+  -0.17 [-0.40, +0.00]; neither resolved). psp-test does not (Normal +0.22 [+0.00, +0.41], Large +0.09 [-0.12, +0.30]). On path (a)
   with the LM, psp-test's Normal is resolved worse: +0.30 [+0.12, +0.53].
 - **Small's cascade into VOCR6-N costs on CLANNAD's pages** (+0.32, resolved), though not on the development sets
   (dev 1.674 → 1.667).
@@ -319,7 +321,7 @@ Intervals: games (vita-test, psp-test) or pages (CLANNAD, Dance with Devils), pa
   - Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD, and the lm6 LMs hold their text;
   - Collar x Malice shares releases with vita-test's Collar x Malice -Unlimited-: VOCR6 trained on it, and its text
     is in the lm6 LMs;
-  - the LMs' Jiten word list includes CLANNAD's script.
+  - the LMs' Jiten word list includes the scripts of CLANNAD, of 7 of vita-test's 16 games and of 1 of psp-test's 14.
 
   So **CLANNAD's gain is not an unseen-game result.** The development sets are the unseen-game evidence, and there
   VOCR6 is level.
@@ -327,14 +329,13 @@ Intervals: games (vita-test, psp-test) or pages (CLANNAD, Dance with Devils), pa
 
 ### Stage 4c (in progress)
 
-Stage 4c retrains the shipped recipe at 45,000 steps, with hval folded in, for Normal and Large (amendment 6;
-Small's run was stopped when Small was not adopted). Its blobs replace the shipped ones only if both hold:
-- S3long is adopted over A15 on stage 3's held-out pair (seeds 1 and 3);
-- the 4c blob is not resolved worse than the shipped 4b blob on the development score.
-
-If they pass, they come as a follow-up release, with their own gate fits and their own final-test read.
-
-
+Stage 4c retrains the shipped recipe at 45,000 steps with hval folded in, for Normal and Large (amendment 6; Small's
+run was stopped when Small was not adopted).
+- **Condition (i) holds:** S3long is adopted over A15 on stage 3's held-out pair (above).
+- **Condition (ii) decides each tier:** the 4c blob replaces the shipped 4b blob only if it is not resolved worse on
+  the development score, on the shipped path. 4c-N is read cascading into 4c-L.
+- **If a tier passes,** its blob comes as a follow-up release, with its own gate fit and its own report-only
+  final-test read.
 
 ## Reproduce
 
@@ -362,16 +363,19 @@ eval/vocr6_report.py records && eval/vocr6_report.py tables
 
 ## Compute
 
-CPU only: one 64-core host with no GPU and 12 heavy slots of 5 threads. A Normal fine-tune of 15k steps takes 2.9-3.4
-slot-hours at the loaded rate, a Large one about 4.5. Stage 1 used 13.4 slot-hours for A15 and B15 plus 2.0 for the
-stopped C50 runs. Stages 2-3 used 66.3 slot-hours before S3long's seed 3.
+CPU only: one 64-core host with no GPU and 12 heavy slots of 5 threads.
+- **Per run, at the loaded rate:** a Normal fine-tune of 15k steps takes 2.9-3.5 slot-hours (4.7 with S3rep's
+  training-only branches), a Large one about 4.5-4.7.
+- **Stage 1:** 13.4 slot-hours for A15 and B15, plus 2.0 for the stopped C50 runs.
+- **Stages 2-3:** 76.8 slot-hours over 19 runs, plus 0.5 for a stopped S3long segment.
 
 ## Limits
 
 - **Nothing has run on a console.** Console times and memory are estimates (ocr-speed's method, calibrated to
   VOCR3-H15's measured 5.0-5.2 ms per CTC frame).
-- **hval comes from the same 49 titles as the training pages.** It measures how well VOCR6 reads the hooked games. The
-  development score measures other games. Most of VOCR6's gain is on the hooked titles.
+- **hval comes from the training titles** (46 of the 48 have hval pages; the test title has none). It measures how
+  well VOCR6 reads the hooked games. The development score measures other games. Most of VOCR6's gain is on the
+  hooked titles.
 - **The finder carries most of the remaining error** (#119: 88% of VOCR5-N's whole-dialogue error on development).
   Recognizer arms move the development score by 0.03-0.12 points. The learned spotter (textspot6) was not adopted.
 - **Seen flags** apply to every test-set number:

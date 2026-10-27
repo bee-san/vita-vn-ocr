@@ -1136,95 +1136,97 @@
    },
    "adopt_y": false
   },
-  "s2_S3long_s1": {
+  "s2_S3long": {
    "stage": "3",
    "arm": "S3long",
    "plan": "v2",
-   "what": "A15 at 45,000 steps (seed 1 only so far)",
+   "what": "A15 at 45,000 steps",
    "x": [
-    "v6s1A15_N_seed1"
+    "v6s1A15_N_seed1",
+    "v6s1A15_N_seed3"
    ],
    "y": [
-    "v6s3long_N_seed1"
+    "v6s3long_N_seed1",
+    "v6s3long_N_seed3"
    ],
    "total": {
     "hval_page": {
-     "delta_points": -0.054,
+     "delta_points": -0.043,
      "ci95": [
-      -0.089,
-      -0.021
+      -0.077,
+      -0.014
      ],
-     "cer_x": 1.0882,
-     "cer_y": 1.0344
+     "cer_x": 1.0759,
+     "cer_y": 1.0328
     },
     "hval_clean": {
-     "delta_points": -0.016,
+     "delta_points": -0.018,
      "ci95": [
-      -0.049,
-      0.016
+      -0.044,
+      0.006
      ],
-     "cer_x": 0.3859,
-     "cer_y": 0.3703
+     "cer_x": 0.3908,
+     "cer_y": 0.3732
     },
     "hval_page_all": {
      "delta_points": 0.145,
      "ci95": [
-      -0.102,
-      0.629
+      -0.074,
+      0.592
      ],
-     "cer_x": 1.881,
-     "cer_y": 2.0256
+     "cer_x": 1.8579,
+     "cer_y": 2.0028
     },
     "hval_page_seen": {
-     "delta_points": -0.055,
+     "delta_points": -0.045,
      "ci95": [
-      -0.088,
-      -0.023
+      -0.082,
+      -0.015
      ],
-     "cer_x": 1.551,
-     "cer_y": 1.4958
+     "cer_x": 1.5391,
+     "cer_y": 1.4936
     },
     "hval_page_nomerge": {
-     "delta_points": -0.062,
+     "delta_points": -0.04,
      "ci95": [
-      -0.101,
-      -0.025
+      -0.071,
+      -0.013
      ],
-     "cer_x": 0.7099,
-     "cer_y": 0.6474
+     "cer_x": 0.689,
+     "cer_y": 0.6487
     },
     "tv": {
-     "delta_points": -0.013,
+     "delta_points": -0.032,
      "ci95": [
-      -0.167,
-      0.144
+      -0.137,
+      0.07
      ],
-     "cer_x": 0.5987,
-     "cer_y": 0.586
+     "cer_x": 0.6688,
+     "cer_y": 0.6369
     },
     "dn": {
-     "delta_points": -0.175,
+     "delta_points": -0.087,
      "ci95": [
-      -0.37,
-      -0.012
+      -0.172,
+      -0.014
      ],
-     "cer_x": 0.8355,
-     "cer_y": 0.6609
+     "cer_x": 0.7669,
+     "cer_y": 0.6796
     },
     "wd": {
-     "delta_points": 0.0,
+     "delta_points": -0.006,
      "ci95": [
-      -0.26,
-      0.357
+      -0.157,
+      0.184
      ],
-     "cer_x": 3.468,
-     "cer_y": 3.468
+     "cer_x": 3.403,
+     "cer_y": 3.3971
     },
     "dev": {
-     "delta_points": -0.047,
+     "delta_points": -0.033,
      "ci95": [
-      -0.195,
-      0.138
+      -0.116,
+      0.065
      ]
     }
    },
@@ -1233,6 +1235,11 @@
      "hval_page": -0.054,
      "hval_clean": -0.016,
      "dev": -0.047
+    },
+    "v6s1A15_N_seed3->v6s3long_N_seed3": {
+     "hval_page": -0.032,
+     "hval_clean": -0.02,
+     "dev": -0.019
     }
    },
    "checks": {
@@ -2221,6 +2228,24 @@
      "dev_score": 2.0457
     },
     "blob_sha256": "0c94c84ab34f54a25ef419ab35ffb6f2f4b0ce01f6e64093dd3bc1c68ae8fb29",
+    "hval_plan_sha256": "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba",
+    "dev_plan_sha256": "12938dfa38cd8f9b22a5607e469d061bd4b87bfab4deca1ab55e78116e485ef3",
+    "cascade": null
+   },
+   "v6s3long_N_seed3": {
+    "summary": {
+     "hval_page": 1.0312,
+     "hval_page_vita": 0.594,
+     "hval_page_psp": 1.8544,
+     "hval_clean_dlg": 0.3761,
+     "hval_page_all": 1.98,
+     "hval_page_seen": 1.4915,
+     "tv": 0.6879,
+     "dn": 0.6983,
+     "wd": 3.3262,
+     "dev_score": 2.0096
+    },
+    "blob_sha256": "660b4fe86de1cb84dbb149a583f790fa355fe59a7d616cf32898a0572dd3ef43",
     "hval_plan_sha256": "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba",
     "dev_plan_sha256": "12938dfa38cd8f9b22a5607e469d061bd4b87bfab4deca1ab55e78116e485ef3",
     "cascade": null

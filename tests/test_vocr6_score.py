@@ -238,3 +238,12 @@ def test_init_builds_the_lm_with_the_given_opts(monkeypatch):
     seen.clear()
     V._init("lib", "blob", "lm.vlm", "", False, None)
     assert seen == V.LM_OPTS
+
+
+def test_the_read_command_passes_lm_opts(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(V, "read", lambda *a: seen.update(args=a))
+    monkeypatch.setattr(sys, "argv", ["vocr6_score.py", "read", "--plan", "p.pkl", "--blob", "b.vocr", "--lm", "l.vlm",
+                                      "--lm-opts", "alpha=600,beta=2500,flags=1", "--out", "o.json"])
+    V.main()
+    assert seen["args"][-1] == V.lm_opts_of("alpha=600,beta=2500,flags=1")

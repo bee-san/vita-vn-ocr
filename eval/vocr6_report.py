@@ -32,7 +32,7 @@ DECISIONS = {
     "s2_S2r30": ("2", "S2r30", "v2", "real share 30%"),
     "s2_S3attn": ("3", "S3attn", "v2", "one global attention layer (#130)"),
     "s2_S3rep": ("3", "S3rep", "v2", "RepCBR branches, training only"),
-    "s2_S3long_s1": ("3", "S3long", "v2", "A15 at 45,000 steps (seed 1 only so far)"),
+    "s2_S3long": ("3", "S3long", "v2", "A15 at 45,000 steps"),
     "s4_S": ("4a", "R3-S", "shipped", "A15 + S2cil at Small vs the released VOCR5-S"),
     "s4_N": ("4a", "R3-N", "shipped", "A15 + S2cil at Normal vs the released VOCR5-N"),
     "s4_L": ("4a", "R3-L", "shipped", "A15 + S2cil at Large vs the released VOCR5-L"),
@@ -56,11 +56,20 @@ def sha256(p):
     return h.hexdigest()
 
 
+# the hval plan each record plan was read on (eval/vocr6_protocol.json: scoring.hval_plan_v1, scoring.hval_plan,
+# stages.4.plans.hval): a score file of the same name read on another plan is skipped, never mixed in
+PLAN_SHA256 = {"v1": "dfefdd96c0f4c6596f964189a996dd719e35f7dde941fabc61f15cf0e743c8ff",
+               "v2": "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba",
+               "shipped": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a"}
+
+
 def find_summary(plan, run):
     for d in SCORE_DIRS[plan]:
         p = d / f"score_{run}.json"
         if p.exists():
             doc = json.loads(p.read_text(encoding="utf-8"))
+            if doc.get("hval_plan_sha256") != PLAN_SHA256[plan]:
+                continue
             s = doc["summary"]["rubi"]
             return {"summary": {k: s[k] for k in SUMMARY_KEYS if k in s}, "blob_sha256": doc.get("blob_sha256"),
                     "hval_plan_sha256": doc.get("hval_plan_sha256"), "dev_plan_sha256": doc.get("dev_plan_sha256"),

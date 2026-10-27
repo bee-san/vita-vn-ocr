@@ -44,3 +44,40 @@ def test_the_decided_tiers():
     assert {D["s2_S2cil"]["adopt_y"]} == {True}
     assert not any(D[n]["adopt_y"] for n in ("s2_S2t5", "s2_S2x2", "s2_S2s6", "s2_S2r70", "s2_S2r30", "s2_S3attn",
                                              "s2_S3rep"))
+
+
+README = (ROOT / "README.md").read_text(encoding="utf-8")
+
+
+def _mean(plan, runs, key):
+    return sum(REC["runs"][plan][r]["summary"][key] for r in runs) / len(runs)
+
+
+def test_every_screening_row_shows_the_records_means_and_verdict():
+    """Stages 2-3 rows: the arm's mean hval page, clean, dev score (wd) and its verdict; stage 1 rows the same means."""
+    lines = [ln for ln in DOC.splitlines() if ln.startswith("| ")]
+    for name, d in REC["decisions"].items():
+        if d["stage"] not in ("1", "2", "3"):
+            continue
+        rows = [ln for ln in lines if ln.split("|")[1].strip() == d["arm"]]   # A15 has a stage-1 row and a base row
+        assert rows, name
+        for row in rows:
+            for key in ("hval_page", "hval_clean_dlg", "dev_score"):
+                assert f"| {_mean(d['plan'], d['y'], key):.3f}" in row, (name, key, row[:40])
+            if d["stage"] in ("2", "3"):
+                assert f"({_mean(d['plan'], d['y'], 'wd'):.2f}%)" in row, name
+                assert ("**adopted**" in row) == d["adopt_y"], name
+
+
+def test_the_summary_and_the_readme_show_the_shipped_numbers():
+    R, D = REC["runs"]["shipped"], REC["decisions"]
+    for t in ("N", "L"):
+        x = R[D[f"s4_{t}"]["x"][0]]["summary"]
+        y = _mean("shipped", D[f"s4_{t}"]["y"], "hval_page")
+        hp = f"{x['hval_page']:.3f} → {y:.3f}%"
+        ship = R[D[f"s4_H{t}"]["y"][0]]["summary"]
+        dev = f"{x['dev_score']:.3f} → {ship['dev_score']:.3f}"
+        assert hp in DOC and hp in README, (t, hp)
+        row = [ln for ln in README.splitlines() if ln.startswith(f"| [`VOCR6_{t}_w8_2l.vocr`]")]
+        assert len(row) == 1 and hp in row[0] and dev in row[0], (t, dev)
+        assert f"{REC['shipped_blobs'][t]['bytes'] + {'N': 1984, 'L': 1984}[t]:,} B" in row[0], t

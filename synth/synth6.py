@@ -1070,7 +1070,6 @@ def cmd_manifests(args):
     and line counts it was measured on). Numbers and hashes only: no font, page or text."""
     A = Path(args.assets)
     inv = json.loads((A / "fonts_inventory.json").read_text(encoding="utf-8"))
-    inv_by = {r["font"]: r for r in inv}
     fc = json.loads((A / "font_check.json").read_text(encoding="utf-8"))
     gc = json.loads((A / "glyph_check.json").read_text(encoding="utf-8"))
     gg = json.loads((A / "glyph_geometry.json").read_text(encoding="utf-8"))["fonts"] \
@@ -1108,7 +1107,7 @@ def cmd_manifests(args):
                                       "fonts of 28-36 px; flagged at RASTER_SHARE or above (the font holds CLANNAD's "
                                       "glyph raster, re-quantised or not)", "threshold": F6.RASTER_SHARE,
                               "flagged": sorted(raster), "drawn_flagged": sorted(
-                                  f for f in raster if not inv_by[f]["excluded"])},
+                                  r["font"] for r in rows if r["drawn"] and r["font"] in raster)},
            "assets_sha256": {n: sha256(A / n) for n in ("fonts_inventory.json", "font_check.json",
                                                         "glyph_check.json", "glyph_geometry.json")
                              if (A / n).exists()},

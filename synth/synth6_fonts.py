@@ -415,6 +415,9 @@ def raster_share(font, ref, n=600, seed=0):
     if font.kind != "bitmap" or ref.kind != "bitmap":
         return 0.0
     la, lb = _levels(font), _levels(ref)
+    if int(la.max()) < MIN_LEVELS - 1 or int(lb.max()) < MIN_LEVELS - 1:
+        return 0.0          # 2 levels: the one-level tolerance accepts any glyph, so no evidence either way. 3 levels
+                            # would still give some (audit-vocr6-synth6-e e2); no font in the pack has 3, so 4 stays
     common = sorted(c for c in font.chars.keys() & ref.chars.keys() if c not in SPACES)
     if not common:
         return 0.0
@@ -458,6 +461,7 @@ def raster_share(font, ref, n=600, seed=0):
 
 
 RASTER_SHARE = 0.5      # raster_share at or above this marks a font as holding a test-title font's raster
+MIN_LEVELS = 4          # raster_share needs at least this many grey levels in both atlases
 
 
 NEAR_SHARE = 0.95       # a font whose glyphs are this identical to a test-title font's is excluded too

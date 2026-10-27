@@ -451,20 +451,41 @@ def test_manual_denials_reach_the_renderer(tmp_path, font):
 
 
 def test_raster_share_ignores_the_palette(tmp_path, font):
-    a = atlas_font(tmp_path, font, "PCSG00415", "ref", px=30)
-    ref = F6.open_font(a)
-    # the same raster, re-quantised to 16 levels through a gamma-like palette (as Little Busters' LUCA fonts)
     import shutil
 
     from PIL import Image
+    a = atlas_font(tmp_path, font, "PCSG00415", "ref", px=30)
+    # a 4-bit reference, levels k x 17 (as CLANNAD's fonts store them)
+    at = np.asarray(Image.open(a / "atlas.png"), np.float32) / 255.0
+    q = np.round(at * 15).astype(int)
+    Image.fromarray((q * 17).astype(np.uint8)).save(a / "atlas.png")
+    ref = F6.open_font(a)
+    # the same 8-bit raster quantised to another 16-level palette (gamma-like), as the hooked titles' copies of
+    # CLANNAD's raster are: not a relabelling of the reference's levels, so the tone map and the tolerance matter
     b = tmp_path / "OTHER" / "copy"
     shutil.copytree(a, b)
-    at = np.asarray(Image.open(b / "atlas.png"), np.float32) / 255.0
-    q = np.round(at * 15)
     pal = np.array([0] + [round(255 * (k / 15) ** 0.6) for k in range(1, 16)], np.uint8)
-    Image.fromarray(pal[q.astype(int)]).save(b / "atlas.png")
+    k = np.abs(at[..., None] - pal.astype(np.float32) / 255.0).argmin(axis=-1)
+    Image.fromarray(pal[k]).save(b / "atlas.png")
     copy = F6.open_font(b)
     assert F6.raster_share(copy, ref) > 0.9
     other = F6.open_font(atlas_font(tmp_path, font, "THIRD", "bold", px=30, chars=CHARS))
     other.atlas = np.roll(other.atlas, 2, axis=1)                       # another raster: shifted strokes
     assert F6.raster_share(other, ref) < 0.5
+    # another raster of the same typeface: the same font rasterised at 28 px instead of 30
+    other2 = F6.open_font(atlas_font(tmp_path, font, "FOURTH", "px28", px=28))
+    assert F6.raster_share(other2, ref) < 0.5
+    # the tolerance's edge: 15% of the pixels at level 3 or more moved down by exactly 2 levels, at random. No tone
+    # map absorbs a per-pixel change, and a glyph with one such pixel fails the one-level tolerance (a two-level
+    # tolerance would accept it)
+    edge_dir = tmp_path / "EDGE" / "copy"
+    shutil.copytree(a, edge_dir)
+    rng = np.random.default_rng(0)
+    noisy = np.where((q >= 3) & (rng.random(q.shape) < 0.15), q - 2, q)
+    Image.fromarray((noisy * 17).astype(np.uint8)).save(edge_dir / "atlas.png")
+    assert F6.raster_share(F6.open_font(edge_dir), ref) < 0.5
+    # a two-level (1-bit) font gives no evidence: 0, not 1
+    bit = tmp_path / "BIT" / "copy"
+    shutil.copytree(a, bit)
+    Image.fromarray(((q > 7) * 255).astype(np.uint8)).save(bit / "atlas.png")
+    assert F6.raster_share(F6.open_font(bit), ref) == 0.0

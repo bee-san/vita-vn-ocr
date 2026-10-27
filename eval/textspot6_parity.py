@@ -67,7 +67,9 @@ def jobs_of(set_name, units=None):
             yield f"{k['title']}:{k['page']}:{k['view']}", g, None
     elif set_name in ("dev-crop", "hval-crop"):
         m = _W["model"]
-        for uid, img, fw, fh in E6.crop_jobs("dev" if set_name == "dev-crop" else "hval", units):
+        # --units names the hval units file: dev-crop reads #119's units (crop_jobs' default), never that file
+        dev = set_name == "dev-crop"
+        for uid, img, fw, fh in E6.crop_jobs("dev" if dev else "hval", None if dev else units):
             yield uid, img, T6.scale_of(m, fw, fh)
     else:
         raise SystemExit(f"unknown set {set_name}")

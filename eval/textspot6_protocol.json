@@ -401,6 +401,82 @@
     "With a negative verdict the test sets are still read once, report only, so that the owner has the test title's, CLANNAD's and vita-test / psp-test's numbers of the best spotter: the research pre-release's blob (the eligible candidate with the lowest unseen-dev CER, as trained on train; no retrain) through the same commands (eval/textspot6_test.py --research). It changes no decision: there is still no Rubi default and no Rubi PR.",
     "Disclosed: registered after stage 1's M arms were scored, whose representatives are not resolved below GRAD + refine on unseen dev (#128); the rule and the selection are unchanged."
    ]
+  },
+  {
+   "id": 16,
+   "kind": "erratum",
+   "utc": "2026-10-27T07:03:42Z",
+   "before": "the merge of PR #147, after the selection (d3e73f4) and the test reads; it changes no rule, no score and no decision (audit-vocr6-spotter F2, N1-N4, N8, N11, N13)",
+   "what": [
+    "Erratum to amendment 9's disclosure (its text is left as committed). The stopped #131 scoring of base_t64n8c16_seed1 had finished more than it says: dev crop, dev crop+refine and dev det (dev_det.json written 13:41:45Z), hval crop and hval crop+refine; hval det was running. Its log (last write 13:42:13Z; eval/_pin131/score_base_t64n8c16_seed1.log) printed, PSP / Vita: dev crop 1.835 / 2.140%, dev crop+refine 2.174 / 2.090%, dev det 1.307 / 1.474%, hval crop 1.243 / 1.581%, hval crop+refine 1.216 / 1.806%. The run was moved aside at 13:42:37Z (not 'stopped at 13:45Z'); amendment 9 was committed at 13:45:05Z. No decision depends on it: the rule's eligible / beats / pick / no-qualifier texts are identical in every protocol version, and amendment 9's benchmark move changes no number (#135 equals #131 unit for unit on GRAD + refine, on textspot3's pick in all four decodes and on these partial rows).",
+    "A data job before the freeze: MeikiOCR's labelling of the 54,803 non-test hooked pages ran 09:23:59-09:46Z, mostly before frozen_utc (09:36:58Z) and the protocol commit (09:39:08Z), after two short meiki / shard-build trials at 09:16Z. It wrote detector boxes only (no score, no development information); the shard build that applied the rules ran at 09:46Z. frozen_before did not list it.",
+    "The full-resolution T arm (the stage-1 table's base_<T full-res>, to be registered 'by an amendment with its A9 row') was never registered: amendment 8 (2 slots) listed the candidates without it. Its shapes' A9 rows (eval/textspot6_a9_20261026.json summary, half_above 0, per 960 x 544 frame at 333 MHz) are t32n4c16 290.1, t24n6c16 290.6 and t48n2c16 293.4 ms, under the 300 ms ceiling even with det+refine's charge, and t40n3c16 303.3, t32n6c16 358.8 and t48n4c16 410.1 ms, over it.",
+    "The test title's VN, v18432 (Dance with Devils, PCSG00807), has 3 of #119's unseen-dev units (in the headline) and 2 of textspot's development frames: the selection saw VNDB screenshots of the test title's game, not its hooked pages.",
+    "The selection ran after every candidate run was scored, not every run: the nohook control's seed 2 (report only) was scored at 04:13:01Z, after the selection (03:55:57Z).",
+    "The test reads: the first tests and clannad tries (03:56-03:57Z) stopped at the reader-library check, before the attempt record (no protected pixel read); --reader-src (f50746a) then changed eval/textspot6_test.py between the title read (03:56:41Z, script 6d2e4ade) and the other two (04:02-04:03Z, script 0af5c5f9).",
+    "synth/textspot6_twin.py's docstring says that for versions 1-3 'blocks, order and pick are this module's'; the code delegates them to textspot3_twin / textspot2_twin's spot_maps. They are equivalent (C == twin == vocr_textspot3_test on every version 1-3 batch). The file is pinned (amendment 10), so the wording is corrected here, not in the file."
+   ],
+   "code_of_record": {
+    "note": "sha256[:8] of the scoring code at the commit each record was made from (git show <commit>:<file>)",
+    "seed-1 runs' page-path scores, tsdev, hval boxes (13:45-14:40Z)": {
+     "commit": "5eaffd6",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "score_run.sh": "000ac295"
+    },
+    "seeds 2-3, kd and nohook: scores and parity (17:21Z-04:13Z)": {
+     "commit": "d83274d",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "b98a47e4",
+     "score_run.sh": "c68b2b4e",
+     "sched.py": "363da933",
+     "sweep.py": "e55d3486",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "the selection (03:55Z)": {
+     "commit": "ac2aaeb (d3e73f4's parent, main clone)",
+     "eval/textspot6_table.py": "64c79393",
+     "eval/textspot6_select.py": "ead6859d"
+    },
+    "tight rows, the research blob's hval parity (03:59-04:19Z)": {
+     "commit": "d3e73f4 / f50746a (identical but for eval/textspot6_test.py)",
+     "worktree": "test",
+     "eval/textspot6.py": "53d795b9",
+     "score_tight.sh": "f9dd2de9",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "test reads": {
+     "title": "d3e73f4 (eval/textspot6_test.py 6d2e4ade)",
+     "tests, clannad": "f50746a (eval/textspot6_test.py 0af5c5f9)"
+    },
+    "equivalence": "eval/textspot6.py 51ad39e6 -> b98a47e4 -> 53d795b9 refactors the helpers (outputs checked equal) and adds an opt-in --units; the PR's audit re-scored kd_t64n8c16_seed2 end to end with the head's code and an empty reading cache: identical units, boxes, spot files, tsdev and hval-box records",
+    "the teacher (22:18Z)": {
+     "commit": "fd57f02 (main clone)",
+     "eval/textspot6_teacher.py": "bb6fed3b"
+    },
+    "seed-1 runs' parity (16:00-16:11Z)": {
+     "commit": "135d821",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "the rubi,fix=1 baseline (started 16:57:13Z)": {
+     "commit": "d83274d",
+     "worktree": "scheduler",
+     "score_run.sh": "c68b2b4e"
+    },
+    "the baselines grad_refine, grad_refine_fix5, textspot3_pick (13:45-13:58Z starts)": {
+     "commit": "5eaffd6",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "score_run.sh": "000ac295"
+    },
+    "parity script at the merge": "eval/textspot6_parity.py 97f0a5a1 (the first audit's F1 fix: dev-crop reads #119's units whatever --units names); every parity record was made with 58a73f6b"
+   },
+   "revised": {
+    "utc": "2026-10-27T10:07:46Z",
+    "what": "corrected in place before the merge (audit-vocr6-spotter-b N14, N15): the full-resolution T arm's A9 reason (three of its six shapes are under the ceiling; the reason that holds is amendment 8's 2 slots), and the code of record (the rubi,fix=1 baseline ran at d83274d, not 135d821; the three 5eaffd6 baselines named; the parity script's F1 change noted)"
+   }
   }
  ],
  "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",

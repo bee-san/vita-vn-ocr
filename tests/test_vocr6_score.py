@@ -147,3 +147,75 @@ def test_lm_opts_override():
     import pytest
     with pytest.raises(SystemExit):
         V.lm_opts_of("nonsense=1")
+
+
+def test_cascade_keeps_a_line_the_upper_tier_reads_as_empty():
+    dump = {"crops": [{"g": "かき", "b": "かき", "cmin": 0.5}]}
+    up = {"crops": [{"g": "", "b": "けこ", "cmin": 0.2}]}
+    ident = lambda ts: list(ts)   # noqa: E731
+    assert V.texts(dump, "rubi", ident, up) == [""]
+
+
+def test_load_up_refuses_a_dump_of_another_plan(tmp_path):
+    import pytest
+    dump = {"plan_sha256": "a" * 64, "crops": [{}, {}]}
+    other = tmp_path / "up.json"
+    other.write_text(json.dumps({"plan_sha256": "b" * 64, "crops": [{}, {}]}))
+    with pytest.raises(SystemExit, match="another plan"):
+        V.load_up(str(other), dump)
+    other.write_text(json.dumps({"plan_sha256": "a" * 64, "crops": [{}]}))
+    with pytest.raises(SystemExit, match="another plan"):
+        V.load_up(str(other), dump)
+    other.write_text(json.dumps({"plan_sha256": "a" * 64, "crops": [{}, {}]}))
+    assert V.load_up(str(other), dump)["plan_sha256"] == "a" * 64
+    assert V.load_up("", dump) is None
+
+
+def test_read_passes_its_lm_opts_to_the_workers(tmp_path, monkeypatch):
+    """--lm-opts reaches the readers (not Rubi's defaults) and is recorded in the dump."""
+    (tmp_path / "runtime/build").mkdir(parents=True)
+    (tmp_path / "runtime/build/libvocr.so").write_bytes(b"lib")
+    blob, plan = tmp_path / "b.vocr", tmp_path / "plan.pkl"
+    blob.write_bytes(b"blob")
+    plan.write_bytes(pickle.dumps({"crops": []}))
+    seen = {}
+
+    class FakePool:
+        def __init__(self, n, initializer=None, initargs=()):
+            seen["initargs"] = initargs
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def imap_unordered(self, fn, jobs, chunksize=1):
+            return iter(())
+    monkeypatch.setattr(V, "ROOT", tmp_path)
+    monkeypatch.setattr(V, "Pool", FakePool)
+    opts = V.lm_opts_of("alpha=600,beta=2500,flags=1")
+    doc = V.read(plan, blob, "", tmp_path / "dump.json", workers=1, lm_opts=opts)
+    assert seen["initargs"][-1] == opts and doc["lm_opts"] == opts and opts != V.LM_OPTS
+
+
+def test_dev_plan_cuts_psp_units_in_the_2x_view_with_the_psp_refinement(tmp_path, monkeypatch):
+    units = {"units": [{"kind": "psp", "image": np.zeros((20, 30), np.uint8), "lines": [{"box": [1, 2, 10, 5]}]},
+                       {"kind": "vita", "image": np.zeros((40, 50), np.uint8), "lines": [{"box": [3, 4, 20, 8]}]}]}
+    up, bp, drv = tmp_path / "units.pkl", tmp_path / "base.pkl", tmp_path / "driver"
+    up.write_bytes(pickle.dumps(units))
+    bp.write_bytes(pickle.dumps({"fixed_ix": {"psp2x": []}, "crops": [], "meta": []}))
+    drv.write_bytes(b"driver")
+    calls = {}
+
+    def fake_find(driver, imgs, mode, fix, probe, flags):
+        calls.update(shapes=[i.shape for i in imgs], flags=list(flags), mode=mode, fix=fix, probe=probe)
+        return [([(0, 0, 4, 4)], [0], 0) for _ in imgs]
+    monkeypatch.setattr(V, "pp_find", fake_find)
+    import argparse
+    out = tmp_path / "dev.pkl"
+    V.dev_plan(argparse.Namespace(units=str(up), base_plan=str(bp), driver=str(drv), fix=1, probe=1, out=str(out)))
+    assert calls["shapes"] == [(40, 60), (40, 50)]
+    assert calls["flags"] == [V.REFINE_ALL, 0] and calls["mode"] == V.FINDER_RECOVERY
+    doc = pickle.load(open(out, "rb"))
+    assert [u["scale"] for u in doc["units"]["psp2x"]] == [2, 1]

@@ -134,3 +134,10 @@ def test_runs_read_on_different_plans_are_refused():
         S.decide([a], [b], n_boot=10)
     b["hval_plan_sha256"] = "p1"
     S.decide([a], [b], n_boot=10)
+
+
+def test_every_hval_plan_the_protocol_pins_is_known():
+    import json
+    p = json.loads((Path(__file__).resolve().parents[1] / "eval/vocr6_protocol.json").read_text(encoding="utf-8"))
+    pinned = {p["scoring"]["hval_plan"]["sha256"], p["stages"]["4"]["plans"]["hval"]["sha256"]}
+    assert pinned <= set(S.KNOWN_PLANS)

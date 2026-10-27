@@ -296,6 +296,11 @@ def train(args, proto, st, spec):
         raise SystemExit(f"train2 ended rc={rc} without {final}: see {rd / 'train.log'}")
 
 
+def hval_in_training(spec):
+    """A run whose mix folds hval back in (stage 4b/4c: r3all_fold) trains on hval: its hval scores are not held out."""
+    return str(spec.get("mix", "")).endswith("_fold")
+
+
 def finish(args, proto, st, spec):
     runs, scores, blobs = dirs(args.label)
     name = run_name(spec, args.seed)
@@ -326,6 +331,10 @@ def finish(args, proto, st, spec):
            "dev_score": sc["summary"]["rubi"].get("dev_score"), "summary": sc["summary"],
            "score_file": str(scores / f"score_{name}.json"), "at": now(),
            "notes": "W8I + Rubi per-line decode (no cascade); final step; dev without the hooked titles' VNs"}
+    if hval_in_training(spec):
+        rec["hval_held_out"] = False
+        rec["notes"] += (f"; hval in training (mix {spec['mix']}): the hval numbers are not held out, reported "
+                         "only (stage 4 amendment 6); dev is held out")
     explog(rec)
     print("run finished:", name, json.dumps(rec["summary"]["rubi"]), flush=True)
 

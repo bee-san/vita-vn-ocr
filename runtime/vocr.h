@@ -80,10 +80,11 @@ typedef struct {
 
 /* The head gate (docs/headgate.md, issue #117): an optional section after the version-1 blob, at its
  * 16-byte aligned end ("VOCG", train/headgate.py writes it), with a tiny network on the head's input:
- *   h = relu(int8 layer 1 on the W8I head's int16 input, exactly as a W8I pointwise layer computes it)
+ *   h = relu(int8 layer 1 on the head's input quantised to int16, exactly as a W8I pointwise layer computes it,
+ *            in every mode)
  *   score = b2 + w2[0] h[0] + w2[1] h[1] + ...   (float, in this order)
  * and a threshold t: with vocr_opts.head_gate = VOCR_HEAD_GATE_ON a frame whose score > t skips the output
- * head and reads as the blank (its blank logit computed as the head computes it, every other class -inf).
+ * head and reads as the blank (its blank logit computed as the run's head computes it, every other class -inf).
  * A blob without the section loads and runs as before; a runtime without gate support ignores it.
  * vocr_check_crc checks the section's CRC, which covers its arrays but not its 64-byte header: t and b2 are
  * content outside it, as the base blob's header is outside the base CRC (vocr_load rejects a NaN in either;
@@ -101,8 +102,8 @@ typedef struct {             /* a blob's head gate; hidden = 0: the blob has non
     unsigned k, hidden;      /* input width (the head's K) and hidden units (8..VOCR_GATE_MAX_HIDDEN, x8) */
     uint32_t bytes;          /* bytes of the gate section */
 } vocr_gate;
-/* The two-level output head (vita-vn-ocr #117 item 2; eval/head2level_protocol.json): an optional 'VOC2' trailer
- * after the version-1 blob. The blob's head rows are in frequency order (class 0 the blank, then the most frequent
+/* The two-level output head (vita-vn-ocr #117 item 2; eval/head2level_protocol.json; W8F since #126): an optional
+ * 'VOC2' trailer after the version-1 blob. The blob's head rows are in frequency order (class 0 the blank, then the most frequent
  * classes); level 1 is the head's first l1_blocks 8-row blocks, computed on every frame, with an escape that says
  * whether the frame needs the other (rare) rows, which then run as the head's own. Absent: l1_blocks == 0. */
 typedef struct {
@@ -155,10 +156,11 @@ typedef struct {
                                 query chunk */
     unsigned max_width;      /* widest resized line in pixels (0: the model's clamp) */
     int mode;                /* VOCR_MODE_*; AUTO = F32 for float blobs, W8F for int8 */
-    unsigned head_gate;      /* VOCR_HEAD_GATE_*: ON and SCORE need VOCR_MODE_W8I and a blob with a gate
-                                (else VOCR_E_MODE); ON skips nothing in a run that asks for the logits */
-    unsigned two_level;      /* 1: the two-level head (VOCR_MODE_W8I and a blob with a 'VOC2' trailer, else
-                                VOCR_E_MODE); 0: the full head (default) */
+    unsigned head_gate;      /* VOCR_HEAD_GATE_*: ON and SCORE need a blob with a gate (else VOCR_E_MODE), in
+                                any mode (the gate's own arithmetic is the same in every mode); ON skips
+                                nothing in a run that asks for the logits */
+    unsigned two_level;      /* 1: the two-level head (VOCR_MODE_W8I or W8F and a blob with a 'VOC2' trailer,
+                                else VOCR_E_MODE); 0: the full head (default) */
 } vocr_opts;
 /* A zeroed vocr_opts gives the defaults. Larger tiles and head batches trade arena
  * bytes for speed; the output does not change. With head_gate ON the head's batches hold

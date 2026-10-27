@@ -292,6 +292,25 @@ static unsigned char arena_a[1 << 20] __attribute__((aligned(16)));
 static unsigned char arena_b[1 << 20] __attribute__((aligned(16)));
 static unsigned char img_px[40 * 300 * 4];
 
+/* An arena of exactly `need` bytes (16-byte aligned) with a guard of 256 bytes after it, at the end of arena_b: a
+ * write past the planned arena lands in the guard, which tight_check() reads back (a 1 MiB arena would hide it). */
+#define GUARD_BYTES 256u
+static unsigned char *tight_arena(size_t need)
+{
+    const size_t start = ((sizeof arena_b - GUARD_BYTES - need) & ~(size_t)15u);
+    if (need + GUARD_BYTES + 16u > sizeof arena_b) return NULL;
+    memset(arena_b + start + need, 0xA5, sizeof arena_b - start - need);
+    return arena_b + start;
+}
+
+static int tight_check(const unsigned char *arena, size_t need)
+{
+    const unsigned char *g = arena + need, *end = arena_b + sizeof arena_b;
+    for (; g < end; g++)
+        if (*g != 0xA5) return 0;
+    return 1;
+}
+
 static void make_image(unsigned w, unsigned h, int rgba)
 {
     unsigned x, y, c, bpp = rgba ? 4u : 1u;
@@ -1024,6 +1043,8 @@ static float gate_ref(const vocr_model *m, const float *x)
 }
 
 static float g_logits[80 * CLASSES], g_hin[80 * 16], g_score[80], g_tv[80 * CLASSES], g_bl[80];
+/* the mode gate_run and two_run read in: W8I, then (#126) the gate in W8F and F32 and the two-level head in W8F */
+static int g_mode = VOCR_MODE_W8I;
 static uint16_t g_tc[80 * CLASSES], g_best[80];
 
 /* One W8I run of the blob in blob_buf (n bytes) with head_gate hg and these tiles; topk k (0: none). */
@@ -1035,17 +1056,20 @@ static int gate_run(size_t n, unsigned hg, unsigned tile, unsigned head, unsigne
     vocr_ctx c;
     vocr_image im;
     vocr_extra ex;
+    unsigned char *arena;
     size_t need;
     int rc = vocr_load(&m, blob_buf, n);
     if (rc) return rc;
     memset(&o, 0, sizeof o);
-    o.mode = VOCR_MODE_W8I;
+    o.mode = g_mode;
     o.tile_frames = tile;
     o.head_frames = head;
     o.head_gate = hg;
     need = vocr_arena_bytes(&m, &o);
     if (!need) return VOCR_E_MODE;
-    rc = vocr_init(&c, &m, &o, arena_a, need);
+    arena = tight_arena(need);
+    if (!arena) return VOCR_E_ARENA;
+    rc = vocr_init(&c, &m, &o, arena, need);
     if (rc) return rc;
     im.pixels = img_px;
     im.width = w;
@@ -1065,6 +1089,10 @@ static int gate_run(size_t n, unsigned hg, unsigned tile, unsigned head, unsigne
         ex.blank_logit = g_bl;
     }
     rc = vocr_run(&c, &im, text, cap, &ex);
+    if (!tight_check(arena, need)) {
+        fprintf(stderr, "gate_run: a write past the planned arena (%lu B)\n", (unsigned long)need);
+        failures++;
+    }
     if (out) *out = ex;
     return rc;
 }
@@ -1151,8 +1179,8 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
     unsigned f, j, ti, ki, frames, skipped = 0;
     float t;
     make_image(w, hgt, 0);
-    n = build(1);
-    /* the base blob, W8I, top-3: the reference */
+    n = build(g_mode != VOCR_MODE_F32);
+    /* the base blob, in g_mode, top-3: the reference */
     CHECK(gate_run(n, 0, 0, 0, w, hgt, 3, 1, ref, sizeof ref, &e0) == VOCR_OK);
     frames = e0.frames;
     if (want_hash) {
@@ -1204,7 +1232,7 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
         size_t base_w8i;
         CHECK(vocr_load(&mb, blob_buf, n) == VOCR_OK && vocr_load(&mg, blob_buf, gn) == VOCR_OK);
         memset(&oo, 0, sizeof oo);
-        oo.mode = VOCR_MODE_W8I;
+        oo.mode = g_mode;
         base_w8i = vocr_arena_bytes(&mb, &oo);
         CHECK(base_w8i > 0 && vocr_arena_bytes(&mg, &oo) == base_w8i);
         oo.head_gate = VOCR_HEAD_GATE_SCORE;
@@ -1213,9 +1241,10 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
         oo.head_gate = 3;
         CHECK(vocr_arena_bytes(&mg, &oo) == 0);
         oo.head_gate = VOCR_HEAD_GATE_ON;
-        oo.mode = VOCR_MODE_W8F;
+        /* the gate runs in every mode (#126), but an int8 blob has no float weights for F32, nor a float blob int8 */
+        oo.mode = g_mode == VOCR_MODE_F32 ? VOCR_MODE_W8F : VOCR_MODE_F32;
         CHECK(vocr_arena_bytes(&mg, &oo) == 0);
-        oo.mode = VOCR_MODE_W8I;
+        oo.mode = g_mode;
         /* the frame indices (with an attention op they may fit in the working set's overlay: docs/vocr6-attn.md) */
         CHECK(mg.attn.dim ? vocr_arena_bytes(&mg, &oo) >= base_w8i : vocr_arena_bytes(&mg, &oo) > base_w8i);
     }
@@ -1290,7 +1319,7 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
         int calls = 0;
         CHECK(vocr_load(&mg, blob_buf, gn) == VOCR_OK);
         memset(&oo, 0, sizeof oo);
-        oo.mode = VOCR_MODE_W8I;
+        oo.mode = g_mode;
         oo.head_gate = VOCR_HEAD_GATE_ON;
         CHECK(vocr_init(&c, &mg, &oo, arena_a, vocr_arena_bytes(&mg, &oo)) == VOCR_OK);
         im.pixels = img_px;
@@ -1326,7 +1355,7 @@ static void test_gate_run_on(size_t (*build)(int), uint64_t want_hash)
 static void test_gate_run(void)
 {
     test_gate_run_on(build_blob, 0);
-    test_gate_run_on(build_stem_head_blob, STEM_HEAD_W8I_HASH);
+    test_gate_run_on(build_stem_head_blob, g_mode == VOCR_MODE_W8I ? STEM_HEAD_W8I_HASH : 0);
 }
 
 /* ------------------------------------------------------------ the two-level head (docs/head2level.md) */
@@ -1479,19 +1508,22 @@ static int two_run(size_t n, unsigned tl, unsigned hg, unsigned tile, unsigned h
     vocr_ctx c;
     vocr_image im;
     vocr_extra ex;
+    unsigned char *arena;
     size_t need;
     unsigned f;
     int rc = vocr_load(&m, blob_buf, n);
     if (rc) return rc;
     memset(&o, 0, sizeof o);
-    o.mode = VOCR_MODE_W8I;
+    o.mode = g_mode;
     o.tile_frames = tile;
     o.head_frames = head;
     o.head_gate = hg;
     o.two_level = tl;
     need = vocr_arena_bytes(&m, &o);
     if (!need) return VOCR_E_MODE;
-    rc = vocr_init(&c, &m, &o, arena_a, need);
+    arena = tight_arena(need);
+    if (!arena) return VOCR_E_ARENA;
+    rc = vocr_init(&c, &m, &o, arena, need);
     if (rc) return rc;
     im.pixels = img_px;
     im.width = w;
@@ -1511,6 +1543,10 @@ static int two_run(size_t n, unsigned tl, unsigned hg, unsigned tile, unsigned h
     ex.topk_class = t_tc;
     ex.blank_logit = t_bl;
     rc = vocr_run(&c, &im, text, cap, &ex);
+    if (!tight_check(arena, need)) {
+        fprintf(stderr, "two_run: a write past the planned arena (%lu B)\n", (unsigned long)need);
+        failures++;
+    }
     if (out) *out = ex;
     return rc;
 }
@@ -1531,7 +1567,10 @@ static void test_two_load(void)
     CHECK(vocr_arena_bytes(&m, &o) == 0);                                  /* two_level needs a trailer */
     CHECK(vocr_load(&m, blob_buf, tn) == VOCR_OK);
     o.mode = VOCR_MODE_W8F;
-    CHECK(vocr_arena_bytes(&m, &o) == 0);                                  /* and W8I */
+    CHECK(vocr_arena_bytes(&m, &o) > 0);                                   /* W8F too (#126) */
+    o.mode = VOCR_MODE_F32;
+    CHECK(vocr_arena_bytes(&m, &o) == 0);                                  /* not F32: an int8 blob */
+    o.mode = VOCR_MODE_W8I;
     blob_buf[tn - 1] ^= 1u;
     CHECK(vocr_check_crc(blob_buf, tn) == VOCR_E_FORMAT && vocr_load(&m, blob_buf, tn) == VOCR_OK);
     blob_buf[tn - 1] ^= 1u;
@@ -2215,8 +2254,24 @@ int main(void)
     test_two_load();
     test_two_run();
     test_two_gate();
+    /* #126: the head gate in W8F and F32 and the two-level head in W8F, against references read in the same mode */
+    g_mode = VOCR_MODE_W8F;
+    test_gate_run();
+    test_two_run();
+    test_two_gate();
+    g_mode = VOCR_MODE_F32;
+    test_gate_run();
+    g_mode = VOCR_MODE_W8I;
     test_two_stem_head();
     test_attn();
+    /* #126 x the attention op: the gate (W8F, F32) and the two-level head (W8F) reading z', in the sanitized suite too */
+    g_mode = VOCR_MODE_W8F;
+    test_gate_run_on(build_attn_gate_blob, 0);
+    test_two_run_on(build_attn_2l_blob, 260, 21);
+    test_two_run_on(build_stem_head_attn_2l_blob, 257, 10);
+    g_mode = VOCR_MODE_F32;
+    test_gate_run_on(build_attn_gate_blob, 0);
+    g_mode = VOCR_MODE_W8I;
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

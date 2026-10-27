@@ -123,12 +123,15 @@ filter deletes them however well they are read. The report prints this floor bes
 from the references alone. It is the same for VOCR5 and VOCR6. On CLANNAD it is 26 of 33,485 dialogue characters; on
 PCSG00807's clean lines 26 of 13,911 (audit-vocr6-final-test's count).
 
-**Against Rubi's whole job** (`vocr6_final_test.py pagecheck`, `eval/vocr6_final_test_pagecheck_20261026.json`).
+**Against Rubi's whole job** (`vocr6_final_test.py pagecheck`, `eval/vocr6_final_test_pagecheck_20261027.json`).
 Rubi main `b6c715c` added vertical text (#335), which changed `recognize`. Its host tool `vjo-page-ocr` runs the game
 worker's job on the defaults of `config.ini`, with `--vertical auto`, through textnorm and the line filter. It read
 development regions of the train titles: horizontal ones, counter ones, and regions drawn around the columns of the
 vertical title PCSG00653. Path (b)'s model was compared with it at every tier on four things: the switch to columns,
 the boxes, the line texts, and the text shown.
+
+All 299 regions are equal at S, N and L: 184 horizontal, 55 with a counter, and 60 vertical, which both switched to
+columns. That is 540 lines per tier.
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.

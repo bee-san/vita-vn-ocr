@@ -1,0 +1,55 @@
+{
+ "all_equal": true,
+ "differences": [],
+ "finder_source": "checkout",
+ "fix": 0,
+ "kinds": {
+  "counter": 55,
+  "horizontal": 184,
+  "vertical": 60
+ },
+ "lm": "vocr_lm6_o3_1000k.vlm",
+ "lm_settings": {
+  "alpha": 600,
+  "beam": 8,
+  "beta": 2500,
+  "bracket": 8000,
+  "flags": 1,
+  "gate": 8000,
+  "topk": 8
+ },
+ "note": "development data only (hooked train titles' train and hval regions; no protected set): vocr6_final_test.py pagecheck at 7462538's code, path (b)'s model (finder fix 0, as this Rubi checkout runs it; API 47's auto check and the column read by VOCR5-V) against Rubi main b6c715c's own vjo-page-ocr --vertical auto (the game worker's job on config.ini's defaults: tier, LM tier 2 = lm6, cascade, head gate, counters, probe, refinement on PSP, textnorm, line filter), with the models and LM that checkout pins; per tier: the switch to columns, boxes, dark flags, each line's text, the text shown",
+ "regions": 299,
+ "rubi_head": "b6c715c2528f446d204a3606923dfe58c29e733c",
+ "switched_mine": 60,
+ "tiers": {
+  "L": {
+   "boxes_equal": 299,
+   "columns": 60,
+   "line_text_equal": 540,
+   "lines": 540,
+   "regions": 299,
+   "shown_equal": 299,
+   "switched_equal": 299
+  },
+  "N": {
+   "boxes_equal": 299,
+   "columns": 60,
+   "line_text_equal": 540,
+   "lines": 540,
+   "regions": 299,
+   "shown_equal": 299,
+   "switched_equal": 299
+  },
+  "S": {
+   "boxes_equal": 299,
+   "columns": 60,
+   "line_text_equal": 540,
+   "lines": 540,
+   "regions": 299,
+   "shown_equal": 299,
+   "switched_equal": 299
+  }
+ },
+ "vertical_check": true
+}

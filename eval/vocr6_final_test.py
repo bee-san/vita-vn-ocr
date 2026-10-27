@@ -2164,11 +2164,16 @@ def cmd_dryrun(a):
             plan.doc["finder"] = {k: rp["finder"][k] for k in ("fix", "driver_sha256", "sources_sha256")}
             write_pickle(planp, plan.doc)
         dumps = []
+        vd = work / f"dump_{name}_V_V.pkl"
+        if not vd.exists():
+            cmd_read(argparse.Namespace(plan=str(planp), blob=proto["models"]["VOCR5"]["vertical"]["file"],
+                                        rubi_path=str(rpath), workers=a.workers, only="columns", out=str(vd)))
+        dumps.append(f"V:V={vd}")
         for (fam, t), blob in blobs.items():
             dp = work / f"dump_{name}_{fam}_{t}.pkl"
             if not dp.exists():
                 cmd_read(argparse.Namespace(plan=str(planp), blob=str(blob), rubi_path=str(rpath), workers=a.workers,
-                                            out=str(dp)))
+                                            only="rows", out=str(dp)))
             dumps.append(f"{fam}:{t}={dp}")
         rows_b[name] = work / f"rows_{name}.pkl"
         if not rows_b[name].exists():
@@ -2176,7 +2181,8 @@ def cmd_dryrun(a):
         with open(rows_b[name], "rb") as f:
             d = pickle.load(f)
         summary[name] = {"fixed": len(d["rows"]["fixed"]), "units": len(d["rows"]["units"]),
-                         "read_errors": d["read_errors"], "finder_errors": d["finder_errors"], "rereads": d["rereads"]}
+                         "read_errors": d["read_errors"], "finder_errors": d["finder_errors"], "rereads": d["rereads"],
+                         "vertical_auto": d["vertical_auto"]}
     models = {"kind": "vocr6-final-test-models", "staged": now(), "tiers": {}}
     for t in TIERS:
         b = blobs[("VOCR6", t)]

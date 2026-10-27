@@ -2158,7 +2158,13 @@
      "why": "stages.4.amendments[1] decides 4c by decision.adopt with the 4b blob as X on the shipped path, but both blobs train on hval (folded in), so their hval page comparison is not held out and would reward memorising hval, which a longer schedule does more. The held-out evidence for the long schedule is stage 3's S3long pair (hval out, seeds 1 and 3)",
      "rule": "4c's blob of tier T replaces 4b's iff (i) S3long is adopted over A15 under stage 3's rule (seeds 1 and 3, hval plan v2, decision.adopt) and (ii) the 4c blob is not resolved worse than the 4b blob on the dev score on the shipped path (VN bootstrap, one pair; the same check as 4b against its 4a sibling). The hval page of 4b and 4c is reported only, marked 'hval in training'. If (i) fails, 4c is not used, whatever its scores",
      "arms": "F4Sc_s1, F4Nc_s1, F4Lc_s1: F4{T}h_s1 at 45,000 steps (run v6f4c_{T}_seed1; mix r3all_fold, lr 1.2e-3, warmup 500, init the tier's VOCR5 fine-tuned seed-1 checkpoint)",
-     "compute": "4c runs may start before S3long seed 3 is scored, in slots stage 4a/4b free; they are used only under the rule above"
+     "compute": "4c runs may start before S3long seed 3 is scored, in slots stage 4a/4b free; they are used only under the rule above",
+     "open_cases": {
+      "source": "audit-vocr6-lead-h H1 (PR #148's audit), recorded by vocr6-lead in the experiment log at 2026-10-27T07:56:28Z (its preregistration-amendment line), before any 4c score; carried here by vocr6-followup with the follow-up's records",
+      "where_4b_does_not_ship": "4c is used only where 4b ships: a tier not adopted in 4a keeps VOCR5 and its 4c run is not used (Small: v6f4c_S_seed1 stopped unscored at 07:30:10Z); where 4b fails its check against its 4a sibling and the sibling ships, 4c is not used either (it was never compared with the sibling)",
+      "cascade_in_ii": "(ii) reads 4c-N cascading into 4c-L (4a's same-family composition) and 4b-N into 4b-L; the composition that ships (e.g. 4c-N into 4b-L if only Normal's 4c passed) is reported before it ships, as audit-vocr6-lead-g N6 asks",
+      "in_run_evals": "the 4c runs' in-run float evals (--val tvd, hvl) exist and are not read for any choice"
+     }
     },
     {
      "n": 7,

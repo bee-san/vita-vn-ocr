@@ -351,7 +351,7 @@ def cmd_propose(a):
 
 # ----------------------------------------------------------------------------- sheets
 
-FONT = "/usr/share/fonts/google-droid-sans-fonts/DroidSansFallbackFull.ttf"
+FONT = os.environ.get("T7_SHEET_FONT", str(ART / "vocr6-spotter3" / "fonts" / "NotoSansJP-wght.ttf"))
 SHEET_W = 1280
 COLOURS = [(255, 64, 64), (64, 200, 255), (255, 200, 0), (80, 255, 80), (255, 80, 255), (255, 140, 0)]
 
@@ -423,6 +423,69 @@ def make_sheet(rgb_console, platform, boxes, title):
     return sheet
 
 
+REVIEW_README = """# textspot7 confirmation set: review conventions (vita-vn-ocr #128)
+
+Each sheet is ONE frame of a game, shown in the console view (a PSP frame at 2x), with a grid every 100 px
+(yellow numbers = pixels) and the numbered proposal boxes of a text detector. Under the frame: each horizontal
+proposal's crop with two machine readings, M (MeikiOCR) and P (PP-OCRv6 small, its lowest character confidence).
+The readings are suggestions only: they are often wrong. You decide what the screen really says.
+
+## What to decide per frame
+- accept true: the frame shows story text a player reads, as HORIZONTAL text: dialogue or narration in a text box
+  or over the scene, or an in-story choice menu; and you can read EVERY character of those lines with certainty.
+- accept false (with "skip"): "no dialogue" (title, logo, CG without text, system menu, save/load/config screen,
+  battle or map UI, a screenshot of a magazine), "vertical" (the story text runs vertically), "undecidable" (some
+  character of a dialogue line cannot be read with certainty, the text is cut off by the frame's edge, or a line is
+  covered), "not a game frame" (a photo of a console, a collage, several screens in one image).
+
+## Units (when accepted)
+A unit is the group of lines a player would draw ONE region around: all the lines of one text box (without its
+speaker-name plate), or all the options of one choice menu. A frame may hold one text box and one choice menu: two
+units. Speaker names on their own plate or row are NOT part of a unit; a name written inside the text line itself
+(e.g. a line starting with 【name】 or name「...」) is part of that line.
+
+## Lines (in each unit, in reading order: rows top to bottom, left to right within a row)
+- {"k": 3, "text": "..."}: proposal box 3 is exactly this line.
+- {"k": [3, 4], "text": "..."}: boxes 3 and 4 are pieces of ONE line (the code joins them).
+- {"k": 5, "split": 2, "texts": ["...", "..."]}: box 5 holds 2 stacked lines (top first).
+- {"add": [x, y, w, h], "text": "..."}: a line no proposal box holds (or holds only together with other text):
+  a rough box in the sheet's frame pixels (read it off the grid); it must hold the WHOLE line and no other text;
+  a few px loose is fine (the code shrinks it to the ink).
+
+## The text, exactly as displayed (eval's convention)
+- Main text only: no furigana (ruby), no page-cursor or button icons.
+- Every character matters: small kana (っゃゅょ / ッャュョ), dakuten and handakuten, ー (long vowel) vs 一 (kanji
+  one), 、 vs 。, similar kanji. Brackets 「」『』（）as shown. Ellipses as shown (… or ‥ or ・・・); full-width ！？
+  as shown. Spaces do not matter (they are removed when scored).
+- Latin letters and digits as written.
+- If even one character of a unit's lines is uncertain after a zoom, skip the frame as "undecidable".
+
+## The decision line (one JSON object per frame, one line)
+{"frame": "<id>", "accept": true, "units": [{"kind": "dialogue", "lines": [{"k": 2, "text": "..."}]}], "notes": ""}
+{"frame": "<id>", "accept": false, "skip": "no dialogue", "notes": ""}
+kind is "dialogue" (dialogue and narration) or "choice".
+"""
+
+
+def batch_plan(frames, cap_view, max_sheets):
+    """VNs packed into batches of at most max_sheets potential sheets (min(frames, cap_view) per VN), VNs in id
+    order."""
+    by_vn = defaultdict(list)
+    for fr in frames:
+        by_vn[fr["vn"]].append(fr)
+    batches, cur, n = [], [], 0
+    for vn in sorted(by_vn, key=lambda v: (int(v[1:]) if v[1:].isdigit() else 0, v)):
+        k = min(len(by_vn[vn]), cap_view)
+        if cur and n + k > max_sheets:
+            batches.append(cur)
+            cur, n = [], 0
+        cur.append(vn)
+        n += k
+    if cur:
+        batches.append(cur)
+    return batches, by_vn
+
+
 def cmd_sheets(a):
     import cv2
     frames = frame_list(a.frames)
@@ -430,29 +493,184 @@ def cmd_sheets(a):
     got = fetched(a.dir)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    by_vn = defaultdict(list)
-    for fr in frames:
-        by_vn[fr["vn"]].append(fr)
-    vns = sorted(by_vn)
-    batches = [vns[i::a.batches] for i in range(a.batches)]
+    batches, by_vn = batch_plan(frames, a.cap_view, a.max_sheets)
     for bi, bvns in enumerate(batches, 1):
+        bd = out / f"batch_{bi:02d}"
+        bd.mkdir(exist_ok=True)
+        (bd / "README.md").write_text(REVIEW_README, encoding="utf-8")
         items = []
         for vn in bvns:
-            for fr in sorted(by_vn[vn], key=lambda f: f["review_rank"]):
+            for fr in sorted(by_vn[vn], key=lambda f: f["review_rank"])[:a.cap_view]:
                 bgr = cv2.imread(str(Path(a.dir) / got[fr["id"]]["file"]), cv2.IMREAD_COLOR)
                 p = props[fr["id"]]
                 sheet = make_sheet(console_view(bgr, fr["platform"]), fr["platform"], p["boxes"],
-                                   f"{fr['id']}  ({fr['platform']}, rank {fr['review_rank']} of {vn})")
-                name = f"b{bi:02d}_{fr['id']}.png"
-                sheet.save(out / name)
+                                   f"{fr['id']}  ({fr['platform']}, {vn} #{fr['review_rank']})")
+                name = f"{fr['id']}.png"
+                sheet.save(bd / name)
                 items.append({"frame": fr["id"], "vn": vn, "platform": fr["platform"], "rank": fr["review_rank"],
                               "sheet": name, "proposals": [{k: b.get(k) for k in ("k", "det", "vertical", "meiki",
                                                                                      "v6", "v6_conf")}
                                                            for b in p["boxes"]]})
-        (out / f"batch_{bi:02d}.json").write_text(json.dumps({"batch": bi, "vns": bvns, "per_vn": a.per_vn,
-                                                              "items": items}, ensure_ascii=False, indent=1) + "\n",
-                                                  encoding="utf-8")
-        print(f"batch {bi}: {len(bvns)} VNs, {len(items)} sheets")
+                (bd / f"{fr['id']}.json").write_text(json.dumps(items[-1], ensure_ascii=False, indent=1) + "\n",
+                                                     encoding="utf-8")
+        (bd / "batch.json").write_text(json.dumps({"batch": bi, "vns": bvns, "per_vn": a.per_vn,
+                                                   "cap_view": a.cap_view, "items": items}, ensure_ascii=False,
+                                                  indent=1) + "\n", encoding="utf-8")
+        print(f"batch {bi:02d}: {len(bvns)} VNs, {len(items)} sheets")
+
+
+# ----------------------------------------------------------------------------- the review tool
+
+def decisions_of(bd):
+    """{frame: the last decision line of any reviewer of this batch}."""
+    out = {}
+    for f in sorted(Path(bd).glob("decisions-*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(r, dict) and "frame" in r:
+                    out[r["frame"]] = r
+    return out
+
+
+def todo(bd):
+    """The next sheet of a batch in the frozen order: VN by VN, frames by rank, a VN closed at per_vn accepted."""
+    b = json.loads((Path(bd) / "batch.json").read_text(encoding="utf-8"))
+    dec = decisions_of(bd)
+    for vn in b["vns"]:
+        items = [it for it in b["items"] if it["vn"] == vn]
+        acc = sum(1 for it in items if dec.get(it["frame"], {}).get("accept"))
+        for it in items:
+            if acc >= b["per_vn"]:
+                break
+            if it["frame"] not in dec:
+                return it
+    return None
+
+
+def check_line(r, item):
+    errs = []
+    if not isinstance(r.get("accept"), bool):
+        errs.append("accept must be true or false")
+    if r.get("accept") is False and not r.get("skip"):
+        errs.append("a skipped frame needs a skip reason")
+    if r.get("accept"):
+        ks = {p["k"] for p in item["proposals"]}
+        units = r.get("units")
+        if not isinstance(units, list) or not units:
+            errs.append("an accepted frame needs units")
+            return errs
+        for u in units:
+            if u.get("kind") not in ("dialogue", "choice"):
+                errs.append("unit kind must be dialogue or choice")
+            if not u.get("lines"):
+                errs.append("a unit needs lines")
+            for ln in u.get("lines") or []:
+                if "add" in ln:
+                    v = ln["add"]
+                    if not (isinstance(v, list) and len(v) == 4 and all(isinstance(x, int) for x in v) and
+                            v[2] > 0 and v[3] > 0):
+                        errs.append(f"add must be [x, y, w, h] integers: {v}")
+                    if not ln.get("text"):
+                        errs.append("an added line needs its text")
+                elif "k" in ln:
+                    kk = ln["k"] if isinstance(ln["k"], list) else [ln["k"]]
+                    if not kk or any(k not in ks for k in kk):
+                        errs.append(f"unknown proposal box {ln['k']}")
+                    if ln.get("split"):
+                        if isinstance(ln["k"], list) or not isinstance(ln.get("texts"), list) or \
+                                len(ln["texts"]) != int(ln["split"]) or not all(ln["texts"]):
+                            errs.append(f"split box {ln['k']} needs one k and {ln.get('split')} texts")
+                    elif not ln.get("text"):
+                        errs.append(f"line {ln['k']} needs its text")
+                else:
+                    errs.append("a line needs k or add")
+    return errs
+
+
+def cmd_claim(a):
+    import fcntl
+    sd = Path(a.sheets)
+    claims_p = sd / "claims.json"
+    with open(sd / "claims.lock", "w") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        claims = json.loads(claims_p.read_text()) if claims_p.exists() else {}
+        for b, lab in sorted(claims.items()):
+            if lab == a.label and not (sd / b / "COMPLETE").exists():
+                print(f"RESUME {sd / b}")
+                return
+        for bd in sorted(sd.glob("batch_*")):
+            if bd.name not in claims:
+                claims[bd.name] = a.label
+                claims_p.write_text(json.dumps(claims, indent=1))
+                print(f"TASK {bd}")
+                return
+    print("STOP no batch left")
+
+
+def cmd_next(a):
+    it = todo(a.batch)
+    if it is None:
+        print("NONE every sheet of this batch is decided (run check, then complete)")
+        return
+    bd = Path(a.batch)
+    print(f"SHEET {bd / it['sheet']} {bd / (it['frame'] + '.json')}")
+
+
+def cmd_check(a):
+    bd = Path(a.batch)
+    b = json.loads((bd / "batch.json").read_text(encoding="utf-8"))
+    items = {it["frame"]: it for it in b["items"]}
+    f = bd / f"decisions-{a.label}.jsonl"
+    bad = 0
+    for n, line in enumerate(f.read_text(encoding="utf-8").splitlines() if f.exists() else [], 1):
+        if not line.strip():
+            continue
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError as e:
+            print(f"line {n}: not JSON ({e}); append a corrected line")
+            bad += 1
+            continue
+        if r.get("frame") not in items:
+            print(f"line {n}: unknown frame {r.get('frame')}")
+            bad += 1
+            continue
+        for e in check_line(r, items[r["frame"]]):
+            print(f"line {n} ({r['frame']}): {e}")
+            bad += 1
+    nxt = todo(bd)
+    print(f"{'OK' if not bad else 'PROBLEMS'}: {bad} problems; next: {nxt['frame'] if nxt else 'none'}")
+
+
+def cmd_complete(a):
+    bd = Path(a.batch)
+    if todo(bd) is not None:
+        raise SystemExit("not yet: some sheet is still to decide (run next)")
+    (bd / "COMPLETE").write_text(f"{a.label} {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n")
+    print(f"complete: {bd.name}")
+
+
+def cmd_zoom(a):
+    import cv2
+    bd = Path(a.batch)
+    b = json.loads((bd / "batch.json").read_text(encoding="utf-8"))
+    it = next(i for i in b["items"] if i["frame"] == a.frame)
+    got = fetched(a.dir)
+    bgr = cv2.imread(str(Path(a.dir) / got[a.frame]["file"]), cv2.IMREAD_COLOR)
+    rgb = console_view(bgr, it["platform"])
+    x, y, w, h = a.box
+    H, W = rgb.shape[:2]
+    c = rgb[max(0, y):min(H, y + h), max(0, x):min(W, x + w)]
+    f = min(4.0, 1280 / max(1, c.shape[1]), 1280 / max(1, c.shape[0]))
+    c = cv2.resize(c, None, fx=f, fy=f, interpolation=cv2.INTER_CUBIC)
+    n = len(list(bd.glob(f"zoom_{a.label}_*.png"))) + 1
+    out = bd / f"zoom_{a.label}_{n:02d}.png"
+    cv2.imwrite(str(out), np.ascontiguousarray(c[:, :, ::-1]))
+    print(f"ZOOM {out} ({f:.1f}x)")
 
 
 # ----------------------------------------------------------------------------- build
@@ -493,9 +711,10 @@ def cmd_build(a):
     props = {r["id"]: r for r in read_jsonl(a.proposals)}
     got = fetched(a.dir)
     dec = {}
-    for f in sorted(Path(a.decisions).glob("*.jsonl")):
-        for r in read_jsonl(f):
-            dec[r["frame"]] = r                                    # the last decision of a frame wins
+    for bd in sorted(Path(a.decisions).glob("batch_*")):
+        if not (bd / "COMPLETE").exists():
+            raise SystemExit(f"{bd.name} is not complete")
+        dec.update(decisions_of(bd))                               # the last decision of a frame wins
     accepted = defaultdict(list)
     for fid, r in dec.items():
         if r.get("accept"):
@@ -522,7 +741,9 @@ def cmd_build(a):
                         for bx, t in zip(parts, texts):
                             lines.append((bx, t))
                     elif "k" in ln:
-                        lines.append((kb[ln["k"]]["det"], ln["text"]))
+                        dets = [kb[k]["det"] for k in (ln["k"] if isinstance(ln["k"], list) else [ln["k"]])]
+                        lines.append(([min(d[0] for d in dets), min(d[1] for d in dets), max(d[2] for d in dets),
+                                       max(d[3] for d in dets)], ln["text"]))
                     else:
                         x, y, w, h = ln["add"]
                         lines.append(([x // s, y // s, (x + w + s - 1) // s, (y + h + s - 1) // s], ln["text"]))
@@ -600,14 +821,31 @@ def main(argv=None):
     p.add_argument("--dir", required=True)
     p.add_argument("--proposals", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--batches", type=int, default=8)
     p.add_argument("--per-vn", type=int, default=6)
+    p.add_argument("--cap-view", type=int, default=12)
+    p.add_argument("--max-sheets", type=int, default=48)
     p.set_defaults(fn=cmd_sheets)
+    p = sub.add_parser("claim")
+    p.add_argument("--sheets", required=True)
+    p.add_argument("--label", required=True)
+    p.set_defaults(fn=cmd_claim)
+    for name, fn in (("next", cmd_next), ("check", cmd_check), ("complete", cmd_complete)):
+        p = sub.add_parser(name)
+        p.add_argument("--batch", required=True)
+        p.add_argument("--label", default="")
+        p.set_defaults(fn=fn)
+    p = sub.add_parser("zoom")
+    p.add_argument("--batch", required=True)
+    p.add_argument("--dir", required=True)
+    p.add_argument("--frame", required=True)
+    p.add_argument("--box", type=int, nargs=4, required=True)
+    p.add_argument("--label", required=True)
+    p.set_defaults(fn=cmd_zoom)
     p = sub.add_parser("build")
     p.add_argument("--frames", required=True)
     p.add_argument("--dir", required=True)
     p.add_argument("--proposals", required=True)
-    p.add_argument("--decisions", required=True)
+    p.add_argument("--decisions", required=True, help="the sheets directory (its batch_*/decisions-*.jsonl)")
     p.add_argument("--out", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--per-vn", type=int, default=6)

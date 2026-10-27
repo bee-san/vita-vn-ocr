@@ -2512,6 +2512,54 @@ def cmd_pagecheck(a):
     print(json.dumps({k: v for k, v in res.items() if k != "differences"}))
 
 
+# ----------------------------------------------------------------------------- plaincheck (development)
+
+def cmd_plaincheck(a):
+    """Development data only (vocr6-lead's hval plan v1). Path (a) reads each staged blob as given, its heads off where
+    the tool has them off. This compares that read with the blob's plain twin, crop by crop: a two-level blob (its head
+    rows and vocab permuted into frequency order, docs/head2level.md) or a gated one (its VOCG section) against the
+    plain blob it was made from. Per crop: the greedy text, conf_min, and per frame the top-8 logits and the blank's,
+    and the top-8 class texts in order (the LM decoders and the counter re-decode map classes by text)."""
+    from pyvocr import Vocr
+    pairs = {}
+    for spec in a.pair:
+        t, rest = spec.split("=", 1)
+        pairs[t] = tuple(Path(x) for x in rest.split(","))
+    plan_path = Path(a.plan)
+    with open(plan_path, "rb") as f:
+        plan = pickle.load(f)
+    idx = _sample(len(plan["crops"]), a.k)
+    res = {"kind": "vocr6-final-test-plaincheck", "at": now(), "repo_head": git_head(),
+           "data": "development: vocr6-lead's hval plan v1 (hval crops of the hooked train titles)",
+           "plan_sha256": sha256(plan_path), "crops": len(idx), "tiers": {}}
+    for t, (shipped, plain) in pairs.items():
+        sa = Vocr(str(shipped), mode="w8i", max_width=1024, head_gate="off", two_level=0)
+        pb = Vocr(str(plain), mode="w8i", max_width=1024, head_gate="off", two_level=0)
+        e = {"shipped": shipped.name, "shipped_sha256": sha256(shipped), "plain": plain.name,
+             "plain_sha256": sha256(plain), "frames": 0, "greedy_equal": 0, "conf_equal": 0, "logits_equal": 0,
+             "topk_text_equal": 0}
+        ta, tb = {}, {}
+        for i in idx:
+            img, inv = plan["crops"][i][0], plan["crops"][i][1]
+            oa = sa.run_topk(img, TOPK, invert=bool(inv), blank=True)
+            ob = pb.run_topk(img, TOPK, invert=bool(inv), blank=True)
+            e["frames"] += int(oa["frames"])
+            e["greedy_equal"] += oa["text"] == ob["text"]
+            e["conf_equal"] += oa["conf_min"] == ob["conf_min"]
+            same = oa["frames"] == ob["frames"] and np.array_equal(oa["topv"], ob["topv"]) and \
+                np.array_equal(oa["blank"], ob["blank"])
+            e["logits_equal"] += same
+            e["topk_text_equal"] += same and all(
+                [ta.setdefault(int(c), sa.class_text(int(c))) for c in fa] ==
+                [tb.setdefault(int(c), pb.class_text(int(c))) for c in fb] for fa, fb in zip(oa["topc"], ob["topc"]))
+        res["tiers"][t] = e
+    res["all_equal"] = all(e[k] == len(idx) for e in res["tiers"].values()
+                           for k in ("greedy_equal", "conf_equal", "logits_equal", "topk_text_equal"))
+    write_json(a.out, res)
+    print(json.dumps({t: {k: v for k, v in e.items() if not k.endswith("sha256")} for t, e in res["tiers"].items()}),
+          res["all_equal"])
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -2592,6 +2640,11 @@ def main(argv=None):
     p.add_argument("--vertical-regions", type=int, default=60)
     p.add_argument("--tall-regions", type=int, default=80)
     p.add_argument("--out", required=True)
+    p = sp.add_parser("plaincheck")
+    p.add_argument("--plan", required=True, help="vocr6-lead's hval plan v1 (development)")
+    p.add_argument("--pair", action="append", required=True, help="TIER=SHIPPED.vocr,PLAIN.vocr")
+    p.add_argument("--k", type=int, default=3000)
+    p.add_argument("--out", required=True)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)
     p.add_argument("--suffix", required=True)
@@ -2599,7 +2652,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
     {"stage": cmd_stage, "rubi-path": cmd_rubi_path, "pcsg-a": cmd_pcsg_a, "plan": cmd_plan, "read": cmd_read,
      "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "dryrun": cmd_dryrun,
-     "rubicheck": cmd_rubicheck, "pagecheck": cmd_pagecheck, "report": cmd_report}[a.cmd](a)
+     "rubicheck": cmd_rubicheck, "pagecheck": cmd_pagecheck, "plaincheck": cmd_plaincheck,
+     "report": cmd_report}[a.cmd](a)
 
 
 if __name__ == "__main__":

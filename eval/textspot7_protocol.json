@@ -269,6 +269,29 @@
     "confirmation_set.labelling.view_cap": "the reviewers see at most the first 12 frames of a VN in the frozen review order (eval/textspot7_confirm.py sheets --cap-view 12); a VN closes at 6 accepted frames; the review tool hands out the frames in that order",
     "confirmation_set.labelling.batches": "9 batches of 3-7 VNs (at most 48 sheets each), one Claude helper per batch (vocr6-spotter3-label-*), then a second look by another helper at every accepted line whose text equals neither engine's reading and at every split or added line (eval/textspot7_confirm.py recheck-sheets): it picks a reading, writes the text, or marks it unsure (the frame then drops)"
    }
+  },
+  {
+   "n": 3,
+   "utc": "2026-10-27T09:56Z",
+   "before": "the confirmation read (no arm has run on any confirmation frame)",
+   "what": "the confirmation units are frozen",
+   "units": {
+    "public_manifest": "eval/textspot7_confirm_units_v1.json",
+    "units_pkl_sha256": "afc93c818ba29dfa3f96177feeb7c3fac32645c219f53a2cc0f96f898e41de89",
+    "vns": 41,
+    "base_regions": 172,
+    "units": 516,
+    "lines": 320,
+    "chars": 4737,
+    "accepted_frames": 170,
+    "by_platform_base_regions": {
+     "psp": 154,
+     "vita": 18
+    }
+   },
+   "labelling_as_done": "9 batches reviewed by 9 Claude helpers (vocr6-spotter3-label-1..9, reviewer_kind assistant), 383 sheets offered, 323 frames decided, 170 accepted (the rest: no dialogue, not Japanese, undecidable, not a game frame); the second look covered the 30 accepted lines whose text matched neither engine or that were added by hand (29 confirmed, 1 corrected)",
+   "deviation": "amendment 2 named another helper for the second look; no agent capacity was free (30 of 25 running), so it was done by this label's own session, a different Claude session than every first reviewer, which had seen no arm output on any confirmation frame (none existed); 3 zooms",
+   "dev_reads_before_freeze": "the dev and hval reads of the arms (and the dev-phase record, f62c2e8) came before this freeze; the frame list and the review rules were frozen before any arm read (ae1dd78, amendments 1-2), and the reviewers never saw an arm's output"
   }
  ]
 }

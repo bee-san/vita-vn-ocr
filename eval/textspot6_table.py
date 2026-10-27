@@ -101,14 +101,14 @@ def main(argv=None):
     E, R = Path(a.eval), Path(a.runs)
     det, crop = a9_rows(a.a9)
     kinds = [u["kind"] for u in pickle.load(open(a.dev_units, "rb"))["units"]]
-    cands, reports, missing = [], [], []
-    for arms, into in ((ARMS, cands), (REPORT_ARMS, reports)):
+    cands, reports, missing, missing_reports = [], [], [], []
+    for arms, into, miss in ((ARMS, cands, missing), (REPORT_ARMS, reports, missing_reports)):
         for arm in arms:
             for seed in SEEDS if arms is ARMS else (1, 2):
                 name = f"{arm}_seed{seed}"
                 ev = E / name
                 if not (ev / "SCORED").exists():
-                    missing.append(name)
+                    miss.append(name)
                     continue
                 into.extend(candidate_rows(name, arm, seed, ev, R / name, det, crop, kinds))
     unchecked = sorted({c["run"] for c in cands if c["c_equal"] is None})
@@ -126,9 +126,11 @@ def main(argv=None):
                           for d in DECODES},
                        **{f"{r['arm']}|s{r['seed']}|{r['decode']}": {"dev": r["dev"], "hval": r["hval"]}
                           for r in reports}},
-           "missing": missing, "no_parity": unchecked, "a9": str(a.a9), "a9_sha256": sha256_file(a.a9)}
+           "missing": missing, "missing_reports": missing_reports, "no_parity": unchecked, "a9": str(a.a9),
+           "a9_sha256": sha256_file(a.a9)}
     Path(a.out).write_text(json.dumps(tab, indent=1) + "\n", encoding="utf-8")
-    print(f"{a.out}: {len(cands)} candidate rows, {len(reports)} report rows, missing {missing}")
+    print(f"{a.out}: {len(cands)} candidate rows, {len(reports)} report rows, missing {missing}, "
+          f"report rows not scored yet {missing_reports}")
 
 
 if __name__ == "__main__":

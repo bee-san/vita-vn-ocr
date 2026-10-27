@@ -320,3 +320,42 @@ def test_doc_tables_match_the_committed_result(tmp_path):
         assert j["shipped"][tier]["config"] == dict({"beam": 8, "topk": 8}, **chosen)
     for tier in ("500k", "2000k"):
         assert j["tiers"][tier]["AB"]["rule"]["ships"] == "incumbent" and j["shipped"][tier]["family"] == "incumbent"
+
+
+def test_settings_report_picks_the_seed_mean_best():
+    """Another recognizer's settings: setting 1 has fewer errors on every unit for both seeds, so every fold and the
+    in-sample choice pick it; its CV errors are its errors; the ref (setting 0) comparison is the paired difference."""
+    units = []
+    for i in range(60):
+        part = ("tv", "dn", "wd", "hc", "hp")[i % 5]
+        units.append([part, f"u{i}", f"c{i % 12}", False, 10, "vita"])
+    n = len(units)
+    cfgs = [{"alpha": 500, "beta": 3500, "flags": 2, "gate": 8000, "bracket": 8000},
+            {"alpha": 600, "beta": 2500, "flags": 1, "gate": 8000, "bracket": 8000}]
+    errs = {s: np.stack([np.full(n, 3), np.full(n, 1)]) for s in ("1", "3")}
+    greedy = {s: np.full(n, 4) for s in ("1", "3")}
+    r = V.settings_report(units, greedy, errs, cfgs, ref=cfgs[0])
+    assert r["chosen"] == {"fold0": cfgs[1], "fold1": cfgs[1], "in_sample": cfgs[1]}
+    for s in ("1", "3"):
+        ps = r["per_seed"][s]
+        assert ps["cv"]["hc"] == 10.0 and ps["greedy"]["hc"] == 40.0 and ps["vocr5_setting"]["hc"] == 30.0
+        assert ps["cv_minus_vocr5_setting"]["hc"]["delta_points"] == -20.0
+    assert r["by_alpha"]["600"]["config"] == cfgs[1]
+
+
+def test_punct_line():
+    """Display arm P1's line test: dialogue punctuation only (>= 2 characters, spaces ignored)."""
+    assert V.punct_line("……") and V.punct_line("「…… 」") and V.punct_line("！？")
+    assert not V.punct_line("…") and not V.punct_line("Ab12") and not V.punct_line("…a")
+
+
+@pytest.mark.skipif(not (RUBI / "core" / "textnorm.c").exists(), reason="no Rubi_for_vita checkout (RUBI_DIR)")
+def test_display_arm_p1_keeps_punctuation_lines(tmp_path):
+    """Display arm P1: a line of dialogue punctuation only stays; Rubi's filter as it is drops it; lines of other
+    symbols still go."""
+    try:
+        x, y = V.RubiShow(RUBI, tmp_path), V.RubiShow(RUBI, tmp_path, keep_punct=True)
+    except SystemExit:
+        pytest.skip("the Rubi checkout is not at the pinned textnorm.c")
+    assert x(["……", "テスト"]) == ["テスト"] and y(["……", "テスト"]) == ["……", "テスト"]
+    assert y(["Ab12Cd34"]) == [] and y(["＃＃"]) == []

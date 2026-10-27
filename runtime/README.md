@@ -1099,6 +1099,31 @@ vocr_refine_lines_rows(&src, VOCR_REFINE_DEFAULT, arena, need, &set, &rows);  /*
   stay inside their box, errors leave the set unchanged; then `tests/lines_split_parity.py` against the twins, both
   forms, and `tests/lines_split_merged.py` on merged-line regions, where the split acts), and `tests/test_lines_split.py`.
 
+## Spotter fallback and post-pass (`vocr_textspot7.c`)
+
+textspot7's two per-region steps for a text spotter's boxes (issue #128, `docs/textspot7.md`);
+`synth/textspot7_twin.py` is the specification and the bit-exact twin.
+
+- `vocr_textspot7_choose(s, ns, g, ng, &params)` (F): shows the spotter's lines or the GRAD finder's for one region, by
+  the spotter's median confidence and two structure tests (a GRAD line the spotter's boxes do not cover; a GRAD line
+  reaching beyond them), or in GRAD-by-default mode by GRAD's merged lines. It is integer logic on at most 64 boxes
+  per set; est. < 0.02 ms per region at 333 MHz.
+- `vocr_textspot7_post(fb, n, x0, y0, x1, y1, &region, steps, arena, bytes, out, &m)` (D): turns the spotter's
+  whole-frame boxes into one region's lines. It assigns the boxes to the region (centre, or with `VOCR_T7_ASSIGN` a
+  large enough part inside), clips them, joins boxes of one row (`VOCR_T7_JOIN5` / `_JOIN10`), grows each box over
+  the ink at its ends (`VOCR_T7_EXTEND`, the page path's ink threshold) and cuts its rows to the text band
+  (`VOCR_T7_TIGHTEN`, `vocr_lines_refine.c`). textspot7's pick uses `JOIN10 | EXTEND`.
+  - Region: grey. The arena is `vocr_textspot7_arena_bytes_steps(w, h, steps)`: TIGHTEN needs the refinement's arena
+    (72,391 B at 960x544) and EXTEND 2 (w + 2) bytes; the pick's `JOIN10 | EXTEND` needs 1,924 B at 960 px.
+  - Est. 4.3 ms per mean development region and at most 33.5 ms on the largest (A9 cycle model,
+    `eval/textspot7_a9_20261027.json`).
+- `vocr_textspot7_post_rows(...)` is the same post-pass over a row source (`vocr_lines_rows.h`), for a caller that
+  streams the frame. EXTEND reads each box's rows (one above and one below included) twice, top to bottom. Its
+  arena is `vocr_textspot7_rows_arena_bytes_steps(w, h, steps)` (3 w bytes for EXTEND: 2,880 B at 960 px).
+- C99, no allocation, no recursion, no global state, integer only. Checks: `make check-textspot7` (strict compiles,
+  then the sanitized driver `vocr_textspot7_test.c` through `tests/textspot7_parity.py`: the choice, the post-pass and
+  its row-streamed form against the twin on random inputs) and `tests/test_textspot7.py`.
+
 ## Porting notes (vita, psp)
 
 - Compile `vocr.c` alone with `-std=c99 -O2 -ffp-contract=off`. Vita: `-mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard`. PSP: the scalar path is picked automatically when `__ARM_NEON` is undefined.

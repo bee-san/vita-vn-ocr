@@ -1752,7 +1752,8 @@
      "eval_every": 5000,
      "init": "W15",
      "what": "finder augmentation doubled",
-     "note_seed3": "seed 3 is not run: seed 1's hval page pair was +0.003, so decision.adopt's every-pair condition could not hold (vocr6-lead decision line 2026-10-26T22:55:14Z); the arm is not marked stopped, so `finish` still works for the scored seed 1"
+     "note_seed3": "seed 3 is not run: seed 1's hval page pair was +0.003, so decision.adopt's every-pair condition could not hold (vocr6-lead decision line 2026-10-26T22:55:14Z); the arm is not marked stopped, so `finish` still works for the scored seed 1",
+     "seed_only": 1
     },
     "S2cil": {
      "run": "v6s2cil_N",

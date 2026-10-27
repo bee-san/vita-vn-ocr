@@ -1,0 +1,168 @@
+{
+ "all_equal": true,
+ "at": "2026-10-26T19:23:12Z",
+ "checks": [
+  {
+   "check": "fixed_line.console.VOCR5_S.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "fixed_line.native.VOCR5_S.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.totals.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.groups.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "resources.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "fixed_line.console.VOCR5_N.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "fixed_line.native.VOCR5_N.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.totals.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.groups.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "resources.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "fixed_line.console.VOCR5_L.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "fixed_line.native.VOCR5_L.summary",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.totals.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue.groups.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "resources.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_S+LM",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.native.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_N+LM",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.native.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.console.VOCR5_L+LM",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "dialogue_tables.native.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "clannad.systems.VOCR5_S",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "clannad.systems.VOCR5_N",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "clannad.systems.VOCR5_L",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "clannad.systems.Lens",
+   "equal": true,
+   "first_difference": null
+  },
+  {
+   "check": "pcsg00807.sets.test",
+   "equal": true,
+   "first_difference": null
+  }
+ ],
+ "identity": {
+  "pcsg00807.finder_identity": {
+   "equal": false,
+   "published": {
+    "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+    "driver_sha256": "09de18f7e8935202ef79df62e02073de8e374c3afda4de00c843539bd7f5572b",
+    "library_sha256": "6cf1ddf2633ab9783ddbbc85348c6c344e938c90c4b55b8edf00a26a1dc63ff7"
+   },
+   "this_read": {
+    "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+    "driver_sha256": "09de18f7e8935202ef79df62e02073de8e374c3afda4de00c843539bd7f5572b",
+    "library_sha256": "e7a305189a5f8e174728966395857e36858dfac429a278f940e5e677ff7adb32"
+   }
+  }
+ },
+ "kind": "vocr6-final-test-validation",
+ "repo_head": "91cd1033d0efe1dcdd3772c894c04749e9b821bf"
+}

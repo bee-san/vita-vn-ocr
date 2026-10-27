@@ -214,8 +214,36 @@ def test_dev_plan_cuts_psp_units_in_the_2x_view_with_the_psp_refinement(tmp_path
     monkeypatch.setattr(V, "pp_find", fake_find)
     import argparse
     out = tmp_path / "dev.pkl"
-    V.dev_plan(argparse.Namespace(units=str(up), base_plan=str(bp), driver=str(drv), fix=1, probe=1, out=str(out)))
+    V.dev_plan(argparse.Namespace(units=str(up), base_plan=str(bp), driver=str(drv), fix=5, probe=0, out=str(out)))
     assert calls["shapes"] == [(40, 60), (40, 50)]
     assert calls["flags"] == [V.REFINE_ALL, 0] and calls["mode"] == V.FINDER_RECOVERY
+    assert calls["fix"] == 5 and calls["probe"] == 0
     doc = pickle.load(open(out, "rb"))
     assert [u["scale"] for u in doc["units"]["psp2x"]] == [2, 1]
+
+
+def test_init_builds_the_lm_with_the_given_opts(monkeypatch):
+    """The readers' LM decodes with the --lm-opts given (not Rubi's defaults): the dump records what was decoded."""
+    import types
+    seen = {}
+
+    class FakeLM:
+        def __init__(self, r, lm, **opts):
+            seen.update(opts)
+    fake = types.SimpleNamespace(Vocr=lambda *a, **k: object(), VocrLM=FakeLM, load_lib=lambda p: None)
+    monkeypatch.setitem(sys.modules, "pyvocr", fake)
+    opts = V.lm_opts_of("alpha=600,beta=2500,flags=1")
+    V._init("lib", "blob", "lm.vlm", "", False, opts)
+    assert seen == opts and opts != V.LM_OPTS
+    seen.clear()
+    V._init("lib", "blob", "lm.vlm", "", False, None)
+    assert seen == V.LM_OPTS
+
+
+def test_the_read_command_passes_lm_opts(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(V, "read", lambda *a: seen.update(args=a))
+    monkeypatch.setattr(sys, "argv", ["vocr6_score.py", "read", "--plan", "p.pkl", "--blob", "b.vocr", "--lm", "l.vlm",
+                                      "--lm-opts", "alpha=600,beta=2500,flags=1", "--out", "o.json"])
+    V.main()
+    assert seen["args"][-1] == V.lm_opts_of("alpha=600,beta=2500,flags=1")

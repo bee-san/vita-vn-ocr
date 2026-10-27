@@ -2,7 +2,7 @@
 """The blank-frame head gate (docs/headgate.md, issue #117 item 1, eval/headgate_protocol.json).
 
   headgate.py features --tier N --blob VOCR5_N_w8.vocr --out DIR        (heavy: the training-side frames)
-  headgate.py fit --tier N --blob VOCR5_N_w8.vocr --features DIR --out DIR --record REC.json
+  headgate.py fit --tier N --blob VOCR5_N_w8.vocr --features DIR --out DIR --record REC.json [--prefix VOCR5]
   headgate.py info GATED.vocr
 
 A gate is a 96 -> 16 (ReLU) -> 1 network on the output head's input, as the W8I head sees it, fit to say
@@ -445,7 +445,7 @@ def cmd_fit(a):
     for eps in EPS:
         t, m = threshold(s[nb], eps)
         blob = append_gate(base, params, t)
-        name = f"VOCR5_{a.tier}_w8g.vocr" if eps == EPS[0] else f"VOCR5_{a.tier}_w8g_eps{eps:g}.vocr"
+        name = f"{a.prefix}_{a.tier}_w8g.vocr" if eps == EPS[0] else f"{a.prefix}_{a.tier}_w8g_eps{eps:g}.vocr"
         (out / name).write_bytes(blob)
         skip = s > t
         rec["gates"][f"{eps:g}"] = {
@@ -508,6 +508,8 @@ def main():
     p.add_argument("--features", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--record", required=True)
+    p.add_argument("--prefix", default="VOCR5", help="the gated blobs' names: PREFIX_TIER_w8g.vocr (VOCR6: "
+                                                     "eval/vocr6_gate_protocol.json)")
     p = sub.add_parser("info")
     p.add_argument("blob")
     a = ap.parse_args()

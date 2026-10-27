@@ -6,6 +6,12 @@ development cohorts (eval/vocr6_lm_protocol.json; docs/vocr6-lm.md).
   vocr6_lm.py screen --lm NAME=PATH ... --hval-text HVAL.txt --out SCREEN.json
   vocr6_lm.py tune --lm NAME=PATH --grid JSON --tiers S,N,L --out DIR/NAME.npz [--hval-cache DIR] [--procs 5]
   vocr6_lm.py select --protocol eval/vocr6_lm_protocol.json --tune DIR --out eval/vocr6_lm_dev_<date>.json
+Another recognizer as tier T (VOCR6's logits; docs/vocr6-lm.md "LM settings on VOCR6's logits"): --blob T=PATH on
+hval-cache / tune / display-arm / show-cost, --dev-cache T=FILE on tune / display-arm, and
+  vocr6_lm.py dev-cache --tier T --blob T=PATH --out FILE                     its reads of VOCR5's dev cohorts (heavy)
+  vocr6_lm.py blob-report --run SEED=DIR ... --lm NAME[:a,b,f] --out FILE     its settings across seeds (report)
+  vocr6_lm.py show-cost --blob N=PATH --hval-cache DIR --rubi RUBI --out FILE  what the display rules alone cost
+  vocr6_lm.py display-arm --tiers N --blob N=PATH --dev-cache N=FILE ...      display arm P1 (keep punctuation lines)
 
 Reads. Every crop the console would hand the recognizer, read once per tier (VOCR5-S/N/L, the release blobs, W8I,
 head gate off) through the C runtime with the top-8 extras, the blank's logit and conf_min:
@@ -182,6 +188,15 @@ def is_japanese_char(c):
     return 0x3040 <= cp <= 0x309F or 0x30A0 <= cp <= 0x30FF or 0x4E00 <= cp <= 0x9FAF
 
 
+PUNCT_LINE = set("…―ー！？!?「」『』、。・～〜")     # display arm P1 (vocr6-lead's set)
+
+
+def punct_line(x):
+    """Display arm P1: a line of Japanese dialogue punctuation only (spaces ignored), at least 2 characters."""
+    t = x.replace(" ", "").replace("\u3000", "")
+    return len(t) >= 2 and all(c in PUNCT_LINE for c in t)
+
+
 class RubiShow:
     """What Rubi shows of a job's lines (protocol amendment 1): the lines read (an empty one adds nothing) joined
     by '\\n' as finish_line joins them; the game worker's core/textnorm.c (vjo_text_normalize_as, flags 0: every
@@ -189,9 +204,10 @@ class RubiShow:
     checkout at RUBI_TEXTNORM_SHA256; then the Shell's core/textfilter.c vjo_filter_lines (non_japanese_filter =
     lines): a line without a kana or kanji goes. Returns the shown lines."""
 
-    def __init__(self, rubi, build_dir):
+    def __init__(self, rubi, build_dir, keep_punct=False):
         import ctypes as C
         import subprocess
+        self.keep_punct = keep_punct            # display arm P1 (punct_line): off is Rubi's filter as it is
         src, hdr = Path(rubi) / "core" / "textnorm.c", Path(rubi) / "core" / "textnorm.h"
         if sha256(src) != RUBI_TEXTNORM_SHA256 or sha256(hdr) != RUBI_TEXTNORM_H_SHA256:
             raise SystemExit(f"{src}: not Rubi main bd130a8's textnorm.c/.h")
@@ -212,7 +228,8 @@ class RubiShow:
 
     def __call__(self, lines):
         text = self.textnorm("\n".join(x for x in lines if x))
-        return [x for x in text.split("\n") if any(is_japanese_char(c) for c in x)]
+        return [x for x in text.split("\n") if any(is_japanese_char(c) for c in x)
+                or (self.keep_punct and punct_line(x))]
 
 
 def dev_units():
@@ -300,9 +317,18 @@ def normed(texts):
     return {k: norm(v) for k, v in texts.items()}
 
 
+DEV_OVERRIDE = {}          # tier -> a dev-cache pickle of another blob (--dev-cache T=FILE; VOCR6's logits)
+
+
 def dev_reads(tier):
-    """[(row key, read)] of the head gate's development cache, arm today (the release blob's own reads)."""
+    """[(row key, read)] of the head gate's development cache, arm today (the release blob's own reads), or of a
+    dev-cache file for another blob (DEV_OVERRIDE)."""
     import headgate_eval as HE
+    if tier in DEV_OVERRIDE:
+        d = pickle.loads(Path(DEV_OVERRIDE[tier]).read_bytes())
+        if d["blob_sha256"] != sha256(BLOBS[tier]):
+            raise SystemExit(f"{DEV_OVERRIDE[tier]}: read another blob than {BLOBS[tier]}")
+        return d["reads"], d["meta"]
     c = HE.load_cache(DEV_CACHE, tier)
     fixed = HE.fixed_rows()
     keys = HE.row_keys(c["keys"], fixed)
@@ -669,6 +695,174 @@ def cmd_select(a):
                         **{f"in_{m}": err(m, choice[None]) for m in ("N", "S", "L")})
     print(json.dumps({"tier": a.tier, "chosen": out["chosen"]["in_sample"], "rule": rule,
                       "N": {k: out["models"]["N"][k] for k in ("incumbent", "cv", "in_sample")}}, ensure_ascii=False))
+
+
+def settings_report(units, greedy, errs, configs, ref=None, key="N|none"):
+    """Another recognizer's LM settings (VOCR6's logits; not part of the protocol's decision). greedy: {seed: unit
+    errors}; errs: {seed: configs x unit errors} of one LM over one grid; ref: a config of the grid (the VOCR5-tuned
+    setting). The setting minimising the objective averaged over the seeds, in-sample and 2-fold cross-validated on
+    the protocol's folds (each fold scored by the other fold's choice; the first minimum in grid order); per seed its
+    scores and its paired intervals against greedy and against ref; and per alpha the in-sample best."""
+    sc = Scorer(units)
+    U = [Unit(u[0], u[1], u[2], u[3], [], u[5]) for u in units]
+    for u, x in zip(U, units):
+        u.chars = x[4]
+    seeds = sorted(errs)
+
+    def mean_obj(fold):
+        return np.mean([sc.scores(errs[s], fold=fold)["obj"] for s in seeds], axis=0)
+
+    pick = {f: int(np.argmin(mean_obj(f))) for f in (0, 1, None)}
+    out = {"key": key, "seeds": seeds, "configs": len(configs),
+           "chosen": {"fold0": configs[pick[0]], "fold1": configs[pick[1]], "in_sample": configs[pick[None]]},
+           "vocr5_setting": ref, "per_seed": {}, "by_alpha": {}}
+    if ref is not None and ref not in configs:
+        raise SystemExit(f"the reference setting {ref} is not in the grid")
+    j_ref = configs.index(ref) if ref is not None else None
+    for s in seeds:
+        g = greedy[s]
+        e_in = errs[s][pick[None]]
+        e_cv = np.where(sc.fold == 0, errs[s][pick[1]], errs[s][pick[0]])
+        rep = {"greedy": rounded(sc.scores(g)), "in_sample": rounded(sc.scores(e_in)), "cv": rounded(sc.scores(e_cv)),
+               "cv_minus_greedy": compare(U, g, e_cv), "in_sample_minus_greedy": compare(U, g, e_in)}
+        if j_ref is not None:
+            e_ref = errs[s][j_ref]
+            rep["vocr5_setting"] = rounded(sc.scores(e_ref))
+            rep["vocr5_setting_minus_greedy"] = compare(U, g, e_ref)
+            rep["cv_minus_vocr5_setting"] = compare(U, e_ref, e_cv)
+        out["per_seed"][s] = rep
+    allm = mean_obj(None)
+    hc = np.mean([sc.scores(errs[s])["hc"] for s in seeds], axis=0)
+    for al in sorted({c["alpha"] for c in configs}):
+        js = [j for j, c in enumerate(configs) if c["alpha"] == al]
+        j = js[int(np.argmin(allm[js]))]
+        out["by_alpha"][str(al)] = {"config": configs[j], "obj": round(float(allm[j]), 4), "hc": round(float(hc[j]), 4)}
+    return out
+
+
+def cmd_blob_report(a):
+    """settings_report over tune runs of one recognizer's seeds: --run SEED=DIR (each DIR holds greedy.npz and one
+    <lm>.npz per --lm NAME[:alpha,beta,flags], the ref setting)."""
+    runs = dict(r.split("=", 1) for r in a.run)
+    out = {"kind": "vocr6-lm-blob-settings", "schema": 1, "created": utc_now(), "name": a.name, "key": a.key,
+           "runs": {}, "lms": {}}
+    greedy, units = {}, None
+    for s, d in runs.items():
+        meta, e = load_tune(Path(d) / "greedy.npz", {a.key})
+        units = units or meta["units"]
+        if meta["units"] != units:
+            raise SystemExit(f"{d}: other units")
+        greedy[s] = e[a.key][0]
+        out["runs"][s] = {"tune": Path(d).name, "blobs": meta["blobs"]}
+    for spec in a.lm:
+        name, _, r = spec.partition(":")
+        ref = None
+        if r:
+            al, be, fl = (int(x) for x in r.split(","))
+            ref = {"alpha": al, "beta": be, "flags": fl, "gate": 8000, "bracket": 8000}
+        errs, cfgs, lm_sha = {}, None, None
+        for s, d in runs.items():
+            meta, e = load_tune(Path(d) / f"{name}.npz", {a.key})
+            if meta["units"] != units:
+                raise SystemExit(f"{d}/{name}.npz: other units")
+            cfgs = cfgs or meta["configs"]
+            if meta["configs"] != cfgs:
+                raise SystemExit(f"{name}: the seeds' grids differ")
+            lm_sha = meta["lm_sha256"]
+            errs[s] = e[a.key]
+        out["lms"][name] = {"lm_sha256": lm_sha, **settings_report(units, greedy, errs, cfgs, ref, a.key)}
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    ks = ("hc", "hp", "dev", "obj")
+    for name, r in out["lms"].items():
+        ps = r["per_seed"]
+        print(json.dumps({"lm": name, "in_sample": r["chosen"]["in_sample"],
+                          "cv": {s: {k: ps[s]["cv"][k] for k in ks} for s in ps},
+                          "greedy": {s: {k: ps[s]["greedy"][k] for k in ks} for s in ps},
+                          "vocr5_setting": {s: {k: ps[s].get("vocr5_setting", {}).get(k) for k in ks} for s in ps}}),
+              flush=True)
+
+
+def cmd_display_arm(a):
+    """Display arm P1 (pre-registered in vocr6/experiments.jsonl): Rubi's display rules as they are (X) against X
+    plus keeping punctuation-only lines (Y), on identical decodes at one LM setting. --tiers S,N,L: VOCR5's blobs,
+    S and N with their cascades, L alone; --tiers N with --blob/--dev-cache: another recognizer as N alone."""
+    tiers_l = a.tiers.split(",")
+    cfg = json.loads(a.config)
+    tiers, units = load_all(tiers_l, a.hval_cache)
+    U = units
+    tx = {t: tiers[t].decode(a.lm, lm_opts(cfg)) for t in tiers_l}
+    shows = {"X": RubiShow(a.rubi, PRIV / "build"), "Y": RubiShow(a.rubi, PRIV / "build", keep_punct=True)}
+    models = {}
+    for t in tiers_l:
+        if UP[t] in tiers_l:
+            models[f"{t}+cascade"] = cascade(tx[t], tiers[t].conf, tx[UP[t]], a.cascade_conf)
+        elif len(tiers_l) == 1 or UP[t] is None:
+            models[t] = tx[t]
+    sc_units = [[u.part, u.uid, u.cluster, u.name, u.chars, u.platform] for u in U]
+    sc = Scorer(sc_units)
+    out = {"kind": "vocr6-lm-display-arm", "schema": 1, "created": utc_now(), "arm": "P1 keep punctuation-only lines",
+           "lm": Path(a.lm).name, "lm_sha256": sha256(a.lm), "config": cfg, "cascade_conf": a.cascade_conf,
+           "blobs": {t: sha256(BLOBS[t]) for t in tiers_l}, "name": a.name, "models": {}}
+    for m, texts in models.items():
+        ex = unit_errors(U, texts, shows["X"])
+        ey = unit_errors(U, texts, shows["Y"])
+        changed = int((ex != ey).sum())
+        out["models"][m] = {"X": rounded(sc.scores(ex)), "Y": rounded(sc.scores(ey)), "units_changed": changed,
+                            "units_better": int((ey < ex).sum()), "units_worse": int((ey > ex).sum()),
+                            "Y_minus_X": compare(U, ex, ey)}
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    for m, r in out["models"].items():
+        d = r["Y_minus_X"]
+        print(json.dumps({"model": m, "changed": r["units_changed"], "better": r["units_better"],
+                          "worse": r["units_worse"], **{k: [d[k]["delta_points"], d[k]["ci95"]]
+                                                         for k in ("hc", "hp", "dev", "obj") if k in d}}),
+              flush=True)
+
+
+def cmd_show_cost(a):
+    """What Rubi's display rules alone do to a recognizer's greedy text on hval (no LM): hc and hp errors without
+    and with them (RubiShow), and the clean lines they drop whole, by the reference's character classes. Counts
+    only. A greedy arm scored without the rules against an LM arm scored with them mixes the two effects."""
+    import unicodedata
+    units, reads = hval_load(a.hval_cache, ["N"])
+    greedy = {k: o["text"] for k, o in reads["N"]}
+    show = RubiShow(a.rubi, PRIV / "build")
+    out = {"kind": "vocr6-lm-show-cost", "schema": 1, "created": utc_now(), "blob_sha256": sha256(BLOBS["N"]),
+           "parts": {}, "dropped_clean_lines": {"lines": 0, "ref_chars": 0, "classes": {}, "by_title": {}}}
+    for part in ("hc", "hp"):
+        us = [u for u in units if u.part == part]
+        raw = sum(u.errors(greedy, None) for u in us)
+        shown = sum(u.errors(greedy, show) for u in us)
+        ch = sum(u.chars for u in us)
+        out["parts"][part] = {"units": len(us), "chars": ch, "errors_raw": raw, "errors_shown": shown,
+                              "cer_raw": round(100 * raw / ch, 4), "cer_shown": round(100 * shown / ch, 4)}
+    dr = out["dropped_clean_lines"]
+    for u in units:
+        if u.part != "hc":
+            continue
+        ref, keys = u.segs[0]
+        lines = tuple(t for t in (greedy[k] for k in keys) if t)
+        if not lines or show(lines) or not ref:
+            continue
+        kinds = set()
+        for c in ref:
+            nm = unicodedata.name(c, "")
+            jp = ("HIRAGANA" in nm or "KATAKANA" in nm or "CJK UNIFIED" in nm) and c != "ー"
+            kinds.add("kana/kanji" if jp else "latin/digit" if c.isascii() and c.isalnum() else "punctuation/symbol")
+        key = "+".join(sorted(kinds))
+        dr["lines"] += 1
+        dr["ref_chars"] += len(ref)
+        dr["classes"][key] = dr["classes"].get(key, 0) + 1
+        dr["by_title"][u.cluster] = dr["by_title"].get(u.cluster, 0) + 1
+    import finder_tighten as FT
+    FT.assert_public(out)
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"parts": out["parts"], "dropped": {k: dr[k] for k in ("lines", "ref_chars", "classes")}}),
+          flush=True)
 
 
 def cmd_families(a):
@@ -1175,8 +1369,33 @@ def cmd_hval_cache(a):
     reads = [(k, res[k]) for k, _, _ in jobs]
     doc = {"tier": a.tier, "blob": BLOBS[a.tier].name, "blob_sha256": sha256(BLOBS[a.tier]), "reads": reads,
            "seconds": round(time.time() - t0, 1), "created": utc_now()}
-    (d / f"reads_{a.tier}.pkl").write_bytes(pickle.dumps(doc, protocol=4))
+    tag = READS_TAG.get(a.tier)
+    (d / (f"reads_{a.tier}.{tag}.pkl" if tag else f"reads_{a.tier}.pkl")).write_bytes(pickle.dumps(doc, protocol=4))
     print(json.dumps({k: doc[k] for k in ("tier", "blob_sha256", "seconds")} | {"reads": len(reads)}), flush=True)
+
+
+def cmd_dev_cache(a):
+    """One blob's reads of VOCR5's development cohorts, exactly the head gate cache's reads (eval/headgate_eval.py
+    fixed_rows, wd_lines, reads: tv/dn as stored and with the inversion undone, wd's lines through the C GRAD finder
+    and the refinement), keyed as dev_reads() keys them; for another recognizer's logits (VOCR6's)."""
+    import headgate_eval as HE
+    t0 = time.time()
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fixed = HE.fixed_rows()
+    wd, ident, flags = HE.wd_lines(out.parent / "build")
+    rd = HE.reads(fixed, wd)
+    keys = HE.row_keys([k for k, _, _ in rd], fixed)
+    jobs = [(i, img, inv) for i, (_, img, inv) in enumerate(rd)]
+    with mp.get_context("fork").Pool(a.procs, initializer=_rinit, initargs=(BLOBS[a.tier],)) as pool:
+        res = dict(pool.imap_unordered(_rwork, jobs, chunksize=16))
+    doc = {"tier": a.tier, "blob": str(BLOBS[a.tier]), "blob_sha256": sha256(BLOBS[a.tier]),
+           "reads": [(keys[i], res[i]) for i in range(len(rd))],
+           "meta": {"reads": len(rd), "finder": {k: v for k, v in ident.items() if k != "driver"}, "flags": flags},
+           "seconds": round(time.time() - t0, 1), "created": utc_now()}
+    out.write_bytes(pickle.dumps(doc, protocol=4))
+    print(json.dumps({"tier": a.tier, "blob_sha256": doc["blob_sha256"], "reads": len(rd), "seconds": doc["seconds"]}),
+          flush=True)
 
 
 def hval_load(d, tiers):
@@ -1185,11 +1404,30 @@ def hval_load(d, tiers):
     units = [Unit(*st) for st in pickle.loads((d / "units.pkl").read_bytes())]
     reads = {}
     for t in tiers:
-        c = pickle.loads((d / f"reads_{t}.pkl").read_bytes())
+        f = d / f"reads_{t}.pkl"
+        tag = READS_TAG.get(t)
+        if tag:
+            f = d / f"reads_{t}.{tag}.pkl"
+        c = pickle.loads(f.read_bytes())
         if c["blob_sha256"] != sha256(BLOBS[t]):
-            raise SystemExit(f"{d}: tier {t} read another blob")
+            raise SystemExit(f"{f}: tier {t} read another blob than {BLOBS[t]}")
         reads[t] = c["reads"]
     return units, reads
+
+
+READS_TAG = {}            # tier -> the tag of its hval reads file when BLOBS[tier] is overridden (--blob)
+
+
+def set_blobs(specs, dev_caches=()):
+    """--blob T=PATH (another recognizer as tier T: its hval reads are reads_T.<blob stem>.pkl) and --dev-cache
+    T=FILE (its dev reads, dev-cache)."""
+    for spec in specs or ():
+        t, _, path = spec.partition("=")
+        BLOBS[t] = Path(path)
+        READS_TAG[t] = Path(path).stem
+    for spec in dev_caches or ():
+        t, _, path = spec.partition("=")
+        DEV_OVERRIDE[t] = path
 
 
 def main():
@@ -1205,6 +1443,35 @@ def main():
     p.add_argument("--tier", required=True)
     p.add_argument("--dir", required=True)
     p.add_argument("--procs", type=int, default=5)
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p = sub.add_parser("display-arm")
+    p.add_argument("--tiers", required=True, help="S,N,L (VOCR5's blobs, cascades) or N (with --blob)")
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--dev-cache", action="append", default=[], help="T=FILE: its dev reads (dev-cache)")
+    p.add_argument("--hval-cache", required=True)
+    p.add_argument("--rubi", required=True)
+    p.add_argument("--lm", required=True)
+    p.add_argument("--config", required=True, help="the LM setting, JSON (alpha, beta, flags, gate, bracket)")
+    p.add_argument("--cascade-conf", type=int, default=700)
+    p.add_argument("--name", default="")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("show-cost")
+    p.add_argument("--blob", action="append", default=[], help="N=PATH: the recognizer (default VOCR5-N)")
+    p.add_argument("--dev-cache", action="append", default=[], help="unused here; accepted for symmetry")
+    p.add_argument("--hval-cache", required=True)
+    p.add_argument("--rubi", required=True, help="a Rubi checkout at the pinned core/textnorm.c")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("blob-report")
+    p.add_argument("--name", default="", help="what the runs are (e.g. the recognizer's name)")
+    p.add_argument("--run", action="append", required=True, help="SEED=DIR of one seed's tune runs")
+    p.add_argument("--lm", action="append", required=True, help="NAME[:alpha,beta,flags] (the reference setting)")
+    p.add_argument("--key", default="N|none")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("dev-cache")
+    p.add_argument("--tier", required=True)
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--procs", type=int, default=5)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("tune")
     p.add_argument("--lm", required=True, help="NAME=PATH (NAME=none: greedy)")
     p.add_argument("--grid", default=json.dumps({"alpha": [500], "beta": [3500]}))
@@ -1213,6 +1480,8 @@ def main():
     p.add_argument("--hval-cache")
     p.add_argument("--rubi", help="a Rubi_for_vita checkout: its display rules (protocol amendment 1)")
     p.add_argument("--both", action="store_true", help="with --rubi: the original path's errors too (raw:<tier>)")
+    p.add_argument("--blob", action="append", default=[], help="T=PATH: another recognizer as tier T")
+    p.add_argument("--dev-cache", action="append", default=[], help="T=FILE: its dev reads (dev-cache)")
     p.add_argument("--procs", type=int, default=5)
     p.add_argument("--out", required=True)
     p = sub.add_parser("screen")
@@ -1270,9 +1539,11 @@ def main():
                    help="shown: Rubi's display rules (amendment 1; the decision); raw: the original line path")
     p.add_argument("--out", required=True)
     a = ap.parse_args()
-    cmds = {"tune": cmd_tune, "screen": cmd_screen, "hval-units": cmd_hval_units, "hval-cache": cmd_hval_cache,
-            "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families, "summary": cmd_summary,
-            "checks": cmd_checks, "tables": cmd_tables}
+    set_blobs(getattr(a, "blob", None), getattr(a, "dev_cache", None))
+    cmds = {"tune": cmd_tune, "dev-cache": cmd_dev_cache, "screen": cmd_screen, "hval-units": cmd_hval_units,
+            "hval-cache": cmd_hval_cache, "select": cmd_select, "lex-tune": cmd_lex_tune, "families": cmd_families,
+            "summary": cmd_summary, "checks": cmd_checks, "tables": cmd_tables, "blob-report": cmd_blob_report,
+            "show-cost": cmd_show_cost, "display-arm": cmd_display_arm}
     cmds[a.cmd](a)
 
 

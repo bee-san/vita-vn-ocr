@@ -301,12 +301,69 @@ def hval_plan(args):
           f"pages {len(by_page)} titles {len({u['title'] for u in units})} skipped {skipped}", flush=True)
 
 
+def dev_plan(args):
+    """#119's development plan with its whole-dialogue units' finder crops cut again by eval/pagepath_find.c (Rubi's
+    line path: the finder, its short-line probe, the per-box refinement on PSP units; --fix: #129's fixes), in the
+    console view only (PSP units 2x bilinear, as #119 and eval/pagepath.py cut them). The fixed lines' crops (tv, dn)
+    are the base plan's, unchanged: they are hand-cut and need no finder."""
+    import cv2
+    units = pickle.load(open(args.units, "rb"))
+    base = pickle.load(open(args.base_plan, "rb"))
+    view = "psp2x"
+    crops, meta = [], []
+    fixed_ix = []
+    for i, c in enumerate(base["fixed_ix"][view]):
+        crops.append(base["crops"][c])
+        meta.append(dict(base["meta"][c], rebuilt_from=c))
+        fixed_ix.append(len(crops) - 1)
+    imgs, scales = [], []
+    for u in units["units"]:
+        img = u["image"]
+        s = 2 if u["kind"] == "psp" else 1
+        if s == 2:
+            img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+        imgs.append(np.ascontiguousarray(img, np.uint8))
+        scales.append(s)
+    found = pp_find(args.driver, imgs, FINDER_RECOVERY, args.fix, args.probe,
+                    [REFINE_ALL if u["kind"] == "psp" else 0 for u in units["units"]])
+    out_units = []
+    for i, (u, img, s, (boxes, dark, rc)) in enumerate(zip(units["units"], imgs, scales, found)):
+        lb = [[q * s for q in ln["box"]] for ln in u["lines"]]
+        cov = [[li for li, b in enumerate(lb) if covers(bx, b)] for bx in boxes]
+        pu = {"u": i, "scale": s, "rc": rc, "boxes": [list(b) for b in boxes], "dark": list(dark), "cov": cov,
+              "finder": []}
+        for bi, ((x, y, w, h), dk) in enumerate(zip(boxes, dark)):
+            crops.append((np.ascontiguousarray(img[y:y + h, x:x + w]), bool(dk)))
+            meta.append({"view": view, "kind": "finder", "u": i, "b": bi})
+            pu["finder"].append(len(crops) - 1)
+        out_units.append(pu)
+    doc = {"kind": "vocr6-dev-plan", "built": now(), "units_sha256": sha256(args.units),
+           "base_plan_sha256": sha256(args.base_plan), "driver_sha256": sha256(args.driver), "fix": args.fix,
+           "probe": args.probe, "fixed_ix": {view: fixed_ix}, "units": {view: out_units}, "crops": crops,
+           "meta": meta}
+    with open(args.out, "wb") as f:
+        pickle.dump(doc, f, protocol=4)
+    print(f"dev plan written: {len(crops)} crops, {len(fixed_ix)} fixed, {len(out_units)} units -> {args.out}",
+          flush=True)
+
+
 # ---------------------------------------------------------------- reading
 
 _W = {}
 
 
-def _init(lib, blob, lm, head_gate, two_level):
+def lm_opts_of(spec):
+    """Rubi's lm_opts (LM_OPTS) with "key=value,..." overrides (alpha, beta, gate, flags, bracket, beam, topk)."""
+    o = dict(LM_OPTS)
+    for kv in filter(None, (spec or "").split(",")):
+        k, _, v = kv.partition("=")
+        if k not in o:
+            raise SystemExit(f"unknown LM option {k!r} ({', '.join(o)})")
+        o[k] = int(v)
+    return o
+
+
+def _init(lib, blob, lm, head_gate, two_level, lm_opts=None):
     from pyvocr import Vocr, VocrLM, load_lib
     L = load_lib(lib)
     kw = {}
@@ -316,7 +373,7 @@ def _init(lib, blob, lm, head_gate, two_level):
         kw["two_level"] = True
     r = Vocr(blob, mode="w8i", max_width=1024, lib=L, **kw)
     _W["r"] = r
-    _W["lm"] = VocrLM(r, lm, **LM_OPTS) if lm else None
+    _W["lm"] = VocrLM(r, lm, **(lm_opts or LM_OPTS)) if lm else None
 
 
 def _read(job):
@@ -328,7 +385,7 @@ def _read(job):
     return i, o["text"], red["text"], beam, float(o["conf_min"]), float(o["conf_mean"]), int(o["topv"].shape[0])
 
 
-def read(plan_path, blob, lm, out, workers=5, head_gate="", two_level=False):
+def read(plan_path, blob, lm, out, workers=5, head_gate="", two_level=False, lm_opts=None):
     lib = ROOT / "runtime/build/libvocr.so"
     if not lib.exists():
         raise SystemExit("build the runtime first: make -C runtime build/libvocr.so")
@@ -336,13 +393,14 @@ def read(plan_path, blob, lm, out, workers=5, head_gate="", two_level=False):
     plan = pickle.load(open(plan_path, "rb"))
     jobs = [(i, img, inv) for i, (img, inv) in enumerate(plan["crops"])]
     res = [None] * len(jobs)
-    with Pool(workers, initializer=_init, initargs=(str(lib), str(blob), lm, head_gate, two_level)) as pool:
+    lm_opts = lm_opts or dict(LM_OPTS)
+    with Pool(workers, initializer=_init, initargs=(str(lib), str(blob), lm, head_gate, two_level, lm_opts)) as pool:
         for k, r in enumerate(pool.imap_unordered(_read, jobs, chunksize=16)):
             res[r[0]] = r
             if k and k % 5000 == 0:
                 print(f"read {k}/{len(jobs)} {time.time() - t0:.0f}s", flush=True)
     doc = {"kind": "vocr6-dump", "blob": str(blob), "blob_sha256": sha256(blob), "lm": lm,
-           "lm_sha256": sha256(lm) if lm else None, "lm_opts": LM_OPTS, "redecode": list(REDECODE),
+           "lm_sha256": sha256(lm) if lm else None, "lm_opts": lm_opts, "redecode": list(REDECODE),
            "head_gate": head_gate or "off", "two_level": bool(two_level),
            "library_sha256": sha256(lib), "plan": str(plan_path), "plan_sha256": sha256(plan_path),
            "repo_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
@@ -374,14 +432,27 @@ class Norm:
         return out[:-1]
 
 
-def texts(dump, path, cnorm):
+CASCADE_CONF = 700     # core/vocr_ocr.c: a line whose greedy conf_min * 1000 + 0.5 is under it is read again
+
+
+def texts(dump, path, cnorm, up=None):
     """Per crop: greedy (W8I argmax) or rubi (beam over the re-decoded top-K when the greedy text is not empty,
-    then textnorm and the non-Japanese filter; no cascade)."""
+    then textnorm and the non-Japanese filter). With up (the next tier's dump on the same plan), rubi is Rubi's cascade:
+    a line whose greedy confidence is under 0.7 shows the next tier's beam text (empty when its greedy text is)."""
     cr = dump["crops"]
     if path == "greedy":
         return [c["g"] for c in cr]
     if path == "rubi":
-        out = cnorm([c["b"] if c["g"] else "" for c in cr])
+        if up is not None and len(up["crops"]) != len(cr):
+            raise SystemExit("the cascade dump holds another number of crops")
+        raw = []
+        for i, c in enumerate(cr):
+            t = c["b"] if c["g"] else ""
+            if up is not None and c["g"] and int(c["cmin"] * 1000 + 0.5) < CASCADE_CONF:
+                u = up["crops"][i]
+                t = u["b"] if u["g"] else ""
+            raw.append(t)
+        out = cnorm(raw)
         return [t if has_japanese(t) else "" for t in out]
     raise ValueError(path)
 
@@ -392,8 +463,8 @@ def transcript(lines, preds):
     return sc["errors"], sc["chars"]
 
 
-def score_hval(plan, dump, cnorm, paths=("rubi", "greedy")):
-    T = {p: texts(dump, p, cnorm) for p in paths}
+def score_hval(plan, dump, cnorm, paths=("rubi", "greedy"), up=None):
+    T = {p: texts(dump, p, cnorm, up) for p in paths}
     clean = {"id": [], "title": [], "platform": [], "kind": [], "chars": [], "errors": {p: [] for p in paths}}
     for f in plan["fixed"]:
         ref = norm(f["ref"])
@@ -421,10 +492,10 @@ def score_hval(plan, dump, cnorm, paths=("rubi", "greedy")):
     return {"hval_clean": clean, "hval_page": page}
 
 
-def score_dev(units_doc, plan, dump, cnorm, exclude_vns, paths=("rubi", "greedy"), view="psp2x"):
+def score_dev(units_doc, plan, dump, cnorm, exclude_vns, paths=("rubi", "greedy"), view="psp2x", up=None):
     """reports/vocr5-analysis's cohorts in the console view: tv / dn fixed lines (rows of every development crop,
     the name-like rule of VOCR5's selection marking names), wd whole-dialogue units."""
-    T = {p: texts(dump, p, cnorm) for p in paths}
+    T = {p: texts(dump, p, cnorm, up) for p in paths}
     out = {}
     for cohort in ("tv", "dn"):
         rows = {"id": [], "vn": [], "name": [], "chars": [], "errors": {p: [] for p in paths}}
@@ -512,6 +583,16 @@ def blob_info(blob):
     return {"blob_bytes": int(r.blob_bytes), "arena_bytes": int(r.arena_bytes)}
 
 
+def load_up(path, dump):
+    """The next tier's dump for Rubi's cascade (same plan, same crops), or None."""
+    if not path:
+        return None
+    up = json.loads(Path(path).read_text(encoding="utf-8"))
+    if up["plan_sha256"] != dump["plan_sha256"] or len(up["crops"]) != len(dump["crops"]):
+        raise SystemExit(f"{path} was read from another plan than its tier's dump")
+    return up
+
+
 def score(args, proto=None):
     cnorm = Norm(args.rubi_norm)
     sc = {}
@@ -520,20 +601,26 @@ def score(args, proto=None):
         hd = json.loads(Path(args.hval_dump).read_text(encoding="utf-8"))
         if hd["plan_sha256"] != sha256(args.hval_plan):
             raise SystemExit("the hval dump was read from another plan")
-        sc.update(score_hval(hp, hd, cnorm))
+        hu = load_up(getattr(args, "hval_cascade_dump", ""), hd)
+        sc.update(score_hval(hp, hd, cnorm, up=hu))
     if args.dev_plan:
         dp = pickle.load(open(args.dev_plan, "rb"))
         du = pickle.load(open(args.dev_units, "rb"))
         dd = json.loads(Path(args.dev_dump).read_text(encoding="utf-8"))
         if dd["plan_sha256"] != sha256(args.dev_plan):
             raise SystemExit("the dev dump was read from another plan")
-        sc.update(score_dev(du, dp, dd, cnorm, set(args.exclude_vns or [])))
+        du_up = load_up(getattr(args, "dev_cascade_dump", ""), dd)
+        sc.update(score_dev(du, dp, dd, cnorm, set(args.exclude_vns or []), up=du_up))
     doc = {"kind": "vocr6-score", "name": args.name, "blob": str(args.blob), "blob_sha256": sha256(args.blob),
            **blob_info(args.blob), "hval_plan_sha256": sha256(args.hval_plan) if args.hval_plan else None,
            "dev_plan_sha256": sha256(args.dev_plan) if args.dev_plan else None,
            "exclude_vns": sorted(args.exclude_vns or []), "rubi_norm_sha256": sha256(args.rubi_norm),
-           "path": "W8I greedy + top-8, counter re-decode 6000/4000, beam 8 + LM (alpha 500, beta 3500, gate 8000, "
-                   "EOS, bracket 8000), textnorm, non-Japanese filter; no cascade",
+           "path": "W8I greedy + top-8, counter re-decode 6000/4000, beam 8 + LM (the dumps' lm_opts), textnorm, "
+                   "non-Japanese filter; " + ("Rubi's cascade under 0.7 to the next tier's dump"
+                                              if getattr(args, "hval_cascade_dump", "") or
+                                              getattr(args, "dev_cascade_dump", "") else "no cascade"),
+           "cascade": {"hval": getattr(args, "hval_cascade_dump", "") or None,
+                       "dev": getattr(args, "dev_cascade_dump", "") or None},
            "summary": summarize(sc), "rows": sc, "at": now()}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(str(args.out) + ".tmp")
@@ -607,6 +694,13 @@ def main():
     p.add_argument("--fix", type=int, default=0, help="with --driver: VOCR_FIX_* flags (5 = COLGAP|JUNK)")
     p.add_argument("--probe", type=int, default=1, choices=(0, 1), help="with --driver: Rubi's short-line probe")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("dev-plan")
+    p.add_argument("--units", required=True, help="#119's units.pkl")
+    p.add_argument("--base-plan", required=True, help="#119's plan.pkl (its fixed-line crops are kept)")
+    p.add_argument("--driver", required=True)
+    p.add_argument("--fix", type=int, default=0)
+    p.add_argument("--probe", type=int, default=1, choices=(0, 1))
+    p.add_argument("--out", required=True)
     p = sub.add_parser("read")
     p.add_argument("--plan", required=True)
     p.add_argument("--blob", required=True)
@@ -615,7 +709,11 @@ def main():
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--head-gate", default="")
     p.add_argument("--two-level", action="store_true")
+    p.add_argument("--lm-opts", default="",
+                   help="key=value,... over Rubi's lm_opts (alpha, beta, gate, flags, bracket)")
     p = sub.add_parser("score")
+    p.add_argument("--hval-cascade-dump", default="", help="the next tier's hval dump: score Rubi's cascade")
+    p.add_argument("--dev-cascade-dump", default="", help="the next tier's dev dump: score Rubi's cascade")
     p.add_argument("--name", required=True)
     p.add_argument("--blob", required=True)
     p.add_argument("--rubi-norm", required=True)
@@ -637,8 +735,10 @@ def main():
         merge_npz(a)
     elif a.cmd == "hval-plan":
         hval_plan(a)
+    elif a.cmd == "dev-plan":
+        dev_plan(a)
     elif a.cmd == "read":
-        read(a.plan, a.blob, a.lm, a.out, a.workers, a.head_gate, a.two_level)
+        read(a.plan, a.blob, a.lm, a.out, a.workers, a.head_gate, a.two_level, lm_opts_of(a.lm_opts))
     elif a.cmd == "score":
         score(a)
     else:

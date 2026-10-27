@@ -12,7 +12,7 @@ fallback's cost counted and the confirmation condition added. Two phases, each r
       0), and the VOCR6 guard when the table has one
 
 TABLE.json:
-  {"baseline": {"dev": RESULT, "hval": RESULT},                              GRAD + refine (eval/pagepath.py --finder rubi)
+  {"baseline": {"dev": RESULT, "hval": RESULT},          GRAD + refine (eval/pagepath.py --finder rubi)
    "rubi_next": {"name": "rubi,fix=1", "dev": RESULT, "hval": RESULT, "confirm": RESULT (phase confirm)},
    "seen_dev_clusters": ["v12188"],
    "candidates": [{"name", "arm", "run", "decode": "D|F|F+D", "dev": RESULT, "hval": RESULT, "confirm": RESULT (phase

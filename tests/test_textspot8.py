@@ -99,7 +99,13 @@ def test_tight_crop_keeps_the_block_and_shifts_boxes():
             assert b[0] >= 0 and b[1] >= 0 and b[2] <= im2.shape[1] and b[3] <= im2.shape[0]
 
 
-def test_apply_settings_registers_the_recipe_and_functions():
+def test_apply_settings_registers_the_recipe_and_functions(monkeypatch):
+    # apply_settings() rebinds textspot6_train's recipe table, augmentation and functions for the process: restore them
+    # after this test, so textspot6's own tests see textspot6's trainer in any file order (audit-vocr6-spotter2, F3)
+    for name in ("targets", "make_window", "code_sha256"):
+        monkeypatch.setattr(B, name, getattr(B, name))
+    monkeypatch.setattr(B, "AUG", dict(B.AUG))
+    monkeypatch.setattr(B, "RECIPES", dict(B.RECIPES))
     T.apply_settings()
     assert "t8" in B.RECIPES and B.targets is T.targets and B.make_window is T.make_window
     assert B.AUG["zoom"] == list(T.T8["zoom"]) and "train/textspot8_train.py" in B.code_sha256()

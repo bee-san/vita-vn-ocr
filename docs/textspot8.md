@@ -401,10 +401,11 @@ VTSP 52,176 B. MeikiOCR's detector, the reference: 3,547,383 float32 parameters,
   paired check and step 2 refuted it; the protocol's `corrections` and #149 record the correction. No arm or rule
   changed.
 - **The stopped runs:** amendment 2 stopped the first seed-1 run before any score. A second run of the stopped
-  recipe (across shrink 1.0, seed 2, `runs/t8_t64n8c16_seed2`) also started, at 07:48:33Z, and was not stopped: its
-  heavy.sh wrapper was killed by its recorded PID at 07:48:25Z, but the training child kept running, to step 30,000
-  (11:18:03Z; blob `847a9f9f1855…`), and held a heavy slot beyond this study's share for those 3.5 h. It was never
-  scored and is no candidate (found by the audit; the protocol's `corrections`).
+  recipe (across shrink 1.0, seed 2, `runs/t8_t64n8c16_seed2`) was launched at 07:48:12Z (its `run.json`: 07:48:33Z)
+  and was not stopped: its heavy.sh wrapper was killed by its recorded PID at 07:48:25Z, but the training child kept
+  running, to step 30,000 (11:18:03Z; blob `847a9f9f1855…`, 3.49 slot-hours), and held one heavy slot beyond this
+  study's share from 07:49Z to 10:30Z (about 2.7 h; the share was 4 after that). It was never scored and is no
+  candidate (found by the audit; the protocol's `corrections`).
 - **One rule-code change after the scores:** the selection record's commit (`319bea6`) also changed
   `eval/textspot8_table.py` to read textspot7's D parity format (without it det+D could not qualify) and to add D's
   cost to F+D's; both follow amendment 3, and the pick, its chain and Rubi's default are the same either way.

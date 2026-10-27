@@ -305,12 +305,61 @@ def test_vocr5_released_pins_match_the_protocols():
 
 
 def test_parse_final_blobs():
+    yes = lambda p: True  # noqa: E731
     msg = "vocr6-lead: FINAL BLOBS S=/a/S_w8.vocr N=/a/N_w8.vocr L=/a/L_w8.vocr."
-    assert G.parse_final_blobs(msg) == {"S": "/a/S_w8.vocr", "N": "/a/N_w8.vocr", "L": "/a/L_w8.vocr"}
+    assert G.parse_final_blobs(msg, yes) == {"S": "/a/S_w8.vocr", "N": "/a/N_w8.vocr", "L": "/a/L_w8.vocr"}
     two = msg + "\nFINAL BLOBS S=/b/S N=/b/N L=/b/L"
-    assert G.parse_final_blobs(two)["N"] == "/b/N"
-    assert G.parse_final_blobs("FINAL BLOBS S=<path> N=<path>") is None
-    assert G.parse_final_blobs("nothing") is None
+    assert G.parse_final_blobs(two, yes)["N"] == "/b/N"
+    assert G.parse_final_blobs("FINAL BLOBS S=<path> N=<path>", yes) is None
+    assert G.parse_final_blobs("nothing", yes) is None
+    # audit -b G3: a placeholder after the real message, a backtick-quoted message, a missing file
+    real = {"/a/S_w8.vocr", "/a/N_w8.vocr", "/a/L_w8.vocr"}
+    after = msg + "\nthe template: `FINAL BLOBS S=… N=… L=…`"
+    assert G.parse_final_blobs(after, real.__contains__) == {"S": "/a/S_w8.vocr", "N": "/a/N_w8.vocr",
+                                                            "L": "/a/L_w8.vocr"}
+    quoted = "`FINAL BLOBS S=/a/S_w8.vocr N=/a/N_w8.vocr L=/a/L_w8.vocr`"
+    assert G.parse_final_blobs(quoted, real.__contains__)["L"] == "/a/L_w8.vocr"
+    assert G.parse_final_blobs(msg.replace("/a/L_w8", "/x/L_w8"), real.__contains__) is None
+
+
+def test_redo_plan():
+    same = {"S": "s", "N": "n", "L": "l"}
+    assert G.redo_plan(same, same) == ([], [])
+    assert G.redo_plan(same, dict(same, S="s2")) == (["S"], ["S"])
+    assert G.redo_plan(same, dict(same, N="n2")) == (["N"], ["N", "S"])
+    assert G.redo_plan(same, dict(same, L="l2")) == (["L"], ["L", "N", "S"])
+    assert G.redo_plan({"S": "s", "N": "n"}, same) == (["L"], ["L", "N", "S"])        # L never prepared
+
+
+def test_steps_of_two_jobs_run_once(tmp_path):
+    import threading
+    ctx = G.Ctx(tmp_path / "out", _Args(tmp_path / "priv"))
+    runs = []
+
+    def slow():
+        runs.append(1)
+        import time
+        time.sleep(0.3)
+        return {"v": len(runs)}
+    res = []
+    th = [threading.Thread(target=lambda: res.append(G.step(ctx, "L", "shared", slow))) for _ in range(3)]
+    for x in th:
+        x.start()
+    for x in th:
+        x.join()
+    assert runs == [1] and [r["v"] for r in res] == [1, 1, 1]
+
+
+def test_timing_reports_superseded_steps_apart(tmp_path):
+    ctx = G.Ctx(tmp_path / "out", _Args(tmp_path / "priv"))
+    G.step(ctx, "N", "kept", lambda: {})
+    d = ctx.out / "superseded" / "N-abc-000000" / "steps"
+    d.mkdir(parents=True)
+    (d / "old.json").write_text(json.dumps({"tier": "N", "step": "old", "start": "a", "end": "b", "wall_s": 360.0,
+                                            "slot_hours": 0.1}))
+    t = G.timing(ctx)
+    assert [r["step"] for r in t["rows"]] == ["kept"] and t["superseded_slot_hours"] == 0.1
+    assert t["superseded_rows"][0]["tier"] == "N-abc-000000 (superseded)"
 
 
 def test_protocol_matches_the_driver():
@@ -338,6 +387,9 @@ def test_protocol_matches_the_driver():
     assert "read_again" in a2["reported_beside_as_produced"]
     assert "8ff76d83" in a2["runtime"] and "eps = 1e-4" in a2["deviation_added"]
     assert proto["amendments"][0]["n"] == 1
+    a3 = proto["amendments"][2]                         # provisional runs, confirmed by FINAL BLOBS
+    assert a3["n"] == 3 and "redo_plan" in a3["confirmation"] and "superseded" in a3["confirmation"]
+    assert set(a3["provisional_inputs"]) >= set(G.TIERS)
 
 
 def test_completion_tokens_never_printed():
@@ -445,6 +497,22 @@ def test_decide_two_level_alone_and_the_recall_fallback(monkeypatch, tmp_path):
     assert [c for c in calls if c[0] == "two"] == [("two", "2L"), ("two", "2L_rc9999")]
     assert dec["final_blob"]["name"] == "VOCR6_L_w8_2l.vocr"
     assert not any(c[0] == "shipped" for c in calls)                # Large has no next tier
+
+
+def test_decide_path_check_is_part_of_the_two_level_adoption(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "N", {"gate": "adopted"},
+                                {"2Lg": "adoptable", "2Lg_rc9999": "adoptable"}, path_worse=("2Lg",))
+    dec = G.decide(ctx, "N")
+    assert not dec["two_level"]["2Lg"]["adopted"] and dec["two_final"] == "2Lg_rc9999"
+    assert ("path", "2Lg_rc9999") in calls
+
+
+def test_decide_a_vocr5_blob_of_another_tier_is_ruled_as_any_blob(monkeypatch, tmp_path):
+    n_sha = next(h for h, v in G.VOCR5_RELEASED.items() if v[0] == "N")
+    ctx, _, _ = stub_decide(monkeypatch, tmp_path, "L", {"gate": "rejected", "gate_e4": "adopted"},
+                            {"2Lg_e4": "adoptable"}, sha=n_sha)
+    dec = G.decide(ctx, "L")
+    assert "kept_vocr5_verdict" not in dec and dec["final_arm"] == "2Lg_e4"
 
 
 def test_decide_recall_fallback_on_the_gate(monkeypatch, tmp_path):
@@ -585,3 +653,23 @@ def test_counter_report_tallies(monkeypatch, tmp_path):
     assert a["greedy"]["cer_arm_pct"] == pytest.approx(100 / 9, abs=1e-3) and a["greedy"]["cer_today_pct"] == 0
     assert a["rubi"]["lines_worse"] == 2 and a["rubi_reread"]["lines_worse"] == 1
     assert a["greedy"]["by_cut"]["3"]["lines_worse"] == 1 and a["greedy"]["by_cut"]["0"]["lines_worse"] == 0
+
+
+def test_dumps_job_waits_for_each_arms_blob(monkeypatch, tmp_path):
+    ctx = G.Ctx(tmp_path / "out", _Args(tmp_path / "priv"))
+    st = ctx.tdir("N", "steps")
+    (ctx.out / "N" / "input.json").write_text("{}")
+    order = []
+
+    def wait_for(paths, timeout_s=0, every_s=0):
+        order.append(("wait", tuple(Path(q).name for q in paths)))
+    monkeypatch.setattr(G, "wait_for", wait_for)
+    for f in ("ensure_dumps", "ensure_reads", "ensure_a9", "ensure_counter"):
+        monkeypatch.setattr(G, f, lambda c, t, a, f=f: order.append((f, a)))
+    G.dumps_job(ctx, "N", ["today", "gate", "2Lg"], extra=True)
+    assert order[:6] == [("wait", ("input.json",)), ("wait", ()), ("ensure_dumps", "today"),
+                         ("wait", ("gate_fit.json",)), ("ensure_dumps", "gate"),
+                         ("wait", ("gate_fit.json", "two_timing_blobs.json"))]
+    assert ("ensure_dumps", "2Lg_e4") in order and ("ensure_counter", "2Lg") in order
+    assert order.index(("ensure_reads", "gate_e4")) < order.index(("ensure_counter", "today"))
+    assert st.exists()

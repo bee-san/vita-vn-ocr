@@ -217,6 +217,36 @@
    "utc": "2026-10-27T15:25:00Z",
    "of": "amendment 6, 'guard'",
    "text": "'the shipped _w8_2l blobs add the two-level head, which vocr6-final-gate measured at +0.000 to +0.006 points' was written before that record was checked, and it is not a reading of this guard. vocr6-final-gate measured the two-level head on its own VOCR6-path kit and line plans, with Rubi's decode, not on the spotter's boxes ($A/vocr6-final-gate/result.json, tiers.{N,L}.arms.2L.vocr6_path.rubi): N with the L cascade dev +0.003 [0.000, +0.009] and hval page +0.005 [-0.004, +0.016]; L dev +0.000 [0.000, 0.000] and hval page +0.005 [0.000, +0.015]; on its fixed-line sets 0 to +0.012 points (N's dn +0.012 [0.000, +0.034]). The pinned page path (snap135) has no two-level switch, so the guard read the plain _w8 blobs only; the two-level head has not been read on the spotter's boxes. The guard's rule and figures are unchanged."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "amendment 2, 'stopped'",
+   "text": "amendment 2 names one stopped run, the across-shrink-1.0 seed-1 run. A second run of the stopped recipe also ran: runs/t8_t64n8c16_seed2 (across_shrink 1.0, hook splits train, git 7eb4484 with no modified file), started 07:48:33Z by job_0830.sh's last step and trained to step 30,000 (done 11:18:03Z; vtsp sha256 847a9f9f1855..., pt 910e2580...). Its heavy.sh wrapper was killed by its recorded PID at 07:48:25Z (rc 143) when amendment 2 was registered, but the training child it had started kept running and held heavy slot 4's lock until 11:18Z, so the label used one heavy slot more than its share for 3.5 h (3 slots at share 2 from 07:49Z, 4 at share 3 from 08:53Z). It was never scored: its blob's hash is in no result, record, release or log, the one script naming it (job_score_s2.sh) never ran, and eval/t8_t64n8c16_seed2 holds runs2's seed-2 blob (eba8eee6...). It is no candidate and played no part in any choice (found by audit-vocr6-spotter2, F1)."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "amendment 2, 'why'",
+   "text": "the stopped seed-1 run's log reaches step 6,400 (07:46:40Z), not 6,300."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "the selection record's commit 319bea6",
+   "text": "319bea6 also changed eval/textspot8_table.py after every score: ok() reads textspot7's D parity format ({'post': {'equal': ...}}), without which det+D counted as not C == twin and could not qualify, and F+D's est. ms adds D's cost. Both read amendment 3 as registered; the pick, its chain and Rubi's default are the same either way (crop is cheaper, and det+D is not resolved better than it); det+D only joined the confirmation read. 30f3f74 (amendment 5's test as code) was first pushed at 11:31:01Z, after the first dev scores (11:21:38Z); its logic is amendment 5's text pushed at 10:17:58Z, word for word."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "the final retrain's start",
+   "text": "the final retrain started (heavy START 12:47:27Z, run.json 12:47:49Z) 41 s before the confirmation record was committed (12:48:08Z); the confirmation read had finished (READ_COMPLETE 12:46:46Z). The retrain is the rule's next step whatever the guard says, so nothing flows either way."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "rule.with_pick, 'GRAD as the fallback on low confidence'",
+   "text": "Rubi's fallback is structural instead: no weights, a wrong file, no memory, no room for the scratch or a runtime refusal -> GRAD; vertical text under ocr_vertical = auto (and, since Rubi's API 53, on) -> GRAD's rows and that mode's check. Measured: textspot7's confidence fallback F is est. 386.6 ms (over the 300 ms bound), F reads unseen dev at 1.14% against the crop pick's 0.99%, and the pick left 0 of 1,161 dev, 6,327 hval and 516 confirmation units without a box, so a 'no line -> GRAD' rule would only bring GRAD's junk back to empty regions."
+  },
+  {
+   "utc": "2026-10-27T19:55:00Z",
+   "of": "amendment 5's test, seed spread",
+   "text": "the registered rule reads the representative only. Per crop seed against rubi,fix=1 on hval: s1 -1.58 [-4.16, -0.04], s2 -1.84 [-5.43, +0.21] (not resolved below 0), s3 -1.98 [-5.38, -0.11]; unseen dev is not resolved above 0 for any seed."
   }
  ]
 }

@@ -128,8 +128,10 @@ Each is dated in `eval/textspot8_protocol.json` and precedes the reads it names 
 1. **The student** (06:51Z, before every training run and score): one arm, `t8_t64n8c16`, seeds 1-3, as above.
 2. **The across shrink is 0** (07:48Z, before any student score). Step 1's raw-vs-padded MeikiOCR boxes showed on
    hval that boxes without a margin cost the recognizer, and the shrink amendment 1's rule had picked from step 2
-   (1.0 network px) would have put the margins below what step 2 tested. The first seed-1 run (43 min, 6,300 steps,
-   with the shrink) was stopped, never scored, and is not a candidate; the arm's runs restarted in `runs2/`.
+   (1.0 network px) would have put the margins below what step 2 tested. The first seed-1 run (43 min, 6,400 steps,
+   with the shrink) was stopped, never scored, and is not a candidate; the arm's runs restarted in `runs2/`. (A
+   second run of that recipe, seed 2, was not stopped and ran to the end, unscored: "Disclosures found after the
+   protocol".)
 3. **vocr6-spotter3's D, F and F+D as extra decodes** (07:55Z, before any student score): textspot7's post-pass
    (`join10` then `extend`, as its hval fit keeps them, `feat/textspot7` a2fa039 / 3781f2f) on the student's det boxes,
    and its spotter + GRAD fallback F and F+D fit on hval per seed, with textspot7's cost rules (F adds GRAD's est.
@@ -184,14 +186,14 @@ clusters on hval.
 | finder | dev | dev Vita / PSP | hval | hval Vita / PSP | dev line R / box P / F1 | hval line R / box P / F1 | dev − GRAD + refine | dev − `rubi,fix=1` | hval − `rubi,fix=1` |
 |---|---:|---|---:|---|---|---|---|---|---|
 | GRAD + refine (`rubi`) | 3.08 | 2.95 / 3.21 | 3.88 | 4.53 / 2.70 | 0.970 / 0.950 / 0.960 | 0.960 / 0.959 / 0.960 | | +0.71 [+0.25, +1.29] | +0.58 [+0.31, +0.93] |
-| `rubi,fix=1` (Rubi's finder) | 2.38 | 1.97 / 2.74 | 3.29 | 3.90 / 2.20 | 0.986 / 0.950 / 0.968 | 0.976 / 0.959 / 0.967 | −0.71 [−1.29, −0.25] | | |
+| `rubi,fix=1` (Rubi's finder) | 2.38 | 1.97 / 2.74 | 3.29 | 3.90 / 2.20 | 0.986 / 0.950 / 0.968 | 0.975 / 0.959 / 0.967 | −0.71 [−1.29, −0.25] | | |
 | textspot6 `base_qS4` s2 crop (its research release) | 1.39 | 0.96 / 1.77 | 1.61 | 1.84 / 1.21 | 0.930 / 0.992 / 0.960 | 0.941 / 0.985 / 0.963 | −1.70 [−4.33, +0.08] | −0.99 [−3.65, +0.65] | −1.68 [−5.21, +0.31] |
 | textspot6 `base_t64n8c16` s1 det | 1.41 | 1.47 / 1.35 | 1.30 | 1.37 / 1.18 | 0.979 / 0.995 / 0.987 | 0.970 / 0.990 / 0.980 | −1.68 [−4.31, +0.12] | −0.97 [−3.59, +0.71] | −1.99 [−5.64, −0.05] |
 | MeikiOCR, raw boxes, det | 2.25 | 1.94 / 2.52 | 3.51 | 4.13 / 2.40 | 0.998 / 0.997 / 0.998 | 0.920 / 0.957 / 0.938 | −0.84 [−3.54, +0.89] | −0.13 [−2.83, +1.54] | +0.22 [−3.65, +2.59] |
 | MeikiOCR, raw, det+refine | 2.46 | 2.12 / 2.77 | 3.60 | 4.25 / 2.43 | 0.993 / 0.995 / 0.994 | 0.917 / 0.956 / 0.936 | −0.62 [−3.35, +1.11] | +0.08 [−2.62, +1.73] | +0.30 [−3.51, +2.68] |
 | **MeikiOCR, +4 px, det** | **0.72** | 0.50 / 0.92 | 2.22 | 3.00 / 0.83 | 0.998 / 0.997 / 0.998 | 0.972 / 0.957 / 0.965 | −2.36 [−4.96, −0.67] | −1.65 [−4.24, −0.09] | −1.07 [−5.01, +1.75] |
-| **MeikiOCR, +4 px, det+refine (row of record)** | **0.91** | 0.62 / 1.17 | **1.65** | 2.08 / 0.88 | 0.997 / 0.997 / 0.997 | 0.969 / 0.957 / 0.963 | −2.17 [−4.84, −0.47] | −1.47 [−4.15, +0.10] | −1.65 [−5.41, +0.60] |
-| MeikiOCR, ink + 4 px, det | 2.48 | 0.80 / 3.97 | 3.40 | 3.40 / 3.40 | 0.936 / 0.997 / 0.966 | 0.875 / 0.957 / 0.914 | −0.61 [−3.32, +1.32] | +0.10 [−2.61, +1.91] | +0.11 [−4.03, +3.13] |
+| **MeikiOCR, +4 px, det+refine (row of record)** | **0.91** | 0.62 / 1.17 | **1.65** | 2.08 / 0.88 | 0.996 / 0.997 / 0.997 | 0.969 / 0.957 / 0.963 | −2.17 [−4.84, −0.47] | −1.47 [−4.15, +0.10] | −1.65 [−5.41, +0.60] |
+| MeikiOCR, ink + 4 px, det | 2.47 | 0.80 / 3.97 | 3.40 | 3.40 / 3.40 | 0.936 / 0.997 / 0.966 | 0.875 / 0.957 / 0.914 | −0.61 [−3.32, +1.32] | +0.10 [−2.61, +1.91] | +0.11 [−4.03, +3.13] |
 | MeikiOCR, ink + 4 px, det+refine | 2.67 | 0.85 / 4.30 | 2.81 | 2.41 / 3.54 | 0.933 / 0.995 / 0.963 | 0.872 / 0.956 / 0.912 | −0.41 [−3.11, +1.44] | +0.29 [−2.44, +2.03] | −0.48 [−4.43, +2.06] |
 
 - **The row of record** by the registered rule (the lowest hval CER) is +4 px det+refine: unseen dev **0.91%**, hval
@@ -210,7 +212,7 @@ clusters on hval.
 - **On hval** Meiki's errors are concentrated in 3 Vita titles: PCSG00917, PCSG00918 and PCSG00509 make 784 / 765 / 252
   errors with +4 px det against textspot6 t64's 24 / 6 / 15. The refinement brings the first two down to 279 / 241.
   Every other title is within a few dozen errors of textspot6.
-  - In PCSG00917 and PCSG00918 every line is found whole, but 228 and 182 of Meiki's boxes are junk. In their base
+  - In PCSG00917 every line is found whole and in PCSG00918 318 of 321, but 228 and 182 of Meiki's boxes are junk. In their base
     units 41-49% of the boxes are about 0.4 of the line's height, which fits ruby (furigana) boxed as lines of their
     own. The references and the hooked training targets leave ruby out.
   - PCSG00509 misses 12 lines.
@@ -251,7 +253,8 @@ Page-path dialogue CER is in %. Each row is a decode's representative, the media
     take the larger of it and the refinement's 72,391 B).
   - The C runtime equals the twin on every development frame and crop, and on every grown ctx region of dev and hval.
   - textspot7's C post-pass equals its twin on every dev and hval unit.
-  - D's largest-region cost is est. 33.0-33.8 ms (textspot7's A9 method), so det+D is est. 297.2 ms, under 300.
+  - D's largest-region cost is est. 32.8-33.8 ms over the seeds (textspot7's A9 method), so det+D is est. 297.2 ms,
+    under 300.
 - **The pick** is the cheapest qualifier: the crop decode, seed 3. No costlier qualifier is resolved better than it on
   unseen dev, so none replaces it.
 
@@ -276,8 +279,12 @@ same pins.
   - hval −1.98 [−5.38, −0.11], resolved below 0;
   - unseen dev −1.39 [−3.96, +0.16], not resolved above 0;
   - confirmation −2.43 [−5.69, −0.30], resolved below 0.
-- **So the spotter becomes Rubi's default line finder**, with `rubi,fix=1` as the fallback and a setting to turn it
-  off (vocr6-lead's ruling: one spotter in Rubi; textspot7's pick is released in vita-vn-ocr but not pinned).
+- **So the spotter is Rubi's default line finder** (bee-san/Rubi_for_vita#396, merged as `9ad8eb5`), with GRAD as
+  the fallback and a setting to turn it off (vocr6-lead's ruling: one spotter in Rubi; textspot7's pick is released in
+  vita-vn-ocr but not pinned).
+- **The default test's seed spread** (the rule reads the representative only): against `rubi,fix=1` on hval the crop
+  seeds give −1.58 [−4.16, −0.04] (s1), −1.84 [−5.43, +0.21] (s2, not resolved below 0) and −1.98 [−5.38, −0.11] (s3);
+  unseen dev is not resolved above 0 for any seed.
 - **textspot6's own clause** (unseen dev resolved below `rubi,fix=1`) would not have made it the default.
 
 **With the recognizer Rubi will run** (amendment 6, vocr6-lead's guard).
@@ -315,10 +322,11 @@ same pins.
   | a junk box | every line whole | 20 | 7 / 0 |
   | all 91 VNs | | 1,119 | 222 / 294 |
 
-  textspot6's crop decode lost +99 errors on cut lines here; the student loses +14. On v27449 it makes 20-22 errors
-  against GRAD's 311.
+  textspot6's crop decode lost +99 errors on cut lines here; the student loses +14. On v27449 the pick makes 29 errors
+  (seeds 1 and 2: 20 and 22) against GRAD's 311.
 - **Where it still loses:**
-  - v1971, the side-by-side choice buttons (28 → 58 errors), where every spotter and MeikiOCR lose too;
+  - v1971, the side-by-side choice buttons (28 → 55 errors for the pick, 58 for seed 1), where every spotter and
+    MeikiOCR lose too;
   - single regions of v3496, v6985 and v5000.
 - **Whole frames** (textspot's 188 dev frames, det): box F1 0.56-0.58, UI recall 0.22-0.23, dialogue CER 1.61-1.83%.
   That is textspot6's level and below MeikiOCR's (0.895 / 0.77 / 1.45%). The student reads dialogue lines, not the
@@ -352,7 +360,7 @@ with an icon of the trained kinds or of three unseen kinds.
 | finder | the icon inside a line box: trained / unseen icons | junk boxes | CER: trained / unseen |
 |---|---|---|---|
 | `rubi,fix=1` | 97.8% / 96.4% | 24 / 21 | 2.33 / 2.98 |
-| textspot6 base_t64n8c16 s1, crop | 75.7% / 82.3% | 9 / 8 | 1.31 / 1.80 |
+| textspot6 base_t64n8c16 s1, crop | 75.7% / 82.2% | 9 / 8 | 1.30 / 1.80 |
 | **student s3, crop (the pick)** | 81.2% / 93.8% | 16 / 23 | **0.75 / 1.36** |
 | student s3, det | 74.3% / 88.8% | 10 / 20 | 0.80 / 1.47 |
 
@@ -392,13 +400,30 @@ VTSP 52,176 B. MeikiOCR's detector, the reference: 3,547,383 float32 parameters,
 - **A wrong first analysis, corrected before any student read:** amendment 1's "why" first blamed crop geometry. The
   paired check and step 2 refuted it; the protocol's `corrections` and #149 record the correction. No arm or rule
   changed.
-- **The stopped run:** amendment 2 stopped the first seed-1 run before any score.
+- **The stopped runs:** amendment 2 stopped the first seed-1 run before any score. A second run of the stopped
+  recipe (across shrink 1.0, seed 2, `runs/t8_t64n8c16_seed2`) also started, at 07:48:33Z, and was not stopped: its
+  heavy.sh wrapper was killed by its recorded PID at 07:48:25Z, but the training child kept running, to step 30,000
+  (11:18:03Z; blob `847a9f9f1855…`), and held a heavy slot beyond this study's share for those 3.5 h. It was never
+  scored and is no candidate (found by the audit; the protocol's `corrections`).
+- **One rule-code change after the scores:** the selection record's commit (`319bea6`) also changed
+  `eval/textspot8_table.py` to read textspot7's D parity format (without it det+D could not qualify) and to add D's
+  cost to F+D's; both follow amendment 3, and the pick, its chain and Rubi's default are the same either way.
+- **41 s of overlap:** the final retrain started 41 s before the confirmation record was committed (the read had
+  finished); the retrain is the rule's next step whatever the guard says.
+- **The fallback is structural, not by confidence:** the rule's `with_pick` asks for "GRAD as the fallback on low
+  confidence". Rubi falls back to GRAD when the spotter cannot run (no weights, a wrong file, no memory, no room, a
+  refusal) and hands vertical text to GRAD's rows, because textspot7's confidence fallback F is est. 386.6 ms (over
+  300), reads unseen dev at 1.14% against the pick's 0.99%, and the pick left no text unit of dev, hval or the
+  confirmation set without a box.
 - **Amendment 5 came after textspot7's reads of other models** (above).
 - **The branch was rebased onto main** after textspot6 merged (#147, 4674e54): the registered commits keep their
   times; the tag `textspot8-registered-20261027` holds the branch as registered and run. The training worktree ran
   at 7eb4484, the amendment-1 commit (its tree is the rebased 1e681d7's for every file the trainer reads).
 - **Release partners of training titles:** as textspot6's (PCSG00007 and ULJM05383 share VNDB release r3748 with
   CLANNAD; PCSG00866 shares releases with v21789, a vita-test VN). The owner's 2026-10-25 policy allows them.
+- **CLANNAD's glyph raster is in the training pages:** two of the 48 training titles, PCSG00620 (Grisaia Spinout) and
+  PCSG00007 (Little Busters!), draw their dialogue in CLANNAD's 32 px raster re-quantised (`docs/synth6.md`), so the
+  CLANNAD reads below are not an unseen-raster result (they are report only, and dialogue is level with GRAD).
 
 ## The final model and the test reads (measured)
 
@@ -417,8 +442,8 @@ hval regions.
 - with VOCR6-N → L (amendment 6's setup): unseen dev **0.99%** (Vita 0.85 / PSP 1.11) against `rubi,fix=1`'s 2.41%,
   −1.43 [−4.03, +0.15]; hval 1.15% against 1.52%, −0.38 [−1.17, +0.10]. Neither is resolved above 0.
 
-**The test reads**, once each with the final blob (16:33-16:42Z, after the selection record 12:51Z and the
-confirmation record; `eval/textspot8_test.py`, the attempt records in the private directory;
+**The test reads**, once each with the final blob (16:33-16:42Z, after the selection record, committed 12:44Z as
+`319bea6` (12:51Z rebased), and the confirmation record; `eval/textspot8_test.py`, the attempt records in the private directory;
 `eval/textspot8_test_20261027.json`, counts only). Dialogue CER, the page path's crop decode on each unit's region
 unless the row says whole frames; paired 95% intervals over pages (the title, CLANNAD) or VNs (vita-test + psp-test):
 
@@ -427,7 +452,7 @@ unless the row says whole frames; paired 95% intervals over pages (the title, CL
 | Dance with Devils, the hooked test title (2,055 units) | **0.97%** | 1.24% (−0.28 [−0.58, −0.005]) | 0.98% (−0.01 [−0.26, +0.22]) | 1.48% (−0.51 [−0.68, −0.36]) |
 | CLANNAD, each page's region: 2,052 dialogue lines | 0.97% | **0.82%** (+0.15 [−0.09, +0.36]) | 0.95% (+0.02 [−0.21, +0.21]) | 0.85% (+0.13 [+0.04, +0.22]) |
 | CLANNAD, each page's region: all 3,048 lines, names included | 1.17% | 2.33% (−1.17 [−1.49, −0.87]) | 2.83% (−1.67 [−2.00, −1.37]) | **0.84%** (+0.33 [+0.22, +0.44]) |
-| CLANNAD whole frames (det decode): dialogue | 1.11% | | | **0.99%** (+0.12 [+0.01, +0.23]) |
+| CLANNAD whole frames (det decode): dialogue | 1.10% | | | **0.99%** (+0.12 [+0.01, +0.23]) |
 | CLANNAD whole frames: all lines | **1.17%** | | | 1.73% (−0.56 [−0.71, −0.42]) |
 | vita-test + psp-test whole frames (176 frames): dialogue | **1.91%** | | | 2.29% (−0.38 [−1.39, +0.43]) |
 | the same frames: box F1 | 0.775 | | | 0.776 (−0.001 [−0.032, +0.027]) |

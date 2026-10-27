@@ -338,9 +338,10 @@ The seed column gives the representative's seed, then the unseen-dev CER of seed
   - hval: the det decodes of all four arms, and `base_qL5` det+refine, are resolved lower (upper ends −0.004 to
     −0.07).
 - **textspot3's released pick** (51,008 B; trained on synthetic frames and meiki labels, no hooked page) reads as
-  well as any textspot6 arm. Its crop decode is the only row of the study whose unseen-dev interval lies below 0.
-  It is one released model and was not a textspot6 candidate (no median seed); its selection read development
-  frames of some of these VNs.
+  well as any textspot6 arm. Its crop decode is the only spotter row of the study whose unseen-dev interval lies
+  below 0 (the finder rows `rubi,fix=1` and `rubi,fix=5` are resolved below GRAD + refine too). It is one released
+  model and was not a textspot6 candidate (no median seed); its selection read textspot's development frames, which
+  cover 74 of these 92 VNs.
 - The per-title (hval) and per-VN (dev) rows of the research release, beside GRAD + refine's and `rubi,fix=1`'s,
   are in `eval/textspot6_tables_20261027.json` (`per_title`).
 
@@ -356,8 +357,8 @@ The gain over GRAD + refine is a few VNs' worth (`spread` in the tables record):
 | `kd_t64n8c16` det s2 | −1.57 [−4.17, +0.28] | 29 / 18 / 45 | v27449 311 → 33, v17972 68 → 4, v7290 42 → 0 | v20524 0 → 45, v9178 1 → 45, v1971 28 → 54 | −0.49 [−1.51, +0.55] |
 
 - **v27449** holds 311 of GRAD + refine's 785 unseen-dev errors, 40% of them: 311 errors on its 837 characters.
-  GRAD + refine merges its 45 lines into 6 merged boxes, and `rubi,fix=1` reads it the same way. Every spotter
-  boxes the 45 lines apart and reads it with 20-33 errors.
+  GRAD + refine reads its 45 lines in 41 boxes, 6 of which each merge two or more lines, and `rubi,fix=1` reads
+  it the same way. Every spotter boxes the 45 lines apart and reads it with 20-33 errors.
   - With v27449 the research release's interval is 4.4 points wide; without it, 1.8.
   - Without it, the representatives' differences run from +0.13 to −0.57 points, and none is resolved.
 - **The losses** are concentrated:
@@ -407,8 +408,8 @@ same weights.
 - **textspot's 188 development frames** (`tsdev`; every textspot6 run is in the tables record):
   - box F1 is 0.56-0.59 for every textspot6 run, against textspot3's 0.654;
   - UI recall is 0.21-0.25, against textspot3's 0.36;
-  - the tagged dialogue CER (what Rubi shows if it reads only dialogue-tagged boxes) is 21-30%. textspot3, which
-    has no tags, scores 61.8%;
+  - the tagged dialogue CER (what Rubi shows if it reads only dialogue-tagged boxes) is 21-30% (the nohook
+    control: 33-34%). textspot3, which has no tags, scores 61.8%;
   - no textspot6 arm puts a dialogue box on any of the 25 text-free frames.
 - **hval boxes** (Vita view): F1 0.85-0.92 (textspot3 0.81). Dialogue tag accuracy is ≥ 0.996, name tag accuracy
   0.87-1.00.

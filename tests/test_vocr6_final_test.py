@@ -364,13 +364,56 @@ def test_final_record_is_the_one_read():
     vocr6-lead's FINAL READ named, VOCR5's path (a) equal to its published records, no read or finder error."""
     import hashlib
     rec = json.loads((ROOT / "eval" / "vocr6_final_test_20261027.json").read_text(encoding="utf-8"))
-    proto = hashlib.sha256((ROOT / "eval" / "vocr6_final_test_protocol.json").read_bytes()).hexdigest()
+    # the protocol as it was at that read: amendment 9 (the follow-up's finalist set) was appended after it
+    a9 = [x for x in PROTO["amendments"] if x["n"] == 9]
+    proto = a9[0]["protocol_before_sha256"] if a9 else \
+        hashlib.sha256((ROOT / "eval" / "vocr6_final_test_protocol.json").read_bytes()).hexdigest()
     assert rec["attempt"]["mode"] == "final" and rec["protocol_sha256"] == rec["attempt"]["protocol_sha256"] == proto
+    assert rec["attempt"]["models"] == PROTO["finalist_sets"]["v0.4.0-vocr6.1"]["models"]
     assert {t: h[:8] for t, h in rec["attempt"]["models"].items()} == {"S": "76a1bc5d", "N": "929652e3",
                                                                        "L": "b051fd4f"}
     assert rec["validation"]["all_equal"] is True
     for s, r in rec["path_b"]["reads"].items():
         assert r["finder_errors"] == 0 and not any(r["read_errors"].values()), s
+
+
+def test_follow_up_record_is_its_one_read():
+    """The follow-up's read (amendment 9): one final attempt of the registered set v0.4.1-vocr6.2, on the committed
+    protocol (no amendment since the read), at the registered Rubi head, VOCR5's path (a) equal to its records, no
+    read or finder error; its compare pairs it with the earlier read unit for unit (VOCR5 alike in every unit), and
+    every compared rate is the one each read's own report shows."""
+    import hashlib
+    rec = json.loads((ROOT / "eval" / "vocr6_final_test_followup_20261027.json").read_text(encoding="utf-8"))
+    cmp_ = json.loads((ROOT / "eval" / "vocr6_final_test_followup_compare_20261027.json").read_text(encoding="utf-8"))
+    old = json.loads((ROOT / "eval" / "vocr6_final_test_20261027.json").read_text(encoding="utf-8"))
+    fs = PROTO["finalist_sets"]["v0.4.1-vocr6.2"]
+    proto = hashlib.sha256((ROOT / "eval" / "vocr6_final_test_protocol.json").read_bytes()).hexdigest()
+    assert rec["attempt"]["mode"] == "final" and rec["attempt"]["models"] == fs["models"]
+    assert rec["protocol_sha256"] == rec["attempt"]["protocol_sha256"] == proto
+    assert rec["rubi_path"]["rubi_head"] == fs["rubi_head"] and rec["validation"]["all_equal"] is True
+    for s, r in rec["path_b"]["reads"].items():
+        assert r["finder_errors"] == 0 and not any(r["read_errors"].values()), s
+    F.assert_public(rec)
+    F.assert_public(cmp_)
+    assert (cmp_["this"]["set"], cmp_["earlier"]["set"]) == ("v0.4.1-vocr6.2", "v0.4.0-vocr6.1")
+    assert cmp_["this"]["attempt"] == rec["attempt"] and cmp_["earlier"]["attempt"] == old["attempt"]
+    keys = {"b|clannad_lines": "clannad_lines", "b|clannad_pages": "clannad_pages",
+            "b|vita_psp_fixed_lines": "vita_psp_fixed_lines",
+            "b|vita_psp_whole_dialogue_base": "vita_psp_whole_dialogue_base", "b|pcsg00807_clean": "pcsg00807_clean",
+            "b|pcsg00807_page_base": "pcsg00807_page", "a|clannad_lines": "clannad_lines",
+            "a|vita_psp_fixed_lines": "vita_psp_fixed_lines", "a|vita_psp_fixed_lines_lm": "vita_psp_fixed_lines_lm",
+            "a|vita_psp_whole_dialogue_base": "vita_psp_whole_dialogue_base", "a|pcsg00807_clean": "pcsg00807_clean",
+            "a|pcsg00807_page_refine_base": "pcsg00807_page"}
+    assert set(cmp_["measures"]) == set(keys)
+    for name, m in cmp_["measures"].items():
+        assert m["same_units"] and m["vocr5_units_differ"] == 0, name
+        path = "path_" + name[0]
+        for t in "SNL":
+            h, ho, e = rec["headline"][path][keys[name]][t], old["headline"][path][keys[name]][t], m["tiers"][t]
+            assert (e["this"]["errors"], e["this"]["chars"]) == (h["VOCR6"]["errors"], h["VOCR6"]["chars"]), name
+            assert e["vocr5"]["errors"] == h["VOCR5"]["errors"] == ho["VOCR5"]["errors"], name
+            assert e["earlier"]["errors"] == ho["VOCR6"]["errors"], name
+            assert e["this_minus_vocr5"]["ci95"] == h["VOCR6_minus_VOCR5"]["ci95"], name
 
 
 def test_assert_public():
@@ -459,3 +502,145 @@ def test_driver_script_is_safe():
     # no completion-style token is printed by the driver itself (agent panes treat them as markers)
     assert not re.search(r"[A-Z0-9]+_(DONE|BLOCKED)\b", sh)
     assert not re.search(r"[A-Z0-9]+_(DONE|BLOCKED)\b", (ROOT / "eval" / "vocr6_final_test.py").read_text())
+    # amendment 9: a final read goes through the finalist-set guard and publishes to its set's directory
+    assert '"$H" finalist --models "$MODELS" --priv "$PRIV"' in sh
+    assert 'cp "$OUT/report.json" "$OUT/report.md" "$PUBLISH/"' in sh and '"$A/vocr6-final-test/"' not in sh
+    assert 'OUT is the finalist set\'s publish directory' in sh and "names other blobs than" in sh    # the review's
+    assert "exists and is not empty: give a new OUT" in sh                                     # audit n4
+
+
+# ----------------------------------------------------------------------------- amendment 9
+
+def test_finalist_sets_and_runtime_differences_are_registered():
+    """Amendment 9: two registered finalist sets with distinct blobs (the follow-up's names the earlier set, its
+    publish directory and the Rubi head it reads at); the runtime differences rubi-path accepts are exactly the
+    runtimecheck record's, on the files this checkout holds, with every read equal for the follow-up's staged blobs."""
+    fs = {k: v for k, v in PROTO["finalist_sets"].items() if k != "rule"}
+    assert set(fs) == {"v0.4.0-vocr6.1", "v0.4.1-vocr6.2"}
+    for v in fs.values():
+        assert set(v["models"]) == set("SNL") and all(SHA.match(h) for h in v["models"].values())
+    assert fs["v0.4.0-vocr6.1"]["models"] != fs["v0.4.1-vocr6.2"]["models"]
+    f = fs["v0.4.1-vocr6.2"]
+    assert f["earlier"] in fs and re.fullmatch(r"[0-9a-f]{40}", f["rubi_head"]) and "vocr6-followup" in f["publish"]
+    assert f["earlier_private"].endswith("/final-20261027")
+    assert "vocr6-final-test" in fs["v0.4.0-vocr6.1"]["publish"]
+    rd = PROTO["paths"]["b"]["runtime_differences"]
+    rec_path = ROOT / rd["check"]["record"]
+    assert F.sha256(rec_path) == rd["check"]["record_sha256"]
+    rec = json.loads(rec_path.read_text(encoding="utf-8"))
+    F.assert_public(rec)
+    assert rec["all_equal"] is True and rec["rubi_head"] == f["rubi_head"]
+    assert {k: [v["rubi_pin"], v["checkout"]] for k, v in rd["files"].items()} == rec["files"]
+    for k, v in rd["files"].items():
+        assert F.sha256(ROOT / "runtime" / k) == v["checkout"]
+    for t in "SNL":
+        e = rec["blobs"][f"staged_{t}"]
+        assert e["sha256"] == f["models"][t] and e["raw_equal"] == e["line_equal"] == e["crops"] >= 4000
+    assert rec["libraries"]["checkout"] != rec["libraries"]["rubi"]
+    assert F.runtime_differences({k: v["rubi_pin"] for k, v in rd["files"].items()},
+                                 {k: v["checkout"] for k, v in rd["files"].items()}, rd["files"], rec)["refused"] == []
+
+
+def _models(s, n, large):
+    return {"S": s * 64, "N": n * 64, "L": large * 64}
+
+
+def test_finalist_of_and_same_set_attempts(tmp_path):
+    proto = {"finalist_sets": {"rule": "x", "one": {"models": _models("a", "b", "c")},
+                               "two": {"models": _models("a", "d", "e"), "publish": "/p", "rubi_head": "f" * 40}}}
+    assert F.finalist_of(proto, _models("a", "d", "e"))[0] == "two"
+    with pytest.raises(SystemExit):
+        F.finalist_of(proto, _models("a", "b", "e"))            # not a registered set
+    root = tmp_path / "priv"
+    for d, rec in (("old", {"mode": "final", "models": _models("a", "b", "c")}),
+                   ("val", {"mode": "validate"})):
+        (root / d).mkdir(parents=True)
+        (root / d / "attempt.json").write_text(json.dumps(rec))
+    me = root / "new"
+    me.mkdir()
+    assert F.same_set_attempts(root, me, _models("a", "d", "e")) == []
+    assert F.same_set_attempts(root, me, _models("a", "b", "c")) == [str(root / "old" / "attempt.json")]
+    assert F.same_set_attempts(root, root / "old", _models("a", "b", "c")) == []    # its own record (a resume)
+    # a final record without models cannot be told apart: it counts as the same set
+    (root / "bare").mkdir()
+    (root / "bare" / "attempt.json").write_text(json.dumps({"mode": "final"}))
+    assert F.same_set_attempts(root, me, _models("a", "d", "e")) == [str(root / "bare" / "attempt.json")]
+
+
+def test_rubi_head_and_registered_record(tmp_path):
+    """Amendment 9's two rubi-path guards (audit-vocr6-followup n3): the registered Rubi head, and the runtimecheck
+    record accepted only as the registered file for Rubi's pinned commit."""
+    F.check_rubi_head("a" * 40, "")
+    F.check_rubi_head("a" * 40, "-")
+    F.check_rubi_head("a" * 40, "a" * 40)
+    with pytest.raises(SystemExit):
+        F.check_rubi_head("a" * 40, "b" * 40)
+    rec = tmp_path / "eval" / "rec.json"
+    rec.parent.mkdir()
+    rec.write_text(json.dumps({"all_equal": True, "rubi_vocr_commit": "c" * 40}))
+    rd = {"check": {"record": "eval/rec.json", "record_sha256": F.sha256(rec)}}
+    assert F.registered_record(rd, "c" * 40, tmp_path)[1]["all_equal"] is True
+    assert F.registered_record(rd, "d" * 40, tmp_path)[1] is None                  # made for another Rubi pin
+    assert F.registered_record(dict(rd, check=dict(rd["check"], record_sha256="0" * 64)), "c" * 40, tmp_path)[1] \
+        is None                                                                         # not the registered file
+    assert F.registered_record({}, "c" * 40, tmp_path) == (None, None)
+    assert F.registered_record({"check": {"record": "eval/none.json"}}, "c" * 40, tmp_path)[1] is None
+
+
+def test_finalist_needs_a_publish_directory(tmp_path, monkeypatch):
+    """audit-vocr6-followup n4: a registered set without its own publish directory is refused (it would have
+    published into the first read's directory)."""
+    models = tmp_path / "models"
+    models.mkdir()
+    (models / "models.json").write_text(json.dumps({"tiers": {t: {"sha256": h} for t, h in _models("e", "f", "9")
+                                                              .items()}}))
+    proto = {"kind": "vocr6-final-test-protocol", "schema": 1,
+             "finalist_sets": {"rule": "x", "new": {"models": _models("e", "f", "9")}}}
+    monkeypatch.setattr(F, "protocol", lambda: proto)
+    args = type("A", (), {"models": str(models), "priv": str(tmp_path / "priv" / "new")})
+    with pytest.raises(SystemExit):
+        F.cmd_finalist(args)
+    proto["finalist_sets"]["new"]["publish"] = str(tmp_path / "pub")
+    F.cmd_finalist(args)
+
+
+def test_runtime_differences():
+    pins = {"vocr.c": "1" * 64, "vocr.h": "2" * 64, "vocr_lm.c": "3" * 64}
+    checkout = {"vocr.c": "4" * 64, "vocr.h": "2" * 64, "vocr_lm.c": "3" * 64}
+    reg = {"vocr.c": {"rubi_pin": "1" * 64, "checkout": "4" * 64}}
+    rec = {"all_equal": True, "files": {"vocr.c": ["1" * 64, "4" * 64]}}
+    assert F.runtime_differences(pins, checkout, reg, rec) == {"accepted": ["vocr.c"], "refused": []}
+    assert F.runtime_differences(pins, checkout, reg, dict(rec, all_equal=False))["refused"] == ["vocr.c"]
+    assert F.runtime_differences(pins, checkout, reg, None)["refused"] == ["vocr.c"]
+    assert F.runtime_differences(pins, dict(checkout, **{"vocr.c": "5" * 64}), reg, rec)["refused"] == ["vocr.c"]
+    assert F.runtime_differences(pins, dict(checkout, **{"vocr_lm.c": None}), reg, rec)["refused"] == ["vocr_lm.c"]
+    assert F.runtime_differences(pins, dict(pins), {}, None) == {"accepted": [], "refused": []}
+
+
+def test_compare_reads_pairs_the_same_units():
+    import vocr3_report as R
+    rng = np.random.default_rng(5)
+    old, new = [], []
+    for i in range(40):
+        n = int(rng.integers(5, 30))
+        e5 = {f"VOCR5:{t}:shipped": int(rng.integers(0, 3)) for t in "SNL"}
+        o = {"id": f"u{i}", "vn": f"v{i % 6}", "chars": n,
+             "errors": {**e5, **{f"VOCR6:{t}:shipped": int(rng.integers(0, 3)) for t in "SNL"}}}
+        m = {"id": f"u{i}", "vn": f"v{i % 6}", "chars": n,
+             "errors": {**e5, **{f"VOCR6:{t}:shipped": int(rng.integers(0, 3)) for t in "SNL"}}}
+        old.append(o)
+        new.append(m)
+    c = F.compare_reads(new, old[::-1], "shipped", "vn", 5)
+    assert c["same_units"] and c["vocr5_units_differ"] == 0 and c["units"] == 40 and c["clusters"] == 6
+    a = {r["id"]: (r["errors"]["VOCR6:N:shipped"], r["chars"]) for r in new}
+    b = {r["id"]: (r["errors"]["VOCR6:N:shipped"], r["chars"]) for r in old}
+    want = R.cluster_bootstrap(a, b, {r["id"]: r["vn"] for r in new}, 10000, 0, 5)
+    assert c["tiers"]["N"]["this_minus_earlier"]["ci95"] == want["ci95"]
+    assert c["tiers"]["N"]["earlier"]["errors"] == sum(r["errors"]["VOCR6:N:shipped"] for r in old)
+    old[3]["errors"]["VOCR5:S:shipped"] += 1
+    assert F.compare_reads(new, old, "shipped", "vn", 5)["vocr5_units_differ"] == 1
+    assert F.compare_reads(new[:-1], old, "shipped", "vn", 5)["same_units"] is False
+    other = [dict(r) for r in old]
+    other[0]["chars"] += 1                                       # the same ids, another reference length
+    assert F.compare_reads(new, other, "shipped", "vn", 5)["same_units"] is False
+    F.assert_public(c)

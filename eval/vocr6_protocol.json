@@ -1337,6 +1337,144 @@
     ],
     "opts": "inv=0.5"
    }
+  ],
+  "r3all_v5r": [
+   {
+    "name": "nv",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.05625,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.05625,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.025,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.103757,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.071243,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.058827,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.016173,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.013041,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.011959,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   },
+   {
+    "name": "cc",
+    "weight": 0.06,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console/*.npz"
+    ],
+    "opts": "inv=0.5"
+   },
+   {
+    "name": "ccj",
+    "weight": 0.04,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console_jitter/*.npz"
+    ],
+    "opts": "inv=0.5"
+   }
   ]
  },
  "mix_notes": {
@@ -1349,7 +1487,8 @@
   "m1_fa2": "m1 with every source's finder-augmentation probability doubled (nv/s2 0.15 -> 0.30; the real ink pools and hk 0.3 -> 0.6; the GRAD-crop pools keep none)",
   "m1_cil": "m1 with the hooked share split: hk 0.15 + vocr6-finder's console crops of the train pages (finder rubi,fix=5 = F13; console view: Vita as is, PSP 2x) 0.06 whole-line crops (cc, 98,324) + 0.04 jittered boxes (ccj, 304,524); no finder augmentation on them (they are finder crops); hval and guard pages' crops never used",
   "r3all": "m1 + adopted stage-2 factors ['cil'] (stages.2.decision.recipe order)",
-  "r3all_fold": "r3all with hval folded back in (stage 4b): hooked train + guard + hval_fold, console crops train + hval + guard, VOCR5's real pools as pinned"
+  "r3all_fold": "r3all with hval folded back in (stage 4b): hooked train + guard + hval_fold, console crops train + hval + guard, VOCR5's real pools as pinned",
+  "r3all_v5r": "r3all with VOCR5's real pools back at their full VOCR5 weights (0.5) and the synthetic half halved (0.25); hooked 0.25 unchanged (hk 0.15, cc 0.06, ccj 0.04)"
  },
  "data_pins": {
   "hooked": {
@@ -2019,7 +2158,22 @@
      "why": "stages.4.amendments[1] decides 4c by decision.adopt with the 4b blob as X on the shipped path, but both blobs train on hval (folded in), so their hval page comparison is not held out and would reward memorising hval, which a longer schedule does more. The held-out evidence for the long schedule is stage 3's S3long pair (hval out, seeds 1 and 3)",
      "rule": "4c's blob of tier T replaces 4b's iff (i) S3long is adopted over A15 under stage 3's rule (seeds 1 and 3, hval plan v2, decision.adopt) and (ii) the 4c blob is not resolved worse than the 4b blob on the dev score on the shipped path (VN bootstrap, one pair; the same check as 4b against its 4a sibling). The hval page of 4b and 4c is reported only, marked 'hval in training'. If (i) fails, 4c is not used, whatever its scores",
      "arms": "F4Sc_s1, F4Nc_s1, F4Lc_s1: F4{T}h_s1 at 45,000 steps (run v6f4c_{T}_seed1; mix r3all_fold, lr 1.2e-3, warmup 500, init the tier's VOCR5 fine-tuned seed-1 checkpoint)",
-     "compute": "4c runs may start before S3long seed 3 is scored, in slots stage 4a/4b free; they are used only under the rule above"
+     "compute": "4c runs may start before S3long seed 3 is scored, in slots stage 4a/4b free; they are used only under the rule above",
+     "open_cases": {
+      "source": "audit-vocr6-lead-h H1 (PR #148's audit), recorded by vocr6-lead in the experiment log at 2026-10-27T07:56:28Z (its preregistration-amendment line), before any 4c score; carried here by vocr6-followup with the follow-up's records",
+      "where_4b_does_not_ship": "4c is used only where 4b ships: a tier not adopted in 4a keeps VOCR5 and its 4c run is not used (Small: v6f4c_S_seed1 stopped unscored at 07:30:10Z); where 4b fails its check against its 4a sibling and the sibling ships, 4c is not used either (it was never compared with the sibling)",
+      "cascade_in_ii": "(ii) reads 4c-N cascading into 4c-L (4a's same-family composition) and 4b-N into 4b-L; the composition that ships (e.g. 4c-N into 4b-L if only Normal's 4c passed) is reported before it ships, as audit-vocr6-lead-g N6 asks",
+      "in_run_evals": "the 4c runs' in-run float evals (--val tvd, hvl) exist and are not read for any choice"
+     }
+    },
+    {
+     "n": 7,
+     "time": "this commit (see git log); 2026-10-27T11:5xZ, before any stage-4d run or score (after stage 4a's Small decision and after the one final-test read of the shipped set)",
+     "why": "Small (R3-S) was not adopted: hval page -0.134 [-0.198, -0.079] (every pair below 0) but dev +0.070 [+0.004, +0.138] (resolved worse; tv +0.081, dn +0.125, wd +0.037). Hypothesis: m1 halves VOCR5's real pools to make room for the hooked data, and Small, the smallest model, loses some of what they taught it (teacher_val and devnative are the same VNDB-screenshot domain); a smaller step size keeps it closer to VOCR5-S",
+     "arms": "4d-r: F4Sdr_s{1,2,3} (run v6f4dr_S), mix r3all_v5r (VOCR5's real pools at full weight 0.5, synthetic 0.25, hooked 0.25); 4d-lr: F4Sdl_s{1,2,3} (run v6f4dl_S), mix r3all at lr 6e-4. Otherwise as F4S_s{seed} (15,000 steps, warmup 500, init v5f_S_seed1 / seed2 / seed2 with training seeds 1-3)",
+     "decision": "each arm against the released VOCR5-S: decision.adopt with three seed pairs on stage 4's shipped path (hval plan v3 + screening LM, dev plan v2 + shipped 1 MB LM, alpha 600 / beta 2500 / BOS, Small cascading into the same seed's VOCR6-N: v6s2cil_N_seed1, v6f4_N_seed2, v6s2cil_N_seed3; X = VOCR5-S into VOCR5-N). If both arms are adopted, the one with the lower mean dev score. If one is adopted: its seed 1 is retrained with hval folded in (mix r3all_v5r_fold or r3all_fold at lr 6e-4; registered with the fill) and must not be resolved worse on dev than its 4a sibling; then #120's head-gate rule on the blob; then one final-test read of the new Small with its cascade into the shipped VOCR6-N (report only) and a follow-up release. If neither: Small stays VOCR5-S",
+     "notes": "the final test of the shipped set has been read once (11:05Z); no 4d choice may use it",
+     "fill": "2026-10-27T16:1xZ, after 4d's decisions and before this run: F4Sdr NOT adopted (dev +0.076 [+0.005, +0.149] resolved worse); F4Sdl ADOPTED (hval page -0.128 [-0.189, -0.074], all three pairs below 0, dev +0.064 [-0.009, +0.138] not resolved above 0). The fold-in arm is F4Sdlh_s1: mix r3all_fold (as F4Sh_s1), lr 6e-4, init v5f_S_seed1, seed 1, 15,000 steps; it ships iff its dev is not resolved worse than F4Sdl's seed 1 (one pair, shipped path, cascade into the shipped VOCR6-N 4b)"
     }
    ],
    "plans": {
@@ -2233,6 +2387,118 @@
      },
      "arch_extra": [],
      "what": "stage 4c: 4b at 45,000 steps (S3long's schedule); used only under amendment 6"
+    },
+    "F4Sdr_s1": {
+     "run": "v6f4dr_S",
+     "tier": "S",
+     "mix": "r3all_v5r",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm r: VOCR5's real pools at full weight"
+    },
+    "F4Sdl_s1": {
+     "run": "v6f4dl_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0006,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm lr: r3all at half the learning rate"
+    },
+    "F4Sdr_s2": {
+     "run": "v6f4dr_S",
+     "tier": "S",
+     "mix": "r3all_v5r",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 2,
+     "init_sha256": {
+      "2": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm r: VOCR5's real pools at full weight"
+    },
+    "F4Sdl_s2": {
+     "run": "v6f4dl_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0006,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 2,
+     "init_sha256": {
+      "2": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm lr: r3all at half the learning rate"
+    },
+    "F4Sdr_s3": {
+     "run": "v6f4dr_S",
+     "tier": "S",
+     "mix": "r3all_v5r",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 3,
+     "init_sha256": {
+      "3": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm r: VOCR5's real pools at full weight"
+    },
+    "F4Sdl_s3": {
+     "run": "v6f4dl_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0006,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 3,
+     "init_sha256": {
+      "3": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": [],
+     "what": "stage 4d arm lr: r3all at half the learning rate"
+    },
+    "F4Sdlh_s1": {
+     "run": "v6f4dlh_S",
+     "tier": "S",
+     "mix": "r3all_fold",
+     "steps": 15000,
+     "lr": 0.0006,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": [],
+     "what": "stage 4d: the adopted arm F4Sdl (r3all at lr 6e-4) with hval folded in (mix r3all_fold), seed 1"
     }
    },
    "defaults": {

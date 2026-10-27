@@ -18,7 +18,10 @@
 #               once-guard: a failure there needs an amendment); every other step: nothing (its output file is written
 #               last, or the step rebuilds what it needs)
 # One final read only (audit F1): a final attempt refuses to start while another final attempt record exists under
-# $HERD/shared/private/vocr6-final-test/*/ (whatever its OUT name); the same for a second validation.
+# $HERD/shared/private/vocr6-final-test/*/ (whatever its OUT name); the same for a second validation. Since
+# amendment 9: one final read per registered finalist set (the protocol's finalist_sets): the staged blobs must be
+# exactly one set's, and a final attempt of that set refuses to start while another one exists; the set names its
+# publish directory, its Rubi head (if any) and the earlier set whose read it is compared with (compare, report only).
 # Run it through heavy.sh (one slot, 5 threads). Each step writes its own log under the private directory; nothing of
 # a step's output reaches the terminal but this script's one-line notes (no protected text, no completion token).
 set -euo pipefail
@@ -41,6 +44,10 @@ else
   [ "$PATHS" = a,b ] || { echo "the final read reads both paths (PATHS=a,b)"; exit 2; }
   [ -s "$MODELS/models.json" ] || { echo "$MODELS/models.json is missing: run vocr6_final_test.py stage"; exit 2; }
 fi
+# a fresh read writes into a new OUT (audit-vocr6-followup n4: never into another read's directory); RESUME=1 continues
+if [ "${RESUME:-0}" != 1 ] && [ -d "$OUT" ] && [ -n "$(ls -A "$OUT")" ]; then
+  echo "$OUT exists and is not empty: give a new OUT (RESUME=1 continues a read)"; exit 2
+fi
 mkdir -p "$OUT" "$PRIV"/{logs,a/lm,a/pcsg,clannad,b,blobs}
 LOG=$OUT/log.txt
 note() { echo "$(date -u +%FT%TZ) $*" | tee -a "$LOG"; }
@@ -49,16 +56,28 @@ step() {   # step NAME OUTPUT CMD...: run CMD (its output to the step's private 
   if [ -e "$output" ]; then echo "$(date -u +%FT%TZ) step $name: $output exists, not run again" >> "$LOG"; return 0; fi
   if ! "$@" > "$PRIV/logs/$name.log" 2>&1; then note "step $name FAILED (log: $PRIV/logs/$name.log)"; exit 3; fi
 }
-# the attempt record: one validation and one final read, each refused a second time (RESUME=1 continues one),
-# whatever the OUT name (audit F1)
-for other in "$HERD"/shared/private/vocr6-final-test/*/attempt.json; do
-  [ -e "$other" ] || continue
-  [ "$(dirname "$other")" = "$PRIV" ] && continue
-  if "$PY" -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('mode') == sys.argv[2] else 1)" \
-      "$other" "$MODE"; then
-    echo "another $MODE attempt exists: $other (one $MODE read only; RESUME=1 with its OUT continues it)"; exit 2
+# the attempt record: one validation and one final read per registered finalist set (amendment 9; before it, one final
+# read at all), each refused a second time (RESUME=1 continues one), whatever the OUT name (audit F1)
+FSET=-; PUBLISH=$A/vocr6-final-test; RUBI_HEAD=-; EARLIER=-
+if [ "$MODE" = final ]; then
+  FIN=$("$PY" "$H" finalist --models "$MODELS" --priv "$PRIV") || { echo "not a final read of a registered finalist set"; exit 2; }
+  IFS=$'\t' read -r FSET PUBLISH RUBI_HEAD EARLIER <<< "$FIN"
+  [ "$(realpath -m "$PUBLISH")" != "$OUT" ] || { echo "OUT is the finalist set's publish directory: give another OUT"; exit 2; }
+  if [ -e "$PRIV/attempt.json" ] && ! "$PY" -c "import json, sys; a = json.load(open(sys.argv[1])); \
+m = json.load(open(sys.argv[2])); sys.exit(0 if a.get('models') == {t: e['sha256'] for t, e in m['tiers'].items()} \
+else 1)" "$PRIV/attempt.json" "$MODELS/models.json"; then
+    echo "$PRIV/attempt.json names other blobs than $MODELS/models.json"; exit 2
   fi
-done
+else
+  for other in "$HERD"/shared/private/vocr6-final-test/*/attempt.json; do
+    [ -e "$other" ] || continue
+    [ "$(dirname "$other")" = "$PRIV" ] && continue
+    if "$PY" -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('mode') == sys.argv[2] else 1)" \
+        "$other" "$MODE"; then
+      echo "another $MODE attempt exists: $other (one $MODE read only; RESUME=1 with its OUT continues it)"; exit 2
+    fi
+  done
+fi
 if [ -e "$PRIV/attempt.json" ]; then
   [ "${RESUME:-0}" = 1 ] || { echo "$PRIV/attempt.json exists: this read has run (RESUME=1 continues it)"; exit 2; }
   "$PY" -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('mode') == sys.argv[2] else 1)" \
@@ -83,12 +102,18 @@ PY
 fi
 
 # ---- path (b)'s settings, resolved from Rubi main first: a mismatch stops the read before anything is read
+# (amendment 9: a finalist set registered with a Rubi head is read at that head, checked out in the harness's clone)
+rubi_checkout() { git -C "$1" checkout -q --detach "$2" && git -C "$1" rev-parse HEAD > "$3"; }
 if [ "$MODE" = final ]; then
   if [ -z "${RUBI:-}" ]; then
     RUBI=$PRIV/rubi
     step b_rubi_clone "$RUBI/.git" timeout 600 git clone -q https://github.com/bee-san/Rubi_for_vita.git "$RUBI"
+    if [ "$RUBI_HEAD" != - ]; then
+      step b_rubi_checkout "$PRIV/rubi_checkout.txt" rubi_checkout "$RUBI" "$RUBI_HEAD" "$PRIV/rubi_checkout.txt"
+    fi
   fi
-  step b_rubi_path "$PRIV/rubi_path.json" "$PY" "$H" rubi-path --rubi "$RUBI" --out "$PRIV/rubi_path.json"
+  step b_rubi_path "$PRIV/rubi_path.json" "$PY" "$H" rubi-path --rubi "$RUBI" --want-head "$RUBI_HEAD" \
+    --out "$PRIV/rubi_path.json"
   cp "$PRIV/rubi_path.json" "$OUT/rubi_path.json"
   note "path (b): $(tail -n 1 "$PRIV/logs/b_rubi_path.log" 2>/dev/null || echo resolved earlier)"
 fi
@@ -225,5 +250,12 @@ done
 
 # ---- every table
 step report "$OUT/report.md" "$PY" "$H" report --priv "$PRIV" --suffix "$SUF" --out "$OUT"
-cp "$OUT/report.json" "$OUT/report.md" "$A/vocr6-final-test/"
-note "final read finished: $OUT/report.md"
+# amendment 9: a later finalist set's read beside the earlier set's (report only), and the set's own publish directory
+if [ "$EARLIER" != - ]; then
+  note "compare with the earlier finalist set's read ($EARLIER)"
+  step compare "$OUT/compare.md" "$PY" "$H" compare --priv "$PRIV" --earlier "$EARLIER" --suffix "$SUF" --out "$OUT"
+fi
+mkdir -p "$PUBLISH"
+cp "$OUT/report.json" "$OUT/report.md" "$PUBLISH/"
+if [ "$EARLIER" != - ]; then cp "$OUT/compare.json" "$OUT/compare.md" "$PUBLISH/"; fi
+note "final read finished (finalist set $FSET): $OUT/report.md"

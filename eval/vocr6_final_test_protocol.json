@@ -195,7 +195,29 @@
    },
    "job_defaults": "amendment 5 (audit F2): rubi-path reads Rubi's job defaults and stops unless they are what path (b) models: VJO_VOCR_FINDER = VOCR_LINES_TEXTBOX_RECOVERY; ocr_text_gate off (VJO_TEXT_GATE_DEFAULT 0); ocr_skip_blank_lines off; non_japanese_filter = lines; ocr_cascade_ms > 0 (2000); VJO_GAME_CASCADE_CONF 0 (the core's 700); ocr_vertical's default absent, off or auto (amendment 6; on is not modelled); ocr_line_fix's default absent (a Rubi before #330: path (b) runs COLGAP all the same, as stage 4 amendment 1 registered, and the report says so) or on (VJO_LINE_FIX_DEFAULT 1 -> VOCR_FIX_DEFAULT = COLGAP: Rubi main since 0994afc)",
    "vertical": "amendment 6 (Rubi #335, API 47; Rubi's default ocr_vertical = auto): before a region's rows are read, Rubi checks the row finder's lines (vocr_find_lines_rows: the finder alone, before the short-line probe and the refinement; here at the protocol's finder fix) with vjo_vocr_rows_vertical; a region they call vertical text is read as columns: vita-vn-ocr's column finder (runtime/vocr_vertical.c; its bit-exact twin synth/vertical_twin.find_columns) with Rubi's flags VOCR_COLUMNS_VALLEYS | VOCR_COLUMNS_NO_DARK, right to left, a column over 56 KiB left out, each column's dark flag from its own pixels and its crop turned 90 degrees anticlockwise, read by Rubi's vertical model VOCR5-V (the protocol's models.VOCR5.vertical: both families, VOCR6 has none) through the same line read (the counter re-decode and the LM; no head gate, no cascade, no refinement, no probe), then textnorm and the line filter. vocr6_final_test.py rows_vertical is the rule's port, job_crops the region's read, pagecheck the check against Rubi's own vjo-page-ocr --vertical auto; the report counts the regions read as columns per set",
-   "runtime": "amendment 7: rubi-path stops unless every runtime file Rubi's cmake/VocrOCR.cmake pins (vocr.c, vocr_lm.c, vocr_post.c, the finders, the refinement, the gate, the vertical finder: 18 files at Rubi main 0994afc, vita-vn-ocr f8a1856) has this checkout's sha256, so path (b) reads with Rubi's runtime code"
+   "runtime": "amendment 7: rubi-path stops unless every runtime file Rubi's cmake/VocrOCR.cmake pins (vocr.c, vocr_lm.c, vocr_post.c, the finders, the refinement, the gate, the vertical finder: 18 files at Rubi main 0994afc, vita-vn-ocr f8a1856) has this checkout's sha256, so path (b) reads with Rubi's runtime code",
+   "runtime_differences": {
+    "what": "amendment 9: the runtime files Rubi pins that differ from this checkout's, each accepted with exactly this pair of sha256 and only with the runtimecheck record (all reads equal)",
+    "rubi_vocr_commit": "f8a1856c1b21bf41af744c159b54ce8203408a89",
+    "files": {
+     "vocr.c": {
+      "rubi_pin": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+      "checkout": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+      "commit": "9b4aeb0 (#138, vocr6-psp: the head gate and the two-level head in W8F; W8I as before)"
+     },
+     "vocr.h": {
+      "rubi_pin": "c9670efd980a993f98307e6093ca17c7595f64a09c11a3d4c7bb6cea84993de5",
+      "checkout": "0b43a90131acd955326c879d8f71e011607ab94d704be93dc8df1951ee44d371",
+      "commit": "9b4aeb0 (#138, vocr6-psp: the head gate and the two-level head in W8F; W8I as before)"
+     }
+    },
+    "check": {
+     "record": "eval/vocr6_final_test_runtimecheck_20261027.json",
+     "record_sha256": "1ae4ba27925f8edba7152745bc90b218b4285584ad06f14ee27de296fde5e8dc",
+     "command": "vocr6_final_test.py runtimecheck --rubi <Rubi 892cfb9> --models MODELS_DIR --k 2000",
+     "data": "development only: samples of vocr6-lead's hval plan v2 (hooked train titles' hval crops) and dev plan v2 (other games' dev crops); no protected set"
+    }
+   }
   }
  },
  "metrics": {
@@ -355,6 +377,52 @@
     "N15: paths.b.job_defaults' line-fix text updated (Rubi ships the fix since 0994afc); paths.b.finder's full stop",
     "N16: pagecheck's development sample adds tall regions (PCSG00653's columns widened toward square: the frozen-finder branch) and a unit test covers job_crops' branches with a stubbed finder; pagecheck rerun against Rubi 0994afc with them"
    ]
+  },
+  {
+   "n": 9,
+   "time": "this commit (see git log); 2026-10-27, after the one final read of the v0.4.0-vocr6.1 set (OUT final-20261027, 10:05-11:00Z) and before any read of the follow-up's set",
+   "why": "vocr6-lead's follow-up (eval/vocr6_protocol.json stages.4 amendments 6 and 7): stage 4c's Normal and Large and stage 4d's Small replace the shipped set under the registered rules, so a new finalist set is read once, report only (vocr6-common: the protected sets are read once per finalist set). Before this amendment the harness refused any second final read (amendment 5, F1); Rubi pins vita-vn-ocr f8a1856's runtime/vocr.c and vocr.h while this checkout holds #138's; and Rubi main changed two of the pinned functions after the earlier read",
+   "protocol_before_sha256": "89c97e6a84eb4238136ec3ccdbe8a2a2539629a8ae11447bba8b9a0563a2452b",
+   "changes": [
+    "finalist_sets (new): the registered finalist sets, each read once. report.sh's final read goes through vocr6_final_test.py finalist: the staged blobs must be exactly one set's, and no other final attempt of that set may exist. v0.4.0-vocr6.1 is registered as read; v0.4.1-vocr6.2 is the follow-up's set",
+    "the follow-up's read takes path (b)'s Rubi at the earlier read's head, 892cfb9 (report.sh checks it out in its own clone; rubi-path --want-head stops on another head), so path (b) is the path the earlier read and this protocol's checks modelled (pagecheck at 0994afc; the pinned functions equal at 892cfb9) and the two reads compare unit for unit. Rubi main moved after it (#373 VOCR6's pins, #358, #379 / #385 and others) and changed finish_line and recognize. By review of the diff 892cfb9..main neither changes the line read path (b) models at Rubi's defaults (ocr_lm = 1000k, ocr_vertical = auto, ocr_head_gate = on): finish_line passes the job model to cascade_setup (lm_retuned: VOCR6-N's own settings for the 2000k LM only, not the 1000k LM path (b) reads) and a line's text to line_stat (statistics); recognize adds ocr_vertical = on's horizontal-rows rule (#379; not the default) and fetches a job of columns' columns together (the same pixels); lm_setup and cascade_setup take the job model's settings, the tier's own for the 1000k LM. They are not re-pinned (no pagecheck against Rubi main's tools). Rubi main's default finder then became the textspot8 spotter (9ad8eb5, #396, API 54: ocr_finder = spotter), which this harness does not model (its own test read is vocr6-spotter2's, eval/textspot8_test_20261027.json); path (b) stays the GRAD line path both reads share, and every crop is read by the same line read either way",
+    "paths.b.runtime_differences (new): rubi-path accepts exactly the registered pairs (Rubi's pin, this checkout's sha256) for runtime/vocr.c and vocr.h, and only with runtimecheck's record: path (b)'s line read with this checkout's runtime and with a build of Rubi's pinned files is equal crop for crop (rubi_line's fields and a hash of the raw gated and ungated outputs) on 2,000 crops each of vocr6-lead's hval plan v2 and dev plan v2 (development data only), for every blob path (b) reads (VOCR5's gated blobs, VOCR5-V, the follow-up's staged blobs). Path (a)'s tools build from this checkout as before; the in-read VOCR5 validation checks them against the published records",
+    "report.sh: each set publishes to its own directory (the earlier set: $HERD/shared/artifacts/vocr6-final-test, as before; the follow-up's: $HERD/shared/artifacts/vocr6-followup/final-test); a set registered with an earlier set also gets compare.json / compare.md (vocr6_final_test.py compare, report only): VOCR6 of this set minus VOCR6 of the earlier set per tier on every headline measure of both paths, paired over the same units and clusters as the report's pairs, and the units whose VOCR5 readings differ between the two reads (0: the same path)",
+    "the follow-up's report is committed as eval/vocr6_final_test_followup_20261027.json and its compare as eval/vocr6_final_test_followup_compare_20261027.json; the markdown goes into docs/vocr6-final-test.md's follow-up section",
+    "an independent review before the read (READ_OK, two fixes, taken before the read): report.sh refuses an OUT that is the set's publish directory and a RESUME whose attempt record names other blobs than the staged ones; rubi-path accepts the runtime differences only with the registered record (its sha256, record_sha256 here) made for Rubi's pinned vita-vn-ocr commit"
+   ]
   }
- ]
+ ],
+ "finalist_sets": {
+  "rule": "amendment 9: each registered finalist set is read once by step 3 (report.sh MODELS_DIR OUT). Its staged blobs (models.json) must be exactly one set's three blobs (vocr6_final_test.py finalist), and a final attempt of a set refuses to start while another final attempt record of that set exists under $HERD/shared/private/vocr6-final-test/*/ (a final record without models counts as the same set). A set enters this list by an amendment made after every choice of its blobs and before its read",
+  "v0.4.0-vocr6.1": {
+   "models": {
+    "S": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928",
+    "N": "929652e33da10fee3b7bd3991a557e8bbf1a16fba83eb5775bbd0298ab65c4d6",
+    "L": "b051fd4f3abe6451927d74b1d1209f44a3072ab755ee9e1b9363368f00feb45b"
+   },
+   "registered": "steps.3_final_read: vocr6-lead's message FINAL READ (2026-10-27 ~09:55Z)",
+   "read": "OUT final-20261027, started 2026-10-27T10:05:26Z (its attempt.json), Rubi main 892cfb9 at the read; committed as eval/vocr6_final_test_20261027.json",
+   "publish": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-final-test"
+  },
+  "v0.4.1-vocr6.2": {
+   "models": {
+    "L": "65310013e8f990886e4e8097b2fe55eb98cdf082d7193eea510601fc0ac26c82",
+    "N": "107cf084cc0c1a3a61ce4c3f9b9cf6b31d6dff80f0a1bdb94afd3f7ee9ae3bc9",
+    "S": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2"
+   },
+   "registered": "amendment 9 (vocr6-followup): eval/vocr6_protocol.json stages.4 amendments 6 and 7 replace Normal and Large by stage 4c's blobs and Small by stage 4d's (vocr6-lead's decision lines, 2026-10-27T18:24:19Z); the blobs are the follow-up's gate fits' shipped blobs (main's eval/vocr6_gate.sh, eval/vocr6_gate_protocol.json's rules)",
+   "sources": {
+    "L": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-followup/gate/final/VOCR6_L_w8_2l.vocr",
+    "N": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-followup/gate/final/VOCR6_N_w8g2.vocr",
+    "S": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/blobs/v6f4dlh_S_seed1_w8.vocr"
+   },
+   "publish": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-followup/final-test",
+   "rubi_head": "892cfb9f3a6f57e81f5f7ef1b31abfb1d551b23c",
+   "earlier": "v0.4.0-vocr6.1",
+   "earlier_private": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-final-test/final-20261027",
+   "record": "eval/vocr6_final_test_followup_20261027.json (compare: eval/vocr6_final_test_followup_compare_20261027.json)",
+   "label": "vocr6-followup"
+  }
+ }
 }

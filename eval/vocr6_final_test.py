@@ -21,6 +21,12 @@ PCSG00807), on two paths: (a) VOCR5's locked path as published, (b) Rubi's shipp
       path (a)'s VOCR5 outputs against the published records: every compared entry must be equal
   vocr6_final_test.py report --priv PRIV --out OUT
       every table: OUT/report.json (counts, rates, intervals, hashes; no text) and OUT/report.md
+  vocr6_final_test.py finalist --models MODELS_DIR --priv PRIV          (amendment 9)
+      report.sh's guard: the staged blobs are one registered finalist set (finalist_sets), not read before
+  vocr6_final_test.py runtimecheck --rubi RUBI --models MODELS_DIR --work DIR --out REC.json   (amendment 9)
+      development data only: path (b)'s line read with this checkout's runtime against Rubi's pinned runtime files
+  vocr6_final_test.py compare --priv PRIV --earlier PRIV0 --suffix SUF --out OUT              (amendment 9)
+      report only: a later finalist set's read beside the earlier set's, paired over the same units
 
 Everything a model reads here is protected or private (copyrighted frames, the owner's text, hand-checked
 references): plans, dumps and per-unit rows stay under $HERD/shared/private/vocr6-final-test; the public outputs
@@ -512,6 +518,23 @@ def build_finder(src_dir, out_dir, cc="gcc"):
     return exe, {"driver_sha256": sha256(exe), "sources_sha256": h.hexdigest()}
 
 
+def check_rubi_head(head, want):
+    """Amendment 9: a finalist set registered with a Rubi head is read at that head ('' or '-': no head registered)."""
+    if want not in ("", "-") and head != want:
+        raise SystemExit(f"the Rubi checkout is at {head[:12]}, the finalist set's registered head is {want[:12]}")
+
+
+def registered_record(rd, commit, root=ROOT):
+    """Amendment 9: (path, record) of paths.b.runtime_differences' runtimecheck record; record None unless it is the
+    registered file (its sha256) made for Rubi's pinned vita-vn-ocr commit (then no difference is accepted)."""
+    rec_path = Path(root) / rd["check"]["record"] if rd.get("check") else None
+    record = json.loads(rec_path.read_text(encoding="utf-8")) if rec_path and rec_path.exists() else None
+    if record is not None and (sha256(rec_path) != rd["check"].get("record_sha256") or
+                               record.get("rubi_vocr_commit") != commit):
+        record = None                          # not the registered record, or another Rubi pin: accept nothing
+    return rec_path, record
+
+
 def cmd_rubi_path(a):
     proto = protocol()
     rubi = Path(a.rubi).resolve()
@@ -523,6 +546,8 @@ def cmd_rubi_path(a):
     cfg = (rubi / "core" / "config.c").read_text(encoding="utf-8")
     cmake = (rubi / "cmake" / "VocrOCR.cmake").read_text(encoding="utf-8")
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=rubi, capture_output=True, text=True).stdout.strip()
+    # amendment 9: a finalist set registered with a Rubi head is read at that head (the earlier read's checkout)
+    check_rubi_head(head, getattr(a, "want_head", "") or "")
     lm = pinned_lm(proto)                      # amendment 2: pinned; Rubi main's own pin is recorded beside it
     rsha, rset = rubi_lm(src)
     known = [n for n, c in proto["paths"]["b"]["lm_candidates"].items() if c["sha256"] == rsha]
@@ -543,11 +568,15 @@ def cmd_rubi_path(a):
         raise SystemExit(f"Rubi's cascade {casc} / counter {counter} differ from the protocol's 700 / (6000, 4000)")
     commit, pins = vocr_pins(cmake)
     fsrc = finder_sources(out.parent / "finder_src")
-    # amendment 7: every runtime file Rubi pins must be this checkout's (path (b) reads with this runtime/)
-    differ = sorted(f for f, h in pins.items() if not (ROOT / "runtime" / f).exists() or
-                    sha256(ROOT / "runtime" / f) != h)
-    if differ:
-        raise SystemExit(f"Rubi pins runtime files {differ} that differ from this checkout's: review and amend")
+    # amendment 7: every runtime file Rubi pins must be this checkout's (path (b) reads with this runtime/);
+    # amendment 9: or differ exactly as paths.b.runtime_differences registers, with runtimecheck's record equal
+    checkout = {f: (sha256(ROOT / "runtime" / f) if (ROOT / "runtime" / f).exists() else None) for f in pins}
+    rd = proto["paths"]["b"].get("runtime_differences") or {}
+    rec_path, record = registered_record(rd, commit)
+    rdiff = runtime_differences(pins, checkout, rd.get("files") or {}, record)
+    if rdiff["refused"]:
+        raise SystemExit(f"Rubi pins runtime files {rdiff['refused']} that differ from this checkout's: review and "
+                         "amend")
     rubi_fix = None
     for f in ("vocr_lines_fix.c", "vocr_lines_fix.h"):
         if f in pins and pins[f] != fsrc["files"][f]:
@@ -577,6 +606,9 @@ def cmd_rubi_path(a):
                         "textnorm_h_sha256": sha256(rubi / "core" / "textnorm.h")},
            "vocr_pin": {"commit": commit, "files": pins}, "vocr5_in_rubi": models,
            "vocr5_in_rubi_matches_protocol": models == want}
+    if rdiff["accepted"]:
+        doc["runtime_differences"] = {"files": {f: [pins[f], checkout[f]] for f in rdiff["accepted"]},
+                                      "record": str(rec_path.relative_to(ROOT)), "record_sha256": sha256(rec_path)}
     # amendment 5 (audit F2): the job defaults path (b) assumes
     jd = rubi_job_defaults(rubi)
     doc["job_defaults"] = {k: {"value": v, "ok": ok} for k, (v, ok) in jd.items()}
@@ -2560,6 +2592,284 @@ def cmd_plaincheck(a):
           res["all_equal"])
 
 
+# ----------------------------------------------------------------------------- amendment 9: later finalist sets
+
+def finalist_of(proto, tiers):
+    """The registered finalist set (protocol finalist_sets) whose blobs are exactly tiers ({tier: sha256}), as
+    (name, entry); a set not registered there is never read."""
+    sets = {k: v for k, v in (proto.get("finalist_sets") or {}).items() if isinstance(v, dict) and "models" in v}
+    hits = [(k, v) for k, v in sets.items() if v["models"] == tiers]
+    if len(hits) != 1:
+        raise SystemExit("the staged blobs are " + ("no" if not hits else "more than one") +
+                         " registered finalist set (eval/vocr6_final_test_protocol.json finalist_sets): " +
+                         ", ".join(f"{t} {h[:12]}" for t, h in sorted(tiers.items())))
+    return hits[0]
+
+
+def same_set_attempts(priv_root, this_priv, tiers):
+    """Other final attempt records under priv_root/*/attempt.json of the same finalist set (or of no recorded set:
+    counted as the same, since they cannot be told apart)."""
+    out = []
+    for p in sorted(Path(priv_root).glob("*/attempt.json")):
+        if p.parent.resolve() == Path(this_priv).resolve():
+            continue
+        rec = json.loads(p.read_text(encoding="utf-8"))
+        if rec.get("mode") == "final" and rec.get("models", tiers) == tiers:
+            out.append(str(p))
+    return out
+
+
+def cmd_finalist(a):
+    """report.sh's guard for a final read (amendment 9): the staged blobs must be one registered finalist set, read
+    once: no other final attempt of that set may exist. Prints the set's name, publish directory, Rubi head and the
+    earlier set's private directory (tab separated, '-' for none)."""
+    proto = protocol()
+    m = json.loads((Path(a.models) / "models.json").read_text(encoding="utf-8"))
+    tiers = {t: e["sha256"] for t, e in m["tiers"].items()}
+    name, entry = finalist_of(proto, tiers)
+    others = same_set_attempts(Path(a.priv).parent, a.priv, tiers)
+    if others:
+        raise SystemExit(f"finalist set {name} has a final attempt already: {others[0]} (one read per set; RESUME=1 "
+                         "with its OUT continues it)")
+    if not entry.get("publish"):
+        raise SystemExit(f"finalist set {name} names no publish directory: register one (audit-vocr6-followup n4)")
+    print("\t".join([name, entry["publish"], entry.get("rubi_head") or "-", entry.get("earlier_private") or "-"]))
+
+
+def runtime_differences(pins, checkout, registered, record):
+    """Amendment 9: Rubi's runtime pins that differ from this checkout's files ({file: sha256 or None}), split into
+    accepted (registered in paths.b.runtime_differences with exactly Rubi's pin and this checkout's sha256, and the
+    runtimecheck record found every read equal with exactly that pair) and refused."""
+    acc, ref = [], []
+    for f in sorted(f for f, h in pins.items() if checkout.get(f) != h):
+        r = registered.get(f) or {}
+        good = (r.get("rubi_pin") == pins[f] and checkout.get(f) is not None and r.get("checkout") == checkout[f]
+                and bool(record) and record.get("all_equal") is True
+                and (record.get("files") or {}).get(f) == [pins[f], checkout[f]])
+        (acc if good else ref).append(f)
+    return {"accepted": acc, "refused": ref}
+
+
+LIB_SRC = ("vocr.c", "vocr.h", "vocr_lm.c", "vocr_lm.h", "vocr_post.c", "vocr_post.h")     # runtime/Makefile SRC
+
+
+def build_lib(files, out_dir, cc="gcc"):
+    """libvocr.so from {name: bytes} (runtime/Makefile's release rule: its WARN, -O2 -fPIC -shared)."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for n, data in files.items():
+        (out_dir / n).write_bytes(data)
+    lib = out_dir / "libvocr.so"
+    subprocess.run([cc, "-std=c99", "-ffp-contract=off", "-Wall", "-Wextra", "-Werror", "-Wpedantic", "-Wshadow",
+                    "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wcast-align", "-Wpointer-arith", "-O2", "-fPIC",
+                    "-shared", "-o", str(lib), *(str(out_dir / n) for n in ("vocr.c", "vocr_lm.c", "vocr_post.c")),
+                    "-lm"], check=True, cwd=out_dir)
+    return lib
+
+
+def _init_lib(lib, blob, lm, settings, counter):
+    os.environ["VOCR_LIB"] = str(lib)            # a spawned worker: pyvocr loads this build
+    _init(blob, lm, settings, counter)
+
+
+def _read_raw(job):
+    """rubi_line's fields and a hash of the recognizer's raw outputs (frames, gated / escaped, conf, the top-8
+    logits, classes and the blank logit, gated and ungated): the runtime check's unit."""
+    i, img, inv = job
+    rt = _W["rt"]
+    h = hashlib.sha256()
+    for ungated in (False, True):
+        o = rt.run_topk(img, TOPK, invert=bool(inv), blank=True, ungated=ungated)
+        h.update(repr((o["text"], int(o["frames"]), int(o["gated"]), int(o["escaped"]),
+                       float(o["conf_min"]))).encode("utf-8"))
+        for k in ("topv", "topc", "blank"):
+            h.update(np.ascontiguousarray(o[k]).tobytes())
+    r = rubi_line(rt, _W["lm"], img, inv, _W["two"], _W["counter"])
+    return i, r, h.hexdigest()
+
+
+def cmd_runtimecheck(a):
+    """Development data only (amendment 9): path (b)'s line read (rubi_line) with this checkout's runtime against
+    the same read with the runtime files Rubi pins (cmake/VocrOCR.cmake of a Rubi checkout; their bytes from this
+    repository's history at Rubi's pinned commit), crop for crop and field for field, on samples of vocr6-lead's
+    hval plan v2 (the hooked train titles' hval crops) and dev plan v2 (other games), for every blob a final read
+    reads on path (b): VOCR5's gated blobs, VOCR5-V and the staged blobs."""
+    proto = protocol()
+    work = Path(a.work)
+    work.mkdir(parents=True, exist_ok=True)
+    commit, pins = vocr_pins((Path(a.rubi) / "cmake" / "VocrOCR.cmake").read_text(encoding="utf-8"))
+    rubi_files, files = {}, {}
+    for n in LIB_SRC:
+        data = subprocess.run(["git", "show", f"{commit}:runtime/{n}"], cwd=ROOT, capture_output=True,
+                              check=True).stdout
+        if n in pins and hashlib.sha256(data).hexdigest() != pins[n]:
+            raise SystemExit(f"runtime/{n} at {commit[:12]} is not the file Rubi pins")
+        rubi_files[n] = data
+        mine = (ROOT / "runtime" / n).read_bytes()
+        if hashlib.sha256(data).hexdigest() != hashlib.sha256(mine).hexdigest():
+            files[n] = [hashlib.sha256(data).hexdigest(), hashlib.sha256(mine).hexdigest()]
+    libs = {"checkout": build_lib({n: (ROOT / "runtime" / n).read_bytes() for n in LIB_SRC}, work / "rt_checkout"),
+            "rubi": build_lib(rubi_files, work / "rt_rubi")}
+    lmc = pinned_lm(proto)
+    blobs = {f"VOCR5g_{t}": Path(proto["models"]["VOCR5"]["gated"][t]["file"]) for t in TIERS}
+    blobs["VOCR5_V"] = Path(proto["models"]["VOCR5"]["vertical"]["file"])
+    m = json.loads((Path(a.models) / "models.json").read_text(encoding="utf-8"))
+    for t in TIERS:
+        if sha256(Path(a.models) / f"{t}.vocr") != m["tiers"][t]["sha256"]:
+            raise SystemExit(f"{a.models}/{t}.vocr differs from its models.json")
+        blobs[f"staged_{t}"] = Path(a.models) / f"{t}.vocr"
+    lead = A / "vocr6-lead" / "plans"
+    plans = {"hval_v2": lead / "hval_plan_v2.pkl", "dev_v2": lead / "dev_plan_v2.pkl"}
+    res = {"kind": "vocr6-final-test-runtimecheck", "at": now(), "repo_head": git_head(),
+           "data": "development only: samples of vocr6-lead's hval plan v2 (hooked train titles' hval crops) and dev "
+                   "plan v2 (other games' dev crops); no protected set",
+           "rubi_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=a.rubi, capture_output=True,
+                                       text=True).stdout.strip(), "rubi_vocr_commit": commit, "files": files,
+           "libraries": {k: sha256(v) for k, v in libs.items()}, "lm": lmc["sha256"], "lm_settings": lmc["settings"],
+           "plans": {}, "blobs": {}}
+    jobs = []
+    for name, p in plans.items():
+        with open(p, "rb") as f:
+            crops = pickle.load(f)["crops"]
+        idx = _sample(len(crops), a.k)
+        res["plans"][name] = {"sha256": sha256(p), "crops": len(idx), "of": len(crops)}
+        jobs += [(f"{name}:{i}", crops[i][0], crops[i][1]) for i in idx]
+    fields = ("g", "b", "conf", "used_g", "frames", "gated", "escaped", "reread", "edits")
+    for bn, blob in blobs.items():
+        out = {}
+        for ln, lib in libs.items():
+            got = {}
+            with get_context("spawn").Pool(a.workers, initializer=_init_lib,
+                                           initargs=(str(lib), str(blob), lmc["file"], lmc["settings"],
+                                                     (6000, 4000))) as pool:
+                for i, r, h in pool.imap_unordered(_read_raw, jobs, chunksize=16):
+                    got[i] = (r, h)
+            out[ln] = got
+        e = {"sha256": sha256(blob), "crops": len(jobs), "raw_equal": 0, "line_equal": 0, "rereads": 0}
+        for i, _, _ in jobs:
+            (ra, ha), (rb, hb) = out["checkout"][i], out["rubi"][i]
+            e["raw_equal"] += ha == hb
+            e["line_equal"] += all(ra.get(k) == rb.get(k) for k in fields)
+            e["rereads"] += ra["reread"]
+        res["blobs"][bn] = e
+        print(f"runtimecheck {bn}: {e['raw_equal']} / {e['line_equal']} of {e['crops']} equal", flush=True)
+    res["all_equal"] = all(e["raw_equal"] == e["crops"] == e["line_equal"] for e in res["blobs"].values())
+    assert_public(res)
+    write_json(a.out, res)
+    print(json.dumps({"all_equal": res["all_equal"], "files": sorted(files)}))
+
+
+def b_measures(priv):
+    """Path (b)'s headline measures of a read: {name: (rows, stage, cluster key, id key, min clusters)}."""
+    b = {}
+    for s in SETS_B:
+        with open(Path(priv) / "b" / f"rows_{s}.pkl", "rb") as fh:
+            b[s] = pickle.load(fh)["rows"]
+    fx = [dict(r, id=f"{s}:{r['id']}") for s in ("vita-test", "psp-test") for r in b[s]["fixed"]]
+    ru = [dict(r, id=r["uid"]) for s in ("vita-test", "psp-test") for r in b[s]["units"]]
+    cu = [dict(r, id=r["uid"]) for r in b["clannad"]["units"]]
+    pu = [dict(r, id=r["uid"]) for r in b["pcsg00807"]["units"]]
+    return {"b|clannad_lines": ([r for r in b["clannad"]["fixed"] if not r["name"]], "shipped", "page", 2),
+            "b|clannad_pages": (cu, "shipped", "page", 2),
+            "b|vita_psp_fixed_lines": ([r for r in fx if not r["name"]], "shipped", "vn", MIN_CLUSTERS),
+            "b|vita_psp_whole_dialogue_base": ([r for r in ru if r["variant"] == "base"], "shipped", "vn",
+                                               MIN_CLUSTERS),
+            "b|pcsg00807_clean": (b["pcsg00807"]["fixed"], "shipped", "page", 2),
+            "b|pcsg00807_page_base": ([r for r in pu if r["kind"] == "page" and r["variant"] == "base"], "shipped",
+                                      "page", 2)}
+
+
+def a_measures(priv, suffix):
+    """Path (a)'s headline measures of a read, as b_measures."""
+    fx = a_fixed_rows(priv, FAMILIES)
+    dia = a_dialogue_rows(priv, FAMILIES)
+    cl = a_clannad_rows(priv, FAMILIES, suffix)
+    pc = a_pcsg_rows(priv, FAMILIES)
+    return {"a|clannad_lines": ([r for r in cl if not r["name"]], "greedy", "page", 2),
+            "a|vita_psp_fixed_lines": ([r for r in fx if not r["name"]], "greedy", "vn", MIN_CLUSTERS),
+            "a|vita_psp_fixed_lines_lm": ([r for r in fx if not r["name"]], "lm", "vn", MIN_CLUSTERS),
+            "a|vita_psp_whole_dialogue_base": ([r for r in dia if r["variant"] == "base"], "greedy", "vn",
+                                               MIN_CLUSTERS),
+            "a|pcsg00807_clean": ([r for r in pc if r["part"] == "clean"], "rubi_cascade", "page", 2),
+            "a|pcsg00807_page_refine_base": ([r for r in pc if r["part"] == "finder" and r.get("mode") == "refine"
+                                              and r.get("variant") == "base"], "rubi_cascade", "page", 2)}
+
+
+def compare_reads(new, old, stage, cluster, min_clusters):
+    """One measure of two reads of the same units: VOCR6 (this read) - VOCR6 (the earlier read) per tier, paired over
+    the same units and clusters, both rates, and whether VOCR5 read every unit alike in both (any key)."""
+    on = {r["id"]: r for r in old}
+    ids = [r["id"] for r in new]
+    if sorted(ids) != sorted(on) or any(on[r["id"]]["chars"] != r["chars"] for r in new):
+        return {"same_units": False, "units": [len(new), len(old)]}
+    ch = [r["chars"] for r in new]
+    cl = [r[cluster] for r in new]
+    v5keys = sorted(k for k in new[0]["errors"] if k.startswith("VOCR5:")) if new else []
+    res = {"same_units": True, "units": len(new), "chars": int(sum(ch)), "clusters": len(set(cl)), "stage": stage,
+           "vocr5_units_differ": sum(1 for r in new if any(r["errors"][k] != on[r["id"]]["errors"].get(k)
+                                                           for k in v5keys)),
+           "tiers": {}}
+    for t in TIERS:
+        k6, k5 = f"VOCR6:{t}:{stage}", f"VOCR5:{t}:{stage}"
+        en = [r["errors"][k6] for r in new]
+        eo = [on[r["id"]]["errors"][k6] for r in new]
+        e5 = [r["errors"][k5] for r in new]
+        res["tiers"][t] = {"this": boot_rate(en, ch, cl), "earlier": boot_rate(eo, ch, cl),
+                           "vocr5": boot_rate(e5, ch, cl),
+                           "this_minus_earlier": boot_pair(en, eo, ch, cl, ids, min_clusters),
+                           "this_minus_vocr5": boot_pair(en, e5, ch, cl, ids, min_clusters)}
+    return res
+
+
+def cmd_compare(a):
+    """Report only (amendment 9): a registered later finalist set's read beside the earlier set's read on the same
+    units: VOCR6 (this set) - VOCR6 (the earlier set) per tier on every headline measure of both paths, paired over
+    the same units and clusters as the report's pairs, and VOCR5's agreement between the two reads (the same path:
+    every VOCR5 reading of every unit equal). Nothing is chosen on it."""
+    priv, old = Path(a.priv), Path(a.earlier)
+    me = json.loads((priv / "attempt.json").read_text(encoding="utf-8"))
+    them = json.loads((old / "attempt.json").read_text(encoding="utf-8"))
+    proto = protocol()
+    names = {json.dumps(v["models"], sort_keys=True): k for k, v in (proto.get("finalist_sets") or {}).items()
+             if isinstance(v, dict) and "models" in v}
+    doc = {"kind": "vocr6-final-test-compare", "created": now(), "repo_head": git_head(),
+           "this": {"set": names.get(json.dumps(me.get("models"), sort_keys=True)), "attempt": me},
+           "earlier": {"set": names.get(json.dumps(them.get("models"), sort_keys=True)), "attempt": them},
+           "measures": {}}
+    mine = {**b_measures(priv), **a_measures(priv, a.suffix)}
+    theirs = {**b_measures(old), **a_measures(old, a.suffix)}
+    for name, (rows_new, stage, cl, mc) in mine.items():
+        doc["measures"][name] = compare_reads(rows_new, theirs[name][0], stage, cl, mc)
+    assert_public(doc)
+    out = Path(a.out)
+    write_json(out / "compare.json", doc)
+    (out / "compare.md").write_text(compare_markdown(doc) + "\n", encoding="utf-8")
+    print(json.dumps({k: {"same_units": v["same_units"], "vocr5_units_differ": v.get("vocr5_units_differ")}
+                      for k, v in doc["measures"].items()}))
+
+
+def compare_markdown(doc):
+    md = ["# The follow-up's final read beside the earlier set's (report only)", "",
+          f"This read: finalist set {doc['this']['set']} (started {doc['this']['attempt'].get('started')}); the "
+          f"earlier read: {doc['earlier']['set']} (started {doc['earlier']['attempt'].get('started')}). Dialogue "
+          "CER; the difference is paired over the same units with the report's clusters (game bootstrap for "
+          "vita-test / psp-test, page bootstrap for CLANNAD and the test title). 'VOCR5 alike': units where VOCR5's "
+          "readings differ between the two reads (0: the same path). Host measurements; nothing ran on a console.", "",
+          "| measure | stage | tier | earlier set | this set | this - earlier (points) | VOCR5 | this - VOCR5 | "
+          "VOCR5 alike |", "|---|---|---|---|---|---|---|---|---|"]
+    for name, m in doc["measures"].items():
+        if not m["same_units"]:
+            md.append(f"| {name} | | | units differ ({m['units']}) | | | | | |")
+            continue
+        for t in TIERS:
+            e = m["tiers"][t]
+            md.append(f"| {name} | {m['stage']} | {t} | {cell(e['earlier'])} | {cell(e['this'])} | "
+                      f"{pcell(e['this_minus_earlier'])} | {cell(e['vocr5'])} | {pcell(e['this_minus_vocr5'])} | "
+                      f"{m['vocr5_units_differ']} of {m['units']} differ |")
+    md.append("")
+    return "\n".join(md)
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -2573,6 +2883,7 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p = sp.add_parser("rubi-path")
     p.add_argument("--rubi", required=True)
+    p.add_argument("--want-head", default="", help="amendment 9: the Rubi head a finalist set is registered with")
     p.add_argument("--out", required=True)
     p = sp.add_parser("pcsg-a")
     p.add_argument("--family", required=True, choices=FAMILIES)
@@ -2649,11 +2960,26 @@ def main(argv=None):
     p.add_argument("--priv", required=True)
     p.add_argument("--suffix", required=True)
     p.add_argument("--out", required=True)
+    p = sp.add_parser("finalist")
+    p.add_argument("--models", required=True, help="MODELS_DIR (models.json)")
+    p.add_argument("--priv", required=True, help="this read's private directory")
+    p = sp.add_parser("runtimecheck")
+    p.add_argument("--rubi", required=True, help="the Rubi checkout whose cmake/VocrOCR.cmake pins the runtime")
+    p.add_argument("--models", required=True, help="MODELS_DIR of the staged blobs (models.json)")
+    p.add_argument("--work", required=True)
+    p.add_argument("--k", type=int, default=2000, help="crops per development plan")
+    p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--out", required=True)
+    p = sp.add_parser("compare")
+    p.add_argument("--priv", required=True, help="this read's private directory")
+    p.add_argument("--earlier", required=True, help="the earlier finalist set's private directory")
+    p.add_argument("--suffix", required=True)
+    p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     {"stage": cmd_stage, "rubi-path": cmd_rubi_path, "pcsg-a": cmd_pcsg_a, "plan": cmd_plan, "read": cmd_read,
      "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "dryrun": cmd_dryrun,
      "rubicheck": cmd_rubicheck, "pagecheck": cmd_pagecheck, "plaincheck": cmd_plaincheck,
-     "report": cmd_report}[a.cmd](a)
+     "report": cmd_report, "finalist": cmd_finalist, "runtimecheck": cmd_runtimecheck, "compare": cmd_compare}[a.cmd](a)
 
 
 if __name__ == "__main__":

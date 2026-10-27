@@ -16,6 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 A = Path("/local/home/skerraut/herd-vita-ocr/shared/artifacts")
 RECORDS = ROOT / "eval/vocr6_results_20261027.json"
+FOLLOWUP_TEST = ROOT / "eval/vocr6_final_test_followup_20261027.json"
+FOLLOWUP_COMPARE = ROOT / "eval/vocr6_final_test_followup_compare_20261027.json"
 SCORE_DIRS = {"v1": [A / "vocr6-lead/scores"], "v2": [A / "vocr6-lead/scores_v2", A / "vocr6-s1-a/scores",
                                                        A / "vocr6-s1-b/scores", A / "vocr6-s2-a/scores",
                                                        A / "vocr6-s2-b/scores", A / "vocr6-s3-a/scores"],
@@ -38,10 +40,28 @@ DECISIONS = {
     "s4_L": ("4a", "R3-L", "shipped", "A15 + S2cil at Large vs the released VOCR5-L"),
     "s4_HN": ("4b", "4b-N", "shipped", "4b (hval folded in) vs its 4a sibling"),
     "s4_HL": ("4b", "4b-L", "shipped", "4b (hval folded in) vs its 4a sibling"),
+    # stage 4c (amendment 6, its open cases audit-vocr6-lead-h H1) and 4d (amendment 7): the follow-up, v0.4.1-vocr6.2
+    "s4c_N": ("4c", "4c-N", "shipped", "4b's recipe at 45,000 steps, hval in, into 4c-L (vs the shipped 4b-N into "
+                                       "4b-L)"),
+    "s4c_L": ("4c", "4c-L", "shipped", "4b's recipe at 45,000 steps, hval in (vs the shipped 4b-L)"),
+    "s4d_r": ("4d", "4d-r", "shipped", "Small with VOCR5's real pools back at full weight (mix r3all_v5r) vs the "
+                                       "released VOCR5-S"),
+    "s4d_l": ("4d", "4d-l", "shipped", "Small, R3 at half the learning rate (6e-4) vs the released VOCR5-S"),
+    "s4d_lh": ("4d-fold", "4d-l fold-in", "shipped", "4d-l with hval folded in (into the shipped 4b-N) vs its 4a "
+                                                     "sibling seed 1 (into v6s2cil_N_seed1)"),
+    "s4d_report_SvsV5S_up4cN": ("4d-report", "Small in the follow-up's cascade", "shipped",
+                                "report only: the new Small vs VOCR5-S, both cascading into 4c-N"),
 }
 EXTRA_RUNS = {"shipped": ["VOCR5-S_up6N", "v6f4h_S_seed1"]}
-SHIPPED = {"N": A / "vocr6-final-train/blobs/v6f4h_N_seed1_w8.vocr",
-           "L": A / "vocr6-final-train/blobs/v6f4h_L_seed1_w8.vocr"}
+# the shipped plain blobs of each release: v0.4.0-vocr6.1 (stage 4b's N and L; Small stayed VOCR5-S) and the
+# follow-up v0.4.1-vocr6.2 (stage 4c's N and L, stage 4d's Small)
+SHIPPED_V040 = {"N": A / "vocr6-final-train/blobs/v6f4h_N_seed1_w8.vocr",
+                "L": A / "vocr6-final-train/blobs/v6f4h_L_seed1_w8.vocr"}
+SHIPPED = {"S": A / "vocr6-lead/blobs/v6f4dlh_S_seed1_w8.vocr",
+           "N": A / "vocr6-lead/blobs/v6f4c_N_seed1_w8.vocr",
+           "L": A / "vocr6-lead/blobs/v6f4c_L_seed1_w8.vocr"}
+# the follow-up's gate fits (eval/vocr6_gate.sh on main, vocr6-followup): the shipped blob of each tier
+GATE_RESULT = A / "vocr6-followup/gate/result.json"
 COMPONENTS = ("hval_page", "hval_clean", "hval_page_all", "hval_page_seen", "hval_page_nomerge", "tv", "dn", "wd",
               "dev")
 SUMMARY_KEYS = ("hval_page", "hval_page_vita", "hval_page_psp", "hval_clean_dlg", "hval_page_all", "hval_page_seen",
@@ -95,12 +115,34 @@ def records(out):
     shipped = {}
     for t, p in SHIPPED.items():
         shipped[t] = {"run": p.name.replace("_w8.vocr", ""), "bytes": p.stat().st_size, "sha256": sha256(p)}
+    shipped_v040 = {}
+    for t, p in SHIPPED_V040.items():
+        shipped_v040[t] = {"run": p.name.replace("_w8.vocr", ""), "bytes": p.stat().st_size, "sha256": sha256(p)}
+    gate = None
+    if GATE_RESULT.exists():
+        g = json.loads(GATE_RESULT.read_text(encoding="utf-8"))
+        gate = {"protocol_sha256": g["protocol_sha256"], "repo_head": g["repo_head"], "tiers": {}}
+        for t, s in g["tiers"].items():
+            if s["input"]["sha256"] != shipped[t]["sha256"]:
+                raise SystemExit(f"the gate result's {t} input is not the follow-up's shipped plain blob")
+            fin, today = s["estimate"]["final"], s["estimate"]["today"]
+            gate["tiers"][t] = {"gate": s["gate_adopted"], "two_level": s["two_level_adopted"],
+                                "two_level_K": (s["arms"][s["two_level_adopted"]]["K"] if s["two_level_adopted"]
+                                                else None),
+                                "final_arm": s["final_arm"], "blob": {k: s["final_blob"][k] for k in
+                                                                      ("name", "sha256", "bytes")},
+                                "arena_w8i_1024": fin["arena_w8i_1024"],
+                                "est_box_ms": {"plain_333": today["pld0"]["nominal_box_ms_333"],
+                                               "plain_444": today["pld0"]["nominal_box_ms_444"],
+                                               "shipped_333": fin["pld0"]["nominal_box_ms_333"],
+                                               "shipped_444": fin["pld0"]["nominal_box_ms_444"]}}
     doc = {"kind": "vocr6-results", "schema": 1, "issue": 125, "protocol": "eval/vocr6_protocol.json",
            "metric": "dialogue CER (%), Rubi's per-line decode; 'shipped' = Rubi's shipped path (plan v3 + "
                      "screening LM for hval, dev plan v2 + shipped 1 MB LM, alpha 600 / beta 2500 / BOS, cascade into "
                      "the same seed's next tier); v1 / v2 = the screening plans, no cascade",
            "intervals": "95% cluster bootstrap, 10,000 resamples: titles (hval), VNs (dev)",
-           "decisions": dec, "runs": runs, "shipped_blobs": shipped,
+           "decisions": dec, "runs": runs, "shipped_blobs": shipped, "shipped_blobs_v0.4.0": shipped_v040,
+           "follow_up_gate": gate,
            "measured_on": "the host (W8I int8 blobs through the C runtime); nothing ran on a console"}
     Path(out).write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print("records:", len(dec), "decisions,", sum(len(v) for v in runs.values()), "run summaries ->", out)
@@ -151,6 +193,154 @@ def tables(doc):
     return "\n".join(md) + "\n"
 
 
+def follow_up_tables(doc):
+    """docs/vocr6.md's stage 4c / 4d tables (the follow-up, v0.4.1-vocr6.2), from the records."""
+    D, R = doc["decisions"], doc["runs"]["shipped"]
+    md = ["| tier | 4c (45,000 steps, hval in) vs the shipped 4b | Δ dev score | Δ tv | Δ dn | Δ dev wd | "
+          "Δ hval page (both in training) | rule (ii) |", "|---|---|---|---|---|---|---|---|"]
+    for t, what in (("N", "v6f4c_N_seed1 (into 4c-L) vs v6f4h_N_seed1 (into 4b-L)"),
+                    ("L", "v6f4c_L_seed1 vs v6f4h_L_seed1")):
+        d = D[f"s4c_{t}"]
+        ok = not d["total"]["dev"]["ci95"][0] > 0
+        md.append(f"| {t} | {what} | {iv(d['total'], 'dev')} | {iv(d['total'], 'tv')} | {iv(d['total'], 'dn')} | "
+                  f"{iv(d['total'], 'wd')} | {iv(d['total'], 'hval_page')} | {'passes' if ok else 'fails'} |")
+    cols = [("hval_page", "hval page"), ("hval_clean_dlg", "hval clean"), ("dev_score", "dev score"), ("wd", "dev wd"),
+            ("tv", "tv"), ("dn", "dn")]
+    md += ["", "| arm | model | " + " | ".join(c for _, c in cols) + " |", "|---|---|" + "---:|" * len(cols)]
+    md.append("| - | VOCR5-S (released) | " + " | ".join(f"{R['VOCR5-S']['summary'][k]:.3f}" for k, _ in cols) + " |")
+    for name in ("s4d_r", "s4d_l"):
+        d = D[name]
+        for y in d["y"]:
+            md.append(f"| {d['arm']} | {y} | " + " | ".join(f"{R[y]['summary'][k]:.3f}" for k, _ in cols) + " |")
+        m = {k: sum(R[y]["summary"][k] for y in d["y"]) / len(d["y"]) for k, _ in cols}
+        md.append(f"| {d['arm']} | **mean of 3** | " + " | ".join(f"**{m[k]:.3f}**" for k, _ in cols) + " |")
+    md += ["", "| arm | Δ hval page (4d − VOCR5-S) | Δ hval clean | Δ dev score | Δ dev wd | seed pairs (hval page) | "
+           "seed pairs (dev) | adopted |", "|---|---|---|---|---|---|---|---|"]
+    for name in ("s4d_r", "s4d_l"):
+        d = D[name]
+        tt = d["total"]
+        hp = ", ".join(f"{v['hval_page']:+.3f}" for v in d["pairs"].values())
+        dv = ", ".join(f"{v['dev']:+.3f}" for v in d["pairs"].values())
+        md.append(f"| {d['arm']} | {iv(tt, 'hval_page')} | {iv(tt, 'hval_clean')} | {iv(tt, 'dev')} | {iv(tt, 'wd')} "
+                  f"| {hp} | {dv} | {'**yes**' if d['adopt_y'] else 'no'} |")
+    md += ["", "| check | compared | Δ dev score | Δ tv | Δ dn | Δ dev wd | Δ hval page | result |",
+           "|---|---|---|---|---|---|---|---|"]
+    d = D["s4d_lh"]
+    ok = not d["total"]["dev"]["ci95"][0] > 0
+    md.append(f"| 4d-l's fold-in vs its 4a sibling | v6f4dlh_S_seed1 (into 4b-N) vs v6f4dl_S_seed1 (into "
+              f"v6s2cil_N_seed1) | {iv(d['total'], 'dev')} | {iv(d['total'], 'tv')} | {iv(d['total'], 'dn')} | "
+              f"{iv(d['total'], 'wd')} | {iv(d['total'], 'hval_page')} (hval in the fold-in's training) | "
+              f"{'passes' if ok else 'fails'} |")
+    d = D["s4d_report_SvsV5S_up4cN"]
+    md.append(f"| Small in the follow-up's cascade | v6f4dlh_S_seed1 vs VOCR5-S, both into 4c-N | "
+              f"{iv(d['total'], 'dev')} | {iv(d['total'], 'tv')} | {iv(d['total'], 'dn')} | {iv(d['total'], 'wd')} | "
+              f"{iv(d['total'], 'hval_page')} (hval in the new Small's training) | report only |")
+    ds = lambda r: f"{R[r]['summary']['dev_score']:.3f}"  # noqa: E731
+    md += ["", "| tier | VOCR5 (released) | v0.4.0-vocr6.1 | v0.4.1-vocr6.2 (the follow-up) |", "|---|---|---|---|",
+           f"| Small | VOCR5-S into VOCR5-N: {ds('VOCR5-S')} | VOCR5-S into 4b-N: {ds('VOCR5-S_up6N')} | "
+           f"v6f4dlh_S_seed1 into 4c-N: **{ds('v6f4dlh_S_seed1_up4cN')}** (VOCR5-S into 4c-N: "
+           f"{ds('VOCR5-S_up4cN')}) |",
+           f"| Normal | VOCR5-N into VOCR5-L: {ds(D['s4_N']['x'][0])} | 4b-N into 4b-L: {ds('v6f4h_N_seed1')} | "
+           f"4c-N into 4c-L: **{ds('v6f4c_N_seed1')}** |",
+           f"| Large | VOCR5-L: {ds(D['s4_L']['x'][0])} | 4b-L: {ds('v6f4h_L_seed1')} | "
+           f"4c-L: **{ds('v6f4c_L_seed1')}** |"]
+    return "\n".join(md) + "\n"
+
+
+TIER_NAMES = {"S": "Small", "N": "Normal", "L": "Large"}
+
+
+def follow_up_gate_table(doc):
+    """docs/vocr6.md's table of the follow-up's gate fits, from the records' follow_up_gate."""
+    md = ["| tier | shipped blob (gate driver's name → release name) | bytes | sha256 | W8I arena @1,024 px | "
+          "head gate | two-level head | est. s per box, 333 / 444 MHz (plain → shipped) |",
+          "|---|---|---:|---|---:|---|---|---|"]
+    for t in ("S", "N", "L"):
+        g = doc["follow_up_gate"]["tiers"][t]
+        name = g["blob"]["name"]
+        if "_rc9999" in g["final_arm"]:
+            raise SystemExit("a recall-0.9999 escape: the table's 'r96' column would not say so")
+        rel = "VOCR6.2_" + name[len("VOCR6_"):]
+        gate = {None: "**no**", "gate": "**yes, ε = 1e-3**", "gate_e4": "**yes, ε = 1e-4**"}[g["gate"]]
+        two = "-" if t == "S" else (f"yes (K {g['two_level_K']}, r96)" if g["two_level"] else "no")
+        e = g["est_box_ms"]
+        plain = f"{e['plain_333'] / 1000:.2f} / {e['plain_444'] / 1000:.2f}"
+        times = (f"{plain} (no change)" if g["final_arm"] == "today" else
+                 f"{plain} → **{e['shipped_333'] / 1000:.2f} / {e['shipped_444'] / 1000:.2f}**")
+        plain_tag = " (plain)" if g["final_arm"] == "today" else ""
+        md.append(f"| {TIER_NAMES[t]} | `{name}` → `{rel}`{plain_tag} | "
+                  f"{g['blob']['bytes']:,} | `{g['blob']['sha256'][:16]}…` | {g['arena_w8i_1024']:,} | {gate} | "
+                  f"{two} | "
+                  f"{times} |")
+    return "\n".join(md) + "\n"
+
+
+FT_MEASURES = (("b|clannad_lines", "CLANNAD, {n} lines", "CLANNAD, {n} lines"),
+               ("b|clannad_pages", "CLANNAD, {n} pages through Rubi's finder", "CLANNAD, {n} pages (finder)"),
+               ("b|vita_psp_fixed_lines", "vita-test + psp-test, {n} fixed lines", "vita + psp-test fixed lines, {n}"),
+               ("b|vita_psp_whole_dialogue_base", "vita-test + psp-test, {n} whole-dialogue regions",
+                "vita + psp-test whole dialogue, {n} regions"),
+               ("b|pcsg00807_clean", "Dance with Devils (PCSG00807), {n} clean lines",
+                "PCSG00807 clean lines, {n}"),
+               ("b|pcsg00807_page_base", "Dance with Devils, {n} page regions", "PCSG00807 page path, {n} regions"))
+
+
+def _rate(r):
+    return 100 * r["errors"] / r["chars"]
+
+
+def _resolved(p):
+    return p["ci95"][0] > 0 or p["ci95"][1] < 0
+
+
+def _pair(p, minus="-", bold_delta=False):
+    """A pair in points [95% interval], bold when resolved (the whole cell, or with bold_delta the difference alone)."""
+    d = f"{p['delta']:+.2f}".replace("-", minus)
+    ci = f"[{p['ci95'][0]:+.2f}, {p['ci95'][1]:+.2f}]".replace("-", minus)
+    if not _resolved(p):
+        return f"{d} {ci}"
+    return f"**{d}** {ci}" if bold_delta else f"**{d} {ci}**"
+
+
+def follow_up_final_table(cmp_):
+    """docs/vocr6.md's table of the follow-up's final read (path b) beside VOCR5 and v0.4.0-vocr6.1's read, from the
+    committed compare record (the same units in both reads)."""
+    md = ["| set (path b, dialogue CER) | tier | VOCR5 | v0.4.0-vocr6.1 | **v0.4.1-vocr6.2** | v0.4.1 − VOCR5 | "
+          "v0.4.1 − v0.4.0 |", "|---|---|---:|---:|---:|---|---|"]
+    for key, label, _ in FT_MEASURES:
+        m = cmp_["measures"][key]
+        tt = m["tiers"]
+        lab = label.format(n=f"{m['units']:,}")
+        pairs = [tt[t][k] for t in ("S", "N", "L") for k in ("this_minus_vocr5", "this_minus_earlier")]
+        if key == "b|pcsg00807_page_base" and not any(_resolved(p) for p in pairs):
+            md.append(f"| {lab} | Small / Normal / Large | " + " | ".join(
+                " / ".join(f"{_rate(tt[t][c]):.2f}" for t in ("S", "N", "L")) + "%"
+                for c in ("vocr5", "earlier", "this")) + " | every interval includes 0 | every interval includes 0 |")
+            continue
+        for i, t in enumerate(("S", "N", "L")):
+            e = tt[t]
+            md.append(f"| {lab if i == 0 else ''} | {TIER_NAMES[t]} | {_rate(e['vocr5']):.2f}% | "
+                      f"{_rate(e['earlier']):.2f}% | {_rate(e['this']):.2f}% | {_pair(e['this_minus_vocr5'])} | "
+                      f"{_pair(e['this_minus_earlier'])} |")
+    return "\n".join(md) + "\n"
+
+
+def final_test_followup_table(cmp_):
+    """docs/vocr6-final-test.md's table of the follow-up's read: VOCR5 → v0.4.1 per tier, with v0.4.1 − VOCR5 and
+    v0.4.1 − v0.4.0, from the committed compare record."""
+    md = ["| set | S | N | L |", "|---|---|---|---|"]
+    for key, _, label in FT_MEASURES:
+        m = cmp_["measures"][key]
+        cells = []
+        for t in ("S", "N", "L"):
+            e = m["tiers"][t]
+            cells.append(f"{_rate(e['vocr5']):.2f} → {_rate(e['this']):.2f}% "
+                         f"({_pair(e['this_minus_vocr5'], '−', True)}; {_pair(e['this_minus_earlier'], '−', True)})")
+        n = f"{m['units']:,}"
+        md.append(f"| {label.format(n=n)} | " + " | ".join(cells) + " |")
+    return "\n".join(md) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -162,7 +352,8 @@ def main():
     if a.cmd == "records":
         records(a.out)
     else:
-        print(tables(json.loads(Path(a.records).read_text(encoding="utf-8"))), end="")
+        doc = json.loads(Path(a.records).read_text(encoding="utf-8"))
+        print(tables(doc) + "\n" + follow_up_tables(doc), end="")
 
 
 if __name__ == "__main__":

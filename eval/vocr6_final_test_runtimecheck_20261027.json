@@ -1,0 +1,96 @@
+{
+ "all_equal": true,
+ "at": "2026-10-27T19:30:29Z",
+ "blobs": {
+  "VOCR5_V": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172"
+  },
+  "VOCR5g_L": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "41c3543ff8dddd45dc953a6a5f5d579ef9ca779f0e43196406be59c1d985c5b5"
+  },
+  "VOCR5g_N": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b"
+  },
+  "VOCR5g_S": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "76a1bc5de5cd0419a7edad31bc198af8016bda5592a7e595de75697671d3e928"
+  },
+  "staged_L": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "65310013e8f990886e4e8097b2fe55eb98cdf082d7193eea510601fc0ac26c82"
+  },
+  "staged_N": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "107cf084cc0c1a3a61ce4c3f9b9cf6b31d6dff80f0a1bdb94afd3f7ee9ae3bc9"
+  },
+  "staged_S": {
+   "crops": 4000,
+   "line_equal": 4000,
+   "raw_equal": 4000,
+   "rereads": 0,
+   "sha256": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2"
+  }
+ },
+ "data": "development only: samples of vocr6-lead's hval plan v2 (hooked train titles' hval crops) and dev plan v2 (other games' dev crops); no protected set",
+ "files": {
+  "vocr.c": [
+   "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+   "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51"
+  ],
+  "vocr.h": [
+   "c9670efd980a993f98307e6093ca17c7595f64a09c11a3d4c7bb6cea84993de5",
+   "0b43a90131acd955326c879d8f71e011607ab94d704be93dc8df1951ee44d371"
+  ]
+ },
+ "kind": "vocr6-final-test-runtimecheck",
+ "libraries": {
+  "checkout": "d5948a971ccc19d428e95347d24ec698572568a31571ecb0bf6b9f0bdf9d46b6",
+  "rubi": "7ec1c8810e4e8ecde9b3b7315381cfc7a93bcb28c8b7b124a4b4ca0c1b0bda55"
+ },
+ "lm": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f",
+ "lm_settings": {
+  "alpha": 600,
+  "beam": 8,
+  "beta": 2500,
+  "bracket": 8000,
+  "flags": 1,
+  "gate": 8000,
+  "topk": 8
+ },
+ "plans": {
+  "dev_v2": {
+   "crops": 2000,
+   "of": 3513,
+   "sha256": "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e"
+  },
+  "hval_v2": {
+   "crops": 2000,
+   "of": 13451,
+   "sha256": "3a6f80e1dfe4e4f5cf61d2b56aef4253e2039939a76231d344e17a4d351d97ba"
+  }
+ },
+ "repo_head": "0d3dffe47238b49f8ba9b8f4a241002d90f58e78",
+ "rubi_head": "892cfb9f3a6f57e81f5f7ef1b31abfb1d551b23c",
+ "rubi_vocr_commit": "f8a1856c1b21bf41af744c159b54ce8203408a89"
+}

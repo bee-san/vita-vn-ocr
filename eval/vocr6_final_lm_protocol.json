@@ -126,6 +126,14 @@
     "the counter set's kept count and CER per LM tier at the shipped setting and at arm b's in-sample choice are reported for every job tier (already in reports; restated for Rubi's 「九ヶ月です」 expectation)"
    ],
    "unchanged": "the arms, metric, guards and rule"
+  },
+  {
+   "n": 2,
+   "time": "2026-10-27T08:17Z (this commit; before FINAL BLOBS and before any read of a stage-4 blob)",
+   "why": "vocr6-lead (status 2026-10-27T07:31Z, message to vocr6-final-lm 08:17Z): stage 4a did not adopt VOCR6-S (dev resolved worse), so Small stays VOCR5-S as Rubi ships it; the VOCR6 checks are the N and L tiers",
+   "change": "the rule decides the N job tier (final N + cascade to the final L) and the L job tier only. The S job path (VOCR5-S, v0.3.0's v5f_S_seed2 read ungated, + cascade to the final N) is decoded and reported with its rule clauses, report only; VOCR5-S reads hval itself (it never trained on it)",
+   "decide_tiers": ["N", "L"],
+   "unchanged": "the arms, metric, guards and rule for N and L"
   }
  ]
 }

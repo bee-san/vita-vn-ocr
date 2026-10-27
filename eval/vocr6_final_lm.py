@@ -499,6 +499,10 @@ def cmd_select(a):
            "issues": [125, 127], "protocol_sha256": sha256(a.protocol), "lm_tiers": {}, "decisions": {}}
     own = dict(s.split("=", 1) for s in a.own) if a.own else {}
     ws_limit = int(proto["rule"]["workspace_limit_bytes"])
+    decided = list(TIERS)
+    for am in proto.get("amendments", []):              # amendment 2: only these job tiers are decided
+        decided = am.get("decide_tiers", decided)
+    out["decide_tiers"] = decided
     for spec in a.tune:
         lm_tier, path = spec.split("=", 1)
         meta, E, Kk = load_tune(path)
@@ -561,8 +565,13 @@ def cmd_select(a):
             rec["jobs"][tier] = r
             setting = {"keep": None, "b": {"config": cfgs[jb], "cascade_conf": tb, "counter": list(cb)},
                        "c": {"config": ship, "cascade_conf": ship_thr, "counter": list(cc)}}[d]
-            out["decisions"].setdefault(tier, {})[lm_tier] = {"decision": "keep" if d == "keep" else "change",
-                                                             "arm": d, "setting": setting}
+            if tier in decided:
+                out["decisions"].setdefault(tier, {})[lm_tier] = {"decision": "keep" if d == "keep" else "change",
+                                                                 "arm": d, "setting": setting}
+            else:                                       # amendment 2: reported, not decided
+                out["decisions"].setdefault(tier, {})[lm_tier] = {"decision": "report only", "arm": "keep",
+                                                                 "setting": None, "rule_outcome": d,
+                                                                 "rule_setting": setting}
         out["lm_tiers"][lm_tier] = rec
     FT.assert_public(out)
     Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

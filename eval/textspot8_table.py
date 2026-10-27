@@ -9,9 +9,10 @@ Candidates: amendment 1's t8_t64n8c16, seeds 1-3, in textspot6's four decodes, w
 (eval/textspot6_table.candidate_rows: the A9 rows of record of the shape, the refine decodes' extra time and arena,
 the parity check), plus amendment 4's ctx (the crop row; parity on the grown regions) and amendment 3's det+D (the
 det row plus D's largest-region A9 cost; parity of the spotter and of D), F and F+D (the det row plus rubi,fix=1 on
-the largest dev region, textspot7's cost rule: eval/textspot7_a9_20261027.json). Baselines: textspot6's stored
-GRAD + refine (rubi) and rubi,fix=1 results (the same units and pins). Report rows: textspot6's control (base_t64n8c16 seeds 1-3, every decode) and every MeikiOCR reference row
-found under EVAL/meiki.
+the largest dev region, textspot7's cost rule: eval/textspot7_a9_20261027.json).
+
+Baselines: textspot6's stored GRAD + refine (rubi) and rubi,fix=1 results (the same units and pins). Report rows:
+textspot6's control (base_t64n8c16 seeds 1-3, every decode) and every MeikiOCR reference row under EVAL/meiki.
 """
 import argparse
 import json

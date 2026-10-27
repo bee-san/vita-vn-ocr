@@ -18,7 +18,7 @@ number here was measured on the host. Console times are estimates.
   - **The follow-up's final test, read once:** CLANNAD lines 0.47 / 0.33 / 0.31% (VOCR5: 0.73 / 0.66 / 0.60%, all
     resolved better); vita-test + psp-test fixed lines 0.58 / 0.36 / 0.40% (VOCR5: 0.68 / 0.49 / 0.47%, level). Against
     v0.4.0-vocr6.1, CLANNAD's pages read worse at Normal and Large (+0.33, +0.27 points, resolved).
-  - **Disclosed:** Small's adopted arm was the second one tried, and its development score is worse in point
+  - **Disclosed:** Small's adopted arm was the third recipe tried at Small, and its development score is worse in point
     (+0.064, not resolved). In the set as it ships it reads +0.041 [-0.016, +0.099] against VOCR5-S.
 - **v0.4.0-vocr6.1 (stage 4a/4b): Normal and Large VOCR6, Small VOCR5-S.** Each tier was adopted over the released
   VOCR5 tier only if it read the hooked games' held-out pages better, with every seed pair below 0, and other games
@@ -36,8 +36,9 @@ number here was measured on the host. Console times are estimates.
     training data, so these are not unseen-game numbers.
   - vita-test + psp-test: level.
   - The hooked test title: level or better.
-- **The owner's < 1% target** (page path): met on the hooked games' pages (0.94% / 0.92%). Not met on other games:
-  whole dialogue 2.43% / 2.46% (4a means), about 80% of it the line finder's. The spotter tracks (#128, #149) target that.
+- **The owner's < 1% target** (page path): met on the hooked games' held-out pages by Normal and Large (0.94% /
+  0.92%; Small 1.05%). Not met on other games: whole dialogue 2.47 / 2.37 / 2.39% for the follow-up's set (v0.4.0's
+  4a means 2.43% / 2.46%), about 80% of it the line finder's. The spotter tracks (#128, #149) target that.
 
 
 ## What was decided, and how
@@ -156,7 +157,7 @@ decode, with no cascade. CER is in percent; differences are in CER points with 9
   and -0.032, dev -0.033 [-0.116, +0.065]. It decides stage 4c only (amendment 6): a 45k-step retrain of the
   shipped tiers, which replaces a shipped blob only if it is not resolved worse on dev than that blob.
 
-## Stage 4: the shipped tiers (2026-10-27)
+## Stage 4: the shipped tiers of v0.4.0-vocr6.1 (2026-10-27)
 
 **What ran** (protocol stage 4, amendments 1-6; tag `vocr6-runner-00b8288`):
 - **4a:** R3 at each tier, three seeds, hval held out:
@@ -233,7 +234,7 @@ dev score = 0.25 tv + 0.25 dn + 0.5 wd (other games: teacher_val and devnative f
   fixed lines read at 0.46-0.47%, so about 80% of the whole-dialogue error is the finder's.
 - So the remaining gap is the finder. textspot7 and textspot8 (#128, #149) target it.
 
-### Speed: the head gate and the two-level head (vocr6-final-gate, #146)
+### Speed: the head gate and the two-level head (vocr6-final-gate, #146; v0.4.0-vocr6.1)
 
 Both are speed-only sections, fit on each shipped blob's own outputs under #120's and #122's pre-registered rules
 (`eval/vocr6_gate_protocol.json`). Times are estimates from ocr-speed's method: `vita/a9_layers.py` under qemu,
@@ -260,7 +261,7 @@ calibrated to VOCR3-H15's measured console rate, one Cortex-A9 core, no prefetch
 - Weights and arena are VOCR5's tiers' plus the sections: +1,984 B and +1,456 B arena for the two-level trailer.
 
 
-### LM settings on VOCR6's logits (vocr6-final-lm)
+### LM settings on VOCR6's logits (vocr6-final-lm; v0.4.0-vocr6.1)
 
 Rubi's decoder settings were chosen on VOCR5's logits. They were re-checked on the shipped Normal and Large under a
 pre-registered rule (`eval/vocr6_final_lm_protocol.json`): keep the shipped settings unless a grid setting (2-fold
@@ -276,7 +277,7 @@ CV, as #127) or a counter threshold is resolved better on the objective and not 
   against 3,064 for VOCR5-N with its cascade.
 
 
-### Final test (read once, report only)
+### Final test of v0.4.0-vocr6.1 (read once, report only)
 
 vocr6-final-test (PR #140: its protocol `eval/vocr6_final_test_protocol.json`, driver and records) read
 the protected sets once, after every choice above. Nothing below changed a choice. The shipped blobs were read on
@@ -363,7 +364,8 @@ unscored when Small was not adopted in 4a (H1: 4c is used only where 4b ships).
 - (ii) the 4c blob is not resolved worse than its 4b blob on the shipped-path development score (one pair).
 
 H1 fixed the composition: 4c-N is read cascading into 4c-L, against 4b-N into 4b-L. The hval comparison is reported
-only, since both blobs trained on hval.
+only, since both blobs trained on hval. H1's cases were logged at 07:56Z, before any 4c score; they enter the protocol
+file (`stages.4.amendments[5].open_cases`) with this follow-up's records.
 
 | tier | 4c (45,000 steps, hval in) vs the shipped 4b | Δ dev score | Δ tv | Δ dn | Δ dev wd | Δ hval page (both in training) | rule (ii) |
 |---|---|---|---|---|---|---|---|
@@ -408,8 +410,9 @@ cascading into the same seed's VOCR6-N.
 - **4d-l is adopted:** hval page below 0 with every pair below 0, and its dev interval includes 0 ([-0.009,
   +0.138]), so the rule calls it not worse. **Disclosed:**
   - its dev point estimate is worse (+0.064, every seed pair above 0);
-  - it was the second Small arm, after 4d-r failed. Amendment 7 registered both arms together before any 4d run, but
-    with two arms tried, a "not resolved worse" pass by chance is likelier than with one.
+  - it was the second Small arm of 4d, after 4d-r failed, and the third recipe tried at Small (after 4a's R3-S).
+    Amendment 7 registered both 4d arms together before any 4d run, but with more arms tried, a "not resolved worse"
+    pass by chance is likelier than with one.
 - **The fold-in** (the fill, registered after these decisions and before its run): F4Sdlh_s1 retrains 4d-l's seed 1
   with hval folded in (`r3all_fold` at 6e-4, 15,000 steps, 1.9 slot-hours; run `v6f4dlh_S_seed1`). It ships iff its
   dev score is not resolved worse than 4d-l's seed 1.
@@ -422,9 +425,14 @@ cascading into the same seed's VOCR6-N.
 - The fold-in passes, so `v6f4dlh_S_seed1` replaces VOCR5-S. The check compares two cascades (into the 4b-N that
   shipped then, against into v6s2cil_N_seed1), as the fill registered.
 - **Disclosed (report only):** in the set as it ships (both Smalls cascading into 4c-N), the new Small reads dev
-  +0.041 [-0.016, +0.099] against VOCR5-S. Not resolved, but worse in point. Most of that swing is junk-box text in
-  one VN (v21004: 33 of its 74 whole-dialogue errors), the display-rule effect the final test saw on CLANNAD's pages
-  (below).
+  +0.041 [-0.016, +0.099] against VOCR5-S. Not resolved, but worse in point.
+  - It is worse in point in either cascade: +0.021 into 4b-N, +0.041 into 4c-N. The difference is whole dialogue's
+    (+0.067 / +0.075 points there; +17 / +19 errors, spread over VNs, the largest v2817 with +7). teacher_val and
+    devnative move little (into 4c-N: +0.000 and +0.012; into 4b-N: -0.025 and -0.025).
+  - Moving both Smalls' cascade from 4b-N to 4c-N lowers both scores by 0.14-0.16 points (VOCR5-S 1.667 → 1.509,
+    74 fewer whole-dialogue errors; the new Small 1.688 → 1.549, 72 fewer). 33 of those 74 are one VN's junk-box text (v21004), the display-rule effect the
+    final test saw on CLANNAD's pages (below). That swing is the same for both Smalls, so it does not explain the
+    difference between them.
 
 **The development score of each set as it ships** (Rubi's cascade S -> N -> L; hval is in the training of every VOCR6
 blob here):
@@ -435,13 +443,22 @@ blob here):
 | Normal | VOCR5-N into VOCR5-L: 1.482 | 4b-N into 4b-L: 1.451 | 4c-N into 4c-L: **1.389** |
 | Large | VOCR5-L: 1.439 | 4b-L: 1.442 | 4c-L: **1.396** |
 
+**The gap to the owner's < 1% target** (dialogue CER through Rubi's full page path):
+- **Other games:** whole dialogue on #119's development units reads 2.47 / 2.37 / 2.39% (S / N / L, the set as it
+  ships), against VOCR5's 2.70 / 2.48 / 2.41%. The same tiers read those games' fixed lines at 0.40-0.68%, so about
+  75-85% of the remaining whole-dialogue error is the line finder's. Rubi's new default finder, the textspot8 spotter
+  (#149), targets it; the GRAD path measured here is not Rubi's default any more.
+- **The hooked games' pages:** the held-out evidence is the recipes' seeds above: Normal 0.936% and Large 0.917%,
+  under 1%; Small 1.049%. The shipped blobs' own hval reads (0.98 / 0.88 / 0.87%) are not held out.
+
 ### Speed: the follow-up's gate fits
 
 vocr6-followup ran vocr6-final-gate's driver (main's `eval/vocr6_gate.sh`, #146) on the three blobs, in the
 protocol's order L, N, S. Each tier's VOCR6-path arm cascades into the next tier as it ships. The settings are those
 of vocr6-final-gate's final run: the VOCR6 path reads hval with the screening LM h64_1000k and dev with the shipped
 lm6 1000k, at alpha 600 / beta 2500 / BOS. The rules are #120's and #122's, as `eval/vocr6_gate_protocol.json`
-freezes them. The fits took 2.29 slot-hours. Times are estimates, by the same method as above.
+freezes them. The fits' steps took 2.29 slot-hours of compute; the three jobs held 2.56 slot-hours. Times are
+estimates, by the same method as above.
 
 | tier | shipped blob (gate driver's name → release name) | bytes | sha256 | W8I arena @1,024 px | head gate | two-level head | est. s per box, 333 / 444 MHz (plain → shipped) |
 |---|---|---:|---|---:|---|---|---|
@@ -451,7 +468,7 @@ freezes them. The fits took 2.29 slot-hours. Times are estimates, by the same me
 
 Development score, gated − ungated, in points [95% VN-cluster interval]; the rule's margin is +0.05:
 - **Small: no gate.**
-  - The ε = 1e-3 gate is not resolved worse on any decode and saves 18-19% of a box. But its upper bounds pass the
+  - The ε = 1e-3 gate is not resolved worse on any decode and saves 18-19% of a box. But its upper bounds exceed the
     +0.05 margin: rubi +0.019 [-0.063, +0.125] and rubi_cascade +0.029 [-0.016, +0.074]. So it stays behind the
     switch.
   - The ε = 1e-4 fallback is rejected: on the cascade decode its whole-dialogue component is resolved worse, +0.051
@@ -496,32 +513,33 @@ and Dance with Devils). Records: `eval/vocr6_final_test_followup_20261027.json` 
 
 | set (path b, dialogue CER) | tier | VOCR5 | v0.4.0-vocr6.1 | **v0.4.1-vocr6.2** | v0.4.1 − VOCR5 | v0.4.1 − v0.4.0 |
 |---|---|---:|---:|---:|---|---|
-| CLANNAD, 2,052 lines | Small | 0.73% | 0.68% | **0.47%** | **-0.26 [-0.35, -0.18]** | **-0.21 [-0.30, -0.12]** |
-| | Normal | 0.66% | 0.44% | **0.33%** | **-0.33 [-0.41, -0.24]** | **-0.10 [-0.17, -0.04]** |
-| | Large | 0.60% | 0.36% | **0.31%** | **-0.29 [-0.37, -0.21]** | -0.05 [-0.10, +0.01] |
+| CLANNAD, 2,052 lines | Small | 0.73% | 0.68% | 0.47% | **-0.26 [-0.35, -0.18]** | **-0.21 [-0.30, -0.12]** |
+|  | Normal | 0.66% | 0.44% | 0.33% | **-0.33 [-0.41, -0.24]** | **-0.10 [-0.17, -0.04]** |
+|  | Large | 0.60% | 0.36% | 0.31% | **-0.29 [-0.37, -0.21]** | -0.05 [-0.10, +0.01] |
 | CLANNAD, 1,837 pages through Rubi's finder | Small | 5.84% | 6.16% | 5.75% | -0.09 [-0.28, +0.10] | **-0.41 [-0.61, -0.21]** |
-| | Normal | 5.94% | 5.47% | 5.81% | -0.13 [-0.31, +0.05] | **+0.33 [+0.19, +0.48]** |
-| | Large | 6.19% | 5.40% | 5.67% | **-0.52 [-0.71, -0.32]** | **+0.27 [+0.13, +0.41]** |
+|  | Normal | 5.94% | 5.47% | 5.81% | -0.13 [-0.31, +0.05] | **+0.33 [+0.19, +0.48]** |
+|  | Large | 6.19% | 5.40% | 5.67% | **-0.52 [-0.71, -0.32]** | **+0.27 [+0.13, +0.41]** |
 | vita-test + psp-test, 336 fixed lines | Small | 0.68% | 0.81% | 0.58% | -0.11 [-0.33, +0.11] | **-0.23 [-0.46, -0.04]** |
-| | Normal | 0.49% | 0.49% | 0.36% | -0.13 [-0.33, +0.04] | -0.13 [-0.26, +0.00] |
-| | Large | 0.47% | 0.43% | 0.40% | -0.06 [-0.18, +0.04] | -0.02 [-0.14, +0.11] |
+|  | Normal | 0.49% | 0.49% | 0.36% | -0.13 [-0.33, +0.04] | -0.13 [-0.26, +0.00] |
+|  | Large | 0.47% | 0.43% | 0.40% | -0.06 [-0.18, +0.04] | -0.02 [-0.14, +0.11] |
 | vita-test + psp-test, 175 whole-dialogue regions | Small | 3.04% | 3.26% | 3.02% | -0.02 [-0.45, +0.45] | -0.24 [-0.58, +0.06] |
-| | Normal | 2.83% | 2.63% | 2.70% | -0.13 [-0.55, +0.27] | +0.06 [-0.33, +0.48] |
-| | Large | 2.72% | 2.52% | 2.68% | -0.04 [-0.47, +0.39] | +0.15 [-0.17, +0.52] |
+|  | Normal | 2.83% | 2.63% | 2.70% | -0.13 [-0.55, +0.27] | +0.06 [-0.33, +0.48] |
+|  | Large | 2.72% | 2.52% | 2.68% | -0.04 [-0.47, +0.39] | +0.15 [-0.17, +0.52] |
 | Dance with Devils (PCSG00807), 1,152 clean lines | Small | 0.27% | 0.24% | 0.21% | **-0.06 [-0.11, -0.01]** | -0.03 [-0.06, +0.00] |
-| | Normal | 0.26% | 0.21% | 0.19% | **-0.06 [-0.12, -0.02]** | -0.01 [-0.04, +0.00] |
-| | Large | 0.22% | 0.21% | 0.19% | **-0.04 [-0.08, -0.01]** | -0.02 [-0.05, +0.00] |
+|  | Normal | 0.26% | 0.21% | 0.19% | **-0.06 [-0.12, -0.02]** | -0.01 [-0.04, +0.00] |
+|  | Large | 0.22% | 0.21% | 0.19% | **-0.04 [-0.08, -0.01]** | -0.02 [-0.05, +0.00] |
 | Dance with Devils, 685 page regions | Small / Normal / Large | 0.85 / 0.84 / 0.81% | 0.84 / 0.80 / 0.80% | 0.85 / 0.80 / 0.79% | every interval includes 0 | every interval includes 0 |
 
 In bold: resolved (the interval excludes 0).
 
 - **Small** is now better than VOCR5-S or level on every set. The CLANNAD-pages loss of v0.4.0's composition
   (VOCR5-S cascading into VOCR6-N: +0.32, resolved) is gone: -0.09 against VOCR5, -0.41 against v0.4.0's Small.
-- **Normal and Large read CLANNAD's lines better** than v0.4.0's (-0.10 and -0.05) **but its pages worse** (+0.33 and
+- **Normal and Large read CLANNAD's lines better** than v0.4.0's (-0.10, resolved, and -0.05) **but its pages worse** (+0.33 and
   +0.27, both resolved). Against VOCR5 the pages are still better or level (-0.13, and -0.52 resolved).
-  - The decomposition puts the page loss before the cascade. Large's greedy pages read level with v0.4.0's (6.07% /
-    6.10%), but the counter and LM stage gains less: 6.03% against 5.78%. Normal's greedy pages are worse already:
-    8.29% against 7.94%.
+  - Large has no cascade, and its loss sits in the counter + LM stage: its greedy pages read level with v0.4.0's
+    (6.07% / 6.10%), but the counter and LM gain less (6.03% against 5.78%).
+  - Normal's gap is +0.35 points greedy (8.29% / 7.94%), +0.07 after the counter and LM, +0.24 after the cascade and
+    +0.34 as shown: it comes from its greedy reads and from the cascade.
   - Lines and pages differ in their crops. The pages are the finder's crops of whole ROIs, junk boxes included; the
     lines are the frozen line crops.
 - **vita-test + psp-test:** level against VOCR5 at every tier on path (b). vita-test is better (Small -0.25
@@ -581,8 +599,10 @@ CPU only: one 64-core host with no GPU and 12 heavy slots of 5 threads.
   training-only branches), a Large one about 4.5-4.7.
 - **Stage 1:** 13.4 slot-hours for A15 and B15, plus 2.0 for the stopped C50 runs.
 - **Stages 2-3:** 76.8 slot-hours over 19 runs, plus 0.5 for a stopped S3long segment.
-- **The follow-up:** stage 4c 24.0 slot-hours (Normal 10.3, Large 13.7, 45k steps each); stage 4d 19.3 (six runs
-  17.4, the fold-in 1.9); the gate fits 2.3; the final read 0.8 (one slot, 47 minutes).
+- **The follow-up:** stage 4c 24.0 slot-hours (Normal 10.3, Large 13.7, 45k steps each), plus 0.6 for Small's run,
+  stopped unscored (06:51-07:30Z); stage 4d 19.3 (six runs
+  17.4, the fold-in 1.9); the gate fits 2.3 of compute (2.56 slot-hours held); the final read 0.8
+  (one slot, 47 minutes); its runtime check 0.3.
 
 ## Limits
 

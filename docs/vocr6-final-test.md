@@ -254,6 +254,19 @@ once for it. **Amendment 9** (committed before the read, after an independent pr
 One attempt, at repo `27e0126`, with VOCR5 beside the blobs on both paths. VOCR5's path (a) equals its published
 records, 29 of 29 checks. There were no read errors and no finder errors.
 
+Provenance, as audit-vocr6-followup checked it:
+- **Amendment 9** was committed before the read (cd530d1 at 19:49Z, 27e0126 at 20:03:13Z; the attempt started
+  20:03:42Z and names repo `27e0126` and the protocol's sha256 `dc8f3ae3…`). It was pushed only after the read, at
+  21:03Z, when the branch was created. The content is fixed by the commit; for a later set, push first.
+- **The runtimecheck record's `repo_head` is 0d3dffe.** That commit predates the command: the record was made with
+  the code still uncommitted in the clone, and cd530d1 then committed it unchanged. The audit re-ran it at the head and
+  found the record equal, apart from `at` and `repo_head`.
+- **The pre-read review** (READ_OK, two fixes) is kept at
+  `$HERD/shared/artifacts/vocr6-followup/review_amend9_cd530d1.md`.
+- **After the read** (audit-vocr6-followup n3 and n4), the harness gained guards for a later set: a registered set must
+  name its own publish directory, and a fresh read refuses an OUT that exists and is not empty. rubi-path's head and
+  record checks moved into tested helpers, unchanged. The read itself ran at `27e0126`.
+
 Records:
 - `eval/vocr6_final_test_followup_20261027.json`: every measure;
 - `eval/vocr6_final_test_followup_compare_20261027.json`: the pairing with the earlier read;
@@ -273,9 +286,12 @@ Path (b), dialogue CER, VOCR5 → v0.4.1, with v0.4.1 − VOCR5 and v0.4.1 − v
 What the read shows:
 - **Small (now VOCR6)** is better than VOCR5-S or level everywhere. v0.4.0's Small lost on CLANNAD's pages through its
   cascade (+0.32); the follow-up's Small does not (−0.09).
-- **Normal and Large** read CLANNAD's lines better than v0.4.0's VOCR6 but its pages worse (+0.33 / +0.27, resolved),
-  though still better than VOCR5 or level on the pages. The stage table places the page loss before the cascade: Large's
-  greedy pages are level with v0.4.0's (6.07 / 6.10%), and its counter + LM stage gains less (6.03 / 5.78%).
+- **Normal and Large** read CLANNAD's lines better than v0.4.0's VOCR6 (−0.10, resolved, and −0.05) but its pages
+  worse (+0.33 / +0.27, resolved),
+  though still better than VOCR5 or level on the pages. The stage table: Large, which has no cascade, loses it in
+  the counter + LM stage (greedy pages level with v0.4.0's, 6.07 / 6.10%; after the counter and LM 6.03 / 5.78%).
+  Normal's gap is +0.35 points greedy (8.29 / 7.94%), +0.07 after the counter and LM, +0.24 after the cascade and
+  +0.34 as shown.
 - **vita-test + psp-test** are level against VOCR5 on path (b) at every tier. vita-test is better (Small −0.25, Normal
   −0.33, resolved); psp-test is not. On path (a) with ctclm.2's LM, psp-test's Normal is resolved worse: +0.26 [+0.04,
   +0.51].

@@ -24,7 +24,8 @@ VOCR6 keeps VOCR5's shapes. Each tier is fine-tuned from its VOCR5 checkpoint on
 
 A recipe was adopted only if, on Rubi's shipped path and with three seeds, it read the hooked games' held-out pages
 better and other games no worse. Normal and Large were then trained 3x longer, which kept other games no worse
-(stage 4c). Small needed a second recipe, half the learning rate (stage 4d).
+(stage 4c). Small needed another recipe, half the learning rate (stage 4d): the third tried at Small, after 4a's
+recipe and 4d's other arm failed.
 All numbers are measured on the host (`docs/vocr6.md`). Console times are estimates. **Nothing of VOCR6 has run on a
 console.**
 
@@ -41,8 +42,11 @@ console.**
     [-0.077, -0.014]);
   - the dev score is VOCR5's development score on other games, for the set as it ships (Rubi's cascade S → N → L).
     VOCR5-S in the same cascade reads 1.509, so Small is +0.041 [-0.016, +0.099] against it (not resolved; Small's
-    adopted recipe was the second one tried);
-  - CLANNAD and vita-test + psp-test were read once for this set, after every choice.
+    adopted recipe was the third one tried);
+  - CLANNAD and vita-test + psp-test were read once for this set, after every choice;
+  - "Rubi's path" is the final reads' model of Rubi's line path: the GRAD finder with its COLGAP fix, Rubi 892cfb9.
+    Rubi's default finder is now the textspot8 spotter (#149, Rubi #396), whose own test read is in
+    `eval/textspot8_test_20261027.json`.
 - **\* The CLANNAD exposure.** Two hooked training games draw dialogue in CLANNAD's own glyph raster, so CLANNAD's
   gain is not an unseen-game result (`docs/synth6.md`, `docs/vocr6.md`).
 - **Seen flags on the read-once columns.**
@@ -52,11 +56,13 @@ console.**
   - The VOCR6 columns are decoded with the lm6 1 MB LM. Its text holds the hooked train titles' scripts, those three
     games' included. Its Jiten word list holds the scripts of CLANNAD, of 7 of vita-test's 16 games and of 1 of
     psp-test's 14.
-- **Against v0.4.0-vocr6.1:** CLANNAD's lines read better (-0.21 / -0.10 / -0.05 points), but its pages through Rubi's
-  finder read worse at Normal and Large (+0.33 / +0.27, resolved; still better than VOCR5 or level). vita-test +
-  psp-test are level.
+- **Against v0.4.0-vocr6.1:** CLANNAD's lines read better (Small -0.21 and Normal -0.10, resolved; Large -0.05
+  [-0.10, +0.01]), but its pages through Rubi's finder read worse at Normal and Large (+0.33 / +0.27, resolved; still
+  better than VOCR5 or level). vita-test + psp-test: Small better (-0.23 [-0.46, -0.04], resolved), Normal and Large
+  level.
 - **PSP alone** does not improve: psp-test's fixed lines on Rubi's path +0.04 / +0.09 / -0.04, and Normal +0.26
-  [+0.04, +0.51] (resolved worse) on VOCR5's greedy + LM path. vita-test improves (Small -0.25, Normal -0.33, resolved).
+  [+0.04, +0.51] (resolved worse) on VOCR5's locked path with beam 8 + ctclm.2's 1 MB LM. vita-test improves (Small
+  -0.25, Normal -0.33, resolved).
 - **The blobs:** Normal carries #120's head gate (at ε = 1e-4) and #122's two-level head, Large the two-level head.
   Small has neither: the gate rule kept no gate for it, so it is est. 0.11 s slower than VOCR5-S as Rubi runs it
   (gated). Plain blobs (`VOCR6.2_S_w8.vocr`, `VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr`) are in the same release.
@@ -89,7 +95,7 @@ The table records each component and each earlier round. VOCR6's follow-up (v0.4
 | | |
 |---|---|
 | Model | `train/model.py`: a CTC line recognizer (stem plus depthwise-separable blocks, factorised head), grey input at height 32. VOCR5 (v0.3.0) ships three sizes: Small (width 1.0, 0.73M parameters in training, 0.72M in the exported blob after BatchNorm folding, 4,987 classes), Normal, the default (width 1.5, 1.07M, 5,631 classes) and Large (late-wide, width 2.0 early and 3.0 late, 2.32M, 5,631 classes). v0.2.0's H15 was width 1.5, 1.04M parameters, 5,355 classes |
-| **v0.4.1-vocr6.2 (VOCR6's follow-up, pre-release)** | VOCR6-S, VOCR6-N and VOCR6-L, all three of Rubi's tiers (`docs/vocr6.md`, "The follow-up", #125). Normal and Large: v0.4.0's recipe trained 3x longer (stage 4c), not resolved worse on other games (dev -0.063 / -0.046 points against v0.4.0's). Small: the recipe at half the learning rate (stage 4d, the second Small arm tried), hooked games' held-out pages 1.177 → 1.049% (resolved better), other games +0.064 (not resolved). Read once: CLANNAD lines 0.73 / 0.66 / 0.60 → 0.47 / 0.33 / 0.31% (resolved better; the same seen flags as v0.4.0), vita-test + psp-test level (psp-test not better), CLANNAD pages worse than v0.4.0's at Normal and Large. Normal with the head gate (ε = 1e-4) and the two-level head, Large with the two-level head, Small plain: est. 0.63 / 0.77 / 1.88 s per 3-line box at 333 MHz. Nothing of it has run on a console |
+| **v0.4.1-vocr6.2 (VOCR6's follow-up, pre-release)** | VOCR6-S, VOCR6-N and VOCR6-L, all three of Rubi's tiers (`docs/vocr6.md`, "The follow-up", #125). Normal and Large: v0.4.0's recipe trained 3x longer (stage 4c), not resolved worse on other games (dev -0.063 / -0.046 points against v0.4.0's). Small: the recipe at half the learning rate (stage 4d, the third recipe tried at Small), hooked games' held-out pages 1.177 → 1.049% (resolved better), other games +0.064 (not resolved). Read once: CLANNAD lines 0.73 / 0.66 / 0.60 → 0.47 / 0.33 / 0.31% (resolved better; the same seen flags as v0.4.0), vita-test + psp-test level (psp-test not better), CLANNAD pages worse than v0.4.0's at Normal and Large. Normal with the head gate (ε = 1e-4) and the two-level head, Large with the two-level head, Small plain: est. 0.63 / 0.77 / 1.88 s per 3-line box at 333 MHz. Nothing of it has run on a console |
 | **v0.4.0-vocr6.1 (VOCR6, pre-release)** | VOCR6-N and VOCR6-L, Rubi's Normal and Large tiers; Small stays VOCR5-S. Fine-tuned from VOCR5's checkpoints on the owner's hooked corpus and the finder's crops of its pages (`docs/vocr6.md`, #125). On Rubi's shipped path: hooked games' held-out pages 1.008 → 0.936% (N) and 0.990 → 0.917% (L), both resolved better; other games level (dev -0.038 / +0.026 points). Read once: CLANNAD lines 0.66 → 0.44% / 0.60 → 0.36% (seen flags: CLANNAD's glyph raster, the Key box and Collar x Malice games and 38 of 49 hooked VNs in VOCR5's pools; the lm6 LM's text and Jiten lists), vita-test + psp-test level (psp-test's Normal not better). Two-level head, no gate: est. 0.79 / 1.87 s per 3-line box at 333 MHz. Nothing of it has run on a console |
 | **v0.3.0 release (VOCR5, the final round)** | Three int8 recognizers, one per tier of Rubi's model sizes: **Small** `VOCR5_S_w8.vocr` (819,792 B, FL10's topology, 4,987 classes), **Normal** (the default) `VOCR5_N_w8.vocr` (1,185,632 B, H15's topology, 5,631 classes) and **Large** `VOCR5_L_w8.vocr` (2,473,696 B, late-wide, 5,631 classes). Each replaced its VOCR4 predecessor under a pre-registered rule on development data. vita-test + psp-test dialogue CER (fixed lines, console polarity): **1.60% / 1.13% / 0.79%** (0.53% for Large with the overlay's beam + 1 MB LM); whole dialogue 8.31% / 7.98% / 7.08%; CLANNAD dialogue 1.38% / 0.96% / **0.73%** (Google Lens 1.53%). Estimated 0.63 / 0.92 / 2.08 s per 3-line box at 333 MHz on one A9 core without prefetch credit (#85's runtime; estimates, nothing of VOCR5 has run on a console). `docs/vocr5.md` |
 | v0.2.0 release (train2) | Pretrained on NVIDIA OCR-Synthetic-Multilingual-v1 Japanese crops (nvsynth) mixed with VN-style synthetic boxes (synth2), fine-tuned on teacher-labelled real crops. **H15** (recommended, width 1.5): real Vita screenshots (`eval/`, vita-test) **1.56% CER, 83.5% exact**; real PSP (psp-test) **2.63% CER, 82.4% exact**, int8 through the C runtime. That beats trimmed int8 PP-OCRv5 mobile (2.30% / 5.34%) on both sets, at 1.16 MB of int8 weights and a 183 KB arena. Not every style is at or below that model's yet: H15 is above it on names, coloured text, PSP furigana and text without a box (4-62 lines each, mostly within noise). **F20** (width 2.0): 1.79% / 2.79%. **FL10** (PSP-lean, width 1.0, 3,500-char vocab, 658 KB): 2.30% / 5.18%, so it ties the bar on vita-test. An estimated 166-302 ms per 640-px line for H15 (w8i, one 444 MHz A9 core; about 220-400 ms at the 333 MHz games run at by default). H15 has not run on a console; FL10 has (see Hardware). Distillation from PP-OCRv6 small was tried and did not help. Ablation, per-style tables and the selection rule are in `docs/train2.md` |

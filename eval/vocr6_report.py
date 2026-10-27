@@ -16,6 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 A = Path("/local/home/skerraut/herd-vita-ocr/shared/artifacts")
 RECORDS = ROOT / "eval/vocr6_results_20261027.json"
+FOLLOWUP_TEST = ROOT / "eval/vocr6_final_test_followup_20261027.json"
+FOLLOWUP_COMPARE = ROOT / "eval/vocr6_final_test_followup_compare_20261027.json"
 SCORE_DIRS = {"v1": [A / "vocr6-lead/scores"], "v2": [A / "vocr6-lead/scores_v2", A / "vocr6-s1-a/scores",
                                                        A / "vocr6-s1-b/scores", A / "vocr6-s2-a/scores",
                                                        A / "vocr6-s2-b/scores", A / "vocr6-s3-a/scores"],
@@ -125,6 +127,8 @@ def records(out):
                 raise SystemExit(f"the gate result's {t} input is not the follow-up's shipped plain blob")
             fin, today = s["estimate"]["final"], s["estimate"]["today"]
             gate["tiers"][t] = {"gate": s["gate_adopted"], "two_level": s["two_level_adopted"],
+                                "two_level_K": (s["arms"][s["two_level_adopted"]]["K"] if s["two_level_adopted"]
+                                                else None),
                                 "final_arm": s["final_arm"], "blob": {k: s["final_blob"][k] for k in
                                                                       ("name", "sha256", "bytes")},
                                 "arena_w8i_1024": fin["arena_w8i_1024"],
@@ -240,6 +244,100 @@ def follow_up_tables(doc):
            f"4c-N into 4c-L: **{ds('v6f4c_N_seed1')}** |",
            f"| Large | VOCR5-L: {ds(D['s4_L']['x'][0])} | 4b-L: {ds('v6f4h_L_seed1')} | "
            f"4c-L: **{ds('v6f4c_L_seed1')}** |"]
+    return "\n".join(md) + "\n"
+
+
+TIER_NAMES = {"S": "Small", "N": "Normal", "L": "Large"}
+
+
+def follow_up_gate_table(doc):
+    """docs/vocr6.md's table of the follow-up's gate fits, from the records' follow_up_gate."""
+    md = ["| tier | shipped blob (gate driver's name → release name) | bytes | sha256 | W8I arena @1,024 px | "
+          "head gate | two-level head | est. s per box, 333 / 444 MHz (plain → shipped) |",
+          "|---|---|---:|---|---:|---|---|---|"]
+    for t in ("S", "N", "L"):
+        g = doc["follow_up_gate"]["tiers"][t]
+        name = g["blob"]["name"]
+        if "_rc9999" in g["final_arm"]:
+            raise SystemExit("a recall-0.9999 escape: the table's 'r96' column would not say so")
+        rel = "VOCR6.2_" + name[len("VOCR6_"):]
+        gate = {None: "**no**", "gate": "**yes, ε = 1e-3**", "gate_e4": "**yes, ε = 1e-4**"}[g["gate"]]
+        two = "-" if t == "S" else (f"yes (K {g['two_level_K']}, r96)" if g["two_level"] else "no")
+        e = g["est_box_ms"]
+        plain = f"{e['plain_333'] / 1000:.2f} / {e['plain_444'] / 1000:.2f}"
+        times = (f"{plain} (no change)" if g["final_arm"] == "today" else
+                 f"{plain} → **{e['shipped_333'] / 1000:.2f} / {e['shipped_444'] / 1000:.2f}**")
+        plain_tag = " (plain)" if g["final_arm"] == "today" else ""
+        md.append(f"| {TIER_NAMES[t]} | `{name}` → `{rel}`{plain_tag} | "
+                  f"{g['blob']['bytes']:,} | `{g['blob']['sha256'][:16]}…` | {g['arena_w8i_1024']:,} | {gate} | "
+                  f"{two} | "
+                  f"{times} |")
+    return "\n".join(md) + "\n"
+
+
+FT_MEASURES = (("b|clannad_lines", "CLANNAD, {n} lines", "CLANNAD, {n} lines"),
+               ("b|clannad_pages", "CLANNAD, {n} pages through Rubi's finder", "CLANNAD, {n} pages (finder)"),
+               ("b|vita_psp_fixed_lines", "vita-test + psp-test, {n} fixed lines", "vita + psp-test fixed lines, {n}"),
+               ("b|vita_psp_whole_dialogue_base", "vita-test + psp-test, {n} whole-dialogue regions",
+                "vita + psp-test whole dialogue, {n} regions"),
+               ("b|pcsg00807_clean", "Dance with Devils (PCSG00807), {n} clean lines",
+                "PCSG00807 clean lines, {n}"),
+               ("b|pcsg00807_page_base", "Dance with Devils, {n} page regions", "PCSG00807 page path, {n} regions"))
+
+
+def _rate(r):
+    return 100 * r["errors"] / r["chars"]
+
+
+def _resolved(p):
+    return p["ci95"][0] > 0 or p["ci95"][1] < 0
+
+
+def _pair(p, minus="-", bold_delta=False):
+    """A pair in points [95% interval], bold when resolved (the whole cell, or with bold_delta the difference alone)."""
+    d = f"{p['delta']:+.2f}".replace("-", minus)
+    ci = f"[{p['ci95'][0]:+.2f}, {p['ci95'][1]:+.2f}]".replace("-", minus)
+    if not _resolved(p):
+        return f"{d} {ci}"
+    return f"**{d}** {ci}" if bold_delta else f"**{d} {ci}**"
+
+
+def follow_up_final_table(cmp_):
+    """docs/vocr6.md's table of the follow-up's final read (path b) beside VOCR5 and v0.4.0-vocr6.1's read, from the
+    committed compare record (the same units in both reads)."""
+    md = ["| set (path b, dialogue CER) | tier | VOCR5 | v0.4.0-vocr6.1 | **v0.4.1-vocr6.2** | v0.4.1 − VOCR5 | "
+          "v0.4.1 − v0.4.0 |", "|---|---|---:|---:|---:|---|---|"]
+    for key, label, _ in FT_MEASURES:
+        m = cmp_["measures"][key]
+        tt = m["tiers"]
+        lab = label.format(n=f"{m['units']:,}")
+        pairs = [tt[t][k] for t in ("S", "N", "L") for k in ("this_minus_vocr5", "this_minus_earlier")]
+        if key == "b|pcsg00807_page_base" and not any(_resolved(p) for p in pairs):
+            md.append(f"| {lab} | Small / Normal / Large | " + " | ".join(
+                " / ".join(f"{_rate(tt[t][c]):.2f}" for t in ("S", "N", "L")) + "%"
+                for c in ("vocr5", "earlier", "this")) + " | every interval includes 0 | every interval includes 0 |")
+            continue
+        for i, t in enumerate(("S", "N", "L")):
+            e = tt[t]
+            md.append(f"| {lab if i == 0 else ''} | {TIER_NAMES[t]} | {_rate(e['vocr5']):.2f}% | "
+                      f"{_rate(e['earlier']):.2f}% | {_rate(e['this']):.2f}% | {_pair(e['this_minus_vocr5'])} | "
+                      f"{_pair(e['this_minus_earlier'])} |")
+    return "\n".join(md) + "\n"
+
+
+def final_test_followup_table(cmp_):
+    """docs/vocr6-final-test.md's table of the follow-up's read: VOCR5 → v0.4.1 per tier, with v0.4.1 − VOCR5 and
+    v0.4.1 − v0.4.0, from the committed compare record."""
+    md = ["| set | S | N | L |", "|---|---|---|---|"]
+    for key, _, label in FT_MEASURES:
+        m = cmp_["measures"][key]
+        cells = []
+        for t in ("S", "N", "L"):
+            e = m["tiers"][t]
+            cells.append(f"{_rate(e['vocr5']):.2f} → {_rate(e['this']):.2f}% "
+                         f"({_pair(e['this_minus_vocr5'], '−', True)}; {_pair(e['this_minus_earlier'], '−', True)})")
+        n = f"{m['units']:,}"
+        md.append(f"| {label.format(n=n)} | " + " | ".join(cells) + " |")
     return "\n".join(md) + "\n"
 
 

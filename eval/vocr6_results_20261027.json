@@ -3521,6 +3521,7 @@
    "L": {
     "gate": null,
     "two_level": "2L",
+    "two_level_K": 500,
     "final_arm": "2L",
     "blob": {
      "name": "VOCR6_L_w8_2l.vocr",
@@ -3538,6 +3539,7 @@
    "N": {
     "gate": "gate_e4",
     "two_level": "2Lg_e4",
+    "two_level_K": 500,
     "final_arm": "2Lg_e4",
     "blob": {
      "name": "VOCR6_N_w8g2.vocr",
@@ -3555,6 +3557,7 @@
    "S": {
     "gate": null,
     "two_level": null,
+    "two_level_K": null,
     "final_arm": "today",
     "blob": {
      "name": "VOCR6_S_w8.vocr",

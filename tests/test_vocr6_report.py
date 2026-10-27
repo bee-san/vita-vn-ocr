@@ -18,9 +18,15 @@ def test_stage4_tables_are_rendered_from_the_records():
 
 
 def test_follow_up_tables_are_rendered_from_the_records():
-    """Stages 4c and 4d (the follow-up, v0.4.1-vocr6.2): every table of docs/vocr6.md's follow-up section."""
+    """Stages 4c and 4d (the follow-up, v0.4.1-vocr6.2): every table of docs/vocr6.md's follow-up section, the gate
+    fits' table, and the final read's tables in docs/vocr6.md and docs/vocr6-final-test.md (from the committed
+    compare record)."""
     for block in VR.follow_up_tables(REC).strip().split("\n\n"):
         assert block in DOC, block.splitlines()[0]
+    assert VR.follow_up_gate_table(REC).strip() in DOC
+    cmp_ = json.loads(VR.FOLLOWUP_COMPARE.read_text(encoding="utf-8"))
+    assert VR.follow_up_final_table(cmp_).strip() in DOC
+    assert VR.final_test_followup_table(cmp_).strip() in (ROOT / "docs/vocr6-final-test.md").read_text(encoding="utf-8")
 
 
 def test_every_screening_decision_row_shows_the_records_numbers():
@@ -103,3 +109,12 @@ def test_the_summary_and_the_readme_show_the_shipped_numbers():
         assert f"{G[t]['blob']['bytes']:,} B" in row[0] and f"{G[t]['arena_w8i_1024']:,} B" in row[0], t
         if G[t]["final_arm"] == "today":                 # no head section adopted: the plain blob ships
             assert G[t]["blob"]["sha256"] == REC["shipped_blobs"][t]["sha256"], t
+        # the read-once cells (the follow-up's final read, path b) and the estimated box times (the gate fits)
+        h = json.loads(VR.FOLLOWUP_TEST.read_text(encoding="utf-8"))["headline"]["path_b"]
+        for key in ("clannad_lines", "vita_psp_fixed_lines"):
+            x = h[key][t]
+            cell = (f"{100 * x['VOCR5']['errors'] / x['VOCR5']['chars']:.2f} → "
+                    f"{100 * x['VOCR6']['errors'] / x['VOCR6']['chars']:.2f}%")
+            assert cell in row[0], (t, key, cell)
+        e = G[t]["est_box_ms"]
+        assert f"| {e['shipped_333'] / 1000:.2f} / {e['shipped_444'] / 1000:.2f} s |" in row[0], t

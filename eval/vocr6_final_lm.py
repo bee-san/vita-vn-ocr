@@ -811,7 +811,7 @@ def summarise(sel):
                 "check_shipped_twice_equal": r["check_shipped_twice_equal"]}
             ch = rb["chosen"]["in_sample"]
             c0 = ch["config"]
-            fl = "|".join(n for bit, n in ((1, "BOS"), (2, "EOS")) if c0["flags"] & bit) or "0"
+            fl = "+".join(n for bit, n in ((1, "BOS"), (2, "EOS")) if c0["flags"] & bit) or "0"   # no | in a table
             arm = "" if d["arm"] == "keep" else f" ({d['arm']})"
             mark = " (shipped)" if ch["is_shipped"] else ""
             casc = "" if ch["cascade_conf"] == "none" else f" c{ch['cascade_conf']}"

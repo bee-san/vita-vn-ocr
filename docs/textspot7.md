@@ -16,7 +16,9 @@ They are decided by textspot6's rule unchanged, plus one condition: not resolved
 confirmation set of unseen games, because the losing VNs were found on the decision set itself.
 
 This document starts as the pre-registered protocol (`eval/textspot7_protocol.json`), frozen before any read of a new
-arm. Results are added under "Results"; nothing above it changes except by a dated amendment in the protocol.
+arm. The commits named in it and in the records (the protocol ae1dd78, the fits 359437d and a2fa039, the dev record
+f62c2e8, the units' freeze 3781f2f, the confirmation record 91a39a0, the release target a5b7d34) are on the branch's
+original history, kept as tag `textspot7-history-20261027a`; the branch was rebased onto main after #147 merged. Results are added under "Results"; nothing above it changes except by a dated amendment in the protocol.
 
 ## Diagnosis (from textspot6's stored dev rows, before the protocol)
 

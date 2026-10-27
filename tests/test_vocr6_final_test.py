@@ -305,6 +305,42 @@ def test_stage_texts_columns():
     assert st["rubi_cascade"] == ["AX", "CD"] and st["greedy"] == ["ab", "cd"] and st["rubi_tier"] == ["AB", "CD"]
 
 
+def test_job_crops_frozen_check_for_tall_regions(monkeypatch):
+    """Rubi API 50 + 47 (recognize: frozen_check): with a fix and the auto check, a region at least as tall as wide is
+    checked on the frozen finder's rows (fix 0), a wider one on the fixed finder's; a region the check calls vertical
+    is read as columns, any other through the line path at the fix (audit N16)."""
+    calls = []
+    vertical_rows = [(0, 10 * i, 30, 10) for i in range(8)]       # rows of one character: vertical text
+    wide_row = [(0, 0, 400, 30)]
+
+    def fake_find(exe, imgs, platforms, fix, probe=1, refine=None):
+        calls.append((len(imgs), fix, probe, refine))
+        out = []
+        for img in imgs:
+            tall = img.shape[0] >= img.shape[1]
+            rows = vertical_rows if (tall and fix == 0) else wide_row   # the fix joins the columns' parts
+            out.append((rows, [0] * len(rows), {"found": len(rows), "probed": 0, "rc": 0}))
+        return out
+
+    monkeypatch.setattr(F, "find_boxes", fake_find)
+    monkeypatch.setattr(F, "region_columns", lambda g: ([((1, 2, 3, 4), 1, np.zeros((3, 4), np.uint8))], 0))
+    tall, wide = np.zeros((200, 100), np.uint8), np.zeros((100, 400), np.uint8)
+    rp = {"finder": {"driver": "x", "fix": 1}, "vertical_check": True}
+    got = F.job_crops(rp, [tall, wide], ["vita", "vita"])
+    assert got[0][4] is True and got[0][0] == [[1, 2, 3, 4]]          # tall: frozen rows look vertical -> columns
+    assert got[1][4] is False and got[1][0] == [list(wide_row[0])]     # wide: the line path at the fix
+    assert (1, 0, 0, 0) in calls and (1, 1, 0, 0) in calls             # the check: frozen for tall, fixed for wide
+    assert (2, 1, 1, None) in calls                                    # the line path: both regions, fix 1
+    # without the fix the check runs at fix 0 for every region (Rubi before API 50)
+    calls.clear()
+    F.job_crops({"finder": {"driver": "x", "fix": 0}, "vertical_check": True}, [tall, wide], ["vita", "vita"])
+    assert (2, 0, 0, 0) in calls
+    # without auto there is no check
+    calls.clear()
+    got = F.job_crops({"finder": {"driver": "x", "fix": 1}, "vertical_check": False}, [tall], ["vita"])
+    assert calls == [(1, 1, 1, None)] and got[0][4] is False
+
+
 def test_vocr_pins_and_defines():
     cmake = ("set(VJO_VOCR_COMMIT " + "a" * 40 + ")\nset(_vocr_pins\n  vocr.c " + "b" * 64 + "\n  vocr_lines_fix.c "
              + "c" * 64 + ")\n")

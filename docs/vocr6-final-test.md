@@ -120,7 +120,7 @@ On CLANNAD's pages, a reading on an empty box is never charged: the 133 pages wi
 an incomplete reference are left out.
 
 **The line filter's floor.** Some reference lines hold no hiragana, katakana or CJK character. Rubi's non-Japanese line
-filter deletes them however well they are read. The report prints this floor beside every path (b) measure, computed
+filter deletes them when they are read right. The report prints this floor beside every path (b) measure, computed
 from the references alone. It is the same for VOCR5 and VOCR6. On CLANNAD it is 26 of 33,485 dialogue characters; on
 PCSG00807's clean lines 26 of 13,911 (audit-vocr6-final-test's count).
 

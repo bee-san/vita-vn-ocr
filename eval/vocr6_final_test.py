@@ -1046,7 +1046,7 @@ def cmd_score_b(a):
         r = {k: fx.get(k) for k in ("id", "vn", "title", "page", "platform", "image", "name", "styles")}
         r["chars"] = len(ref)
         # the line filter's floor (audit F4): a reference line with no Japanese character is deleted by Rubi's
-        # non-Japanese line filter however well it is read
+        # non-Japanese line filter when it is read right
         r["nojp_chars"] = len(ref) if ref and not has_japanese(fx["text"]) else 0
         r["errors"] = {f"{f}:{t}:{s}": lev("" if fx["crop"] in texts[(f, t)]["failed"] else
                                            norm(texts[(f, t)][s][fx["crop"]]), ref)
@@ -1453,7 +1453,7 @@ def region_tables(rows, families, stages, cluster):
 
 def filter_floor(rows, chars_key="chars"):
     """Audit F4: the reference characters on lines with no Japanese character, which Rubi's non-Japanese line filter
-    deletes however well they are read; an upper bound on a region or page measure (such a line read in one crop
+    deletes when they are read right; an upper bound on a region or page measure (such a line read in one crop
     with another line is kept), exact on fixed lines. Computed from the references alone."""
     chars = sum(r.get("nojp_chars", 0) for r in rows)
     lines = sum(r.get("nojp_lines", 1 if r.get("nojp_chars") else 0) for r in rows)
@@ -1593,7 +1593,7 @@ def build_report(priv, out, suffix):
             "pcsg00807_clean": filter_floor(pfx),
             "pcsg00807_page_base": filter_floor(sub(pu, lambda r: r["kind"] == "page" and r["variant"] == "base")),
             "note": "reference characters on dialogue lines with no hiragana, katakana or CJK character: Rubi's "
-                    "non-Japanese line filter deletes them however they are read (exact on line measures, an upper "
+                    "non-Japanese line filter deletes them when they are read right (exact on line measures, an upper "
                     "bound on region and page measures); the same for both families"}
     vp = Path(out) / "validation.json"
     if vp.exists():
@@ -1741,7 +1741,9 @@ def markdown(rep, proto):
             reads = (rep.get("path_b") or {}).get("reads") or {}
             va = {s: (reads.get(s) or {}).get("vertical_auto") or {} for s in SETS_B}
             md += ["Rubi's ocr_vertical = auto (API 47): regions whose rows look like vertical text are read as "
-                   "columns by VOCR5-V (both families). Regions or pages read as columns: " +
+                   "columns by VOCR5-V (both families). The check runs on the frozen finder's rows for a region at "
+                   "least as tall as wide and on the fixed finder's rows otherwise, as Rubi's recognize does. Regions "
+                   "or pages read as columns: " +
                    ", ".join(f"{s} {v.get('columns', 0)} of {v.get('units', 0)}" for s, v in va.items()) + ".", ""]
     md += ["## Headline", ""]
     b = rep.get("path_b") or {}
@@ -2293,7 +2295,8 @@ def cmd_rubicheck(a):
         pick = sorted(rng.choice(len(counter_units), size=min(a.counter_regions, len(counter_units)),
                                  replace=False).tolist())
         units += [counter_units[i] for i in pick]
-    res = {"regions": 0, "sampled": len(units), "counter_candidates": len(counter_units),
+    res = {"repo_head": git_head(), "vjo_ocr_sha256": sha256(a.vjo_ocr),
+           "regions": 0, "sampled": len(units), "counter_candidates": len(counter_units),
            "tiers": {t: defaultdict(int) for t in TIERS}, "fix": fix, "finder_source": fsrc["tree"],
            "rubi_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=a.rubi, capture_output=True,
                                        text=True).stdout.strip(), "lm": lm_name, "lm_settings": lm_set,
@@ -2356,13 +2359,15 @@ def cmd_rubicheck(a):
 
 # ----------------------------------------------------------------------------- pagecheck (development data only)
 
-def dev_regions(pagepool, per_title, counter_regions, vertical_regions, seed=20261026):
+def dev_regions(pagepool, per_title, counter_regions, vertical_regions, seed=20261026, tall_regions=0):
     """Development regions of the hooked train titles (train and hval pages; never the test split): per title a
-    sample of hval base regions, regions whose verified text holds a counter, and regions drawn around the vertical
-    title's columns (PCSG00653: the union of a page's vertical line boxes plus 12 px)."""
+    sample of hval base regions, regions whose verified text holds a counter, regions drawn around the vertical
+    title's columns (PCSG00653: the union of a page's vertical line boxes plus 12 px), and (tall_regions) those
+    widened to the left toward square, still at least as tall as wide (half and all of the difference): the regions
+    whose auto check Rubi makes on the frozen finder's rows (audit N16, audit-vocr6-final-test's probe)."""
     pagepool = Path(pagepool)
     counter_re = re.compile("[〇一二三四五六七八九十百千万0-9０-９何数幾][ヶヵケカッ箇][月年所国条]")
-    sample, counters, verticals = [], [], []
+    sample, counters, verticals, talls = [], [], [], []
     for f in sorted(pagepool.glob("*.jsonl")):
         rows = [r for r in read_jsonl(f) if r["split"] in ("train", "hval") and not r.get("untrusted")]
         hv = [r for r in rows if r["split"] == "hval" and r.get("regions")]
@@ -2383,9 +2388,12 @@ def dev_regions(pagepool, per_title, counter_regions, vertical_regions, seed=202
                 x1 = min(W, max(b[0] + b[2] for b in v) + 12)
                 y1 = min(H, max(b[1] + b[3] for b in v) + 12)
                 verticals.append((r, [x0, y0, x1, y1], "vertical"))
+                extra = max(0, (y1 - y0) - (x1 - x0))
+                for frac in (0.5, 1.0):
+                    talls.append((r, [max(0, x0 - int(extra * frac)), y0, x1, y1], "tall"))
     rng = np.random.default_rng(seed)
     pick = lambda xs, k: [xs[i] for i in sorted(rng.choice(len(xs), size=min(k, len(xs)), replace=False))]  # noqa
-    return sample + pick(counters, counter_regions) + pick(verticals, vertical_regions)
+    return sample + pick(counters, counter_regions) + pick(verticals, vertical_regions) + pick(talls, tall_regions)
 
 
 def cmd_pagecheck(a):
@@ -2428,7 +2436,8 @@ def cmd_pagecheck(a):
         rt = Vocr(str(md / f), mode="w8i", max_width=1024, head_gate="on" if gate else "off",
                   two_level=1 if two else 0)
         rts[t] = (rt, VocrLM(rt, str(lm), **lm_set), two)
-    regions = dev_regions(s["pagepool_dir"], a.per_title, a.counter_regions, a.vertical_regions)
+    regions = dev_regions(s["pagepool_dir"], a.per_title, a.counter_regions, a.vertical_regions,
+                          tall_regions=a.tall_regions)
     imgs, rgbas, metas = [], [], []
     for r, reg, kind in regions:
         bgr = cv2.imread(str(Path(s["pages_dir"]) / r["image"]), cv2.IMREAD_COLOR)
@@ -2442,8 +2451,9 @@ def cmd_pagecheck(a):
                                      np.full((g.shape[0], g.shape[1], 1), 255, np.uint8)], axis=2))
         metas.append((r["title_id"], r["page"], r["platform"], kind))
     mine = job_crops(rp, imgs, [m[2] for m in metas])
-    res = {"regions": len(imgs), "kinds": {k: sum(1 for m in metas if m[3] == k) for k in ("horizontal", "counter",
-                                                                                         "vertical")},
+    res = {"repo_head": git_head(), "page_ocr_sha256": sha256(a.page_ocr),
+           "regions": len(imgs), "kinds": {k: sum(1 for m in metas if m[3] == k) for k in ("horizontal", "counter",
+                                                                                         "vertical", "tall")},
            "fix": fix, "finder_source": fsrc["tree"], "vertical_check": rp["vertical_check"],
            "rubi_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=a.rubi, capture_output=True,
                                        text=True).stdout.strip(), "lm": lm_name, "lm_settings": lm_set,
@@ -2573,6 +2583,7 @@ def main(argv=None):
     p.add_argument("--per-title", type=int, default=4)
     p.add_argument("--counter-regions", type=int, default=60)
     p.add_argument("--vertical-regions", type=int, default=60)
+    p.add_argument("--tall-regions", type=int, default=80)
     p.add_argument("--out", required=True)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)

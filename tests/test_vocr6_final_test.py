@@ -251,6 +251,60 @@ def test_filter_floor():
     assert F.filter_floor([])["points"] is None
 
 
+def test_rows_vertical_matches_rubis_rule_cases():
+    """Rubi host/tests/test_vocr_vertical.c test_rows_vertical_rule's cases, on the port."""
+    two = [(12, 11, 59, 28), (14, 36, 57, 26), (12, 59, 59, 28), (13, 83, 58, 27), (12, 130, 59, 27),
+           (12, 154, 59, 27), (14, 179, 57, 25), (44, 201, 26, 18)]
+    three = [(12, 12, 89, 27), (12, 36, 90, 27), (12, 59, 90, 27), (15, 83, 87, 27), (16, 106, 86, 28),
+             (12, 131, 91, 24), (12, 154, 89, 27), (45, 202, 57, 25)]
+    psp = [(10, 8, 306, 38), (11, 44, 309, 48)]
+    vita = [(30, 13, 510, 34), (12, 48, 279, 34)]
+    one = [(14, 8, 831, 46)]
+    screen = [(196, 0, 764, 34), (196, 28, 764, 25), (196, 48, 220, 20), (196, 87, 475, 28), (0, 358, 960, 74),
+              (251, 426, 164, 28)]
+    rv = F.rows_vertical
+    assert rv(two, 83, 287) and rv(three, 114, 358) and rv(two, 300, 287) and rv(three, 300, 358)
+    assert not rv(two[:4], 300, 287) and rv(two[:2], 83, 287) and not rv(two[:1], 83, 287)
+    assert not rv(psp, 358, 94) and not rv(vita, 552, 95) and not rv(one, 880, 62) and not rv(screen, 960, 544)
+    assert not rv(psp, 94, 358) and not rv([], 83, 287)
+    edge = [(0, 0, 40, 10), (0, 10, 40, 10), (0, 20, 40, 10), (0, 30, 41, 10), (0, 40, 41, 10)]
+    assert rv(edge, 100, 100) and not rv(edge, 101, 100)
+    fewer = [(0, 0, 40, 10), (0, 10, 40, 10), (0, 20, 41, 10), (0, 30, 41, 10), (0, 40, 41, 10)]
+    assert not rv(fewer, 100, 100)
+    b = [[0, 10 * i, 35, 10] for i in range(10)]
+    assert rv([tuple(x) for x in b], 500, 100)
+    for i in range(3):
+        b[i][2] = 36
+    assert rv([tuple(x) for x in b], 500, 100)
+    b[3][2] = 36
+    assert not rv([tuple(x) for x in b], 500, 100)
+    b = [[0, 10 * i, 30, 10] for i in range(10)]
+    for i in range(3):
+        b[i][0] = 300
+    assert rv([tuple(x) for x in b], 500, 100)
+    b[3][0] = 300
+    assert not rv([tuple(x) for x in b], 500, 100)
+    b = [[0, 10 * i, 30, 10] for i in range(10)]
+    for i in (9, 8, 7, 6):
+        b[i][0] = 7
+    assert not rv([tuple(x) for x in b], 500, 100)
+    for i in (9, 8, 7, 6):
+        b[i][0] = 6
+    assert rv([tuple(x) for x in b], 500, 100)
+    assert not rv([(0, 0, 10, 10)] * 17, 100, 300)          # more than 16 rows: Rubi's guard
+
+
+def test_stage_texts_columns():
+    """A crop of a region auto read as columns shows the vertical model's reading, at every tier, never cascaded."""
+    def crop(g, b, conf):
+        return {"g": g, "b": b, "conf": conf, "reread": 0}
+    dumps = {("VOCR6", "N"): {"crops": [crop("ab", "AB", 600), None]},
+             ("VOCR6", "L"): {"crops": [crop("ab", "AX", 950), None]},
+             ("V", "V"): {"crops": [None, crop("cd", "CD", 300)]}}
+    st = F.stage_texts(dumps, "VOCR6", "N", 700, lambda t: list(t), columns=[1])
+    assert st["rubi_cascade"] == ["AX", "CD"] and st["greedy"] == ["ab", "cd"] and st["rubi_tier"] == ["AB", "CD"]
+
+
 def test_vocr_pins_and_defines():
     cmake = ("set(VJO_VOCR_COMMIT " + "a" * 40 + ")\nset(_vocr_pins\n  vocr.c " + "b" * 64 + "\n  vocr_lines_fix.c "
              + "c" * 64 + ")\n")

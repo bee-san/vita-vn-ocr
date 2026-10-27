@@ -63,6 +63,9 @@ FINDER_RECOVERY = 3                       # vocr_lines.h VOCR_LINES_TEXTBOX_RECO
 REFINE_ALL = 0x1F                         # VOCR_REFINE_ALL (ocr_refine_lines = psp: PSP titles only)
 REPS, SEED, MIN_CLUSTERS = 10000, 0, 5
 KANA_COUNTER = re.compile("[カケ][月所年国条]")    # Rubi core/vocr_ocr.c kana_counter
+COLUMN_FLAGS = 3                          # Rubi VJO_VOCR_COLUMN_FLAGS: VOCR_COLUMNS_VALLEYS | VOCR_COLUMNS_NO_DARK
+ROTATE_BYTES = 56 * 1024                  # Rubi VJO_VOCR_ROTATE_BYTES (= VJO_VOCR_STRIP_BYTES)
+MAX_LINES = 16                            # Rubi VJO_VOCR_MAX_LINES
 FORBIDDEN = {"text", "texts", "pred", "preds", "predictions", "ref", "reference_text", "lens", "readings", "g",
              "b", "used_g"}
 
@@ -229,6 +232,45 @@ def has_japanese(t):
     return any(0x3040 <= ord(c) <= 0x309F or 0x30A0 <= ord(c) <= 0x30FF or 0x4E00 <= ord(c) <= 0x9FAF for c in t)
 
 
+def rows_vertical(lines, w, h):
+    """Rubi core/vocr_ocr.c vjo_vocr_rows_vertical (API 47, ocr_vertical = auto): whether the row finder's lines
+    [(x, y, w, h)] on a w x h region look like vertical text read as rows (integer arithmetic, as the C)."""
+    n = len(lines)
+    if not n or n > MAX_LINES:
+        return False
+    narrow = sum(1 for (_, _, lw, lh) in lines if lw <= 4 * lh)
+    small = [(x, x + lw) for (x, _, lw, lh) in lines if 2 * lw <= 7 * lh]
+    if h >= w and n >= 2 and 10 * narrow >= 6 * n:
+        return True
+    if n < 5 or 10 * len(small) < 7 * n:
+        return False
+    m0 = sorted(a for a, _ in small)[len(small) // 2]
+    m1 = sorted(b for _, b in small)[len(small) // 2]
+    inside = 0
+    for (x, _, lw, lh) in lines:
+        a, b = max(x, m0), min(x + lw, m1)
+        inside += bool(2 * lw <= 7 * lh and b > a and 5 * (b - a) >= 4 * lw)
+    return 10 * inside >= 7 * n
+
+
+def region_columns(grey):
+    """A job of columns on a grey region (Rubi recognize with the vertical model): vita-vn-ocr's column finder with
+    Rubi's flags (synth/vertical_twin.find_columns, the bit-exact twin of runtime/vocr_vertical.c), right to left;
+    a column over ROTATE_BYTES left out; each column's dark flag from its own pixels (vocr_line_dark) and its crop
+    turned 90 degrees anticlockwise (vocr_column_rotate). -> ([(box, dark, rotated crop)], skipped)."""
+    import vertical_twin as VT
+    from common import line_dark
+    boxes, _, _ = VT.find_columns(grey, COLUMN_FLAGS)
+    out, skipped = [], 0
+    for (x, y, w, h) in boxes:
+        if w * h > ROTATE_BYTES:
+            skipped += 1
+            continue
+        out.append(((x, y, w, h), int(line_dark(grey, (x, y, w, h))),
+                    np.ascontiguousarray(np.rot90(grey[y:y + h, x:x + w], 1))))
+    return out, skipped
+
+
 def blob_heads(path, lib=None):
     """(head gate present, two-level head present) of a blob, as the C runtime sees it."""
     import ctypes as C
@@ -359,7 +401,8 @@ def rubi_functions(rubi):
     src = (rubi / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
     out = {}
     for n in ("line_conf", "counter_redecode", "reread_ungated", "read_full", "kana_counter", "read_again",
-              "finish_line", "probe_short_lines", "probe_contrast", "recognize"):
+              "finish_line", "probe_short_lines", "probe_contrast", "recognize", "vjo_vocr_rows_vertical",
+              "median_of"):
         f = c_function(src, n)
         out[n] = hashlib.sha256(f.encode()).hexdigest() if f else None
     f = c_function((rubi / "game_ocr" / "main.c").read_text(encoding="utf-8"), "request_policy")
@@ -401,6 +444,10 @@ def rubi_job_defaults(rubi):
     lf = c_define(cfh, "VJO_LINE_FIX_DEFAULT")
     mapped = "VJO_GAME_OCR_S_LINE_FIX ? (unsigned)VOCR_FIX_DEFAULT" in gm
     out["line_fix_default"] = (lf, lf is None or (lf == 1 and mapped))
+    # API 47 (amendment 6): ocr_vertical's default; absent (before API 47) or off: rows only; auto: the check
+    m = re.search(r"#define VJO_VERTICAL_DEFAULT (\w+)", cfh)
+    vd = m.group(1) if m else None
+    out["ocr_vertical"] = (vd, vd in (None, "VJO_VERTICAL_OFF", "VJO_VERTICAL_AUTO"))
     return out
 
 
@@ -529,6 +576,21 @@ def cmd_rubi_path(a):
     jd = rubi_job_defaults(rubi)
     doc["job_defaults"] = {k: {"value": v, "ok": ok} for k, (v, ok) in jd.items()}
     doc["finder"]["rubi_ships_fix"] = jd["line_fix_default"][0] == 1 and "vocr_lines_fix.c" in pins
+    # API 47 (amendment 6): auto reads a region whose rows look vertical as columns with Rubi's vertical model, which
+    # must be the protocol's VOCR5-V; the column finder's files must be the checkout's (its twin's)
+    doc["vertical_check"] = jd["ocr_vertical"][0] == "VJO_VERTICAL_AUTO"
+    if doc["vertical_check"]:
+        mv = re.search(r"\{VJO_VOCR5_V_NAME, \w+,\s*\{([^}]*)\}", src)
+        vsha = bytes(int(x, 16) for x in re.findall(r"0x([0-9a-fA-F]{2})", mv.group(1))).hex() if mv else None
+        doc["vertical_model"] = {"sha256": vsha, "equal_to_protocol": vsha == proto["models"]["VOCR5"]["vertical"]
+                                 ["sha256"]}
+        for f in ("vocr_vertical.c", "vocr_vertical.h"):
+            if f in pins and pins[f] != sha256(ROOT / "runtime" / f):
+                raise SystemExit(f"Rubi pins {f} {pins[f][:16]}..., this checkout holds another")
+        if not doc["vertical_model"]["equal_to_protocol"] or \
+                c_define(src, "VJO_VOCR_COLUMN_FLAGS") not in (None, COLUMN_FLAGS) or \
+                "#define VJO_VOCR_COLUMN_FLAGS (VOCR_COLUMNS_VALLEYS | VOCR_COLUMNS_NO_DARK)" not in src:
+            raise SystemExit("Rubi's vertical model or column flags differ from what path (b) models")
     bad = sorted(k for k, (v, ok) in jd.items() if not ok)
     if bad:
         raise SystemExit(f"Rubi's job defaults {bad} differ from what path (b) assumes: review and amend")
@@ -561,10 +623,11 @@ def load_rubi_path(path):
 
 # ----------------------------------------------------------------------------- the finder on regions
 
-def find_boxes(exe, imgs, platforms, fix, probe=1):
-    """Rubi's line path on grey regions (pagepath_find): [(boxes [(x, y, w, h)], dark flags, rc)]."""
+def find_boxes(exe, imgs, platforms, fix, probe=1, refine=None):
+    """Rubi's line path on grey regions (pagepath_find): [(boxes [(x, y, w, h)], dark flags, rc)]. refine None: the
+    refinement on PSP titles (ocr_refine_lines = psp); else these flags everywhere (0: the finder's rows alone)."""
     import pagepath as PP
-    jobs = [(img, FINDER_RECOVERY, fix, probe, REFINE_ALL if plat == "psp" else 0)
+    jobs = [(img, FINDER_RECOVERY, fix, probe, (REFINE_ALL if plat == "psp" else 0) if refine is None else refine)
             for img, plat in zip(imgs, platforms)]
     out = []
     for i in range(0, len(jobs), 256):
@@ -572,6 +635,28 @@ def find_boxes(exe, imgs, platforms, fix, probe=1):
             # a finder error is Rubi's job failing on the region (VJO_E_OCR_REGION): no line, no text; counted
             out.append(([tuple(b[:4]) for b in bx] if rc == 0 else [], [int(b[4]) for b in bx] if rc == 0 else [],
                         {"found": found, "probed": probed, "rc": rc}))
+    return out
+
+
+def job_crops(rp, imgs, platforms):
+    """Each region as Rubi's job of rows reads it, with API 47's auto check when Rubi's default is auto
+    (rp["vertical_check"]): the finder's rows (no probe, no refinement) checked by rows_vertical; a region they call
+    vertical is read as columns (region_columns, by the vertical model), any other through the line path (find_boxes).
+    -> [(boxes, dark, finder info, [(crop, invert)], columns flag)]."""
+    found = find_boxes(rp["finder"]["driver"], imgs, platforms, rp["finder"]["fix"])
+    rows = (find_boxes(rp["finder"]["driver"], imgs, platforms, rp["finder"]["fix"], probe=0, refine=0)
+            if rp.get("vertical_check") else [None] * len(imgs))
+    out = []
+    for img, (boxes, dark, st), raw in zip(imgs, found, rows):
+        if raw is not None and raw[2].get("rc") == 0 and rows_vertical(raw[0], img.shape[1], img.shape[0]):
+            cols, skipped = region_columns(img)
+            st = dict(st, vertical=True, rotate_skipped=skipped)
+            out.append(([list(b) for b, _, _ in cols], [d for _, d, _ in cols], st, [(c, d) for _, d, c in cols],
+                        True))
+            continue
+        out.append(([list(b) for b in boxes], list(dark), st,
+                    [(np.ascontiguousarray(img[y:y + h, x:x + w]), d) for (x, y, w, h), d in zip(boxes, dark)],
+                    False))
     return out
 
 
@@ -599,9 +684,18 @@ class Plan:
         self.doc = {"kind": "vocr6-final-test-plan", "set": name, "view": "console", "built": now(), "crops": [],
                     "fixed": [], "units": [], "inputs": {}}
 
-    def crop(self, img, inv):
+    def crop(self, img, inv, column=False):
         self.doc["crops"].append((np.ascontiguousarray(img, np.uint8), bool(inv)))
+        if column:
+            self.doc.setdefault("column_crops", []).append(len(self.doc["crops"]) - 1)
         return len(self.doc["crops"]) - 1
+
+    def add_units(self, infos, imgs, rp):
+        """Region or page units through job_crops; units read as columns are marked and their crops listed."""
+        for info, (boxes, dark, st, crops, cols) in zip(infos, job_crops(rp, imgs, [i["platform"] for i in infos])):
+            info.update(boxes=boxes, dark=dark, finder=st, columns=cols,
+                        crops=[self.crop(c, d, cols) for c, d in crops])
+            self.doc["units"].append(info)
 
 
 def plan_tests(name, rp, plan, data, rows=None, platform=None, image_of=None):
@@ -660,11 +754,7 @@ def plan_tests(name, rp, plan, data, rows=None, platform=None, image_of=None):
             infos.append({"uid": f"{name}|{img_sha[:16]}@{','.join(map(str, region))}|{variant}", "kind": "region",
                           "vn": rs[0]["vn"], "title": rs[0].get("title"), "platform": platform, "image": img_sha,
                           "variant": variant, "lines": lines})
-    found = find_boxes(rp["finder"]["driver"], imgs, [i["platform"] for i in infos], rp["finder"]["fix"])
-    for img, info, (boxes, dark, st) in zip(imgs, infos, found):
-        info.update(boxes=[list(b) for b in boxes], dark=dark, finder=st,
-                    crops=[plan.crop(img[y:y + h, x:x + w], d) for (x, y, w, h), d in zip(boxes, dark)])
-        plan.doc["units"].append(info)
+    plan.add_units(infos, imgs, rp)
     plan.doc["inputs"] = {"manifest": "stand-in" if stand_in else f"eval/manifests/{name}.jsonl",
                           "manifest_sha256": None if stand_in else sha256(sets.MANIFESTS / f"{name}.jsonl"),
                           "screenshots": len(frames), "regions_excluded_uncertain": excluded}
@@ -724,11 +814,7 @@ def plan_clannad(rp, plan, work):
         infos.append({"uid": f"clannad|{page}", "kind": "page", "vn": "v4", "page": page, "platform": "vita",
                       "variant": "base", "lines": [{"id": r["id"], "text": x["text"] if x["status"] == "ref" else "",
                                                     "styles": ["name"] if x.get("name") else []} for r, x in order]})
-    found = find_boxes(rp["finder"]["driver"], imgs, ["vita"] * len(imgs), rp["finder"]["fix"])
-    for img, info, (boxes, dark, st) in zip(imgs, infos, found):
-        info.update(boxes=[list(b) for b in boxes], dark=dark, finder=st,
-                    crops=[plan.crop(img[y:y + h, x:x + w], d) for (x, y, w, h), d in zip(boxes, dark)])
-        plan.doc["units"].append(info)
+    plan.add_units(infos, imgs, rp)
     plan.doc["inputs"] = {"refs_sha256": freeze["refs_sha256"], "lines_sha256": meta["lines_sha256"],
                           "pages": len(by_page), "pages_scored": len(infos), "pages_skipped": dict(skipped)}
 
@@ -759,15 +845,14 @@ def plan_pcsg(rp, plan, pools, pagepool, pages, title="PCSG00807", split="test",
         pts = PP.ink_points(img, cells, rboxes)
         imgs.append(img)
         infos.append((u, s, o, pts))
-    found = find_boxes(rp["finder"]["driver"], imgs, [u["platform"] for u, _, _, _ in infos], rp["finder"]["fix"])
+    found = job_crops(rp, imgs, [u["platform"] for u, _, _, _ in infos])
     from common import line_dark
-    for img, (u, s, o, pts), (boxes, dark, st) in zip(imgs, infos, found):
+    for img, (u, s, o, pts), (boxes, dark, st, crops, cols) in zip(imgs, infos, found):
         base = {"cluster": u["cluster"], "vn": vn, "page": u["page"], "platform": u["platform"],
                 "variant": u["variant"], "lines": [{"id": ln["id"], "text": ln["text"], "styles": []}
                                                    for ln in u["lines"]], "points": pts}
-        plan.doc["units"].append(dict(base, uid=u["uid"], kind="page", boxes=[list(b) for b in boxes], dark=dark,
-                                      finder=st, crops=[plan.crop(img[y:y + h, x:x + w], d)
-                                                        for (x, y, w, h), d in zip(boxes, dark)]))
+        plan.doc["units"].append(dict(base, uid=u["uid"], kind="page", boxes=boxes, dark=dark, finder=st,
+                                      columns=cols, crops=[plan.crop(c, d, cols) for c, d in crops]))
         ob = PP.oracle_boxes(u, s, o)
         od = [line_dark(img, b) for b in ob]
         plan.doc["units"].append(dict(base, uid=u["uid"] + "|oracle", kind="oracle", boxes=[list(b) for b in ob],
@@ -837,8 +922,11 @@ def cmd_read(a):
     if sha256(lm) != rp["lm"]["sha256"]:
         raise SystemExit("the LM differs from rubi-path's")
     gate, two = blob_heads(a.blob)
-    jobs = [(i, img, inv) for i, (img, inv) in enumerate(plan["crops"])]
-    res = [None] * len(jobs)
+    only = getattr(a, "only", "rows")
+    cols = set(plan.get("column_crops") or [])
+    jobs = [(i, img, inv) for i, (img, inv) in enumerate(plan["crops"])
+            if only == "all" or (only == "columns") == (i in cols)]
+    res = [None] * len(plan["crops"])
     t0 = time.time()
     with get_context("fork").Pool(a.workers, initializer=_init,
                                   initargs=(str(a.blob), lm, settings, rp["counter"])) as pool:
@@ -848,10 +936,11 @@ def cmd_read(a):
            "blob_sha256": sha256(a.blob), "head_gate": gate, "two_level": two, "lm_sha256": rp["lm"]["sha256"],
            "lm_settings": settings, "counter": rp["counter"],
            "library_sha256": sha256(ROOT / "runtime/build/libvocr.so"),
-           "repo_head": git_head(), "crops": res, "seconds": round(time.time() - t0, 1), "at": now()}
+           "repo_head": git_head(), "crops": res, "only": only, "seconds": round(time.time() - t0, 1), "at": now()}
     write_pickle(out, doc)
-    print(json.dumps({"crops": len(res), "head_gate": gate, "two_level": two, "rereads": sum(r["reread"] for r in res),
-                      "errors": sum(1 for r in res if r.get("error")), "seconds": doc["seconds"]}))
+    print(json.dumps({"crops": len(jobs), "head_gate": gate, "two_level": two,
+                      "rereads": sum(r["reread"] for r in res if r),
+                      "errors": sum(1 for r in res if r and r.get("error")), "seconds": doc["seconds"]}))
 
 
 # ----------------------------------------------------------------------------- score (path b)
@@ -867,21 +956,38 @@ class Norm:
         return PP.textnorm(self.exe, list(texts))
 
 
-def stage_texts(dumps, family, tier, casc_conf, cnorm):
+def stage_texts(dumps, family, tier, casc_conf, cnorm, columns=()):
     """{stage: [text per crop]} of one family's tier: greedy, rubi_tier, rubi_cascade, shipped; and the crops whose
-    read failed (the job tier's, or the cascade tier's for a crop it reads again)."""
+    read failed (the job tier's, or the cascade tier's for a crop it reads again). columns: the crops of regions
+    auto read as columns, which the vertical model reads (dumps[("V", "V")]) for every family and tier, with no
+    cascade (a job of columns has none)."""
     own = dumps[(family, tier)]["crops"]
     nt = NEXT[tier]
     up = dumps[(family, nt)]["crops"] if nt else None
-    g = [c["g"] for c in own]
-    rt = [c["b"] if c["g"] else "" for c in own]
-    # a cascade read that failed leaves the job tier's reading (finish_line: the primary's reading stays; Rubi then
-    # turns the cascade off for the rest of that job, which is not modelled: it never happened in any read so far)
-    rc = [compose(c, up[i] if up and not up[i].get("error") else None, casc_conf) for i, c in enumerate(own)]
+    cols = set(columns)
+    vert = dumps[("V", "V")]["crops"] if cols else None
+    g, rt, rc, failed, casc_failed = [], [], [], set(), 0
+    for i, c in enumerate(own):
+        if i in cols:
+            v = vert[i]
+            t = v["b"] if v["g"] else ""
+            g.append(v["g"])
+            rt.append(t)
+            rc.append(t)
+            if v.get("error"):
+                failed.add(i)
+            continue
+        g.append(c["g"])
+        rt.append(c["b"] if c["g"] else "")
+        # a cascade read that failed leaves the job tier's reading (finish_line: the primary's reading stays; Rubi then
+        # turns the cascade off for the rest of that job, which is not modelled: it never happened in any read so far)
+        u = up[i] if up is not None and not up[i].get("error") else None
+        rc.append(compose(c, u, casc_conf))
+        if c.get("error"):
+            failed.add(i)
+        if up is not None and c["g"] and c["conf"] < casc_conf and up[i].get("error"):
+            casc_failed += 1
     sh = [t if has_japanese(t) else "" for t in cnorm(rc)]
-    failed = {i for i, c in enumerate(own) if c.get("error")}
-    casc_failed = sum(1 for i, c in enumerate(own) if up is not None and c["g"] and c["conf"] < casc_conf and
-                      up[i].get("error"))
     return {"greedy": g, "rubi_tier": rt, "rubi_cascade": rc, "shipped": sh, "failed": failed,
             "cascade_failed": casc_failed}
 
@@ -911,11 +1017,14 @@ def cmd_score_b(a):
         if d["plan_sha256"] != psha:
             raise SystemExit(f"{path} was read from another plan")
         dumps[(fam, tier)] = d
-    fams = sorted({f for f, _ in dumps})
+    fams = sorted({f for f, _ in dumps if f != "V"})
+    cols = plan.get("column_crops") or []
+    if cols and ("V", "V") not in dumps:
+        raise SystemExit("the plan holds regions auto read as columns: the vertical model's dump (V:V=) is needed")
     cnorm = Norm(rp["textnorm"]["exe"])
     import pagepath as PP
     rows = {"fixed": [], "units": []}
-    texts = {(f, t): stage_texts(dumps, f, t, rp["cascade_conf"], cnorm) for f in fams for t in TIERS}
+    texts = {(f, t): stage_texts(dumps, f, t, rp["cascade_conf"], cnorm, cols) for f in fams for t in TIERS}
     for fx in plan["fixed"]:
         ref = norm(fx["text"])
         r = {k: fx.get(k) for k in ("id", "vn", "title", "page", "platform", "image", "name", "styles")}
@@ -929,6 +1038,7 @@ def cmd_score_b(a):
         rows["fixed"].append(r)
     for u in plan["units"]:
         r = {k: u.get(k) for k in ("uid", "kind", "vn", "title", "page", "platform", "image", "variant", "cluster")}
+        r["columns"] = bool(u.get("columns"))
         r["lines"] = len(u["lines"])
         r["boxes"] = len(u["crops"])
         nojp = [len(norm(ln["text"])) for ln in u["lines"] if "name" not in (ln.get("styles") or []) and
@@ -951,11 +1061,19 @@ def cmd_score_b(a):
            "dumps": {f"{f}:{t}": {k: d[k] for k in ("blob_sha256", "head_gate", "two_level", "lm_sha256",
                                                      "lm_settings", "library_sha256", "seconds")}
                      for (f, t), d in dumps.items()},
-           "rereads": {f"{f}:{t}": sum(c["reread"] for c in d["crops"]) for (f, t), d in dumps.items()},
-           "read_errors": {f"{f}:{t}": sum(1 for c in d["crops"] if c.get("error")) for (f, t), d in dumps.items()},
+           "rereads": {f"{f}:{t}": sum(c["reread"] for c in d["crops"] if c) for (f, t), d in dumps.items()},
+           "read_errors": {f"{f}:{t}": sum(1 for c in d["crops"] if c and c.get("error"))
+                           for (f, t), d in dumps.items()},
+           "vertical_auto": {"units": sum(1 for u in plan["units"] if u["kind"] != "oracle"),
+                             "columns": sum(1 for u in plan["units"] if u.get("columns")),
+                             "column_crops": len(cols),
+                             "rotate_skipped": sum((u.get("finder") or {}).get("rotate_skipped", 0)
+                                                   for u in plan["units"]),
+                             "check": bool(rp.get("vertical_check"))},
            "cascade_read_errors": {f"{f}:{t}": texts[(f, t)]["cascade_failed"] for f in fams for t in TIERS},
            "finder_errors": sum(1 for u in plan["units"] if (u.get("finder") or {}).get("rc")),
-           "cascaded": {f"{f}:{t}": sum(1 for c in dumps[(f, t)]["crops"] if c["g"] and c["conf"] < rp["cascade_conf"])
+           "cascaded": {f"{f}:{t}": sum(1 for i, c in enumerate(dumps[(f, t)]["crops"])
+                                        if c and i not in set(cols) and c["g"] and c["conf"] < rp["cascade_conf"])
                         for f in fams for t in TIERS if NEXT[t]},
            "rubi_path": {k: rp[k] for k in ("rubi_head", "lm", "cascade_conf", "counter")},
            "finder": plan["finder"], "inputs": plan["inputs"], "rows": rows}
@@ -1447,7 +1565,7 @@ def build_report(priv, out, suffix):
                 rep["path_b"]["pcsg00807_page"][f"{kind}|{v}"] = t
         rep["path_b"]["reads"] = {s: {k: b[s].get(k) for k in ("dumps", "rereads", "cascaded", "read_errors",
                                                                "cascade_read_errors", "finder_errors", "finder",
-                                                               "inputs")} for s in SETS_B}
+                                                               "vertical_auto", "inputs")} for s in SETS_B}
         dlg = lambda r: not r.get("name")  # noqa: E731
         rep["path_b"]["filter_floor"] = {
             "clannad_lines": filter_floor(sub(cfx, dlg)),
@@ -1552,7 +1670,7 @@ def floor_line(fl, bound=False):
         return []
     return [f"Line-filter floor: {fl['lines']:,} reference line(s), {fl['chars']:,} characters "
             f"({fl['points']:.2f} points{', an upper bound' if bound else ''}) hold no Japanese character; Rubi's "
-            "non-Japanese line filter deletes them however they are read (both families alike).", ""]
+            "non-Japanese line filter deletes them when they are read right (both families alike).", ""]
 
 
 def md_measure(title, tbl, stage, note="", floor=None, bound=False):
@@ -1603,6 +1721,12 @@ def markdown(rep, proto):
                f"`{rp['finder']['source']['commit'][:7]}`), refinement on PSP, textnorm `"
                f"{rp['textnorm']['textnorm_sha256'][:12]}…`, the non-Japanese line filter; PSP in the 2x console "
                "view.", ""]
+        if rp.get("vertical_check"):
+            reads = (rep.get("path_b") or {}).get("reads") or {}
+            va = {s: (reads.get(s) or {}).get("vertical_auto") or {} for s in SETS_B}
+            md += ["Rubi's ocr_vertical = auto (API 47): regions whose rows look like vertical text are read as "
+                   "columns by VOCR5-V (both families). Regions or pages read as columns: " +
+                   ", ".join(f"{s} {v.get('columns', 0)} of {v.get('units', 0)}" for s, v in va.items()) + ".", ""]
     md += ["## Headline", ""]
     b = rep.get("path_b") or {}
     if b:
@@ -2194,6 +2318,147 @@ def cmd_rubicheck(a):
     print(json.dumps({k: v for k, v in res.items() if k != "differences"}))
 
 
+# ----------------------------------------------------------------------------- pagecheck (development data only)
+
+def dev_regions(pagepool, per_title, counter_regions, vertical_regions, seed=20261026):
+    """Development regions of the hooked train titles (train and hval pages; never the test split): per title a
+    sample of hval base regions, regions whose verified text holds a counter, and regions drawn around the vertical
+    title's columns (PCSG00653: the union of a page's vertical line boxes plus 12 px)."""
+    pagepool = Path(pagepool)
+    counter_re = re.compile("[〇一二三四五六七八九十百千万0-9０-９何数幾][ヶヵケカッ箇][月年所国条]")
+    sample, counters, verticals = [], [], []
+    for f in sorted(pagepool.glob("*.jsonl")):
+        rows = [r for r in read_jsonl(f) if r["split"] in ("train", "hval") and not r.get("untrusted")]
+        hv = [r for r in rows if r["split"] == "hval" and r.get("regions")]
+        rng = np.random.default_rng(int(hashlib.sha256(f"pagecheck:{f.stem}".encode()).hexdigest()[:8], 16))
+        for i in sorted(rng.choice(len(hv), size=min(per_title, len(hv)), replace=False).tolist()) if hv else []:
+            g = [x for x in hv[i]["regions"] if x["variant"] == "base"][0]
+            sample.append((hv[i], g["region"], "horizontal"))
+        for r in rows:
+            texts = {ln["id"]: ln["text"] for ln in r["lines"]}
+            for g in r.get("regions") or []:
+                if g["variant"] == "base" and any(counter_re.search(texts.get(i, "")) for i in g["lines"]):
+                    counters.append((r, g["region"], "counter"))
+            v = [ln["box"] for ln in r["lines"] if ln.get("vertical")]
+            if len(v) >= 2:
+                W, H = r["dims"]
+                x0 = max(0, min(b[0] for b in v) - 12)
+                y0 = max(0, min(b[1] for b in v) - 12)
+                x1 = min(W, max(b[0] + b[2] for b in v) + 12)
+                y1 = min(H, max(b[1] + b[3] for b in v) + 12)
+                verticals.append((r, [x0, y0, x1, y1], "vertical"))
+    rng = np.random.default_rng(seed)
+    pick = lambda xs, k: [xs[i] for i in sorted(rng.choice(len(xs), size=min(k, len(xs)), replace=False))]  # noqa
+    return sample + pick(counters, counter_regions) + pick(verticals, vertical_regions)
+
+
+def cmd_pagecheck(a):
+    """Development data only: path (b) (job_crops, rubi_line, the cascade, textnorm, the line filter; API 47's auto
+    with the column read) against Rubi's own vjo-page-ocr (host/page_ocr.c: the game worker's job on the defaults of
+    config.ini, --vertical auto) built from a Rubi checkout, with the models and LM that checkout pins (VOCR5's gated
+    blobs, its tier-2 LM, VOCR5-V) and its finder (--fix as that checkout runs it). Compared per region and tier:
+    auto's switch, each line's box, dark flag and text, and the text shown."""
+    import cv2
+    from pyvocr import Vocr, VocrLM
+
+    proto = protocol()
+    s = proto["sets"]["pcsg00807"]
+    work = Path(a.work)
+    work.mkdir(parents=True, exist_ok=True)
+    md = Path(a.models)
+    names = {"S": "VOCR5_S_w8g.vocr", "N": "VOCR5_N_w8g2.vocr", "L": "VOCR5_L_w8g2.vocr"}
+    for t in TIERS:
+        if sha256(md / names[t]) != proto["models"]["VOCR5"]["gated"][t]["sha256"]:
+            raise SystemExit(f"{md / names[t]} is not the protocol's gated VOCR5 {t}")
+    if sha256(md / "VOCR5_V_w8.vocr") != proto["models"]["VOCR5"]["vertical"]["sha256"]:
+        raise SystemExit("the vertical model is not the protocol's VOCR5-V")
+    src = (Path(a.rubi) / "core" / "vocr_ocr.c").read_text(encoding="utf-8")
+    lm_sha, lm_set = rubi_lm(src)
+    lm_name = {c["sha256"]: Path(c["file"]).name for c in proto["paths"]["b"]["lm_candidates"].values()}[lm_sha]
+    lm = md / lm_name
+    if sha256(lm) != lm_sha:
+        raise SystemExit(f"{lm} is not the LM Rubi pins")
+    jd = rubi_job_defaults(a.rubi)
+    fsrc = finder_sources(work / "finder_src")
+    exe, _ = build_finder(work / "finder_src", work / "bin")
+    import pagepath as PP
+    norm_exe, _ = PP.rubi_norm_tool(a.rubi, work / "bin")
+    cnorm = Norm(norm_exe)
+    fix = int(a.fix)
+    rp = {"finder": {"driver": str(exe), "fix": fix}, "vertical_check": jd["ocr_vertical"][0] == "VJO_VERTICAL_AUTO"}
+    rts = {}
+    for t, f in list(names.items()) + [("V", "VOCR5_V_w8.vocr")]:
+        gate, two = blob_heads(md / f)
+        rt = Vocr(str(md / f), mode="w8i", max_width=1024, head_gate="on" if gate else "off",
+                  two_level=1 if two else 0)
+        rts[t] = (rt, VocrLM(rt, str(lm), **lm_set), two)
+    regions = dev_regions(s["pagepool_dir"], a.per_title, a.counter_regions, a.vertical_regions)
+    imgs, rgbas, metas = [], [], []
+    for r, reg, kind in regions:
+        bgr = cv2.imread(str(Path(s["pages_dir"]) / r["image"]), cv2.IMREAD_COLOR)
+        rgb2, grey2, sc = console_frame(np.ascontiguousarray(bgr[..., ::-1]), r["platform"])
+        x0, y0, x1, y1 = (v * sc for v in reg)
+        g = np.ascontiguousarray(grey2[y0:y1, x0:x1])
+        if g.shape[1] > 960 or g.shape[0] > 544:
+            continue
+        imgs.append(g)
+        rgbas.append(np.concatenate([np.ascontiguousarray(rgb2[y0:y1, x0:x1]),
+                                     np.full((g.shape[0], g.shape[1], 1), 255, np.uint8)], axis=2))
+        metas.append((r["title_id"], r["page"], r["platform"], kind))
+    mine = job_crops(rp, imgs, [m[2] for m in metas])
+    res = {"regions": len(imgs), "kinds": {k: sum(1 for m in metas if m[3] == k) for k in ("horizontal", "counter",
+                                                                                         "vertical")},
+           "fix": fix, "finder_source": fsrc["tree"], "vertical_check": rp["vertical_check"],
+           "rubi_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=a.rubi, capture_output=True,
+                                       text=True).stdout.strip(), "lm": lm_name, "lm_settings": lm_set,
+           "switched_mine": sum(1 for x in mine if x[4]), "tiers": {}, "differences": []}
+    reads = {}
+    for t in TIERS + ("V",):
+        reads[t] = [[rubi_line(rts[t][0], rts[t][1], c, d, rts[t][2], (6000, 4000)) for c, d in m[3]]
+                    if (m[4] == (t == "V")) or (t != "V" and not m[4]) else None for m in mine]
+    for t in TIERS:
+        jobs = work / f"jobs_{t}.bin"
+        with open(jobs, "wb") as f:
+            for i, (rgba, (tid, page, plat, kind)) in enumerate(zip(rgbas, metas)):
+                f.write(f"r{i}:{tid}:{page} {rgba.shape[1]} {rgba.shape[0]} {1 if plat == 'psp' else 0}\n".encode())
+                f.write(np.ascontiguousarray(rgba).tobytes())
+        tier_no = {"S": 1, "N": 2, "L": 3}[t]
+        with open(jobs, "rb") as fin:
+            out = subprocess.run([str(a.page_ocr), str(md), "--tier", str(tier_no), "--lm", "2", "--cascade", "on",
+                                  "--vertical", "auto"] + (["--line-fix", "on"] if fix else []),
+                                 stdin=fin, capture_output=True, timeout=7200)
+        if out.returncode:
+            raise SystemExit(f"vjo-page-ocr failed: {out.stderr.decode()[:400]}")
+        theirs = [json.loads(x) for x in out.stdout.decode("utf-8").splitlines() if x.strip()]
+        e = defaultdict(int)
+        nt = NEXT[t]
+        for i, (m, th) in enumerate(zip(mine, theirs)):
+            boxes, dark, st, crops, cols = m
+            if cols:
+                comp = [x["b"] if x["g"] else "" for x in reads["V"][i]]
+            else:
+                comp = [compose(x, reads[nt][i][k] if nt else None, 700) for k, x in enumerate(reads[t][i])]
+            shown = [z for z in (q if has_japanese(q) else "" for q in cnorm(comp)) if z]
+            tb = [tuple(x["box"]) for x in th["lines"]]
+            e["regions"] += 1
+            e["switched_equal"] += bool(th["switched"]) == cols
+            same_boxes = tb == [tuple(b) for b in boxes] and [x["dark"] for x in th["lines"]] == list(dark)
+            e["boxes_equal"] += same_boxes
+            e["lines"] += len(boxes)
+            if same_boxes:
+                e["line_text_equal"] += sum(x["text"] == c for x, c in zip(th["lines"], comp))
+            e["shown_equal"] += th["text"] == "\n".join(shown)
+            e["columns"] += cols
+            if not same_boxes or th["text"] != "\n".join(shown) or bool(th["switched"]) != cols:
+                res["differences"].append({"title": metas[i][0], "page": metas[i][1], "kind": metas[i][3],
+                                           "tier": t, "switched": [bool(th["switched"]), cols],
+                                           "boxes_equal": same_boxes, "lines": [len(th["lines"]), len(boxes)]})
+        res["tiers"][t] = dict(e)
+    res["all_equal"] = not res["differences"] and all(v["regions"] == len(imgs) for v in res["tiers"].values())
+    write_json(a.out, res)
+    print(json.dumps({k: v for k, v in res.items() if k != "differences"}))
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -2225,6 +2490,9 @@ def main(argv=None):
     p.add_argument("--blob", required=True)
     p.add_argument("--rubi-path", required=True)
     p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--only", default="rows", choices=("rows", "columns", "all"),
+                   help="rows: every crop but the columns of a region auto read as vertical (a tier's read); columns: "
+                        "those alone (the vertical model's read)")
     p.add_argument("--out", required=True)
     p = sp.add_parser("score-b")
     p.add_argument("--plan", required=True)
@@ -2260,6 +2528,16 @@ def main(argv=None):
     p.add_argument("--per-title", type=int, default=6)
     p.add_argument("--counter-regions", type=int, default=150)
     p.add_argument("--out", required=True)
+    p = sp.add_parser("pagecheck")
+    p.add_argument("--work", required=True)
+    p.add_argument("--rubi", required=True)
+    p.add_argument("--page-ocr", required=True, help="Rubi's host tool vjo-page-ocr (build of the --rubi checkout)")
+    p.add_argument("--models", required=True, help="a directory with the models and LMs that checkout pins")
+    p.add_argument("--fix", default="0", help="the finder fix Rubi's checkout runs (0 until it pins #129's)")
+    p.add_argument("--per-title", type=int, default=4)
+    p.add_argument("--counter-regions", type=int, default=60)
+    p.add_argument("--vertical-regions", type=int, default=60)
+    p.add_argument("--out", required=True)
     p = sp.add_parser("report")
     p.add_argument("--priv", required=True)
     p.add_argument("--suffix", required=True)
@@ -2267,7 +2545,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     {"stage": cmd_stage, "rubi-path": cmd_rubi_path, "pcsg-a": cmd_pcsg_a, "plan": cmd_plan, "read": cmd_read,
      "score-b": cmd_score_b, "validate": cmd_validate, "selftest": cmd_selftest, "dryrun": cmd_dryrun,
-     "rubicheck": cmd_rubicheck, "report": cmd_report}[a.cmd](a)
+     "rubicheck": cmd_rubicheck, "pagecheck": cmd_pagecheck, "report": cmd_report}[a.cmd](a)
 
 
 if __name__ == "__main__":

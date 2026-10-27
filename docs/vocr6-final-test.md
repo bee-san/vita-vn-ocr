@@ -11,8 +11,10 @@ Every number is a host measurement. Nothing ran on a console.
   - 51dd0a6: path (b)'s LM;
   - f289ea5: the check of path (b) against Rubi's own code;
   - 841f293: the CLANNAD glyph-raster disclosure;
-  - amendment 5: audit-vocr6-final-test's fixes (one final read under any OUT name, Rubi's job defaults checked,
-    the line filter's floor beside path (b)'s headline). The hashes are those of the original commits (tag
+  - 8948d52: audit-vocr6-final-test's fixes (one final read under any OUT name, Rubi's job defaults checked,
+    the line filter's floor beside path (b)'s headline);
+  - amendment 6: Rubi #335's vertical text (API 47, `ocr_vertical = auto` by default), modelled and checked
+    against Rubi's own code, and the audit's optional nits. The hashes are those of the original commits (tag
   `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
@@ -36,6 +38,9 @@ Every number is a host measurement. Nothing ran on a console.
   where Rubi does it.
 - Decoding: beam 8 with the shipped 1 MB game-text LM (v0.3.7-lm6.1: alpha 600, beta 2500, BOS).
 - The cascade S -> N -> L under 700, then Rubi's `core/textnorm.c` and the non-Japanese line filter.
+- Rubi's `ocr_vertical = auto` (API 47, Rubi #335). Before a region's rows are read, Rubi checks the finder's rows.
+  A region they call vertical text is read as columns by the vertical model VOCR5-V, for both families (VOCR6 has no
+  vertical model). The report counts such regions per set.
 - `vocr6_final_test.py rubi-path` resolves the Rubi side from a checkout of Rubi main taken at the read. It stops if
   Rubi's defaults leave the protocol.
 
@@ -117,6 +122,13 @@ an incomplete reference are left out.
 filter deletes them however well they are read. The report prints this floor beside every path (b) measure, computed
 from the references alone. It is the same for VOCR5 and VOCR6. On CLANNAD it is 26 of 33,485 dialogue characters; on
 PCSG00807's clean lines 26 of 13,911 (audit-vocr6-final-test's count).
+
+**Against Rubi's whole job** (`vocr6_final_test.py pagecheck`, `eval/vocr6_final_test_pagecheck_20261026.json`).
+Rubi main `b6c715c` added vertical text (#335), which changed `recognize`. Its host tool `vjo-page-ocr` runs the game
+worker's job on the defaults of `config.ini`, with `--vertical auto`, through textnorm and the line filter. It read
+development regions of the train titles: horizontal ones, counter ones, and regions drawn around the columns of the
+vertical title PCSG00653. Path (b)'s model was compared with it at every tier on four things: the switch to columns,
+the boxes, the line texts, and the text shown.
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.

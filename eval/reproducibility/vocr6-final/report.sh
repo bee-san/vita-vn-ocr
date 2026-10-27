@@ -61,6 +61,8 @@ for other in "$HERD"/shared/private/vocr6-final-test/*/attempt.json; do
 done
 if [ -e "$PRIV/attempt.json" ]; then
   [ "${RESUME:-0}" = 1 ] || { echo "$PRIV/attempt.json exists: this read has run (RESUME=1 continues it)"; exit 2; }
+  "$PY" -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('mode') == sys.argv[2] else 1)" \
+    "$PRIV/attempt.json" "$MODE" || { echo "$PRIV/attempt.json is not a $MODE attempt: RESUME continues its own mode"; exit 2; }
   echo "{\"resumed\": \"$(date -u +%FT%TZ)\", \"repo_head\": \"$(git rev-parse HEAD)\"}" >> "$PRIV/resumes.jsonl"
   cp "$PRIV/resumes.jsonl" "$OUT/resumes.jsonl"
   note "resume $MODE at repo $(git rev-parse --short HEAD)"
@@ -103,6 +105,8 @@ def put(src, dst, want):
     got = hashlib.sha256(open(f"{out}/{dst}", "rb").read()).hexdigest()
     if got != want:
         raise SystemExit(f"{src}: sha256 {got[:16]}... is not the pinned {want[:16]}...")
+v = p["models"]["VOCR5"]["vertical"]
+put(v["file"], "VOCR5_V_w8.vocr", v["sha256"])
 for t in "SNL":
     e = p["models"]["VOCR5"]["path_a"][t]
     put(e["file"], f"VOCR5_{t}_w8.vocr", e["sha256"])
@@ -114,6 +118,7 @@ for t in "SNL":
 PY
 [ "$MODE" = final ] && cp "$MODELS/models.json" "$PRIV/models.json" && cp "$MODELS/models.json" "$OUT/models.json"
 (cd "$B" && sha256sum ./*.vocr) > "$OUT/blobs.sha256"
+# the arms of path (a)'s tools: the size models only (the vertical model reads path (b)'s columns)
 ARMS=(); for f in "${FAMS[@]}"; do for t in S N L; do ARMS+=("${f}_$t"); done; done
 
 # ---- path (a) 1: vita-test + psp-test fixed lines and whole dialogue (eval/vocr3_report.py shared, scalar C W8I)
@@ -201,7 +206,11 @@ for s in vita-test psp-test clannad pcsg00807; do
   note "path (b): $s"
   step "b_plan_$s" "$PRIV/b/plan_$s.pkl" timeout 7200 "$PY" "$H" plan --set "$s" --rubi-path "$PRIV/rubi_path.json" \
     --data "$A/eval" --out "$PRIV/b/plan_$s.pkl"
-  DUMPS=()
+  # API 47's auto (Rubi's default since #335): the columns of a region whose rows look vertical, read by the vertical
+  # model (both families: VOCR6 has none); no crop when no region switched
+  step "b_read_${s}_V" "$PRIV/b/dump_${s}_V_V.pkl" timeout 7200 "$PY" "$H" read --plan "$PRIV/b/plan_$s.pkl" \
+    --blob "$B/VOCR5_V_w8.vocr" --only columns --rubi-path "$PRIV/rubi_path.json" --out "$PRIV/b/dump_${s}_V_V.pkl"
+  DUMPS=(--dump "V:V=$PRIV/b/dump_${s}_V_V.pkl")
   for f in "${FAMS[@]}"; do
     for t in S N L; do
       if [ "$f" = VOCR5 ]; then BL=$B/VOCR5g_$t.vocr; else BL=$B/VOCR6_${t}_w8.vocr; fi

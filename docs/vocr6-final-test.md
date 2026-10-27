@@ -266,6 +266,8 @@ Provenance, as audit-vocr6-followup checked it:
 - **After the read** (audit-vocr6-followup n3 and n4), the harness gained guards for a later set: a registered set must
   name its own publish directory, and a fresh read refuses an OUT that exists and is not empty. rubi-path's head and
   record checks moved into tested helpers, unchanged. The read itself ran at `27e0126`.
+- **The SHAs above** (27e0126, cd530d1, 0d3dffe) are the branch's commits before its rebase and squash. The pushed tag
+  `vocr6-followup-read-27e0126` keeps them reachable.
 
 Records:
 - `eval/vocr6_final_test_followup_20261027.json`: every measure;
@@ -290,8 +292,8 @@ What the read shows:
   worse (+0.33 / +0.27, resolved),
   though still better than VOCR5 or level on the pages. The stage table: Large, which has no cascade, loses it in
   the counter + LM stage (greedy pages level with v0.4.0's, 6.07 / 6.10%; after the counter and LM 6.03 / 5.78%).
-  Normal's gap is +0.35 points greedy (8.29 / 7.94%), +0.07 after the counter and LM, +0.24 after the cascade and
-  +0.34 as shown.
+  Normal's gap, from the error counts, is +0.34 points greedy (8.29 / 7.94%), +0.07 after the counter and LM, +0.24
+  after the cascade and +0.33 as shown.
 - **vita-test + psp-test** are level against VOCR5 on path (b) at every tier. vita-test is better (Small −0.25, Normal
   −0.33, resolved); psp-test is not. On path (a) with ctclm.2's LM, psp-test's Normal is resolved worse: +0.26 [+0.04,
   +0.51].

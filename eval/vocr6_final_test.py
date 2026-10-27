@@ -543,6 +543,11 @@ def cmd_rubi_path(a):
         raise SystemExit(f"Rubi's cascade {casc} / counter {counter} differ from the protocol's 700 / (6000, 4000)")
     commit, pins = vocr_pins(cmake)
     fsrc = finder_sources(out.parent / "finder_src")
+    # amendment 7: every runtime file Rubi pins must be this checkout's (path (b) reads with this runtime/)
+    differ = sorted(f for f, h in pins.items() if not (ROOT / "runtime" / f).exists() or
+                    sha256(ROOT / "runtime" / f) != h)
+    if differ:
+        raise SystemExit(f"Rubi pins runtime files {differ} that differ from this checkout's: review and amend")
     rubi_fix = None
     for f in ("vocr_lines_fix.c", "vocr_lines_fix.h"):
         if f in pins and pins[f] != fsrc["files"][f]:
@@ -642,10 +647,21 @@ def job_crops(rp, imgs, platforms):
     """Each region as Rubi's job of rows reads it, with API 47's auto check when Rubi's default is auto
     (rp["vertical_check"]): the finder's rows (no probe, no refinement) checked by rows_vertical; a region they call
     vertical is read as columns (region_columns, by the vertical model), any other through the line path (find_boxes).
+    With a finder fix (Rubi API 50, amendment 7), a region at least as tall as wide is checked on the frozen finder's
+    rows (fix 0), any other on the fixed finder's (core/vocr_ocr.c recognize: frozen_check).
     -> [(boxes, dark, finder info, [(crop, invert)], columns flag)]."""
-    found = find_boxes(rp["finder"]["driver"], imgs, platforms, rp["finder"]["fix"])
-    rows = (find_boxes(rp["finder"]["driver"], imgs, platforms, rp["finder"]["fix"], probe=0, refine=0)
-            if rp.get("vertical_check") else [None] * len(imgs))
+    fix = rp["finder"]["fix"]
+    found = find_boxes(rp["finder"]["driver"], imgs, platforms, fix)
+    rows = [None] * len(imgs)
+    if rp.get("vertical_check"):
+        tall = [i for i, img in enumerate(imgs) if fix and img.shape[0] >= img.shape[1]]
+        wide = [i for i in range(len(imgs)) if i not in set(tall)]
+        for idx, f in ((tall, 0), (wide, fix)):
+            if idx:
+                got = find_boxes(rp["finder"]["driver"], [imgs[i] for i in idx], [platforms[i] for i in idx], f,
+                                 probe=0, refine=0)
+                for i, g in zip(idx, got):
+                    rows[i] = g
     out = []
     for img, (boxes, dark, st), raw in zip(imgs, found, rows):
         if raw is not None and raw[2].get("rc") == 0 and rows_vertical(raw[0], img.shape[1], img.shape[0]):

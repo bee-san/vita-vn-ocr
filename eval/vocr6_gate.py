@@ -80,6 +80,12 @@ CASCADE_CONF = 700
 TOPK = 8
 REREAD_RE = re.compile("[カケ][月所年国条]")        # Rubi core/vocr_ocr.c kana_counter
 
+PLATFORM = {"vita": "vita", "psp": "psp", "hires": "pc"}
+# #109's synthetic counter-context set (eval/kanum_dev.py render; private renders of development pool texts):
+# report only
+COUNTER_SET = (ART / "kanum-fix" / "synth" / "synth.npz",
+               "6abe211482d11d8f17f13535c411b4d2c2cc214657351ed036f57b00663cc5da")
+
 PACK = ART / "ocr-speed-resume" / "packs" / "sub24.bin"
 PACK_SHA = "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7"
 SPEED_ENV = ART / "ocr-speed" / "env.sh"
@@ -600,6 +606,14 @@ class Dev:
             z = np.load(self.pools / f"{stem}.npz")
             names.update({m["id"]: "name" in (m.get("styles") or []) for m in json.loads(str(z["meta"]))})
         self.dn_names = names
+        kinds = {}                       # each fixed row's platform (its meta kind), aligned with load_dev's rows
+        for stem in (TV,) + DN:
+            z = np.load(self.pools / f"{stem}.npz")
+            kinds[stem] = [m.get("kind") for m, lab in zip(json.loads(str(z["meta"])), json.loads(str(z["labels"])))
+                           if lab]
+            if len(kinds[stem]) != len(self.fixed[stem]):
+                raise SystemExit(f"{stem}: the platforms do not align with the rows")
+        self.kinds = kinds
         keys = []
         for stem, rows in self.fixed.items():
             for i in range(len(rows)):
@@ -666,6 +680,36 @@ class Dev:
             raise SystemExit("wd: two units share a key")
         out["wd"] = ([r[1] for r in rows], [r[2] for r in rows], [r[3] for r in rows], [False] * len(rows))
         return out
+
+    def row_platforms(self, exclude):
+        """Each row's platform (vita, psp, pc) of rows()'s components, in rows()'s order."""
+        out = {}
+        for coh, stems in (("tv", (TV,)), ("dn", DN)):
+            pl = []
+            for stem in sorted(stems, key=lambda s: str(self.pools / f"{s}.npz")):
+                for i, r in enumerate(self.fixed[stem]):
+                    if r["vn"] not in exclude:
+                        pl.append(PLATFORM.get(self.kinds[stem][i], str(self.kinds[stem][i])))
+            out[coh] = pl
+        keys = []
+        for coh in WD:
+            for mode in ("grad", "refine"):
+                for case in self.cases[coh]:
+                    if (coh == "dn_dlg" and case["shot"] in self.tv_shots) or case["vn"] in exclude:
+                        continue
+                    keys.append((f"{coh}|{mode}|{case['unit']}|{case['variant']}",
+                                 PLATFORM.get(case.get("kind"), str(case.get("kind")))))
+        keys.sort(key=lambda r: r[0])
+        out["wd"] = [k[1] for k in keys]
+        return out
+
+    def platform_of(self, key):
+        p = key.split("|")
+        if p[0] in WD:
+            k = self.cases[p[0]][int(p[2])].get("kind")
+        else:
+            k = self.kinds[p[0]][int(p[1])]
+        return PLATFORM.get(k, str(k))
 
     def components(self, models):
         """eval/vocr5_select.py Components tv / dn / wd of {model: rows()}."""
@@ -953,9 +997,15 @@ def skip_stats(ctx, reads, today_reads):
         nb = today_reads["best"][today_reads["off"][i]:today_reads["off"][i + 1]] != 0
         vals = (fr, int(reads["gated"][i]), int(reads["escaped"][i]), int((sk & nb).sum()), int(nb.sum()))
         parts = ["all", "wd" if dev.is_wd(k) else "fixed"]
+        plat = dev.platform_of(k)
         if not dev.is_wd(k):
             stem, j = k.split("|")[:2]
-            parts.append("fixed_names" if dev.is_name(stem, dev.fixed[stem][int(j)]) else "fixed_dialogue")
+            nm = dev.is_name(stem, dev.fixed[stem][int(j)])
+            parts.append("fixed_names" if nm else "fixed_dialogue")
+            if not nm:
+                parts.append(f"fixed_dialogue|platform:{plat}")
+        else:
+            parts.append(f"wd|platform:{plat}")
         for g in parts:
             e = groups.setdefault(g, [0, 0, 0, 0, 0])
             for n, v in enumerate(vals):
@@ -974,6 +1024,7 @@ def compare_arms(ctx, tier, x, y):
     tx, _, rx = arm_texts(ctx, tier, x)
     ty, _, ry = arm_texts(ctx, tier, y)
     keep = [i for i, k in enumerate(dev.keys) if dev.vn_of(k) not in ctx.exclude]
+    plats = row_platforms(ctx)
     out = {}
     for d in DECODES + REREAD:
         comps = dev.components({x: model_rows(ctx, tier, x, d), y: model_rows(ctx, tier, y, d)})
@@ -985,8 +1036,48 @@ def compare_arms(ctx, tier, x, y):
                                                  if not dev.is_wd(dev.keys[i])}),
                               "wd_lines": sum(dev.is_wd(dev.keys[i]) for i in diff)},
                   "names_cer_pct": {m: {c: rnd(100 * comps[c].rate([m], "name")) for c in ("tv", "dn")}
-                                    for m in (x, y)}}
+                                    for m in (x, y)},
+                  "platforms": platform_rates(model_rows(ctx, tier, x, d), model_rows(ctx, tier, y, d), plats)}
     return out, (tx, ty, rx, ry)
+
+
+_PLATS = {}
+
+
+def row_platforms(ctx):
+    key = (str(ctx.out), ctx.exclude)
+    if key not in _PLATS:
+        _PLATS[key] = ctx.dev().row_platforms(ctx.exclude)
+    return _PLATS[key]
+
+
+def platform_rates(rows_x, rows_y, plats):
+    """Report only: dialogue CER of x and y per component and platform (no interval)."""
+    out = {}
+    for comp in ("tv", "dn", "wd"):
+        ex, c, _, nm = rows_x[comp]
+        ey = rows_y[comp][0]
+        pl = plats[comp]
+        if len(pl) != len(c):
+            raise SystemExit(f"{comp}: platforms and rows differ in number")
+        for p in sorted(set(pl)):
+            m = [i for i in range(len(c)) if pl[i] == p and not nm[i]]
+            n = sum(c[i] for i in m)
+            out.setdefault(comp, {})[p] = {"rows": len(m), "chars": int(n),
+                                           "cer_x": rnd(100 * sum(ex[i] for i in m) / max(1, n)),
+                                           "cer_y": rnd(100 * sum(ey[i] for i in m) / max(1, n))}
+    return out
+
+
+def lm_candidates(ctx, reads):
+    """Report only (#120's 'lm_candidates'): the LM decoder's candidate rule at Rubi's gate over the read crops:
+    frames, the share of frames with no non-blank candidate, non-blank candidates per frame."""
+    dev = ctx.dev()
+    m = np.asarray([bool(reads["read"][i]) and dev.vn_of(k) not in ctx.exclude for i, k in enumerate(dev.keys)])
+    lmc = np.asarray(reads["lmc"])[m]
+    f = int(lmc[:, 0].sum())
+    return {"frames": f, "blank_only_share": rnd(lmc[:, 1].sum() / max(1, f), 5),
+            "nonblank_candidates_per_frame": rnd(lmc[:, 2].sum() / max(1, f), 4)}
 
 
 def frozen_gate(ctx, tier, arm):
@@ -1002,7 +1093,9 @@ def frozen_gate(ctx, tier, arm):
         res[d]["rule"] = gate_rule(res[d]["compare"], share)
     return {"arm": arm, "blob": str(ctx.blob(tier, arm)), "blob_sha256": sha256(ctx.blob(tier, arm)),
             "cascade": None if nt is None else {"tier": nt, "arm": cascade_arm(arm)}, "decodes": res,
-            "skip": skip_stats(ctx, ry, rx), "estimate": est, "verdict": gate_verdict(rules)}
+            "skip": skip_stats(ctx, ry, rx), "lm_candidates": {"today": lm_candidates(ctx, rx),
+                                                                arm: lm_candidates(ctx, ry)},
+            "estimate": est, "verdict": gate_verdict(rules)}
 
 
 def frozen_two(ctx, tier, arm):
@@ -1034,7 +1127,11 @@ def frozen_two(ctx, tier, arm):
         out["vs"][ref] = res
     today_reads = load_reads(ctx, tier, "today")
     out["escape"] = skip_stats(ctx, rarm, today_reads)
+    vpad = H2._head_record(Path(blob).read_bytes())["cout_pad"]
+    for g in out["escape"].values():            # #122's head rows per frame: level 1 + the fired share of the rest
+        g["head_rows_per_frame"] = rnd(L1 + g["fire_share"] * (vpad - L1), 1)
     out["oracle_share_wd"] = oracle_share(ctx, tier, today_reads, L1)
+    out["lm_candidates"] = {"today": lm_candidates(ctx, today_reads), arm: lm_candidates(ctx, rarm)}
     tm = two_estimate(ctx, tier, arm, out["escape"]["wd"])
     out["estimate"] = tm
     verdict, fails = two_verdict(checks, tm["d_saving_at_least_3pct"], arm_parts(arm)["gate"] is not None,
@@ -1063,6 +1160,119 @@ def shipped_cascade(ctx, tier, arm):
             "scores": {m: rnd(V.score_of(comps, m), 5) for m in rows},
             "cascaded_lines": sum(1 for i in keep if conf[i] < CASCADE_CONF),
             "shipped_vs": {ref: V.compare(comps, [ref], ["shipped"]) for ref in ("today", "frozen")}}
+
+
+_C = {}
+
+
+def _cinit(blob, two, gate):
+    from pyvocr import Vocr, VocrLM
+    kw = {}
+    if two:
+        kw["two_level"] = 1
+    if gate:
+        kw["head_gate"] = "on"
+    rt = Vocr(str(blob), mode="w8i", max_width=1024, **kw)
+    _C.update(rt=rt, lm=VocrLM(rt, str(DEV_LM), **RUBI_LM), two=bool(two), skipping=bool(two or gate))
+
+
+def _cread(i):
+    from metrics import norm
+    from pyvocr import post_counters
+    row = _C["rows"][i]
+    rt, lm = _C["rt"], _C["lm"]
+
+    def rubi_of(o):
+        if not o["text"]:
+            return "", 0
+        o2, st = rt.redecode(o, *COUNTER)
+        return norm(post_counters(lm.decode(o2["topv"], o2["topc"], o2["blank"]), rt.lib)[0]), int(st["contexts"])
+    o = rt.run_topk(row["img"], TOPK)
+    r, contexts = rubi_of(o)
+    rr, again = r, 0
+    if _C["skipping"] and read_again(int(o["gated"]), int(o["escaped"]), int(o["frames"]), contexts, _C["two"],
+                                     o["text"]):
+        rr, again = rubi_of(rt.run_topk(row["img"], TOPK, ungated=True))[0], 1
+    return i, norm(o["text"]), r, rr, again
+
+
+def ensure_counter(ctx, tier, arm):
+    """Report only (development.reported_beside, as #120's counter_check and #122's counter): #109's synthetic
+    counter-context set through one arm in the C runtime (W8I, top-8): greedy, rubi (the frozen decodes' re-decode,
+    LM and counter rule) and rubi with Rubi's re-read without skipping (core/vocr_ocr.c read_again: frames were
+    skipped, and the re-decode found a counter context or, with the two-level head, the reading holds a full-size カ /
+    ケ before a counter character). Its texts are synthetic renders of development pool texts: private."""
+    def run():
+        import multiprocessing as mp
+
+        import kanum_dev as KD
+        if sha256(COUNTER_SET[0]) != COUNTER_SET[1]:
+            raise SystemExit(f"{COUNTER_SET[0]}: not the protocol's counter set")
+        p = arm_parts(arm)
+        _C["rows"] = KD.sy_rows(COUNTER_SET[0])
+        n = len(_C["rows"])
+        res = [None] * n
+        init = (ensure_blob(ctx, tier, arm), p["two"], p["gate"] is not None)
+        with mp.get_context("fork").Pool(ctx.procs, initializer=_cinit, initargs=init) as pool:
+            for r in pool.imap_unordered(_cread, range(n), chunksize=16):
+                res[r[0]] = r
+        d = ctx.pdir(tier, "counter")
+        doc = {"arm": arm, "blob_sha256": sha256(ensure_blob(ctx, tier, arm)), "set_sha256": COUNTER_SET[1],
+               "greedy": [r[1] for r in res], "rubi": [r[2] for r in res], "rubi_reread": [r[3] for r in res],
+               "reread": [r[4] for r in res]}
+        (d / f"{arm}.json").write_text(json.dumps(doc, ensure_ascii=False) + "\n", encoding="utf-8")
+        _C.pop("rows", None)
+        return {"lines": n, "reread_lines": int(sum(r[4] for r in res))}
+    return step(ctx, tier, f"counter_{arm}", run)
+
+
+def counter_report(ctx, tier, arms):
+    """Report only: per arm against today on the counter set: CER, lines changed / worse / better, by cut, and the
+    lines read again (numbers only)."""
+    import kanum_dev as KD
+    from metrics import lev, norm
+    meta = json.loads(str(np.load(COUNTER_SET[0])["meta"]))
+    refs, cuts = [norm(m["text"]) for m in meta], [m["cut"] for m in meta]
+    chars = sum(len(r) for r in refs)
+    ensure_counter(ctx, tier, "today")
+    base = json.loads((ctx.priv / tier / "counter" / "today.json").read_text(encoding="utf-8"))
+    out = {"set_sha256": COUNTER_SET[1], "lines": len(refs), "chars": chars, "arms": {}}
+    for arm in arms:
+        if arm == "today":
+            continue
+        ensure_counter(ctx, tier, arm)
+        a = json.loads((ctx.priv / tier / "counter" / f"{arm}.json").read_text(encoding="utf-8"))
+        rep = {"reread_lines": int(sum(a["reread"]))}
+        for d in ("greedy", "rubi", "rubi_reread"):
+            e0 = [lev(t, r) for t, r in zip(base["rubi" if d == "rubi_reread" else d], refs)]
+            e1 = [lev(t, r) for t, r in zip(a[d], refs)]
+            t0 = base["rubi" if d == "rubi_reread" else d]
+
+            def tally(idx, e0=e0, e1=e1, t0=t0, d=d):
+                n = sum(len(refs[i]) for i in idx)
+                return {"lines": len(idx), "cer_today_pct": rnd(100 * sum(e0[i] for i in idx) / max(1, n)),
+                        "cer_arm_pct": rnd(100 * sum(e1[i] for i in idx) / max(1, n)),
+                        "lines_changed": sum(t0[i] != a[d][i] for i in idx),
+                        "lines_worse": sum(e1[i] > e0[i] for i in idx),
+                        "lines_better": sum(e1[i] < e0[i] for i in idx)}
+            rep[d] = tally(range(len(refs)))
+            rep[d]["by_cut"] = {str(c): tally([i for i in range(len(refs)) if cuts[i] == c]) for c in KD.SY_CUTS}
+        out["arms"][arm] = rep
+    return out
+
+
+def arm_wd_shares(ctx, tier, arm):
+    """An arm's shares on wd's finder-cut lines (skip_stats' wd group): the gate's skip and the escape's fire shares."""
+    ensure_reads(ctx, tier, "today")
+    ensure_reads(ctx, tier, arm)
+    return skip_stats(ctx, load_reads(ctx, tier, arm), load_reads(ctx, tier, "today"))["wd"]
+
+
+def arm_l1(ctx, tier, arm):
+    """The level-1 rows of an arm's two-level head (None without one)."""
+    import head2level as H2
+    tr = H2.read_trailer(Path(ensure_blob(ctx, tier, arm)).read_bytes())
+    return None if tr is None else 8 * tr["l1_blocks"]
 
 
 def oracle_share(ctx, tier, today_reads, L1):
@@ -1516,32 +1726,54 @@ def decide(ctx, tier):
                 break
     released = VOCR5_RELEASED.get(ctx.input(tier)["sha256"])
     if released and released[0] == tier and not ctx.all_vns:
-        # models.vocr5_final: the released VOCR5 blob keeps #120's / #122's verdict and blobs (step 2 reproduces them
-        # byte for byte); the rules above are reported beside it
-        dec["kept_vocr5_verdict"] = {"by_the_rules": {"gate": gate_final, "two_level": two_final},
-                                     "kept": {"gate": released[1], "two_level": released[2]}}
-        gate_final, two_final = released[1], released[2]
+        # models.vocr5_final (amendment 2): the released VOCR5 blob keeps #120's / #122's verdict and its released
+        # gated blob; the rules above are reported beside it, and a kept arm the rules' route did not reach is
+        # scored the same way, as a report
+        kept = {"gate": released[1], "two_level": released[2]}
+        dec["kept_vocr5_verdict"] = {"by_the_rules": {"gate": gate_final, "two_level": two_final}, "kept": kept,
+                                     "kept_arms_report": {}}
+        for part, arm in (("gate", kept["gate"]), ("two_level", kept["two_level"])):
+            if arm and arm not in dec[part]:
+                fr = frozen_gate(ctx, tier, arm) if part == "gate" else frozen_two(ctx, tier, arm)
+                dec["kept_vocr5_verdict"]["kept_arms_report"][arm] = {"frozen": fr, "path": vocr6_path(ctx, tier, arm)}
+        gate_final, two_final = kept["gate"], kept["two_level"]
     fa = final_arm(gate_final, two_final)
     dec.update(gate_final=gate_final, two_final=two_final, final_arm=fa)
     dec["estimate"] = {"today": config_estimate(ctx, tier, "today"), "final": config_estimate(ctx, tier, fa)}
     if fa != "today":
-        sk = (dec["two_level"][two_final]["frozen"]["escape"]["wd"] if two_final else
-              dec["gate"][gate_final]["frozen"]["skip"]["wd"])
-        if two_final:
-            dec["estimate"]["final"]["L1"] = dec["two_level"][two_final]["frozen"]["L1"]
+        sk = arm_wd_shares(ctx, tier, fa)
+        if arm_parts(fa)["two"]:
+            dec["estimate"]["final"]["L1"] = arm_l1(ctx, tier, fa)
+        dec["estimate"]["final"]["dev_wd_shares"] = {k: sk[k] for k in ("gated_share", "fire_share_all_frames",
+                                                                         "fire_share")}
         dec["estimate"]["final"]["effective_macs_per_frame_dev_wd"] = effective_macs(dec["estimate"]["final"], sk)
     if nt and fa != "today":
-        dec["shipped_cascade"] = shipped_cascade(ctx, tier, fa)
+        # report only; a frozen-only run whose next tier was prepared but not decided has none (audit N3)
+        dec["shipped_cascade"] = (shipped_cascade(ctx, tier, fa) if (ctx.out / nt / "decision.json").exists()
+                                  else None)
+    tried = list(dec["gate"]) + list(dec["two_level"]) + list(dec.get("kept_vocr5_verdict", {}).get(
+        "kept_arms_report", {}))
+    dec["counter_check"] = counter_report(ctx, tier, ["today"] + tried)
     fb = ensure_blob(ctx, tier, fa)
     fin = ctx.tdir("final")
-    name = shipping_name(ctx.prefix, tier, fa)
+    if "kept_vocr5_verdict" in dec and fa != "today":
+        # the kept blob is the released asset, byte for byte (step 2 reproduces it), named as released
+        rel, asset = ((REF["two_release"], f"VOCR5_{tier}_w8g2.vocr") if arm_parts(fa)["two"] else
+                      (REF["gate_release"], f"VOCR5_{tier}_w8g.vocr"))
+        if not (rel / asset).exists() or (rel / asset).read_bytes() != Path(fb).read_bytes():
+            raise SystemExit(f"{tier}: the kept blob {fb} is not the released {rel / asset}")
+        name = asset
+        dec["kept_vocr5_verdict"]["released_asset"] = {"path": str(rel / asset), "sha256": sha256(rel / asset),
+                                                       "identical": True}
+    else:
+        name = shipping_name(ctx.prefix, tier, fa)
     if fa != "today":
         shutil.copyfile(fb, fin / name)
     dec["final_blob"] = {"path": str(fin / name) if fa != "today" else str(fb), "name": name, "sha256": sha256(fb),
-                         "bytes": fb.stat().st_size, "source": str(fb)}
+                         "bytes": Path(fb).stat().st_size, "source": str(fb)}
     dec["decided_at"] = now()
     (ctx.out / tier / "decision.json").write_text(json.dumps(dec, indent=1) + "\n")
-    print(f"{tier}: decided {fa} ({name}, {fb.stat().st_size} B)", flush=True)
+    print(f"{tier}: decided {fa} ({name}, {Path(fb).stat().st_size} B)", flush=True)
     return dec
 
 
@@ -1552,7 +1784,7 @@ def run_tier(ctx, tier, blob, next_blob):
             if not next_blob:
                 raise SystemExit(f"{tier} needs {nt}: give --next-blob")
             prepare(ctx, nt, next_blob)
-            if not ctx.frozen_only:
+            if NEXT[nt] is None:                 # Large: no next tier of its own, so it can be decided here
                 decide(ctx, nt)
         else:
             raise SystemExit(f"{tier} needs {nt} decided first: run {nt} (with its next tier's blob) before {tier}")
@@ -1569,6 +1801,45 @@ def compact_compare(c):
             if isinstance(v, dict) and "ci95" in v}
 
 
+def arm_summary(part, fr, path, adopted):
+    """One tried arm's numbers for the result: the frozen rule's decodes or references, its shares and estimates,
+    the VOCR6 path."""
+    a = {"adopted": adopted, "frozen_verdict": fr["verdict"], "blob_sha256": fr["blob_sha256"],
+         "fails": fr.get("fails")}
+    if part == "gate":
+        a["decodes"] = {d: {"score_ungated": fr["decodes"][d]["score_x"], "score_gated": fr["decodes"][d]["score_y"],
+                            **compact_compare(fr["decodes"][d]["compare"]), "changed": fr["decodes"][d]["changed"],
+                            "rule": fr["decodes"][d]["rule"]} for d in DECODES + REREAD}
+        a["skip"] = {g: v for g, v in fr["skip"].items() if g == "all" or g.startswith(("wd", "fixed_dialogue"))}
+        a["saving_estimate_pld0"] = fr["estimate"]["pld0"]["saving"]
+    else:
+        a["K"] = fr["K"]
+        a["vs"] = {ref: {d: {"score_ref": x[d]["score_x"], "score_arm": x[d]["score_y"],
+                             **compact_compare(x[d]["compare"]), "rare_recall": x[d]["rare_recall"]["combined"],
+                             "rule": x[d]["rule"]} for d in DECODES} for ref, x in fr["vs"].items()}
+        a["escape_wd"] = fr["escape"]["wd"]
+        a["escape_platforms"] = {g: v for g, v in fr["escape"].items() if "|platform:" in g}
+        a["oracle_share_wd"] = fr.get("oracle_share_wd")
+        a["saving_estimate"] = {k: fr["estimate"][k] for k in ("measured", "projected",
+                                                               "saved_pct_nominal_box_safe_min")}
+    if "lm_candidates" in fr:
+        a["lm_candidates"] = fr["lm_candidates"]
+    if path:
+        a["vocr6_path"] = {"check": path["check"], "rubi": compact_compare(path["rubi"]["total"]),
+                           "rubi_platforms": {k: {p: path["rubi"]["total"][k].get(p) for p in ("vita", "psp")}
+                                              for k in ("hval_page", "hval_clean")},
+                           "greedy": compact_compare(path["greedy"]["total"]),
+                           "x_summary": path["x"]["summary"]["rubi"], "y_summary": path["y"]["summary"]["rubi"],
+                           "cascade": path["y"]["cascade"]}
+        if "stage4_plans_report" in path:
+            r4 = path["stage4_plans_report"]
+            a["vocr6_path"]["stage4_plans_report"] = {"check": r4["check"],
+                                                      "rubi": compact_compare(r4["rubi"]["total"]),
+                                                      "x_summary": r4["x_summary"]["rubi"],
+                                                      "y_summary": r4["y_summary"]["rubi"]}
+    return a
+
+
 def summarise_tier(ctx, tier):
     dec = json.loads((ctx.out / tier / "decision.json").read_text())
     inp = ctx.input(tier)
@@ -1577,42 +1848,18 @@ def summarise_tier(ctx, tier):
          "final_blob": dec["final_blob"], "arms": {}}
     for part in ("gate", "two_level"):
         for arm, v in dec[part].items():
-            fr = v["frozen"]
-            a = {"adopted": v["adopted"], "frozen_verdict": fr["verdict"], "blob_sha256": fr["blob_sha256"],
-                 "fails": fr.get("fails")}
-            if part == "gate":
-                a["decodes"] = {d: {"score_ungated": fr["decodes"][d]["score_x"],
-                                    "score_gated": fr["decodes"][d]["score_y"],
-                                    **compact_compare(fr["decodes"][d]["compare"]),
-                                    "changed": fr["decodes"][d]["changed"], "rule": fr["decodes"][d]["rule"]}
-                                for d in DECODES + REREAD}
-                a["skip"] = {g: fr["skip"][g] for g in ("all", "wd") if g in fr["skip"]}
-                a["saving_estimate_pld0"] = fr["estimate"]["pld0"]["saving"]
-            else:
-                a["K"] = fr["K"]
-                a["vs"] = {ref: {d: {"score_ref": x[d]["score_x"], "score_arm": x[d]["score_y"],
-                                     **compact_compare(x[d]["compare"]), "rare_recall": x[d]["rare_recall"]["combined"],
-                                     "rule": x[d]["rule"]} for d in DECODES} for ref, x in fr["vs"].items()}
-                a["escape_wd"] = fr["escape"]["wd"]
-                a["saving_estimate"] = {k: fr["estimate"][k] for k in ("measured", "projected",
-                                                                       "saved_pct_nominal_box_safe_min")}
-            if v["path"]:
-                a["vocr6_path"] = {"check": v["path"]["check"],
-                                   "rubi": compact_compare(v["path"]["rubi"]["total"]),
-                                   "rubi_platforms": {k: {p: v["path"]["rubi"]["total"][k].get(p)
-                                                          for p in ("vita", "psp")}
-                                                      for k in ("hval_page", "hval_clean")},
-                                   "greedy": compact_compare(v["path"]["greedy"]["total"]),
-                                   "x_summary": v["path"]["x"]["summary"]["rubi"],
-                                   "y_summary": v["path"]["y"]["summary"]["rubi"],
-                                   "cascade": v["path"]["y"]["cascade"]}
-                if "stage4_plans_report" in v["path"]:
-                    r4 = v["path"]["stage4_plans_report"]
-                    a["vocr6_path"]["stage4_plans_report"] = {"check": r4["check"],
-                                                              "rubi": compact_compare(r4["rubi"]["total"]),
-                                                              "x_summary": r4["x_summary"]["rubi"],
-                                                              "y_summary": r4["y_summary"]["rubi"]}
-            s["arms"][arm] = a
+            s["arms"][arm] = arm_summary(part, v["frozen"], v["path"], v["adopted"])
+    kept = dec.get("kept_vocr5_verdict")
+    if kept:
+        s["kept_vocr5_verdict"] = {k: kept[k] for k in ("by_the_rules", "kept", "released_asset") if k in kept}
+        s["kept_vocr5_verdict"]["kept_arms_report"] = {
+            arm: arm_summary("two_level" if arm_parts(arm)["two"] else "gate", v["frozen"], v["path"], None)
+            for arm, v in kept.get("kept_arms_report", {}).items()}
+    sc = dec.get("shipped_cascade")
+    s["shipped_cascade"] = ({k: v for k, v in sc.items() if k != "shipped_vs"} |
+                            {"shipped_vs": {r: compact_compare(c) for r, c in sc["shipped_vs"].items()}}
+                            if sc else None)
+    s["counter_check"] = dec.get("counter_check")
     s["estimate"] = dec["estimate"]
     return s
 
@@ -1774,6 +2021,34 @@ def cmd_check_vocr5(a):
                                  rt["measured"]["nopld"]["saved_pct_nominal_box"]],
                 "projected_pct": [mine["estimate"]["projected"]["saved_pct_nominal_box"],
                                   rt["projected"]["saved_pct_nominal_box"]]}
+    # #109's counter set (report only): the gate against #120's counter_check, 2Lg against #122's 2Lg_Kalt_r96
+    rep["counter"] = {}
+    gc = json.loads(REF["gate_dev"].read_text())["counter_check"]
+    tc = json.loads(REF["two_dev"].read_text())["counter_check"]
+    for t in TIERS:
+        p = ctx.out / t / "decision.json"
+        if not p.exists() or not json.loads(p.read_text()).get("counter_check"):
+            continue
+        cc = json.loads(p.read_text())["counter_check"]
+        for arm, ref, keys in (("gate", gc["tiers"].get(t), ("cer_today_pct", "cer_gated_pct")),
+                               ("2Lg", tc.get(t, {}).get("arms", {}).get("2Lg_Kalt_r96"), ("cer_ref_pct", "cer_pct"))):
+            if arm not in cc["arms"] or ref is None:
+                continue
+            mine = cc["arms"][arm]
+            row = {"reread_lines": [mine["reread_lines"], ref["reread_lines"]]}
+            ok = True
+            for d in ("greedy", "rubi", "rubi_reread"):
+                m, r = mine[d], ref[d]
+                pairs = {"cer_today_pct": [m["cer_today_pct"], r[keys[0]]],
+                         "cer_arm_pct": [m["cer_arm_pct"], r[keys[1]]],
+                         **{k: [m[k], r[k]] for k in ("lines_changed", "lines_worse", "lines_better")}}
+                if "by_cut" in r:
+                    pairs["by_cut_lines_worse"] = [{c: v["lines_worse"] for c, v in m["by_cut"].items()},
+                                                   {c: v["lines_worse"] for c, v in r["by_cut"].items()}]
+                row[d] = pairs
+                ok &= all(abs(a - b) < 5e-4 if isinstance(a, float) else a == b for a, b in pairs.values())
+            row["equal"] = bool(ok)
+            rep["counter"][f"{t}/{arm}"] = row
     sd = ctx.out / "S" / "decision.json"
     if sd.exists() and "shipped_cascade" in json.loads(sd.read_text()):
         mine = json.loads(sd.read_text())["shipped_cascade"]
@@ -1787,8 +2062,10 @@ def cmd_check_vocr5(a):
     rep["all_blobs_identical"] = all(v["identical"] for v in rep["blobs"].values())
     rep["all_fits_equal"] = all(v["equal"] for v in rep["fits"].values())
     rep["all_dev_equal"] = all(v["equal"] for v in rep["dev"].values())
+    rep["all_counter_equal"] = all(v["equal"] for v in rep["counter"].values()) if rep["counter"] else None
     Path(a.record).write_text(json.dumps(rep, indent=1) + "\n")
-    print(json.dumps({k: rep[k] for k in ("all_blobs_identical", "all_fits_equal", "all_dev_equal")}))
+    print(json.dumps({k: rep[k] for k in ("all_blobs_identical", "all_fits_equal", "all_dev_equal",
+                                          "all_counter_equal")}))
     for k, v in rep["blobs"].items():
         if not v["identical"]:
             print("blob differs:", k, v["sha256"], v["ref_sha256"])

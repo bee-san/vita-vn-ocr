@@ -239,6 +239,9 @@ def tiny_dev():
     d.n_lines = {"tv_dlg": {"grad": [1], "refine": [1]}, "dn_dlg": {"grad": [1], "refine": [1]}}
     d.tv_shots = {"s1"}
     d.dn_names = {"d1": False}
+    d.kinds = {G.TV: ["vita", "psp", "hires"], G.DN[0]: ["psp"], **{s: [] for s in G.DN[1:]}}
+    d.cases["tv_dlg"][0]["kind"] = "vita"
+    d.cases["dn_dlg"][0]["kind"] = "psp"
     keys = [f"{G.TV}|{i}|{v}" for i in range(3) for v in ("rv", "rvn")] + [f"{G.DN[0]}|0|rv", f"{G.DN[0]}|0|rvn"]
     keys += [f"{n}|{m}|0|0" for n in G.WD for m in ("grad", "refine")]
     d.keys, d.index = keys, {k: i for i, k in enumerate(keys)}
@@ -329,6 +332,12 @@ def test_protocol_matches_the_driver():
     assert a1["n"] == 1 and all(h in a1["what"] for h in G.PATH_LM_SHA.values())
     assert all(h in a1["also"] for _, h in G.PLANS4.values())
     assert G.PATH_LM_OPTS in a1["what"]
+    a2 = proto["amendments"][1]                         # audit F1 / N2 / N3 / N4 / N7, before step 5
+    assert a2["n"] == 2 and "VOCR5_S_w8g.vocr" in a2["vocr5_final_as_implemented"]
+    assert "VOCR5_{N,L}_w8g2.vocr" in a2["vocr5_final_as_implemented"]
+    assert "read_again" in a2["reported_beside_as_produced"]
+    assert "8ff76d83" in a2["runtime"] and "eps = 1e-4" in a2["deviation_added"]
+    assert proto["amendments"][0]["n"] == 1
 
 
 def test_completion_tokens_never_printed():
@@ -346,3 +355,233 @@ def test_rows_refuse_duplicate_wd_units():
     d.cases["tv_dlg"][0]["unit"] = "u1"
     rows = d.rows(GOOD, frozenset())           # different cohorts: distinct keys
     assert len(rows["wd"][0]) == 4
+
+
+# ---------------------------------------------------------------- the decision flow, stubbed (audit F2)
+
+class _Live(_Args):
+    frozen_only = False
+
+
+def stub_decide(monkeypatch, tmp_path, tier, gate_verdicts, two_verdicts=None, path_worse=(), sha="0" * 64,
+                next_final="2Lg"):
+    """decide() with its scoring stubbed: gate_verdicts {arm: #120 verdict}, two_verdicts {arm: #122 verdict}, the arms
+    in path_worse resolved worse on the VOCR6 path. Returns (ctx, the calls in order, the blob of an arm)."""
+    ctx = G.Ctx(tmp_path / "out", _Live(tmp_path / "priv"))
+    base = tmp_path / "in_w8.vocr"
+    base.write_bytes(b"base")
+    ctx.tdir(tier)
+    (ctx.out / tier / "input.json").write_text(json.dumps({"blob": str(base), "sha256": sha}))
+    nt = G.NEXT[tier]
+    if nt and next_final:
+        ctx.tdir(nt)
+        (ctx.out / nt / "decision.json").write_text(json.dumps({"final_arm": next_final}))
+    calls = []
+
+    def blob_of(c, t, arm):
+        if arm == "today":
+            return base
+        b = tmp_path / f"{t}_{arm}.vocr"
+        if not b.exists():
+            b.write_bytes(f"{t}:{arm}".encode())
+        return b
+
+    def frozen_gate(c, t, arm):
+        calls.append(("gate", arm))
+        return {"verdict": gate_verdicts[arm], "blob_sha256": "-"}
+
+    def frozen_two(c, t, arm):
+        calls.append(("two", arm))
+        v = (two_verdicts or {})[arm]
+        return {"verdict": v, "fails": [] if v == "adoptable" else ["x"], "blob_sha256": "-"}
+
+    def path(c, t, arm):
+        calls.append(("path", arm))
+        ok = arm not in path_worse
+        return {"not_worse": ok, "check": {"not_worse": ok}}
+
+    def estimate(c, t, arm):
+        return {"arm": arm, "macs_per_frame_full_head": 2_000_000, "head_macs_per_frame": 96 * 5632}
+
+    monkeypatch.setattr(G, "frozen_gate", frozen_gate)
+    monkeypatch.setattr(G, "frozen_two", frozen_two)
+    monkeypatch.setattr(G, "vocr6_path", path)
+    monkeypatch.setattr(G, "config_estimate", estimate)
+    monkeypatch.setattr(G, "arm_wd_shares", lambda c, t, a: {"gated_share": 0.6, "fire_share_all_frames": 0.08,
+                                                             "fire_share": 0.2})
+    monkeypatch.setattr(G, "arm_l1", lambda c, t, a: 504)
+    monkeypatch.setattr(G, "ensure_blob", blob_of)
+    monkeypatch.setattr(G, "shipped_cascade", lambda c, t, a: calls.append(("shipped", a)) or {"shipped_vs": {}})
+    monkeypatch.setattr(G, "counter_report", lambda c, t, arms: calls.append(("counter", tuple(arms))) or {"arms": {}})
+    return ctx, calls, blob_of
+
+
+def test_decide_gate_fallback_then_two_level_on_it(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "N", {"gate": "rejected", "gate_e4": "adopted"},
+                                {"2Lg_e4": "adoptable"})
+    dec = G.decide(ctx, "N")
+    assert (dec["gate_final"], dec["two_final"], dec["final_arm"]) == ("gate_e4", "2Lg_e4", "2Lg_e4")
+    assert calls[:6] == [("gate", "gate"), ("path", "gate"), ("gate", "gate_e4"), ("path", "gate_e4"),
+                         ("two", "2Lg_e4"), ("path", "2Lg_e4")]
+    assert ("counter", ("today", "gate", "gate_e4", "2Lg_e4")) in calls and ("shipped", "2Lg_e4") in calls
+    assert dec["final_blob"]["name"] == "VOCR6_N_w8g2.vocr" and (ctx.out / "final" / "VOCR6_N_w8g2.vocr").exists()
+    assert not dec["gate"]["gate"]["adopted"] and dec["gate"]["gate_e4"]["adopted"]
+    assert json.loads((ctx.out / "N" / "decision.json").read_text())["final_arm"] == "2Lg_e4"
+
+
+def test_decide_path_check_is_part_of_adoption(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "N", {"gate": "adopted", "gate_e4": "adopted"},
+                                {"2Lg_e4": "adoptable"}, path_worse=("gate",))
+    dec = G.decide(ctx, "N")
+    assert not dec["gate"]["gate"]["adopted"] and dec["gate_final"] == "gate_e4"
+    assert ("gate", "gate_e4") in calls
+
+
+def test_decide_two_level_alone_and_the_recall_fallback(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "L", {"gate": "rejected", "gate_e4": "behind_the_switch"},
+                                {"2L": "not adopted", "2L_rc9999": "adoptable"})
+    dec = G.decide(ctx, "L")
+    assert dec["gate_final"] is None and dec["two_final"] == "2L_rc9999"
+    assert [c for c in calls if c[0] == "two"] == [("two", "2L"), ("two", "2L_rc9999")]
+    assert dec["final_blob"]["name"] == "VOCR6_L_w8_2l.vocr"
+    assert not any(c[0] == "shipped" for c in calls)                # Large has no next tier
+
+
+def test_decide_recall_fallback_on_the_gate(monkeypatch, tmp_path):
+    ctx, _, _ = stub_decide(monkeypatch, tmp_path, "N", {"gate": "adopted"}, {"2Lg": "rejected",
+                                                                               "2Lg_rc9999": "adoptable"})
+    dec = G.decide(ctx, "N")
+    assert (dec["gate_final"], dec["two_final"]) == ("gate", "2Lg_rc9999")
+
+
+def test_decide_nothing_adopted_ships_the_input(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "S", {"gate": "rejected", "gate_e4": "rejected"},
+                                next_final="gate")
+    dec = G.decide(ctx, "S")
+    assert dec["final_arm"] == "today" and dec["two_final"] is None
+    assert dec["final_blob"]["path"] == str(tmp_path / "in_w8.vocr") and dec["final_blob"]["name"] == "VOCR6_S_w8.vocr"
+    assert not any(c[0] in ("two", "shipped") for c in calls)
+
+
+def test_decide_needs_the_next_tier_decided(monkeypatch, tmp_path):
+    ctx, calls, _ = stub_decide(monkeypatch, tmp_path, "N", {"gate": "adopted"}, {"2Lg": "adoptable"},
+                                next_final=None)
+    with pytest.raises(SystemExit):
+        G.decide(ctx, "N")
+    assert calls == []
+
+
+def test_decide_keeps_a_released_vocr5_verdict_when_the_route_diverges(monkeypatch, tmp_path):
+    n_sha = next(h for h, v in G.VOCR5_RELEASED.items() if v[0] == "N")
+    ctx, calls, blob_of = stub_decide(monkeypatch, tmp_path, "N", {"gate": "rejected", "gate_e4": "adopted"},
+                                      {"2Lg_e4": "adoptable", "2Lg": "adoptable"}, sha=n_sha)
+    rel = tmp_path / "rel2"
+    rel.mkdir()
+    (rel / "VOCR5_N_w8g2.vocr").write_bytes(blob_of(ctx, "N", "2Lg").read_bytes())
+    monkeypatch.setitem(G.REF, "two_release", rel)
+    dec = G.decide(ctx, "N")
+    k = dec["kept_vocr5_verdict"]
+    assert k["by_the_rules"] == {"gate": "gate_e4", "two_level": "2Lg_e4"}
+    assert k["kept"] == {"gate": "gate", "two_level": "2Lg"} and list(k["kept_arms_report"]) == ["2Lg"]
+    assert (dec["gate_final"], dec["two_final"], dec["final_arm"]) == ("gate", "2Lg", "2Lg")
+    assert ("two", "2Lg") in calls and ("path", "2Lg") in calls
+    assert dec["final_blob"]["name"] == "VOCR5_N_w8g2.vocr" and k["released_asset"]["identical"]
+    assert ("counter", ("today", "gate", "gate_e4", "2Lg_e4", "2Lg")) in calls
+
+
+def test_decide_refuses_a_kept_blob_unlike_the_release(monkeypatch, tmp_path):
+    s_sha = next(h for h, v in G.VOCR5_RELEASED.items() if v[0] == "S")
+    ctx, _, _ = stub_decide(monkeypatch, tmp_path, "S", {"gate": "adopted"}, sha=s_sha, next_final="2Lg")
+    rel = tmp_path / "rel1"
+    rel.mkdir()
+    (rel / "VOCR5_S_w8g.vocr").write_bytes(b"another blob")
+    monkeypatch.setitem(G.REF, "gate_release", rel)
+    with pytest.raises(SystemExit):
+        G.decide(ctx, "S")
+
+
+def test_frozen_only_run_decides_large_but_not_normal_for_small(monkeypatch, tmp_path):
+    ctx = G.Ctx(tmp_path / "out", _Args(tmp_path / "priv"))            # frozen only
+    calls = []
+    monkeypatch.setattr(G, "prepare", lambda c, t, b: calls.append(("prepare", t)))
+    monkeypatch.setattr(G, "decide", lambda c, t: calls.append(("decide", t)))
+    G.run_tier(ctx, "N", "n.vocr", "l.vocr")
+    assert calls == [("prepare", "L"), ("decide", "L"), ("prepare", "N"), ("decide", "N")]
+    calls.clear()
+    G.run_tier(ctx, "S", "s.vocr", "n.vocr")
+    assert calls == [("prepare", "N"), ("prepare", "S"), ("decide", "S")]
+
+
+# ---------------------------------------------------------------- rule edges (audit F2)
+
+def test_two_level_d_needs_both_estimates():
+    today = {"ms_per_frame": 3.75, "head_ms": 1.0}
+    never, always = {"head_ms": 0.1}, {"head_ms": 1.1}
+    box = G.box_ms(today)                                                  # 1,000 ms
+    assert box == pytest.approx(1000.0)
+    ref = {"ms_per_frame": 3.0}
+
+    def d(measured_pct, s, f):
+        arm = {"ms_per_frame": 3.0 - measured_pct * box / 100 / G.NOMINAL_FRAMES}
+        return G.two_saving(today, ref, arm, never, always, {"gated_share": s, "fire_share_all_frames": f}, True, box)
+    big = d(3.5, 0.6, 0.08)                      # projected (0.4 x 0.9 - 0.08) x 240 / 1000 = 6.72%
+    assert big["projected"]["saved_pct_nominal_box"] == pytest.approx(6.72, abs=0.01) and big["d_saving_at_least_3pct"]
+    lo_proj = d(3.5, 0.9, 0.05)                  # projected 0.96%: the measured 3.5% alone does not pass
+    assert lo_proj["projected"]["saved_pct_nominal_box"] < 3 and not lo_proj["d_saving_at_least_3pct"]
+    lo_meas = d(2.9, 0.6, 0.08)
+    assert lo_meas["measured"]["saved_pct_nominal_box"] == pytest.approx(2.9, abs=0.01)
+    assert not lo_meas["d_saving_at_least_3pct"] and lo_meas["saved_pct_nominal_box_safe_min"] == pytest.approx(2.9,
+                                                                                                                abs=0.01)
+    edge = d(3.0, 0.6, 0.08)
+    assert edge["d_saving_at_least_3pct"]
+
+
+def test_two_level_b_margin_edge():
+    rare = {"combined": {"loss_points": 0.0, "ci95": [0.0, 0.0]}}
+    assert G.two_rule(cmp_of((-0.01, 0.05)), rare)["b_noninferior_0.05"]
+    assert not G.two_rule(cmp_of((-0.01, 0.0501)), rare)["b_noninferior_0.05"]
+    assert not G.two_rule(cmp_of((-0.01, 0.01), wd=(0.0001, 0.1)), rare)["a_not_resolved_worse"]
+
+
+def test_rows_skip_dn_dlg_frames_tv_dlg_holds():
+    d = tiny_dev()
+    d.cases["dn_dlg"][0]["shot"] = "s1"                    # the same frame as tv_dlg's case
+    rows = d.rows(GOOD, frozenset())
+    assert rows["wd"][2] == ["v1", "v1"] and len(rows["wd"][0]) == 2
+
+
+def test_platforms_of_the_rows_and_their_rates():
+    d = tiny_dev()
+    pl = d.row_platforms(frozenset(G.EXCLUDE_VNS))
+    assert pl == {"tv": ["vita", "pc"], "dn": ["psp"], "wd": ["vita", "vita"]}
+    assert d.platform_of(f"{G.TV}|1|rv") == "psp" and d.platform_of("dn_dlg|grad|0|0") == "psp"
+    rx, ry = d.rows(GOOD, frozenset(G.EXCLUDE_VNS)), d.rows(BAD, frozenset(G.EXCLUDE_VNS))
+    r = G.platform_rates(rx, ry, pl)
+    assert r["tv"]["vita"] == {"rows": 1, "chars": 6, "cer_x": 0.0, "cer_y": pytest.approx(100 / 6, abs=1e-3)}
+    assert r["tv"]["pc"]["rows"] == 0                      # the name row is not dialogue
+    assert r["wd"]["vita"]["cer_y"] == pytest.approx(100 * 2 / 6, abs=1e-3)
+
+
+def test_counter_report_tallies(monkeypatch, tmp_path):
+    import numpy as np
+    meta = [{"text": "三ヶ月", "cut": 3}, {"text": "二ヶ所", "cut": 0}, {"text": "何ヶ国", "cut": -2}]
+    f = tmp_path / "synth.npz"
+    np.savez(f, meta=np.array(json.dumps(meta, ensure_ascii=False)))
+    monkeypatch.setattr(G, "COUNTER_SET", (f, "-"))
+    ctx = G.Ctx(tmp_path / "out", _Args(tmp_path / "priv"))
+    docs = {"today": {"greedy": ["三ヶ月", "二ヶ所", "何ヶ国"], "rubi": ["三ヶ月", "二ヶ所", "何ヶ国"],
+                      "rubi_reread": ["三ヶ月", "二ヶ所", "何ヶ国"], "reread": [0, 0, 0]},
+            "gate": {"greedy": ["三ケ月", "二ヶ所", "何ヶ国"], "rubi": ["三ケ月", "二ヵ所", "何ヶ国"],
+                     "rubi_reread": ["三ヶ月", "二ヵ所", "何ヶ国"], "reread": [1, 0, 0]}}
+
+    def fake_counter(c, t, arm):
+        d = c.pdir(t, "counter")
+        (d / f"{arm}.json").write_text(json.dumps(docs[arm], ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(G, "ensure_counter", fake_counter)
+    rep = G.counter_report(ctx, "N", ["today", "gate"])
+    a = rep["arms"]["gate"]
+    assert rep["lines"] == 3 and rep["chars"] == 9 and a["reread_lines"] == 1
+    assert (a["greedy"]["lines_worse"], a["greedy"]["lines_changed"]) == (1, 1)
+    assert a["greedy"]["cer_arm_pct"] == pytest.approx(100 / 9, abs=1e-3) and a["greedy"]["cer_today_pct"] == 0
+    assert a["rubi"]["lines_worse"] == 2 and a["rubi_reread"]["lines_worse"] == 1
+    assert a["greedy"]["by_cut"]["3"]["lines_worse"] == 1 and a["greedy"]["by_cut"]["0"]["lines_worse"] == 0

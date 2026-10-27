@@ -4,10 +4,10 @@
   textspot6_tables.py [--eval DIR] [--runs NAME,...] [--out TABLES.md] [--json TABLES.json]
 
 Tables: the page-path dialogue CER of every scored run and decode (unseen dev with the seen VN left out, and hval;
-Vita / PSP), the baselines (GRAD + refine, rubi,fix=5, textspot3's pick, the oracle when scored), the paired
-differences against GRAD + refine and rubi,fix=5 (cluster bootstrap); textspot's whole-frame metrics (F1, all-text
-CER, dialogue CER, the tagged dialogue CER, text-free frames with a dialogue box); the hval box metrics (P / R / F1
-and tag accuracy per view); the C == twin checks.
+Vita / PSP); the baselines (GRAD + refine, rubi,fix=1 = Rubi's next finder, rubi,fix=5, textspot3's pick, the oracle
+when scored); the paired differences against GRAD + refine and rubi,fix=1 (cluster bootstrap; amendment 12);
+textspot's whole-frame metrics (F1, all-text CER, dialogue CER, the tagged dialogue CER, text-free frames with a
+dialogue box); the hval box metrics (P / R / F1 and tag accuracy per view); the C == twin checks.
 """
 import argparse
 import json
@@ -46,7 +46,7 @@ def main(argv=None):
     runs = a.runs.split(",") if a.runs else sorted(p.parent.name for p in E.glob("*/SCORED")
                                                    if p.parent.name.startswith(("base_", "nohook_", "kd_", "final_")))
     base = {n: (SEL.load_rows(E / n / "dev.json", SEEN), SEL.load_rows(E / n / "hval.json"))
-            for n in ("grad_refine", "grad_refine_fix5", "oracle") if (E / n / "dev.json").exists()}
+            for n in ("grad_refine", "grad_refine_fix1", "grad_refine_fix5", "oracle") if (E / n / "dev.json").exists()}
     out, rec = [], {"baselines": {}, "runs": {}}
     out.append("| finder | dev | dev Vita / PSP | hval | hval Vita / PSP |")
     out.append("|---|---:|---|---:|---|")
@@ -57,9 +57,9 @@ def main(argv=None):
         rec["baselines"][n] = {"dev": SEL.cer(d), "hval": SEL.cer(h), "dev_platform": pd, "hval_platform": ph}
     out.append("")
     gd, gh = base["grad_refine"]
-    fd, fh = base.get("grad_refine_fix5", (None, None))
+    fd, fh = base.get("grad_refine_fix1", (None, None))
     out.append("| run | decode | dev | dev Vita / PSP | hval | hval Vita / PSP | dev − GRAD+refine | "
-               "hval − GRAD+refine | dev − fix=5 | hval − fix=5 |")
+               "hval − GRAD+refine | dev − fix=1 | hval − fix=1 |")
     out.append("|---|---|---:|---|---:|---|---|---|---|---|")
     for run in ["textspot3_pick", *runs]:
         for dec in DECODES:
@@ -76,7 +76,7 @@ def main(argv=None):
                        f"{ci(cf)} | {ci(chf)} |")
             rec["runs"].setdefault(run, {})[dec] = {"dev": SEL.cer(d), "hval": SEL.cer(h), "dev_platform": pd,
                                                     "hval_platform": ph, "vs_grad_refine": {"dev": cg, "hval": chg},
-                                                    "vs_fix5": {"dev": cf, "hval": chf}}
+                                                    "vs_fix1": {"dev": cf, "hval": chf}}
     out.append("")
     out.append("| run | decode | F1 | CER all | dialogue | tagged dialogue | text-free with a dialogue box | "
                "UI recall |")

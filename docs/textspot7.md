@@ -274,3 +274,31 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
 - **Next, by the rule:** the pick's spotter is retrained on train + guard + hval (`base` recipe, t64n8c16, seed 1:
   54,771 hooked pages), then released, read once on the test sets (report only), and wired into Rubi behind
   `ocr_finder = spotter`.
+
+### The final weights and the test sets (read once, report only)
+
+- **Final weights:** `base_t64n8c16`'s recipe and seed retrained on train + guard + hval (54,771 pages, 30,000 steps,
+  from f62c2e8): 52,176 B, sha256 `78330f96…` (`eval/textspot7_final_20261027.json`). C == twin holds on every
+  development frame and crop and for D on its dev boxes. Published as the pre-release v0.3.9-textspot7.1.
+- **The read:** `eval/textspot7_test.py`, once each (attempt records), after the release. Record:
+  `eval/textspot7_test_20261027.json`. These weights in D beside det; the baselines as textspot6 read them.
+
+| set | the pick (D) | det | GRAD + refine | `rubi,fix=1` | D − `rubi,fix=1` |
+|---|---:|---:|---:|---:|---|
+| Dance with Devils (PCSG00807; 2,055 units, page path) | **0.67** | 1.12 | 1.24 | 0.98 | −0.31 [−0.52, −0.13] |
+| CLANNAD, each page's region (2,052 dialogue lines, page path) | 0.82 | 0.92 | 0.82 | 0.95 | −0.13 [−0.36, +0.04] |
+| CLANNAD whole frames, dialogue (textspot3's read) | 1.06 | 1.02 | | | (textspot3 0.99) |
+| vita-test + psp-test whole frames, dialogue CER | 2.15 | 2.19 | | | (textspot3 2.29) |
+| vita-test + psp-test whole frames, box F1 | 0.667 | 0.748 | | | (textspot3 0.776) |
+
+Values are CER in % unless marked F1. Intervals are page clusters (one title, CLANNAD) and VN clusters (vita-test +
+psp-test).
+
+- **Dance with Devils:** D is resolved better than `rubi,fix=1` (the det decode alone is worse than it).
+- **CLANNAD's regions:** level with both baselines.
+- **Whole frames:** dialogue CER is level with det and with textspot3's pick. Box F1 drops (−0.08 [−0.12, −0.05]
+  against det), because D read on a whole frame joins the boxes of one row (names, UI labels) that the box metric
+  scores apart.
+  - D is a decode for the player's region, which is how Rubi reads. The whole-frame rows apply it to the frame
+    only to keep textspot6's harness.
+- **Disclosed** (as textspot6): three training titles share a VNDB release with CLANNAD or with a vita-test VN.

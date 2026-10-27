@@ -185,6 +185,16 @@
    "cost": "the crop decode's row (textspot6's forced SCALE2 960 x 544 row: a grown region is never larger than the frame)",
    "cost_order": "crop, crop+refine, ctx, det, det+refine, det+D (then F, F+D)",
    "rule": "unchanged"
+  },
+  {
+   "n": 5,
+   "utc": "2026-10-27T10:17:56Z",
+   "before": "every score of a t8 run (seed 1 is at step ~22,500 of 30,000; nothing of seeds 1-3 has been read)",
+   "title": "Rubi's default: the task's wording and vocr6-common's adoption rule against the incumbent",
+   "why": "this study's task says: if the spotter passes the rule, ship it and 'it becomes the default region/line picker; GRAD as fallback on low confidence'. vocr6-common adopts a change over the incumbent when it is better on hval and not worse on the unseen-game dev sets. The initial registration copied textspot6's stricter clause (unseen dev resolved below rubi,fix=1), which goes beyond both. Disclosed: registered after vocr6-spotter3 recorded textspot7's dev and confirmation reads of other models (textspot6's spotters with D: dev against rubi,fix=1 -1.20 [-3.83, +0.47], hval -2.29 [-5.97, -0.32], confirmation 1.92% against 4.29%, -2.37 [-5.49, -0.18]), and before any read of this study's student",
+   "rule.rubi_default": "the pick becomes Rubi's default line picker (GRAD, rubi,fix=1, as the fallback) iff, against rubi,fix=1 on the same units: hval page-path dialogue CER is resolved below 0 AND unseen dev is not resolved above 0 AND the confirmation set is not resolved above 0 (95% cluster intervals); otherwise it ships behind a setting that is off by default",
+   "cross_line": "if vocr6-spotter3's textspot7 pick would also be a default under this test, vocr6-lead sets the order (vocr6-spotter3 keeps its own registered clause: its pick ships opt-in)",
+   "unchanged": "eligibility, representative, beats_grad_refine, the confirmation guard, the pick"
   }
  ],
  "corrections": [

@@ -1,0 +1,11 @@
+{"run": "base_qL5_seed1", "arm": "base_qL5", "recipe": "base", "shape": "qL5", "seed": 1, "stage": 1}
+{"run": "base_qS4_seed1", "arm": "base_qS4", "recipe": "base", "shape": "qS4", "seed": 1, "stage": 1}
+{"run": "nohook_t64n8c16_seed1", "arm": "nohook_t64n8c16", "recipe": "nohook", "shape": "t64n8c16", "seed": 1, "stage": 1}
+{"run": "base_t64n8c16_seed2", "arm": "base_t64n8c16", "recipe": "base", "shape": "t64n8c16", "seed": 2, "stage": 1}
+{"run": "base_qL5_seed2", "arm": "base_qL5", "recipe": "base", "shape": "qL5", "seed": 2, "stage": 1}
+{"run": "base_qS4_seed2", "arm": "base_qS4", "recipe": "base", "shape": "qS4", "seed": 2, "stage": 1}
+{"run": "nohook_t64n8c16_seed2", "arm": "nohook_t64n8c16", "recipe": "nohook", "shape": "t64n8c16", "seed": 2, "stage": 1}
+{"run": "base_t64n8c16_seed3", "arm": "base_t64n8c16", "recipe": "base", "shape": "t64n8c16", "seed": 3, "stage": 1}
+{"run": "base_qL5_seed3", "arm": "base_qL5", "recipe": "base", "shape": "qL5", "seed": 3, "stage": 1}
+{"run": "base_qS4_seed3", "arm": "base_qS4", "recipe": "base", "shape": "qS4", "seed": 3, "stage": 1}
+{"run": "nohook_t64n8c16_seed3", "arm": "nohook_t64n8c16", "recipe": "nohook", "shape": "t64n8c16", "seed": 3, "stage": 1}

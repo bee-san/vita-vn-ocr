@@ -1,0 +1,7457 @@
+{
+ "kind": "textspot6-pages",
+ "schema": 1,
+ "issue": 128,
+ "generator": "synth/textspot6_pages.py",
+ "created": "2026-10-26T09:50:17Z",
+ "rules": {
+  "meiki_det_thr": 0.2,
+  "meiki_pos_min": 0.5,
+  "meiki_weight_span": 0.3,
+  "meet_iou": 0.2,
+  "meet_inside": 0.3,
+  "meet_grow": 3,
+  "refine_grow": 3,
+  "refine_min_across": 0.45,
+  "ruby_grow": 1,
+  "dropped_grow": 2,
+  "uncovered_grow": 2,
+  "positive_drops": [
+   null,
+   "oov"
+  ],
+  "ignore_drops": [
+   "geometry",
+   "conflict"
+  ],
+  "classes": {
+   "line": "dialogue",
+   "name": "name"
+  },
+  "other_class": "notdlg",
+  "shard_pages": 500
+ },
+ "code_sha256": {
+  "synth/textspot6_pages.py": "593aeb75433319216983c4c50c38c1fab46090c527ba629a61ad68ab5c3fd00d",
+  "synth/textspot2_labels.py": "cf8564d80b0004a0781eedc7453cc8219e04daf5e4f5d91d6d75e9e5cea0a011",
+  "teacher/geometry.py": "fa001851fad9d405700df467925b99322d40cc0b2897fd0305281db43419def5",
+  "teacher/engines.py": "e447547601f51733d786df0701412b3992cf4dc4a71dc82d6f0dee4e965d469d"
+ },
+ "pool": {
+  "dir": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pagepool/v1",
+  "files_sha256": {
+   "NPJG00016.jsonl": "38d6ad0e88eb81a75305e5d1da797462ee951899401ebf7de6cacc3dbbc095ef",
+   "NPJH00140.jsonl": "1a6ab0897634a5ee8b3b53d88613cdce93b81debf0d7cf7d1e12e26a863d5695",
+   "NPJH50001.jsonl": "22c0ca6d69b4defdd6eaad7fee15e598bf2d8a2a93b7d0eb0c9b438b332d40c3",
+   "NPJH50002.jsonl": "82db05280c9661cbda57a708523074e67492a69af6b5ae2eb6a0ef630ab7221e",
+   "NPJH50127.jsonl": "7dd22f2fd1a858c9ba97970534c0f935cd45800ac8f2f11bd18a421d518f889b",
+   "NPJH50132.jsonl": "ee432636bd3291805f2988a0c86205a3475ca3539eab870b1349db4760e84532",
+   "NPJH50279.jsonl": "b31d269475db56236e22c805401a8e67373d1a956feeefac0b6c9109855f341e",
+   "NPJH50297.jsonl": "42e6a711b15d715a8ad1a63d58c1cfdb0c6d48ff25699941ed5a35a4c2164c6d",
+   "NPJH50356.jsonl": "8edc365859493b592f6a5f8d728bfac28aa35fc81f14309df17dd3edeed713dd",
+   "NPJH50382.jsonl": "af8caccd0ff3795b0ae08789b65e3b76bce1a97b2e0f0263a750bbc5009525fe",
+   "NPJH50551.jsonl": "e1829da52e5b76a40fc234212a648917d7757ef1545eb998b72cd7bb2f758445",
+   "NPJH50621.jsonl": "570ce363f63c4adfca6c7b7e9768741356b61a4f5a265fd264dd9c5810ad6280",
+   "NPJH50641.jsonl": "d6785722a549aed4d630d549647b1a02dec01264d3e0c8b8735646915bd31de6",
+   "NPJH50649.jsonl": "7da68c01faa5f8bbeed03def859bd8a1fcaed6eab8917c043b08e671cc74203b",
+   "PCSG00007.jsonl": "d323b00d6b43f64645b36fdaabc1fc56d0fdaaa3fac150ff7262c4e27e288974",
+   "PCSG00146.jsonl": "530cf3c04fc22b4774310d20d472ab6b783ad4b192477c6c5580fa41f352923c",
+   "PCSG00352.jsonl": "7a1e4f915c3a9d75cd0d59fb1ec9135a97e5173c22ae792d870976bf6f6b1dfb",
+   "PCSG00367.jsonl": "3ff7b60d83ce25bb9e373a5c08ee01d1f3c80a9d060c5e373069dda4ec29fcf5",
+   "PCSG00380.jsonl": "bb1c29e2ec108f10da2853df46d184ce5d9efc1f8f1b91523345b67b45d3e27b",
+   "PCSG00468.jsonl": "c450f9ccb870612acb96c7fcae200c5598594080f08291e9cf5eaf141be318c5",
+   "PCSG00469.jsonl": "7f75c829b159461f143cd270a4e32d60b616b920d0ee84aaa1103471988ba876",
+   "PCSG00509.jsonl": "c7f809f9bc81d40352b386a22d54019b071c0e222d476396421937ee6a875467",
+   "PCSG00540.jsonl": "d605144adc603b90e81b43598e44d35a7d129d0518aadcee80012e85e21530f5",
+   "PCSG00547.jsonl": "c8b50dd5a7c2844cbd90840e6598e771a5527d26e0d9e837563338e859ef0eca",
+   "PCSG00553.jsonl": "27250ffc37fb509d56f6112d472280e880cf70392b34657641fd000c7fdc850a",
+   "PCSG00555.jsonl": "ed62fbecfd76983517ca81e3af6944a11d820debfee792e7802fc8251d56665c",
+   "PCSG00576.jsonl": "32d552dfd20d003923f98e15cfcf0ab9c136a249d268020ab8fc2ca11318a50e",
+   "PCSG00611.jsonl": "60a2c292182a6f791c26cf7e892798e24282d882e4d6fd468021b17ced126976",
+   "PCSG00620.jsonl": "ad441b9212a692d615f2a52e104e3a34e3fc60a33880d3f8efb922c5bc520b11",
+   "PCSG00628.jsonl": "85118bf641873b7b96ffb529296efc8da1715298e73180bb5fe236c3de148a07",
+   "PCSG00648.jsonl": "6f491d79b2bc9e9f56c4030eca4ef2c2cf5c2eeafa818d84dadbd0642d6d9d6e",
+   "PCSG00653.jsonl": "1122d9e297fe6e4c7d8c3b1c9ba5348da61cc7c9c2ccfaf0202512c7b4fa5dc4",
+   "PCSG00666.jsonl": "e6b5f66a8c5a921f4f94d5c2e6ecfcdf6b5171b7c5abac10dcef4a9f25b502fd",
+   "PCSG00667.jsonl": "ae07aca9c92a2bdd72dca74d0b2f06154854fe482d8449d16abd0c609d7e32ef",
+   "PCSG00713.jsonl": "291308ccbd0297fa7ea32f1c4b3e6ae2af231d4c16edf501466918686e2875fc",
+   "PCSG00751.jsonl": "fcec94da395c0c8261d9bc003bf0d24a4a095e948dd3202d2f4d65afda963554",
+   "PCSG00753.jsonl": "cfcf226f598a64e3362bcaedd936796aeecbb41a093e3c95b4681e46047244d8",
+   "PCSG00805.jsonl": "7f4d29f82004a2681ffd0e3b5cc0654ff7457d87c2b20dbb57f6f0300417e520",
+   "PCSG00807.jsonl": "680704e39bdd209f06202e015733216f7062b8a04674e3344dbe5dbdb49a3e55",
+   "PCSG00854.jsonl": "c6583ac4a3dc2b08f196b9ab70910c0ee238d1b2c7863e3321ba82f9ccbf2150",
+   "PCSG00866.jsonl": "220c40d3790f3f6c4a20fdaad35abeca360538cb722a6e85e5c7188cc92907b0",
+   "PCSG00876.jsonl": "4297971a8f8919ac1ef69dfbfa2f56445b288d9bdf9128d89ffeaacd72e9bae3",
+   "PCSG00914.jsonl": "a83bf0ed2c67cbc01a0132f544643880bb2a593cf4fd46d2a209a3e200013f2b",
+   "PCSG00917.jsonl": "315038cff1684a2103012e803ce46ba6033da112fa4653b54adde35dee6c19b4",
+   "PCSG00918.jsonl": "ba147938393f90a5482851c0893d41508f0c3e7c290cee94bcb856da5bdaa17d",
+   "PCSG00935.jsonl": "445674fe03e1e3cc66dcb8d83a07bb04f52c84bb4ad0499ea2f80924c707d982",
+   "PCSG01110.jsonl": "3ec400f85e264895a657d8befa67101a569c31982637f5d84fcb3d8cded77386",
+   "ULJM05383.jsonl": "de34ea41c0e230bc3bc43b5326c3fb21f4afd15ab401f5c879172ddfd0402e93",
+   "ULJM05674.jsonl": "2d9fdd21aae356d0df2f600548e3ec65d35baf2f3453774c66af3937e2c7b6a1"
+  }
+ },
+ "shards": [
+  {
+   "dir": "train",
+   "name": "NPJG00016_000",
+   "split": "train",
+   "title": "NPJG00016",
+   "npy_sha256": "36e7fdde69eb3c3baba22f664c193c61528ac86c1ab17c88932a225a209b77ca",
+   "json_sha256": "6d5858099050aa9927d00580b95a67e456dcf00b9301130a1ff72e6bff73bfdc",
+   "samples": 230,
+   "lines": 480,
+   "vertical": 2,
+   "ignore": 557,
+   "by_class": {
+    "dialogue": 466,
+    "notdlg": 14
+   },
+   "counts": {
+    "positive": 466,
+    "dialogue": 466,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 412,
+    "meiki": 1075,
+    "meiki_meets": 916,
+    "meiki_other": 14,
+    "meiki_ignore": 145,
+    "ink": 466,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 230
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH00140_000",
+   "split": "train",
+   "title": "NPJH00140",
+   "npy_sha256": "de7682b9f4402d6f74f4190229ba8a80b8febf7a6bbb585cf79c585619744382",
+   "json_sha256": "1b98f180ad359821d9b118aa199bb5be8868765a220afa1da987df894301efeb",
+   "samples": 500,
+   "lines": 1027,
+   "vertical": 0,
+   "ignore": 851,
+   "by_class": {
+    "dialogue": 1006,
+    "notdlg": 21
+   },
+   "counts": {
+    "positive": 1006,
+    "dialogue": 1006,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 94,
+    "meiki": 1888,
+    "meiki_meets": 1110,
+    "meiki_other": 21,
+    "meiki_ignore": 757,
+    "ink": 1006,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH00140_001",
+   "split": "train",
+   "title": "NPJH00140",
+   "npy_sha256": "83ce9dc6547e08be8a2d57f5ddca2cda747984531f3c133464223de8fa393ae7",
+   "json_sha256": "013223f4285b715f1e5f2efb39de0c96b827f075cb4b2052db3940dc25b3e0dc",
+   "samples": 500,
+   "lines": 1069,
+   "vertical": 0,
+   "ignore": 938,
+   "by_class": {
+    "dialogue": 1069
+   },
+   "counts": {
+    "positive": 1069,
+    "dialogue": 1069,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 131,
+    "meiki": 2006,
+    "meiki_meets": 1199,
+    "meiki_other": 0,
+    "meiki_ignore": 807,
+    "ink": 1069,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH00140_002",
+   "split": "train",
+   "title": "NPJH00140",
+   "npy_sha256": "fb82be5b7f1c5838b4090d735f37db850a92b346200cb4a368ea52221b8cef13",
+   "json_sha256": "780c4608a100a3611ee3f5533f93ae451e7ebb317161fa013e7c9340004f7f41",
+   "samples": 500,
+   "lines": 1150,
+   "vertical": 0,
+   "ignore": 1418,
+   "by_class": {
+    "dialogue": 1093,
+    "notdlg": 57
+   },
+   "counts": {
+    "positive": 1093,
+    "dialogue": 1093,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 154,
+    "meiki": 2567,
+    "meiki_meets": 1246,
+    "meiki_other": 57,
+    "meiki_ignore": 1264,
+    "ink": 1093,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH00140_003",
+   "split": "train",
+   "title": "NPJH00140",
+   "npy_sha256": "2363449378fd10ddd63b65415a5933f9f0bb2275f2d3d179aea60345df44f8fa",
+   "json_sha256": "7e6a79e8b6930e51458e53c7bddcb96c42d60698e0fbc76525ab29bfc1f2e15a",
+   "samples": 14,
+   "lines": 24,
+   "vertical": 0,
+   "ignore": 29,
+   "by_class": {
+    "dialogue": 24
+   },
+   "counts": {
+    "positive": 24,
+    "dialogue": 24,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 3,
+    "meiki": 53,
+    "meiki_meets": 27,
+    "meiki_other": 0,
+    "meiki_ignore": 26,
+    "ink": 24,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 14
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50001_000",
+   "split": "train",
+   "title": "NPJH50001",
+   "npy_sha256": "4b33520679725ad9e17d2dc1209c2ef18b62ca137a375be15ab6b03aa9038af5",
+   "json_sha256": "04b021a4b404d3dca2bd6ca82b0c7fdf175a72d0682bc6d7973715d1ddf3a8e2",
+   "samples": 500,
+   "lines": 1060,
+   "vertical": 0,
+   "ignore": 524,
+   "by_class": {
+    "dialogue": 905,
+    "notdlg": 155
+   },
+   "counts": {
+    "positive": 905,
+    "dialogue": 905,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 40,
+    "meiki": 1623,
+    "meiki_meets": 984,
+    "meiki_other": 155,
+    "meiki_ignore": 484,
+    "ink": 905,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50001_001",
+   "split": "train",
+   "title": "NPJH50001",
+   "npy_sha256": "14e36fb0c10934fb98ea9f387d79aa76bd3e97479880d18e0fd26de7d45a29ba",
+   "json_sha256": "9bcfc736ccac82a1ca7e751eb6aa5d0f806bd0fb4365ce398c075f64825c743f",
+   "samples": 500,
+   "lines": 935,
+   "vertical": 0,
+   "ignore": 221,
+   "by_class": {
+    "dialogue": 886,
+    "notdlg": 49
+   },
+   "counts": {
+    "positive": 886,
+    "dialogue": 886,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 41,
+    "meiki": 1187,
+    "meiki_meets": 958,
+    "meiki_other": 49,
+    "meiki_ignore": 180,
+    "ink": 886,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50001_002",
+   "split": "train",
+   "title": "NPJH50001",
+   "npy_sha256": "8f76110c659eb5ff94211dcdbe3cc8798e822545b6f6679137cfaf80ebee5a2f",
+   "json_sha256": "5a57f4bcf0ab126eda3a166a3353aeeb9e6117f77b43aeb48f26a6dca21d714d",
+   "samples": 476,
+   "lines": 1025,
+   "vertical": 0,
+   "ignore": 579,
+   "by_class": {
+    "dialogue": 890,
+    "notdlg": 135
+   },
+   "counts": {
+    "positive": 890,
+    "dialogue": 890,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 31,
+    "meiki": 1631,
+    "meiki_meets": 948,
+    "meiki_other": 135,
+    "meiki_ignore": 548,
+    "ink": 890,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 476
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50002_000",
+   "split": "train",
+   "title": "NPJH50002",
+   "npy_sha256": "f1fe3302de379e7a613e8312606a61dc15e12d2a7ddecb9d32be9984a436b12c",
+   "json_sha256": "fa4fee5565c3f07d161afb72a266cca9a176780f6e0ca2127f3ad063cb69f585",
+   "samples": 500,
+   "lines": 858,
+   "vertical": 0,
+   "ignore": 507,
+   "by_class": {
+    "dialogue": 818,
+    "notdlg": 40
+   },
+   "counts": {
+    "positive": 818,
+    "dialogue": 818,
+    "name": 0,
+    "ruby_ignore": 22,
+    "drop_ignore": 0,
+    "uncovered_ignore": 309,
+    "meiki": 1390,
+    "meiki_meets": 1174,
+    "meiki_other": 40,
+    "meiki_ignore": 176,
+    "ink": 818,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50002_001",
+   "split": "train",
+   "title": "NPJH50002",
+   "npy_sha256": "c20a031dc6702b9e419e06b0361e634a32772879b03c2471de7d140e16e2cb2e",
+   "json_sha256": "7c11279b38eea17216b301dc53743b71dbeca6a60912363fd188b671056276b6",
+   "samples": 500,
+   "lines": 749,
+   "vertical": 0,
+   "ignore": 394,
+   "by_class": {
+    "dialogue": 719,
+    "notdlg": 30
+   },
+   "counts": {
+    "positive": 719,
+    "dialogue": 719,
+    "name": 0,
+    "ruby_ignore": 7,
+    "drop_ignore": 0,
+    "uncovered_ignore": 333,
+    "meiki": 1180,
+    "meiki_meets": 1096,
+    "meiki_other": 30,
+    "meiki_ignore": 54,
+    "ink": 719,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50002_002",
+   "split": "train",
+   "title": "NPJH50002",
+   "npy_sha256": "047a780ebd8d0ee84375863ea831088b3740a9e74af8369daaf233121fe3178b",
+   "json_sha256": "759311bfe1c98cb6576abb13a51af743257ea5047081fe762b191992ed496b66",
+   "samples": 500,
+   "lines": 742,
+   "vertical": 0,
+   "ignore": 610,
+   "by_class": {
+    "dialogue": 735,
+    "notdlg": 7
+   },
+   "counts": {
+    "positive": 735,
+    "dialogue": 735,
+    "name": 0,
+    "ruby_ignore": 24,
+    "drop_ignore": 0,
+    "uncovered_ignore": 273,
+    "meiki": 1396,
+    "meiki_meets": 1076,
+    "meiki_other": 7,
+    "meiki_ignore": 313,
+    "ink": 735,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50002_003",
+   "split": "train",
+   "title": "NPJH50002",
+   "npy_sha256": "f2208ae0045c6418b3d430ebeb9a269da0a473afe5abe3fc64c2e06360fdcc00",
+   "json_sha256": "17df548f4942a46e090c429ddd6ebb142115df39cd90a983891437ca3ae8dd3c",
+   "samples": 98,
+   "lines": 151,
+   "vertical": 0,
+   "ignore": 75,
+   "by_class": {
+    "dialogue": 149,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 149,
+    "dialogue": 149,
+    "name": 0,
+    "ruby_ignore": 2,
+    "drop_ignore": 0,
+    "uncovered_ignore": 67,
+    "meiki": 233,
+    "meiki_meets": 225,
+    "meiki_other": 2,
+    "meiki_ignore": 6,
+    "ink": 149,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 98
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50127_000",
+   "split": "train",
+   "title": "NPJH50127",
+   "npy_sha256": "33b1dccadbd619cfa71918374300ffd49d5d61b1d6ee52464c920091473fa8ce",
+   "json_sha256": "6bb0aa389ea63042a116533eec1204583d610df62ef5434a0131096bf322bc46",
+   "samples": 58,
+   "lines": 9,
+   "vertical": 7,
+   "ignore": 123,
+   "by_class": {
+    "notdlg": 9
+   },
+   "counts": {
+    "positive": 0,
+    "dialogue": 0,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 61,
+    "meiki": 255,
+    "meiki_meets": 184,
+    "meiki_other": 9,
+    "meiki_ignore": 62,
+    "ink": 0,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 58
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50132_000",
+   "split": "train",
+   "title": "NPJH50132",
+   "npy_sha256": "d0298c38b61272b4a07ed7d7b3c77f9dc85e5f1bd2301c0fa01e5b0c3f1e44da",
+   "json_sha256": "00f03bd73b9ba89b480794e0709733794061d0303511028fc043a31942aaa40a",
+   "samples": 500,
+   "lines": 696,
+   "vertical": 0,
+   "ignore": 208,
+   "by_class": {
+    "dialogue": 546,
+    "name": 116,
+    "notdlg": 34
+   },
+   "counts": {
+    "positive": 662,
+    "dialogue": 546,
+    "name": 116,
+    "ruby_ignore": 0,
+    "drop_ignore": 2,
+    "uncovered_ignore": 109,
+    "meiki": 903,
+    "meiki_meets": 772,
+    "meiki_other": 34,
+    "meiki_ignore": 97,
+    "ink": 662,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50132_001",
+   "split": "train",
+   "title": "NPJH50132",
+   "npy_sha256": "29a1ac9fc4f0d6466c09b8eb5ea66d3037592aaf8a244e6cfbf1e2234fec3da7",
+   "json_sha256": "8e81e94d6590a3940e9d343d4146ac7011d845dfa263c9039758db0170e0a357",
+   "samples": 500,
+   "lines": 752,
+   "vertical": 0,
+   "ignore": 300,
+   "by_class": {
+    "dialogue": 579,
+    "name": 161,
+    "notdlg": 12
+   },
+   "counts": {
+    "positive": 740,
+    "dialogue": 579,
+    "name": 161,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 60,
+    "meiki": 1067,
+    "meiki_meets": 815,
+    "meiki_other": 12,
+    "meiki_ignore": 240,
+    "ink": 740,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50132_002",
+   "split": "train",
+   "title": "NPJH50132",
+   "npy_sha256": "2205a0a1b7a6fdb8957f0673a21a70efba493365b6538ee1befeccebe66d999a",
+   "json_sha256": "ac4919fc5b854397cc59d58db05ef722512b0bab1ce8be91629e64d8d1594247",
+   "samples": 500,
+   "lines": 818,
+   "vertical": 0,
+   "ignore": 502,
+   "by_class": {
+    "name": 156,
+    "dialogue": 588,
+    "notdlg": 74
+   },
+   "counts": {
+    "positive": 744,
+    "dialogue": 588,
+    "name": 156,
+    "ruby_ignore": 0,
+    "drop_ignore": 2,
+    "uncovered_ignore": 49,
+    "meiki": 1347,
+    "meiki_meets": 822,
+    "meiki_other": 74,
+    "meiki_ignore": 451,
+    "ink": 744,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50132_003",
+   "split": "train",
+   "title": "NPJH50132",
+   "npy_sha256": "5bf500a22a3ebbef6c5e3a5042233157b027910a4f7041e9ea83042b8455a619",
+   "json_sha256": "71e76773953f96d9dffabbbf49223bd78b06e580b680d6f019ede4db362cf1b9",
+   "samples": 217,
+   "lines": 324,
+   "vertical": 0,
+   "ignore": 221,
+   "by_class": {
+    "dialogue": 251,
+    "name": 55,
+    "notdlg": 18
+   },
+   "counts": {
+    "positive": 306,
+    "dialogue": 251,
+    "name": 55,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 14,
+    "meiki": 560,
+    "meiki_meets": 335,
+    "meiki_other": 18,
+    "meiki_ignore": 207,
+    "ink": 306,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 217
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50279_000",
+   "split": "train",
+   "title": "NPJH50279",
+   "npy_sha256": "84458198e0cdff8d932f90486e3ca0f9fbf3ea9d5d3f9acba861ca0b9febf6c1",
+   "json_sha256": "e563a6893456dcfbf5eecb83338d9cd11ac377f6ce51056e13ff2fdd486fed32",
+   "samples": 500,
+   "lines": 769,
+   "vertical": 0,
+   "ignore": 700,
+   "by_class": {
+    "dialogue": 665,
+    "name": 103,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 768,
+    "dialogue": 665,
+    "name": 103,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 196,
+    "meiki": 1719,
+    "meiki_meets": 1214,
+    "meiki_other": 1,
+    "meiki_ignore": 504,
+    "ink": 768,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50279_001",
+   "split": "train",
+   "title": "NPJH50279",
+   "npy_sha256": "a44687144d5b9d5abfa26cfbc6ffeee67c6bc7895daf64f0359071ddec694284",
+   "json_sha256": "67ba8bfeb7a964be0776b96abce1ab90a1bc7d8190a60facb7cb9fc053ae6020",
+   "samples": 431,
+   "lines": 821,
+   "vertical": 0,
+   "ignore": 450,
+   "by_class": {
+    "dialogue": 553,
+    "name": 126,
+    "notdlg": 142
+   },
+   "counts": {
+    "positive": 679,
+    "dialogue": 553,
+    "name": 126,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 119,
+    "meiki": 1444,
+    "meiki_meets": 971,
+    "meiki_other": 142,
+    "meiki_ignore": 331,
+    "ink": 679,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 431
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50297_000",
+   "split": "train",
+   "title": "NPJH50297",
+   "npy_sha256": "21ab2f518fa23e833b863147e80ed4599e6853447906b72cf3d920202909b27a",
+   "json_sha256": "32a48bd5f3333185297b8380d4a69b27d322c9642e6b4f67671ed4fae1cbb807",
+   "samples": 500,
+   "lines": 1099,
+   "vertical": 0,
+   "ignore": 3301,
+   "by_class": {
+    "dialogue": 1006,
+    "notdlg": 93
+   },
+   "counts": {
+    "positive": 1006,
+    "dialogue": 1006,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 89,
+    "meiki": 4449,
+    "meiki_meets": 1144,
+    "meiki_other": 93,
+    "meiki_ignore": 3212,
+    "ink": 1006,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50297_001",
+   "split": "train",
+   "title": "NPJH50297",
+   "npy_sha256": "07026d8ea9e4c14e0c34686d2b3119dad5bcf23732293ed23ff6e9f3be0c2464",
+   "json_sha256": "c79fd21b186e762ba9fd3cd1ef3dd8a995338d8fa27224f2af663a630775d1bc",
+   "samples": 500,
+   "lines": 1143,
+   "vertical": 0,
+   "ignore": 2541,
+   "by_class": {
+    "dialogue": 1116,
+    "notdlg": 27
+   },
+   "counts": {
+    "positive": 1116,
+    "dialogue": 1116,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 79,
+    "meiki": 3724,
+    "meiki_meets": 1235,
+    "meiki_other": 27,
+    "meiki_ignore": 2462,
+    "ink": 1116,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50297_002",
+   "split": "train",
+   "title": "NPJH50297",
+   "npy_sha256": "52cb32a07c8c3b32133dcbf7a5b078c596a7ac458325f8c1074b7887666817d4",
+   "json_sha256": "cef2c2bad8158c0f3d0dde7f8541744f44ce35e781cca40b176ebcbf65c4fe9f",
+   "samples": 70,
+   "lines": 164,
+   "vertical": 0,
+   "ignore": 236,
+   "by_class": {
+    "dialogue": 145,
+    "notdlg": 19
+   },
+   "counts": {
+    "positive": 145,
+    "dialogue": 145,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 404,
+    "meiki_meets": 160,
+    "meiki_other": 19,
+    "meiki_ignore": 225,
+    "ink": 145,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 70
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50356_000",
+   "split": "train",
+   "title": "NPJH50356",
+   "npy_sha256": "7c4165faf51cb9fca975eb6fa659b023920ab3e267883fbe17099eb7a78aecd8",
+   "json_sha256": "3bdb528ada310380061178b326e87881de4d5cbd5e2ffbddcf92fff15f32202f",
+   "samples": 500,
+   "lines": 1489,
+   "vertical": 0,
+   "ignore": 1188,
+   "by_class": {
+    "dialogue": 672,
+    "notdlg": 817
+   },
+   "counts": {
+    "positive": 672,
+    "dialogue": 672,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 324,
+    "meiki": 2715,
+    "meiki_meets": 1034,
+    "meiki_other": 817,
+    "meiki_ignore": 864,
+    "ink": 672,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50356_001",
+   "split": "train",
+   "title": "NPJH50356",
+   "npy_sha256": "fe88125a28790cf6c4534640f5bc5ade3dcd18f87b7a0950dac3a573ab345eef",
+   "json_sha256": "b796c1dc93fcd5a46576f395ce3ebfd1eaa02e81a6eef04b3aacf038c69cf71b",
+   "samples": 500,
+   "lines": 1412,
+   "vertical": 0,
+   "ignore": 1268,
+   "by_class": {
+    "dialogue": 677,
+    "notdlg": 735
+   },
+   "counts": {
+    "positive": 677,
+    "dialogue": 677,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 331,
+    "meiki": 2708,
+    "meiki_meets": 1036,
+    "meiki_other": 735,
+    "meiki_ignore": 937,
+    "ink": 677,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50356_002",
+   "split": "train",
+   "title": "NPJH50356",
+   "npy_sha256": "00140ba3675db843691e376a8d9c08c74b30ff4769fd791071f34193485346fc",
+   "json_sha256": "a430300e0a27e78351b8bc038280544235ad0b63f95ff3cd6e0491b06b6020fb",
+   "samples": 500,
+   "lines": 1457,
+   "vertical": 0,
+   "ignore": 1142,
+   "by_class": {
+    "dialogue": 622,
+    "notdlg": 835
+   },
+   "counts": {
+    "positive": 622,
+    "dialogue": 622,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 366,
+    "meiki": 2645,
+    "meiki_meets": 1034,
+    "meiki_other": 835,
+    "meiki_ignore": 776,
+    "ink": 622,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50356_003",
+   "split": "train",
+   "title": "NPJH50356",
+   "npy_sha256": "ee0dba79c124d730f6ccd0f46e05209253a0863a4137bb1012bab1f1451c9610",
+   "json_sha256": "5616863007b99f6339f4cfca76a90a421d30ed0801d546dd68874a823e2ae1d1",
+   "samples": 359,
+   "lines": 926,
+   "vertical": 0,
+   "ignore": 1196,
+   "by_class": {
+    "dialogue": 448,
+    "notdlg": 478
+   },
+   "counts": {
+    "positive": 448,
+    "dialogue": 448,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 290,
+    "meiki": 2135,
+    "meiki_meets": 751,
+    "meiki_other": 478,
+    "meiki_ignore": 906,
+    "ink": 448,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 359
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50382_000",
+   "split": "train",
+   "title": "NPJH50382",
+   "npy_sha256": "afa16a4e41a4645fbeaeec86cf7e3ffb84eb4f063dbbecef14f5c073c96b9047",
+   "json_sha256": "408f6ca9342df5eabefe474bf13744557c57da49934863134eba86a5463432f3",
+   "samples": 500,
+   "lines": 871,
+   "vertical": 0,
+   "ignore": 669,
+   "by_class": {
+    "dialogue": 585,
+    "notdlg": 147,
+    "name": 139
+   },
+   "counts": {
+    "positive": 724,
+    "dialogue": 585,
+    "name": 139,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 123,
+    "meiki": 1581,
+    "meiki_meets": 888,
+    "meiki_other": 147,
+    "meiki_ignore": 546,
+    "ink": 724,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50382_001",
+   "split": "train",
+   "title": "NPJH50382",
+   "npy_sha256": "94426b79caf2541767c5f4147567dbd4a303b70ba7df65a390be46ab09ad74f2",
+   "json_sha256": "804fcafccbc90633b6ffcb15398ec9273b67da8d4ff2905a2b921ef5c3a6e31f",
+   "samples": 500,
+   "lines": 974,
+   "vertical": 33,
+   "ignore": 699,
+   "by_class": {
+    "dialogue": 635,
+    "name": 232,
+    "notdlg": 107
+   },
+   "counts": {
+    "positive": 867,
+    "dialogue": 635,
+    "name": 232,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 67,
+    "meiki": 1705,
+    "meiki_meets": 966,
+    "meiki_other": 107,
+    "meiki_ignore": 632,
+    "ink": 867,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50382_002",
+   "split": "train",
+   "title": "NPJH50382",
+   "npy_sha256": "671e0db8e73ee8d534afc8e98f9d3b8b212b2ccde0e15e4df7e8bce0aa7ce2a7",
+   "json_sha256": "dd906f868b2dc8f738f699e219f4b8db83e2d109372ef094cee2bf32081e1c96",
+   "samples": 500,
+   "lines": 917,
+   "vertical": 0,
+   "ignore": 580,
+   "by_class": {
+    "name": 252,
+    "dialogue": 598,
+    "notdlg": 67
+   },
+   "counts": {
+    "positive": 850,
+    "dialogue": 598,
+    "name": 252,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 131,
+    "meiki": 1539,
+    "meiki_meets": 1023,
+    "meiki_other": 67,
+    "meiki_ignore": 449,
+    "ink": 850,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50382_003",
+   "split": "train",
+   "title": "NPJH50382",
+   "npy_sha256": "c0bf58b02572841d74134df15b1ae96bcc62d2222da6e6d543accaeca8879e87",
+   "json_sha256": "364d6efa2b3c910839aed24421b3e5a9fc5562110753a6f62649f17ae7d41717",
+   "samples": 326,
+   "lines": 560,
+   "vertical": 0,
+   "ignore": 239,
+   "by_class": {
+    "dialogue": 409,
+    "name": 151
+   },
+   "counts": {
+    "positive": 560,
+    "dialogue": 409,
+    "name": 151,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 94,
+    "meiki": 867,
+    "meiki_meets": 722,
+    "meiki_other": 0,
+    "meiki_ignore": 145,
+    "ink": 560,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 326
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50551_000",
+   "split": "train",
+   "title": "NPJH50551",
+   "npy_sha256": "0f80cf4f8588e7072e94360b99a7793248df339db6e90009e66f83e636b7f894",
+   "json_sha256": "c56005cf1257f594c347fd97996edb3f3e29e4bb7351e998ddd7c7465336d298",
+   "samples": 175,
+   "lines": 515,
+   "vertical": 0,
+   "ignore": 489,
+   "by_class": {
+    "dialogue": 298,
+    "notdlg": 217
+   },
+   "counts": {
+    "positive": 298,
+    "dialogue": 298,
+    "name": 0,
+    "ruby_ignore": 7,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 1015,
+    "meiki_meets": 316,
+    "meiki_other": 217,
+    "meiki_ignore": 482,
+    "ink": 298,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 175
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50621_000",
+   "split": "train",
+   "title": "NPJH50621",
+   "npy_sha256": "be2d367e645796bfbcc205cc039386689221b5b88f57c285901a577b3dba4438",
+   "json_sha256": "b55eca7947adcd0701acbc22b7fad181980822db003aef22914a85fa95f01eb2",
+   "samples": 500,
+   "lines": 858,
+   "vertical": 0,
+   "ignore": 1805,
+   "by_class": {
+    "dialogue": 639,
+    "name": 211,
+    "notdlg": 8
+   },
+   "counts": {
+    "positive": 850,
+    "dialogue": 639,
+    "name": 211,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 152,
+    "meiki": 2669,
+    "meiki_meets": 1008,
+    "meiki_other": 8,
+    "meiki_ignore": 1653,
+    "ink": 850,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50621_001",
+   "split": "train",
+   "title": "NPJH50621",
+   "npy_sha256": "771617ef1f0b5ae10958e9691f60e4a262865cae7a9b2df5a19c3762e8e6bfe7",
+   "json_sha256": "e5f370473120446b90a7017b8b773f97f7f025aa7a5e2b31494436b9170b2b9e",
+   "samples": 500,
+   "lines": 848,
+   "vertical": 0,
+   "ignore": 1474,
+   "by_class": {
+    "name": 191,
+    "dialogue": 653,
+    "notdlg": 4
+   },
+   "counts": {
+    "positive": 844,
+    "dialogue": 653,
+    "name": 191,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 147,
+    "meiki": 2341,
+    "meiki_meets": 1010,
+    "meiki_other": 4,
+    "meiki_ignore": 1327,
+    "ink": 844,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50621_002",
+   "split": "train",
+   "title": "NPJH50621",
+   "npy_sha256": "1f5dc594cf075618a97b84819ae4e855e0c7194ccb5d10df09d80da6f9a0ae19",
+   "json_sha256": "191aafd14fec79ce4f1eab89738030cdccfb04c1ec54bfc9c2b299d3208fc93e",
+   "samples": 384,
+   "lines": 703,
+   "vertical": 0,
+   "ignore": 1611,
+   "by_class": {
+    "dialogue": 500,
+    "name": 202,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 702,
+    "dialogue": 500,
+    "name": 202,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 68,
+    "meiki": 2329,
+    "meiki_meets": 785,
+    "meiki_other": 1,
+    "meiki_ignore": 1543,
+    "ink": 702,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 384
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50641_000",
+   "split": "train",
+   "title": "NPJH50641",
+   "npy_sha256": "c262cbd44ca8dc2f85b68a314d8833c856ab72394f0d14d8b6e84471dfddbe3e",
+   "json_sha256": "962f692a1a7e0c7a9d41e076060b393c062dc9b076c6f4ca47add4f8a6b65584",
+   "samples": 500,
+   "lines": 1041,
+   "vertical": 0,
+   "ignore": 723,
+   "by_class": {
+    "dialogue": 779,
+    "name": 244,
+    "notdlg": 18
+   },
+   "counts": {
+    "positive": 1023,
+    "dialogue": 779,
+    "name": 244,
+    "ruby_ignore": 0,
+    "drop_ignore": 3,
+    "uncovered_ignore": 64,
+    "meiki": 1851,
+    "meiki_meets": 1177,
+    "meiki_other": 18,
+    "meiki_ignore": 656,
+    "ink": 1023,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50641_001",
+   "split": "train",
+   "title": "NPJH50641",
+   "npy_sha256": "0a7b4ad82abeba88d8658c23f87c0d0c19b64e7c9dcfabe288456e76e6a03e51",
+   "json_sha256": "693149b551a91a7a7f71b1fadd07f041d36b8d22fc73bd42675afa9051608134",
+   "samples": 500,
+   "lines": 1089,
+   "vertical": 0,
+   "ignore": 880,
+   "by_class": {
+    "name": 316,
+    "dialogue": 750,
+    "notdlg": 23
+   },
+   "counts": {
+    "positive": 1066,
+    "dialogue": 750,
+    "name": 316,
+    "ruby_ignore": 0,
+    "drop_ignore": 4,
+    "uncovered_ignore": 16,
+    "meiki": 2069,
+    "meiki_meets": 1186,
+    "meiki_other": 23,
+    "meiki_ignore": 860,
+    "ink": 1066,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50641_002",
+   "split": "train",
+   "title": "NPJH50641",
+   "npy_sha256": "c969f00ce7bdd07c77f11c2c6fc98ba2f50d0de3b4655e69501f680defccfcdc",
+   "json_sha256": "84986cdf5cf9ad2468096012be834c21a3376c2484d5723a3ec42aec57ca1b43",
+   "samples": 25,
+   "lines": 49,
+   "vertical": 0,
+   "ignore": 30,
+   "by_class": {
+    "name": 14,
+    "dialogue": 35
+   },
+   "counts": {
+    "positive": 49,
+    "dialogue": 35,
+    "name": 14,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 5,
+    "meiki": 81,
+    "meiki_meets": 56,
+    "meiki_other": 0,
+    "meiki_ignore": 25,
+    "ink": 49,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 25
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50649_000",
+   "split": "train",
+   "title": "NPJH50649",
+   "npy_sha256": "4c5e2699d402681a98fb06b3794c8a3ef9d8c46c02dee439b7108ab42adcf565",
+   "json_sha256": "e90d74021003fee05342600e066601204d53b78656afbfd2f09b5122485be791",
+   "samples": 500,
+   "lines": 1574,
+   "vertical": 151,
+   "ignore": 1668,
+   "by_class": {
+    "name": 476,
+    "dialogue": 940,
+    "notdlg": 158
+   },
+   "counts": {
+    "positive": 1416,
+    "dialogue": 940,
+    "name": 476,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 41,
+    "meiki": 3240,
+    "meiki_meets": 1455,
+    "meiki_other": 158,
+    "meiki_ignore": 1627,
+    "ink": 1416,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "NPJH50649_001",
+   "split": "train",
+   "title": "NPJH50649",
+   "npy_sha256": "56e19fffc7acdd66d94df21268f6b617dd2cc4e5b5b0dd622d6ea88299123acf",
+   "json_sha256": "3f21115fae4604e92aecf310459853a2d6c5f2558fe5b56fc6ed2de3bd4d70e0",
+   "samples": 463,
+   "lines": 1403,
+   "vertical": 29,
+   "ignore": 2781,
+   "by_class": {
+    "name": 443,
+    "dialogue": 838,
+    "notdlg": 122
+   },
+   "counts": {
+    "positive": 1281,
+    "dialogue": 838,
+    "name": 443,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 49,
+    "meiki": 4184,
+    "meiki_meets": 1330,
+    "meiki_other": 122,
+    "meiki_ignore": 2732,
+    "ink": 1281,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 463
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00007_000",
+   "split": "train",
+   "title": "PCSG00007",
+   "npy_sha256": "0a4473694df51efd0aa90b47c3a52d169d515b76e072106c7a71dd905c5b8754",
+   "json_sha256": "a1432da98ed75bc79a8eb206bbc89cf4ad8f7bac434de096deabad1821d50567",
+   "samples": 500,
+   "lines": 1266,
+   "vertical": 10,
+   "ignore": 1270,
+   "by_class": {
+    "name": 253,
+    "dialogue": 593,
+    "notdlg": 420
+   },
+   "counts": {
+    "positive": 846,
+    "dialogue": 593,
+    "name": 253,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 2,
+    "meiki": 2687,
+    "meiki_meets": 999,
+    "meiki_other": 420,
+    "meiki_ignore": 1268,
+    "ink": 846,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00007_001",
+   "split": "train",
+   "title": "PCSG00007",
+   "npy_sha256": "2e0afab2067a1b67293ac8313cd437db1d0e04f858c7110ccb379170999073f5",
+   "json_sha256": "6b1d4d4bd19d9b318e555bc87681a195df0af867cc7c19f2b4b947393f5ce785",
+   "samples": 15,
+   "lines": 66,
+   "vertical": 0,
+   "ignore": 28,
+   "by_class": {
+    "name": 14,
+    "dialogue": 18,
+    "notdlg": 34
+   },
+   "counts": {
+    "positive": 32,
+    "dialogue": 18,
+    "name": 14,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 104,
+    "meiki_meets": 42,
+    "meiki_other": 34,
+    "meiki_ignore": 28,
+    "ink": 32,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 15,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00146_000",
+   "split": "train",
+   "title": "PCSG00146",
+   "npy_sha256": "f4d7d1ab2bd7dbc04b9c15d3160afd16b5d0940f3fdf9142098b8323cd1e6d7d",
+   "json_sha256": "b33a7fa16d96f791562e38b6a4cdc9cc6287311307d459d7fb5d514c5ba90c18",
+   "samples": 500,
+   "lines": 2397,
+   "vertical": 0,
+   "ignore": 5301,
+   "by_class": {
+    "dialogue": 641,
+    "name": 278,
+    "notdlg": 1478
+   },
+   "counts": {
+    "positive": 919,
+    "dialogue": 641,
+    "name": 278,
+    "ruby_ignore": 26,
+    "drop_ignore": 0,
+    "uncovered_ignore": 14,
+    "meiki": 7748,
+    "meiki_meets": 1009,
+    "meiki_other": 1478,
+    "meiki_ignore": 5261,
+    "ink": 919,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00146_001",
+   "split": "train",
+   "title": "PCSG00146",
+   "npy_sha256": "f12f502eb4c5253a5583c18c9302bc0ac45c88a3553d1d8dee8a03472d80d33e",
+   "json_sha256": "3489ff4a1db25cb339fc6e37cb0ff750577dfb815f5e7779cc9aa94457c1a00a",
+   "samples": 500,
+   "lines": 2664,
+   "vertical": 18,
+   "ignore": 6822,
+   "by_class": {
+    "dialogue": 684,
+    "name": 277,
+    "notdlg": 1703
+   },
+   "counts": {
+    "positive": 961,
+    "dialogue": 684,
+    "name": 277,
+    "ruby_ignore": 13,
+    "drop_ignore": 0,
+    "uncovered_ignore": 13,
+    "meiki": 9601,
+    "meiki_meets": 1102,
+    "meiki_other": 1703,
+    "meiki_ignore": 6796,
+    "ink": 961,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00146_002",
+   "split": "train",
+   "title": "PCSG00146",
+   "npy_sha256": "eabd2f7b45d151148bd1794ac7c0d5f23ffe8c48ce15f68399c0ae559905c023",
+   "json_sha256": "2238a0e02aa42bd28f63016957beb7cf69fd3393db56fbe4712e13b36efddeda",
+   "samples": 378,
+   "lines": 2291,
+   "vertical": 24,
+   "ignore": 5494,
+   "by_class": {
+    "dialogue": 487,
+    "notdlg": 1628,
+    "name": 176
+   },
+   "counts": {
+    "positive": 663,
+    "dialogue": 487,
+    "name": 176,
+    "ruby_ignore": 3,
+    "drop_ignore": 0,
+    "uncovered_ignore": 7,
+    "meiki": 7830,
+    "meiki_meets": 718,
+    "meiki_other": 1628,
+    "meiki_ignore": 5484,
+    "ink": 663,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 378,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00352_000",
+   "split": "train",
+   "title": "PCSG00352",
+   "npy_sha256": "64cd1f84ba9e9bb5a1514b9140f55efa004fcb130369d0323297b6059b5c615b",
+   "json_sha256": "6d9875c5ee41c5238b6030f1d9b92ab0d4c10becf9f4b3d151a09c9334e9a945",
+   "samples": 500,
+   "lines": 2409,
+   "vertical": 0,
+   "ignore": 2267,
+   "by_class": {
+    "dialogue": 679,
+    "notdlg": 1633,
+    "name": 97
+   },
+   "counts": {
+    "positive": 776,
+    "dialogue": 679,
+    "name": 97,
+    "ruby_ignore": 17,
+    "drop_ignore": 0,
+    "uncovered_ignore": 84,
+    "meiki": 4986,
+    "meiki_meets": 1187,
+    "meiki_other": 1633,
+    "meiki_ignore": 2166,
+    "ink": 776,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00352_001",
+   "split": "train",
+   "title": "PCSG00352",
+   "npy_sha256": "cc6eddacff73e4096166ef73b5fe13669652a44365da538929f305fbfc87c8bc",
+   "json_sha256": "adac475e805d6de27be23759e05cf7b8464718bd0321b527c36286388f5b31dd",
+   "samples": 32,
+   "lines": 164,
+   "vertical": 0,
+   "ignore": 89,
+   "by_class": {
+    "dialogue": 46,
+    "notdlg": 109,
+    "name": 9
+   },
+   "counts": {
+    "positive": 55,
+    "dialogue": 46,
+    "name": 9,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 274,
+    "meiki_meets": 76,
+    "meiki_other": 109,
+    "meiki_ignore": 89,
+    "ink": 55,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 32,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00367_000",
+   "split": "train",
+   "title": "PCSG00367",
+   "npy_sha256": "a0f0b7b44f72b565a12140ac3be9f563b69fd51968711a9cd64a53178cb03f01",
+   "json_sha256": "f7bd7e92362413f41f35605a4c7233016682568a6fe2b79a6a5c501db0d0278c",
+   "samples": 500,
+   "lines": 913,
+   "vertical": 0,
+   "ignore": 1018,
+   "by_class": {
+    "dialogue": 909,
+    "notdlg": 4
+   },
+   "counts": {
+    "positive": 909,
+    "dialogue": 909,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 520,
+    "meiki": 2008,
+    "meiki_meets": 1506,
+    "meiki_other": 4,
+    "meiki_ignore": 498,
+    "ink": 909,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00367_001",
+   "split": "train",
+   "title": "PCSG00367",
+   "npy_sha256": "82ccf80bbf560068f2275ac53673792ae0088f81eb25723b4e293129e12d6d39",
+   "json_sha256": "65a1def02033e7b75e630cd63c0b67d169e21888c9fa97b276c9be0931650695",
+   "samples": 500,
+   "lines": 857,
+   "vertical": 0,
+   "ignore": 1046,
+   "by_class": {
+    "dialogue": 854,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 854,
+    "dialogue": 854,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 526,
+    "meiki": 1978,
+    "meiki_meets": 1455,
+    "meiki_other": 3,
+    "meiki_ignore": 520,
+    "ink": 854,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00367_002",
+   "split": "train",
+   "title": "PCSG00367",
+   "npy_sha256": "322abf6c56b838d89e7c9e8116a2587a800c5109719e02cd77ba9c642db8338e",
+   "json_sha256": "a491a177481c1e0bb42d3a9d545cbc377872d6a27f5e770ff54dd93f0f02ccc7",
+   "samples": 58,
+   "lines": 94,
+   "vertical": 0,
+   "ignore": 91,
+   "by_class": {
+    "dialogue": 94
+   },
+   "counts": {
+    "positive": 94,
+    "dialogue": 94,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 59,
+    "meiki": 201,
+    "meiki_meets": 169,
+    "meiki_other": 0,
+    "meiki_ignore": 32,
+    "ink": 94,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 58,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00380_000",
+   "split": "train",
+   "title": "PCSG00380",
+   "npy_sha256": "eb9b34b200d1d1137c172f66ee7974ddc05f6108e0131b610ac6e92ebd61a5a0",
+   "json_sha256": "2bb7035e0cbaf8a4fe88738938adee35d4b5b0a82f72b465c628a6034cb1e58f",
+   "samples": 500,
+   "lines": 1008,
+   "vertical": 0,
+   "ignore": 1784,
+   "by_class": {
+    "dialogue": 921,
+    "notdlg": 87
+   },
+   "counts": {
+    "positive": 921,
+    "dialogue": 921,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 339,
+    "meiki": 2875,
+    "meiki_meets": 1343,
+    "meiki_other": 87,
+    "meiki_ignore": 1445,
+    "ink": 921,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00380_001",
+   "split": "train",
+   "title": "PCSG00380",
+   "npy_sha256": "484d519df41a0d6088fb19285aa6b17070ca14021fe1a8e9f63e6d1f08bd0fd0",
+   "json_sha256": "a52e2c9c6765f1c932c631b8ba3d5782236b022eb8ac3077f99bc2f3104c126a",
+   "samples": 491,
+   "lines": 1142,
+   "vertical": 0,
+   "ignore": 2793,
+   "by_class": {
+    "dialogue": 970,
+    "notdlg": 172
+   },
+   "counts": {
+    "positive": 970,
+    "dialogue": 970,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 331,
+    "meiki": 3996,
+    "meiki_meets": 1362,
+    "meiki_other": 172,
+    "meiki_ignore": 2462,
+    "ink": 970,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 491,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00468_000",
+   "split": "train",
+   "title": "PCSG00468",
+   "npy_sha256": "4265f3dd10c3e5575a8c1bcc305686ed7eb0802e50e6d561d0d178770c8bb62c",
+   "json_sha256": "1e76b18b1887312afe66a74203c0aa58a0ccb58bc9d3fba3b522ea99cd7701d0",
+   "samples": 366,
+   "lines": 626,
+   "vertical": 0,
+   "ignore": 378,
+   "by_class": {
+    "dialogue": 624,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 624,
+    "dialogue": 624,
+    "name": 0,
+    "ruby_ignore": 9,
+    "drop_ignore": 0,
+    "uncovered_ignore": 255,
+    "meiki": 1156,
+    "meiki_meets": 1040,
+    "meiki_other": 2,
+    "meiki_ignore": 114,
+    "ink": 624,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 366,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00469_000",
+   "split": "train",
+   "title": "PCSG00469",
+   "npy_sha256": "4fd9888a65444926773a8c92bf42316bf1684c1f84dcdbbb2fa0e462b34a94be",
+   "json_sha256": "b802d90b706fac8774e8577ca83cdbecba739a589dce8d7c607d07f476f5f5f1",
+   "samples": 500,
+   "lines": 1017,
+   "vertical": 11,
+   "ignore": 423,
+   "by_class": {
+    "dialogue": 971,
+    "name": 30,
+    "notdlg": 16
+   },
+   "counts": {
+    "positive": 1001,
+    "dialogue": 971,
+    "name": 30,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 187,
+    "meiki": 1465,
+    "meiki_meets": 1213,
+    "meiki_other": 16,
+    "meiki_ignore": 236,
+    "ink": 1001,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00469_001",
+   "split": "train",
+   "title": "PCSG00469",
+   "npy_sha256": "99bc96197776ffeb0aa340bcb8ac7a12a4909769e754720447923e75671af032",
+   "json_sha256": "7d4f1399300833b7bc7571022ea83113ab5bd88a955698f67114ece946e987aa",
+   "samples": 500,
+   "lines": 1117,
+   "vertical": 0,
+   "ignore": 304,
+   "by_class": {
+    "dialogue": 989,
+    "name": 122,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 1111,
+    "dialogue": 989,
+    "name": 122,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 157,
+    "meiki": 1493,
+    "meiki_meets": 1340,
+    "meiki_other": 6,
+    "meiki_ignore": 147,
+    "ink": 1111,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00469_002",
+   "split": "train",
+   "title": "PCSG00469",
+   "npy_sha256": "685919e3874bd71c0dae01bba826a3049890bb4da0a3b87a25225e58aac22802",
+   "json_sha256": "2ce1d89385f34fe79635890c3e080fb2a31b4316d342ac9afbd03ee71df689e8",
+   "samples": 500,
+   "lines": 1159,
+   "vertical": 109,
+   "ignore": 871,
+   "by_class": {
+    "name": 88,
+    "dialogue": 958,
+    "notdlg": 113
+   },
+   "counts": {
+    "positive": 1046,
+    "dialogue": 958,
+    "name": 88,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 176,
+    "meiki": 2069,
+    "meiki_meets": 1261,
+    "meiki_other": 113,
+    "meiki_ignore": 695,
+    "ink": 1046,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00469_003",
+   "split": "train",
+   "title": "PCSG00469",
+   "npy_sha256": "c32b3f7dbadad2083399f4fdb9a09c3103599856549d981301ff7a702125ed94",
+   "json_sha256": "ab943bb9ea2dfeff7a8c4bcea988442986f3d32fae06892c780b937495628404",
+   "samples": 356,
+   "lines": 776,
+   "vertical": 19,
+   "ignore": 275,
+   "by_class": {
+    "dialogue": 664,
+    "notdlg": 21,
+    "name": 91
+   },
+   "counts": {
+    "positive": 755,
+    "dialogue": 664,
+    "name": 91,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 158,
+    "meiki": 1071,
+    "meiki_meets": 933,
+    "meiki_other": 21,
+    "meiki_ignore": 117,
+    "ink": 755,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 356,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00509_000",
+   "split": "train",
+   "title": "PCSG00509",
+   "npy_sha256": "4cdb9a9547943241f7f4970b273fcf0be556e4f71b9121745ab93c33fcdf2815",
+   "json_sha256": "fb9c67096090b86497c28ec6f698ad566b2922c27fdd02d771b3156fc05d8d71",
+   "samples": 500,
+   "lines": 1709,
+   "vertical": 0,
+   "ignore": 2051,
+   "by_class": {
+    "dialogue": 720,
+    "notdlg": 989
+   },
+   "counts": {
+    "positive": 720,
+    "dialogue": 720,
+    "name": 0,
+    "ruby_ignore": 9,
+    "drop_ignore": 0,
+    "uncovered_ignore": 396,
+    "meiki": 3939,
+    "meiki_meets": 1304,
+    "meiki_other": 989,
+    "meiki_ignore": 1646,
+    "ink": 720,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00509_001",
+   "split": "train",
+   "title": "PCSG00509",
+   "npy_sha256": "ad4e21d6702df6ec00a426f8abd027e92c6d3e6efcd4013fe1872ae815ffcfc9",
+   "json_sha256": "0e21ab38f2d168cb44eae5b3939f8992dfd97fd8c274f1211daec27b1f57afb5",
+   "samples": 500,
+   "lines": 1593,
+   "vertical": 0,
+   "ignore": 1421,
+   "by_class": {
+    "dialogue": 747,
+    "notdlg": 846
+   },
+   "counts": {
+    "positive": 747,
+    "dialogue": 747,
+    "name": 0,
+    "ruby_ignore": 2,
+    "drop_ignore": 0,
+    "uncovered_ignore": 425,
+    "meiki": 3190,
+    "meiki_meets": 1350,
+    "meiki_other": 846,
+    "meiki_ignore": 994,
+    "ink": 747,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00509_002",
+   "split": "train",
+   "title": "PCSG00509",
+   "npy_sha256": "6594a37498afa6655c74f9a4e9d38e2b372752a2aeb08cc3759a0a5896bbaf8c",
+   "json_sha256": "c227445de2777949c620935d20314c596722a2170820d39d9c5ec9e3f3104754",
+   "samples": 187,
+   "lines": 482,
+   "vertical": 0,
+   "ignore": 438,
+   "by_class": {
+    "dialogue": 264,
+    "notdlg": 218
+   },
+   "counts": {
+    "positive": 264,
+    "dialogue": 264,
+    "name": 0,
+    "ruby_ignore": 4,
+    "drop_ignore": 0,
+    "uncovered_ignore": 124,
+    "meiki": 1002,
+    "meiki_meets": 474,
+    "meiki_other": 218,
+    "meiki_ignore": 310,
+    "ink": 264,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 187,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00540_000",
+   "split": "train",
+   "title": "PCSG00540",
+   "npy_sha256": "52f57007b68083a8c66e9e01c653f463b4669601996f582223104dd7d46290c3",
+   "json_sha256": "61d134ff1f70f5c3b71791809196435bbb63089cddffefebb525e991f4477176",
+   "samples": 500,
+   "lines": 969,
+   "vertical": 44,
+   "ignore": 840,
+   "by_class": {
+    "name": 302,
+    "dialogue": 573,
+    "notdlg": 94
+   },
+   "counts": {
+    "positive": 875,
+    "dialogue": 573,
+    "name": 302,
+    "ruby_ignore": 60,
+    "drop_ignore": 0,
+    "uncovered_ignore": 44,
+    "meiki": 1947,
+    "meiki_meets": 1117,
+    "meiki_other": 94,
+    "meiki_ignore": 736,
+    "ink": 875,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00540_001",
+   "split": "train",
+   "title": "PCSG00540",
+   "npy_sha256": "ab5e20f2437dd63ab6b16a0e02ddb8aa7e3f93856bc5f0fe1f84590a08d88ac7",
+   "json_sha256": "bafdd43e1ab67a5dedf02c401be2f9eeccd07ddfefab7b77c86c9efc4cbb55db",
+   "samples": 435,
+   "lines": 762,
+   "vertical": 0,
+   "ignore": 251,
+   "by_class": {
+    "name": 266,
+    "dialogue": 496
+   },
+   "counts": {
+    "positive": 762,
+    "dialogue": 496,
+    "name": 266,
+    "ruby_ignore": 14,
+    "drop_ignore": 0,
+    "uncovered_ignore": 7,
+    "meiki": 1129,
+    "meiki_meets": 899,
+    "meiki_other": 0,
+    "meiki_ignore": 230,
+    "ink": 762,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 435,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00547_000",
+   "split": "train",
+   "title": "PCSG00547",
+   "npy_sha256": "f8dd0bfdbe856e8b1ee2f31fb8cb7f3b9f29de1602f309fc649b0c6136d6c790",
+   "json_sha256": "8ee1af3f059fa66ed0ce4bf68b6f901c9bd1c31dd00cd68d3cc254cba3b94c4c",
+   "samples": 500,
+   "lines": 1118,
+   "vertical": 0,
+   "ignore": 652,
+   "by_class": {
+    "dialogue": 810,
+    "name": 289,
+    "notdlg": 19
+   },
+   "counts": {
+    "positive": 1099,
+    "dialogue": 810,
+    "name": 289,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 145,
+    "meiki": 2370,
+    "meiki_meets": 1844,
+    "meiki_other": 19,
+    "meiki_ignore": 507,
+    "ink": 1099,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00547_001",
+   "split": "train",
+   "title": "PCSG00547",
+   "npy_sha256": "55915b0988b62da21debe088ba64e719584e8f8730f89b1a0a388bc8031456c5",
+   "json_sha256": "c0c04d042c45e0f7eea121732764dccf614578315ad6928008040e9c5e7146b9",
+   "samples": 420,
+   "lines": 908,
+   "vertical": 0,
+   "ignore": 787,
+   "by_class": {
+    "dialogue": 642,
+    "name": 260,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 902,
+    "dialogue": 642,
+    "name": 260,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 134,
+    "meiki": 2319,
+    "meiki_meets": 1660,
+    "meiki_other": 6,
+    "meiki_ignore": 653,
+    "ink": 902,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 420,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00553_000",
+   "split": "train",
+   "title": "PCSG00553",
+   "npy_sha256": "d292b75d138c26c2054f66fda99c835a27414c1dd35061e1386e4b46b00fafb1",
+   "json_sha256": "c6e8ce8dcd083e263c45a76df77c92028812eb2352073936467d1698762e411d",
+   "samples": 500,
+   "lines": 974,
+   "vertical": 0,
+   "ignore": 2942,
+   "by_class": {
+    "dialogue": 974
+   },
+   "counts": {
+    "positive": 974,
+    "dialogue": 974,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 8,
+    "uncovered_ignore": 457,
+    "meiki": 4006,
+    "meiki_meets": 1529,
+    "meiki_other": 0,
+    "meiki_ignore": 2477,
+    "ink": 974,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00553_001",
+   "split": "train",
+   "title": "PCSG00553",
+   "npy_sha256": "8360d000245c8ee4a897e16775ef04725700e44a19f8665648daf5cb8d1108bd",
+   "json_sha256": "bc1b9bb9c5f6bb9e4f609990fe285bda205895ef0d0e8480585be08891e662d6",
+   "samples": 500,
+   "lines": 953,
+   "vertical": 0,
+   "ignore": 3170,
+   "by_class": {
+    "dialogue": 953
+   },
+   "counts": {
+    "positive": 953,
+    "dialogue": 953,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 17,
+    "uncovered_ignore": 386,
+    "meiki": 4184,
+    "meiki_meets": 1417,
+    "meiki_other": 0,
+    "meiki_ignore": 2767,
+    "ink": 953,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00553_002",
+   "split": "train",
+   "title": "PCSG00553",
+   "npy_sha256": "ddd0de226af47d25e456ab573bc21a01606bcda52bcd4ee58a52a30ea9daf8e6",
+   "json_sha256": "690969b5388b1f48638a92fc5160fe373700701291b5f9b0cb16da9265434c00",
+   "samples": 34,
+   "lines": 74,
+   "vertical": 0,
+   "ignore": 208,
+   "by_class": {
+    "dialogue": 73,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 73,
+    "dialogue": 73,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 2,
+    "uncovered_ignore": 18,
+    "meiki": 282,
+    "meiki_meets": 93,
+    "meiki_other": 1,
+    "meiki_ignore": 188,
+    "ink": 73,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 34,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00555_000",
+   "split": "train",
+   "title": "PCSG00555",
+   "npy_sha256": "90663c0bcc8e7e35cf9ae3f49b5794cf474b25ac2c7fcd1eb7aac9b4caa859df",
+   "json_sha256": "3418c9d0a1d8f6b3c3455d50c3dcf4f1df456850725d389606847b4cfec0b5ce",
+   "samples": 348,
+   "lines": 784,
+   "vertical": 0,
+   "ignore": 2129,
+   "by_class": {
+    "dialogue": 535,
+    "notdlg": 249
+   },
+   "counts": {
+    "positive": 535,
+    "dialogue": 535,
+    "name": 0,
+    "ruby_ignore": 8,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 2924,
+    "meiki_meets": 554,
+    "meiki_other": 249,
+    "meiki_ignore": 2121,
+    "ink": 535,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 348,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00576_000",
+   "split": "train",
+   "title": "PCSG00576",
+   "npy_sha256": "8b402d9aa50ec4d50ef59dacf0f0fa765b5532a3ecf86ceb328ab9cd9ab602fd",
+   "json_sha256": "36edcca2e021d8b89b02a20e6a41e41548068f080ef36d843ee015c4c371a9e4",
+   "samples": 500,
+   "lines": 1089,
+   "vertical": 162,
+   "ignore": 3063,
+   "by_class": {
+    "dialogue": 927,
+    "notdlg": 162
+   },
+   "counts": {
+    "positive": 927,
+    "dialogue": 927,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 500,
+    "meiki": 4913,
+    "meiki_meets": 2188,
+    "meiki_other": 162,
+    "meiki_ignore": 2563,
+    "ink": 927,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00576_001",
+   "split": "train",
+   "title": "PCSG00576",
+   "npy_sha256": "a90fa7a1dcb5d2f2209722e4d1398ac9499f0cf63c73de1fb6ae87b10f0c938a",
+   "json_sha256": "4d3c5be5710e467502936ccd651cd63b6da10f55549e529adfac723f528c28e9",
+   "samples": 500,
+   "lines": 1476,
+   "vertical": 482,
+   "ignore": 2883,
+   "by_class": {
+    "dialogue": 921,
+    "notdlg": 555
+   },
+   "counts": {
+    "positive": 921,
+    "dialogue": 921,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 515,
+    "meiki": 5136,
+    "meiki_meets": 2213,
+    "meiki_other": 555,
+    "meiki_ignore": 2368,
+    "ink": 921,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00576_002",
+   "split": "train",
+   "title": "PCSG00576",
+   "npy_sha256": "8b9ab8c1d60320a44170c91a99ac1048c9e46ce131db4fd57852640c9c37b9f2",
+   "json_sha256": "920a5c87a762d92c01f8962cb9575b008a485cacbf520cb6ab252c1d8ae2c631",
+   "samples": 110,
+   "lines": 330,
+   "vertical": 125,
+   "ignore": 639,
+   "by_class": {
+    "dialogue": 205,
+    "notdlg": 125
+   },
+   "counts": {
+    "positive": 205,
+    "dialogue": 205,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 110,
+    "meiki": 1090,
+    "meiki_meets": 436,
+    "meiki_other": 125,
+    "meiki_ignore": 529,
+    "ink": 205,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 110,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00611_000",
+   "split": "train",
+   "title": "PCSG00611",
+   "npy_sha256": "fe4f8d7907ef577caaad56e369e6e7e108d77a7623702f917a69401e9b3c06ad",
+   "json_sha256": "2d7360a920c210a4ff32df7a67c5fa09b35212b74e9f5baf03da00c187f5cd98",
+   "samples": 500,
+   "lines": 688,
+   "vertical": 0,
+   "ignore": 1217,
+   "by_class": {
+    "dialogue": 688
+   },
+   "counts": {
+    "positive": 688,
+    "dialogue": 688,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 340,
+    "meiki": 2071,
+    "meiki_meets": 1194,
+    "meiki_other": 0,
+    "meiki_ignore": 877,
+    "ink": 688,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00611_001",
+   "split": "train",
+   "title": "PCSG00611",
+   "npy_sha256": "0d4b81e66cf30fc61008fe172615dbdb77b8df8f15078749fd00f6eb4f0cff2c",
+   "json_sha256": "5a9e640add7bac6fbc69d0df4992c1fa1ddc04e60adc30a3e576de53eeb17874",
+   "samples": 500,
+   "lines": 722,
+   "vertical": 0,
+   "ignore": 1063,
+   "by_class": {
+    "dialogue": 722
+   },
+   "counts": {
+    "positive": 722,
+    "dialogue": 722,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 362,
+    "meiki": 1932,
+    "meiki_meets": 1231,
+    "meiki_other": 0,
+    "meiki_ignore": 701,
+    "ink": 722,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00611_002",
+   "split": "train",
+   "title": "PCSG00611",
+   "npy_sha256": "ae0903ecd92c280614762def07940b19b805813e008af2e1df10b218d5d15f31",
+   "json_sha256": "1b1c78c58a575d29d1038bed7e78f993b750c7b3b6ec95c99db5813fc86df0cd",
+   "samples": 267,
+   "lines": 338,
+   "vertical": 0,
+   "ignore": 426,
+   "by_class": {
+    "dialogue": 338
+   },
+   "counts": {
+    "positive": 338,
+    "dialogue": 338,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 185,
+    "meiki": 846,
+    "meiki_meets": 605,
+    "meiki_other": 0,
+    "meiki_ignore": 241,
+    "ink": 338,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 267,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00620_000",
+   "split": "train",
+   "title": "PCSG00620",
+   "npy_sha256": "50e272a94aec517ae3ba076d915165ac1b75ce6c29817cefebb0f1f32112974e",
+   "json_sha256": "4bca81aa53f2f4b88e132e83610f678b878cdb2c15b139849bb9a191c4192fc7",
+   "samples": 500,
+   "lines": 1326,
+   "vertical": 27,
+   "ignore": 2446,
+   "by_class": {
+    "dialogue": 933,
+    "notdlg": 393
+   },
+   "counts": {
+    "positive": 933,
+    "dialogue": 933,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 2,
+    "meiki": 3913,
+    "meiki_meets": 1076,
+    "meiki_other": 393,
+    "meiki_ignore": 2444,
+    "ink": 933,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00620_001",
+   "split": "train",
+   "title": "PCSG00620",
+   "npy_sha256": "c97efc3fcbfac95d2a6785d84c28ab55f90a015ff227cde0e3758c20ec352010",
+   "json_sha256": "0b01a120fbffee4b613e68045b7af9d6c7bc723ca39c34a8d14999b4f887234b",
+   "samples": 425,
+   "lines": 1167,
+   "vertical": 4,
+   "ignore": 2498,
+   "by_class": {
+    "dialogue": 763,
+    "notdlg": 404
+   },
+   "counts": {
+    "positive": 763,
+    "dialogue": 763,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 3746,
+    "meiki_meets": 844,
+    "meiki_other": 404,
+    "meiki_ignore": 2498,
+    "ink": 763,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 425,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00628_000",
+   "split": "train",
+   "title": "PCSG00628",
+   "npy_sha256": "996611e0b2e828ed88bf0e94f03dead77f234a3d304118cefdc12c2005b31feb",
+   "json_sha256": "45550cdbf3c59ede0c4a74ee775630daea24929ba6677bb3b3c95058925950bd",
+   "samples": 500,
+   "lines": 1060,
+   "vertical": 5,
+   "ignore": 670,
+   "by_class": {
+    "dialogue": 788,
+    "name": 186,
+    "notdlg": 86
+   },
+   "counts": {
+    "positive": 974,
+    "dialogue": 788,
+    "name": 186,
+    "ruby_ignore": 43,
+    "drop_ignore": 0,
+    "uncovered_ignore": 44,
+    "meiki": 1793,
+    "meiki_meets": 1124,
+    "meiki_other": 86,
+    "meiki_ignore": 583,
+    "ink": 974,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00628_001",
+   "split": "train",
+   "title": "PCSG00628",
+   "npy_sha256": "0d9b7f67f491272e7b01e737df6b09f5f4e89d4e85a750d41ccb11d73ed767c4",
+   "json_sha256": "b070de4afa6184fdf11600f62e2d2edc9e8de3c06c58632b33242244d59002ca",
+   "samples": 500,
+   "lines": 966,
+   "vertical": 3,
+   "ignore": 337,
+   "by_class": {
+    "dialogue": 789,
+    "name": 174,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 963,
+    "dialogue": 789,
+    "name": 174,
+    "ruby_ignore": 11,
+    "drop_ignore": 0,
+    "uncovered_ignore": 66,
+    "meiki": 1341,
+    "meiki_meets": 1078,
+    "meiki_other": 3,
+    "meiki_ignore": 260,
+    "ink": 963,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00628_002",
+   "split": "train",
+   "title": "PCSG00628",
+   "npy_sha256": "300b780b8c8892354f2d2adf77bd5639905e5e64fc798de5a2ad8fc21636302f",
+   "json_sha256": "c02803a355ce530b400256524ae1f02ab62b464f02c71968f6167f6f1c422471",
+   "samples": 97,
+   "lines": 403,
+   "vertical": 0,
+   "ignore": 467,
+   "by_class": {
+    "name": 59,
+    "dialogue": 137,
+    "notdlg": 207
+   },
+   "counts": {
+    "positive": 196,
+    "dialogue": 137,
+    "name": 59,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 5,
+    "meiki": 875,
+    "meiki_meets": 206,
+    "meiki_other": 207,
+    "meiki_ignore": 462,
+    "ink": 196,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 97,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00648_000",
+   "split": "train",
+   "title": "PCSG00648",
+   "npy_sha256": "30c1ee05b6767fa2cc366eeee4a4e0d88d037c6f063ab2aee8cbef034d3350af",
+   "json_sha256": "2be753f20bc5db850259869b79202ae4825e3538859b27181d7fb5065b04026d",
+   "samples": 500,
+   "lines": 1523,
+   "vertical": 0,
+   "ignore": 927,
+   "by_class": {
+    "dialogue": 1523
+   },
+   "counts": {
+    "positive": 1523,
+    "dialogue": 1523,
+    "name": 0,
+    "ruby_ignore": 67,
+    "drop_ignore": 0,
+    "uncovered_ignore": 616,
+    "meiki": 2490,
+    "meiki_meets": 2246,
+    "meiki_other": 0,
+    "meiki_ignore": 244,
+    "ink": 1523,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00648_001",
+   "split": "train",
+   "title": "PCSG00648",
+   "npy_sha256": "df8717bfbb4951f7bbe9de4d85cdab725ea3c9f2602dc6e6ddff074f41ce0bfa",
+   "json_sha256": "772eac8c92d3b503921603b512c4f23a9f5ed540055386722da8ebb1cad9ca03",
+   "samples": 500,
+   "lines": 1021,
+   "vertical": 0,
+   "ignore": 540,
+   "by_class": {
+    "dialogue": 1021
+   },
+   "counts": {
+    "positive": 1021,
+    "dialogue": 1021,
+    "name": 0,
+    "ruby_ignore": 18,
+    "drop_ignore": 0,
+    "uncovered_ignore": 389,
+    "meiki": 1576,
+    "meiki_meets": 1443,
+    "meiki_other": 0,
+    "meiki_ignore": 133,
+    "ink": 1021,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00648_002",
+   "split": "train",
+   "title": "PCSG00648",
+   "npy_sha256": "8bea954d967fafeda95cbdd4f81eeb8d2657f5c5c0fa759d30176b888e65189e",
+   "json_sha256": "16754afd96e3dcdef738163aee0441d68baf124520f5a805ac6c96b044884fda",
+   "samples": 277,
+   "lines": 494,
+   "vertical": 0,
+   "ignore": 492,
+   "by_class": {
+    "dialogue": 424,
+    "notdlg": 70
+   },
+   "counts": {
+    "positive": 424,
+    "dialogue": 424,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 225,
+    "meiki": 989,
+    "meiki_meets": 652,
+    "meiki_other": 70,
+    "meiki_ignore": 267,
+    "ink": 424,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 277,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00653_000",
+   "split": "train",
+   "title": "PCSG00653",
+   "npy_sha256": "fe15c8e02838cf4a0a41d89e7cb3f910885116a21f8b0e05a54464896b6dd3a0",
+   "json_sha256": "3bd99ea0185f386e9fbe9dc1d9754f22def7af8310ddc8a4d52abcf66f44ec90",
+   "samples": 500,
+   "lines": 1217,
+   "vertical": 1217,
+   "ignore": 1857,
+   "by_class": {
+    "dialogue": 939,
+    "notdlg": 278
+   },
+   "counts": {
+    "positive": 939,
+    "dialogue": 939,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 356,
+    "meiki": 3159,
+    "meiki_meets": 1380,
+    "meiki_other": 278,
+    "meiki_ignore": 1501,
+    "ink": 939,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00653_001",
+   "split": "train",
+   "title": "PCSG00653",
+   "npy_sha256": "5e256bec8e7743532dc8d9bde8fb2a1e6e884a0ecf8bd1476da017ccdf856220",
+   "json_sha256": "a70ec91116e991f89e48519302c69d1adaba41baf5728f95e8bf8fcad6294abb",
+   "samples": 298,
+   "lines": 604,
+   "vertical": 588,
+   "ignore": 1342,
+   "by_class": {
+    "dialogue": 559,
+    "notdlg": 45
+   },
+   "counts": {
+    "positive": 559,
+    "dialogue": 559,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 265,
+    "meiki": 1980,
+    "meiki_meets": 858,
+    "meiki_other": 45,
+    "meiki_ignore": 1077,
+    "ink": 559,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 298,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00666_000",
+   "split": "train",
+   "title": "PCSG00666",
+   "npy_sha256": "bebb82c069d978c2b73d4d64a1e8a073e79426e602cb00f56eafa63f7b51da1b",
+   "json_sha256": "401956be757698b8b3d6f1e6b3b931393034e7de0ca95ff3fdca3cf219fcdbea",
+   "samples": 500,
+   "lines": 802,
+   "vertical": 0,
+   "ignore": 799,
+   "by_class": {
+    "dialogue": 792,
+    "notdlg": 10
+   },
+   "counts": {
+    "positive": 792,
+    "dialogue": 792,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 320,
+    "meiki": 1627,
+    "meiki_meets": 1138,
+    "meiki_other": 10,
+    "meiki_ignore": 479,
+    "ink": 792,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00666_001",
+   "split": "train",
+   "title": "PCSG00666",
+   "npy_sha256": "582b8497d8dbfd03e28baf6372fbcc011a3624c3adaa6fca1d7725bba2a4eae9",
+   "json_sha256": "8ca97b229ca4518162ea328e71d128360ebe6356be6fa7576ced89123dec304d",
+   "samples": 500,
+   "lines": 821,
+   "vertical": 0,
+   "ignore": 1075,
+   "by_class": {
+    "dialogue": 804,
+    "notdlg": 17
+   },
+   "counts": {
+    "positive": 804,
+    "dialogue": 804,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 297,
+    "meiki": 1910,
+    "meiki_meets": 1115,
+    "meiki_other": 17,
+    "meiki_ignore": 778,
+    "ink": 804,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00666_002",
+   "split": "train",
+   "title": "PCSG00666",
+   "npy_sha256": "abca45f30dc2bcffdb7a378028fce251ae90f2de67c267673ec8f4816f95e472",
+   "json_sha256": "8e65d1924e1254c0d852c0f87f2679563d13a3d34f22534309ec4d3e46b16f51",
+   "samples": 460,
+   "lines": 804,
+   "vertical": 0,
+   "ignore": 771,
+   "by_class": {
+    "dialogue": 793,
+    "notdlg": 11
+   },
+   "counts": {
+    "positive": 793,
+    "dialogue": 793,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 326,
+    "meiki": 1610,
+    "meiki_meets": 1154,
+    "meiki_other": 11,
+    "meiki_ignore": 445,
+    "ink": 793,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 460,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00667_000",
+   "split": "train",
+   "title": "PCSG00667",
+   "npy_sha256": "176fe0f19156b1bc6f9c53ccf90b9a0ea434e67b00c7adea601696a07bc4e138",
+   "json_sha256": "d265f2d0915a76e0a042f7a1f9cedf5532b2530015a60db8e6ea3395744a93ee",
+   "samples": 500,
+   "lines": 1324,
+   "vertical": 0,
+   "ignore": 1294,
+   "by_class": {
+    "dialogue": 782,
+    "notdlg": 521,
+    "name": 21
+   },
+   "counts": {
+    "positive": 803,
+    "dialogue": 782,
+    "name": 21,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 379,
+    "meiki": 2649,
+    "meiki_meets": 1213,
+    "meiki_other": 521,
+    "meiki_ignore": 915,
+    "ink": 803,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00667_001",
+   "split": "train",
+   "title": "PCSG00667",
+   "npy_sha256": "a726a3a38fc63d06fa08df102f89607d3f211887771a04c7f474b92f6f4d95d6",
+   "json_sha256": "ba1e06cd374e7963cea64a7dcfa44f27b94b5f281487807b20d1fe89f2183e4b",
+   "samples": 500,
+   "lines": 1313,
+   "vertical": 0,
+   "ignore": 1096,
+   "by_class": {
+    "dialogue": 794,
+    "notdlg": 502,
+    "name": 17
+   },
+   "counts": {
+    "positive": 811,
+    "dialogue": 794,
+    "name": 17,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 412,
+    "meiki": 2435,
+    "meiki_meets": 1249,
+    "meiki_other": 502,
+    "meiki_ignore": 684,
+    "ink": 811,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00667_002",
+   "split": "train",
+   "title": "PCSG00667",
+   "npy_sha256": "713015124fee021b95b10c5570b6cc11bcab125c41fb89540da0dc7e66ad1085",
+   "json_sha256": "32bb99b4d9f3db65b23d56a267365c8d9f667b79c262cc12603601bb1526e9e8",
+   "samples": 500,
+   "lines": 1383,
+   "vertical": 0,
+   "ignore": 1505,
+   "by_class": {
+    "dialogue": 817,
+    "notdlg": 552,
+    "name": 14
+   },
+   "counts": {
+    "positive": 831,
+    "dialogue": 817,
+    "name": 14,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 363,
+    "meiki": 2915,
+    "meiki_meets": 1221,
+    "meiki_other": 552,
+    "meiki_ignore": 1142,
+    "ink": 831,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00667_003",
+   "split": "train",
+   "title": "PCSG00667",
+   "npy_sha256": "66284a267a530676aa821843d3e6aa6ea64b8f031c6858600bd92f9fc56c7f62",
+   "json_sha256": "70bd6b21f1c23339fe13f82db7f0dcc66d28293c430792e512eb68079ea66659",
+   "samples": 360,
+   "lines": 975,
+   "vertical": 0,
+   "ignore": 773,
+   "by_class": {
+    "dialogue": 563,
+    "notdlg": 390,
+    "name": 22
+   },
+   "counts": {
+    "positive": 585,
+    "dialogue": 563,
+    "name": 22,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 271,
+    "meiki": 1768,
+    "meiki_meets": 876,
+    "meiki_other": 390,
+    "meiki_ignore": 502,
+    "ink": 585,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 360,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00713_000",
+   "split": "train",
+   "title": "PCSG00713",
+   "npy_sha256": "810d06f88c4a6ae43365d4d301f675763a36eebe1a1c5d850923961d73850639",
+   "json_sha256": "38a16146043051e3e273a5738cdf97f14356d23c7bae312ba31d8f5e6df5437c",
+   "samples": 500,
+   "lines": 1338,
+   "vertical": 0,
+   "ignore": 775,
+   "by_class": {
+    "dialogue": 908,
+    "name": 420,
+    "notdlg": 10
+   },
+   "counts": {
+    "positive": 1328,
+    "dialogue": 908,
+    "name": 420,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 2142,
+    "meiki_meets": 1366,
+    "meiki_other": 10,
+    "meiki_ignore": 766,
+    "ink": 1328,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00713_001",
+   "split": "train",
+   "title": "PCSG00713",
+   "npy_sha256": "145ad79e02e7949e7754d79216af4de20b08742639942024df6a5d5a9547ab0b",
+   "json_sha256": "da11dde6ef61d240638722dd81f163255f24ab54bffd1bcc64dbb32d78d15757",
+   "samples": 500,
+   "lines": 1549,
+   "vertical": 0,
+   "ignore": 1510,
+   "by_class": {
+    "name": 435,
+    "dialogue": 968,
+    "notdlg": 146
+   },
+   "counts": {
+    "positive": 1403,
+    "dialogue": 968,
+    "name": 435,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 3071,
+    "meiki_meets": 1415,
+    "meiki_other": 146,
+    "meiki_ignore": 1510,
+    "ink": 1403,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00713_002",
+   "split": "train",
+   "title": "PCSG00713",
+   "npy_sha256": "23a6e4fa634570e44596343f900b954dc04f4d95c410fa7dcdf01b900a8bb413",
+   "json_sha256": "1a32107c1f2563774a9ba2fa295ee1e8974211c4c68cb120f1ec02463978be71",
+   "samples": 344,
+   "lines": 923,
+   "vertical": 0,
+   "ignore": 350,
+   "by_class": {
+    "name": 313,
+    "dialogue": 608,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 921,
+    "dialogue": 608,
+    "name": 313,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 3,
+    "meiki": 1281,
+    "meiki_meets": 932,
+    "meiki_other": 2,
+    "meiki_ignore": 347,
+    "ink": 921,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 344,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00751_000",
+   "split": "train",
+   "title": "PCSG00751",
+   "npy_sha256": "bd6f37af15fc12abc899131e26d2d5b31cfe042a6013975f43fa83de523f62f6",
+   "json_sha256": "c0b7f20164e7f971a59270fb98b6e2be627818dfd169afa6ff9b0615230c3415",
+   "samples": 212,
+   "lines": 432,
+   "vertical": 1,
+   "ignore": 536,
+   "by_class": {
+    "notdlg": 243,
+    "dialogue": 189
+   },
+   "counts": {
+    "positive": 189,
+    "dialogue": 189,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 158,
+    "meiki": 997,
+    "meiki_meets": 376,
+    "meiki_other": 243,
+    "meiki_ignore": 378,
+    "ink": 189,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 212,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00753_000",
+   "split": "train",
+   "title": "PCSG00753",
+   "npy_sha256": "5c6f384927588443e04e6051a6f4b4ffbc4e3e2b6c6129d4b4308bdce21e87d4",
+   "json_sha256": "2ce91b7b6d7e6c6438b5edb70cb610b6bd3581ecef0d388b8e33d68f89f2b493",
+   "samples": 500,
+   "lines": 773,
+   "vertical": 0,
+   "ignore": 640,
+   "by_class": {
+    "dialogue": 725,
+    "notdlg": 48
+   },
+   "counts": {
+    "positive": 725,
+    "dialogue": 725,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 398,
+    "meiki": 1500,
+    "meiki_meets": 1210,
+    "meiki_other": 48,
+    "meiki_ignore": 242,
+    "ink": 725,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00753_001",
+   "split": "train",
+   "title": "PCSG00753",
+   "npy_sha256": "cb06e6e16c9b3f2285b93ea3452e063a1860b5c4a240b086060493d0b1aa0c89",
+   "json_sha256": "6559cfb4cb2af75e928c315a77ad29bacfe372fe94b0cbfad9ec3bcfd8bb2181",
+   "samples": 430,
+   "lines": 574,
+   "vertical": 0,
+   "ignore": 478,
+   "by_class": {
+    "dialogue": 571,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 571,
+    "dialogue": 571,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 321,
+    "meiki": 1099,
+    "meiki_meets": 939,
+    "meiki_other": 3,
+    "meiki_ignore": 157,
+    "ink": 571,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 430,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00805_000",
+   "split": "train",
+   "title": "PCSG00805",
+   "npy_sha256": "07f0fe04fe0551c064bcaa44ef1fee654396d7ce9ce0c9bfaba5252f528b311a",
+   "json_sha256": "dd2a6b462ec96e869acc66ca610bff7b03fb1784220956726474cd22c2685740",
+   "samples": 500,
+   "lines": 946,
+   "vertical": 0,
+   "ignore": 765,
+   "by_class": {
+    "dialogue": 916,
+    "notdlg": 30
+   },
+   "counts": {
+    "positive": 916,
+    "dialogue": 916,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 279,
+    "meiki": 1720,
+    "meiki_meets": 1204,
+    "meiki_other": 30,
+    "meiki_ignore": 486,
+    "ink": 916,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00805_001",
+   "split": "train",
+   "title": "PCSG00805",
+   "npy_sha256": "30caf668959c7cb4a9a8a8b09a9b7f01252a232a2807fcbd4252f2a3044c04ef",
+   "json_sha256": "4338814d9cb8bce480c25cab69b3629a7334fca6cfa3a0b2b605e230434ab3ea",
+   "samples": 500,
+   "lines": 954,
+   "vertical": 0,
+   "ignore": 833,
+   "by_class": {
+    "dialogue": 882,
+    "notdlg": 72
+   },
+   "counts": {
+    "positive": 882,
+    "dialogue": 882,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 246,
+    "meiki": 1794,
+    "meiki_meets": 1135,
+    "meiki_other": 72,
+    "meiki_ignore": 587,
+    "ink": 882,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00805_002",
+   "split": "train",
+   "title": "PCSG00805",
+   "npy_sha256": "7cec7959d21110cc83947d81c6681732d0817db420cc292d7a492e0fd8832ff7",
+   "json_sha256": "087cc24e7045d09561be00e72e94c9f74633253f4e18f7a5e693cd160858e736",
+   "samples": 216,
+   "lines": 415,
+   "vertical": 0,
+   "ignore": 252,
+   "by_class": {
+    "dialogue": 402,
+    "notdlg": 5,
+    "name": 8
+   },
+   "counts": {
+    "positive": 410,
+    "dialogue": 402,
+    "name": 8,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 81,
+    "meiki": 667,
+    "meiki_meets": 491,
+    "meiki_other": 5,
+    "meiki_ignore": 171,
+    "ink": 410,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 216,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00854_000",
+   "split": "train",
+   "title": "PCSG00854",
+   "npy_sha256": "0641e19d3d6252e5c3bac26c960c59bda86021d113b36599fce561ab63706727",
+   "json_sha256": "cffcdae7ed46d84cdb35f6d59dd46e785531d911be06a97014c522899c836945",
+   "samples": 500,
+   "lines": 862,
+   "vertical": 0,
+   "ignore": 2468,
+   "by_class": {
+    "dialogue": 841,
+    "notdlg": 21
+   },
+   "counts": {
+    "positive": 841,
+    "dialogue": 841,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 362,
+    "meiki": 3903,
+    "meiki_meets": 1776,
+    "meiki_other": 21,
+    "meiki_ignore": 2106,
+    "ink": 841,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00854_001",
+   "split": "train",
+   "title": "PCSG00854",
+   "npy_sha256": "cf15c9ff64da1def36d1f890d1bf09b5180a343acb7e26cc474f79a6ecc4507d",
+   "json_sha256": "a8d5cac68d2f8eaf8507dab6d658f228bcaab9a0f4044d136d0578906d1c0f23",
+   "samples": 418,
+   "lines": 715,
+   "vertical": 0,
+   "ignore": 3685,
+   "by_class": {
+    "dialogue": 700,
+    "notdlg": 15
+   },
+   "counts": {
+    "positive": 700,
+    "dialogue": 700,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 334,
+    "meiki": 4919,
+    "meiki_meets": 1553,
+    "meiki_other": 15,
+    "meiki_ignore": 3351,
+    "ink": 700,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 418,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00866_000",
+   "split": "train",
+   "title": "PCSG00866",
+   "npy_sha256": "1db69b254f0654d2e69fc181b70042975161ca8aa78883ee4494d85524dbacd0",
+   "json_sha256": "46888a3086b0593921f0f34856dac228723ec1ef8ef64ba5e627e69b1050e5d1",
+   "samples": 462,
+   "lines": 997,
+   "vertical": 0,
+   "ignore": 1775,
+   "by_class": {
+    "dialogue": 925,
+    "notdlg": 72
+   },
+   "counts": {
+    "positive": 925,
+    "dialogue": 925,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 294,
+    "meiki": 2831,
+    "meiki_meets": 1278,
+    "meiki_other": 72,
+    "meiki_ignore": 1481,
+    "ink": 925,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 462,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00876_000",
+   "split": "train",
+   "title": "PCSG00876",
+   "npy_sha256": "2bb9d4d248b81c767968c91a24eee7eef62892f84841afb863bc9538e72da062",
+   "json_sha256": "a1bcc636fdd6a56338f182aae4ced3212dc67c30face18d61b2b8ff249ca0642",
+   "samples": 500,
+   "lines": 1090,
+   "vertical": 0,
+   "ignore": 884,
+   "by_class": {
+    "dialogue": 834,
+    "notdlg": 256
+   },
+   "counts": {
+    "positive": 834,
+    "dialogue": 834,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 764,
+    "meiki": 1617,
+    "meiki_meets": 1241,
+    "meiki_other": 256,
+    "meiki_ignore": 120,
+    "ink": 834,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00876_001",
+   "split": "train",
+   "title": "PCSG00876",
+   "npy_sha256": "cb462a9dfd439ee577433898ebb11d635b81049c1a151b19db57cf8a41bca3d4",
+   "json_sha256": "29d2ee405a0abb33eb71473c376c8e5c2ce28faa1a51ea6162d61e33c43aa5d1",
+   "samples": 447,
+   "lines": 852,
+   "vertical": 0,
+   "ignore": 1155,
+   "by_class": {
+    "dialogue": 756,
+    "notdlg": 96
+   },
+   "counts": {
+    "positive": 756,
+    "dialogue": 756,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 800,
+    "meiki": 1639,
+    "meiki_meets": 1188,
+    "meiki_other": 96,
+    "meiki_ignore": 355,
+    "ink": 756,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 447,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00914_000",
+   "split": "train",
+   "title": "PCSG00914",
+   "npy_sha256": "b3db619dd22ee85043765a6e53404cf5880f1dc6c7eebf86d3d845ec6b40a285",
+   "json_sha256": "c35211073f073f2eb00beb6149973a155b36a90207413adb640ad7ff6d94afcc",
+   "samples": 466,
+   "lines": 1010,
+   "vertical": 0,
+   "ignore": 2262,
+   "by_class": {
+    "dialogue": 985,
+    "notdlg": 25
+   },
+   "counts": {
+    "positive": 985,
+    "dialogue": 985,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 303,
+    "meiki": 3376,
+    "meiki_meets": 1392,
+    "meiki_other": 25,
+    "meiki_ignore": 1959,
+    "ink": 985,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 466,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00917_000",
+   "split": "train",
+   "title": "PCSG00917",
+   "npy_sha256": "cc2e530841a68e3fa87d0c86c417bbf2ffd7db1aceac5643fa5c6355bca63495",
+   "json_sha256": "349ccfdab77dca390dc838876f77fc01d4f07b5dc2027dba357f2b0f49219f0f",
+   "samples": 500,
+   "lines": 3490,
+   "vertical": 0,
+   "ignore": 3327,
+   "by_class": {
+    "dialogue": 758,
+    "notdlg": 2732
+   },
+   "counts": {
+    "positive": 758,
+    "dialogue": 758,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 397,
+    "meiki": 7744,
+    "meiki_meets": 2082,
+    "meiki_other": 2732,
+    "meiki_ignore": 2930,
+    "ink": 758,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00917_001",
+   "split": "train",
+   "title": "PCSG00917",
+   "npy_sha256": "68b0adbe2d03a75345d8c1891f0cea327d543c5d996f524659e18721a6a06c2e",
+   "json_sha256": "d8578bd4e56d58678f447520e7faef4745196a8b814394e619c65974636cd4b2",
+   "samples": 500,
+   "lines": 3428,
+   "vertical": 0,
+   "ignore": 3068,
+   "by_class": {
+    "dialogue": 786,
+    "notdlg": 2642
+   },
+   "counts": {
+    "positive": 786,
+    "dialogue": 786,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 418,
+    "meiki": 7401,
+    "meiki_meets": 2109,
+    "meiki_other": 2642,
+    "meiki_ignore": 2650,
+    "ink": 786,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00917_002",
+   "split": "train",
+   "title": "PCSG00917",
+   "npy_sha256": "a05e7947abba9398a6418c4e3c94313c2ef6c744b3349e2ee686ed30fc568b24",
+   "json_sha256": "5be9a973a1fd16d03a24ac622e6dad9b27d239bb5150e82128bfb8b6703fb4c2",
+   "samples": 441,
+   "lines": 3133,
+   "vertical": 0,
+   "ignore": 2638,
+   "by_class": {
+    "dialogue": 677,
+    "notdlg": 2456
+   },
+   "counts": {
+    "positive": 677,
+    "dialogue": 677,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 328,
+    "meiki": 6455,
+    "meiki_meets": 1689,
+    "meiki_other": 2456,
+    "meiki_ignore": 2310,
+    "ink": 677,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 441,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00918_000",
+   "split": "train",
+   "title": "PCSG00918",
+   "npy_sha256": "027de30aa4815a2abc0b8c8821bf0307fb3cf68d0680b483e64774717edef9e8",
+   "json_sha256": "2268d81a4453cee14327d43622e243b4fd970057629e14a9343a41542f770a75",
+   "samples": 500,
+   "lines": 2982,
+   "vertical": 0,
+   "ignore": 3597,
+   "by_class": {
+    "dialogue": 857,
+    "notdlg": 2125
+   },
+   "counts": {
+    "positive": 857,
+    "dialogue": 857,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 312,
+    "meiki": 7322,
+    "meiki_meets": 1912,
+    "meiki_other": 2125,
+    "meiki_ignore": 3285,
+    "ink": 857,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00918_001",
+   "split": "train",
+   "title": "PCSG00918",
+   "npy_sha256": "1d144467a7613bf9416c83218e27e7c555b66b7d02d572784aa732703e25d5ae",
+   "json_sha256": "d70ac9054dea67109bc78387bebab90a7edeabf5f1815185687ab04f563b7e87",
+   "samples": 500,
+   "lines": 3189,
+   "vertical": 0,
+   "ignore": 3425,
+   "by_class": {
+    "dialogue": 797,
+    "notdlg": 2392
+   },
+   "counts": {
+    "positive": 797,
+    "dialogue": 797,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 370,
+    "meiki": 7508,
+    "meiki_meets": 2061,
+    "meiki_other": 2392,
+    "meiki_ignore": 3055,
+    "ink": 797,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 500,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00918_002",
+   "split": "train",
+   "title": "PCSG00918",
+   "npy_sha256": "d36883d3adbea63d99be94a4babee4b684b2ada4e0e320f00ecae451342d2e6e",
+   "json_sha256": "b41ab019714f698bdc1dc7e1ca59c745b409be99ccf62559c90135583a37c226",
+   "samples": 380,
+   "lines": 2611,
+   "vertical": 0,
+   "ignore": 2576,
+   "by_class": {
+    "dialogue": 592,
+    "notdlg": 2019
+   },
+   "counts": {
+    "positive": 592,
+    "dialogue": 592,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 269,
+    "meiki": 5818,
+    "meiki_meets": 1492,
+    "meiki_other": 2019,
+    "meiki_ignore": 2307,
+    "ink": 592,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 380,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG00935_000",
+   "split": "train",
+   "title": "PCSG00935",
+   "npy_sha256": "2a05cfa65f940d21115816ec0b9b3756ab84c7f45eb47b6e3eadad7cb54f62d7",
+   "json_sha256": "b19fa53dd19c099efaf357f882fa78832755ad2d6cb144c8ddb13b08693ea73f",
+   "samples": 337,
+   "lines": 700,
+   "vertical": 0,
+   "ignore": 459,
+   "by_class": {
+    "dialogue": 677,
+    "notdlg": 23
+   },
+   "counts": {
+    "positive": 677,
+    "dialogue": 677,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 218,
+    "meiki": 1200,
+    "meiki_meets": 936,
+    "meiki_other": 23,
+    "meiki_ignore": 241,
+    "ink": 677,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 337,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "PCSG01110_000",
+   "split": "train",
+   "title": "PCSG01110",
+   "npy_sha256": "1531825f4fe3dd83e6f57f0387593fad056928ed80659d927083fa22857c57a8",
+   "json_sha256": "f7627f794fd1cdb65530135ba59be5511c60a2415e1eaa665427882950b5f2f7",
+   "samples": 299,
+   "lines": 559,
+   "vertical": 0,
+   "ignore": 226,
+   "by_class": {
+    "dialogue": 559
+   },
+   "counts": {
+    "positive": 559,
+    "dialogue": 559,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 191,
+    "meiki": 785,
+    "meiki_meets": 750,
+    "meiki_other": 0,
+    "meiki_ignore": 35,
+    "ink": 559,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 299,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05383_000",
+   "split": "train",
+   "title": "ULJM05383",
+   "npy_sha256": "3fd791b52b7a0dafb41178002196ca45ca33ef8c275baae5b62633813e1322a3",
+   "json_sha256": "b973a3edd5ed871c5462c2c956f2ac9a2d86b12b96b9f8fedb61dc2f1fa550e1",
+   "samples": 500,
+   "lines": 792,
+   "vertical": 0,
+   "ignore": 30,
+   "by_class": {
+    "dialogue": 792
+   },
+   "counts": {
+    "positive": 792,
+    "dialogue": 792,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 6,
+    "uncovered_ignore": 0,
+    "meiki": 829,
+    "meiki_meets": 805,
+    "meiki_other": 0,
+    "meiki_ignore": 24,
+    "ink": 792,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05383_001",
+   "split": "train",
+   "title": "ULJM05383",
+   "npy_sha256": "4c2c080019e5a32122d83f806836daf6173fe9e80adfc21d5889a1932b4b1753",
+   "json_sha256": "d3a440c7967ae73a5ae8787529ded0ca071c7893d3dfb552630b28df948248a3",
+   "samples": 500,
+   "lines": 798,
+   "vertical": 0,
+   "ignore": 45,
+   "by_class": {
+    "dialogue": 798
+   },
+   "counts": {
+    "positive": 798,
+    "dialogue": 798,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 848,
+    "meiki_meets": 803,
+    "meiki_other": 0,
+    "meiki_ignore": 45,
+    "ink": 798,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05383_002",
+   "split": "train",
+   "title": "ULJM05383",
+   "npy_sha256": "1ff4f1afbae056101b52a44da8503092b3f0bebed7131169e8f351335ac35b5c",
+   "json_sha256": "4caf49e5fa663266c9b1d4e7d24aa456dd38bf4396a41b4ecaf461634c4271d2",
+   "samples": 500,
+   "lines": 784,
+   "vertical": 0,
+   "ignore": 14,
+   "by_class": {
+    "dialogue": 784
+   },
+   "counts": {
+    "positive": 784,
+    "dialogue": 784,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 805,
+    "meiki_meets": 791,
+    "meiki_other": 0,
+    "meiki_ignore": 14,
+    "ink": 784,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05383_003",
+   "split": "train",
+   "title": "ULJM05383",
+   "npy_sha256": "b679b60bdf7a5e790a59a923ceb289d92b696a2b45cff299ecd179f50e133fda",
+   "json_sha256": "c5e6f75111a05c7095fbc49e89981656bac3a5d43de77d809a3112f35a77a5f9",
+   "samples": 194,
+   "lines": 270,
+   "vertical": 0,
+   "ignore": 0,
+   "by_class": {
+    "dialogue": 270
+   },
+   "counts": {
+    "positive": 270,
+    "dialogue": 270,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 271,
+    "meiki_meets": 271,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 270,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 194
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05674_000",
+   "split": "train",
+   "title": "ULJM05674",
+   "npy_sha256": "85db06ddd9c96bcbe05be3829f37da0d811110e3728a02f620f4f7db255a0635",
+   "json_sha256": "d987e671ca191eb1855db63a7178c5ed786d640c246abb952948c502e7b397e0",
+   "samples": 500,
+   "lines": 789,
+   "vertical": 0,
+   "ignore": 633,
+   "by_class": {
+    "dialogue": 773,
+    "notdlg": 16
+   },
+   "counts": {
+    "positive": 773,
+    "dialogue": 773,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 1454,
+    "meiki_meets": 805,
+    "meiki_other": 16,
+    "meiki_ignore": 633,
+    "ink": 773,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05674_001",
+   "split": "train",
+   "title": "ULJM05674",
+   "npy_sha256": "e579513f1ea7b1e152cefb286620860d1c3eda19f6017db10b9d81cd9e15a10b",
+   "json_sha256": "92bc66a533b2682db9aa4d822f7c662587c4a3114a94ecf614fb2fb9fe7756f8",
+   "samples": 500,
+   "lines": 753,
+   "vertical": 0,
+   "ignore": 573,
+   "by_class": {
+    "dialogue": 738,
+    "notdlg": 15
+   },
+   "counts": {
+    "positive": 738,
+    "dialogue": 738,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 1362,
+    "meiki_meets": 774,
+    "meiki_other": 15,
+    "meiki_ignore": 573,
+    "ink": 738,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05674_002",
+   "split": "train",
+   "title": "ULJM05674",
+   "npy_sha256": "7fa8211d27391c43bc63d0527b32c7ffa30b445800106279675ff6f2ac696779",
+   "json_sha256": "71f38fa024a3d51faab845dd42bad4a9a30d26b44ff378e25ecf258b01d646a4",
+   "samples": 500,
+   "lines": 775,
+   "vertical": 0,
+   "ignore": 581,
+   "by_class": {
+    "dialogue": 768,
+    "notdlg": 7
+   },
+   "counts": {
+    "positive": 768,
+    "dialogue": 768,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 1374,
+    "meiki_meets": 786,
+    "meiki_other": 7,
+    "meiki_ignore": 581,
+    "ink": 768,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 500
+   }
+  },
+  {
+   "dir": "train",
+   "name": "ULJM05674_003",
+   "split": "train",
+   "title": "ULJM05674",
+   "npy_sha256": "6929bccb48d542b5607d0bb67333bf79aa596e4a1298f5ffdf59708e6f6c416b",
+   "json_sha256": "84377a1d8808097379cfe8d8edf2f2926c1edab6905b6713d2a630eb9fd2e779",
+   "samples": 357,
+   "lines": 515,
+   "vertical": 0,
+   "ignore": 358,
+   "by_class": {
+    "dialogue": 508,
+    "notdlg": 7
+   },
+   "counts": {
+    "positive": 508,
+    "dialogue": 508,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 885,
+    "meiki_meets": 520,
+    "meiki_other": 7,
+    "meiki_ignore": 358,
+    "ink": 508,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 357
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJG00016_000",
+   "split": "hval",
+   "title": "NPJG00016",
+   "npy_sha256": "79128a8ab40f256ab7028890d6eb8c6811845fc65228ce0397bfbc640fea01f3",
+   "json_sha256": "4e6ec0bcf1506d4a8541df8772876fcae78c53c48df4a7e6119e88ea92dac39b",
+   "samples": 11,
+   "lines": 30,
+   "vertical": 0,
+   "ignore": 17,
+   "by_class": {
+    "dialogue": 30
+   },
+   "counts": {
+    "positive": 30,
+    "dialogue": 30,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 17,
+    "meiki": 47,
+    "meiki_meets": 47,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 30,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 11
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH00140_000",
+   "split": "hval",
+   "title": "NPJH00140",
+   "npy_sha256": "ead2e95358b02445b8e1f560f579d8f794559cb8ca9340e5bde52e7dc6760bbb",
+   "json_sha256": "fefc4912a0a8c90c0d85a7dfa7c851564f2e3f1ed24df896d108b6e7a983df85",
+   "samples": 66,
+   "lines": 121,
+   "vertical": 0,
+   "ignore": 204,
+   "by_class": {
+    "dialogue": 121
+   },
+   "counts": {
+    "positive": 121,
+    "dialogue": 121,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 16,
+    "meiki": 325,
+    "meiki_meets": 137,
+    "meiki_other": 0,
+    "meiki_ignore": 188,
+    "ink": 121,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 66
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50001_000",
+   "split": "hval",
+   "title": "NPJH50001",
+   "npy_sha256": "15190ec5e089fa38cef06b444d8e0eba2f07890604ada1f622b4c637befb5356",
+   "json_sha256": "6e2d003ada548ea38f974067034c24df572287199a6a1a3067cfe700224f342f",
+   "samples": 64,
+   "lines": 157,
+   "vertical": 0,
+   "ignore": 28,
+   "by_class": {
+    "dialogue": 125,
+    "notdlg": 32
+   },
+   "counts": {
+    "positive": 125,
+    "dialogue": 125,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 1,
+    "meiki": 193,
+    "meiki_meets": 134,
+    "meiki_other": 32,
+    "meiki_ignore": 27,
+    "ink": 125,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 64
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50002_000",
+   "split": "hval",
+   "title": "NPJH50002",
+   "npy_sha256": "be8e433f8621ab9fb18e32387fd6fc94ec99baac3681183885bc939674571813",
+   "json_sha256": "fc3659461af545f4c043301696869a8b8aa2fb6aa215ec85ecc2f7f0928daeba",
+   "samples": 69,
+   "lines": 88,
+   "vertical": 0,
+   "ignore": 73,
+   "by_class": {
+    "dialogue": 88
+   },
+   "counts": {
+    "positive": 88,
+    "dialogue": 88,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 65,
+    "meiki": 163,
+    "meiki_meets": 155,
+    "meiki_other": 0,
+    "meiki_ignore": 8,
+    "ink": 88,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 69
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50132_000",
+   "split": "hval",
+   "title": "NPJH50132",
+   "npy_sha256": "f0aa0ca41fb473c4dde0311a56e40e530ba91119fda719a90e18030a486091b2",
+   "json_sha256": "21c3f48a0bd617a3e52364f091dab2df48fc965e323311970b6eddd00dd39a6f",
+   "samples": 74,
+   "lines": 101,
+   "vertical": 0,
+   "ignore": 22,
+   "by_class": {
+    "name": 23,
+    "dialogue": 78
+   },
+   "counts": {
+    "positive": 101,
+    "dialogue": 78,
+    "name": 23,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 22,
+    "meiki": 128,
+    "meiki_meets": 128,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 101,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 74
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50279_000",
+   "split": "hval",
+   "title": "NPJH50279",
+   "npy_sha256": "2cd24b4e39aaaa1340cb27049d796849eaf54e754d85ba6f71841e3fbe621f84",
+   "json_sha256": "f87aff64758e0a0fc193fe673d6d339fa7060c501a4cc3d9bdbf1118fe01a48a",
+   "samples": 40,
+   "lines": 89,
+   "vertical": 0,
+   "ignore": 52,
+   "by_class": {
+    "dialogue": 43,
+    "notdlg": 41,
+    "name": 5
+   },
+   "counts": {
+    "positive": 48,
+    "dialogue": 43,
+    "name": 5,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 25,
+    "meiki": 156,
+    "meiki_meets": 88,
+    "meiki_other": 41,
+    "meiki_ignore": 27,
+    "ink": 48,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 40
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50297_000",
+   "split": "hval",
+   "title": "NPJH50297",
+   "npy_sha256": "1e4dab6422586f4ec7de71d120ef211dee8e53281ad9f114ced1d666110ea39a",
+   "json_sha256": "7003cd3c0362db20368e4e9911264146427f02427aecdf94dc8fadde62b059d1",
+   "samples": 47,
+   "lines": 103,
+   "vertical": 0,
+   "ignore": 270,
+   "by_class": {
+    "dialogue": 89,
+    "notdlg": 14
+   },
+   "counts": {
+    "positive": 89,
+    "dialogue": 89,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 381,
+    "meiki_meets": 106,
+    "meiki_other": 14,
+    "meiki_ignore": 261,
+    "ink": 89,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 47
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50356_000",
+   "split": "hval",
+   "title": "NPJH50356",
+   "npy_sha256": "216208aeca7cca35eb47985ca3d1ea27f71e72db4929c3aa0d5fd49e857b638a",
+   "json_sha256": "003f705b663064644f5e213694d3fde6eeb38cacd0b6df18fe0528d68495c87e",
+   "samples": 80,
+   "lines": 169,
+   "vertical": 0,
+   "ignore": 148,
+   "by_class": {
+    "dialogue": 103,
+    "notdlg": 66
+   },
+   "counts": {
+    "positive": 103,
+    "dialogue": 103,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 63,
+    "meiki": 317,
+    "meiki_meets": 166,
+    "meiki_other": 66,
+    "meiki_ignore": 85,
+    "ink": 103,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 80
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50382_000",
+   "split": "hval",
+   "title": "NPJH50382",
+   "npy_sha256": "c0d1afd0582bef504cdca0ed57d483b9e8f496e6b70691107500df56d5f83fac",
+   "json_sha256": "4a846ec2b7e21c9fcc87c1b920d1c0f66cae6042fefb1b2eb86748c4f2607fe9",
+   "samples": 79,
+   "lines": 130,
+   "vertical": 0,
+   "ignore": 74,
+   "by_class": {
+    "dialogue": 99,
+    "name": 31
+   },
+   "counts": {
+    "positive": 130,
+    "dialogue": 99,
+    "name": 31,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 19,
+    "meiki": 213,
+    "meiki_meets": 158,
+    "meiki_other": 0,
+    "meiki_ignore": 55,
+    "ink": 130,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 79
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50551_000",
+   "split": "hval",
+   "title": "NPJH50551",
+   "npy_sha256": "8f139a87dca8ab3460cc07eb00ae5da4de31c309ca759e8d0d4ab974efd64d75",
+   "json_sha256": "2b876d776327b2b1fccef2506469f95fc954320f13434366a696c9806b5a95f4",
+   "samples": 9,
+   "lines": 12,
+   "vertical": 0,
+   "ignore": 4,
+   "by_class": {
+    "dialogue": 12
+   },
+   "counts": {
+    "positive": 12,
+    "dialogue": 12,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 2,
+    "meiki": 16,
+    "meiki_meets": 14,
+    "meiki_other": 0,
+    "meiki_ignore": 2,
+    "ink": 12,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 9
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50621_000",
+   "split": "hval",
+   "title": "NPJH50621",
+   "npy_sha256": "fe0c949000f1c22ede289eb6e656e802ad4cc7f66285a8cf429f37ba2573f4e8",
+   "json_sha256": "93811bcb9d5f5d61cacfaf1752f69386b41276fa781fe7ae612be7913fdd71d8",
+   "samples": 60,
+   "lines": 120,
+   "vertical": 0,
+   "ignore": 198,
+   "by_class": {
+    "name": 33,
+    "dialogue": 81,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 114,
+    "dialogue": 81,
+    "name": 33,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 319,
+    "meiki_meets": 124,
+    "meiki_other": 6,
+    "meiki_ignore": 189,
+    "ink": 114,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50641_000",
+   "split": "hval",
+   "title": "NPJH50641",
+   "npy_sha256": "fc960c9bde48156f06cc6172165231fb4eced0879b446c991b854bfdc557a3d4",
+   "json_sha256": "d88b61044587f43849b6442cde8fdcf9bd2146d6dbc73f87c405ec693f7413f1",
+   "samples": 45,
+   "lines": 91,
+   "vertical": 0,
+   "ignore": 46,
+   "by_class": {
+    "dialogue": 75,
+    "name": 14,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 89,
+    "dialogue": 75,
+    "name": 14,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 143,
+    "meiki_meets": 95,
+    "meiki_other": 2,
+    "meiki_ignore": 46,
+    "ink": 89,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 45
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "NPJH50649_000",
+   "split": "hval",
+   "title": "NPJH50649",
+   "npy_sha256": "852ede91eef681d2328379b97e14d88862e54371ab3eb92bd986bb32522fc975",
+   "json_sha256": "9332cb88c6fdcdb4e88b83242eb78cb042d50795d2468dc48d5c966bbac600eb",
+   "samples": 43,
+   "lines": 156,
+   "vertical": 20,
+   "ignore": 135,
+   "by_class": {
+    "name": 42,
+    "dialogue": 73,
+    "notdlg": 41
+   },
+   "counts": {
+    "positive": 115,
+    "dialogue": 73,
+    "name": 42,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 3,
+    "meiki": 290,
+    "meiki_meets": 117,
+    "meiki_other": 41,
+    "meiki_ignore": 132,
+    "ink": 115,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 43
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00007_000",
+   "split": "hval",
+   "title": "PCSG00007",
+   "npy_sha256": "67e8b4251e251c7c2dbf02a89a19ea303c53d05b37053dd5af50dc34b58d64e4",
+   "json_sha256": "abc5b1ce094a4ba9ea7fc62960a40ffff45668cc18a8daed706485d8eab9a13a",
+   "samples": 22,
+   "lines": 65,
+   "vertical": 0,
+   "ignore": 38,
+   "by_class": {
+    "name": 6,
+    "dialogue": 26,
+    "notdlg": 33
+   },
+   "counts": {
+    "positive": 32,
+    "dialogue": 26,
+    "name": 6,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 106,
+    "meiki_meets": 35,
+    "meiki_other": 33,
+    "meiki_ignore": 38,
+    "ink": 32,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 22,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00146_000",
+   "split": "hval",
+   "title": "PCSG00146",
+   "npy_sha256": "7f428addbbe6da0db5c7a25529d76328382f751b3b10a9d521615134d21055a4",
+   "json_sha256": "8d48e6b57924f60ab8944a8e6457061603b7ea46b7af646d479245257bf5b342",
+   "samples": 60,
+   "lines": 308,
+   "vertical": 0,
+   "ignore": 768,
+   "by_class": {
+    "dialogue": 77,
+    "notdlg": 208,
+    "name": 23
+   },
+   "counts": {
+    "positive": 100,
+    "dialogue": 77,
+    "name": 23,
+    "ruby_ignore": 1,
+    "drop_ignore": 0,
+    "uncovered_ignore": 4,
+    "meiki": 1084,
+    "meiki_meets": 113,
+    "meiki_other": 208,
+    "meiki_ignore": 763,
+    "ink": 100,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00352_000",
+   "split": "hval",
+   "title": "PCSG00352",
+   "npy_sha256": "80350543cbd14d3d011caea0d30aa635e8782b99a2b77d5fb1dd76763bbf90d7",
+   "json_sha256": "493e5a80d5625040d674bac8a3e8a9942671432feb453301e7dd519dcab51867",
+   "samples": 23,
+   "lines": 131,
+   "vertical": 0,
+   "ignore": 92,
+   "by_class": {
+    "dialogue": 36,
+    "notdlg": 95
+   },
+   "counts": {
+    "positive": 36,
+    "dialogue": 36,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 237,
+    "meiki_meets": 59,
+    "meiki_other": 95,
+    "meiki_ignore": 83,
+    "ink": 36,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 23,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00367_000",
+   "split": "hval",
+   "title": "PCSG00367",
+   "npy_sha256": "74e246dc190736c4f38203af7ce5d14cd325d30cd55d1ee33afe6158b3faf1a7",
+   "json_sha256": "4e6bbb5d4edaa168e5fa37a3b4430fef83d40556ca0bf462db7a3feb54270630",
+   "samples": 47,
+   "lines": 91,
+   "vertical": 0,
+   "ignore": 83,
+   "by_class": {
+    "dialogue": 91
+   },
+   "counts": {
+    "positive": 91,
+    "dialogue": 91,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 46,
+    "meiki": 183,
+    "meiki_meets": 146,
+    "meiki_other": 0,
+    "meiki_ignore": 37,
+    "ink": 91,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 47,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00380_000",
+   "split": "hval",
+   "title": "PCSG00380",
+   "npy_sha256": "e0dbd5cf8805fa126eb83f06f79afbc972e9e8e2c5036c194081b23e3e87fe4b",
+   "json_sha256": "24ebf738cf74da91a7c8635b1ed4eeac5fb95398fb8ba1c18ec136080b1d0e85",
+   "samples": 44,
+   "lines": 86,
+   "vertical": 0,
+   "ignore": 54,
+   "by_class": {
+    "dialogue": 86
+   },
+   "counts": {
+    "positive": 86,
+    "dialogue": 86,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 35,
+    "meiki": 140,
+    "meiki_meets": 121,
+    "meiki_other": 0,
+    "meiki_ignore": 19,
+    "ink": 86,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 44,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00468_000",
+   "split": "hval",
+   "title": "PCSG00468",
+   "npy_sha256": "ba1fb0881fc5c34f64fce29dbdae6baa6d6c1769d931af12441e1eb71a3e0a5e",
+   "json_sha256": "5abdfe4640ef94646fc6ca96cf7cf4613f5f79df723d75da623379b28254592b",
+   "samples": 16,
+   "lines": 21,
+   "vertical": 0,
+   "ignore": 26,
+   "by_class": {
+    "dialogue": 21
+   },
+   "counts": {
+    "positive": 21,
+    "dialogue": 21,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 13,
+    "meiki": 56,
+    "meiki_meets": 43,
+    "meiki_other": 0,
+    "meiki_ignore": 13,
+    "ink": 21,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 16,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00469_000",
+   "split": "hval",
+   "title": "PCSG00469",
+   "npy_sha256": "6392e548cc70dc64bf4449931422fcd88463b2a18a785500c986b118795d75f0",
+   "json_sha256": "2b49a40e713551e663d37739f59e056c816aa4050d4388cf496a30ea33db3d12",
+   "samples": 80,
+   "lines": 182,
+   "vertical": 0,
+   "ignore": 59,
+   "by_class": {
+    "dialogue": 161,
+    "notdlg": 1,
+    "name": 20
+   },
+   "counts": {
+    "positive": 181,
+    "dialogue": 161,
+    "name": 20,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 31,
+    "meiki": 243,
+    "meiki_meets": 214,
+    "meiki_other": 1,
+    "meiki_ignore": 28,
+    "ink": 181,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 80,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00509_000",
+   "split": "hval",
+   "title": "PCSG00509",
+   "npy_sha256": "11247ed0b1f8eeaca47bc29187e8e928987ea125c05602c4541879a6ab8f4305",
+   "json_sha256": "85c0108c3e537c3317f731582e6e2cbd40243ea8bd6330307e1b28105953f2c8",
+   "samples": 52,
+   "lines": 136,
+   "vertical": 0,
+   "ignore": 113,
+   "by_class": {
+    "dialogue": 78,
+    "notdlg": 58
+   },
+   "counts": {
+    "positive": 78,
+    "dialogue": 78,
+    "name": 0,
+    "ruby_ignore": 2,
+    "drop_ignore": 0,
+    "uncovered_ignore": 33,
+    "meiki": 268,
+    "meiki_meets": 132,
+    "meiki_other": 58,
+    "meiki_ignore": 78,
+    "ink": 78,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 52,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00540_000",
+   "split": "hval",
+   "title": "PCSG00540",
+   "npy_sha256": "efd5fd9140eb7d1412542e44768bda7d6177f6b02f69cbc13c589eee55265bda",
+   "json_sha256": "2f653f59d1bed52b14362d5382e96ca1dfa83f39975cbd253cea379b73fd8849",
+   "samples": 41,
+   "lines": 64,
+   "vertical": 0,
+   "ignore": 90,
+   "by_class": {
+    "name": 18,
+    "dialogue": 46
+   },
+   "counts": {
+    "positive": 64,
+    "dialogue": 46,
+    "name": 18,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 2,
+    "meiki": 163,
+    "meiki_meets": 75,
+    "meiki_other": 0,
+    "meiki_ignore": 88,
+    "ink": 64,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 41,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00547_000",
+   "split": "hval",
+   "title": "PCSG00547",
+   "npy_sha256": "a7dc84ad573a8879a60e0236cb11454bcec2a87aca727c3436783bc6ad025f09",
+   "json_sha256": "b34d77a57c4c0e932346e20b575e225baf5750bf78859cc636f46a508a1c86d4",
+   "samples": 41,
+   "lines": 83,
+   "vertical": 0,
+   "ignore": 69,
+   "by_class": {
+    "name": 29,
+    "dialogue": 54
+   },
+   "counts": {
+    "positive": 83,
+    "dialogue": 54,
+    "name": 29,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 221,
+    "meiki_meets": 163,
+    "meiki_other": 0,
+    "meiki_ignore": 58,
+    "ink": 83,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 41,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00553_000",
+   "split": "hval",
+   "title": "PCSG00553",
+   "npy_sha256": "beb6b1e14930f7ed1ece9b27eb3e5b712e24ca06085366cb9d752272d6288fa8",
+   "json_sha256": "bedfc8b23836a8453402604937ef13aa28c9e7cb019e071bef8a5661a0f397f8",
+   "samples": 45,
+   "lines": 89,
+   "vertical": 0,
+   "ignore": 280,
+   "by_class": {
+    "dialogue": 89
+   },
+   "counts": {
+    "positive": 89,
+    "dialogue": 89,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 2,
+    "uncovered_ignore": 46,
+    "meiki": 378,
+    "meiki_meets": 146,
+    "meiki_other": 0,
+    "meiki_ignore": 232,
+    "ink": 89,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 45,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00555_000",
+   "split": "hval",
+   "title": "PCSG00555",
+   "npy_sha256": "edf931d1c6b95f460c1d36fb84afc429181ca80f0fa1628bdfda98acd1b10e66",
+   "json_sha256": "cc449a60c9938bbdac1c370e43078310a53a752dc0c7201e3625f0fc0ccbbc4e",
+   "samples": 16,
+   "lines": 72,
+   "vertical": 0,
+   "ignore": 78,
+   "by_class": {
+    "dialogue": 21,
+    "notdlg": 51
+   },
+   "counts": {
+    "positive": 21,
+    "dialogue": 21,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 152,
+    "meiki_meets": 23,
+    "meiki_other": 51,
+    "meiki_ignore": 78,
+    "ink": 21,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 16,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00576_000",
+   "split": "hval",
+   "title": "PCSG00576",
+   "npy_sha256": "ae3f351e46e9241a51da98a54197718809533758efe973a4dff792d9482f6ae4",
+   "json_sha256": "60e43e6c51a076b677b22983427b86ce0663536d9e225469028724d0fa85ad1e",
+   "samples": 49,
+   "lines": 108,
+   "vertical": 23,
+   "ignore": 307,
+   "by_class": {
+    "dialogue": 85,
+    "notdlg": 23
+   },
+   "counts": {
+    "positive": 85,
+    "dialogue": 85,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 51,
+    "meiki": 480,
+    "meiki_meets": 201,
+    "meiki_other": 23,
+    "meiki_ignore": 256,
+    "ink": 85,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 49,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00611_000",
+   "split": "hval",
+   "title": "PCSG00611",
+   "npy_sha256": "e69c49ffa8ec6867dbf165b88ad37d7153ed031afdfa9e03fd16e283a422a782",
+   "json_sha256": "d906f803d6502d3e097addb46b5423d04db025ae3f8540f19b74b0ee610e19e9",
+   "samples": 55,
+   "lines": 76,
+   "vertical": 0,
+   "ignore": 125,
+   "by_class": {
+    "dialogue": 75,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 75,
+    "dialogue": 75,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 35,
+    "meiki": 225,
+    "meiki_meets": 134,
+    "meiki_other": 1,
+    "meiki_ignore": 90,
+    "ink": 75,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 55,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00620_000",
+   "split": "hval",
+   "title": "PCSG00620",
+   "npy_sha256": "82d69c39852a59e43b3e7b0fe8deedd83e01af11d11f1366c2d5f1551c760bb8",
+   "json_sha256": "f747ca0100bdd64ecdf2f69da641d8304068472d69b0d657d41849c6c473c2f2",
+   "samples": 40,
+   "lines": 121,
+   "vertical": 0,
+   "ignore": 378,
+   "by_class": {
+    "dialogue": 75,
+    "notdlg": 46
+   },
+   "counts": {
+    "positive": 75,
+    "dialogue": 75,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 505,
+    "meiki_meets": 81,
+    "meiki_other": 46,
+    "meiki_ignore": 378,
+    "ink": 75,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 40,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00628_000",
+   "split": "hval",
+   "title": "PCSG00628",
+   "npy_sha256": "d589e1e482aa1967379364882289e50f9c3118c3a49855e6fbed42feb5036b4c",
+   "json_sha256": "8ab3e6c6ad8d4c10c8d48dc8249961e626f5c788877de81d9341dc86aedac062",
+   "samples": 48,
+   "lines": 75,
+   "vertical": 0,
+   "ignore": 35,
+   "by_class": {
+    "dialogue": 68,
+    "name": 7
+   },
+   "counts": {
+    "positive": 75,
+    "dialogue": 68,
+    "name": 7,
+    "ruby_ignore": 9,
+    "drop_ignore": 0,
+    "uncovered_ignore": 5,
+    "meiki": 116,
+    "meiki_meets": 95,
+    "meiki_other": 0,
+    "meiki_ignore": 21,
+    "ink": 75,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 48,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00648_000",
+   "split": "hval",
+   "title": "PCSG00648",
+   "npy_sha256": "c117a1a5ccd797814980f5fdd38042f27a344d964a87d986bdb644119c5a67b6",
+   "json_sha256": "9f9ec9f3e55ad61e64e940df5d419c216ef8784350d7b61e72753d08b0aa81ec",
+   "samples": 56,
+   "lines": 119,
+   "vertical": 0,
+   "ignore": 70,
+   "by_class": {
+    "dialogue": 119
+   },
+   "counts": {
+    "positive": 119,
+    "dialogue": 119,
+    "name": 0,
+    "ruby_ignore": 4,
+    "drop_ignore": 0,
+    "uncovered_ignore": 65,
+    "meiki": 190,
+    "meiki_meets": 189,
+    "meiki_other": 0,
+    "meiki_ignore": 1,
+    "ink": 119,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 56,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00653_000",
+   "split": "hval",
+   "title": "PCSG00653",
+   "npy_sha256": "44a12d4f7bbb27f79152257ce4edfb28268e2d243a82deeb5651ef2359c57cb3",
+   "json_sha256": "71fa2d076a8b8220c1997b167b7c3b1f303e57cf5502cba37280dabccff53088",
+   "samples": 35,
+   "lines": 81,
+   "vertical": 81,
+   "ignore": 85,
+   "by_class": {
+    "dialogue": 55,
+    "notdlg": 26
+   },
+   "counts": {
+    "positive": 55,
+    "dialogue": 55,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 24,
+    "meiki": 170,
+    "meiki_meets": 83,
+    "meiki_other": 26,
+    "meiki_ignore": 61,
+    "ink": 55,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 35,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00666_000",
+   "split": "hval",
+   "title": "PCSG00666",
+   "npy_sha256": "352b928a841857afbfb6c5f6dad6f0801479a5f016f33c253fd69411d8893e94",
+   "json_sha256": "62564da5490d68faf69e3cf0645db4d870020dacea415e02e64014434e62ed27",
+   "samples": 63,
+   "lines": 112,
+   "vertical": 0,
+   "ignore": 151,
+   "by_class": {
+    "dialogue": 110,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 110,
+    "dialogue": 110,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 15,
+    "meiki": 264,
+    "meiki_meets": 126,
+    "meiki_other": 2,
+    "meiki_ignore": 136,
+    "ink": 110,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 63,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00667_000",
+   "split": "hval",
+   "title": "PCSG00667",
+   "npy_sha256": "c3c7dc477fa0e2f2987f52d5a0691f9adea14db1db351160f4e97383947f2fc6",
+   "json_sha256": "0be32ea4611cd275e6b8e2101ee8b4572a7b9df2dadb3b1ca069e74826b51c8c",
+   "samples": 80,
+   "lines": 202,
+   "vertical": 0,
+   "ignore": 140,
+   "by_class": {
+    "dialogue": 121,
+    "notdlg": 80,
+    "name": 1
+   },
+   "counts": {
+    "positive": 122,
+    "dialogue": 121,
+    "name": 1,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 66,
+    "meiki": 341,
+    "meiki_meets": 187,
+    "meiki_other": 80,
+    "meiki_ignore": 74,
+    "ink": 122,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 80,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00713_000",
+   "split": "hval",
+   "title": "PCSG00713",
+   "npy_sha256": "daa4d932222d48da4900db7cacbff418c1831882ce3b5cf1402ee8a1c250fa06",
+   "json_sha256": "d027e67330c560b22f643d68df64c705c8d51b538a0c1bdd64b5016d547e5635",
+   "samples": 59,
+   "lines": 166,
+   "vertical": 0,
+   "ignore": 58,
+   "by_class": {
+    "name": 47,
+    "dialogue": 119
+   },
+   "counts": {
+    "positive": 166,
+    "dialogue": 119,
+    "name": 47,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 225,
+    "meiki_meets": 167,
+    "meiki_other": 0,
+    "meiki_ignore": 58,
+    "ink": 166,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 59,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00751_000",
+   "split": "hval",
+   "title": "PCSG00751",
+   "npy_sha256": "19acaedacf1f123dce45a8e49769538fbdf172cecb485d8146433f0d6a073279",
+   "json_sha256": "c496099cc2dd82de1763915dd2e8909a669837f0dc412b7ee9c0d257bd157275",
+   "samples": 10,
+   "lines": 20,
+   "vertical": 0,
+   "ignore": 24,
+   "by_class": {
+    "notdlg": 10,
+    "dialogue": 10
+   },
+   "counts": {
+    "positive": 10,
+    "dialogue": 10,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 10,
+    "meiki": 46,
+    "meiki_meets": 22,
+    "meiki_other": 10,
+    "meiki_ignore": 14,
+    "ink": 10,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 10,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00753_000",
+   "split": "hval",
+   "title": "PCSG00753",
+   "npy_sha256": "944b2b39016bbd8ae74fba0aee4405733b031edd18274fb1482f41dcd8479c0d",
+   "json_sha256": "e3cea7a0cbd726b3754d529a1aa537b16f8984bcbf4a614d435e0ab811bcb667",
+   "samples": 40,
+   "lines": 44,
+   "vertical": 0,
+   "ignore": 29,
+   "by_class": {
+    "dialogue": 44
+   },
+   "counts": {
+    "positive": 44,
+    "dialogue": 44,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 27,
+    "meiki": 74,
+    "meiki_meets": 72,
+    "meiki_other": 0,
+    "meiki_ignore": 2,
+    "ink": 44,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 40,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00805_000",
+   "split": "hval",
+   "title": "PCSG00805",
+   "npy_sha256": "034ff2a27d5a8e281f5e3e1f2a490a4a0e8f78e2639436894534d563835da5a2",
+   "json_sha256": "a662b8c718db174e0fcf1d48290498a1cf11e2951fa818d57554fb559e9cef4a",
+   "samples": 53,
+   "lines": 103,
+   "vertical": 0,
+   "ignore": 47,
+   "by_class": {
+    "dialogue": 101,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 101,
+    "dialogue": 101,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 34,
+    "meiki": 150,
+    "meiki_meets": 135,
+    "meiki_other": 2,
+    "meiki_ignore": 13,
+    "ink": 101,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 53,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00854_000",
+   "split": "hval",
+   "title": "PCSG00854",
+   "npy_sha256": "8230453ba0df4b200d39281e02c2ca98d36dc393e48b5a75111fa7a46d983c6d",
+   "json_sha256": "2b267cb3bf9d58ab915b1d74c9dad1ccd2440eb5b6fc6b3a424baffc03443aea",
+   "samples": 40,
+   "lines": 81,
+   "vertical": 0,
+   "ignore": 792,
+   "by_class": {
+    "dialogue": 74,
+    "notdlg": 7
+   },
+   "counts": {
+    "positive": 74,
+    "dialogue": 74,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 38,
+    "meiki": 924,
+    "meiki_meets": 163,
+    "meiki_other": 7,
+    "meiki_ignore": 754,
+    "ink": 74,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 40,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00866_000",
+   "split": "hval",
+   "title": "PCSG00866",
+   "npy_sha256": "4a9d1d64fd72f67ff047920879376977a5814d2ca3dcbea65ba103da691ceb58",
+   "json_sha256": "ba63a54343514a45bab5e24a1582e5fcc2415f77860d075d18179674bbbf67dd",
+   "samples": 21,
+   "lines": 28,
+   "vertical": 0,
+   "ignore": 49,
+   "by_class": {
+    "dialogue": 28
+   },
+   "counts": {
+    "positive": 28,
+    "dialogue": 28,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 79,
+    "meiki_meets": 39,
+    "meiki_other": 0,
+    "meiki_ignore": 40,
+    "ink": 28,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 21,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00876_000",
+   "split": "hval",
+   "title": "PCSG00876",
+   "npy_sha256": "be4424845d604dee3d704b8609dca693d19945941b3dcc0ffb55e2ec9351c612",
+   "json_sha256": "07b88e4548499c7b1088a43c0ce1b729afee7550447031719eac301610bacb1f",
+   "samples": 42,
+   "lines": 76,
+   "vertical": 0,
+   "ignore": 63,
+   "by_class": {
+    "dialogue": 70,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 70,
+    "dialogue": 70,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 58,
+    "meiki": 114,
+    "meiki_meets": 103,
+    "meiki_other": 6,
+    "meiki_ignore": 5,
+    "ink": 70,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 42,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00914_000",
+   "split": "hval",
+   "title": "PCSG00914",
+   "npy_sha256": "a5db16a9f2d15dc8107f8adf3084c1a487bbf254161cb6995424e56088736c68",
+   "json_sha256": "a54b52101efca8d156135d6124d5ef9d570e36f7b7905b69fe993b2849039137",
+   "samples": 21,
+   "lines": 54,
+   "vertical": 0,
+   "ignore": 221,
+   "by_class": {
+    "dialogue": 45,
+    "notdlg": 9
+   },
+   "counts": {
+    "positive": 45,
+    "dialogue": 45,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 283,
+    "meiki_meets": 62,
+    "meiki_other": 9,
+    "meiki_ignore": 212,
+    "ink": 45,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 21,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00917_000",
+   "split": "hval",
+   "title": "PCSG00917",
+   "npy_sha256": "ccb57a92b39e611e7f312956ee253a444f2f172e3c99a4fe04a27093542ef101",
+   "json_sha256": "b22a968f7fb4333ee5a9934f6371bb7582224031f5837a169bdea4d75f441908",
+   "samples": 63,
+   "lines": 437,
+   "vertical": 0,
+   "ignore": 345,
+   "by_class": {
+    "dialogue": 95,
+    "notdlg": 342
+   },
+   "counts": {
+    "positive": 95,
+    "dialogue": 95,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 32,
+    "meiki": 872,
+    "meiki_meets": 217,
+    "meiki_other": 342,
+    "meiki_ignore": 313,
+    "ink": 95,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 63,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00918_000",
+   "split": "hval",
+   "title": "PCSG00918",
+   "npy_sha256": "f4f2451bd9b301ec2e21db5b131b4a340d0e8b3ab60fe47db72d169f47c38a04",
+   "json_sha256": "6f175ef6a06d2a82825f5feb18eed71e4c083941b8cce224750ba55929e4d0ac",
+   "samples": 60,
+   "lines": 435,
+   "vertical": 0,
+   "ignore": 415,
+   "by_class": {
+    "dialogue": 107,
+    "notdlg": 328
+   },
+   "counts": {
+    "positive": 107,
+    "dialogue": 107,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 47,
+    "meiki": 979,
+    "meiki_meets": 283,
+    "meiki_other": 328,
+    "meiki_ignore": 368,
+    "ink": 107,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG00935_000",
+   "split": "hval",
+   "title": "PCSG00935",
+   "npy_sha256": "cbd89b42ed1b73f4c760a3b074a2343932346bc58a7033375c7956530922bc66",
+   "json_sha256": "a9bc7a4cca4db81a3d087b548f73a92795bb164d51a425fd2bbb412e3e14ce66",
+   "samples": 15,
+   "lines": 34,
+   "vertical": 0,
+   "ignore": 23,
+   "by_class": {
+    "dialogue": 33,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 33,
+    "dialogue": 33,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 58,
+    "meiki_meets": 45,
+    "meiki_other": 1,
+    "meiki_ignore": 12,
+    "ink": 33,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 15,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "PCSG01110_000",
+   "split": "hval",
+   "title": "PCSG01110",
+   "npy_sha256": "38e954f6baa6e4e8b2f298c297fe3a6ebd66c6fefc8b776a61521baa4e166708",
+   "json_sha256": "a158d029bf959c29e07b4f2643701af7c3efb51c2a9216e60fbf2437fc969613",
+   "samples": 14,
+   "lines": 26,
+   "vertical": 0,
+   "ignore": 11,
+   "by_class": {
+    "dialogue": 26
+   },
+   "counts": {
+    "positive": 26,
+    "dialogue": 26,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 37,
+    "meiki_meets": 37,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 26,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 14,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "ULJM05383_000",
+   "split": "hval",
+   "title": "ULJM05383",
+   "npy_sha256": "d15934f19c2c39c452cdb30b9cea00c362b7281d0b7e2862316b3a41d34255e4",
+   "json_sha256": "b005abdf74ad854a08608c8c666551da162aa3cd53f117cba8f34e359f973b27",
+   "samples": 73,
+   "lines": 128,
+   "vertical": 0,
+   "ignore": 0,
+   "by_class": {
+    "dialogue": 128
+   },
+   "counts": {
+    "positive": 128,
+    "dialogue": 128,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 133,
+    "meiki_meets": 133,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 128,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 73
+   }
+  },
+  {
+   "dir": "hval",
+   "name": "ULJM05674_000",
+   "split": "hval",
+   "title": "ULJM05674",
+   "npy_sha256": "47d37029e33ccac83909bdc45f08a35cec6ebf6948270e772851b898ec752300",
+   "json_sha256": "1eb4a702fb3e6532f93658f831babcca01741055d5c166a463598251048dd5c4",
+   "samples": 80,
+   "lines": 109,
+   "vertical": 0,
+   "ignore": 91,
+   "by_class": {
+    "dialogue": 106,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 106,
+    "dialogue": 106,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 201,
+    "meiki_meets": 107,
+    "meiki_other": 3,
+    "meiki_ignore": 91,
+    "ink": 106,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 80
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJG00016_000",
+   "split": "guard",
+   "title": "NPJG00016",
+   "npy_sha256": "63078b41baf97076024648c55013dc356c43587fe28d599557a8613142c20f26",
+   "json_sha256": "0bc0ba77c4d47eee4755c949e8686b808b224ab90ec5f56130f4ac04c9a23a84",
+   "samples": 30,
+   "lines": 70,
+   "vertical": 0,
+   "ignore": 56,
+   "by_class": {
+    "dialogue": 70
+   },
+   "counts": {
+    "positive": 70,
+    "dialogue": 70,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 48,
+    "meiki": 130,
+    "meiki_meets": 122,
+    "meiki_other": 0,
+    "meiki_ignore": 8,
+    "ink": 70,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 30
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH00140_000",
+   "split": "guard",
+   "title": "NPJH00140",
+   "npy_sha256": "30cf8cf08ab3e666827ddbecc51279221e2fb75113f30dce59724c78c163392f",
+   "json_sha256": "0bd20c9fa60ef2de8bbb343bbbd26e88d742ca28d0ba8c8b2310e40e54525778",
+   "samples": 60,
+   "lines": 112,
+   "vertical": 0,
+   "ignore": 134,
+   "by_class": {
+    "dialogue": 112
+   },
+   "counts": {
+    "positive": 112,
+    "dialogue": 112,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 8,
+    "meiki": 250,
+    "meiki_meets": 124,
+    "meiki_other": 0,
+    "meiki_ignore": 126,
+    "ink": 112,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50001_000",
+   "split": "guard",
+   "title": "NPJH50001",
+   "npy_sha256": "d29553ca059c57235f54087307f34f15ba184d2119899cf200ca766c62719cb8",
+   "json_sha256": "8397a547c0e684e7e8190f06c4e9556ae29bd57e63ca85cf05d318b453b24ffe",
+   "samples": 60,
+   "lines": 105,
+   "vertical": 0,
+   "ignore": 11,
+   "by_class": {
+    "dialogue": 105
+   },
+   "counts": {
+    "positive": 105,
+    "dialogue": 105,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 1,
+    "meiki": 116,
+    "meiki_meets": 106,
+    "meiki_other": 0,
+    "meiki_ignore": 10,
+    "ink": 105,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50002_000",
+   "split": "guard",
+   "title": "NPJH50002",
+   "npy_sha256": "f4fab621a23e28ba457832c8852dd41b0540e4abdfc2d34446a6f23552c28540",
+   "json_sha256": "e9f9358f4d092d8f5c56b547ea4da477243e2514d1e21038ac404f071cc4f4a6",
+   "samples": 60,
+   "lines": 100,
+   "vertical": 0,
+   "ignore": 29,
+   "by_class": {
+    "dialogue": 94,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 94,
+    "dialogue": 94,
+    "name": 0,
+    "ruby_ignore": 2,
+    "drop_ignore": 0,
+    "uncovered_ignore": 23,
+    "meiki": 133,
+    "meiki_meets": 123,
+    "meiki_other": 6,
+    "meiki_ignore": 4,
+    "ink": 94,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50132_000",
+   "split": "guard",
+   "title": "NPJH50132",
+   "npy_sha256": "5d7357db11907ec32d01c5486d59c453a026546eb1fa331968fcda5fddae10ad",
+   "json_sha256": "207cb12ec880c7b834ea0edb2704932b1ecb807724ed4f21deb11996ee8aa6dd",
+   "samples": 60,
+   "lines": 84,
+   "vertical": 0,
+   "ignore": 11,
+   "by_class": {
+    "name": 20,
+    "dialogue": 64
+   },
+   "counts": {
+    "positive": 84,
+    "dialogue": 64,
+    "name": 20,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 101,
+    "meiki_meets": 101,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 84,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50279_000",
+   "split": "guard",
+   "title": "NPJH50279",
+   "npy_sha256": "3153e790a06b4b51a3ebb6c3b5d90efc63de18ef03de27c4d82400f114785745",
+   "json_sha256": "f4ec49dcae705e4f2e83b9362fadc8dde9032cba1b1374724d7339c56ba28a8e",
+   "samples": 30,
+   "lines": 68,
+   "vertical": 0,
+   "ignore": 36,
+   "by_class": {
+    "dialogue": 32,
+    "notdlg": 30,
+    "name": 6
+   },
+   "counts": {
+    "positive": 38,
+    "dialogue": 32,
+    "name": 6,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 10,
+    "meiki": 120,
+    "meiki_meets": 64,
+    "meiki_other": 30,
+    "meiki_ignore": 26,
+    "ink": 38,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 30
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50297_000",
+   "split": "guard",
+   "title": "NPJH50297",
+   "npy_sha256": "0f2b48e9756b221848e0ca90e7fab84ec03353e52c3ecc6d5212ce002ec16bfb",
+   "json_sha256": "123a2ccbb22addfa8b113d5ddb82996be62e122a5cad04825171dc9a0582a415",
+   "samples": 60,
+   "lines": 161,
+   "vertical": 0,
+   "ignore": 314,
+   "by_class": {
+    "dialogue": 139,
+    "notdlg": 22
+   },
+   "counts": {
+    "positive": 139,
+    "dialogue": 139,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 4,
+    "meiki": 483,
+    "meiki_meets": 151,
+    "meiki_other": 22,
+    "meiki_ignore": 310,
+    "ink": 139,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50356_000",
+   "split": "guard",
+   "title": "NPJH50356",
+   "npy_sha256": "1f5c212d032bcef8e181da73a5a7b1fbf606f08b72a8320c1c69cfa2aae601bf",
+   "json_sha256": "d1ee1563e2192603306c9e9c243eba7c240fc79e65555444bafae0406789810a",
+   "samples": 60,
+   "lines": 148,
+   "vertical": 0,
+   "ignore": 105,
+   "by_class": {
+    "dialogue": 75,
+    "notdlg": 73
+   },
+   "counts": {
+    "positive": 75,
+    "dialogue": 75,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 40,
+    "meiki": 267,
+    "meiki_meets": 129,
+    "meiki_other": 73,
+    "meiki_ignore": 65,
+    "ink": 75,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50382_000",
+   "split": "guard",
+   "title": "NPJH50382",
+   "npy_sha256": "3f89faa9b24da60e468936beefa9fe1a792ef343a14f21d00383bcd52ef46265",
+   "json_sha256": "0fa8297664019e425c5a14571733009ca4188e426e2a922b5fd953e64005ea05",
+   "samples": 60,
+   "lines": 99,
+   "vertical": 0,
+   "ignore": 60,
+   "by_class": {
+    "name": 30,
+    "dialogue": 69
+   },
+   "counts": {
+    "positive": 99,
+    "dialogue": 69,
+    "name": 30,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 160,
+    "meiki_meets": 111,
+    "meiki_other": 0,
+    "meiki_ignore": 49,
+    "ink": 99,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50551_000",
+   "split": "guard",
+   "title": "NPJH50551",
+   "npy_sha256": "361b53daabec383bea2e05303457b9a503003c17d4fe8cda531235f8ba696e6f",
+   "json_sha256": "fb760f8eefdfe3697c36c54fd26c1557f9d8b7cc48012a6b03b67c582a38b792",
+   "samples": 30,
+   "lines": 54,
+   "vertical": 0,
+   "ignore": 83,
+   "by_class": {
+    "dialogue": 51,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 51,
+    "dialogue": 51,
+    "name": 0,
+    "ruby_ignore": 1,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 137,
+    "meiki_meets": 52,
+    "meiki_other": 3,
+    "meiki_ignore": 82,
+    "ink": 51,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 30
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50621_000",
+   "split": "guard",
+   "title": "NPJH50621",
+   "npy_sha256": "91fb254846d0fcb4f3cb3b22db90d7c8d3d78f9791f12e629619e148b883b730",
+   "json_sha256": "991ec91420d846d39e345e96428150acfb91b296e83eba90844c3784d33b58ba",
+   "samples": 60,
+   "lines": 142,
+   "vertical": 0,
+   "ignore": 350,
+   "by_class": {
+    "dialogue": 87,
+    "notdlg": 19,
+    "name": 36
+   },
+   "counts": {
+    "positive": 123,
+    "dialogue": 87,
+    "name": 36,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 6,
+    "meiki": 498,
+    "meiki_meets": 135,
+    "meiki_other": 19,
+    "meiki_ignore": 344,
+    "ink": 123,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50641_000",
+   "split": "guard",
+   "title": "NPJH50641",
+   "npy_sha256": "ab45221d3642613379c16b12d6dd47064c7ae5a6bd1675533b22c0dcd3a66608",
+   "json_sha256": "f41254a9c3030dfe11d807b358ab11385b91fe762e056ec40552ae12eccbb3a7",
+   "samples": 60,
+   "lines": 127,
+   "vertical": 0,
+   "ignore": 61,
+   "by_class": {
+    "name": 40,
+    "dialogue": 87
+   },
+   "counts": {
+    "positive": 127,
+    "dialogue": 87,
+    "name": 40,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 1,
+    "meiki": 205,
+    "meiki_meets": 145,
+    "meiki_other": 0,
+    "meiki_ignore": 60,
+    "ink": 127,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "NPJH50649_000",
+   "split": "guard",
+   "title": "NPJH50649",
+   "npy_sha256": "2cb4ccef6fb7bf91ab0c2fc51acd3cb942583ac67ac4f94866bab7467c68322d",
+   "json_sha256": "b6950b4bde140c07dab7d871dc903b53c3ce05f20c910cfbee6e41dca79c15ca",
+   "samples": 58,
+   "lines": 189,
+   "vertical": 19,
+   "ignore": 235,
+   "by_class": {
+    "name": 52,
+    "dialogue": 99,
+    "notdlg": 38
+   },
+   "counts": {
+    "positive": 151,
+    "dialogue": 99,
+    "name": 52,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 8,
+    "meiki": 425,
+    "meiki_meets": 160,
+    "meiki_other": 38,
+    "meiki_ignore": 227,
+    "ink": 151,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 58
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00007_000",
+   "split": "guard",
+   "title": "PCSG00007",
+   "npy_sha256": "0289f9585ec1b80ed484e5f671d045d056a57c765f9974f6dd79de585bc5091b",
+   "json_sha256": "4f56a88555237a7c0ca620e80a314ffe44beada50a237adce051ea71e6456877",
+   "samples": 25,
+   "lines": 95,
+   "vertical": 0,
+   "ignore": 54,
+   "by_class": {
+    "name": 16,
+    "dialogue": 30,
+    "notdlg": 49
+   },
+   "counts": {
+    "positive": 46,
+    "dialogue": 30,
+    "name": 16,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 152,
+    "meiki_meets": 49,
+    "meiki_other": 49,
+    "meiki_ignore": 54,
+    "ink": 46,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 25,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00146_000",
+   "split": "guard",
+   "title": "PCSG00146",
+   "npy_sha256": "e975e14aeada528ddae2ebd23f54b68dc90e7ae9dbd48da4dc9fa8dd6450baef",
+   "json_sha256": "1d394b71e3d17bb25ebad620109f3cf2e5f8432d4020439556feb28d691167ba",
+   "samples": 60,
+   "lines": 353,
+   "vertical": 0,
+   "ignore": 988,
+   "by_class": {
+    "dialogue": 78,
+    "notdlg": 240,
+    "name": 35
+   },
+   "counts": {
+    "positive": 113,
+    "dialogue": 78,
+    "name": 35,
+    "ruby_ignore": 1,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 1345,
+    "meiki_meets": 118,
+    "meiki_other": 240,
+    "meiki_ignore": 987,
+    "ink": 113,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00352_000",
+   "split": "guard",
+   "title": "PCSG00352",
+   "npy_sha256": "69e68f3114188305292a03a1383fe517420680661414c043d22af0e5f40940dd",
+   "json_sha256": "f631a8250856cfe1539143f8ece76a065ca000009395bffda40a1b612f6b13ae",
+   "samples": 30,
+   "lines": 173,
+   "vertical": 0,
+   "ignore": 125,
+   "by_class": {
+    "dialogue": 48,
+    "notdlg": 124,
+    "name": 1
+   },
+   "counts": {
+    "positive": 49,
+    "dialogue": 48,
+    "name": 1,
+    "ruby_ignore": 3,
+    "drop_ignore": 0,
+    "uncovered_ignore": 11,
+    "meiki": 320,
+    "meiki_meets": 85,
+    "meiki_other": 124,
+    "meiki_ignore": 111,
+    "ink": 49,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00367_000",
+   "split": "guard",
+   "title": "PCSG00367",
+   "npy_sha256": "74798a67ada9d65e6762914f8e751ae7a4ea4ffbf16f1c5d9a2a374f70df8212",
+   "json_sha256": "8b17e363910c45cf45ad63a8acdde73ae11ef8d0b366b38fcd5719d3eaf8086c",
+   "samples": 60,
+   "lines": 94,
+   "vertical": 0,
+   "ignore": 102,
+   "by_class": {
+    "dialogue": 94
+   },
+   "counts": {
+    "positive": 94,
+    "dialogue": 94,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 63,
+    "meiki": 206,
+    "meiki_meets": 167,
+    "meiki_other": 0,
+    "meiki_ignore": 39,
+    "ink": 94,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00380_000",
+   "split": "guard",
+   "title": "PCSG00380",
+   "npy_sha256": "b18900778f68e7cd34ef9f823987303a9fc5a88c7ca78bb776fd3133d5366944",
+   "json_sha256": "59aded14d9f1965cfe77e89845a3d35569f7c84028248de484c01f7df8c97388",
+   "samples": 60,
+   "lines": 110,
+   "vertical": 0,
+   "ignore": 369,
+   "by_class": {
+    "dialogue": 110
+   },
+   "counts": {
+    "positive": 110,
+    "dialogue": 110,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 40,
+    "meiki": 486,
+    "meiki_meets": 157,
+    "meiki_other": 0,
+    "meiki_ignore": 329,
+    "ink": 110,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00468_000",
+   "split": "guard",
+   "title": "PCSG00468",
+   "npy_sha256": "fa34355969ff903eeff51a2fce0887f4a370a6a855a3c8e5808727ce9fbb2671",
+   "json_sha256": "f4a00c3d073bcf836717b52f9191235939650bed5406acf449390a1024660759",
+   "samples": 30,
+   "lines": 47,
+   "vertical": 0,
+   "ignore": 44,
+   "by_class": {
+    "dialogue": 47
+   },
+   "counts": {
+    "positive": 47,
+    "dialogue": 47,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 21,
+    "meiki": 106,
+    "meiki_meets": 83,
+    "meiki_other": 0,
+    "meiki_ignore": 23,
+    "ink": 47,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00469_000",
+   "split": "guard",
+   "title": "PCSG00469",
+   "npy_sha256": "1064eab86bcc670257669db36424e876d3429415e7b15c00768025a37c038fa5",
+   "json_sha256": "79f9156cfc4ee8ee6a2a6d8ac2463a68d016cdc7df7e79a724e51f651800c173",
+   "samples": 89,
+   "lines": 205,
+   "vertical": 0,
+   "ignore": 31,
+   "by_class": {
+    "dialogue": 183,
+    "name": 22
+   },
+   "counts": {
+    "positive": 205,
+    "dialogue": 183,
+    "name": 22,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 16,
+    "meiki": 240,
+    "meiki_meets": 225,
+    "meiki_other": 0,
+    "meiki_ignore": 15,
+    "ink": 205,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 89,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00509_000",
+   "split": "guard",
+   "title": "PCSG00509",
+   "npy_sha256": "9c4c579c6108b200c5506f04a654530ca50464b5ac7087e9f79bd73b79948dc7",
+   "json_sha256": "03d47a4571f9894e970e871afadc7ca64bcea6d4e926c26492e9defe4d8b97a5",
+   "samples": 60,
+   "lines": 161,
+   "vertical": 0,
+   "ignore": 128,
+   "by_class": {
+    "dialogue": 85,
+    "notdlg": 76
+   },
+   "counts": {
+    "positive": 85,
+    "dialogue": 85,
+    "name": 0,
+    "ruby_ignore": 1,
+    "drop_ignore": 0,
+    "uncovered_ignore": 36,
+    "meiki": 301,
+    "meiki_meets": 134,
+    "meiki_other": 76,
+    "meiki_ignore": 91,
+    "ink": 85,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00540_000",
+   "split": "guard",
+   "title": "PCSG00540",
+   "npy_sha256": "6b1da684b6765890928153e146d1744e7b91c380f3ae4aea268192b9e832b27d",
+   "json_sha256": "d7f1dd07c9d002ba2dbde896563fc27864ad31881f9d0958d8962fdbcf2aeab4",
+   "samples": 60,
+   "lines": 112,
+   "vertical": 6,
+   "ignore": 74,
+   "by_class": {
+    "name": 39,
+    "dialogue": 67,
+    "notdlg": 6
+   },
+   "counts": {
+    "positive": 106,
+    "dialogue": 67,
+    "name": 39,
+    "ruby_ignore": 2,
+    "drop_ignore": 0,
+    "uncovered_ignore": 2,
+    "meiki": 199,
+    "meiki_meets": 123,
+    "meiki_other": 6,
+    "meiki_ignore": 70,
+    "ink": 106,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00547_000",
+   "split": "guard",
+   "title": "PCSG00547",
+   "npy_sha256": "d439b6a342847805949aaf38b318f4cf0b809f90fc5e9067a83ca68998d53e3a",
+   "json_sha256": "94622fa870d3851df31a7a8e050106d2ce5cf4e7f9c4c91883de532b000aa781",
+   "samples": 60,
+   "lines": 124,
+   "vertical": 0,
+   "ignore": 128,
+   "by_class": {
+    "name": 35,
+    "dialogue": 89
+   },
+   "counts": {
+    "positive": 124,
+    "dialogue": 89,
+    "name": 35,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 19,
+    "meiki": 317,
+    "meiki_meets": 208,
+    "meiki_other": 0,
+    "meiki_ignore": 109,
+    "ink": 124,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00553_000",
+   "split": "guard",
+   "title": "PCSG00553",
+   "npy_sha256": "19beea4915b324e40b2d1bafbd5e7128ec17a4d3bd87110e2a7cf2b326272efe",
+   "json_sha256": "0945dce886f39c1a3df08b878d1ff1712fabd5423782138a340ae22c3b8abc21",
+   "samples": 50,
+   "lines": 117,
+   "vertical": 0,
+   "ignore": 257,
+   "by_class": {
+    "dialogue": 117
+   },
+   "counts": {
+    "positive": 117,
+    "dialogue": 117,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 2,
+    "uncovered_ignore": 41,
+    "meiki": 379,
+    "meiki_meets": 165,
+    "meiki_other": 0,
+    "meiki_ignore": 214,
+    "ink": 117,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 50,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00555_000",
+   "split": "guard",
+   "title": "PCSG00555",
+   "npy_sha256": "4bf9f9901c48011feac87b6957de72a0dec8bb2dbd07e874f80a42dd382ac73d",
+   "json_sha256": "7d9253455513ee126dcce4ad3d9d343a9682124ec4076237537a265ce0c6c3fe",
+   "samples": 30,
+   "lines": 96,
+   "vertical": 0,
+   "ignore": 159,
+   "by_class": {
+    "dialogue": 38,
+    "notdlg": 58
+   },
+   "counts": {
+    "positive": 38,
+    "dialogue": 38,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 256,
+    "meiki_meets": 39,
+    "meiki_other": 58,
+    "meiki_ignore": 159,
+    "ink": 38,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00576_000",
+   "split": "guard",
+   "title": "PCSG00576",
+   "npy_sha256": "10a18669faac063a183af8e065d898f58cff6bb203dc5f8d6687ea87251dbfff",
+   "json_sha256": "46b80d55407e5ea2d24965890cc44d49c1f214bbcdabcc226dd58f223976570b",
+   "samples": 60,
+   "lines": 154,
+   "vertical": 42,
+   "ignore": 328,
+   "by_class": {
+    "dialogue": 112,
+    "notdlg": 42
+   },
+   "counts": {
+    "positive": 112,
+    "dialogue": 112,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 60,
+    "meiki": 576,
+    "meiki_meets": 266,
+    "meiki_other": 42,
+    "meiki_ignore": 268,
+    "ink": 112,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00611_000",
+   "split": "guard",
+   "title": "PCSG00611",
+   "npy_sha256": "16d8d0457362524695d882193810ff95da9fcca612d51092a0f355ada196bbdc",
+   "json_sha256": "c91e531a567497dbc47abc524acc0a5629e2450a06e2f90ac3735e6bcbb45dcc",
+   "samples": 60,
+   "lines": 82,
+   "vertical": 0,
+   "ignore": 152,
+   "by_class": {
+    "dialogue": 82
+   },
+   "counts": {
+    "positive": 82,
+    "dialogue": 82,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 47,
+    "meiki": 284,
+    "meiki_meets": 179,
+    "meiki_other": 0,
+    "meiki_ignore": 105,
+    "ink": 82,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00620_000",
+   "split": "guard",
+   "title": "PCSG00620",
+   "npy_sha256": "9332d090dbfda1ea0cf3ea5ff86543a7711dbf724776271f5c9702d7a18ba49c",
+   "json_sha256": "9440bbcc86e996e1deaa1f68cd7e7ffb41e66c5d9f53268696ebcd00ed084783",
+   "samples": 30,
+   "lines": 84,
+   "vertical": 0,
+   "ignore": 204,
+   "by_class": {
+    "dialogue": 52,
+    "notdlg": 32
+   },
+   "counts": {
+    "positive": 52,
+    "dialogue": 52,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 298,
+    "meiki_meets": 62,
+    "meiki_other": 32,
+    "meiki_ignore": 204,
+    "ink": 52,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00628_000",
+   "split": "guard",
+   "title": "PCSG00628",
+   "npy_sha256": "10072a664f42f398195eb7a3633e74dc7d56fe80d8a6fb2af3b0215f02c6a0a1",
+   "json_sha256": "978521b8bc02659ebf8bf0c6e79f9c1ae7a0088685111b1c5f0fb6bc0e1967bc",
+   "samples": 60,
+   "lines": 115,
+   "vertical": 0,
+   "ignore": 77,
+   "by_class": {
+    "dialogue": 96,
+    "name": 18,
+    "notdlg": 1
+   },
+   "counts": {
+    "positive": 114,
+    "dialogue": 96,
+    "name": 18,
+    "ruby_ignore": 13,
+    "drop_ignore": 0,
+    "uncovered_ignore": 9,
+    "meiki": 196,
+    "meiki_meets": 140,
+    "meiki_other": 1,
+    "meiki_ignore": 55,
+    "ink": 114,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00648_000",
+   "split": "guard",
+   "title": "PCSG00648",
+   "npy_sha256": "f17321185cfb734baa53d9d059be53e16bc71cb1e954615b45a7e5c806ea4154",
+   "json_sha256": "ec261a54aba434209ab8ce9d339507e345ad1e83a4ef98e76044a83d41f84825",
+   "samples": 60,
+   "lines": 119,
+   "vertical": 0,
+   "ignore": 68,
+   "by_class": {
+    "dialogue": 119
+   },
+   "counts": {
+    "positive": 119,
+    "dialogue": 119,
+    "name": 0,
+    "ruby_ignore": 12,
+    "drop_ignore": 0,
+    "uncovered_ignore": 49,
+    "meiki": 191,
+    "meiki_meets": 184,
+    "meiki_other": 0,
+    "meiki_ignore": 7,
+    "ink": 119,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00653_000",
+   "split": "guard",
+   "title": "PCSG00653",
+   "npy_sha256": "a4c01f4776bc078526c2d5aec64ea7f597c7201e8b433591c39c02fdfda5079f",
+   "json_sha256": "1b4d749f0dac34c404cf22913f73eb8fe30a4cf2ad092cacffe8b6afc9c84bd2",
+   "samples": 30,
+   "lines": 58,
+   "vertical": 58,
+   "ignore": 74,
+   "by_class": {
+    "dialogue": 58
+   },
+   "counts": {
+    "positive": 58,
+    "dialogue": 58,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 26,
+    "meiki": 134,
+    "meiki_meets": 86,
+    "meiki_other": 0,
+    "meiki_ignore": 48,
+    "ink": 58,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00666_000",
+   "split": "guard",
+   "title": "PCSG00666",
+   "npy_sha256": "4c987e6a977a277e28c9a222013b267f967451c15bdd7ab92ed1ee018adf6b81",
+   "json_sha256": "722f79f4574968270093ee783ddcf6980773bcbbc74ef40e2bf94658bf1d250a",
+   "samples": 60,
+   "lines": 103,
+   "vertical": 0,
+   "ignore": 186,
+   "by_class": {
+    "notdlg": 2,
+    "dialogue": 101
+   },
+   "counts": {
+    "positive": 101,
+    "dialogue": 101,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 37,
+    "meiki": 288,
+    "meiki_meets": 137,
+    "meiki_other": 2,
+    "meiki_ignore": 149,
+    "ink": 101,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00667_000",
+   "split": "guard",
+   "title": "PCSG00667",
+   "npy_sha256": "7038ef3e10468c9ee489aa3ad8944a625b0c05ce947e89286e75dc29f1da505f",
+   "json_sha256": "7ce0dedf66d736ae6eedcb96f271dd460d0ad329e6cf4219e79708bd407ac824",
+   "samples": 60,
+   "lines": 144,
+   "vertical": 0,
+   "ignore": 124,
+   "by_class": {
+    "dialogue": 83,
+    "notdlg": 60,
+    "name": 1
+   },
+   "counts": {
+    "positive": 84,
+    "dialogue": 83,
+    "name": 1,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 48,
+    "meiki": 271,
+    "meiki_meets": 135,
+    "meiki_other": 60,
+    "meiki_ignore": 76,
+    "ink": 84,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00713_000",
+   "split": "guard",
+   "title": "PCSG00713",
+   "npy_sha256": "61127039d2d869215af88c7bbbcfaae7ed4eaac8ed6b83430ac64e4a3d14b2d9",
+   "json_sha256": "02660b158356e32984ce832d3360bab612dba46f8d420d7305579e3385355f59",
+   "samples": 60,
+   "lines": 161,
+   "vertical": 0,
+   "ignore": 54,
+   "by_class": {
+    "dialogue": 111,
+    "name": 50
+   },
+   "counts": {
+    "positive": 161,
+    "dialogue": 111,
+    "name": 50,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 217,
+    "meiki_meets": 163,
+    "meiki_other": 0,
+    "meiki_ignore": 54,
+    "ink": 161,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00751_000",
+   "split": "guard",
+   "title": "PCSG00751",
+   "npy_sha256": "ab1b63653499dc7b824fef0180fd3761c990fca70c8f37842fd5e219d31a06bd",
+   "json_sha256": "a3d6a60a56aca97887d98392ccbbbf3fcfa2d8afd8edf36b90cf8e5a429d13a5",
+   "samples": 17,
+   "lines": 37,
+   "vertical": 0,
+   "ignore": 20,
+   "by_class": {
+    "dialogue": 20,
+    "notdlg": 17
+   },
+   "counts": {
+    "positive": 20,
+    "dialogue": 20,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 12,
+    "meiki": 60,
+    "meiki_meets": 35,
+    "meiki_other": 17,
+    "meiki_ignore": 8,
+    "ink": 20,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 17,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00753_000",
+   "split": "guard",
+   "title": "PCSG00753",
+   "npy_sha256": "2cb8520651e96591fdcc3a486e8f60a993c34f25371762e65d09d86ec3fae801",
+   "json_sha256": "e682e080ed95773817569d79045e4a94a78f2c8655f33d1d5259632215ee6c20",
+   "samples": 30,
+   "lines": 39,
+   "vertical": 0,
+   "ignore": 35,
+   "by_class": {
+    "dialogue": 39
+   },
+   "counts": {
+    "positive": 39,
+    "dialogue": 39,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 24,
+    "meiki": 76,
+    "meiki_meets": 65,
+    "meiki_other": 0,
+    "meiki_ignore": 11,
+    "ink": 39,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00805_000",
+   "split": "guard",
+   "title": "PCSG00805",
+   "npy_sha256": "ca18b2422017a6cbedfb81b694f77de586deca057cd696847c14a39f24ab6c6c",
+   "json_sha256": "7d1d78359adbfd444604541a9f9509f14b76f7a17881b36f85de5aa4d5b80868",
+   "samples": 60,
+   "lines": 114,
+   "vertical": 0,
+   "ignore": 49,
+   "by_class": {
+    "dialogue": 112,
+    "notdlg": 2
+   },
+   "counts": {
+    "positive": 112,
+    "dialogue": 112,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 34,
+    "meiki": 164,
+    "meiki_meets": 147,
+    "meiki_other": 2,
+    "meiki_ignore": 15,
+    "ink": 112,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00854_000",
+   "split": "guard",
+   "title": "PCSG00854",
+   "npy_sha256": "59e623087d9d1035eba70090de943c88a0e5afa75e0e2fd96c73211f30e7c0fa",
+   "json_sha256": "4c361d1e48a5bb2ba96ab5f94620a2e487ce436fb4e7ba751aed3bbff77e89af",
+   "samples": 30,
+   "lines": 52,
+   "vertical": 0,
+   "ignore": 380,
+   "by_class": {
+    "dialogue": 52
+   },
+   "counts": {
+    "positive": 52,
+    "dialogue": 52,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 22,
+    "meiki": 475,
+    "meiki_meets": 117,
+    "meiki_other": 0,
+    "meiki_ignore": 358,
+    "ink": 52,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00866_000",
+   "split": "guard",
+   "title": "PCSG00866",
+   "npy_sha256": "09fb55073efe9576cd20bf8c61f10b691de0bbe039f47b7301fd8fe70932010e",
+   "json_sha256": "bff78dd0454f1ea3544139ea7df5e8ff9f908a75855bfe511aeab6216925b0bf",
+   "samples": 30,
+   "lines": 55,
+   "vertical": 0,
+   "ignore": 115,
+   "by_class": {
+    "dialogue": 44,
+    "notdlg": 11
+   },
+   "counts": {
+    "positive": 44,
+    "dialogue": 44,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 12,
+    "meiki": 170,
+    "meiki_meets": 56,
+    "meiki_other": 11,
+    "meiki_ignore": 103,
+    "ink": 44,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00876_000",
+   "split": "guard",
+   "title": "PCSG00876",
+   "npy_sha256": "027afb3807290174173277b6550106fa83234e816562873b669e1f218d83a4f8",
+   "json_sha256": "b5ed91ed9509ed5e35260729d8e43c57c96b3ba6a61e129c1a5631c625a943cf",
+   "samples": 60,
+   "lines": 110,
+   "vertical": 0,
+   "ignore": 124,
+   "by_class": {
+    "dialogue": 96,
+    "notdlg": 14
+   },
+   "counts": {
+    "positive": 96,
+    "dialogue": 96,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 92,
+    "meiki": 196,
+    "meiki_meets": 150,
+    "meiki_other": 14,
+    "meiki_ignore": 32,
+    "ink": 96,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00914_000",
+   "split": "guard",
+   "title": "PCSG00914",
+   "npy_sha256": "55c7fb004193bffe521084313dac36edd4b74e51f4f41e2b48d16ed0bbee6bb0",
+   "json_sha256": "9ffed87e2dc7a43e19b73fe815829c9998c3b43f9f329c208b8ea63cbc7e9471",
+   "samples": 28,
+   "lines": 77,
+   "vertical": 0,
+   "ignore": 460,
+   "by_class": {
+    "dialogue": 59,
+    "notdlg": 18
+   },
+   "counts": {
+    "positive": 59,
+    "dialogue": 59,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 7,
+    "meiki": 545,
+    "meiki_meets": 74,
+    "meiki_other": 18,
+    "meiki_ignore": 453,
+    "ink": 59,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 28,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00917_000",
+   "split": "guard",
+   "title": "PCSG00917",
+   "npy_sha256": "347f4e1d6bb364bae3377c5fff7bba189cf0d97862d5e9332052a74f68a8c7f2",
+   "json_sha256": "e4df3dfe6233ae9bf5670cdac40eb503c5e0f97741bb4ee90b7191ec61986160",
+   "samples": 60,
+   "lines": 440,
+   "vertical": 0,
+   "ignore": 322,
+   "by_class": {
+    "dialogue": 86,
+    "notdlg": 354
+   },
+   "counts": {
+    "positive": 86,
+    "dialogue": 86,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 31,
+    "meiki": 815,
+    "meiki_meets": 170,
+    "meiki_other": 354,
+    "meiki_ignore": 291,
+    "ink": 86,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00918_000",
+   "split": "guard",
+   "title": "PCSG00918",
+   "npy_sha256": "edc3f9df7dd3ab8c61c9c45b9780dfb8dfcb29b200c31b3940e936a5353abb3f",
+   "json_sha256": "cfa43dbb883c22e227a2b0a7d597211070a97bcb7aabcf57ecc3fee97859e40a",
+   "samples": 60,
+   "lines": 407,
+   "vertical": 0,
+   "ignore": 486,
+   "by_class": {
+    "dialogue": 113,
+    "notdlg": 294
+   },
+   "counts": {
+    "positive": 113,
+    "dialogue": 113,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 42,
+    "meiki": 1000,
+    "meiki_meets": 262,
+    "meiki_other": 294,
+    "meiki_ignore": 444,
+    "ink": 113,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 60,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG00935_000",
+   "split": "guard",
+   "title": "PCSG00935",
+   "npy_sha256": "00f1e3f682dd7230273eb77df8fa121210fbce353cbe7d30612ac885776cb210",
+   "json_sha256": "5dfe1c94b753a20bc6e14c65622287ce13cf425a02587e4d688feb2484c0819d",
+   "samples": 30,
+   "lines": 64,
+   "vertical": 0,
+   "ignore": 46,
+   "by_class": {
+    "dialogue": 61,
+    "notdlg": 3
+   },
+   "counts": {
+    "positive": 61,
+    "dialogue": 61,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 23,
+    "meiki": 111,
+    "meiki_meets": 85,
+    "meiki_other": 3,
+    "meiki_ignore": 23,
+    "ink": 61,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "PCSG01110_000",
+   "split": "guard",
+   "title": "PCSG01110",
+   "npy_sha256": "c6d90fc6ef04f969c0ce0d79e2552975d793811b1eb9f1b34e6e41b289ca9cb1",
+   "json_sha256": "7bc44862bf898a5377a2b75919064a0849578d5ae63e71018428b4f743e18d5d",
+   "samples": 30,
+   "lines": 58,
+   "vertical": 0,
+   "ignore": 15,
+   "by_class": {
+    "dialogue": 58
+   },
+   "counts": {
+    "positive": 58,
+    "dialogue": 58,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 15,
+    "meiki": 73,
+    "meiki_meets": 73,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 58,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 30,
+    "psp": 0
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "ULJM05383_000",
+   "split": "guard",
+   "title": "ULJM05383",
+   "npy_sha256": "03410d675441ece225e20e8890d62031064420e702a1d8d1a8e4422761a1a229",
+   "json_sha256": "c5b0327fa177453e48784221977480513f147495141f0eaaa6c0ab458764cd7a",
+   "samples": 60,
+   "lines": 99,
+   "vertical": 0,
+   "ignore": 0,
+   "by_class": {
+    "dialogue": 99
+   },
+   "counts": {
+    "positive": 99,
+    "dialogue": 99,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 99,
+    "meiki_meets": 99,
+    "meiki_other": 0,
+    "meiki_ignore": 0,
+    "ink": 99,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  },
+  {
+   "dir": "guard",
+   "name": "ULJM05674_000",
+   "split": "guard",
+   "title": "ULJM05674",
+   "npy_sha256": "e7f0dab071452543d126d009754235ee6a4ac58c98b52881a1f169c3eae266de",
+   "json_sha256": "e5f541cbd9fd6d08b02c82296a18fad147cb9609be038bc517d15711dffd419a",
+   "samples": 60,
+   "lines": 83,
+   "vertical": 0,
+   "ignore": 71,
+   "by_class": {
+    "dialogue": 79,
+    "notdlg": 4
+   },
+   "counts": {
+    "positive": 79,
+    "dialogue": 79,
+    "name": 0,
+    "ruby_ignore": 0,
+    "drop_ignore": 0,
+    "uncovered_ignore": 0,
+    "meiki": 159,
+    "meiki_meets": 84,
+    "meiki_other": 4,
+    "meiki_ignore": 71,
+    "ink": 79,
+    "quad": 0
+   },
+   "by_kind": {
+    "vita": 0,
+    "psp": 60
+   }
+  }
+ ],
+ "totals": {
+  "train": {
+   "shards": 121,
+   "samples": 50243,
+   "lines": 123687,
+   "ignore": 146968,
+   "by_class": {
+    "dialogue": 81542,
+    "notdlg": 34336,
+    "name": 7809
+   }
+  },
+  "hval": {
+   "shards": 47,
+   "samples": 2191,
+   "lines": 5330,
+   "ignore": 6480,
+   "by_class": {
+    "dialogue": 3497,
+    "notdlg": 1534,
+    "name": 299
+   }
+  },
+  "guard": {
+   "shards": 47,
+   "samples": 2337,
+   "lines": 5801,
+   "ignore": 7334,
+   "by_class": {
+    "dialogue": 3802,
+    "notdlg": 1598,
+    "name": 401
+   }
+  }
+ },
+ "note": "shards hold copyrighted game frames and stay local; this manifest holds names, counts, sha256"
+}

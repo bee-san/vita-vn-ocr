@@ -15,7 +15,10 @@
 #                         with synth/textspot2_twin.py and, for version 1, with vocr_textspot.c), the
 #                         spotter of VTSP version 1, 2 and 3 (multi-scale) blobs' (check-textspot3,
 #                         vocr_textspot3.mk: strict compile, its C self-test, its parity with
-#                         synth/textspot3_twin.py and, for versions 1 and 2, with vocr_textspot2.c), the counter
+#                         synth/textspot3_twin.py and, for versions 1 and 2, with vocr_textspot2.c), the
+#                         tagged spotter of VTSP version 1-4 blobs' (check-textspot6, vocr_textspot6.mk: strict
+#                         compile, also -DVOCR_TEXTSPOT6_NO_MS, its C self-test, its parity with
+#                         synth/textspot6_twin.py and, for versions 1-3, with vocr_textspot3.c), the counter
 #                         post-processing's (check-post, vocr_post.mk: strict compile, its C self-test and its
 #                         parity with eval/vocr_post.py), the edge continuation's (check-widen,
 #                         vocr_lines_widen.mk: strict compile, its C self-test and its parity with
@@ -99,7 +102,7 @@ $(OUT)/vocr_cli_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 check: check-lines check-split check-textdet check-textgate check-vertical check-textspot check-textspot2 \
-       check-textspot3 check-post check-widen check-charbox check-vocr check-lines-fix
+       check-textspot3 check-textspot6 check-post check-widen check-charbox check-vocr check-lines-fix
 
 include vocr_lines.mk
 include vocr_lines_fix.mk
@@ -110,6 +113,7 @@ include vocr_vertical.mk
 include vocr_textspot.mk
 include vocr_textspot2.mk
 include vocr_textspot3.mk
+include vocr_textspot6.mk
 include vocr_post.mk
 include vocr_lines_widen.mk
 include vocr_charbox.mk

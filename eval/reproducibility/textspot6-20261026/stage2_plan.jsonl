@@ -1,0 +1,5 @@
+{"run": "kd_t64n8c16_seed1", "arm": "kd_t64n8c16", "recipe": "kd", "shape": "t64n8c16", "seed": 1, "stage": 2, "teacher": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/runs/base_qS4_seed2"}
+{"run": "kd_t64n8c16_seed2", "arm": "kd_t64n8c16", "recipe": "kd", "shape": "t64n8c16", "seed": 2, "stage": 2, "teacher": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/runs/base_qS4_seed2"}
+{"run": "kd_t64n8c16_seed3", "arm": "kd_t64n8c16", "recipe": "kd", "shape": "t64n8c16", "seed": 3, "stage": 2, "teacher": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-spotter/runs/base_qS4_seed2"}
+{"run": "nohook_t64n8c16_seed1", "arm": "nohook_t64n8c16", "recipe": "nohook", "shape": "t64n8c16", "seed": 1, "stage": 1}
+{"run": "nohook_t64n8c16_seed2", "arm": "nohook_t64n8c16", "recipe": "nohook", "shape": "t64n8c16", "seed": 2, "stage": 1}

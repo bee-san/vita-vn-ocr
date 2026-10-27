@@ -1,0 +1,491 @@
+{
+ "kind": "textspot6-protocol",
+ "schema": 1,
+ "issue": 128,
+ "tracking": 125,
+ "frozen_utc": "2026-10-26T09:36:58Z",
+ "frozen_before": "every textspot6 training run and every score of a textspot6 arm (no run, probe or score exists: the 60-step trainer smoke on 2 titles and the harness checks on textspot3's released pick are not arms)",
+ "doc": "docs/textspot6.md",
+ "sources_sha256": {
+  "synth/textspot6_twin.py": "f3b0d9697f6c889d19852caec0a3d9678491cb5f6ae7b087d52cc96889e49688",
+  "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+  "train/textspot6_train.py": "2dbecfa7b3b2dfbfdc0f9b30cfaf386f582f4ef912db261b40e478d18ae99eca",
+  "train/textspot6_shapes.py": "e2f060e7cd3fa58b240dcf3a740731f05e1a9c4c130f34be974e6902bd63901d",
+  "synth/textspot6_pages.py": "593aeb75433319216983c4c50c38c1fab46090c527ba629a61ad68ab5c3fd00d"
+ },
+ "spotter": {
+  "format": "VTSP version 4 (synth/textspot6_twin.py): textspot3's T trunk (VTDT) or M network (VTMS) with a 16 + 4 T channel d2s head; T = 4 tag maps",
+  "tags": 4,
+  "classes": [
+   "dialogue",
+   "name",
+   "choice",
+   "ui",
+   "scene"
+  ],
+  "runtime": "runtime/vocr_textspot6.c (pinned by an amendment before any score: C == twin on every development frame is an eligibility condition)"
+ },
+ "budget": {
+  "vtsp_max": 512000,
+  "ms_max_333_960": 300,
+  "arena_max": 262144,
+  "time": "the A9 cycle model's high bound x 1.0007 at 333 MHz on runtime/vocr_textspot6.c for the shape and scale (textspot3's method), plus 1.4 ms per refined horizontal box at the arm's median on the development Vita frames for det+refine; reported at 444 MHz too",
+  "owner": "weights <= 500 KB (2026-10-26); time within textspot3's budget unless a bigger one clearly pays (the trade reported)",
+  "slots": 2,
+  "slot_hours": "about 30-40"
+ },
+ "data": {
+  "hook": "vocr6-ingest's page pool v1 + splits_v1.json through synth/textspot6_pages.py (rules in its RULES; the shard manifest data/manifests/textspot6_pages_v1.json is pinned by an amendment before any run)",
+  "synth": "data/manifests/textspot_shards_v1.json",
+  "real": "data/manifests/textspot2_shards_v1.json (its skip lists)",
+  "splits": {
+   "screening": [
+    "train"
+   ],
+   "final": [
+    "train",
+    "guard",
+    "hval"
+   ],
+   "never": [
+    "test"
+   ]
+  },
+  "mix": {
+   "base": {
+    "hook": 0.5,
+    "synth": 0.25,
+    "real": 0.25
+   },
+   "nohook": {
+    "synth": 0.5,
+    "real": 0.5
+   }
+  },
+  "title_temp": 0.5,
+  "untrusted_pages": "left out"
+ },
+ "recipes": {
+  "base": "30,000 steps x 16 windows of 256 x 512 at the network's scale, AdamW 4e-3, 500 warm-up, cosine to 1e-4, clip 5, EMA 0.999 from step 1,000, QAT from 80% (EMA swap, BN re-estimation 32 batches, #97's calibration 32 batches), the QAT average is the run's model; loss = textspot2_train.loss_of + 1.0 x tag loss; augmentation as train/textspot6_train.AUG",
+  "nohook": "base with the nohook mix",
+  "kd": "base + textspot2_train.kd_loss on K, O, A from the teacher + 1.0 x KL(teacher || student) of the tag softmax on cells where sigmoid(K_t) > 0.5"
+ },
+ "stages": {
+  "1": [
+   {
+    "arm": "base_t64n8c16",
+    "shape": "t64n8c16",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "arm": "base_qS4",
+    "shape": "qS4",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "arm": "base_qL5",
+    "shape": "qL5",
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "arm": "nohook_t64n8c16",
+    "shape": "t64n8c16",
+    "seeds": [
+     1,
+     2
+    ],
+    "role": "report-only control"
+   }
+  ],
+  "2": {
+   "rule": "kd_t64n8c16 distilled from the stage-1 M arm (base_qS4 or base_qL5) whose representative has the lower unseen-dev page-path dialogue CER in any of the four decodes (ties: the smaller shape); the teacher is that representative seed's final.pt (amendment 5)",
+   "seeds": [
+    1,
+    2,
+    3
+   ]
+  }
+ },
+ "seeds": {
+  "per_arm": [
+   1,
+   2,
+   3
+  ],
+  "report": "every seed",
+  "representative": "per decode, the median seed by unseen-dev page-path dialogue CER (sorted by that CER, then hval page-path CER, then seed; index n // 2: with 2 seeds the worse one); never the best seed",
+  "crashes": "restart from scratch with the same seed, at most 3 attempts",
+  "note": "amendment 4: 3 seeds per arm (stage 1 and stage 2)"
+ },
+ "metrics": {
+  "primary": "page-path dialogue CER through eval/pagepath.py (#129; pinned by an amendment before any score): Rubi's read (VOCR5-N W8I top 8, counter re-decode, beam 8 + the 1 MB LM, cascade N -> L below 0.7, textnorm, the non-Japanese line filter) (pinned by amendment 6: PR #131 fadc3c6)",
+  "unseen_dev": "#119's 1,161 whole-dialogue units ($A/vocr5-analysis/work/units.pkl, console view); the headline leaves the units of v12188 (seen: hooked title PCSG00576) out; the full set reported",
+  "hval": "the page pool's dialogue regions of the hval pages (base / +4 / +8), console view (PSP at 2x)",
+  "spotter_boxes": "eval/textspot6.py spot (the whole frame) -> pagepath-boxes: each unit reads the horizontal boxes whose centre lies in its region; decodes det and det+refine",
+  "baseline": "GRAD + refine: eval/pagepath.py --finder rubi on the unit's region",
+  "intervals": "paired; 10,000 cluster-bootstrap resamples, seed 0: VN clusters (dev), title clusters (hval)",
+  "report_only": [
+   "tsdev: textspot's whole-frame metrics on its 188 dev frames + the tagged dialogue CER + presence on the 25 text-free frames (eval/textspot6.py tsdev; the harness reproduces textspot3's record of its pick exactly, both decodes)",
+   "hval boxes: P / R / F1 vs the verified lines, recall per class, tag accuracy, per view and title",
+   "textspot3's pick (v0.3.4-textspot3.1) through the same paths"
+  ]
+ },
+ "rule": {
+  "eligible": "VTSP bytes <= 512,000, est. ms @333 <= 300, arena <= 262,144, C == twin on every development frame",
+  "beats_grad_refine": "unseen dev: page-path dialogue CER difference (candidate - GRAD + refine) with a 95% interval entirely below 0; hval: the difference not resolved above 0",
+  "cost_order": "VTSP bytes, est. ms @333 per 960 x 544 frame, arena, decode (crop, crop+refine, det, det+refine), then the name (amendment 2)",
+  "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
+  "no_qualifier": "negative verdict; the eligible candidate with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
+  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> release, test sets once, a normal Rubi PR merged after CI + memory ledger + audit MERGE_OK, a Rubi test pre-release and test issue, an off-switch defaulting to the measured best (amendment 4)",
+  "rubi_default": "the adopted pick is Rubi's default finder only if, against rubi,fix=1 (#129 amendment 3) on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (amendments 9, 12)"
+ },
+ "test": {
+  "read_once_after": "the selection commit",
+  "sets": [
+   "the test title(s) through the page path (Dance with Devils page-pool units)",
+   "CLANNAD whole frames (the frozen long-run references, textspot3's way)",
+   "vita-test + psp-test whole frames (eval/manifests/textspot-test.jsonl)"
+  ],
+  "paired_against": "GRAD + refine and textspot3's pick, read the same way"
+ },
+ "estimates": "console times are A9 cycle-model estimates; nothing runs on a console (hardware work is paused)",
+ "disclosures": [
+  "hval is seen titles (blocks of training titles)",
+  "one dev VN is seen (v12188, hooked PCSG00576); the headline leaves it out",
+  "the dev regions were drawn by people: the region-assisted page path gives the spotter GRAD + refine's region; the whole-frame tagged path is reported beside it"
+ ],
+ "amendments": [
+  {
+   "id": 1,
+   "utc": "2026-10-26T09:54:41Z",
+   "before": "every textspot6 training run and every score of a textspot6 arm",
+   "what": [
+    "The hooked page shards: data/manifests/textspot6_pages_v1.json (synth/textspot6_pages.py at the frozen code, vocr6-ingest's post-audit page pool v1 with every file's sha256 in the manifest): train 50,243 pages (121 shards; positives dialogue 81,542, name 7,809, notdlg 34,336; 146,968 ignore areas), hval 2,191, guard 2,337; 32 untrusted pages left out; test pages never read. MeikiOCR ran on all 54,803 non-test pages (det_thr 0.2).",
+    "Stage 1's shapes are registered: t64n8c16 (T, half_above 480), qS4 and qL5 (M, 480 / 272).",
+    "The sweep: eval/reproducibility/textspot6-20261026/sweep.py and stage1_plan.jsonl (8 runs: base_t64n8c16, base_qL5, base_qS4, nohook_t64n8c16, seeds 1 and 2), at most 2 runs at once (the label's 2 slots), from a detached worktree at this amendment's commit.",
+    "Speed probe (200 steps, 5 threads, 1 loader worker, before QAT): t64n8c16 291.9 ms/step, qL5 256.8, qS4 212.6; the loader waits about 5 ms per step. Stage 1 is about 19 slot-hours."
+   ],
+   "pins": {
+    "data/manifests/textspot6_pages_v1.json": "b5185b4694579910c74906b9fcca67c763fcb510b225074ee0025605ee9461ab",
+    "eval/reproducibility/textspot6-20261026/sweep.py": "004e807be0d4229609fae26b40fef51ac65a0c6e9b44c31d9db9c49c8bd4c8fc",
+    "eval/reproducibility/textspot6-20261026/stage1_plan.jsonl": "87759176e0374678f71028a0c3c4876dc6e26f2252de2650fe44cd52dbdd531c",
+    "train/textspot6_train.py": "8e576ea38d6aa039edbe93e8fa5e444d9cb9b267ed9a5b86b75f52d2a711aba8",
+    "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+    "train/textspot6_shapes.py": "e2f060e7cd3fa58b240dcf3a740731f05e1a9c4c130f34be974e6902bd63901d",
+    "synth/textspot6_twin.py": "f3b0d9697f6c889d19852caec0a3d9678491cb5f6ae7b087d52cc96889e49688",
+    "synth/textspot6_pages.py": "593aeb75433319216983c4c50c38c1fab46090c527ba629a61ad68ab5c3fd00d"
+   },
+   "probes": {
+    "t64n8c16": {
+     "finished": "2026-10-26T09:51:57Z",
+     "name": "base_t64n8c16_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 291.9,
+     "ms_per_step_median": 289.71,
+     "ms_waiting_for_data": 5.48,
+     "threads": 5,
+     "startup_s": 12.1
+    },
+    "qS4": {
+     "finished": "2026-10-26T09:53:53Z",
+     "name": "base_qS4_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 212.63,
+     "ms_per_step_median": 209.94,
+     "ms_waiting_for_data": 4.76,
+     "threads": 5,
+     "startup_s": 9.8
+    },
+    "qL5": {
+     "finished": "2026-10-26T09:52:49Z",
+     "name": "base_qL5_seed1",
+     "steps_timed": 200,
+     "ms_per_step": 256.81,
+     "ms_per_step_median": 253.73,
+     "ms_waiting_for_data": 5.06,
+     "threads": 5,
+     "startup_s": 12.3
+    }
+   }
+  },
+  {
+   "id": 2,
+   "utc": "2026-10-26T10:01:35Z",
+   "before": "every score of a textspot6 arm (stage 1's runs are training; none has finished, none is scored)",
+   "what": [
+    "Two more decodes per arm, the crop decodes: crop (the spotter on each unit's region alone, cut at the view's scale exactly as eval/pagepath.py cuts it, every horizontal box of the region read, as GRAD + refine reads every line of a region; eval/textspot6.py spot-crop) and crop+refine (its horizontal boxes through VOCR_REFINE_DEFAULT). It is how Rubi would use the spotter as a drop-in for GRAD + refine inside the player's region, without a whole-frame capture, at a cost that scales with the region.",
+    "The candidates are every arm x {det, det+refine, crop, crop+refine}, each represented by its median seed. The cost order becomes: VTSP bytes, est. ms per 960 x 544 frame at 333 MHz, arena, then the decode (crop, crop+refine, det, det+refine: the cheaper console path first), then the name. Eligibility is unchanged (the per-frame budget bounds a region's).",
+    "Reason: Rubi's OCR job reads the player's region (core/vocr_ocr.c); a whole-frame decode needs the frame captured, a crop decode does not. Registered before any score."
+   ],
+   "pins": {
+    "eval/textspot6.py": "74f1f5b67a6f926a33fb3cf655d9edd771cc1a28e8b3df90c1e3d283755fa9b0"
+   }
+  },
+  {
+   "id": 3,
+   "utc": "2026-10-26T10:09:54Z",
+   "before": "every score of a textspot6 arm (stage 1 is training; nothing is scored)",
+   "what": [
+    "The crop decodes read a region at the scale the blob's rule gives the frame it was cut from, not the region's own size: synth/textspot6_twin.spot(model, region, scale=f) with f = scale_of(model, frame width, frame height); the C runtime gets the same as two flags (VOCR_TEXTSPOT6_SCALE1 / VOCR_TEXTSPOT6_SCALE2: f forced). Without it a region narrower than half_above would be read at twice the text size the network trained on (a console frame is 960 x 544, so every console region is read halved by the half-scale blobs, as the whole frame is).",
+    "spot(model, img) without scale is unchanged (versions 1-3 bit for bit textspot3_twin's); with scale, versions 1-3 run their own network and decode at the forced f (tests/test_textspot6_twin.py test_forced_scale)."
+   ],
+   "pins": {
+    "synth/textspot6_twin.py": "e913963d810ea81ca438b7ee0cd0f035742ef0a95325b3d96201ea108b1782f5",
+    "eval/textspot6.py": "a57a30ce7cd43f90a4fee1f2cb998974eac6ece0fb7964c7d65efcc86c08fab8"
+   }
+  },
+  {
+   "id": 4,
+   "utc": "2026-10-26T10:21:12Z",
+   "before": "every score of a textspot6 arm (stage 1's first run is training; nothing is scored)",
+   "what": [
+    "Owner directive 2026-10-26T10:17Z (prompts/vocr6-common.md, last section) replaces 'Rubi DRAFT PR, never merged': with an adopted pick, the Rubi_for_vita PR that wires it is a normal PR, merged by this workstream after GitHub CI (package e2e included), the memory ledger and an independent audit's MERGE_OK, with a Rubi test pre-release (v0.9.x-test.N, debug + normal) and a test issue assigned to bee-san for the console checks. The new console path keeps a setting to turn it off; its default is the measured-best choice.",
+    "3 seeds per arm (vocr6-common: '>= 3 seeds for any adoption claim'): every stage-1 arm is trained with seeds 1, 2 and 3 (12 runs) and stage 2's kd arm with seeds 1-3; the representative is the median seed (index n // 2 = 1 of 3, sorted as registered). Nothing else in the rule changes.",
+    "Slots (vocr6/slots.txt, 2026-10-26T10:20Z): the label has 3; heavy.sh has 15. The sweep v2 (sweep.py --cap-file) reads the number of training runs at once from a file before each launch; the third slot scores (eval/pagepath.py runs) and runs the runtime helper's checks. The running base_t64n8c16_seed1 (started 10:06Z by sweep v1 at 648aa07) continues; stage1b_plan.jsonl holds the other 11 runs.",
+    "The test reads are eval/textspot6_test.py (title, clannad, tests), each once with an exclusive attempt record, after the selection record is committed."
+   ],
+   "pins": {
+    "eval/textspot6_test.py": "f2f67eefbbb765ac2a7954587b9f156849e3c6649c8c85c05fa2167ce981052d",
+    "eval/reproducibility/textspot6-20261026/sweep.py": "7da4757ec11ed5e4f873522cd0a161f6bfec5e39db11ca797c659533c240a3ea",
+    "eval/reproducibility/textspot6-20261026/stage1b_plan.jsonl": "72e28e8ecb3d3ab64218bacbd3e9f49e4fb931d72fcdddcbe2c29730aaf34e50"
+   }
+  },
+  {
+   "id": 5,
+   "utc": "2026-10-26T10:28:23Z",
+   "before": "every score of a textspot6 arm (only GRAD + refine and textspot3's released pick, the references, are being scored)",
+   "what": [
+    "Stage 2's teacher rule reads every decode amendment 2 registered: the teacher is the stage-1 M arm (base_qS4 or base_qL5) whose representative has the lower unseen-dev page-path dialogue CER in any of its four decodes (crop, crop+refine, det, det+refine; ties: the smaller shape); the teacher model is that representative seed's final.pt. The student is kd_t64n8c16, seeds 1-3 (amendment 4)."
+   ]
+  },
+  {
+   "id": 6,
+   "utc": "2026-10-26T11:00:13Z",
+   "before": "every score of a textspot6 arm",
+   "what": [
+    "The page-path benchmark is pinned: vocr6-finder's eval/pagepath.py and eval/pagepath_find.c at PR #131's head fadc3c6 (bee-san/vita-vn-ocr, branch feat/vocr6-pagepath), run from a checkout of main 8a71eec with those two files ($A/vocr6-spotter/pagepath_snap/repo). The reference scores of GRAD + refine and of textspot3's pick (2026-10-26T10:24-10:40Z, posted on #128) used the finder's working copy of 10:22Z, whose eval/pagepath.py differs from the pinned one only in its module docstring (3 lines) and whose pagepath_find.c is identical; they are scored again with the pinned files before the selection, and the selection reads only those."
+   ],
+   "pins": {
+    "eval/pagepath.py": "6053822a32a7f11e8be9bc98405f4ed575cf09bd67805494deb3a38dfe4f1bc8",
+    "eval/pagepath_find.c": "3eed78095987e8742672f181ff4fe86a454f4f7164a3badc310634b864314e78",
+    "pr": "https://github.com/bee-san/vita-vn-ocr/pull/131",
+    "commit": "fadc3c6"
+   }
+  },
+  {
+   "id": 7,
+   "utc": "2026-10-26T11:52:25Z",
+   "before": "every score of a textspot6 arm (process only: the rule is unchanged)",
+   "what": [
+    "Owner 2026-10-26T11:33Z (prompts/_rules.md, last entry) replaces amendment 4's Rubi merge gate: a Rubi_for_vita PR is merged right after the local gate passes in the clone (host ctest, both Vita builds, normal and debug, with their import, module-metadata and memory-ledger gates, and tools/e2e_package.py when packaging changed), without waiting for GitHub CI; its audit runs in parallel and its findings become a follow-up PR; the release (a test pre-release here) is tagged right after the merge and the Release workflow builds its assets. A PR whose local Vita build or ledger gate fails is never merged.",
+    "Slots (vocr6/slots.txt 11:58Z): the label's 3 slots include its runtime helper and its auditors; the training runs take at most 2 once the detached seed-1 run ends, and the third slot is shared through a lock (slot3.lock) by the scoring queue and the helper."
+   ]
+  },
+  {
+   "id": 8,
+   "utc": "2026-10-26T12:54:30Z",
+   "before": "every score of a textspot6 arm (the three seed-1 runs are training; nothing is scored)",
+   "what": [
+    "Slots (vocr6-lead 12:37Z; heavy.sh back to 12): the label has 2 slots, its runtime helper and auditors inside them. One process, eval/reproducibility/textspot6-20261026/sched.py, now runs every heavy job of the label: pending scoring first (a finished run is scored before the next training run starts), then the training runs of stage1c_plan.jsonl, at most 2 jobs at once; while RUNS/helper.reserve exists one of the 2 is left to the runtime helper. The three running seed-1 runs (sweeps v1 and v2) are adopted and logged by it; sweep v2 is stopped.",
+    "The nohook arm becomes a report-only control: 2 seeds (1, 2), not a candidate (it measures what the hooked pages buy; with the slot cut its third seed would delay the candidates). The candidates are base_t64n8c16, base_qS4 and base_qL5 (3 seeds each) and stage 2's kd_t64n8c16 (3 seeds).",
+    "stage1c_plan.jsonl: t64n8c16 seed 2, qL5 2, qS4 2, t64n8c16 3, qL5 3, qS4 3, nohook 1, nohook 2."
+   ],
+   "pins": {
+    "eval/reproducibility/textspot6-20261026/sched.py": "62c077d1f550f5d80fe1fb207e85ceb9063a01bd3188296fcf275a0f18e0bb2e",
+    "eval/reproducibility/textspot6-20261026/stage1c_plan.jsonl": "fdec10c5d50c1cd73ff721fd32c3ffe20de6e9c9d776a0b1147f13b5b4004985"
+   }
+  },
+  {
+   "id": 9,
+   "utc": "2026-10-26T13:45:05Z",
+   "before": "the selection; NOT before every score: disclosed below",
+   "disclosure": "This amendment comes after a partial look at one textspot6 score: the scoring of base_t64n8c16_seed1 (started 13:35Z with the #131 pin) had finished its crop and crop+refine dev and hval runs when it was stopped at 13:45Z for this change, and its log lines (dev crop+refine Vita 2.090% / PSP 2.174%, hval crop Vita 1.581% / PSP 1.243%) were seen. Nothing in the rule, the arms or the candidates changes here; only the benchmark's code version (which changes no number, checked below) and a report-only row are added, plus the rule that sets Rubi's default, which the owner's directive (vocr6-common, 10:17Z) requires.",
+   "what": [
+    "Benchmark version: vocr6-finder's PR #135 at 2d3971b (eval/pagepath.py, eval/pagepath_find.c, runtime/vocr_lines_fix.c/.h/.mk; $A/vocr6-spotter/pagepath_snap135/repo, a checkout of main 8a71eec with those files) replaces #131's. The benchmark's owner states #135 changes no --finder number (it adds --boxes clipping, a page sha check and the runtime in the cache tag). Check, before the selection reads anything: GRAD + refine (--finder rubi) and textspot3's pick (all four decodes) scored with #135 must equal #131's scores unit for unit (errors and chars of every unit, dev and hval); if any unit differs, the rule reads #131's scores of every arm (re-scored with #131) and #135 serves only the row below.",
+    "Report-only baseline row: Rubi's next finder, GRAD + refine with #129's COLGAP + JUNK fixes (eval/pagepath.py --finder rubi,fix=5, #135), on the same units.",
+    "Rubi's default (owner 10:17Z: 'defaulting to the measured-best choice'): the adopted pick becomes Rubi's default finder only if, against rubi,fix=5 on the same units, its unseen-dev page-path dialogue CER difference has a 95% interval entirely below 0 and its hval difference is not resolved above 0 (the rule's own test, against the finder Rubi will ship); otherwise the spotter ships behind its setting, off by default.",
+    "Prints: eval/textspot6.py and sweep.py no longer print *_DONE marker lines (the orchestrator reads them); no number changes."
+   ],
+   "pins": {
+    "pagepath_snap135": {
+     "eval/pagepath.py": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea",
+     "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+     "runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+     "runtime/vocr_lines_fix.h": "0ebca0c0ffe47f7841fea314faedc3ab150f579537aa8693b5eed61c650b0c82",
+     "runtime/vocr_lines_fix.mk": "cb0f1238bd2b254c93340ae55ab88ddb3a8199d9fd561ad9fcfecf6c57dd03ef"
+    },
+    "pr": "https://github.com/bee-san/vita-vn-ocr/pull/135",
+    "commit": "2d3971b",
+    "eval/textspot6.py": "51ad39e6af09939f731b89d7436f4dcc23b34f995b65df6d9105c19d2b175a99",
+    "eval/reproducibility/textspot6-20261026/score_run.sh": "000ac29556129cc6663795bd874d35d3245de7bd2d2b95ec4b66b101d1186e21"
+   }
+  },
+  {
+   "id": 10,
+   "utc": "2026-10-26T14:45:23Z",
+   "before": "the selection (seed-1 scores of three arms exist: amendment 9's disclosure and the scoring since)",
+   "what": [
+    "The runtime of record: runtime/vocr_textspot6.c (+ .h, _test.c, .mk) of vocr6-spotter-runtime's branch, merged at 956494e (parity with the twin: large ASan + UBSan runs with gcc and clang, qemu-arm Cortex-A9 parity of the Vita compiler's objects; VOCR_TEXTSPOT6_SCALE1 / _SCALE2; VOCR_TEXTSPOT6_NO_MS). synth/textspot6_twin.py's docstring states the cap's last tie-break (tconf), which the code already used; no code changed.",
+    "The A9 rows of record (estimates): eval/textspot6_a9_20261026.json, -O2 NEON, the default call with the dark pass at 960 x 544: {\"t64n8c16\": {\"vtsp_bytes\": 52176, \"weights_int8\": 40864, \"est_ms_333_960\": 264.2, \"est_ms_444_960\": 198.2}, \"qS4\": {\"vtsp_bytes\": 118096, \"weights_int8\": 102480, \"est_ms_333_960\": 199.1, \"est_ms_444_960\": 149.4}, \"qL5\": {\"vtsp_bytes\": 448304, \"weights_int8\": 416080, \"est_ms_333_960\": 237.0, \"est_ms_444_960\": 177.7}}; every arm is eligible by time (<= 300 ms) and arena (<= 262,144 B).",
+    "The C == twin check of eligibility runs in scoring (score_run.sh step 3: eval/textspot6_parity.py on the dev frames, the dev crops at their frames' scale, textspot's development frames, the hval pages and crops); the three seed-1 runs scored before it get the same check as a separate job.",
+    "sched.py reads extra jobs from RUNS/extra_jobs.txt."
+   ],
+   "pins": {
+    "runtime/vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+    "synth/textspot6_twin.py": "9d47ee7393219eaee0c412b9d29ec094b6f29c3c0ba942f6d5cf4beef5176753",
+    "eval/textspot6_a9_20261026.json": "b7fa271921a37405cb1b23449091036d8ec20213dde67631851e1befdf364717",
+    "eval/textspot6_parity.py": "58a73f6b1a312f111acdeab3370ef9acee991089c3e2135a1606cf1c5cd4b192",
+    "eval/reproducibility/textspot6-20261026/score_run.sh": "626f4f6c6d0af3ddbdaaa17734b618c3d4cca2143bad74a29c0d7e2dea676400",
+    "eval/reproducibility/textspot6-20261026/sched.py": "3145f30963a29ac8d874740b449dc54f0f66d9b041e7b700b1774e02d6964356"
+   }
+  },
+  {
+   "id": 11,
+   "utc": "2026-10-26T14:56:53Z",
+   "before": "the selection (scheduling only; no arm, seed, recipe or rule changes)",
+   "what": [
+    "The remaining stage-1 runs in a new order, the M arms' seeds first so that stage 2's teacher (amendment 5) is known sooner: stage1d_plan.jsonl = qS4 seed 2, qL5 3, qS4 3, t64n8c16 3, nohook 1, nohook 2 (t64n8c16 seed 2 and qL5 seed 2 are already launched). The label obtains 1-2 of its 2 slots (heavy.sh 12/12 busy)."
+   ],
+   "pins": {
+    "eval/reproducibility/textspot6-20261026/stage1d_plan.jsonl": "81f3dc762224f7d999b7af750f2831d140d9af636f4623ea95d147b0edb432e2"
+   }
+  },
+  {
+   "id": 12,
+   "utc": "2026-10-26T15:25:07Z",
+   "before": "the selection (the rule and its candidates are unchanged)",
+   "what": [
+    "Rubi's next finder default is GRAD + refine with COLGAP alone, eval/pagepath.py --finder rubi,fix=1 (vocr6-finder, #129 amendment 3: JUNK deletes text lines in tight regions, #135's audit), not rubi,fix=5. Amendment 9's report row and its Rubi-default test are against rubi,fix=1; rubi,fix=5 stays as one more report row.",
+    "Report-only robustness rows for the pick (and the baselines): vocr6-finder's tight-region units ($A/vocr6-finder/units_v1/hval_tight.jsonl: 0 px around the ink; hval_tight2.jsonl: 2 px; dev_tight.pkl: 1 px), the regions a player draws tight to the text."
+   ]
+  },
+  {
+   "id": 13,
+   "utc": "2026-10-26T16:20:59Z",
+   "before": "any test read (no test title page, CLANNAD page or vita-test / psp-test frame has been read by any textspot6 model); the selection is not yet made",
+   "what": [
+    "How the test sets are read (eval/textspot6_test.py): the final weights (the pick's recipe and seed on train + guard + hval); every check that needs no protected pixel first, then an exclusive attempt record.",
+    "Test title: eval/pagepath.py units --set test (as hval's units), read with GRAD + refine (--finder rubi), Rubi's next finder (rubi,fix=1, report), textspot3's pick and the final weights, both in the pick's decode exactly as score_run.sh reads hval; paired with page clusters (one title).",
+    "CLANNAD (a), textspot3's way: whole frames, the final weights in det and det+refine (the primary one is the pick's decode on a whole frame: crop -> det, crop+refine -> det+refine), against textspot3's pick and textspot's arms from their stored boxes (checked against their committed records first), VOCR5-N; textspot3's pick is also re-spotted and checked box for box. CLANNAD (b), report only: each page's ROI through eval/pagepath.py (GRAD + refine, rubi,fix=1, textspot3's pick and the final weights in the pick's decode), attributed to the reference lines as (a).",
+    "vita-test + psp-test: textspot3's way, the final weights in det and det+refine against textspot3's stored units (checked against its record, and re-read here) and textspot's stored arms, VOCR5-N; plus the tagged dialogue CER and presence on text-free frames.",
+    "Before the read, the script runs on non-protected stand-ins (--dry-run: two hval titles, textspot's development frames, a CLANNAD-shaped directory of hval pages) with a stage-1 run as the weights."
+   ]
+  },
+  {
+   "id": 14,
+   "utc": "2026-10-26T22:19:29Z",
+   "before": "every stage-2 run (the teacher was just taken by amendment 5's rule: eval/textspot6_teacher_20261026.json)",
+   "what": [
+    "Scheduling only, no rule change: stage 2's three kd_t64n8c16 seeds run before the nohook control's two (a report-only control, amendment 8), so that the selection is not held by the control; the scheduler reads a live plan (runs/plan.jsonl; stage2_plan.jsonl is its snapshot).",
+    "The teacher by amendment 5: base_qS4 (its representative's best decode, crop, seed 2, 1.3868% unseen-dev CER) against base_qL5 (crop, seed 1, 1.4418%); the teacher model is base_qS4_seed2/final.pt.",
+    "vocr6-lead lends 2 heavy slots from 23:45Z to 06:25Z (vocr6-spotter = 5 in that window, 3 otherwise)."
+   ]
+  },
+  {
+   "id": 15,
+   "utc": "2026-10-26T22:21:21Z",
+   "before": "the selection and every stage-2 score (stage 2 is training); no test set has been read",
+   "what": [
+    "With a negative verdict the test sets are still read once, report only, so that the owner has the test title's, CLANNAD's and vita-test / psp-test's numbers of the best spotter: the research pre-release's blob (the eligible candidate with the lowest unseen-dev CER, as trained on train; no retrain) through the same commands (eval/textspot6_test.py --research). It changes no decision: there is still no Rubi default and no Rubi PR.",
+    "Disclosed: registered after stage 1's M arms were scored, whose representatives are not resolved below GRAD + refine on unseen dev (#128); the rule and the selection are unchanged."
+   ]
+  },
+  {
+   "id": 16,
+   "kind": "erratum",
+   "utc": "2026-10-27T07:03:42Z",
+   "before": "the merge of PR #147, after the selection (d3e73f4) and the test reads; it changes no rule, no score and no decision (audit-vocr6-spotter F2, N1-N4, N8, N11, N13)",
+   "what": [
+    "Erratum to amendment 9's disclosure (its text is left as committed). The stopped #131 scoring of base_t64n8c16_seed1 had finished more than it says: dev crop, dev crop+refine and dev det (dev_det.json written 13:41:45Z), hval crop and hval crop+refine; hval det was running. Its log (last write 13:42:13Z; eval/_pin131/score_base_t64n8c16_seed1.log) printed, PSP / Vita: dev crop 1.835 / 2.140%, dev crop+refine 2.174 / 2.090%, dev det 1.307 / 1.474%, hval crop 1.243 / 1.581%, hval crop+refine 1.216 / 1.806%. The run was moved aside at 13:42:37Z (not 'stopped at 13:45Z'); amendment 9 was committed at 13:45:05Z. No decision depends on it: the rule's eligible / beats / pick / no-qualifier texts are identical in every protocol version, and amendment 9's benchmark move changes no number (#135 equals #131 unit for unit on GRAD + refine, on textspot3's pick in all four decodes and on these partial rows).",
+    "A data job before the freeze: MeikiOCR's labelling of the 54,803 non-test hooked pages ran 09:23:59-09:46Z, mostly before frozen_utc (09:36:58Z) and the protocol commit (09:39:08Z), after two short meiki / shard-build trials at 09:16Z. It wrote detector boxes only (no score, no development information); the shard build that applied the rules ran at 09:46Z. frozen_before did not list it.",
+    "The full-resolution T arm (the stage-1 table's base_<T full-res>, to be registered 'by an amendment with its A9 row') was never registered: amendment 8 (2 slots) listed the candidates without it. Its shapes' A9 rows (eval/textspot6_a9_20261026.json summary, half_above 0, per 960 x 544 frame at 333 MHz) are t32n4c16 290.1, t24n6c16 290.6 and t48n2c16 293.4 ms, under the 300 ms ceiling even with det+refine's charge, and t40n3c16 303.3, t32n6c16 358.8 and t48n4c16 410.1 ms, over it.",
+    "The test title's VN, v18432 (Dance with Devils, PCSG00807), has 3 of #119's unseen-dev units (in the headline) and 2 of textspot's development frames: the selection saw VNDB screenshots of the test title's game, not its hooked pages.",
+    "The selection ran after every candidate run was scored, not every run: the nohook control's seed 2 (report only) was scored at 04:13:01Z, after the selection (03:55:57Z).",
+    "The test reads: the first tests and clannad tries (03:56-03:57Z) stopped at the reader-library check, before the attempt record (no protected pixel read); --reader-src (f50746a) then changed eval/textspot6_test.py between the title read (03:56:41Z, script 6d2e4ade) and the other two (04:02-04:03Z, script 0af5c5f9).",
+    "synth/textspot6_twin.py's docstring says that for versions 1-3 'blocks, order and pick are this module's'; the code delegates them to textspot3_twin / textspot2_twin's spot_maps. They are equivalent (C == twin == vocr_textspot3_test on every version 1-3 batch). The file is pinned (amendment 10), so the wording is corrected here, not in the file."
+   ],
+   "code_of_record": {
+    "note": "sha256[:8] of the scoring code at the commit each record was made from (git show <commit>:<file>)",
+    "seed-1 runs' page-path scores, tsdev, hval boxes (13:45-14:40Z)": {
+     "commit": "5eaffd6",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "score_run.sh": "000ac295"
+    },
+    "seeds 2-3, kd and nohook: scores and parity (17:21Z-04:13Z)": {
+     "commit": "d83274d",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "b98a47e4",
+     "score_run.sh": "c68b2b4e",
+     "sched.py": "363da933",
+     "sweep.py": "e55d3486",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "the selection (03:55Z)": {
+     "commit": "ac2aaeb (d3e73f4's parent, main clone)",
+     "eval/textspot6_table.py": "64c79393",
+     "eval/textspot6_select.py": "ead6859d"
+    },
+    "tight rows, the research blob's hval parity (03:59-04:19Z)": {
+     "commit": "d3e73f4 / f50746a (identical but for eval/textspot6_test.py)",
+     "worktree": "test",
+     "eval/textspot6.py": "53d795b9",
+     "score_tight.sh": "f9dd2de9",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "test reads": {
+     "title": "d3e73f4 (eval/textspot6_test.py 6d2e4ade)",
+     "tests, clannad": "f50746a (eval/textspot6_test.py 0af5c5f9)"
+    },
+    "equivalence": "eval/textspot6.py 51ad39e6 -> b98a47e4 -> 53d795b9 refactors the helpers (outputs checked equal) and adds an opt-in --units; the PR's audit re-scored kd_t64n8c16_seed2 end to end with the head's code and an empty reading cache: identical units, boxes, spot files, tsdev and hval-box records",
+    "the teacher (22:18Z)": {
+     "commit": "fd57f02 (main clone)",
+     "eval/textspot6_teacher.py": "bb6fed3b"
+    },
+    "seed-1 runs' parity (16:00-16:11Z)": {
+     "commit": "135d821",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "eval/textspot6_parity.py": "58a73f6b"
+    },
+    "the rubi,fix=1 baseline (started 16:57:13Z)": {
+     "commit": "d83274d",
+     "worktree": "scheduler",
+     "score_run.sh": "c68b2b4e"
+    },
+    "the baselines grad_refine, grad_refine_fix5, textspot3_pick (13:45-13:58Z starts)": {
+     "commit": "5eaffd6",
+     "worktree": "scheduler",
+     "eval/textspot6.py": "51ad39e6",
+     "score_run.sh": "000ac295"
+    },
+    "parity script at the merge": "eval/textspot6_parity.py 97f0a5a1 (the first audit's F1 fix: dev-crop reads #119's units whatever --units names); every parity record was made with 58a73f6b"
+   },
+   "revised": {
+    "utc": "2026-10-27T10:07:46Z",
+    "what": "corrected in place before the merge (audit-vocr6-spotter-b N14, N15): the full-resolution T arm's A9 reason (three of its six shapes are under the ceiling; the reason that holds is amendment 8's 2 slots), and the code of record (the rubi,fix=1 baseline ran at d83274d, not 135d821; the three 5eaffd6 baselines named; the parity script's F1 change noted)"
+   }
+  }
+ ],
+ "sources_note": "the trainer, model, twin, shapes and page builder as frozen; eval/textspot6.py and eval/pagepath.py are pinned by the amendment that precedes the first score; docs/textspot6.md's protocol section is frozen by its own rule (changes only through dated amendments)",
+ "shapes": {
+  "registered": [
+   "t64n8c16",
+   "qS4",
+   "qL5"
+  ],
+  "note": "stage 1's shapes (train/textspot6_shapes.CANDIDATES); the full-resolution T arm is registered by a later amendment with its A9 row on runtime/vocr_textspot6.c, before its runs"
+ }
+}

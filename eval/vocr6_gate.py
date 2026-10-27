@@ -1931,6 +1931,9 @@ def cmd_supersede(a):
     """Move a provisional tier's directories aside (OUT/superseded/, PRIV/superseded/), before it is redone on another
     blob; recorded in OUT/superseded.jsonl, and its steps are reported apart in the timing."""
     ctx = Ctx(a.out)
+    if not (ctx.out / a.tier / "input.json").exists():
+        print(json.dumps({"tier": a.tier, "moved": [], "note": "not prepared: nothing to supersede"}))
+        return
     inp = json.loads((ctx.out / a.tier / "input.json").read_text())
     tag = f"{a.tier}-{inp['sha256'][:12]}-{datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S')}"
     moved = {}

@@ -11,6 +11,35 @@ A tiny Japanese OCR made only for visual-novel dialogue on PS Vita and PSP. It i
 
 General OCR models are too big for this. The best general option, a trimmed int8 PP-OCRv5 mobile, still peaks at about 13 MiB (see `docs/research-findings.md`). VN dialogue is a much narrower problem: one or a few horizontal lines in a dialogue box, a handful of game fonts, and a fixed screen size (960×544 on Vita, 480×272 on PSP). A recognizer trained only for that case can be an order of magnitude smaller.
 
+## VOCR6 (pre-release [v0.4.0-vocr6.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.4.0-vocr6.1)): Normal and Large retrained on the owner's hooked games
+
+**VOCR6-N and VOCR6-L replace VOCR5-N and VOCR5-L. Small stays VOCR5-S.**
+
+VOCR6 keeps VOCR5's shapes, and each tier is fine-tuned from its VOCR5 checkpoint on two sources:
+- the owner's hooked PS Vita and PSP corpus: 49 games, exact game text on native frames;
+- the line finder's own crops of those pages.
+
+A tier was adopted only if, on Rubi's shipped path and with three seeds, it read the hooked games' held-out pages
+better and other games no worse. Small read other games' fixed lines a little worse (resolved), so it keeps VOCR5-S.
+All numbers are measured on the host (`docs/vocr6.md`). Console times are estimates. **Nothing of VOCR6 has run on a
+console.**
+
+| model | tier | int8 weights | arena (W8I) | hooked games' pages, held out: VOCR5 → VOCR6 | other games' dev score: VOCR5 → VOCR6 | CLANNAD lines, Rubi's path\* | vita-test + psp-test fixed lines, Rubi's path | est. time per 3-line box, 333 / 444 MHz |
+|---|---|---:|---:|---|---|---|---|---|
+| [`VOCR6_N_w8_2l.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.4.0-vocr6.1/VOCR6_N_w8_2l.vocr) | Normal (the default) | 1,187,616 B | 184,400 B | 1.008 → 0.936% | 1.482 → 1.451 | 0.66 → 0.44% | 0.49 → 0.49% | 0.79 / 0.62 s |
+| [`VOCR6_L_w8_2l.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.4.0-vocr6.1/VOCR6_L_w8_2l.vocr) | Large | 2,475,680 B | 262,480 B | 0.990 → 0.917% | 1.439 → 1.442 | 0.60 → 0.36% | 0.47 → 0.43% | 1.87 / 1.46 s |
+
+- **The columns:**
+  - "hooked games' pages" is dialogue CER through Rubi's finder, LM and cascade on hval pages (held out), as the
+    mean of the three stage-4a seeds;
+  - the dev score is VOCR5's development score on other games, for the shipped blob;
+  - CLANNAD and vita-test + psp-test were read once, after every choice.
+- **\* The CLANNAD exposure.** Two hooked training games draw dialogue in CLANNAD's own glyph raster, so CLANNAD's
+  gain is not an unseen-game result (`docs/synth6.md`, `docs/vocr6.md`).
+- **The blobs** carry #122's two-level head; the head gate was rejected on VOCR6's logits. Plain blobs
+  (`VOCR6_N_w8.vocr`, `VOCR6_L_w8.vocr`) are in the same release.
+- **The remaining error is the line finder:** about 80% of other games' whole-dialogue error.
+
 ## Models (release [v0.3.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.3.0))
 
 | model | tier | int8 weights | arena (W8I) | dialogue CER: CLANNAD / vita-test / psp-test | est. time per 3-line text box, 333 / 444 MHz | model card |
@@ -38,6 +67,7 @@ The table records each component and each earlier round. The VOCR5 models above 
 | | |
 |---|---|
 | Model | `train/model.py`: a CTC line recognizer (stem plus depthwise-separable blocks, factorised head), grey input at height 32. VOCR5 (v0.3.0) ships three sizes: Small (width 1.0, 0.73M parameters in training, 0.72M in the exported blob after BatchNorm folding, 4,987 classes), Normal, the default (width 1.5, 1.07M, 5,631 classes) and Large (late-wide, width 2.0 early and 3.0 late, 2.32M, 5,631 classes). v0.2.0's H15 was width 1.5, 1.04M parameters, 5,355 classes |
+| **v0.4.0-vocr6.1 (VOCR6, pre-release)** | VOCR6-N and VOCR6-L, Rubi's Normal and Large tiers; Small stays VOCR5-S. Fine-tuned from VOCR5's checkpoints on the owner's hooked corpus and the finder's crops of its pages (`docs/vocr6.md`, #125). On Rubi's shipped path: hooked games' held-out pages 1.008 → 0.936% (N) and 0.990 → 0.917% (L), both resolved better; other games level (dev -0.038 / +0.026 points). Read once: CLANNAD lines 0.66 → 0.44% / 0.60 → 0.36% (CLANNAD's glyph raster is in the training data), vita-test + psp-test level. Two-level head, no gate: est. 0.79 / 1.87 s per 3-line box at 333 MHz. Nothing of it has run on a console |
 | **v0.3.0 release (VOCR5, the final round)** | Three int8 recognizers, one per tier of Rubi's model sizes: **Small** `VOCR5_S_w8.vocr` (819,792 B, FL10's topology, 4,987 classes), **Normal** (the default) `VOCR5_N_w8.vocr` (1,185,632 B, H15's topology, 5,631 classes) and **Large** `VOCR5_L_w8.vocr` (2,473,696 B, late-wide, 5,631 classes). Each replaced its VOCR4 predecessor under a pre-registered rule on development data. vita-test + psp-test dialogue CER (fixed lines, console polarity): **1.60% / 1.13% / 0.79%** (0.53% for Large with the overlay's beam + 1 MB LM); whole dialogue 8.31% / 7.98% / 7.08%; CLANNAD dialogue 1.38% / 0.96% / **0.73%** (Google Lens 1.53%). Estimated 0.63 / 0.92 / 2.08 s per 3-line box at 333 MHz on one A9 core without prefetch credit (#85's runtime; estimates, nothing of VOCR5 has run on a console). `docs/vocr5.md` |
 | v0.2.0 release (train2) | Pretrained on NVIDIA OCR-Synthetic-Multilingual-v1 Japanese crops (nvsynth) mixed with VN-style synthetic boxes (synth2), fine-tuned on teacher-labelled real crops. **H15** (recommended, width 1.5): real Vita screenshots (`eval/`, vita-test) **1.56% CER, 83.5% exact**; real PSP (psp-test) **2.63% CER, 82.4% exact**, int8 through the C runtime. That beats trimmed int8 PP-OCRv5 mobile (2.30% / 5.34%) on both sets, at 1.16 MB of int8 weights and a 183 KB arena. Not every style is at or below that model's yet: H15 is above it on names, coloured text, PSP furigana and text without a box (4-62 lines each, mostly within noise). **F20** (width 2.0): 1.79% / 2.79%. **FL10** (PSP-lean, width 1.0, 3,500-char vocab, 658 KB): 2.30% / 5.18%, so it ties the bar on vita-test. An estimated 166-302 ms per 640-px line for H15 (w8i, one 444 MHz A9 core; about 220-400 ms at the 333 MHz games run at by default). H15 has not run on a console; FL10 has (see Hardware). Distillation from PP-OCRv6 small was tried and did not help. Ablation, per-style tables and the selection rule are in `docs/train2.md` |
 | v1 baseline | Trained on synthetic dialogue boxes only. Synthetic validation: 0.34% CER, 95.6% of lines exact (`docs/v1-metrics.jsonl`). Real Vita screenshots (`eval/`, vita-test, 206 lines from 16 games): 23.75% CER, 52.4% exact, 81.8% CER on its 43 dark-on-light lines. Real PSP screenshots (psp-test, 245 lines from 14 games): 46.45% CER, 30.2% exact, 86.8% CER on its 110 dark-on-light lines (`docs/results.md`). |

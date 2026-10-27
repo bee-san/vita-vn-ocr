@@ -2,7 +2,7 @@
 # textspot8 steps 1-2 (docs/textspot8.md, eval/textspot8_protocol.json): MeikiOCR's detector as the reference
 # spotter through textspot6's pinned page path, and the crop-geometry diagnostic on hval. One heavy slot (5 threads):
 #   HEAVY_SLOTS=12 $HERD/heavy.sh timeout 7200 eval/reproducibility/textspot8-20261027/bench_meiki.sh [STEP...]
-# STEP: spot decode pp tsdev boxes geom (default: all, in that order). Re-running a step overwrites its outputs.
+# STEP: spot decode pp tsdev boxes speed geom (default: all but geom, in that order). Re-running a step overwrites its outputs.
 # Env: OUT (default $A/vocr6-spotter2/eval), PAGEPATH (textspot6's pin), RUBI (textspot6's textnorm pin), WORKERS (5).
 set -euo pipefail
 HERD=${HERD:-/local/home/skerraut/herd-vita-ocr}
@@ -24,7 +24,7 @@ PAGES=$A/vocr6-ingest/pages
 T6=$A/vocr6-spotter/eval
 M=$OUT/meiki
 mkdir -p "$M" "$OUT/geom" "$(dirname "$CACHE")" "$WORK"
-STEPS=${*:-"spot decode pp tsdev boxes geom"}
+STEPS=${*:-"spot decode pp tsdev boxes speed"}
 export OMP_NUM_THREADS=1
 
 pp() {   # pp SET UNITS OUTBASE ARGS...: one eval/pagepath.py run (textspot6's score_run.sh pp())
@@ -72,6 +72,8 @@ for step in $STEPS; do
           --shards "$HERD/shared/private/vocr6-spotter/shards_v1" --manifest "$REPO/data/manifests/textspot6_pages_v1.json" \
           --out "$M/hval_boxes_$d.json"
       done;;
+    speed)
+      OMP_NUM_THREADS=5 "$TPY" "$REPO/eval/textspot8.py" meiki-speed --n 100 --threads 1,5 --out "$M/speed.json";;
     geom)
       G=$OUT/geom
       for a in "fix1 $T6/grad_refine_fix1/hval.rows.jsonl 0 1" "fix1 $T6/grad_refine_fix1/hval.rows.jsonl 0 2" \

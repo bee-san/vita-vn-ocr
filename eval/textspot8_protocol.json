@@ -145,5 +145,12 @@
    },
    "rule": "unchanged (this protocol's 'rule')"
   }
+ ],
+ "corrections": [
+  {
+   "utc": "2026-10-27T07:05:48Z",
+   "of": "amendment 1, 'why'",
+   "text": "the comparison of 'units where every line is whole' (162-183 vs 117) compared each finder's own whole units, not a paired set; paired (the 993 dev units both read whole, without v27449 / v12188) the spotter makes 97 errors against rubi,fix=1's 99, and step 2 shows that shrinking the spotters' boxes by 1-2 px changes hval CER by -0.01 (not resolved). The spotters' paired losses are cut lines (base_t64n8c16 det: +68 errors in 28 units, mostly one edge character; base_qS4 crop: fragments, +99 in 114 units) and 6 units with missed lines (+42). Nothing in the arms, the rule or the across-shrink rule changes; the rule gives across_shrink 1.0 (step 2: G = 1.3024 / 1.2919 / 1.2907 for d = 0 / 1 / 2)"
+  }
  ]
 }

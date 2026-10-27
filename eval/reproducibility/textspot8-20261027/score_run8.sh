@@ -68,4 +68,5 @@ done
   --out "$D/hval_boxes.json"
 "$PY" "$REPO/eval/textspot6_parity.py" --blob "$BLOB" --out "$D/parity.json" --sets dev,dev-crop,tsdev \
   --cbin "$OUT/cbuild6" --workers "$WORKERS"
+date -u +%FT%TZ > "$D/SCORED"
 echo "score_run8 finished $NAME $D"

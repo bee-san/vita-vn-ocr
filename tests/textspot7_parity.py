@@ -17,6 +17,7 @@ for _p in (ROOT / "synth", ROOT / "eval", ROOT / "teacher"):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 import textspot7 as E  # noqa: E402
+
 import textspot7_twin as T7  # noqa: E402
 
 COMBOS = [[], ["assign"], ["join5"], ["join10"], ["extend"], ["tighten"], ["assign", "join5", "extend"],

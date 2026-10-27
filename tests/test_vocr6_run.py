@@ -104,3 +104,36 @@ def test_two_pinned_versions_each_check_their_own_files(tmp_path):
     stray.write_bytes(b"x")
     with pytest.raises(SystemExit, match="no pinned manifest"):
         R.check_extra_pools(pins, [("cc", 0.1, [str(stray)], "")], {})
+
+
+def _pin(tmp_path, v, names):
+    d = tmp_path / v / "train"
+    d.mkdir(parents=True)
+    files = []
+    for n in names:
+        f = d / n
+        f.write_bytes((v + n).encode())
+        files.append(f)
+    man = tmp_path / v / "manifest.json"
+    man.write_text(json.dumps({"files": {f"train/{f.name}": {"sha256": R.sha256(f)} for f in files}}))
+    pin = {"name": f"cc_{v}", "manifest": str(man), "sha256": R.sha256(man), "sources": ["cc"]}
+    return pin, [str(f) for f in files]
+
+
+def test_sources_no_pin_names_are_not_checked(tmp_path):
+    """A mix source that no extra pool names (e.g. the hooked pools, checked elsewhere) is skipped, not refused."""
+    pin, files = _pin(tmp_path, "v1", ["T1.npz"])
+    rec = R.check_extra_pools({"extra_pools": [pin]}, [("hk", 0.15, [str(tmp_path / "elsewhere.npz")], ""),
+                                                       ("cc", 0.06, files, "")], {})
+    assert rec == {"cc_v1_files": 1, "cc_v1_manifest_sha256": pin["sha256"]}
+
+
+def test_file_counts_sum_over_a_versions_files(tmp_path):
+    pin, files = _pin(tmp_path, "v2", ["T1.npz", "T2.npz", "T3.npz"])
+    rec = R.check_extra_pools({"extra_pools": [pin]}, [("cc", 0.06, files[:2], ""), ("cc", 0.04, files[2:], "")], {})
+    assert rec["cc_v2_files"] == 3
+
+
+def test_fold_in_mixes_are_marked_hval_in_training():
+    assert R.hval_in_training({"mix": "r3all_fold"}) and not R.hval_in_training({"mix": "r3all"})
+    assert not R.hval_in_training({"mix": "m1_cil"}) and not R.hval_in_training({})

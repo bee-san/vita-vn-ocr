@@ -1751,7 +1751,8 @@
      "warmup": 500,
      "eval_every": 5000,
      "init": "W15",
-     "what": "finder augmentation doubled"
+     "what": "finder augmentation doubled",
+     "note_seed3": "seed 3 is not run: seed 1's hval page pair was +0.003, so decision.adopt's every-pair condition could not hold (vocr6-lead decision line 2026-10-26T22:55:14Z); the arm is not marked stopped, so `finish` still works for the scored seed 1"
     },
     "S2cil": {
      "run": "v6s2cil_N",
@@ -1955,7 +1956,7 @@
     "gate": "the head gate (#120) and, for N and L, the two-level head (#122) are fit on each shipped blob and adopted or not under those PRs' pre-registered rules (train/headgate.py, train/head2level.py)",
     "ship": "the shipped S/N/L blobs go to a vita-vn-ocr pre-release with SHA256SUMS, docs/vocr6.md, and a Rubi_for_vita PR pinning them"
    },
-   "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools CLANNAD glyph raster (vocr6-synth6, 2026-10-26): two hooked train titles draw dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised, PCSG00620 Grisaia Spinout (1,696 lines) and PCSG00007 Little Busters! (878 lines): 39,447 glyphs of 1,201 characters; synth6 v3 draws it too (27 fonts, 4.06% of Vita crops). Every VOCR6 model trained on the hooked lines has seen CLANNAD's glyph raster: disclosed with every CLANNAD number",
+   "final_test": "read once, on the blobs chosen to ship (and VOCR5 beside them), after every choice above: the hooked test title PCSG00807 (Dance with Devils; page path and clean lines), CLANNAD (eval's long-run CLANNAD references), vita-test and psp-test (fixed lines and whole dialogue). Report only: no choice changes after it. Seen flags in every report: Collar x Malice (PCSG00866) shares releases with vita-test's Collar x Malice -Unlimited-; Little Busters! and planetarian share the Key 10th Memorial BOX with CLANNAD; 38 of the 49 hooked titles' VNs were in VOCR5's own fine-tune pools. CLANNAD glyph raster (vocr6-synth6, 2026-10-26): two hooked train titles draw dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised, PCSG00620 Grisaia Spinout (1,696 lines) and PCSG00007 Little Busters! (878 lines): 39,447 glyphs of 1,201 characters; synth6 v3 draws it too (27 fonts, 4.06% of Vita crops). Every VOCR6 model trained on the hooked lines has seen CLANNAD's glyph raster: disclosed with every CLANNAD number",
    "amendments": [
     {
      "n": 1,
@@ -2008,7 +2009,8 @@
      "time": "this commit (see git log); 2026-10-27T03:5xZ, before any stage-4 run or score",
      "why": "stages 2 and 3 are decided (experiment log, vocr6-lead decision lines 2026-10-26T16:20Z to 2026-10-27T03:53Z)",
      "fill": "stage 2 adopted S2cil alone (S2x2, S2s6, S2t5, S2r70, S2r30 and S2fa2 not adopted); stage 3 adopted nothing (S3attn and S3rep not adopted, S3gtc not run, S3long decides stage 4c only). So R3 = R2 = A15 + S2cil and mixes.r3all (fill_stage4.py --adopted S2cil) is json-identical to mixes.m1_cil. With one adopted factor stages.3.decision.recipe needs no combined pair: stages.R3all is written for the record and NOT trained; its Normal pair is S2cil's own runs v6s2cil_N_seed1 and v6s2cil_N_seed3 (stage 2, tag vocr6-runner-1677de9, crops v1 4adb00c9), which are stage 4a's Normal seeds 1 and 3. Stage 4 runs: 4a F4S_s1, F4S_s2, F4S_s3, F4L_s1, F4L_s2, F4L_s3, F4N_s2 (mix r3all); 4b F4Sh_s1, F4Nh_s1, F4Lh_s1 (mix r3all_fold, crops v2). 15,000 steps, the A family's VOCR5 fine-tuned inits (stages.4.inits), no arch or train extras",
-     "decision_unchanged": "4a's adoption per tier (three seed pairs against the released VOCR5 tier on the shipped path, stages.4.4a.adopt), 4b's check and 4c (stages.4.amendments[1]) stand as registered"
+     "decision_unchanged": "4a's adoption per tier (three seed pairs against the released VOCR5 tier on the shipped path, stages.4.4a.adopt), 4b's check and 4c (stages.4.amendments[1]) stand as registered",
+     "record": "one stage-4 read of a 4a run existed before this amendment: vocr6-final-gate's dry run read v6s2cil_N_seed1 (4a's Normal seed 1) on the stage-4 plans at 2026-10-26T23:26:11-23:30:28Z (gate-against-ungated deltas only), and P1L's A15L (not a 4a arm) at 20:59Z. Harmless: this amendment is a mechanical fill (R3 follows from the stage-2/3 decision lines, 4a's N runs were fixed by amendment 2) and changes no rule (audit-vocr6-lead-g N9)"
     },
     {
      "n": 6,
@@ -2023,7 +2025,7 @@
     "hval": {
      "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/hval_plan_v3.pkl",
      "sha256": "17b054496a612df9b152a16309e7e21237ba86d27f566e7d1980bdde945d063a",
-     "what": "the same 6,327 region units and 3,184 clean crops as v1/v2, cut by eval/pagepath_find.c from main f8a1856 (#135 merged) with -DPAGEPATH_FIX: preset rubi (TEXTBOX_RECOVERY + the short-line probe + the per-box refinement on PSP), fix 1 = VOCR_FIX_DEFAULT (COLGAP); driver sha256 656847d2a8508d03acb69ff7207f735bb8e3f6c1d370ceb59ed396dac2c99038"
+     "what": "the same 6,327 region units and 3,184 clean crops as v1/v2, cut by eval/pagepath_find.c from main f8a1856 (#135 merged) with -DPAGEPATH_FIX: preset rubi (TEXTBOX_RECOVERY + the short-line probe + the per-box refinement on PSP), fix 1 = VOCR_FIX_DEFAULT (COLGAP); driver sha256 656847d2a8508d03acb69ff7207f735bb8e3f6c1d370ceb59ed396dac2c99038; with COLGAP alone, junk units rise from 113 (v2) to 444, so the stage-4 decision units are 5,580 with 147,538 reference characters (v2: 5,898 / 154,389); 343 units change boxes from v2; merged (21) and missed (140) lines are unchanged (audit-vocr6-lead-g N7)"
     },
     "dev": {
      "path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/plans/dev_plan_v2.pkl",
@@ -2313,7 +2315,8 @@
       "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
       "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
      },
-     "arch_extra": []
+     "arch_extra": [],
+     "stopped": "not trained: one adopted factor (S2cil), so R3all == S2cil's recipe and its pair is v6s2cil_N_seed1/3 (stages.4.amendments[4])"
     }
    },
    "not_trained": "one adopted factor (S2cil): R3all == S2cil's recipe; its pair is v6s2cil_N_seed1/3 (stages.4.amendments[4])"

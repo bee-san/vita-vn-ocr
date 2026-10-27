@@ -1,0 +1,139 @@
+{
+ "kind": "vocr6-final-lm-protocol",
+ "schema": 1,
+ "label": "vocr6-final-lm",
+ "issues": [125, 127],
+ "lead": "vocr6-lead",
+ "registered": "2026-10-26T22:03Z (this file's first commit on feat/vocr6-final-lm; see git log). No final blob existed then: vocr6-lead's stage 4 (eval/vocr6_protocol.json stages.4, feat/vocr6-t1-stages) had not started, and nothing of a VOCR6 final blob had been read",
+ "question": "Do Rubi's shipped decoder settings (one per LM tier: 1 MB / 4 MB game-text LMs alpha 600, beta 2500, BOS; 0.5 MB / 2 MB ctclm.2 alpha 500, beta 3000, EOS; cascade under 700) and the counter re-decode thresholds (tau 6 / open 4 nats, chosen on VOCR5 logits, #109) still hold on VOCR6's final S/N/L blobs, with #109's synthetic counter set as a not-resolved-worse guard?",
+ "known_before_scoring": {
+  "vocr6_lm_report": "eval/vocr6_lm_vocr6logits_20261026.json (#141, branch feat/vocr6-lm-v6): VOCR6 stage-2 S2cil (seeds 1, 3) and stage-1 A15 (seeds 1, 3) as tier N alone (no cascade), Rubi's line path with its display rules, hval (screening LM builds) + VOCR5's dev units, grid alpha 100-800 x beta 0-5000 x flags 0-3 x gate 2000/4000/8000, 2-fold CV. Retuning did not beat the shipped settings for the shipped LMs: CV setting - shipped setting, objective, h64_1000k S2cil +0.394 (-0.040 to +1.332) / +0.110 (-0.012 to +0.351), A15 +0.064 (-0.074 to +0.317) / -0.016 (-0.052 to +0.027); h16rl_4000k S2cil +0.307 (-0.006 to +0.961) / +0.047 (-0.005 to +0.119); none resolved. ctclm.2's 1 MB LM (no longer shipped at 1 MB; its recipe is the 0.5 / 2 MB tiers') gained from a retune on A15: -0.506 (-1.585 to -0.009) / -0.285 (-0.863 to -0.010), on S2cil +0.001 / -0.012 (not resolved). The in-sample bests were alpha 400-600, beta 1000-2000, flags 1 or 3, mostly gate 4000 (which does not survive the CV). With the rules on both sides the shipped game-text LMs lower VOCR6 N's hval clean-line CER by 0.09-0.14 points (resolved per seed). Display arm P1 (keep punctuation-only lines) was not adopted",
+  "counter_set_vocr5": "vocr6-rubi-ship (Rubi #306; artifacts/vocr6-rubi-ship/kanum/ke_N.json): #109's 3,969 synthetic counter crops, VOCR5-N alone (no cascade, no display rules), counter re-decode 6 / 4 nats + beam + LM + counter rule: ctclm.2 1 MB at alpha 500 / beta 3500 / EOS keeps the counter in 3,104 crops (CER 3.605%, 1,847 / 51,240), the game-text 1 MB LM at 600 / 2500 / BOS in 3,015 (3.778%, 1,936); paired: 121 lost, 32 gained; mostly crops whose left edge is inside the line. A crafted Rubi host test (top-K ルッ月 with ヶ second) reads 「九月です」 with the new LM where ctclm.2 read 「九ヶ月です」",
+  "counter_thresholds_vocr5": "#109 (docs/counters.md, eval/counters_dev_20261021.json): tau 6000 and open 4000 chosen on VOCR5-S/N/L as the largest grid values with no line worse on real development or the synthetic set; 0 real development lines change",
+  "nothing_else": "no VOCR6 final blob, no stage-4 run and no VOCR6 S or L read on this round's sets had been seen when this file was written; the S/L shapes' numbers above are VOCR5's"
+ },
+ "blobs": {
+  "final": "vocr6-lead's message 'FINAL BLOBS S=<path> N=<path> L=<path>' (the blobs to ship: stage 4b's seed-1 fold-in runs, their 4a siblings where 4b's check fails, or VOCR5 where 4a does not adopt VOCR6). Paths, sha256, bytes and their runs (vocr6/experiments.jsonl) are recorded in the result before any read",
+  "hval_reader": "tier T's hval units are read by a recognizer that never trained on them: the final blob when its training held no hval page (a 4a or VOCR5 blob); for a stage-4b blob (trained on train + guard + hval pages: stages.4.4b), its stage-4a sibling of the same tier and seed (hval out), as vocr6/experiments.jsonl records it. The two share the shape and vocabulary (checked: every class text equal). The final blob reads the dev units and the counter set itself",
+  "cascade": "S -> N -> L with the final blobs (dev and counter set) and with the hval readers (hval): the job's next tier reads the same crop",
+  "read": "W8I through the C runtime (runtime/pyvocr.py), head gate and two-level head off (as stage 4a scores; Rubi's head gate is vocr6-final-gate's decision, and on VOCR5 it changed 0-3 lines a tier), top-8 extras, the blank's logit, conf_min. Commands: eval/vocr6_lm.py dev-cache / hval-cache (#141) and eval/vocr6_final_lm.py counter-cache"
+ },
+ "lm_tiers": {
+  "500k": {
+   "dev": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm_o3_500k.vlm", "sha256": "38ea94e0c4ec93863454387e7c2c469d209aaf21f2f6ee5d040e75a09d00d286"},
+   "hval": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm_o3_500k.vlm", "sha256": "38ea94e0c4ec93863454387e7c2c469d209aaf21f2f6ee5d040e75a09d00d286"},
+   "what": "ctclm.2's 0.5 MB LM (no game text), the same bytes for both",
+   "shipped": {"alpha": 500, "beam": 8, "beta": 3000, "bracket": 8000, "flags": 2, "gate": 8000, "topk": 8},
+   "cascade_conf": 700
+  },
+  "1000k": {
+   "dev": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm6_o3_1000k.vlm", "sha256": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f"},
+   "hval": {"path": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lm/lm/h64_1000k.vlm", "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"},
+   "what": "the shipped game-text 1 MB LM (Rubi's default) for dev and the counter set; its screening build h64_1000k (hval and guard pages' text out) for hval",
+   "shipped": {"alpha": 600, "beam": 8, "beta": 2500, "bracket": 8000, "flags": 1, "gate": 8000, "topk": 8},
+   "cascade_conf": 700
+  },
+  "2000k": {
+   "dev": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm_o3_2000k.vlm", "sha256": "ac33e461bd346617aae27168aee47230a758f4b301d78b59eb55ca25a21bcb34"},
+   "hval": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm_o3_2000k.vlm", "sha256": "ac33e461bd346617aae27168aee47230a758f4b301d78b59eb55ca25a21bcb34"},
+   "what": "ctclm.2's 2 MB LM (no game text), the same bytes for both",
+   "shipped": {"alpha": 500, "beam": 8, "beta": 3000, "bracket": 8000, "flags": 2, "gate": 8000, "topk": 8},
+   "cascade_conf": 700
+  },
+  "4000k": {
+   "dev": {"path": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lm/release/v0.3.7-lm6.2/vocr_lm6_o3_4000k.vlm", "sha256": "a65841b5bdce3e3123b2d1e712deb857fb577cbd2fd8667e8fb06ab35d368335"},
+   "hval": {"path": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lm/lm/h16rl_4000k.vlm", "sha256": "58eecb59ffa22f14ed009cbca3756998aeceda72219c2c8a77855030f394f442"},
+   "what": "the shipped game-text 4 MB LM for dev and the counter set; its screening build h16rl_4000k for hval",
+   "shipped": {"alpha": 600, "beam": 8, "beta": 2500, "bracket": 8000, "flags": 1, "gate": 8000, "topk": 8},
+   "cascade_conf": 700
+  },
+  "source": "v0.3.7-lm6.2's settings.json (#137, merged ffb088c) and Rubi #306's lms[] (alpha, beta, flags per tier); Rubi main before #306 runs ctclm.2 at every tier, alpha 500, EOS, beta 3000 / 3500 / 3000 / 3500"
+ },
+ "counter_shipped": {"tau": 6000, "open": 4000, "source": "Rubi core/vocr_ocr.h VJO_VOCR_COUNTER_TAU / VJO_VOCR_COUNTER_OPEN (1/1000 nat)"},
+ "line_path": "Rubi_for_vita core/vocr_ocr.c finish_line as eval/vocr6_lm.py models it: a line read as empty stays empty; else the counter re-decode (tau, open) of the top-8, the beam (8) + LM decode of the edited top-8 at the setting, the counter text rule (vocr_post_counters); the cascade: a line whose greedy confidence (conf_min x 1000 + 0.5, truncated) is under the threshold shows the next tier's reading of the same crop, decoded by the same steps at the same setting (the job's setting); L has no cascade. Then what Rubi shows: eval/vocr6_lm.RubiShow (core/textnorm.c of Rubi main bd130a8 = cbaa4e3, sha256 3fa19017..., flags 0, then the Shell's non-Japanese line filter)",
+ "sets": {
+  "dev": "VOCR5's development cohorts as eval/vocr6_lm.py dev_units builds them (#127): tv (teacher_val's development part) and dn (devnative's four development files) in both views, wd (tv_dlg + dn_dlg through the C GRAD finder and with the refinement), without v12188 (hooked train title PCSG00576) and v18432 (hooked test title PCSG00807); clusters = VNs",
+  "hval": "vocr6-lm's hval_rubi units (#127; private/vocr6-lm/hval_rubi units.pkl sha256 d81af587..., crops.pkl 56bb4400...): hc 3,170 verified dialogue lines as clean crops, hp 12,654 whole-dialogue region reads (6,327 regions through GRAD and GRAD + refine), 46 hooked train titles' hval pages (PSP in the Adrenaline 2x view); clusters = titles",
+  "counter": "#109's synthetic counter set (artifacts/kanum-fix/synth/synth.npz, eval/kanum_dev.py render): 3,969 crops = 189 lines of synth3's development text pools (pools3/*.dev.txt) with a numeral before ヶヵケ箇 + 月所年国条, each as 「…」, bare and …」 in one of nine open fonts, each cut 7 ways (left edge 3 px before the ink, at it, 2-10 px into it); the reference is the whole text; clusters = the 189 source lines"
+ },
+ "metric": {
+  "cer": "dialogue CER (eval/metrics.norm on both sides; names are a secondary column): tv/dn per line over both views; wd and hp per region (the found lines' texts joined in reading order against the region's lines joined); hc per line; the counter set per crop",
+  "dev_score": "0.25 tv + 0.25 dn + 0.5 wd (VOCR5's)",
+  "objective": "0.5 hp + 0.5 dev score (#127's), on the job path of the tier: S with its cascade to N, N with its cascade to L, L alone",
+  "counter_kept": "a crop keeps its counter when eval/metrics.norm of the text Rubi shows holds [0-9０-９一二三四五六七八九十百千何数幾][ヶヵケ箇][月所年国条] (vocr6-rubi-ship's test, artifacts/vocr6-rubi-ship/kanum_ke.py); every crop's reference holds one",
+  "counter_cer": "the counter set's CER on the text Rubi shows"
+ },
+ "arms": {
+  "a": {"what": "the shipped setting of the LM tier with the shipped counter thresholds and cascade threshold"},
+  "b": {
+   "what": "the best setting of vocr6-lm's grid on the final blobs, 2-fold cross-validated as #127",
+   "grid": {"alpha": [100, 200, 300, 400, 500, 600, 700, 800], "beta": [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000], "flags": [0, 1, 2, 3], "gate": [8000], "bracket": [8000], "beam": [8], "topk": [8]},
+   "cascade_conf": [500, 600, 700],
+   "counter": "the shipped thresholds (6000 / 4000)",
+   "options": "S and N: 352 settings x 3 cascade thresholds = 1,056; L (no cascade): 352",
+   "why_gate_8000": "vocr6-lm's VOCR6-logits grid also held gate 2000 / 4000 nats. Those are below the shipped counter re-decode's tau (6 nats) and at or below its open (4 nats); docs/counters.md requires both strictly below the LM's gate (else an edited frame's moved top-1 leaves the candidates and its old logit is read as the blank's, which undoes the edit). Such a setting would need the counter thresholds changed with it, which this round does not test, so it is not selectable. vocr6-lm's report found that gate-4000 in-sample choices did not survive its cross-validation"
+  },
+  "c": {
+   "what": "the counter re-decode thresholds at the LM tier's shipped setting and cascade threshold, 2-fold cross-validated",
+   "tau": [4000, 5000, 6000, 7000, 8000],
+   "open": [3000, 4000, 5000],
+   "note": "tau 8000 equals the shipped gate (8000): only an edit costing exactly the gate is affected (docs/counters.md's 'strictly below'); kept in the grid as the task registers it, and the counter set guards it"
+  }
+ },
+ "selection": {
+  "folds": "eval/vocr6_lm.fold_of: the low bit of sha256(cluster id) (VNs for dev, titles for hval), #127's folds",
+  "choice": "per fold, the option minimising the objective over that fold's units; each fold's units are then scored with the other fold's choice (cross-validated errors); the in-sample choice (all units) is what would ship",
+  "ties": "the first minimum in option order: the shipped option first (arm b: the shipped setting at the shipped cascade threshold; arm c: 6000 / 4000), then grid order (configs in eval/vocr6_lm.grid_configs order x cascade thresholds as listed; tau-major cells)"
+ },
+ "intervals": "paired cluster bootstrap, 10,000 resamples: eval/vocr6_lm.compare (each part resampled on its own clusters with its seed: tv 0, dn 1, wd 2, hp 3, hc 4; dev score and objective combine the parts' replicates) for the real parts; the counter set over its 189 source lines, seed 5. 'Resolved better': the 95% interval of (arm - shipped) entirely below 0; 'resolved worse': entirely above 0 (the kept share: entirely below 0)",
+ "rule": {
+  "per": "each job tier (S + cascade, N + cascade, L) and each LM tier (500k, 1000k, 2000k, 4000k), separately: a change only where it passes",
+  "pass": "an arm (b or c) passes iff (1) its cross-validated objective is resolved better than the shipped setting's; (2) none of hp, hc and the dev score is resolved worse (cross-validated); (3) on the counter set, the setting that would ship (the in-sample choice) is not resolved worse in CER and its kept share is not resolved lower; (4) it is admissible: the counter thresholds at most the LM gate, and the decoder workspace of the job's models (the tier and its cascade tier) at most Rubi's VJO_VOCR_LM_WS_BYTES",
+  "workspace_limit_bytes": 49152,
+  "both": "if b and c both pass at a tier, the one with the lower cross-validated objective difference (point) changes (b on a tie); the other is reported, not adopted (their combination is not tested)",
+  "otherwise": "keep the shipped settings",
+  "ships": "a passing arm's in-sample choice (setting, cascade threshold, counter thresholds) for that job tier and LM tier; Rubi would carry it per job tier (the job's primary decode and its cascade's decode), told to vocr6-rubi-ship"
+ },
+ "deviations_from_the_task_prompt": [
+  "arm b's gate is fixed at 8000 (why_gate_8000)",
+  "hval is read by a recognizer that did not train on it (blobs.hval_reader): a stage-4b blob was trained on the hval pages, so its own hval reads would measure memorised pages; its own hval numbers are reported, not used",
+  "the dev units and the counter set are decoded with the shipped LM blobs (what Rubi runs; vocr6-lead's stages.4 amendment 3), hval with the screening builds; #127 decoded dev with the screening builds too",
+  "arm b's options include the cascade thresholds 500 / 600 / 700 (#127's grid); the rule asks for a pass at each tier separately, as the task's 'a change only for tiers where it passes'",
+  "when b and c both pass, one changes (rule.both)"
+ ],
+ "reports": [
+  "per job tier and LM tier: greedy, shipped, b's cross-validated and in-sample scores (tv, dn, wd, hc, hp, dev score, objective), every comparison with its interval, the choices (folds and in-sample), the rule's clauses, the decision",
+  "the counter set's kept count and CER for every arm: the shipped setting, b's in-sample and fold choices, every cell of c (and its comparison with the shipped)",
+  "hc and hp by platform (Vita, PSP), names (tv, dn) at the shipped setting and b's in-sample choice; no-cascade scores at the shipped setting",
+  "the counter re-decode's edit counts at the shipped thresholds per tier",
+  "the final blobs' own hval reads (for 4b blobs) at the shipped setting and b's in-sample choice (report only)",
+  "continuity: vocr6-rubi-ship's VOCR5-N counter numbers (3,104 / 3,015 kept; 1,847 / 1,936 errors) reproduced by this harness"
+ ],
+ "outputs": {
+  "result": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-final-lm/result.json and eval/vocr6_final_lm_result_<date>.json (counts, rates, settings, hashes; no text)",
+  "private": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-final-lm/ (reads, tune files)",
+  "log": "vocr6/experiments.jsonl: this preregistration, each run, the decision"
+ },
+ "compute": "one heavy slot (vocr6/slots.txt vocr6-final-lm = 1 once the final blobs exist), 5 threads: dev / hval / counter reads per blob, then one tune per LM tier (arm b's grid, arm c's cells, greedy), then select",
+ "amendments":[
+  {
+   "n": 1,
+   "time": "2026-10-27T04:21Z (this commit; before any final blob existed or was read)",
+   "why": "audit-vocr6-lm-rubi F6 / F7, relayed by vocr6-lm and vocr6-rubi-ship: Rubi runs the gated blobs (w8g for S, w8g2 for N and L) with ocr_head_gate = on, while every LM number so far (#137, #141, this protocol's reads) used ungated blobs with the gate off; and on a crafted counter line the 1 MB tier's loss of the small ke follows its settings (600 / 2500 / BOS), not its blob",
+   "adds": [
+    "report only, decides nothing: when a setting changes at any tier, the new setting and the shipped one are also decoded on gate-on reads of the gated final blobs (vocr6-final-gate's), read as Rubi reads them (eval/vocr6_final_lm.py gated-cache: ocr_head_gate = on, its counter-context re-read, core/vocr_ocr.c read_again), and both are reported, so the combination that ships has been measured",
+    "report only: Rubi 0.9.8 as it ships today, gate on (VOCR5_S_w8g, VOCR5_N_w8g2, VOCR5_L_w8g2 of v0.3.6-head2level.1, lm6.2's 1 MB LM at 600 / 2500 / BOS, cascade under 700) against the same path gate off on v0.3.0's blobs (vocr6-lead's burst of 04:08Z)",
+    "the counter set's kept count and CER per LM tier at the shipped setting and at arm b's in-sample choice are reported for every job tier (already in reports; restated for Rubi's 「九ヶ月です」 expectation)"
+   ],
+   "unchanged": "the arms, metric, guards and rule"
+  },
+  {
+   "n": 2,
+   "time": "2026-10-27T08:17Z (this commit; before FINAL BLOBS and before any read of a stage-4 blob)",
+   "why": "vocr6-lead (status 2026-10-27T07:31Z, message to vocr6-final-lm 08:17Z): stage 4a did not adopt VOCR6-S (dev resolved worse), so Small stays VOCR5-S as Rubi ships it; the VOCR6 checks are the N and L tiers",
+   "change": "the rule decides the N job tier (final N + cascade to the final L) and the L job tier only. The S job path (VOCR5-S, v0.3.0's v5f_S_seed2 read ungated, + cascade to the final N) is decoded and reported with its rule clauses, report only; VOCR5-S reads hval itself (it never trained on it)",
+   "decide_tiers": ["N", "L"],
+   "unchanged": "the arms, metric, guards and rule for N and L"
+  }
+ ]
+}

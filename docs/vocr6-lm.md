@@ -388,6 +388,72 @@ in `lm/vlm.py`'s Python twin of the decoder (`decode(lexicon=…)`), on the ship
 - **Why it does not help.** The 3-gram LM and the Jiten word counts already in it cover most short words, and a
   word bonus also rewards wrong splits that happen to form words.
 
+## LM settings on VOCR6's logits (report)
+
+vocr6-lead saw ctclm.2's LM at Rubi's settings raise VOCR6 stage-1 clean-line CER (A15: 0.298% → 0.391%) and asked
+whether VOCR6's sharper logits need other settings. This run decodes two VOCR6 N recognizers, stage 2's adopted
+S2cil and stage 1's A15 (two seeds each), with VOCR5-N as the control. Tier N alone, without the cascade, on Rubi's
+line path with its display rules, on hval (the screening LM builds) and VOCR5's dev units. The grid is alpha
+0.1-0.8, beta 0-5 nats, flags 0-3 and the confidence gate 2/4/8 nats, 1,056 settings (8 × 11 × 4 × 3), 2-fold
+cross-validated on the protocol's folds. It is a report, outside the protocol's decision. Machine-readable:
+`eval/vocr6_lm_vocr6logits_20261026.json`.
+
+| recognizer, seed | LM | greedy hc / hp / dev | LM at its VOCR5 setting: hc / hp / dev | hc, LM − greedy | objective, CV setting − VOCR5 setting |
+|---|---|---|---|---|---|
+| S2cil, 1 | ctclm.2 1 MB | 0.476 / 4.631 / 3.294 | 0.423 / 5.060 / 3.074 | −0.053 (−0.105 to +0.002) | +0.001 (−0.036 to +0.045) |
+| S2cil, 3 | ctclm.2 1 MB | 0.437 / 4.088 / 3.355 | 0.390 / 3.945 / 3.182 | −0.047 (−0.109 to +0.009) | −0.012 (−0.046 to +0.021) |
+| S2cil, 1 | game-text 1 MB | 0.476 / 4.631 / 3.294 | 0.358 / 3.392 / 3.047 | −0.117 (−0.171 to −0.067) | +0.394 (−0.040 to +1.332) |
+| S2cil, 3 | game-text 1 MB | 0.437 / 4.088 / 3.355 | 0.345 / 3.496 / 3.185 | −0.092 (−0.152 to −0.035) | +0.110 (−0.012 to +0.351) |
+| S2cil, 1 | game-text 4 MB | 0.476 / 4.631 / 3.294 | 0.333 / 3.485 / 2.995 | −0.143 (−0.203 to −0.085) | +0.307 (−0.006 to +0.961) |
+| S2cil, 3 | game-text 4 MB | 0.437 / 4.088 / 3.355 | 0.317 / 3.499 / 3.097 | −0.119 (−0.186 to −0.059) | +0.047 (−0.005 to +0.119) |
+| A15, 1 | ctclm.2 1 MB | 0.437 / 4.311 / 3.332 | 0.386 / 4.556 / 3.157 | −0.051 (−0.106 to +0.004) | −0.506 (−1.585 to −0.009) |
+| A15, 3 | ctclm.2 1 MB | 0.443 / 3.913 / 3.368 | 0.396 / 3.808 / 3.121 | −0.047 (−0.097 to −0.002) | −0.285 (−0.863 to −0.010) |
+| A15, 1 | game-text 1 MB | 0.437 / 4.311 / 3.332 | 0.339 / 3.334 / 3.110 | −0.098 (−0.158 to −0.043) | +0.064 (−0.074 to +0.317) |
+| A15, 3 | game-text 1 MB | 0.443 / 3.913 / 3.368 | 0.349 / 3.229 / 3.127 | −0.094 (−0.156 to −0.037) | −0.016 (−0.052 to +0.027) |
+| VOCR5-N | ctclm.2 1 MB | 0.760 / 4.220 / 3.404 | 0.564 / 3.814 / 3.136 | −0.196 (−0.341 to −0.084) | +0.045 (−0.029 to +0.159) |
+| VOCR5-N | game-text 1 MB | 0.760 / 4.220 / 3.404 | 0.435 / 3.332 / 3.144 | −0.325 (−0.511 to −0.173) | +0.186 (−0.006 to +0.569) |
+
+CER %, differences in points with 95% cluster intervals; "VOCR5 setting" is ctclm.2's (alpha 0.5, beta 3.5, EOS)
+for ctclm.2's LM and the shipped one (alpha 0.6, beta 2.5, BOS) for the game-text LMs.
+
+- **On equal terms the LM does not hurt VOCR6's clean lines.** The greedy arm above runs through Rubi's display
+  rules too. Without them, A15 seed 1 reads hval's clean lines at 0.294% (150 errors), vocr6-lead's figure. The same
+  greedy text through `core/textnorm.c` and the Shell's non-Japanese filter is at 0.437%. The rules drop 14
+  dialogue lines made only of punctuation (the `……` kind), 75 reference characters. They do the same for every
+  recognizer (`show_cost` in the JSON: +0.13-0.14 points for each). A greedy arm without the rules, compared with
+  an LM arm with them, puts this cost on the LM. With the rules on both sides, the game-text LMs (the screening builds
+  of the shipped recipes, h64_1000k and h16rl_4000k: the shipped blobs hold hval's text) lower VOCR6's clean-line CER
+  by 0.09-0.14 points, resolved for each seed. ctclm.2's lowers it by about 0.05.
+- **The gain shrinks as the recognizer sharpens.** The game-text 1 MB LM takes 0.33 points off VOCR5-N's clean
+  lines and 0.09-0.12 off VOCR6's.
+- **Retuning does not beat the shipped settings for the shipped LMs.** Cross-validated against the shipped setting:
+  objective −0.02 to +0.39 on the game-text LMs, none resolved, most worse in point. A lower confidence gate (4
+  nats) wins some in-sample bests but does not survive the cross-validation. ctclm.2's 1 MB LM would gain from a
+  retune on A15 (−0.51 and −0.29), mostly on the hval page path (−0.95 and −0.53, with wide intervals), but it no
+  longer ships at 1 MB.
+- **So VOCR6 N keeps the 1 MB and 4 MB settings** (alpha 0.6, beta 2.5, BOS; 4 MB measured on S2cil only). The 0.5
+  and 2 MB tiers were not run here and keep ctclm.2's settings until the final S/N/L pass (vocr6-final-lm,
+  `docs/vocr6-final-lm.md`). The run repeats per recognizer in 10-15 minutes in one heavy slot (Reproduce).
+- **For the 1% target.** Rubi's display rules alone cost 0.14 points of hval clean-line CER, on lines that carry no
+  word to look up.
+- **Keeping those lines (display arm P1, pre-registered; report and decision):** the Shell's filter also keeps a
+  line whose characters, spaces ignored, are all in `…―ー！？!?「」『』、。・～〜` and number at least 2. On identical
+  decodes (the 1 MB game-text LM at its shipped setting), P1 − today:
+  - VOCR5-N + cascade: clean lines −0.092 (−0.155 to −0.035), page path −0.046 (−0.107 to −0.001), dev score
+    0.000, objective −0.023 (−0.053 to −0.000). VOCR5-S + cascade and VOCR5-L move the same way.
+  - VOCR6 runs: clean lines −0.09 and page path −0.05 to −0.06 for each. Dev score +0.002 to +0.026, not resolved,
+    for three of them. For A15 seed 1 it is +0.054 (+0.005 to +0.126), resolved worse: dev whole dialogue +0.108
+    (+0.010 to +0.251), 6 whole-dialogue units of 5 VNs worse (13 units over all parts: those 6 and 7 hval page
+    units). That recognizer reads some box decorations as punctuation-only lines, which P1 keeps.
+  - The pre-registered rule asks that no run be resolved worse on dev, so P1 is not adopted. Rubi's filter stays as
+    it is. A narrower arm (for instance, keep such a line only beside a Japanese line of the same job) needs its own
+    pre-registration.
+- **Counter lines (reported by vocr6-rubi-ship on Rubi #306).** On #109's synthetic counter set (VOCR5-N), the
+  1 MB game-text LM at its new setting keeps 3,015 counters, against 3,104 with ctclm.2 at Rubi's old setting, and
+  its CER is 3.78% against 3.60%. The loss is mostly on crops cut at the edge. A crafted `ルッ月` line reads 九月
+  instead of 九ヶ月. The dev lines are level. The VOCR6 pass on the final S/N/L blobs adds this set as a
+  not-resolved-worse guard, and checks the counter re-decode thresholds (6 / 4 nats) on VOCR6 logits.
+
 ## For Rubi
 
 - New files: `vocr_lm6_o3_1000k.vlm` and `vocr_lm6_o3_4000k.vlm` (pre-release v0.3.7-lm6.2, CC BY-SA 4.0, with
@@ -426,8 +492,22 @@ bash $A/select_all.sh        # select (families A, B; both paths) and families, 
 .venv-ci/bin/python eval/vocr6_lm.py tables --json eval/vocr6_lm_dev_20261026.json --doc docs/vocr6-lm.md
 ```
 
-For the VOCR6 recognizers, run `hval-cache` with their blobs (`BLOBS`) and repeat the tune and select steps. The
-LM and the harness do not depend on the recognizer.
+For another recognizer (VOCR6's), with its blob as tier N:
+
+```sh
+B=BLOB.vocr; T=$P/v6/tune_NAME
+.venv-ci/bin/python eval/vocr6_lm.py dev-cache --tier N --blob N=$B --out $P/v6/dev_N_NAME.pkl   # VOCR5's dev reads
+.venv-ci/bin/python eval/vocr6_lm.py hval-cache --tier N --blob N=$B --dir $P/hval_rubi          # reads_N.<stem>.pkl
+.venv-ci/bin/python eval/vocr6_lm.py tune --tiers N --blob N=$B --dev-cache N=$P/v6/dev_N_NAME.pkl --cascade 700 \
+  --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --lm NAME=LM.vlm --grid GRID --out $T/NAME.npz  # and --lm greedy=none
+.venv-ci/bin/python eval/vocr6_lm.py blob-report --name NAME --run 1=$T ... --lm NAME:ALPHA,BETA,FLAGS --out REPORT.json
+.venv-ci/bin/python eval/vocr6_lm.py show-cost --blob N=$B --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --out COST.json
+.venv-ci/bin/python eval/vocr6_lm.py display-arm --tiers N --blob N=$B --dev-cache N=$P/v6/dev_N_NAME.pkl \
+  --hval-cache $P/hval_rubi --rubi RUBI_CHECKOUT --lm LM.vlm --config SETTING --name NAME --out P1.json   # display arm P1
+```
+
+`dev-cache` reproduces the head gate cache's reads of VOCR5-N bit for bit (8,233 reads checked). The LM and the
+harness do not depend on the recognizer.
 
 ## Limits
 

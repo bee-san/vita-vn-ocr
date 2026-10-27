@@ -120,6 +120,31 @@ One arm, `t8_t64n8c16`, seeds 1-3: textspot6's family-T trunk with the tagged he
 The rule runs as code: `eval/textspot8_table.py` writes eval/textspot6_select.py's table, and textspot6_select.py
 applies the rule unchanged.
 
+### Amendments
+
+Each is dated in `eval/textspot8_protocol.json` and precedes the reads it names (the experiment log
+/local/home/skerraut/herd-synth3/vocr6/experiments.jsonl has a pre-registration line for each).
+
+1. **The student** (06:51Z, before every training run and score): one arm, `t8_t64n8c16`, seeds 1-3, as above.
+2. **The across shrink is 0** (07:48Z, before any student score). Step 1's raw-vs-padded MeikiOCR boxes showed on
+   hval that boxes without a margin cost the recognizer, and the shrink amendment 1's rule had picked from step 2
+   (1.0 network px) would have put the margins below what step 2 tested. The first seed-1 run (43 min, 6,300 steps,
+   with the shrink) was stopped, never scored, and is not a candidate; the arm's runs restarted in `runs2/`.
+3. **vocr6-spotter3's D, F and F+D as extra decodes** (07:55Z, before any student score): textspot7's post-pass
+   (`join10` then `extend`, as its hval fit keeps them, `feat/textspot7` a2fa039 / 3781f2f) on the student's det boxes,
+   and its spotter + GRAD fallback F and F+D fit on hval per seed, with textspot7's cost rules (F adds GRAD's est.
+   122.4 ms on the largest dev region, so F and F+D are over 300 ms for a T trunk).
+4. **The context decode `ctx`** (09:25Z, before any student score): the spotter on the region grown by 48 px (chosen
+   without data), the boxes whose centre lies in the region; the crop decode's cost row.
+5. **Rubi's default** (10:17Z, before any student score; disclosed: after vocr6-spotter3 recorded textspot7's dev and
+   confirmation reads of other models): the pick becomes Rubi's default iff, against `rubi,fix=1`, hval is resolved
+   below 0, unseen dev is not resolved above 0 and the confirmation set is not resolved above 0 (the task's wording
+   and vocr6-common's adoption rule against the incumbent). vocr6-lead accepted it for this study and kept
+   textspot7's own clause for textspot7.
+6. **The VOCR6 guard** (12:50Z, after the dev / hval and confirmation records, before any VOCR6 read): the pick and
+   `rubi,fix=1` read with VOCR6-N → L (v0.4.0-vocr6.1) and Rubi's VOCR6 LM settings; neither difference may be
+   resolved above 0 (vocr6-lead's request: that is what Rubi will run).
+
 ### Disclosures registered in advance
 
 - The student's design is informed by textspot6's per-VN analysis of the same unseen-dev units; the confirmation set
@@ -199,7 +224,6 @@ clusters on hval.
   on 5 (median of 100 dev frames on the 64-core EPYC under the shared box's load). That is about 70 times the parameters
   of the student's 52 KB of int8 weights, and about 3.5 MB even in int8. It is the quality bar, not a console model.
 
-<!-- STEP1 -->
 
 ### Step 3: the student, and the decision (measured 11:30-13:00Z)
 
@@ -258,8 +282,11 @@ same pins.
 
 **With the recognizer Rubi will run** (amendment 6, vocr6-lead's guard).
 - **The setup:** the pick's boxes and `rubi,fix=1`'s are read by VOCR6-N with the cascade to VOCR6-L. The recognizers
-  are v0.4.0-vocr6.1's plain `_w8` blobs; the shipped `_w8_2l` adds the two-level head, which vocr6-final-gate
-  measured at +0.000 to +0.006 points. Rubi's VOCR6 LM settings apply (alpha 600, beta 2500, BOS): on dev the shipped
+  are v0.4.0-vocr6.1's plain `_w8` blobs: the pinned page path has no switch for the two-level head that the shipped
+  `_w8_2l` blobs add, so the guard has not read it on the spotter's boxes. vocr6-final-gate measured it on its own
+  VOCR6-path kit and line plans with Rubi's decode: dev +0.003 [0.000, +0.009] (N with the L cascade) and +0.000 (L),
+  hval page +0.005 for both (its `result.json`; corrected 15:25Z, the protocol's `corrections`). Rubi's VOCR6 LM
+  settings apply (alpha 600, beta 2500, BOS): on dev the shipped
   1 MB game-text LM, on hval its screening build, as vocr6-lead reads hval.
 - **Unseen dev:** the pick reads 0.95% (Vita 0.77 / PSP 1.12) against `rubi,fix=1`'s 2.41%: −1.46 [−4.04, +0.11].
 - **hval:** 1.03% against 1.52%: −0.49 [−1.31, −0.02].
@@ -335,4 +362,68 @@ with an icon of the trained kinds or of three unseen kinds.
 - rubi-spinner's PR covers that case with a timeout path. Its line check takes the active finder's lines, so the
   spotter drops in.
 
-<!-- STUDENT -->
+### Vertical text in Rubi (report only)
+
+Rubi's default `ocr_vertical = auto` checks GRAD's rows for vertical text (API 47). With the spotter as the finder,
+Rubi hands a region to GRAD's rows when the spotter's crop decode returns more vertical than horizontal boxes in it
+(`eval/textspot8_orient.py`, seed 3): **0 of 1,161** development units and **0 of 516** confirmation units
+(horizontal dialogue), and **172 of 181** vertical development regions (79 of 84 VN pages, 93 of 97 manga windows;
+eval/manifests/vertical-dev-regions.jsonl). So horizontal dialogue reads with the spotter and vertical text goes to
+auto's rule as before.
+
+### Cost (estimates; nothing has run on a console)
+
+The pick is textspot6's `t64n8c16` shape, so textspot6's A9 rows of record apply (`eval/textspot6_a9_20261026.json`,
+the Vita compiler's `-O2` code with the dark pass, priced by the Cortex-A9 cycle model):
+
+| read | est. ms @333 / @444 MHz | arena |
+|---|---:|---:|
+| crop decode (the pick), a 900×150 region | 82.1 / 61.6 | 235,119 B |
+| crop decode, 900×200 | 104.7 / 78.5 | 235,119 B |
+| crop decode, 900×300 | 150.5 / 112.9 | 235,119 B |
+| crop decode, a whole 960×544 region (the rule's bound) | 264.2 / 198.2 | 244,607 B |
+
+VTSP 52,176 B. MeikiOCR's detector, the reference: 3,547,383 float32 parameters, 14,503,825 B of ONNX, 137 ms per
+960×544 frame on one host thread (95 ms on 5), the EPYC host under the shared box's load.
+
+### Disclosures found after the protocol
+
+- **A wrong first analysis, corrected before any student read:** amendment 1's "why" first blamed crop geometry. The
+  paired check and step 2 refuted it; the protocol's `corrections` and #149 record the correction. No arm or rule
+  changed.
+- **The stopped run:** amendment 2 stopped the first seed-1 run before any score.
+- **Amendment 5 came after textspot7's reads of other models** (above).
+- **The branch was rebased onto main** after textspot6 merged (#147, 4674e54): the registered commits keep their
+  times; the tag `textspot8-registered-20261027` holds the branch as registered and run. The training worktree ran
+  at 7eb4484, the amendment-1 commit (its tree is the rebased 1e681d7's for every file the trainer reads).
+- **Release partners of training titles:** as textspot6's (PCSG00007 and ULJM05383 share VNDB release r3748 with
+  CLANNAD; PCSG00866 shares releases with v21789, a vita-test VN). The owner's 2026-10-25 policy allows them.
+
+<!-- TESTS -->
+
+### Reproduction
+
+```sh
+S=eval/reproducibility/textspot8-20261027
+# step 1 (MeikiOCR) and step 2 (geometry), one heavy slot each
+HEAVY_SLOTS=12 $HERD/heavy.sh bash $S/bench_meiki.sh            # spot decode pp tsdev boxes speed
+HEAVY_SLOTS=12 $HERD/heavy.sh bash $S/bench_meiki.sh geom
+.venv/bin/python $S/geom_rule.py --geom $A/vocr6-spotter2/eval/geom --base-eval $A/vocr6-spotter/eval --out GEOM.json
+# step 3: the student, from a worktree at the amendment-1 commit (seeds 1-3; the final: train,guard,hval)
+HEAVY_SLOTS=12 $HERD/heavy.sh bash $S/run_train8.sh t64n8c16 SEED $RUNS '{"across_shrink": 0.0}' [train,guard,hval]
+# scoring per seed: textspot6's decodes, the context decode, textspot7's D / F / F+D, the spinner check
+bash $S/score_run8.sh $RUNS/t8_t64n8c16_seedN t8_t64n8c16_seedN
+bash $S/score_ctx8.sh $RUNS/t8_t64n8c16_seedN t8_t64n8c16_seedN
+T7=<textspot7 worktree at 3781f2f> bash $S/score_d8.sh t8_t64n8c16_seedN
+bash $S/spinner_runs.sh blob t8_t64n8c16_seedN $RUNS/t8_t64n8c16_seedN/final.vtsp "det crop"
+# the rule (textspot6_select's code), then the confirmation read once, then the VOCR6 guard
+.venv/bin/python eval/textspot8_table.py --eval $A/vocr6-spotter2/eval --runs $RUNS --base-eval $A/vocr6-spotter/eval \
+    --out TABLE.json
+.venv/bin/python eval/textspot8_select.py --table TABLE.json --out eval/textspot8_dev_20261027.json
+bash $S/confirm_read.sh
+bash $S/guard_vocr6.sh t8_t64n8c16_seed3 crop
+# report only
+.venv/bin/python eval/textspot8_empty.py --blob B.vtsp --out EMPTY.json
+.venv/bin/python eval/textspot8_orient.py --blob B.vtsp --out ORIENT.json
+```
+

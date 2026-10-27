@@ -212,6 +212,11 @@
    "utc": "2026-10-27T07:05:48Z",
    "of": "amendment 1, 'why'",
    "text": "the comparison of 'units where every line is whole' (162-183 vs 117) compared each finder's own whole units, not a paired set; paired (the 993 dev units both read whole, without v27449 / v12188) the spotter makes 97 errors against rubi,fix=1's 99, and step 2 shows that shrinking the spotters' boxes by 1-2 px changes hval CER by -0.01 (not resolved). The spotters' paired losses are cut lines (base_t64n8c16 det: +68 errors in 28 units, mostly one edge character; base_qS4 crop: fragments, +99 in 114 units) and 6 units with missed lines (+42). Nothing in the arms, the rule or the across-shrink rule changes; the rule gives across_shrink 1.0 (step 2: G = 1.3024 / 1.2919 / 1.2907 for d = 0 / 1 / 2)"
+  },
+  {
+   "utc": "2026-10-27T15:25:00Z",
+   "of": "amendment 6, 'guard'",
+   "text": "'the shipped _w8_2l blobs add the two-level head, which vocr6-final-gate measured at +0.000 to +0.006 points' was written before that record was checked, and it is not a reading of this guard. vocr6-final-gate measured the two-level head on its own VOCR6-path kit and line plans, with Rubi's decode, not on the spotter's boxes ($A/vocr6-final-gate/result.json, tiers.{N,L}.arms.2L.vocr6_path.rubi): N with the L cascade dev +0.003 [0.000, +0.009] and hval page +0.005 [-0.004, +0.016]; L dev +0.000 [0.000, 0.000] and hval page +0.005 [0.000, +0.015]; on its fixed-line sets 0 to +0.012 points (N's dn +0.012 [0.000, +0.034]). The pinned page path (snap135) has no two-level switch, so the guard read the plain _w8 blobs only; the two-level head has not been read on the spotter's boxes. The guard's rule and figures are unchanged."
   }
  ]
 }

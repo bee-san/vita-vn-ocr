@@ -453,3 +453,211 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
     *n_out = m;
     return VOCR_T7_OK;
 }
+
+/* ----------------------------------------------------------------------------- the row-streamed form */
+
+typedef struct {
+    const VocrLinesRows *src;
+    unsigned char *ring;    /* 3 rows of width bytes, row y in slot y % 3 */
+    int W, H, last;         /* last: the newest row read in this pass, -1 before the pass's first */
+} RowWin;
+
+static void win_begin(RowWin *w)
+{
+    w->last = -1;
+}
+
+/* Rows y - 1, y, y + 1 (clamped) into r, reading the rows the pass has not read yet, in increasing order, each
+ * once (vocr_lines_rows.h's contract): a pass asks for y = ya, ya + 1, ... */
+static int win_at(RowWin *w, int y, const unsigned char **r)
+{
+    int need = imin(y + 1, w->H - 1), lo = imax(y - 1, 0), yy;
+    if (w->last < lo - 1)
+        w->last = lo - 1;
+    for (yy = w->last + 1; yy <= need; yy++) {
+        const unsigned char *p = w->src->row(w->src->user, (unsigned)yy);
+        if (!p)
+            return -1;
+        memcpy(w->ring + (size_t)(yy % 3) * (size_t)w->W, p, (size_t)w->W);
+        w->last = yy;
+    }
+    r[0] = w->ring + (size_t)(lo % 3) * (size_t)w->W;
+    r[1] = w->ring + (size_t)(y % 3) * (size_t)w->W;
+    r[2] = w->ring + (size_t)(need % 3) * (size_t)w->W;
+    return 0;
+}
+
+static int contrast_rows(const unsigned char *const *r, int W, int x)
+{
+    int mx = 0, mn = 255, dy, dx;
+    for (dy = 0; dy < 3; dy++)
+        for (dx = -1; dx <= 1; dx++) {
+            int v = r[dy][imin(imax(x + dx, 0), W - 1)];
+            if (v > mx)
+                mx = v;
+            if (v < mn)
+                mn = v;
+        }
+    return mx - mn;
+}
+
+/* EXTEND for one box from the rows: the threshold's histogram (pass 1), then each scanned column's inked count
+ * (pass 2, only the columns the scan can reach). The same result as extend() on the image. */
+static int extend_one_rows(RowWin *w, const VocrT7Box *o, int stop, int stopl, VocrT7Box *b)
+{
+    unsigned long hist[256], k, cum = 0, n = (unsigned long)o->w * (unsigned long)o->h;
+    int reach = (3 * o->h) / 2, gapmax = o->h / 2, pad = imax(2, (15 * o->h + 50) / 100);
+    int rlo = o->x + o->w, rhi = imin(stop, o->x + o->w + reach);      /* right scan columns [rlo, rhi) */
+    int llo = imax(stopl, o->x - reach), lhi = o->x;                    /* left scan columns [llo, lhi) */
+    unsigned short cnt[2 * 1024];
+    int y, x, t, v, last, gap, X, x0 = o->x, x1 = o->x + o->w;
+    const unsigned char *r[3];
+    if (rhi - rlo > 1024 || lhi - llo > 1024)
+        return VOCR_T7_E_ARG;
+    memset(hist, 0, sizeof hist);
+    win_begin(w);
+    for (y = o->y; y < o->y + o->h; y++) {
+        if (win_at(w, y, r))
+            return VOCR_LINES_E_SOURCE;
+        for (x = o->x; x < o->x + o->w; x++)
+            hist[contrast_rows(r, w->W, x)]++;
+    }
+    if (!n) {
+        t = 255;
+    } else {
+        k = (99ul * (n - 1ul)) / 100ul;
+        for (v = 0; v < 256; v++) {
+            cum += hist[v];
+            if (cum > k)
+                break;
+        }
+        t = imax(T7_CONTRAST_MIN, (2 * v) / 5);
+    }
+    memset(cnt, 0, sizeof cnt);
+    if (rhi > rlo || lhi > llo) {
+        win_begin(w);
+        for (y = o->y; y < o->y + o->h; y++) {
+            if (win_at(w, y, r))
+                return VOCR_LINES_E_SOURCE;
+            for (x = rlo; x < rhi; x++)
+                if (contrast_rows(r, w->W, x) >= t)
+                    cnt[x - rlo]++;
+            for (x = llo; x < lhi; x++)
+                if (contrast_rows(r, w->W, x) >= t)
+                    cnt[1024 + (x - llo)]++;
+        }
+    }
+    last = -1;
+    gap = 0;
+    for (X = rlo; X < rhi; X++) {
+        if (cnt[X - rlo] >= 2) {
+            last = X;
+            gap = 0;
+        } else if (++gap > gapmax) {
+            break;
+        }
+    }
+    if (last >= 0)
+        x1 = imax(x1, imin(stop, last + 1 + pad));
+    last = -1;
+    gap = 0;
+    for (X = lhi - 1; X >= llo; X--) {
+        if (cnt[1024 + (X - llo)] >= 2) {
+            last = X;
+            gap = 0;
+        } else if (++gap > gapmax) {
+            break;
+        }
+    }
+    if (last >= 0)
+        x0 = imin(x0, imax(stopl, last - pad));
+    b->x = x0;
+    b->w = x1 - x0;
+    return VOCR_T7_OK;
+}
+
+size_t vocr_textspot7_rows_arena_bytes(unsigned max_width, unsigned max_height)
+{
+    size_t r = vocr_refine_arena_bytes(max_width, max_height), e = 3u * (size_t)max_width;
+    if (!max_width || !max_height)
+        return 0;
+    return r > e ? r : e;
+}
+
+int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
+                             const VocrLinesRows *region, unsigned steps, void *arena, size_t arena_bytes,
+                             VocrT7Box *out, unsigned *n_out)
+{
+    int W = x1 - x0, H = y1 - y0, rc;
+    unsigned m = 0, i, k;
+    if (!out || !n_out || (n && !fb) || n > VOCR_T7_MAX_BOXES || (steps & ~VOCR_T7_STEPS) || W <= 0 || H <= 0)
+        return VOCR_T7_E_ARG;
+    if (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) {
+        if (!region || !region->row || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
+            (int)region->height != H)
+            return VOCR_T7_E_ARG;
+        if (!arena || arena_bytes < vocr_textspot7_rows_arena_bytes(region->width, region->height))
+            return VOCR_T7_E_ARENA;
+    }
+    rc = vocr_textspot7_post(fb, n, x0, y0, x1, y1, NULL, steps & (VOCR_T7_ASSIGN | VOCR_T7_JOIN5 | VOCR_T7_JOIN10),
+                             NULL, 0, out, &m);
+    if (rc != VOCR_T7_OK)
+        return rc;
+    if (steps & VOCR_T7_EXTEND) {
+        VocrT7Box orig[VOCR_T7_MAX_BOXES];
+        RowWin w;
+        w.src = region;
+        w.ring = (unsigned char *)arena;
+        w.W = W;
+        w.H = H;
+        w.last = -1;
+        memcpy(orig, out, m * sizeof *out);
+        for (i = 0; i < m; i++) {
+            int stop = W, stopl = 0;
+            for (k = 0; k < m; k++) {
+                if (k == i || !same_row6(&orig[i], &orig[k]))
+                    continue;
+                if (orig[k].x >= orig[i].x + orig[i].w)
+                    stop = imin(stop, orig[k].x);
+                if (orig[k].x + orig[k].w <= orig[i].x)
+                    stopl = imax(stopl, orig[k].x + orig[k].w);
+            }
+            rc = extend_one_rows(&w, &orig[i], stop, stopl, &out[i]);
+            if (rc != VOCR_T7_OK)
+                return rc;
+        }
+    }
+    if (steps & VOCR_T7_TIGHTEN) {
+        unsigned base = 0;
+        while (base < m) {
+            VocrLineSet set;
+            unsigned c = m - base < VOCR_LINES_MAX ? m - base : VOCR_LINES_MAX;
+            memset(&set, 0, sizeof set);
+            for (i = 0; i < c; i++) {
+                set.lines[i].x = (unsigned)out[base + i].x;
+                set.lines[i].y = (unsigned)out[base + i].y;
+                set.lines[i].w = (unsigned)out[base + i].w;
+                set.lines[i].h = (unsigned)out[base + i].h;
+                set.lines[i].dark = out[base + i].dark;
+            }
+            set.count = c;
+            rc = vocr_refine_lines_rows(region, VOCR_REFINE_TIGHTEN, arena, arena_bytes, &set, NULL);
+            if (rc == VOCR_LINES_E_SOURCE)
+                return rc;
+            if (rc == VOCR_LINES_E_ARENA)
+                return VOCR_T7_E_ARENA;
+            if (rc != VOCR_LINES_OK || set.count != c)
+                return VOCR_T7_E_ARG;
+            for (i = 0; i < c; i++) {
+                out[base + i].x = (int)set.lines[i].x;
+                out[base + i].y = (int)set.lines[i].y;
+                out[base + i].w = (int)set.lines[i].w;
+                out[base + i].h = (int)set.lines[i].h;
+                out[base + i].dark = set.lines[i].dark;
+            }
+            base += c;
+        }
+    }
+    *n_out = m;
+    return VOCR_T7_OK;
+}

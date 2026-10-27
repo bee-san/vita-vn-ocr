@@ -8,12 +8,29 @@
  *   kind 2 (post): steps x0 y0 x1 y1 n, then n x (x y w h conf dark), then (only with EXTEND or TIGHTEN) the
  *       region's (x1 - x0) x (y1 - y0) grey bytes, padded to a multiple of 4
  *       -> prints "P <m> x y w h conf dark ..." or "P E<rc>"
+ *   kind 3 (post_rows): kind 2's record, run through vocr_textspot7_post_rows with a row callback over the bytes
+ *       (it also checks that every pass asks for rows in increasing order) -> the same line as kind 2, or "P E<rc>"
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "vocr_textspot7.h"
+
+typedef struct {
+    const unsigned char *px;
+    unsigned w;
+    int last, back;     /* back: requests for a row below the previous one (a new pass) */
+} RowsSrc;
+
+static const unsigned char *row_cb(void *user, unsigned y)
+{
+    RowsSrc *r = (RowsSrc *)user;
+    if ((int)y <= r->last)
+        r->back++;
+    r->last = (int)y;
+    return r->px + (size_t)y * r->w;
+}
 
 static int rd(FILE *f, int *v, unsigned n)
 {
@@ -64,7 +81,7 @@ int main(int argc, char **argv)
                 printf("C E%d\n", rc);
             else
                 printf("C %d\n", rc);
-        } else if (kind == 2) {
+        } else if (kind == 2 || kind == 3) {
             int hd[6], v[6], i, rc, W, H;
             VocrT7Box fb[VOCR_T7_MAX_BOXES], out[VOCR_T7_MAX_BOXES];
             unsigned m = 0, steps;
@@ -91,9 +108,18 @@ int main(int argc, char **argv)
                 im.stride = (size_t)W;
                 im.bpp = VOCR_LINES_GREY;
             }
-            rc = vocr_textspot7_post(fb, (unsigned)hd[5], hd[1], hd[2], hd[3], hd[4],
-                                     (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) ? &im : NULL, steps,
-                                     arena, sizeof arena, out, &m);
+            if (kind == 2) {
+                rc = vocr_textspot7_post(fb, (unsigned)hd[5], hd[1], hd[2], hd[3], hd[4],
+                                         (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) ? &im : NULL, steps,
+                                         arena, sizeof arena, out, &m);
+            } else {
+                RowsSrc rs = {pix, (unsigned)(W > 0 ? W : 1), -1, 0};
+                VocrLinesRows src = {(unsigned)(W > 0 ? W : 0), (unsigned)(H > 0 ? H : 0), VOCR_LINES_GREY, row_cb,
+                                     &rs};
+                rc = vocr_textspot7_post_rows(fb, (unsigned)hd[5], hd[1], hd[2], hd[3], hd[4],
+                                              (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) ? &src : NULL, steps,
+                                              arena, sizeof arena, out, &m);
+            }
             if (rc < 0) {
                 printf("P E%d\n", rc);
                 continue;

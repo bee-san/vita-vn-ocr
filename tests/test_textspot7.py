@@ -191,6 +191,24 @@ def test_c_post_equals_twin(driver):
     assert got == [[tuple(b) for b in w] for w in want]
 
 
+def test_c_post_rows_equals_post(driver):
+    """vocr_textspot7_post_rows (the row-streamed form, kind 3) gives vocr_textspot7_post's boxes."""
+    rng = np.random.default_rng(13)
+    recs2, recs3 = [], []
+    combos = [["extend"], ["join10", "extend"], ["tighten"], ["assign", "join5", "extend", "tighten"]]
+    for k in range(240):
+        W, H = int(rng.integers(40, 420)), int(rng.integers(20, 160))
+        X0, Y0 = int(rng.integers(0, 200)), int(rng.integers(0, 100))
+        region = (X0, Y0, X0 + W, Y0 + H)
+        g = text_image(H, W, int(rng.integers(0, W // 3)), int(rng.integers(W // 2, W)), seed=k)
+        g = (g.astype(np.int16) + rng.integers(-30, 30, g.shape)).clip(0, 255).astype(np.uint8)
+        fb = [(x + X0, y + Y0, w, h, c, d) for x, y, w, h, c, d in rand_boxes(rng, int(rng.integers(0, 8)), W, H)]
+        r = E.rec_post(fb, region, g, combos[k % len(combos)])
+        recs2.append(r)
+        recs3.append(E.i32(3) + r[4:])
+    assert E.run_c(driver, recs3) == E.run_c(driver, recs2)
+
+
 def test_c_rejects_bad_input(driver):
     recs = [E.i32(1, 7, 0, 0, 0, 0, 0)]                          # an unknown mode, no boxes
     assert E.run_c(driver, recs) == ["C E-1"]

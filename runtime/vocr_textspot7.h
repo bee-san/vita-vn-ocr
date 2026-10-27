@@ -26,6 +26,7 @@
 #include <stddef.h>
 
 #include "vocr_lines.h"
+#include "vocr_lines_rows.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,6 +82,18 @@ size_t vocr_textspot7_arena_bytes(unsigned max_width, unsigned max_height);
 int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
                         const VocrLinesImage *region, unsigned steps, void *arena, size_t arena_bytes,
                         VocrT7Box *out, unsigned *n_out);
+
+/* Arena bytes vocr_textspot7_post_rows needs for a region max_width wide (any height) with EXTEND or TIGHTEN: the
+ * larger of the refinement's arena (vocr_refine_arena_bytes(max_width, max_height)) and EXTEND's three rows. */
+size_t vocr_textspot7_rows_arena_bytes(unsigned max_width, unsigned max_height);
+
+/* vocr_textspot7_post for a region read row by row (vocr_lines_rows.h), as a caller that streams the frame (Rubi's
+ * game worker) has it: the same boxes for the same pixels, or VOCR_LINES_E_SOURCE when a row could not be read.
+ * EXTEND reads each box's rows (one above and one below included) twice, top to bottom; TIGHTEN is
+ * vocr_refine_lines_rows. */
+int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
+                             const VocrLinesRows *region, unsigned steps, void *arena, size_t arena_bytes,
+                             VocrT7Box *out, unsigned *n_out);
 
 #ifdef __cplusplus
 }

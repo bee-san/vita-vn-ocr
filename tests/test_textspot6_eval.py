@@ -149,6 +149,29 @@ def test_sched_adopt_specs_score_log_and_plan(tmp_path):
     assert [r["run"] for r in SC.load_plan(plan)] == ["a", "b"]
 
 
+def test_parity_crop_sets_take_the_right_units(monkeypatch):
+    """dev-crop reads #119's units (crop_jobs' default), hval-crop the --units file (audit-vocr6-spotter F1)."""
+    import importlib.util
+
+    import textspot6_twin as T6
+    # by path: tests/textspot6_parity.py (the runtime parity suite) has the same module name
+    spec = importlib.util.spec_from_file_location("textspot6_parity_eval", ROOT / "eval" / "textspot6_parity.py")
+    PAR = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(PAR)
+    seen = []
+
+    def fake_crop_jobs(set_name, units_path=None):
+        seen.append((set_name, units_path))
+        yield "u0", None, 960, 544
+    monkeypatch.setattr(PAR.E6, "crop_jobs", fake_crop_jobs)
+    monkeypatch.setattr(T6, "scale_of", lambda m, w, h: 2)
+    monkeypatch.setitem(PAR._W, "model", object())
+    hval_units = "/x/hval_v1.jsonl"
+    assert [j[0] for j in PAR.jobs_of("dev-crop", hval_units)] == ["u0"]
+    assert [j[0] for j in PAR.jobs_of("hval-crop", hval_units)] == ["u0"]
+    assert seen == [("dev", None), ("hval", hval_units)]
+
+
 def test_seen_clusters_are_left_out(tmp_path):
     u = units(3, [0, 0, 50])
     p = result(tmp_path / "u.json", u)

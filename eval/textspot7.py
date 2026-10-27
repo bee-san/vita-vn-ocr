@@ -50,6 +50,9 @@ ART = HERD / "shared" / "artifacts"
 DEV_UNITS = ART / "vocr5-analysis" / "work" / "units.pkl"
 HVAL_UNITS = ART / "vocr6-spotter" / "eval" / "units" / "hval_v1.jsonl"
 PAGES = ART / "vocr6-ingest" / "pages"
+PRIV = HERD / "shared" / "private" / "vocr6-spotter3" / "confirm"
+CONFIRM_UNITS = Path(os.environ.get("T7_CONFIRM_UNITS", str(PRIV / "units_v1.pkl")))
+CONFIRM_SHOTS = PRIV / "shots"
 TAUS = (0, 8, 16, 24, 32, 48, 64, 80, 96)
 LAMS = (600, 750, 900, 0)
 KAPPAS = (500, 1000, 0)
@@ -102,6 +105,12 @@ def units_of(set_name):
             out.append({"uid": f"dev:{i}:{u['unit']}:{u['variant']}", "cluster": u["vn"], "platform": u["kind"],
                         "region": [v * s for v in u["region"]], "key": dev_frame_key(u), "s": s, "i": i})
         return out
+    if set_name == "confirm":
+        for i, u in enumerate(pickle.load(open(CONFIRM_UNITS, "rb"))["units"]):
+            s = 2 if u["kind"] == "psp" else 1
+            out.append({"uid": f"dev:{i}:{u['unit']}:{u['variant']}", "cluster": u["vn"], "platform": u["kind"],
+                        "region": [v * s for v in u["region"]], "key": u["shot"], "s": s, "i": i, "confirm": True})
+        return out
     if set_name != "hval":
         raise SystemExit(f"unknown set {set_name}")
     for r in read_jsonl(HVAL_UNITS)[1:]:
@@ -116,7 +125,7 @@ def units_of(set_name):
 def spot_rows(path, set_name):
     rows = read_jsonl(path)
     meta, rows = rows[0]["meta"], rows[1:]
-    if set_name == "dev":
+    if set_name in ("dev", "confirm"):
         return meta, {r["frame"]: r for r in rows}
     return meta, {(r["title"], r["page"], r["view"]): r for r in rows}
 
@@ -224,7 +233,7 @@ def region_images(units):
 
     from common import to_gray
     if units and units[0]["uid"].startswith("dev:"):
-        pk = pickle.load(open(DEV_UNITS, "rb"))["units"]
+        pk = pickle.load(open(CONFIRM_UNITS if units[0].get("confirm") else DEV_UNITS, "rb"))["units"]
         for u in units:
             img = pk[u["i"]]["image"]
             if u["s"] == 2:
@@ -279,6 +288,43 @@ def cmd_boxes_d(a):
     write_boxes(a.out, rows)
     print(f"boxes-d {a.set} {'+'.join(steps) or 'plain'}: {sum(len(r['boxes']) for r in rows)} boxes on "
           f"{len(rows)} units, {time.time() - t0:.0f} s -> {a.out}")
+
+
+# ----------------------------------------------------------------------------- the confirmation frames
+
+def confirm_frames():
+    """[(key, grey)] of every frame the confirmation units are cut from, in the console view (the dev units'
+    convention: the grey frame, a PSP one upscaled 2x bilinear on its grey), each checked: every unit's region of
+    the native grey frame equals its stored image."""
+    import cv2
+
+    from common import to_gray
+    units = pickle.load(open(CONFIRM_UNITS, "rb"))["units"]
+    got = {r["id"]: r for r in read_jsonl(CONFIRM_SHOTS / "fetched.jsonl") if r.get("ok")}
+    by = {}
+    for u in units:
+        by.setdefault(u["shot"], []).append(u)
+    for fid, us in sorted(by.items()):
+        path = CONFIRM_SHOTS / got[fid]["file"]
+        if sha256_file(path) != got[fid]["sha256"]:
+            raise SystemExit(f"{path}: sha256 changed")
+        bgr = cv2.imread(str(path), cv2.IMREAD_COLOR)
+        g = to_gray(np.ascontiguousarray(bgr[:, :, ::-1]))
+        for u in us:
+            x0, y0, x1, y1 = u["region"]
+            if not (g[y0:y1, x0:x1] == u["image"]).all():
+                raise SystemExit(f"{u['unit']}: the frame's region is not the unit's image")
+        if us[0]["kind"] == "psp":
+            g = cv2.resize(g, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+        yield {"frame": fid, "view": "psp2x" if us[0]["kind"] == "psp" else "vita", "vn": us[0]["vn"]}, \
+            np.ascontiguousarray(g)
+
+
+def cmd_spot_confirm(a):
+    import textspot6 as S6E
+    jobs = list(confirm_frames())
+    out = S6E.write_spot(a.blob, jobs, a.out, "confirm", a.workers)
+    print(f"spot-confirm: {len(jobs)} frames -> {out}")
 
 
 # ----------------------------------------------------------------------------- C == twin
@@ -380,6 +426,72 @@ def cmd_parity(a):
     print("parity", a.set, json.dumps({k: v for k, v in doc.items() if k in ("post", "choose")}))
 
 
+def result_units(path):
+    return {u["uid"]: u for u in json.loads(Path(path).read_text(encoding="utf-8"))["units"]}
+
+
+def cmd_d_fit(a):
+    """D's fit (protocol arms.D.fit): each step alone against the plain det decode, pooled over the representatives'
+    hval page-path errors; a step is kept when it lowers them; of join5 / join10 the one with fewer errors (join5 on
+    a tie). The plain decode through --boxes must reproduce the stored det rows unit for unit first."""
+    runs = a.runs.split(",")
+    variants = ("assign", "join5", "join10", "extend", "tighten")
+    doc = {"kind": "textspot7-fit-d", "set": "hval", "runs": runs, "per_run": {}, "pooled": {},
+           "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+    pooled = Counter()
+    for r in runs:
+        plain = result_units(Path(a.dir) / r / "hval_D_plain.json")
+        stored = result_units(Path(a.stored) / r / "hval_det.json")
+        bad = [u for u in stored if (plain[u]["errors"], plain[u]["chars"]) != (stored[u]["errors"],
+                                                                                  stored[u]["chars"])]
+        if set(plain) != set(stored) or bad:
+            raise SystemExit(f"{r}: the plain decode does not reproduce the stored det rows ({len(bad)} units)")
+        row = {"plain": sum(u["errors"] for u in plain.values()), "chars": sum(u["chars"] for u in plain.values())}
+        for v in variants:
+            res = result_units(Path(a.dir) / r / f"hval_D_{v}.json")
+            row[v] = sum(u["errors"] for u in res.values())
+        doc["per_run"][r] = row
+        for k in ("plain", *variants):
+            pooled[k] += row[k]
+    doc["pooled"] = dict(pooled)
+    kept = [v for v in ("assign", "extend", "tighten") if pooled[v] < pooled["plain"]]
+    joins = [v for v in ("join5", "join10") if pooled[v] < pooled["plain"]]
+    if joins:
+        kept.append(min(joins, key=lambda v: (pooled[v], v != "join5")))
+    order = [v for v in ("assign", "join5", "join10", "extend", "tighten") if v in kept]
+    doc["kept"] = order
+    doc["D"] = ",".join(order) if order else None
+    doc["reproduced_plain"] = True
+    Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    print(f"d-fit: pooled {dict(pooled)} -> D = {doc['D']}")
+
+
+def cmd_a9_batch(a):
+    """vocr_textspot7_test.c records for eval/textspot7_a9.py t7: D's post-pass (--steps) and F's choice (--params,
+    GRAD's boxes from --g-rows) on every base unit of the set, in one batch file, and the five largest regions' records
+    one per file (OUT.one1.bin ...)."""
+    units = [u for u in units_of(a.set) if u["uid"].endswith(":base")]
+    _, spot = spot_rows(a.spot, a.set)
+    steps = [s for s in (a.steps or "").split(",") if s]
+    grows = load_rows(a.g_rows) if a.params else None
+    p = parse_params(a.params) if a.params else None
+    need_px = bool(set(steps) & {"extend", "tighten"})
+    recs = []
+    for u, img in (region_images(units) if need_px else ((u, None) for u in units)):
+        r = rec_post(frame_boxes_of(spot[u["key"]]), u["region"], img, steps)
+        if p is not None:
+            S = T7.post(frame_boxes_of(spot[u["key"]]), u["region"], img, steps)
+            r += rec_choose(S, grows[u["uid"]]["boxes_xywh"], p)
+        x0, y0, x1, y1 = u["region"]
+        recs.append(((x1 - x0) * (y1 - y0), r))
+    Path(a.out).write_bytes(b"".join(r for _, r in recs))
+    order = sorted(range(len(recs)), key=lambda i: -recs[i][0])[:5]
+    for k, i in enumerate(order, 1):
+        Path(f"{a.out}.one{k}.bin").write_bytes(recs[i][1])
+    print(f"a9-batch {a.set}: {len(recs)} units ({'post ' + '+'.join(steps) if steps else 'post plain'}"
+          f"{', choose ' + p.name() if p else ''}) -> {a.out} (+ 5 largest)")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -399,6 +511,24 @@ def main(argv=None):
     p.add_argument("--steps", default="")
     p.add_argument("--workers", type=int, default=5)
     p.set_defaults(fn=cmd_boxes_d)
+    p = sub.add_parser("d-fit")
+    p.add_argument("--runs", required=True)
+    p.add_argument("--dir", default=str(ART / "vocr6-spotter3" / "eval"))
+    p.add_argument("--stored", default=str(ART / "vocr6-spotter" / "eval"))
+    p.add_argument("--out", required=True)
+    p.set_defaults(fn=cmd_d_fit)
+    p = sub.add_parser("a9-batch")
+    for k in ("spot", "set", "out"):
+        p.add_argument(f"--{k}", required=True)
+    p.add_argument("--steps", default="")
+    p.add_argument("--params")
+    p.add_argument("--g-rows")
+    p.set_defaults(fn=cmd_a9_batch)
+    p = sub.add_parser("spot-confirm")
+    p.add_argument("--blob", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
+    p.set_defaults(fn=cmd_spot_confirm)
     p = sub.add_parser("parity")
     for k in ("spot", "set", "out"):
         p.add_argument(f"--{k}", required=True)

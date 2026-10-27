@@ -50,14 +50,17 @@ view, and a region keeps the horizontal boxes whose centre lies in it, clipped t
 
 **F: spotter + GRAD fallback.** Per region, run both `rubi,fix=1` (G) and the spotter (S), and show one of them:
 - Mode S (the spotter by default): show G when S is empty and G is not, or when S's median box confidence is below
-  τ, or (λ on) when G has a row of text that S lacks (a G row at least λ times S's median line height that no S box
-  overlaps by half its height: S missed or merged a line). Else show S.
-- Mode G (GRAD by default): show S only when one G box holds the centres of S boxes of 2 or more rows (GRAD merged
-  lines) and S's median confidence is at least τ.
-- The grid is mode {S, G} × τ {0, 8, 16, 24, 32, 48, 64, 80, 96} × λ {0.6, 0.75, 0.9, off}. It is fit per
-  representative on hval only: the fewest hval page-path errors, ties to mode S, then the larger τ, then the smaller
-  λ. F shows crops that G's and S's stored runs already read, so the fit needs no new reading; the fitted F is then run
-  through the page path, which must reproduce it unit for unit.
+  τ, or (λ on) when G has a line that S lacks (a G box at least λ times S's median line height, whose rows the S
+  boxes overlapping it cover less than half of: S missed or merged a line), or (κ on) when a G line reaches beyond
+  the S boxes of its row by more than κ of its height at either end (S cut it short). Else show S.
+- Mode G (GRAD by default): show S when G is empty and S is not, or when one G box holds the centres of S boxes of 2
+  or more rows (GRAD merged lines) and S's median confidence is at least τ. Else show G.
+- The grid is mode {S, G} × τ {0, 8, 16, 24, 32, 48, 64, 80, 96} × λ {0.6, 0.75, 0.9, off} × κ {0.5, 1.0, off}. It is
+  fit per representative on hval only: the fewest hval page-path errors, ties to mode S, then the larger τ, then the
+  smaller λ and κ (off last). F shows crops that G's and S's stored runs already read, so the fit needs no new
+  reading; the fitted F is then run through the page path, which must reproduce it unit for unit.
+- Amendment 1 (before any read of a new arm) made the coverage test a union of the S boxes (as first written, it
+  would have sent v27449 to GRAD), added κ, and fixed every definition in integers for the C twin.
 
 **D: decode post-pass on the spotter's boxes** (no GRAD), steps in this order:
 - *assign*: a frame box also belongs to the region when its part inside the region is at least 0.6 of its height tall

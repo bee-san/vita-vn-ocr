@@ -673,6 +673,151 @@ def cmd_zoom(a):
     print(f"ZOOM {out} ({f:.1f}x)")
 
 
+
+# ----------------------------------------------------------------------------- the third look
+
+RECHECK_README = """# textspot7 confirmation set: second look at disputed lines (vita-vn-ocr #128)
+
+Each sheet shows up to 6 numbered line crops (console view, enlarged). For each line you get the first reviewer's
+reading R and the machine readings M (MeikiOCR) and P (PP-OCRv6 small); R differs from both machines, or the line
+was split or added by hand, so a second look is needed. Read the pixels and decide which reading is exactly right.
+
+One JSON line per sheet, its "lines" in the sheet's order:
+{"sheet": "R003", "lines": [{"n": 1, "pick": "R"}, {"n": 2, "pick": "M"}, {"n": 3, "text": "..."},
+                            {"n": 4, "unsure": true}]}
+- "pick": "R", "M" or "P": that reading is exactly right (every character, as displayed; spaces do not matter);
+- "text": none is right: the exact text (eval's convention: main text only, no furigana; small kana, dakuten, ー vs
+  一, 、 vs 。 matter);
+- "unsure": true: you cannot read every character with certainty (the frame is then dropped from the set).
+"""
+
+
+def disputed(sheets_dir, proposals):
+    """Accepted lines whose text (eval/metrics.norm) equals neither engine's reading, plus every split or added line:
+    [(frame, unit index, line index, reviewer text, meiki, v6, box [x0, y0, x1, y1] native or None (split: the box
+    and the part))]."""
+    from metrics import norm
+    props = {r["id"]: r for r in read_jsonl(proposals)}
+    out = []
+    for bd in sorted(Path(sheets_dir).glob("batch_*")):
+        for fid, r in sorted(decisions_of(bd).items()):
+            if not r.get("accept"):
+                continue
+            kb = {b["k"]: b for b in props[fid]["boxes"]}
+            for ui, u in enumerate(r["units"]):
+                for li, ln in enumerate(u["lines"]):
+                    if "add" in ln:
+                        out.append((fid, ui, li, ln["text"], "", "", None, ln["add"]))
+                    elif ln.get("split"):
+                        for pi, t in enumerate(ln["texts"]):
+                            out.append((fid, ui, li, t, "", "", (ln["k"], int(ln["split"]), pi), None))
+                    else:
+                        kk = ln["k"] if isinstance(ln["k"], list) else [ln["k"]]
+                        m = "".join(kb[k].get("meiki", "") for k in kk)
+                        v = "".join(kb[k].get("v6", "") or "" for k in kk)
+                        if norm(ln["text"]) not in (norm(m), norm(v)):
+                            dets = [kb[k]["det"] for k in kk]
+                            box = [min(d[0] for d in dets), min(d[1] for d in dets), max(d[2] for d in dets),
+                                   max(d[3] for d in dets)]
+                            out.append((fid, ui, li, ln["text"], m, v, None, ("det", box)))
+    return out
+
+
+def cmd_recheck_sheets(a):
+    import cv2
+    from PIL import Image, ImageDraw, ImageFont
+
+    from common import to_gray
+    frames = {f["id"]: f for f in frame_list(a.frames)}
+    props = {r["id"]: r for r in read_jsonl(a.proposals)}
+    got = fetched(a.dir)
+    items = disputed(a.sheets, a.proposals)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "README.md").write_text(RECHECK_README, encoding="utf-8")
+    font = ImageFont.truetype(FONT, 20)
+    sheets, k = [], 0
+    for i in range(0, len(items), 6):
+        k += 1
+        rows = []
+        for n, (fid, ui, li, rt, m, v, split, box) in enumerate(items[i:i + 6], 1):
+            fr = frames[fid]
+            s = 2 if fr["platform"] == "psp" else 1
+            bgr = cv2.imread(str(Path(a.dir) / got[fid]["file"]), cv2.IMREAD_COLOR)
+            rgb = console_view(bgr, fr["platform"])
+            H, W = rgb.shape[:2]
+            if split is not None:
+                kb = {b["k"]: b for b in props[fid]["boxes"]}
+                parts = split_rows(to_gray(np.ascontiguousarray(bgr[:, :, ::-1])), kb[split[0]]["det"], split[1])
+                x0, y0, x1, y1 = (c * s for c in parts[split[2]])
+            elif box[0] == "det":
+                x0, y0, x1, y1 = (c * s for c in box[1])
+            else:
+                x0, y0, x1, y1 = box[0], box[1], box[0] + box[2], box[1] + box[3]
+            pad = 6
+            c = rgb[max(0, y0 - pad):min(H, y1 + pad), max(0, x0 - pad):min(W, x1 + pad)]
+            f = min(3.0, 1200 / max(1, c.shape[1]))
+            c = cv2.resize(c, None, fx=f, fy=f, interpolation=cv2.INTER_CUBIC)
+            rows.append((n, fid, ui, li, rt, m, v, Image.fromarray(np.ascontiguousarray(c)),
+                         split[2] if split is not None else None))
+        h = sum(r[7].height + 3 * 26 + 12 for r in rows) + 10
+        sheet = Image.new("RGB", (1280, min(1280, h)), (40, 40, 40))
+        d = ImageDraw.Draw(sheet)
+        y = 6
+        for n, fid, ui, li, rt, m, v, im, _ in rows:
+            d.text((6, y), f"[{n}] R: {rt}", fill=(255, 255, 255), font=font)
+            d.text((6, y + 26), f"     M: {m}", fill=(255, 200, 0), font=font)
+            d.text((6, y + 52), f"     P: {v}", fill=(80, 200, 255), font=font)
+            y += 78
+            sheet.paste(im, (40, y))
+            y += im.height + 12
+        name = f"R{k:03d}"
+        sheet.save(out / f"{name}.png")
+        sheets.append({"sheet": name, "lines": [{"n": n, "frame": fid, "unit": ui, "line": li, "part": part, "R": rt,
+                                                 "M": m, "P": v} for n, fid, ui, li, rt, m, v, _, part in rows]})
+    (out / "recheck.json").write_text(json.dumps({"sheets": sheets}, ensure_ascii=False, indent=1) + "\n",
+                                      encoding="utf-8")
+    print(f"recheck: {len(items)} disputed lines on {len(sheets)} sheets -> {out}")
+
+
+def apply_recheck(dec, recheck_dir):
+    """The second look applied to the first pass's decisions: a picked or corrected text replaces the line's text;
+    an unsure line drops its frame. Returns (decisions, counts)."""
+    rd = Path(recheck_dir)
+    meta = json.loads((rd / "recheck.json").read_text(encoding="utf-8"))
+    got = {}
+    for f in sorted(rd.glob("decisions-*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                r = json.loads(line)
+                got[r["sheet"]] = r
+    counts = Counter()
+    dec = json.loads(json.dumps(dec))
+    for sh in meta["sheets"]:
+        r = got.get(sh["sheet"])
+        if r is None:
+            raise SystemExit(f"recheck sheet {sh['sheet']} is undecided")
+        picks = {x["n"]: x for x in r["lines"]}
+        for ln in sh["lines"]:
+            x = picks.get(ln["n"])
+            if x is None:
+                raise SystemExit(f"recheck {sh['sheet']} line {ln['n']} is undecided")
+            fr = dec[ln["frame"]]
+            line = fr["units"][ln["unit"]]["lines"][ln["line"]]
+            if x.get("unsure"):
+                fr["accept"] = False
+                fr["skip"] = "undecidable (second look)"
+                counts["dropped"] += 1
+                continue
+            t = {"R": ln["R"], "M": ln["M"], "P": ln["P"]}[x["pick"]] if x.get("pick") else x["text"]
+            counts["kept" if t == ln["R"] else "changed"] += 1
+            if ln.get("part") is not None:
+                line["texts"][ln["part"]] = t
+            else:
+                line["text"] = t
+    return dec, dict(counts)
+
+
 # ----------------------------------------------------------------------------- build
 
 def split_rows(grey, box, n):
@@ -715,6 +860,9 @@ def cmd_build(a):
         if not (bd / "COMPLETE").exists():
             raise SystemExit(f"{bd.name} is not complete")
         dec.update(decisions_of(bd))                               # the last decision of a frame wins
+    recheck_counts = None
+    if a.recheck:
+        dec, recheck_counts = apply_recheck(dec, a.recheck)
     accepted = defaultdict(list)
     for fid, r in dec.items():
         if r.get("accept"):
@@ -778,7 +926,7 @@ def cmd_build(a):
             "%Y-%m-%dT%H:%M:%SZ", time.gmtime())}, f)
     doc = {"kind": "textspot7-confirm-units", "schema": 1, "issue": 128, "units_pkl_sha256": sha256_file(out),
            "frames_manifest": a.frames, "frames_manifest_sha256": sha256_file(a.frames),
-           "reviewer_kind": "assistant", "decisions": len(dec),
+           "reviewer_kind": "assistant", "decisions": len(dec), "recheck": recheck_counts,
            "accepted_frames": sum(min(len(v), a.per_vn) for v in accepted.values()),
            "vns": len({u["vn"] for u in units}), "units": len(units),
            "base_regions": sum(1 for u in units if u["variant"] == "base"),
@@ -849,7 +997,15 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--per-vn", type=int, default=6)
+    p.add_argument("--recheck", help="the recheck directory (its decisions-*.jsonl)")
     p.set_defaults(fn=cmd_build)
+    p = sub.add_parser("recheck-sheets")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--dir", required=True)
+    p.add_argument("--proposals", required=True)
+    p.add_argument("--sheets", required=True)
+    p.add_argument("--out", required=True)
+    p.set_defaults(fn=cmd_recheck_sheets)
     a = ap.parse_args(argv)
     a.fn(a)
 

@@ -390,6 +390,8 @@ def test_protocol_matches_the_driver():
     a3 = proto["amendments"][2]                         # provisional runs, confirmed by FINAL BLOBS
     assert a3["n"] == 3 and "redo_plan" in a3["confirmation"] and "superseded" in a3["confirmation"]
     assert set(a3["provisional_inputs"]) >= set(G.TIERS)
+    a4 = proto["amendments"][3]                         # Small kept as VOCR5-S by stage 4's decision
+    assert a4["n"] == 4 and "keep-vocr5" in a4["change"] and "VOCR5_S_w8g.vocr" in a4["change"]
 
 
 def test_completion_tokens_never_printed():
@@ -673,3 +675,50 @@ def test_dumps_job_waits_for_each_arms_blob(monkeypatch, tmp_path):
     assert ("ensure_dumps", "2Lg_e4") in order and ("ensure_counter", "2Lg") in order
     assert order.index(("ensure_reads", "gate_e4")) < order.index(("ensure_counter", "today"))
     assert st.exists()
+
+
+def test_keep_vocr5_records_the_released_verdict(monkeypatch, tmp_path):
+    import argparse
+    ctx = G.Ctx(tmp_path / "out", _Live(tmp_path / "priv"))
+    base = tmp_path / "VOCR5_S_w8.vocr"
+    base.write_bytes(b"s-int8")
+    rel = tmp_path / "rel"
+    rel.mkdir()
+    (rel / "VOCR5_S_w8g.vocr").write_bytes(b"s-gated")
+    import hashlib
+    sha = hashlib.sha256(b"s-int8").hexdigest()
+    monkeypatch.setitem(G.REF, "gate_release", rel)
+    monkeypatch.setattr(G, "VOCR5_RELEASED", {sha: ("S", "gate", None)})
+    monkeypatch.setattr(G, "blob_info", lambda p: {"n_classes": 4987, "has_gate": False, "attention": None})
+    repro = tmp_path / "repro" / "S"
+    repro.mkdir(parents=True)
+    (repro / "decision.json").write_text(json.dumps({
+        "final_arm": "gate", "estimate": {"today": {"x": 1}, "final": {"y": 2}}, "counter_check": {"arms": {}},
+        "final_blob": {"sha256": hashlib.sha256(b"s-gated").hexdigest()}}))
+    a = argparse.Namespace(out=str(ctx.out), tier="S", blob=str(base), repro=str(tmp_path / "repro"), reason="lead")
+    G.cmd_keep_vocr5(a)
+    dec = json.loads((ctx.out / "S" / "decision.json").read_text())
+    assert dec["final_arm"] == "gate" and dec["final_blob"]["name"] == "VOCR5_S_w8g.vocr"
+    assert (ctx.out / "final" / "VOCR5_S_w8g.vocr").read_bytes() == b"s-gated"
+    assert dec["estimate"] == {"today": {"x": 1}, "final": {"y": 2}} and not (ctx.out / "S" / "prepared.json").exists()
+    with pytest.raises(SystemExit):                     # the asset is not the blob step 2 rebuilt
+        (rel / "VOCR5_S_w8g.vocr").write_bytes(b"another")
+        G.cmd_keep_vocr5(a)
+    with pytest.raises(SystemExit):                     # not the released blob of this tier
+        G.cmd_keep_vocr5(argparse.Namespace(**dict(vars(a), tier="N")))
+
+
+def test_confirm_compares_the_version1_part(monkeypatch, tmp_path):
+    import argparse
+    import hashlib
+    ctx = G.Ctx(tmp_path / "out", _Live(tmp_path / "priv"))
+    for t, sha in (("S", "s1"), ("N", "n1"), ("L", "l1")):
+        ctx.tdir(t)
+        (ctx.out / t / "input.json").write_text(json.dumps({"sha256": hashlib.sha256(sha.encode()).hexdigest()}))
+    fb = {t: {"path": str(tmp_path / f"{t}.vocr"), "sha256": "-"} for t in G.TIERS}
+    names = {"S": "s1", "N": "n2", "L": "l1"}                # N named otherwise
+    monkeypatch.setattr(G, "base_sha256", lambda p: hashlib.sha256(names[Path(p).stem].encode()).hexdigest())
+    (tmp_path / "fb.json").write_text(json.dumps(fb))
+    G.cmd_confirm(argparse.Namespace(out=str(ctx.out), final_blobs=str(tmp_path / "fb.json")))
+    doc = json.loads((ctx.out / "confirm.json").read_text())
+    assert doc["confirmed"] == ["S", "L"] and doc["redo"] == ["N"] and doc["decide_again"] == ["N", "S"]

@@ -140,6 +140,14 @@
    "order": "tiers are prepared as their blobs land (S, N, L) and decided in the protocol's order (L, N, S: decision.order, unchanged), each cascade into the next tier's blob of the same seed (stage 4b's seed 1 at every tier)",
    "jobs": "with two slots, a second job makes a tier's VOCR6-path dumps, its fallback arms' reads, A9 measurements and dumps, and its primary arms' counter sets while the first runs the fits; the jobs share the driver's step records under a lock per step (flock, released when a job dies), so each step runs once and nothing waits on a dead job. A step made ahead (a fallback arm's) is the step decide would make: no rule, threshold or arm changes",
    "affects": "no rule and no decision: the same steps, rules and order; only when steps run and on which provisional inputs, confirmed before anything is reported"
+  },
+  {
+   "n": 4,
+   "date": "2026-10-27T07:35:27Z",
+   "why": "vocr6-lead (2026-10-27 ~07:32Z, pane message): Small is decided in stage 4: R3 is not adopted at S on the shipped path (3 seeds against VOCR5-S: hval page -0.134 [-0.198, -0.079], dev +0.070 [+0.004, +0.138], resolved worse), so Small stays VOCR5-S (released; Rubi already ships VOCR5_S_w8g), and the S fit is dropped",
+   "change": "the S tier is not fit or scored again: its decision is models.vocr5_final's kept verdict, #120's (the gate, VOCR5_S_w8g.vocr of v0.3.5-headgate.1), as step 2 reproduced it byte for byte on the runtime step 5 runs on (eval/vocr6_gate_vocr5_20261026.json runs.rebased: its estimates and counter set). eval/vocr6_gate.py keep-vocr5 records it (the released asset checked against the rebuilt blob, by sha256). The rules' report beside it that amendment 2 describes is not made for S (it would re-score VOCR5-S without v12188 / v18432; no decision depends on it). The provisional S input (v6f4h_S_seed1) is not prepared",
+   "confirmation": "FINAL BLOBS' S must then name VOCR5-S (its int8 blob or its released gated blob: confirm compares a named blob's version-1 part); if it names another blob, S is prepared and decided on it as amendment 3 says",
+   "affects": "S only; N and L are unchanged (S is the bottom tier: no cascade reads it). Made before any decision of step 5; N's provisional preparation had started (07:32Z)"
   }
  ]
 }

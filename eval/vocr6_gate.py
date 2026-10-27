@@ -1912,19 +1912,67 @@ def redo_plan(provisional, final):
     return redo, again
 
 
+def base_sha256(path):
+    """sha256 of a blob's version-1 part: the blob itself, or the int8 blob a gated / two-level blob was built on
+    (its VOCG / VOC2 sections after the base; a permuted two-level base is another blob and stays so)."""
+    import headgate as HG
+    return hashlib.sha256(HG.base_of(Path(path).read_bytes())).hexdigest()
+
+
 def cmd_confirm(a):
     """FINAL BLOBS (poll.sh's final_blobs.json) against the provisional run's inputs: OUT/confirm.json with the tiers
-    confirmed, to redo and to decide again (no work done here)."""
+    confirmed, to redo and to decide again (no work done here). A named blob is compared by its version-1 part, so a
+    gated file named for a tier kept as VOCR5 (its released w8g) confirms the int8 blob it was built on."""
     ctx = Ctx(a.out)
     fb = json.loads(Path(a.final_blobs).read_text())
     prov = {t: json.loads((ctx.out / t / "input.json").read_text())["sha256"]
             for t in TIERS if (ctx.out / t / "input.json").exists()}
-    final = {t: fb[t]["sha256"] for t in TIERS}
+    final = {t: base_sha256(fb[t]["path"]) for t in TIERS}
     redo, again = redo_plan(prov, final)
-    doc = {"at": now(), "final_blobs": fb, "provisional": prov,
+    doc = {"at": now(), "final_blobs": fb, "final_base_sha256": final, "provisional": prov,
            "confirmed": [t for t in TIERS if prov.get(t) == final[t]], "redo": redo, "decide_again": again}
     (ctx.out / "confirm.json").write_text(json.dumps(doc, indent=1) + "\n")
     print(json.dumps({k: doc[k] for k in ("confirmed", "redo", "decide_again")}))
+
+
+def cmd_keep_vocr5(a):
+    """A tier vocr6-lead keeps as its released VOCR5 blob (stage 4 not adopted there; protocol amendment 4): its
+    decision is #120's / #122's, as step 2 reproduced it byte for byte (eval/vocr6_gate_vocr5_20261026.json), with no
+    new fit: OUT/<T>/input.json and decision.json (the released gated blob, the reproduction's estimates and counter
+    set), and no prepared.json, so decide leaves it as it is."""
+    ctx = Ctx(a.out)
+    inp = cmd_input(ctx, a.tier, a.blob)
+    rel = VOCR5_RELEASED.get(inp["sha256"])
+    if not rel or rel[0] != a.tier:
+        raise SystemExit(f"{a.blob} is not the released VOCR5-{a.tier} blob")
+    src = Path(a.repro) / a.tier / "decision.json"
+    r = json.loads(src.read_text())
+    if r["final_arm"] != final_arm(rel[1], rel[2]):
+        raise SystemExit(f"{src}: the reproduction decided {r['final_arm']}, not #120's / #122's verdict")
+    asset_dir, asset = ((REF["two_release"], f"VOCR5_{a.tier}_w8g2.vocr") if rel[2] else
+                        (REF["gate_release"], f"VOCR5_{a.tier}_w8g.vocr"))
+    data = (asset_dir / asset).read_bytes()
+    if hashlib.sha256(data).hexdigest() != r["final_blob"]["sha256"]:
+        raise SystemExit(f"{asset_dir / asset} is not the blob step 2 rebuilt")
+    fin = ctx.tdir("final")
+    (fin / asset).write_bytes(data)
+    dec = {"kind": "vocr6-gate-decision", "tier": a.tier, "at": now(), "frozen_only": ctx.frozen_only,
+           "exclude_vns": sorted(ctx.exclude), "gate": {}, "two_level": {},
+           "kept_vocr5_verdict": {
+               "kept": {"gate": rel[1], "two_level": rel[2]}, "by_the_rules": None, "kept_arms_report": {},
+               "released_asset": {"path": str(asset_dir / asset), "sha256": hashlib.sha256(data).hexdigest(),
+                                  "identical": True},
+               "basis": "#120's verdict (eval/headgate_dev_20261023.json; #122's for N and L), reproduced byte for "
+                        "byte by step 2 on the runtime step 5 runs on (eval/vocr6_gate_vocr5_20261026.json "
+                        f"runs.rebased; {src})",
+               "not_rerun": a.reason},
+           "gate_final": rel[1], "two_final": rel[2], "final_arm": r["final_arm"], "estimate": r["estimate"],
+           "counter_check": r.get("counter_check"), "shipped_cascade": None,
+           "final_blob": {"path": str(fin / asset), "name": asset, "sha256": hashlib.sha256(data).hexdigest(),
+                          "bytes": len(data), "source": str(asset_dir / asset)},
+           "estimate_source": str(src), "decided_at": now()}
+    (ctx.out / a.tier / "decision.json").write_text(json.dumps(dec, indent=1) + "\n")
+    print(json.dumps({"tier": a.tier, "kept": dec["kept_vocr5_verdict"]["kept"], "final_blob": dec["final_blob"]}))
 
 
 def cmd_supersede(a):
@@ -2268,6 +2316,12 @@ def main():
     p = sub.add_parser("confirm")
     p.add_argument("--out", required=True)
     p.add_argument("--final-blobs", required=True)
+    p = sub.add_parser("keep-vocr5")
+    p.add_argument("--out", required=True)
+    p.add_argument("--tier", required=True, choices=TIERS)
+    p.add_argument("--blob", required=True, help="the released v0.3.0 VOCR5 blob of the tier")
+    p.add_argument("--repro", required=True, help="step 2's run directory on this runtime (repro_vocr5_r2)")
+    p.add_argument("--reason", required=True)
     p = sub.add_parser("supersede")
     p.add_argument("--out", required=True)
     p.add_argument("--tier", required=True, choices=TIERS)
@@ -2296,7 +2350,7 @@ def main():
             decide(ctx, a.tier)
     else:
         {"result": cmd_result, "timing": cmd_timing, "check-vocr5": cmd_check_vocr5, "confirm": cmd_confirm,
-         "supersede": cmd_supersede}[a.cmd](a)
+         "supersede": cmd_supersede, "keep-vocr5": cmd_keep_vocr5}[a.cmd](a)
 
 
 if __name__ == "__main__":

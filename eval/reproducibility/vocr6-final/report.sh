@@ -44,6 +44,10 @@ else
   [ "$PATHS" = a,b ] || { echo "the final read reads both paths (PATHS=a,b)"; exit 2; }
   [ -s "$MODELS/models.json" ] || { echo "$MODELS/models.json is missing: run vocr6_final_test.py stage"; exit 2; }
 fi
+# a fresh read writes into a new OUT (audit-vocr6-followup n4: never into another read's directory); RESUME=1 continues
+if [ "${RESUME:-0}" != 1 ] && [ -d "$OUT" ] && [ -n "$(ls -A "$OUT")" ]; then
+  echo "$OUT exists and is not empty: give a new OUT (RESUME=1 continues a read)"; exit 2
+fi
 mkdir -p "$OUT" "$PRIV"/{logs,a/lm,a/pcsg,clannad,b,blobs}
 LOG=$OUT/log.txt
 note() { echo "$(date -u +%FT%TZ) $*" | tee -a "$LOG"; }

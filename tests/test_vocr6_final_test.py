@@ -506,6 +506,7 @@ def test_driver_script_is_safe():
     assert '"$H" finalist --models "$MODELS" --priv "$PRIV"' in sh
     assert 'cp "$OUT/report.json" "$OUT/report.md" "$PUBLISH/"' in sh and '"$A/vocr6-final-test/"' not in sh
     assert 'OUT is the finalist set\'s publish directory' in sh and "names other blobs than" in sh    # the review's
+    assert "exists and is not empty: give a new OUT" in sh                                     # audit n4
 
 
 # ----------------------------------------------------------------------------- amendment 9
@@ -566,6 +567,43 @@ def test_finalist_of_and_same_set_attempts(tmp_path):
     assert F.same_set_attempts(root, me, _models("a", "d", "e")) == [str(root / "bare" / "attempt.json")]
 
 
+def test_rubi_head_and_registered_record(tmp_path):
+    """Amendment 9's two rubi-path guards (audit-vocr6-followup n3): the registered Rubi head, and the runtimecheck
+    record accepted only as the registered file for Rubi's pinned commit."""
+    F.check_rubi_head("a" * 40, "")
+    F.check_rubi_head("a" * 40, "-")
+    F.check_rubi_head("a" * 40, "a" * 40)
+    with pytest.raises(SystemExit):
+        F.check_rubi_head("a" * 40, "b" * 40)
+    rec = tmp_path / "eval" / "rec.json"
+    rec.parent.mkdir()
+    rec.write_text(json.dumps({"all_equal": True, "rubi_vocr_commit": "c" * 40}))
+    rd = {"check": {"record": "eval/rec.json", "record_sha256": F.sha256(rec)}}
+    assert F.registered_record(rd, "c" * 40, tmp_path)[1]["all_equal"] is True
+    assert F.registered_record(rd, "d" * 40, tmp_path)[1] is None                  # made for another Rubi pin
+    assert F.registered_record(dict(rd, check=dict(rd["check"], record_sha256="0" * 64)), "c" * 40, tmp_path)[1] \
+        is None                                                                         # not the registered file
+    assert F.registered_record({}, "c" * 40, tmp_path) == (None, None)
+    assert F.registered_record({"check": {"record": "eval/none.json"}}, "c" * 40, tmp_path)[1] is None
+
+
+def test_finalist_needs_a_publish_directory(tmp_path, monkeypatch):
+    """audit-vocr6-followup n4: a registered set without its own publish directory is refused (it would have
+    published into the first read's directory)."""
+    models = tmp_path / "models"
+    models.mkdir()
+    (models / "models.json").write_text(json.dumps({"tiers": {t: {"sha256": h} for t, h in _models("e", "f", "9")
+                                                              .items()}}))
+    proto = {"kind": "vocr6-final-test-protocol", "schema": 1,
+             "finalist_sets": {"rule": "x", "new": {"models": _models("e", "f", "9")}}}
+    monkeypatch.setattr(F, "protocol", lambda: proto)
+    args = type("A", (), {"models": str(models), "priv": str(tmp_path / "priv" / "new")})
+    with pytest.raises(SystemExit):
+        F.cmd_finalist(args)
+    proto["finalist_sets"]["new"]["publish"] = str(tmp_path / "pub")
+    F.cmd_finalist(args)
+
+
 def test_runtime_differences():
     pins = {"vocr.c": "1" * 64, "vocr.h": "2" * 64, "vocr_lm.c": "3" * 64}
     checkout = {"vocr.c": "4" * 64, "vocr.h": "2" * 64, "vocr_lm.c": "3" * 64}
@@ -602,4 +640,7 @@ def test_compare_reads_pairs_the_same_units():
     old[3]["errors"]["VOCR5:S:shipped"] += 1
     assert F.compare_reads(new, old, "shipped", "vn", 5)["vocr5_units_differ"] == 1
     assert F.compare_reads(new[:-1], old, "shipped", "vn", 5)["same_units"] is False
+    other = [dict(r) for r in old]
+    other[0]["chars"] += 1                                       # the same ids, another reference length
+    assert F.compare_reads(new, other, "shipped", "vn", 5)["same_units"] is False
     F.assert_public(c)

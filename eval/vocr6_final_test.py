@@ -518,6 +518,23 @@ def build_finder(src_dir, out_dir, cc="gcc"):
     return exe, {"driver_sha256": sha256(exe), "sources_sha256": h.hexdigest()}
 
 
+def check_rubi_head(head, want):
+    """Amendment 9: a finalist set registered with a Rubi head is read at that head ('' or '-': no head registered)."""
+    if want not in ("", "-") and head != want:
+        raise SystemExit(f"the Rubi checkout is at {head[:12]}, the finalist set's registered head is {want[:12]}")
+
+
+def registered_record(rd, commit, root=ROOT):
+    """Amendment 9: (path, record) of paths.b.runtime_differences' runtimecheck record; record None unless it is the
+    registered file (its sha256) made for Rubi's pinned vita-vn-ocr commit (then no difference is accepted)."""
+    rec_path = Path(root) / rd["check"]["record"] if rd.get("check") else None
+    record = json.loads(rec_path.read_text(encoding="utf-8")) if rec_path and rec_path.exists() else None
+    if record is not None and (sha256(rec_path) != rd["check"].get("record_sha256") or
+                               record.get("rubi_vocr_commit") != commit):
+        record = None                          # not the registered record, or another Rubi pin: accept nothing
+    return rec_path, record
+
+
 def cmd_rubi_path(a):
     proto = protocol()
     rubi = Path(a.rubi).resolve()
@@ -530,10 +547,7 @@ def cmd_rubi_path(a):
     cmake = (rubi / "cmake" / "VocrOCR.cmake").read_text(encoding="utf-8")
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=rubi, capture_output=True, text=True).stdout.strip()
     # amendment 9: a finalist set registered with a Rubi head is read at that head (the earlier read's checkout)
-    want_head = getattr(a, "want_head", "") or ""
-    if want_head not in ("", "-") and head != want_head:
-        raise SystemExit(f"the Rubi checkout is at {head[:12]}, the finalist set's registered head is "
-                         f"{want_head[:12]}")
+    check_rubi_head(head, getattr(a, "want_head", "") or "")
     lm = pinned_lm(proto)                      # amendment 2: pinned; Rubi main's own pin is recorded beside it
     rsha, rset = rubi_lm(src)
     known = [n for n, c in proto["paths"]["b"]["lm_candidates"].items() if c["sha256"] == rsha]
@@ -558,11 +572,7 @@ def cmd_rubi_path(a):
     # amendment 9: or differ exactly as paths.b.runtime_differences registers, with runtimecheck's record equal
     checkout = {f: (sha256(ROOT / "runtime" / f) if (ROOT / "runtime" / f).exists() else None) for f in pins}
     rd = proto["paths"]["b"].get("runtime_differences") or {}
-    rec_path = ROOT / rd["check"]["record"] if rd.get("check") else None
-    record = json.loads(rec_path.read_text(encoding="utf-8")) if rec_path and rec_path.exists() else None
-    if record is not None and (sha256(rec_path) != rd["check"].get("record_sha256") or
-                               record.get("rubi_vocr_commit") != commit):
-        record = None                          # not the registered record, or another Rubi pin: accept nothing
+    rec_path, record = registered_record(rd, commit)
     rdiff = runtime_differences(pins, checkout, rd.get("files") or {}, record)
     if rdiff["refused"]:
         raise SystemExit(f"Rubi pins runtime files {rdiff['refused']} that differ from this checkout's: review and "
@@ -2621,8 +2631,9 @@ def cmd_finalist(a):
     if others:
         raise SystemExit(f"finalist set {name} has a final attempt already: {others[0]} (one read per set; RESUME=1 "
                          "with its OUT continues it)")
-    print("\t".join([name, entry.get("publish") or str(A / "vocr6-final-test"), entry.get("rubi_head") or "-",
-                     entry.get("earlier_private") or "-"]))
+    if not entry.get("publish"):
+        raise SystemExit(f"finalist set {name} names no publish directory: register one (audit-vocr6-followup n4)")
+    print("\t".join([name, entry["publish"], entry.get("rubi_head") or "-", entry.get("earlier_private") or "-"]))
 
 
 def runtime_differences(pins, checkout, registered, record):

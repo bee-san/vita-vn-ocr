@@ -276,6 +276,12 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D â
 - **Next, by the rule:** the pick's spotter is retrained on train + guard + hval (`base` recipe, t64n8c16, seed 1:
   54,771 hooked pages), then released, read once on the test sets (report only), and wired into Rubi behind
   `ocr_finder = spotter`.
+- **Not in Rubi (amendment 4, vocr6-lead's ruling):** Rubi gets one spotter. vocr6-spotter2's textspot8 student (#149,
+  a spotter distilled toward MeikiOCR's detector and read in the crop decode) passed its own registered default test,
+  so it ships as Rubi's default finder. textspot7's pick is released in vita-vn-ocr and is not pinned in Rubi, so no
+  Rubi PR is opened for it. Its runtime file `vocr_textspot7.c` stays in vita-vn-ocr. A Rubi integration branch built
+  for it (`feat/vocr6-spotter3-finder`: the spotter on the whole frame, then `vocr_textspot7_post_rows`, opt-in)
+  remains an unmerged reference.
 
 ### The final weights and the test sets (read once, report only)
 

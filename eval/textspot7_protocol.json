@@ -292,6 +292,13 @@
    "labelling_as_done": "9 batches reviewed by 9 Claude helpers (vocr6-spotter3-label-1..9, reviewer_kind assistant), 383 sheets offered, 323 frames decided, 170 accepted (the rest: no dialogue, not Japanese, undecidable, not a game frame); the second look covered the 30 accepted lines whose text matched neither engine or that were added by hand (29 confirmed, 1 corrected)",
    "deviation": "amendment 2 named another helper for the second look; no agent capacity was free (30 of 25 running), so it was done by this label's own session, a different Claude session than every first reviewer, which had seen no arm output on any confirmation frame (none existed); 3 zooms",
    "dev_reads_before_freeze": "the dev and hval reads of the arms (and the dev-phase record, f62c2e8) came before this freeze; the frame list and the review rules were frozen before any arm read (ae1dd78, amendments 1-2), and the reviewers never saw an arm's output"
+  },
+  {
+   "n": 4,
+   "utc": "2026-10-27T12:52Z",
+   "kind": "process only (no read, no rule of the selection changes)",
+   "what": "vocr6-lead's rulings (2026-10-27 10:35Z and ~12:52Z): Rubi gets ONE spotter. vocr6-spotter2's textspot8 student (#149) passed its own registered default test, so it ships as Rubi's default finder; textspot7's pick is released in vita-vn-ocr (v0.3.9-textspot7.1) and is NOT pinned in Rubi, so rule.with_pick's Rubi PR is not opened",
+   "unchanged": "the pick, every record, the release and the test reads"
   }
  ]
 }

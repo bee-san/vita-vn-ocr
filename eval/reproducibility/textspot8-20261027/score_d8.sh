@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # textspot8 amendment 3: vocr6-spotter3's D (join10, extend: its hval fit, feat/textspot7 a2fa039) on a scored t8 run's
-# det boxes, as a candidate decode, and its F and F+D (report only: ineligible by its cost rule for a T trunk).
+# det boxes, as a candidate decode, and its F and F+D (report only: ineligible by its cost rule for a T trunk). The
+# textspot7 code is its branch tip when the first t8 run is scored (amendment 3): 3781f2f, whose D twin is a2fa039's and
+# whose C post-pass gives the same boxes (its parity) with a row-separable contrast pass.
 # Needs the run's score_run8.sh outputs (spot_dev/hval.jsonl, dev/hval_det rows). One heavy slot:
 #   score_d8.sh NAME     (EVAL dir $A/vocr6-spotter2/eval/NAME)
 # Env: T7 (the textspot7 worktree at a2fa039), OUT, PAGEPATH, RUBI, WORKERS.
@@ -20,7 +22,7 @@ LM=$MODELS/vocr_lm_o3_1000k.vlm
 G=$A/vocr6-spotter/eval/grad_refine_fix1
 NAME=${1:?name}; D=$OUT/$NAME
 STEPS=join10,extend
-[ "$(git -C "$T7" rev-parse --short HEAD)" = a2fa039 ] || { echo "T7 worktree is not at a2fa039" >&2; exit 2; }
+[ "$(git -C "$T7" rev-parse --short HEAD)" = 3781f2f ] || { echo "T7 worktree is not at 3781f2f" >&2; exit 2; }
 pp() {
   local set=$1 units=$2 base=$3; shift 3
   local pages=()

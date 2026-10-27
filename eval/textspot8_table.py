@@ -7,7 +7,9 @@ textspot8's arms, so the rule runs as textspot6's code (eval/textspot6_select.py
 
 Candidates: amendment 1's t8_t64n8c16, seeds 1-3, in textspot6's four decodes, with textspot6's cost rows
 (eval/textspot6_table.candidate_rows: the A9 rows of record of the shape, the refine decodes' extra time and arena,
-the parity check). Baselines: textspot6's stored GRAD + refine (rubi) and rubi,fix=1 results (the same units and
+the parity check), plus amendment 4's ctx (the crop row; parity on the grown regions) and amendment 3's det+D (the
+det row plus D's largest-region A9 cost; parity of the spotter and of D), F and F+D (the det row plus rubi,fix=1 on
+the largest dev region, textspot7's cost rule: eval/textspot7_a9_20261027.json). Baselines: textspot6's stored GRAD + refine (rubi) and rubi,fix=1 results (the same units and
 pins). Report rows: textspot6's control (base_t64n8c16 seeds 1-3, every decode) and every MeikiOCR reference row
 found under EVAL/meiki.
 """
@@ -27,6 +29,46 @@ ARMS = ("t8_t64n8c16",)
 SEEDS = (1, 2, 3)
 DECODES = T6T.DECODES
 MEIKI = ("raw", "pad", "ink", "raw+refine", "pad+refine", "ink+refine")
+GRAD_MS_333 = 122.4          # textspot7's A9 row of rubi,fix=1 on the largest of #119's base regions (F's added cost)
+
+
+def extra_rows(name, arm, seed, ev, run, det, crop):
+    """amendment 3 and 4's decodes of one scored seed: ctx, det+D, F, F+D (rows that exist only)."""
+    meta = json.loads((run / "run.json").read_text(encoding="utf-8"))
+    shape = meta["shape"]["name"]
+    blob = run / "final.vtsp"
+    par = json.loads((ev / "parity.json").read_text(encoding="utf-8")) if (ev / "parity.json").exists() else {}
+
+    def ok(*files):
+        out = bool(par.get("all_equal"))
+        for f in files:
+            if not (ev / f).exists():
+                return None
+            out = out and bool(json.loads((ev / f).read_text(encoding="utf-8")).get("all_equal"))
+        return out
+    rows = []
+    base = {"arm": arm, "seed": seed, "run": name, "shape": shape, "vtsp_bytes": blob.stat().st_size,
+            "blob_sha256": T6T.sha256_file(blob)}
+    if (ev / "dev_ctx.json").exists():
+        r = crop[shape]
+        rows.append(dict(base, decode="ctx", dev=str(ev / "dev_ctx.json"), hval=str(ev / "hval_ctx.json"),
+                         est_ms_333=round(r["ms_333"], 1), est_ms_444=round(r["ms_444"], 1), arena=int(r["arena"]),
+                         c_equal=ok("parity_ctx_dev.json", "parity_ctx_hval.json")))
+    dcost = ev / "a9" / "out" / "a9_t7_D.json"
+    if (ev / "dev_det+D.json").exists() and dcost.exists():
+        r = det[shape]
+        dms = json.loads(dcost.read_text(encoding="utf-8"))["max_one_ms_333"]
+        rows.append(dict(base, decode="det+D", dev=str(ev / "dev_det+D.json"), hval=str(ev / "hval_det+D.json"),
+                         est_ms_333=round(r["ms_333"] + dms, 1), est_ms_444=round((r["ms_333"] + dms) * 333 / 444, 1),
+                         arena=int(r["arena"]), c_equal=ok("parity_D_dev.json", "parity_D_hval.json"), d_ms_333=dms))
+    for dec in ("F", "F+D"):
+        if (ev / f"dev_{dec}.json").exists():
+            r = det[shape]
+            ms = r["ms_333"] + GRAD_MS_333
+            rows.append(dict(base, decode=dec, dev=str(ev / f"dev_{dec}.json"), hval=str(ev / f"hval_{dec}.json"),
+                             est_ms_333=round(ms, 1), est_ms_444=round(ms * 333 / 444, 1), arena=int(r["arena"]),
+                             c_equal=None))
+    return rows
 
 
 def main(argv=None):
@@ -51,7 +93,8 @@ def main(argv=None):
                 missing.append(name)
                 continue
             cands.extend(T6T.candidate_rows(name, arm, seed, ev, R / name, det, crop, kinds))
-    unchecked = sorted({c["run"] for c in cands if c["c_equal"] is None})
+            cands.extend(extra_rows(name, arm, seed, ev, R / name, det, crop))
+    unchecked = sorted({c["run"] for c in cands if c["c_equal"] is None and c["decode"] not in ("F", "F+D")})
     if (missing or unchecked) and not a.allow_partial:
         raise SystemExit(f"not scored yet: {missing}; no parity check: {unchecked}")
     reports = {}

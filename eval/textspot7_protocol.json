@@ -1,0 +1,123 @@
+{
+ "kind": "textspot7-protocol",
+ "schema": 1,
+ "issue": 128,
+ "tracking": 125,
+ "label": "vocr6-spotter3",
+ "frozen_utc": "2026-10-27T06:54Z",
+ "frozen_before": "any read of a new arm (F, D, F+D) on any set: hval, unseen dev, the tight sets, the confirmation set, the test sets",
+ "doc": "docs/textspot7.md",
+ "what": "No training. textspot6's trained spotters (#128, PR #147, docs/textspot6.md), each arm's representative its median seed, with (F) a per-region fallback to Rubi's finder rubi,fix=1, (D) a decode post-pass on the spotter's boxes, and F+D; decided by textspot6's rule unchanged, plus a fresh confirmation set of unseen games read once at the end.",
+ "base": {
+  "textspot6_protocol": {"path": "eval/textspot6_protocol.json", "sha256": "c42409930aad8c282da36b2adf1b790eca61ba655a526130e4021a12a5dd4127"},
+  "textspot6_records": ["eval/textspot6_dev_20261027.json", "eval/textspot6_tables_20261027.json", "eval/textspot6_a9_20261026.json"],
+  "branch": "feat/textspot7 from feat/textspot6 91caf40 (PR #147)"
+ },
+ "diagnosis": {
+  "source": "textspot6's stored dev rows and whole-frame spot files of the representatives and the baselines ($A/vocr6-spotter/eval/<run>/), read before this protocol; per-VN notes in docs/textspot7.md 'Diagnosis'",
+  "v27449": "GRAD + refine and rubi,fix=1 read 2 lines as one box in both regions of one screenshot (44-50 errors per unit); every det representative boxes them apart (1-5 errors)",
+  "v1971": "the whole loss is one region of two side-by-side choices (3 variants): the reference lists the right choice first (its ink box is 1 px higher); every representative reads both choices whole and correct, left to right; rubi,fix=1 reads the right one only. A reference-order artifact: no arm is aimed at it; reported as a sensitivity row",
+  "v20524": "one region (a dark-on-light UI-style line): the det representatives give low-confidence fragments (conf 4-14) or no box; rubi,fix=1 reads it with 0 errors",
+  "v8410": "one region: every det representative's box joins this line with text to its left, so the box's centre is outside the region and the region gets no box; rubi,fix=1 reads it with 0 errors",
+  "v3496": "one region of 2 tightly spaced lines: 3 of 4 det representatives put both in one box (7 errors per unit); rubi,fix=1 boxes them apart (0 errors)",
+  "v20170_v454": "crop-decode losses (a line cut into 2 boxes or cut short); the det decodes read them like rubi,fix=1. The crop decodes are not arms here",
+  "hval_existing_arms": "hval is the fitting set: rubi,fix=1 makes 5,349 errors of 162,471 characters (2,581 in PCSG00854: GRAD junk rows; 677 in ULJM05674: merged rows); the det representatives 2,116-2,552. Their own failures there: lines cut at an edge (1-2 characters, a median 0.4-0.6 line heights beyond the box) far more often than fragmented lines; merged lines (base_qS4)"
+ },
+ "spotters": {
+  "decode": "det: textspot6's whole-frame spot (synth/textspot6_twin.spot) on the frame in the console view (a PSP frame upscaled 2x); a region keeps the horizontal boxes whose centre lies in it, clipped to it (eval/textspot6.py region_boxes / eval/pagepath.py --frame-boxes); every tag",
+  "representatives": [
+   {"arm": "base_t64n8c16", "run": "base_t64n8c16_seed1", "family": "T", "vtsp_bytes": 52176, "blob_sha256": "3c5be87441ac69fdb62b9dbd7163bbd8653793638929d24357566106852a8248"},
+   {"arm": "kd_t64n8c16", "run": "kd_t64n8c16_seed2", "family": "T", "vtsp_bytes": 52176, "blob_sha256": "aef309e230641ef8c89ab130a2f55ba6aa6c6649022eae11c2bd2bbbfe7dc47d"},
+   {"arm": "base_qS4", "run": "base_qS4_seed2", "family": "M", "vtsp_bytes": 118096, "blob_sha256": "d4626b49dfb526c7595c1754a35b93f53a9d73833dfcdaf7176a8f8a6faf0aba"},
+   {"arm": "base_qL5", "run": "base_qL5_seed1", "family": "M", "vtsp_bytes": 448304, "blob_sha256": "60a03b3c8ca490d736ac5bc4591aacfb5f9bee5e10ebe855e736bf1b8c6ceb26"}
+  ],
+  "why_these": "each arm's median seed by unseen-dev page-path CER in the det decode (textspot6's representatives, eval/textspot6_dev_20261027.json); never the best seed"
+ },
+ "arms": {
+  "F": {
+   "name": "spotter + GRAD fallback",
+   "per_region": "run both rubi,fix=1 (G: GRAD TEXTBOX_RECOVERY, its short-line probe, COLGAP, the refinement on PSP titles, on the player's region) and the spotter (S: the det boxes of the region); show S or G, never a mix",
+   "features": {
+    "rows": "the boxes of a set grouped into rows: two boxes are in one row when their vertical overlap is at least half the smaller height (transitively, in order of top)",
+    "cmed": "the median confidence of S's boxes (the decode's box conf, 0-127; the lower middle for an even count)",
+    "S_lacks_row": "a row of G whose height is at least lambda x the median height of S's boxes and that no S box overlaps vertically by at least half the row's height",
+    "G_merge": "a G box that holds the centres of 2 or more S boxes of different rows"
+   },
+   "family": {
+    "mode S (spotter by default)": "show G when S is empty and G is not, or cmed < tau, or (lambda on) some row S_lacks_row; else S",
+    "mode G (GRAD by default)": "show S when G_merge and cmed >= tau; else G (lambda unused)"
+   },
+   "grid": {"mode": ["S", "G"], "tau": [0, 8, 16, 24, 32, 48, 64, 80, 96], "lambda": [0.6, 0.75, 0.9, "off"]},
+   "fit": "per representative, on hval only: the grid point with the fewest hval page-path dialogue errors (computed from the stored per-unit rows: F's text on a unit is the chosen set's, read from the same crops; then confirmed through eval/pagepath.py --boxes, which must reproduce it unit for unit). Ties: mode S, then the larger tau, then the smaller lambda (off last)",
+   "reads": "none new: every crop F shows is a crop of G's or S's stored run (the reading cache holds it)"
+  },
+  "D": {
+   "name": "decode post-pass on the spotter's boxes (no GRAD)",
+   "steps_in_order": {
+    "assign": "a horizontal frame box also belongs to the region when its part inside the region is at least 0.6 of its height tall and at least 1.0 of its height wide (else textspot6's centre rule); clipped to the region",
+    "join(gamma)": "two boxes of the region in one row (vertical overlap >= 0.6 of the smaller height) with a horizontal gap <= gamma x the larger height (overlapping boxes included) become their union, at the earlier box's place in the decode order (dark: the wider box's, conf: the smaller); repeated in decode order",
+    "extend": "each box grows left and right over ink of its own rows: a column is inked when at least 2 of its pixels in the box's rows have a 3x3 contrast (max - min) >= t, t = max(40, 2/5 of the 99th percentile of that contrast inside the box) (eval/pagepath.ink_points' threshold); the scan goes outward at most 1.5 box heights, ends after a gap of more than 0.5 box heights, and stops at the region's edge and at another box of the row; the new edge is the last inked column plus max(2, round(0.15 x height)) px; a box only grows",
+    "tighten": "runtime/vocr_lines_refine.c with VOCR_REFINE_TIGHTEN alone on the region in the console view (each box's rows cut to its main text band plus 16% of the band; columns kept)"
+   },
+   "grid": {"assign": ["centre", "overlap"], "join": ["off", 0.5, 1.0], "extend": ["off", "on"], "tighten": ["off", "on"]},
+   "fit": "on hval only, pooled over the four representatives: each step alone added to the plain det decode (assign, join 0.5, join 1.0, extend, tighten: 5 variants x 4 representatives through eval/pagepath.py) is kept when it lowers the pooled hval page-path dialogue errors; join keeps the better gamma when both lower; D is every kept step together, in the order above, the same for every representative. If no step is kept, D is the plain decode and is not a candidate",
+   "reads": "new crops, through the pinned page path (heavy.sh)"
+  },
+  "F+D": {
+   "name": "F's fallback over D's boxes",
+   "what": "D's boxes are S; F's family and grid re-fit on hval per representative from D's hval rows, as F",
+   "when": "after the single arms are scored, as one confirmation pair"
+  },
+  "candidates": "every representative x {D, F, F+D}: 12 (D and F+D only if D keeps a step)",
+  "not_arms": "no training, no new shapes, no distillation (vocr6-spotter2's), no crop decodes, no reading-order change"
+ },
+ "page_path": {
+  "pinned": "textspot6's: $A/vocr6-spotter/pagepath_snap135/repo/eval/pagepath.py (main 8a71eec + #135), its pagepath_find.c and vocr_lines_fix.*, Rubi textnorm 213fd60",
+  "pagepath_py_sha256": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea",
+  "pagepath_find_c_sha256": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+  "textnorm_c_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe",
+  "read": "VOCR5-N W8I with the top 8, the counter re-decode, beam 8 + the 1 MB LM (vocr_lm_o3_1000k), the cascade to VOCR5-L below a greedy confidence of 0.7, Rubi's text rules, non_japanese_filter lines",
+  "blobs_sha256": {"VOCR5_S_w8.vocr": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "VOCR5_N_w8.vocr": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "VOCR5_L_w8.vocr": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3", "vocr_lm_o3_1000k.vlm": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9"},
+  "units": {
+   "unseen_dev": {"path": "$A/vocr5-analysis/work/units.pkl", "sha256": "73384ae1020608ebbdf45440d8855f8dc793f5068ef05981b71aef75b031cc7b", "what": "#119's 1,161 whole-dialogue units (387 regions x base / +4 / +8, 93 VNs); the headline leaves out v12188 (a hooked training title): 1,143 units, 92 VNs"},
+   "hval": {"path": "$A/vocr6-spotter/eval/units/hval_v1.jsonl", "sha256": "0d2a89459d57bb6f71e2b87ef6ac9a58892b48df54211825b2fcab1faa21310f", "what": "6,327 units of 46 titles"},
+   "tight_report_only": {"dev_tight.pkl": "7189e4297f9b02f0dda3bafab20ab86cf3111ae6199df4fa22808e8bca16af60", "hval_tight.jsonl": "2c48b35c917f0fef40046ea5657c5f2d67400c1e519cbdc08ffcab243704d216", "hval_tight2.jsonl": "c258cf3940829840b2a8cd3d6dbd115ee5c00e3b717a5e0ac0a8fec78918debe"}
+  },
+  "metric": "page-path dialogue CER; paired differences with 10,000 cluster-bootstrap resamples (seed 0): VN clusters on dev and on the confirmation set, title clusters on hval (eval/pagepath.py compare)"
+ },
+ "rule": {
+  "source": "textspot6's rule unchanged (eval/textspot6_protocol.json 'rule'), with the fallback's cost counted and the confirmation condition added",
+  "eligible": "VTSP bytes <= 512,000; est. ms @333 <= 300 per 960 x 544 frame including the fallback's cost; arena <= 262,144; C == twin on every development frame (the spotter: textspot6's parity; F's choice and D's boxes: the C code here against its twin on every unseen-dev and hval unit)",
+  "cost_of_F": "the spotter's row of record (eval/textspot6_a9_20261026.json, with the dark pass) + rubi,fix=1 on the player's region: the A9 cycle model's high bound x 1.0007 (textspot6's calibration, vita/a9_cycles.py) of eval/pagepath_find.c's GRAD with Rubi's settings (TEXTBOX_RECOVERY, the probe, fix=1, the refinement as on a PSP title) on the largest of #119's 387 base regions in the console view; the mean, median and a full 960 x 544 region are reported beside it",
+  "cost_of_D": "the spotter's row of record + D's post-pass, the same A9 method on the development units' boxes (the largest per-region cost)",
+  "arena": "the spotter, the fallback and the post-pass run one after another and keep only boxes between them: the arena is the largest of the three",
+  "beats_grad_refine": "unseen dev: page-path dialogue CER difference (candidate - GRAD + refine, eval/pagepath.py --finder rubi) with a 95% VN-cluster interval entirely below 0; hval: the difference not resolved above 0",
+  "cost_order": "VTSP bytes, est. ms @333 per 960 x 544 frame, arena, then D before F before F+D, then the arm's name",
+  "pick": "among the qualifiers that meet the confirmation condition: the cheapest; a costlier one replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
+  "confirmation": "a qualifier must also be not resolved worse than rubi,fix=1 on the confirmation set (paired, VN clusters: the 95% interval of candidate - rubi,fix=1 does not lie entirely above 0). The set is read once, for every qualifier at the same time, after the dev and hval decision is recorded",
+  "vocr6_guard": "if vocr6-lead has released VOCR6-N (a vita-vn-ocr release Rubi pins) before the decision, the pick is also read with it (as Rubi ships it: its LM and cascade) on unseen dev and hval against rubi,fix=1 on the same path: neither difference may be resolved above 0 (not resolved worse); otherwise no pick. Without such a release the guard is the pinned path itself and is reported as moot",
+  "no_qualifier": "negative verdict with the per-VN table and what would fix the rest; no release, no Rubi PR",
+  "with_pick": "retrain the pick's spotter on train + guard + hval with its recipe and seed (textspot6's with_pick), release it as a vita-vn-ocr pre-release with SHA256SUMS, read the test sets once (report only: the test title through the page path, CLANNAD, vita-test + psp-test as textspot6 amendment 13 reads them), and open a normal Rubi_for_vita PR (the fallback in C, an off-switch defaulting to the measured best, the memory ledger exact, both Vita builds, the fast gate), merged on the local fast gate (owner 2026-10-26 11:33Z), audited in parallel, and carried in the single Rubi test build (rubi-test-consolidate)",
+  "rubi_default": "the pick is Rubi's default finder only if, against rubi,fix=1 on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (and the confirmation and VOCR6 conditions hold); otherwise it ships behind its setting, off by default. Only one spotter can be Rubi's default: if vocr6-spotter2's also passes, the better under this same rule, agreed with vocr6-spotter2 and vocr6-lead before any merge"
+ },
+ "confirmation_set": {
+  "why": "the losing VNs were found on the decision set (the 1,161 unseen-dev units), so a fix aimed at them reads optimistically there",
+  "exclusions": "VN ids, agreed with vocr6-spotter2 at 06:45Z: every hooked title (all splits), textspot2's real half (52,785 canvases: 11,318 VNs), textspot's synthetic frames' scene backgrounds (1,117 VNs), #119's units and the dev sample with its release partners, textspot's development frames, the test sets with their release partners and capture sessions, the owner's screenshot VNs, eval/linefind's sets (GRAD's tuning); vocr6-spotter2 adds none without telling first (eval/textspot7_confirm.py pool)",
+  "frames": {"path": "data/manifests/textspot7_confirm_frames_v1.json", "sha256": "92f0cc8c01f7f4c87fe231e22f87adccb3627514a753aedf337a57147c776342", "what": "454 frames of 50 VNs (PSP 364, Vita 90; 8 duplicates dropped): native-size VNDB screenshots of 45 VNs (eval/'s 2026-10-09 VNDB listings, the content filters) and the fresh native textbox frames (press and blog screenshots) of 5 VNs. Frozen before any new arm is read"},
+  "units": "the whole-dialogue regions of up to 6 accepted frames per VN, taken in the frozen review order: each text box's dialogue and narration lines (in-story choices too; speaker names left out), the region their ink boxes' union plus 12 px (Vita) / 6 px (PSP) native, and the variants expanded-4 / expanded-8 (eval's and #119's rule); a line's cells are even splits of its ink box. A frame is skipped when its text box holds a line the reviewers cannot decide or the proposals miss",
+  "labelling": "PP-OCRv6 small and MeikiOCR proposals (teacher/engines: Meiki's detector and recognizer, PP-OCRv6 small on each horizontal Meiki box with eval's pad), then Claude adjudication on contact sheets (one sheet per frame, <= 1280 px a side, one image per tool call, <= ~60 images per session; helpers vocr6-spotter3-label-*), reviewer_kind assistant; the reading order is rows top to bottom (a row: boxes overlapping vertically by half the smaller height) and left to right in a row, fixed before any read. The reviewers never see an arm's output",
+  "frozen": "the units file and its sha256 (and the public manifest: ids, VNs, URLs, sha256, regions and line boxes, no text) are committed before the confirmation read; the reference text stays private",
+  "read": "console view (Vita as is, PSP upscaled 2x bilinear on the colour frame, then grey: what Rubi gets); the spotter on the whole frame (det), every finder on the unit's region cut from that frame; the same page path; once, by an attempt record that refuses a second read",
+  "size": "at most 6 frames per VN (<= 300 frames): far inside AGENTS.md's held-out budget (the hooked corpus alone is 55,493 pages)",
+  "shared": "vocr6-spotter2 uses the same frozen set as its not-resolved-worse guard and keeps its VNs out of its training"
+ },
+ "report_only": [
+  "the qualifiers and the baselines on vocr6-finder's tight units (dev_tight, hval_tight, hval_tight2)",
+  "v1971 with its two side-by-side choices scored in either order (the reference-order sensitivity)",
+  "per-VN and per-title tables of every candidate against rubi,fix=1 and GRAD + refine; every seed of each arm with F and D at the representative's fitted settings",
+  "with and without v27449"
+ ],
+ "estimates": "every console time is a host A9 cycle-model estimate (textspot6's calibration); nothing runs on a console",
+ "slots": "vocr6/slots.txt share (0 until ~08:30Z, then 1): every page-path read, the labelling proposals, A9 runs and the retrain go through heavy.sh; short gates under the gate locks",
+ "amendments": []
+}

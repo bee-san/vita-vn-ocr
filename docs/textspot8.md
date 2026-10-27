@@ -201,4 +201,119 @@ clusters on hval.
 
 <!-- STEP1 -->
 
+### Step 3: the student, and the decision (measured 11:30-13:00Z)
+
+The records are:
+- `eval/textspot8_dev_20261027.json`: the dev / hval phase, written by `eval/textspot8_select.py`, which is textspot6's
+  rule code. It was committed before the confirmation read;
+- `eval/textspot8_confirm_20261027.json`: the confirmation read, made once.
+
+Page-path dialogue CER is in %. Each row is a decode's representative, the median seed; the seeds' unseen-dev CER
+(1 / 2 / 3) is in brackets.
+
+| decode | representative (seeds) | unseen dev | dev Vita / PSP | hval | dev − GRAD + refine | dev − `rubi,fix=1` | hval − `rubi,fix=1` | est. ms @333 | qualifies |
+|---|---|---:|---|---:|---|---|---|---:|---|
+| **crop** (the region alone) | **s3** (0.94 / 1.09 / 0.99) | **0.99** | 0.71 / 1.23 | **1.31** | −2.10 [−4.66, −0.41] | −1.39 [−3.96, +0.16] | −1.98 [−5.38, −0.11] | 264.2 | **yes** |
+| crop+refine | s1 (1.21 / 1.33 / 1.15) | 1.21 | 0.92 / 1.47 | 1.42 | −1.88 [−4.46, −0.24] | −1.17 [−3.76, +0.34] | −1.87 [−5.21, −0.01] | 265.6 | yes |
+| ctx (the region + 48 px) | s1 (1.04 / 0.97 / 1.04) | 1.04 | 0.82 / 1.23 | 1.33 | −2.05 [−4.64, −0.31] | −1.34 [−3.94, +0.25] | −1.97 [−5.49, −0.05] | 264.2 | yes |
+| det (the whole frame) | s1 (1.34 / 1.61 / 1.24) | 1.34 | 1.26 / 1.41 | 1.28 | −1.75 [−4.24, −0.06] | −1.04 [−3.51, +0.51] | −2.01 [−5.68, −0.02] | 264.2 | yes |
+| det+refine | s1 (1.34 / 1.83 / 1.31) | 1.34 | 1.18 / 1.47 | 1.40 | −1.75 [−4.29, −0.06] | −1.04 [−3.59, +0.50] | −1.89 [−5.54, +0.09] | 271.2 | yes |
+| det+D (textspot7's post-pass) | s2 (1.21 / 1.15 / 0.93) | 1.15 | 1.12 / 1.18 | 1.14 | −1.93 [−4.49, −0.19] | −1.23 [−3.79, +0.40] | −2.15 [−5.44, −0.33] | 297.2 | yes |
+| F (spotter + GRAD fallback) | s2 (1.13 / 1.14 / 1.17) | 1.14 | 0.85 / 1.39 | 1.21 | −1.95 [−4.61, −0.12] | −1.24 [−3.90, +0.47] | −2.08 [−5.82, −0.05] | 386.6 | no: over 300 ms |
+| F+D | s2 (1.02 / 0.87 / 0.82) | 0.87 | 0.72 / 1.00 | 1.14 | −2.22 [−4.76, −0.55] | −1.51 [−4.03, +0.04] | −2.15 [−5.44, −0.33] | 419.6 | no: over 300 ms |
+
+- **Eligibility.**
+  - Every eligible row is the same 52,176 B blob shape. Its arena is 244,607 B (textspot6's row; the refine decodes
+    take the larger of it and the refinement's 72,391 B).
+  - The C runtime equals the twin on every development frame and crop, and on every grown ctx region of dev and hval.
+  - textspot7's C post-pass equals its twin on every dev and hval unit.
+  - D's largest-region cost is est. 33.0-33.8 ms (textspot7's A9 method), so det+D is est. 297.2 ms, under 300.
+- **The pick** is the cheapest qualifier: the crop decode, seed 3. No costlier qualifier is resolved better than it on
+  unseen dev, so none replaces it.
+
+**The confirmation set** is vocr6-spotter3's: 41 VNs that no spotter trained on, 516 units, 4,737 characters. It was
+read once, for every qualifier, after the dev / hval record. The baselines are vocr6-spotter3's stored reads with the
+same pins.
+
+| finder | confirmation CER | − `rubi,fix=1` | VNs better / worse / level |
+|---|---:|---|---|
+| GRAD + refine | 5.01 | | |
+| `rubi,fix=1` | 4.29 | | |
+| **crop, s3 (the pick)** | **1.86** (PSP 1.99 / Vita 0.64) | **−2.43 [−5.69, −0.30]** | 17 / 12 / 12 |
+| crop+refine, s1 | 1.90 | −2.40 [−5.40, −0.34] | 20 / 9 / 12 |
+| ctx, s1 | 2.28 | −2.01 [−5.36, +0.21] | 13 / 15 / 13 |
+| det, s1 | 3.10 | −1.19 [−4.01, +1.10] | 18 / 11 / 12 |
+| det+refine, s1 | 3.33 | −0.97 [−3.82, +1.36] | 13 / 13 / 15 |
+| det+D, s2 | 2.18 | −2.11 [−5.20, +0.13] | 18 / 6 / 17 |
+
+**The decision**:
+- **Every qualifier passes the guard** (not resolved worse than `rubi,fix=1`), so the pick stays the crop decode.
+- **Amendment 5's Rubi-default test passes**, against `rubi,fix=1`:
+  - hval −1.98 [−5.38, −0.11], resolved below 0;
+  - unseen dev −1.39 [−3.96, +0.16], not resolved above 0;
+  - confirmation −2.43 [−5.69, −0.30], resolved below 0.
+- **So the spotter becomes Rubi's default line finder**, with `rubi,fix=1` as the fallback and a setting to turn it
+  off (vocr6-lead's ruling: one spotter in Rubi; textspot7's pick is released in vita-vn-ocr but not pinned).
+- **textspot6's own clause** (unseen dev resolved below `rubi,fix=1`) would not have made it the default.
+
+**With the recognizer Rubi will run** (amendment 6, vocr6-lead's guard).
+- **The setup:** the pick's boxes and `rubi,fix=1`'s are read by VOCR6-N with the cascade to VOCR6-L. The recognizers
+  are v0.4.0-vocr6.1's plain `_w8` blobs; the shipped `_w8_2l` adds the two-level head, which vocr6-final-gate
+  measured at +0.000 to +0.006 points. Rubi's VOCR6 LM settings apply (alpha 600, beta 2500, BOS): on dev the shipped
+  1 MB game-text LM, on hval its screening build, as vocr6-lead reads hval.
+- **Unseen dev:** the pick reads 0.95% (Vita 0.77 / PSP 1.12) against `rubi,fix=1`'s 2.41%: −1.46 [−4.04, +0.11].
+- **hval:** 1.03% against 1.52%: −0.49 [−1.31, −0.02].
+- **Tier L alone** (no cascade): dev 0.95% against 2.37%, hval 1.01% against 1.51%.
+- **The guard holds,** and on these 92 unseen-game VNs the page path reads dialogue at **0.95%: under the owner's 1%
+  target, measured with VOCR6-N → L**.
+
+### What the changes bought (report only)
+
+- **Against textspot6's control** (base_t64n8c16, the same shape, data and schedule; paired by seed number):
+  - **Crop decode:** seed 1 −1.06 [−1.51, −0.73], seed 2 −0.71 [−1.01, −0.45], seed 3 −0.88 [−1.47, −0.45]. Resolved
+    for every seed. hval moves +0.25 / +0.04 / −0.23, none resolved.
+  - **Det decode:** −0.07 / +0.14 / −0.13, none resolved.
+  - So T8's settings made the region-only read as good as the whole-frame one, and better. Which of them did it was
+    not separated: the arm changes them together. The tight-region windows train exactly that read.
+- **Against `rubi,fix=1`, paired per unit** (the pick, dev without v27449, 91 VNs):
+
+  | the spotter's unit | `rubi,fix=1`'s unit | units | errors: spotter / fix=1 |
+  |---|---|---:|---|
+  | every line whole | a line missed | 15 | 42 / 115 |
+  | a line cut | every line whole | 17 | 23 / 9 |
+  | a line merged | a junk box | 2 | 14 / 0 |
+  | every line whole | every line whole | 996 | 96 / 108 |
+  | every line whole | a line cut | 6 | 0 / 12 |
+  | every line whole | a junk box | 54 | 6 / 15 |
+  | a junk box | every line whole | 20 | 7 / 0 |
+  | all 91 VNs | | 1,119 | 222 / 294 |
+
+  textspot6's crop decode lost +99 errors on cut lines here; the student loses +14. On v27449 it makes 20-22 errors
+  against GRAD's 311.
+- **Where it still loses:**
+  - v1971, the side-by-side choice buttons (28 → 58 errors), where every spotter and MeikiOCR lose too;
+  - single regions of v3496, v6985 and v5000.
+- **Whole frames** (textspot's 188 dev frames, det): box F1 0.56-0.58, UI recall 0.22-0.23, dialogue CER 1.61-1.83%.
+  That is textspot6's level and below MeikiOCR's (0.895 / 0.77 / 1.45%). The student reads dialogue lines, not the
+  rest of the screen. No dialogue box appears on any of the 25 text-free frames.
+- **hval boxes** against the verified lines (F1, seed 3): Vita 0.860, PSP 2x 0.949, PSP native 0.935.
+
+### Spinners and page cursors (report only)
+
+276 dev units (the regions where an icon drawn 0.35 line heights after the last line's end lies inside the region),
+with an icon of the trained kinds or of three unseen kinds.
+
+| finder | the icon inside a line box: trained / unseen icons | junk boxes | CER: trained / unseen |
+|---|---|---|---|
+| `rubi,fix=1` | 97.8% / 96.4% | 24 / 21 | 2.33 / 2.98 |
+| textspot6 base_t64n8c16 s1, crop | 75.7% / 82.3% | 9 / 8 | 1.31 / 1.80 |
+| **student s3, crop (the pick)** | 81.2% / 93.8% | 16 / 23 | **0.75 / 1.36** |
+| student s3, det | 74.3% / 88.8% | 10 / 20 | 0.80 / 1.47 |
+
+- The student reads the text next to an icon best, with a third to a half of GRAD's errors.
+- Its line boxes still cover most of an icon this close to the text: their end is the last character plus the
+  decode's pad and cell. So a checksum over the line boxes still sees a spinner that close.
+- rubi-spinner's PR covers that case with a timeout path. Its line check takes the active finder's lines, so the
+  spotter drops in.
+
 <!-- STUDENT -->

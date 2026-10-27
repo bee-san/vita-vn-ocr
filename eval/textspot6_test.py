@@ -159,6 +159,56 @@ def guard_out(out, dry):
     return out
 
 
+# ----------------------------------------------------------------------------- textspot's reader
+
+def textspot_readers(models, proto, out, record, reader_src):
+    """The readers textspot's protected records were read with, exactly: the C runtime and its ctypes wrapper of a
+    checkout of that commit (d214a05: runtime/vocr.c, runtime/pyvocr.py), built here with finder_tighten's scalar
+    flags; the library must hash to the record's reader (eval/textspot2.readers_for's check). Today's runtime reads
+    the same by design (its head gate and two-level head are off by default) but differs in bytes, which that check
+    refuses, and its wrapper does not fit the old library's structs."""
+    import importlib.util
+
+    import finder_tighten as FT
+    import textspot as TS
+    src = Path(reader_src)
+    lib = Path(out) / "private" / "rbuild_textspot" / "libvocr_scalar.so"
+    lib.parent.mkdir(parents=True, exist_ok=True)
+    env = {"PATH": os.environ.get("PATH", os.defpath), "LC_ALL": "C", "SOURCE_DATE_EPOCH": "0"}
+    subprocess.run(["gcc", *FT.SCALAR_FLAGS, "-o", str(lib), "runtime/vocr.c", "-lm"], check=True, cwd=src, env=env)
+    sha = sha256_file(lib)
+    want = record["reader"]["library_sha256"]
+    if sha != want:
+        raise SystemExit(f"{src}: its reader library {sha[:12]} is not the record's {want[:12]}")
+    spec = importlib.util.spec_from_file_location("pyvocr_textspot", src / "runtime" / "pyvocr.py")
+    pv = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pv)
+
+    class Reader:                      # finder_tighten.Reader on the old wrapper and library
+        def __init__(self, blob):
+            self.rt = pv.Vocr(blob, mode="w8i", max_width=1024, lib=pv.load_lib(str(lib)))
+            self.sha256 = FT.sha256(blob)
+            self.blob_bytes, self.arena_bytes = self.rt.blob_bytes, self.rt.arena_bytes
+
+        def read(self, g, invert):
+            return FT.norm(self.rt.text(np.ascontiguousarray(g), invert=bool(invert)))
+
+    rd = TS.Readers(TS.recognizer_paths(models, proto), Reader)
+    version = subprocess.run(["gcc", "--version"], capture_output=True, text=True).stdout.splitlines()[0]
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=src, capture_output=True, text=True).stdout.strip()
+    rd.identity = {"library_sha256": sha, "compiler": version, "scalar_flags": list(FT.SCALAR_FLAGS),
+                   "source": {"commit": commit, "vocr_c_sha256": sha256_file(src / "runtime" / "vocr.c"),
+                              "pyvocr_sha256": sha256_file(src / "runtime" / "pyvocr.py")}}
+    return rd
+
+
+def record_readers(models, proto, out, compiler, record, reader_src):
+    import textspot2_protected as TP2
+    if reader_src:
+        return textspot_readers(models, proto, out, record, reader_src)
+    return TP2.build_readers(models, proto, out, compiler, record)
+
+
 # ----------------------------------------------------------------------------- the page path
 
 def pp_run(pagepath, units, base, extra, priv, pages=None, workers=5):
@@ -316,12 +366,13 @@ def cmd_tests(a):
         if TS.summarize(TP.scored(t3_units, report_ids)) != want:
             raise SystemExit(f"{f3}: does not reproduce textspot3's committed record")
         stored_sha[T3_ARM] = sha256_file(f3)
-        rd = TP2.build_readers(models, proto, out, a.compiler, record)
+        rd = record_readers(models, proto, out, a.compiler, record, a.reader_src)
         seeded = seed_cache(priv / "cache", T3_CACHE)
     else:
         rd = TS.c_readers({m: TS.BLOBS[m] for m in [*models, TS.V_MODEL]}, priv / "cbuild")
         seeded = seed_cache(priv / "cache", T3_DEV_CACHE)
     once(out / "tests.attempt.json", {"started": utc(), "manifest_sha256": digest, "selection": sel_rec,
+                                      "reader": getattr(rd, "identity", None),
                                       "final": final, "decode": dec, "textspot3": t3, "stored_sha256": stored_sha,
                                       "code_sha256": sha256_file(__file__)})
     frames = TS.load_frames(rows, list(TS.SHOT_DIRS) if dry else TP.test_sources(a))
@@ -362,7 +413,8 @@ def cmd_tests(a):
               "manifest": {"path": str(man.relative_to(ROOT)), "sha256": digest, "frames": len(rows)},
               "report_only_frames": len(report_ids), "scored_frames": len(rows) - len(report_ids),
               "selection": sel_rec, "final": final, "decode": dec, "primary": f"textspot6_{KIND[dec]}",
-              "textspot3": t3, "models": models, "read": n_read, "cache_seed": seeded, "arms": {},
+              "textspot3": t3, "models": models, "read": n_read, "cache_seed": seeded,
+              "reader": getattr(rd, "identity", None), "arms": {},
               "comparisons": {}, "recall_by_class": {}}
     for n in units:
         sc = TP.scored(units[n], report_ids)
@@ -503,12 +555,13 @@ def cmd_clannad(a):
             diffs.append("counts.pages")
         if diffs:
             raise SystemExit(f"the stored arms do not reproduce their CLANNAD records (nothing read): {diffs[:5]}")
-        rd = TP2.build_readers(models, proto, out, a.compiler, record)
+        rd = record_readers(models, proto, out, a.compiler, record, a.reader_src)
         seeded = seed_cache(priv / "cache", T3_CACHE)
     else:
         rd = TS.c_readers({m: TS.BLOBS[m] for m in [*models, TS.V_MODEL]}, priv / "cbuild")
         seeded = None
     once(out / "clannad.attempt.json", {"started": utc(), "refs_sha256": freeze["refs_sha256"],
+                                        "reader": getattr(rd, "identity", None),
                                         "selection": sel_rec, "final": final, "decode": dec, "textspot3": t3,
                                         "stored_sha256": stored_sha, "pagepath_sha256": sha256_file(pagepath),
                                         "code_sha256": sha256_file(__file__)})
@@ -616,7 +669,7 @@ def cmd_clannad(a):
     result = {"kind": "textspot6-test-clannad" + ("-dry-run" if dry else ""), "computed": utc(),
               "refs_sha256": freeze["refs_sha256"], "selection": sel_rec, "final": final, "decode": dec,
               "textspot3": t3, "models": models, "pagepath_sha256": sha256_file(pagepath),
-              "whole_frames": whole, "roi_page_path": roi}
+              "reader": getattr(rd, "identity", None), "whole_frames": whole, "roi_page_path": roi}
     TS.assert_public(result)
     (out / "clannad.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     for part, doc in (("whole", whole), ("roi", roi)):
@@ -715,6 +768,9 @@ def main(argv=None):
             p.add_argument("--titles", help="dry runs only: some titles of the split")
         if name == "clannad":
             p.add_argument("--work", default=str(CLANNAD_WORK))
+        if name in ("tests", "clannad"):
+            p.add_argument("--reader-src", help="a checkout of the commit textspot's records were read with (d214a05): "
+                                                "its runtime and wrapper are the readers (the record's library)")
         if name == "tests":
             p.add_argument("--data", default=str(ART / "eval"), help="eval's data directory (vita/shots, psp/shots)")
             p.add_argument("--shots", action="append", default=[], help="more source directories (text-free shots)")

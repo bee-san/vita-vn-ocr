@@ -416,7 +416,8 @@ def raster_share(font, ref, n=600, seed=0):
         return 0.0
     la, lb = _levels(font), _levels(ref)
     if int(la.max()) < MIN_LEVELS - 1 or int(lb.max()) < MIN_LEVELS - 1:
-        return 0.0          # with 2-3 levels the one-level tolerance accepts any glyph: no evidence either way
+        return 0.0          # 2 levels: the one-level tolerance accepts any glyph, so no evidence either way. 3 levels
+                            # would still give some (audit-vocr6-synth6-e e2); no font in the pack has 3, so 4 stays
     common = sorted(c for c in font.chars.keys() & ref.chars.keys() if c not in SPACES)
     if not common:
         return 0.0

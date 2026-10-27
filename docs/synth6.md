@@ -112,10 +112,10 @@ verified matched font).
 
 What synth6 adds is breadth: it draws the raster for 7.2 times as many glyphs and 3.9 times as many characters
 (3,509 the real lines never show in it). So a CLANNAD score of a model trained on the hooked lines has seen CLANNAD's
-glyph raster for 1,201 characters (21% of the vocab), and one trained on synth6 v3 as well for 4,701 (83%), though
-not its font files, text or pages. VOCR6's CLANNAD reports and release notes must say so. The counts above are for
+glyph raster for 1,201 characters (21% of the vocab), and one trained on synth6 v3 as well for 4,710 (83.7%; synth6 v3
+alone draws 4,701 of them, 83.5%, and the hooked lines add 9), though not its font files, text or pages. VOCR6's CLANNAD reports and release notes must say so. The counts above are for
 train pages; a final model trained with hval (and guard) pages folded back in sees the two titles' raster in 2,681
-lines, 41,309 glyphs and 1,226 characters (2,779, 42,784 and 1,234 with guard pages).
+lines, 41,309 glyphs and 1,226 characters (2,779, 42,784 and 1,234 with guard pages; with synth6 v3, 4,711 characters).
 
 Dance with Devils' FOT-ModeMinA Std B has no near copy in the pack, even by ink-box alignment (the audit's measure).
 The same typeface is drawn from the Otomate titles' FFU atlases.

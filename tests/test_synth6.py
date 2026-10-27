@@ -456,14 +456,17 @@ def test_raster_share_ignores_the_palette(tmp_path, font):
     from PIL import Image
     a = atlas_font(tmp_path, font, "PCSG00415", "ref", px=30)
     # a 4-bit reference, levels k x 17 (as CLANNAD's fonts store them)
-    q = np.round(np.asarray(Image.open(a / "atlas.png"), np.float32) / 255.0 * 15).astype(int)
+    at = np.asarray(Image.open(a / "atlas.png"), np.float32) / 255.0
+    q = np.round(at * 15).astype(int)
     Image.fromarray((q * 17).astype(np.uint8)).save(a / "atlas.png")
     ref = F6.open_font(a)
-    # the same raster, re-quantised through a gamma-like palette (as Little Busters' LUCA fonts)
+    # the same 8-bit raster quantised to another 16-level palette (gamma-like), as the hooked titles' copies of
+    # CLANNAD's raster are: not a relabelling of the reference's levels, so the tone map and the tolerance matter
     b = tmp_path / "OTHER" / "copy"
     shutil.copytree(a, b)
     pal = np.array([0] + [round(255 * (k / 15) ** 0.6) for k in range(1, 16)], np.uint8)
-    Image.fromarray(pal[q]).save(b / "atlas.png")
+    k = np.abs(at[..., None] - pal.astype(np.float32) / 255.0).argmin(axis=-1)
+    Image.fromarray(pal[k]).save(b / "atlas.png")
     copy = F6.open_font(b)
     assert F6.raster_share(copy, ref) > 0.9
     other = F6.open_font(atlas_font(tmp_path, font, "THIRD", "bold", px=30, chars=CHARS))

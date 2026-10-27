@@ -13,8 +13,10 @@ Every number is a host measurement. Nothing ran on a console.
   - 841f293: the CLANNAD glyph-raster disclosure;
   - 8948d52: audit-vocr6-final-test's fixes (one final read under any OUT name, Rubi's job defaults checked,
     the line filter's floor beside path (b)'s headline);
-  - amendment 6: Rubi #335's vertical text (API 47, `ocr_vertical = auto` by default), modelled and checked
-    against Rubi's own code, and the audit's optional nits. The hashes are those of the original commits (tag
+  - 7462538: Rubi #335's vertical text (API 47, `ocr_vertical = auto` by default), modelled and checked
+    against Rubi's own code, and the audit's optional nits;
+  - 5c9c23c: Rubi #330 (API 50), which ships #129's COLGAP fix by default: re-pinned and re-checked; Rubi's
+    pinned runtime files must equal this checkout's. The hashes are those of the original commits (tag
   `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
@@ -105,9 +107,8 @@ The shipped path was checked on development data only: the hooked hval block of 
   job defaults (`paths.b.job_defaults`): the finder mode, text gate off, blank lines kept, the line filter on, the
   cascade, and the line-fix default. The final read stops if Rubi main differs; a change needs review, rubicheck again
   and an amendment.
-- Rubi #306 merged during the wait (Rubi main `796168e`). Rubi main now ships the pinned LM itself, and its line-read
-  functions are unchanged. Rubi #330 (the COLGAP fix in Rubi, API 44) is open. It changes `recognize` and
-  `request_policy`, so a merge before the read stops it: rubicheck runs again with `--fix 1`, then an amendment.
+- Rubi main now ships both the pinned LM (#306) and the COLGAP fix (#330), so path (b) is Rubi main's shipped line
+  path. A further change of a pinned function or default stops the read for review, a recheck and an amendment.
 
 **Not modelled.**
 
@@ -124,14 +125,21 @@ from the references alone. It is the same for VOCR5 and VOCR6. On CLANNAD it is 
 PCSG00807's clean lines 26 of 13,911 (audit-vocr6-final-test's count).
 
 **Against Rubi's whole job** (`vocr6_final_test.py pagecheck`, `eval/vocr6_final_test_pagecheck_20261027.json`).
-Rubi main `b6c715c` added vertical text (#335), which changed `recognize`. Its host tool `vjo-page-ocr` runs the game
-worker's job on the defaults of `config.ini`, with `--vertical auto`, through textnorm and the line filter. It read
-development regions of the train titles: horizontal ones, counter ones, and regions drawn around the columns of the
-vertical title PCSG00653. Path (b)'s model was compared with it at every tier on four things: the switch to columns,
-the boxes, the line texts, and the text shown.
+Rubi main moved twice during the wait:
+
+- `b6c715c` added vertical text (#335), which changed `recognize`;
+- `0994afc` (#330, API 50) ships #129's COLGAP fix by default (`ocr_line_fix = on`), with a tall region's auto check
+  made on the frozen finder's rows.
+
+Rubi's host tool `vjo-page-ocr` runs the game worker's job on the defaults of `config.ini`, with `--vertical auto`
+and `--line-fix on`, through textnorm and the line filter. Built from `0994afc`, it read development regions of the
+train titles: horizontal ones, counter ones, and regions drawn around the columns of the vertical title PCSG00653.
+Path (b)'s model was compared with it at every tier on four things: the switch to columns, the boxes, the line texts,
+and the text shown.
 
 All 299 regions are equal at S, N and L: 184 horizontal, 55 with a counter, and 60 vertical, which both switched to
-columns. That is 540 lines per tier.
+columns. That is 537 lines per tier. The same regions were equal against `b6c715c` at fix 0 too. Every runtime file
+Rubi pins (18) equals this checkout's, so path (b) reads with Rubi's runtime code.
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.

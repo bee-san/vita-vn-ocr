@@ -258,6 +258,17 @@
     "F.features.S_short.scope": "only a G box with at least one S box in its row counts (a row without S boxes is S_lacks' case)",
     "F.geometry": "a box's centre is (2x + w, 2y + h) in half pixels, inside a box when 2x0 <= cx < 2(x0 + w) (and in y); rows: union-find over the pairs with 2 x vertical overlap >= the smaller height"
    }
+  },
+  {
+   "n": 2,
+   "utc": "2026-10-27T07:38Z",
+   "before": "any review decision on the confirmation set and any read of a new arm on it (only its proposals and sheets exist)",
+   "why": "the frozen frame list holds 42 frames of translated releases (English, Chinese, Russian; eval/'s VNDB listings record the release languages), and the review rules said nothing about language; and the batch plan's view cap was not written down",
+   "changes": {
+    "confirmation_set.labelling.language": "a frame is accepted only for Japanese story text; a frame whose story text is in another language is skipped as 'not Japanese' (the frames stay in the frozen list)",
+    "confirmation_set.labelling.view_cap": "the reviewers see at most the first 12 frames of a VN in the frozen review order (eval/textspot7_confirm.py sheets --cap-view 12); a VN closes at 6 accepted frames; the review tool hands out the frames in that order",
+    "confirmation_set.labelling.batches": "9 batches of 3-7 VNs (at most 48 sheets each), one Claude helper per batch (vocr6-spotter3-label-*), then a second look by another helper at every accepted line whose text equals neither engine's reading and at every split or added line (eval/textspot7_confirm.py recheck-sheets): it picks a reading, writes the text, or marks it unsure (the frame then drops)"
+   }
   }
  ]
 }

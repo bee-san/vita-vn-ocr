@@ -431,12 +431,14 @@ proposal's crop with two machine readings, M (MeikiOCR) and P (PP-OCRv6 small, i
 The readings are suggestions only: they are often wrong. You decide what the screen really says.
 
 ## What to decide per frame
-- accept true: the frame shows story text a player reads, as HORIZONTAL text: dialogue or narration in a text box
-  or over the scene, or an in-story choice menu; and you can read EVERY character of those lines with certainty.
+- accept true: the frame shows JAPANESE story text a player reads, as HORIZONTAL text: dialogue or narration in a
+  text box or over the scene, or an in-story choice menu; and you can read EVERY character of those lines with
+  certainty.
 - accept false (with "skip"): "no dialogue" (title, logo, CG without text, system menu, save/load/config screen,
   battle or map UI, a screenshot of a magazine), "vertical" (the story text runs vertically), "undecidable" (some
   character of a dialogue line cannot be read with certainty, the text is cut off by the frame's edge, or a line is
-  covered), "not a game frame" (a photo of a console, a collage, several screens in one image).
+  covered), "not Japanese" (the story text is English, Chinese, Korean or another language: a translated release),
+  "not a game frame" (a photo of a console, a collage, several screens in one image).
 
 ## Units (when accepted)
 A unit is the group of lines a player would draw ONE region around: all the lines of one text box (without its

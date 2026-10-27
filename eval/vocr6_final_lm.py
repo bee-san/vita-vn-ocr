@@ -404,6 +404,30 @@ def workspace(blob_paths, lm_path, cfg):
                       **V.lm_opts(cfg)).workspace_bytes for t, p in blob_paths.items()}
 
 
+def junk_free(sc, U, e_x, e_y, limit=50.0):
+    """Report only (#127's definition): y - x without the hval titles whose page-path CER under x is above `limit`%
+    (a finder that reads a box's decoration as a line of junk: those errors follow the decoder's per-character bonus
+    and the display rules, not the text)."""
+    hp = sc.mask("hp")
+    titles = []
+    for t in sorted(set(sc.cluster[hp])):
+        m = hp & (sc.cluster == t)
+        if e_x[m].sum() / sc.chars[m].sum() * 100 > limit:
+            titles.append(str(t))
+    keep = np.flatnonzero(~np.isin(sc.cluster, titles))
+    c = V.compare([U[i] for i in keep], e_x[keep], e_y[keep])
+    # and without the one title that moves hp's errors the most (leave-one-title-out on the top contributor)
+    moves = {str(t): int(e_y[hp & (sc.cluster == t)].sum() - e_x[hp & (sc.cluster == t)].sum())
+             for t in sorted(set(sc.cluster[hp]))}
+    top = max(moves, key=lambda t: abs(moves[t])) if moves else None
+    keep2 = np.flatnonzero(sc.cluster != top)
+    c2 = V.compare([U[i] for i in keep2], e_x[keep2], e_y[keep2])
+    return {"titles": titles, "y_minus_x": {k: c[k] for k in ("hp", "hc", "dev", "obj") if k in c},
+            "top_hp_title": top, "top_hp_title_errors": moves.get(top),
+            "hp_errors_all_titles": int(sum(moves.values())),
+            "y_minus_x_without_top_title": {k: c2[k] for k in ("hp", "hc", "dev", "obj") if k in c2}}
+
+
 def tier_select(sc, U, E, Kk, cs_idx, cs_units, tier, cfgs, ship_j, thrs, cells, ship_cell, paths_present,
                 casc_ship):
     """Arms b and c at one job tier: choices, cross-validated and in-sample scores, comparisons, counter set."""
@@ -443,6 +467,7 @@ def tier_select(sc, U, E, Kk, cs_idx, cs_units, tier, cfgs, ship_j, thrs, cells,
                 "counter_folds": {f: cs_compare(cl, ch, e_ship[cs_idx], eb[c][cs_idx], k_ship,
                                                 Kk["b"][key(order[c][1])][order[c][0]])
                                   for f, c in (("fold0", c0), ("fold1", c1))},
+                "without_junk_titles": junk_free(sc, U, e_ship, e_cv),
                 "_flat": flat, "_choice": (order[c0], order[c1], order[ca])}
     # arm c: counter cells at the shipped setting and threshold (the shipped cell first)
     corder = [ship_cell] + [i for i in range(len(cells)) if i != ship_cell]
@@ -803,11 +828,34 @@ def summarise(sel):
     return res, "\n".join(md) + "\n\n" + "\n".join(cs) + "\n"
 
 
+def rubi_settings(sel, proto):
+    """What Rubi runs per job tier (model) and LM tier after the rule: vocr_lm_opts, the cascade threshold and the
+    counter thresholds; a changed entry says so (it applies to the job's decode and its cascade's)."""
+    out = {}
+    for tier, by_lm in sel["decisions"].items():
+        for lt, d in by_lm.items():
+            ship = proto["lm_tiers"][lt]
+            s = d.get("setting")
+            entry = {"lm": Path(ship["dev"]["path"]).name, "lm_sha256": ship["dev"]["sha256"],
+                     "vocr_lm_opts": s["config"] if s else ship["shipped"],
+                     "cascade_conf": (s["cascade_conf"] if s else ship["cascade_conf"]) if tier != "L" else None,
+                     "counter_tau_open": s["counter"] if s else [proto["counter_shipped"]["tau"],
+                                                                 proto["counter_shipped"]["open"]],
+                     "changed": bool(s), "decision": d["decision"]}
+            out.setdefault(tier, {})[lt] = entry
+    return out
+
+
 def cmd_summary(a):
     import finder_tighten as FT
     sel = json.loads(Path(a.select).read_text(encoding="utf-8"))
     res, md = summarise(sel)
     res["select_sha256"] = sha256(a.select)
+    if a.protocol:
+        res["rubi"] = rubi_settings(sel, json.loads(Path(a.protocol).read_text(encoding="utf-8")))
+    for spec in a.extra or []:
+        name, _, path = spec.partition("=")
+        res.setdefault("reports", {})[name] = json.loads(Path(path).read_text(encoding="utf-8"))
     FT.assert_public(res)
     Path(a.out).write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     if a.md:
@@ -850,6 +898,8 @@ def main():
     p.add_argument("--out", required=True)
     p = sub.add_parser("summary")
     p.add_argument("--select", required=True)
+    p.add_argument("--protocol", help="adds the Rubi table (per job tier and LM tier)")
+    p.add_argument("--extra", action="append", default=[], help="NAME=FILE: a report JSON to embed (public)")
     p.add_argument("--out", required=True)
     p.add_argument("--md")
     p = sub.add_parser("gated-cache")

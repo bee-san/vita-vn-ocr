@@ -185,6 +185,10 @@ clusters on hval.
 - **On hval** Meiki's errors are concentrated in 3 Vita titles: PCSG00917, PCSG00918 and PCSG00509 make 784 / 765 / 252
   errors with +4 px det against textspot6 t64's 24 / 6 / 15. The refinement brings the first two down to 279 / 241.
   Every other title is within a few dozen errors of textspot6.
+  - In PCSG00917 and PCSG00918 every line is found whole, but 228 and 182 of Meiki's boxes are junk. In their base
+    units 41-49% of the boxes are about 0.4 of the line's height, which fits ruby (furigana) boxed as lines of their
+    own. The references and the hooked training targets leave ruby out.
+  - PCSG00509 misses 12 lines.
 - **Whole frames** (textspot's 188 development frames, +4 px det): box F1 0.895 (precision 0.948, recall 0.847),
   all-text CER 15.1%, dialogue CER 1.45%, UI recall 0.77. textspot6's runs: F1 0.57, all-text 40-42%, dialogue
   1.9-2.0%, UI recall 0.22.

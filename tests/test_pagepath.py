@@ -2,9 +2,11 @@
 
 The Levenshtein count, Rubi's per-crop composition (cascade, empty lines), the line filters, the line statistics,
 the cluster bootstrap and the checks of `compare`, finder specs and units, external boxes (clipping, page ids), the
-LM settings per LM, the cache tag, the page hash check, and eval/pagepath_find.c built against the frozen finder on
-procedural regions: Rubi's short-line probe (its boxes frozen from Rubi's own host tool) and per-box refinement."""
+LM settings per LM, the cache tag, the page hash check, the textnorm tool's source put in place whole, and
+eval/pagepath_find.c built against the frozen finder on procedural regions: Rubi's short-line probe (its boxes
+frozen from Rubi's own host tool) and per-box refinement."""
 import json
+import os
 import random
 import shutil
 import sys
@@ -254,3 +256,28 @@ def test_driver_short_line_probe(tmp_path):
     assert out[0] == (0, 2, 1, [(6, 6, 290, 28, 0), (6, 32, 290, 28, 0), (23, 63, 43, 23, 0)])
     assert out[1] == (0, 2, 1, [(6, 7, 290, 26, 0), (6, 33, 290, 26, 0), (23, 65, 43, 19, 0)])
     assert out[2] == (0, 2, 0, [(6, 6, 290, 28, 0), (6, 32, 290, 28, 0)])                     # probe off
+
+
+@pytest.mark.skipif(CC is None, reason="no C compiler")
+def test_rubi_norm_source_is_replaced_whole(tmp_path):
+    """rubi_norm_tool puts its generated source in place with a rename, never by rewriting the file under its name:
+    another process's compiler may be reading it (audit-vocr6-finder-g g1: the O_TRUNC rewrite broke parallel cold
+    builds). Run on a stand-in for Rubi's core/textnorm.c."""
+    core = tmp_path / "rubi" / "core"
+    core.mkdir(parents=True)
+    (core / "textnorm.h").write_text("void vjo_text_normalize(char *s, void *stats);\n")
+    (core / "textnorm.c").write_text('#include "textnorm.h"\n'
+                                     "void vjo_text_normalize(char *s, void *stats) {\n"
+                                     "  (void)stats; for (; *s; s++) if (*s == 'a') *s = 'b'; }\n")
+    exe, meta = PP.rubi_norm_tool(tmp_path / "rubi", tmp_path / "bin", cc=CC)
+    assert PP.textnorm(exe, ["abc", ""]) == ["bbc", ""] and meta["textnorm_sha256"]
+    src = exe.with_name(exe.name + ".c")
+    exe.unlink()                                                        # a cold cache again, the source left behind
+    with open(src, "rb") as held:                                       # as another process's compiler holds it
+        before = held.read()
+        exe2, _ = PP.rubi_norm_tool(tmp_path / "rubi", tmp_path / "bin", cc=CC)
+        held.seek(0)
+        assert held.read() == before                                    # the reader's file was not rewritten
+        assert os.stat(src).st_ino != os.fstat(held.fileno()).st_ino       # a new file took its name
+    assert exe2 == exe and PP.textnorm(exe2, ["aa"]) == ["bb"]
+    assert sorted(p.name for p in (tmp_path / "bin").iterdir()) == sorted([exe.name, src.name])  # no temp left

@@ -218,7 +218,8 @@ them together (38 clusters instead of 46) leaves every verdict as it was. The gr
 
 **Development empty regions (eval/linefind's 66, report only).** Rubi today reads 27 characters in 10 of them, from 112
 boxes.
-- With COLGAP + JUNK, the same 10 regions read 23 characters from 100 boxes.
+- With COLGAP + JUNK, 10 regions read 23 characters from 100 boxes: 9 of Rubi today's 10, and `dev:38`, one of the
+  two that COLGAP adds. JUNK empties `dev:26`, which read 6 characters.
 - With the default, COLGAP, 12 regions read 31 characters from 112 boxes: two regions that read nothing before now
   read 2 characters each.
 

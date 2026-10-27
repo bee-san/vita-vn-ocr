@@ -220,3 +220,68 @@ def test_protocol_records_are_counts_only():
     fit = ROOT / "eval" / "textspot7_fit_20261027.json"
     if fit.exists():
         assert "text" not in fit.read_text(encoding="utf-8").lower().replace("textspot", "")
+
+
+# ----------------------------------------------------------------------------- the fit of D and the selection
+
+def fake_result(path, errors_by_uid, chars=20, cluster_of=lambda u: u.split(":")[0]):
+    units = [{"uid": u, "set": "x", "cluster": cluster_of(u), "platform": "vita", "variant": "base", "errors": e,
+              "chars": chars, "lines": 1, "boxes": 1, "whole": 1, "cut": 0, "missed": 0, "noink": 0, "merged": 0,
+              "junk": 0, "frames": 10} for u, e in errors_by_uid.items()]
+    Path(path).write_text(json.dumps({"units": units}), encoding="utf-8")
+    return str(path)
+
+
+def test_d_fit_rule(tmp_path):
+    uids = [f"t{i}:{k}" for i in range(3) for k in range(4)]
+    base = {u: 2 for u in uids}
+    for r in ("runA", "runB"):
+        (tmp_path / "mine" / r).mkdir(parents=True)
+        (tmp_path / "stored" / r).mkdir(parents=True)
+        fake_result(tmp_path / "stored" / r / "hval_det.json", base)
+        fake_result(tmp_path / "mine" / r / "hval_D_plain.json", base)
+        for v, e in (("assign", 2), ("join5", 1), ("join10", 1), ("extend", 3), ("tighten", 1)):
+            fake_result(tmp_path / "mine" / r / f"hval_D_{v}.json", {u: e for u in uids})
+    out = tmp_path / "D.json"
+    E.main(["d-fit", "--runs", "runA,runB", "--dir", str(tmp_path / "mine"), "--stored", str(tmp_path / "stored"),
+            "--out", str(out)])
+    d = json.loads(out.read_text())
+    assert d["kept"] == ["join5", "tighten"] and d["D"] == "join5,tighten"     # a join tie goes to join5
+    fake_result(tmp_path / "mine" / "runB" / "hval_D_plain.json", {**base, uids[0]: 5})
+    with pytest.raises(SystemExit):
+        E.main(["d-fit", "--runs", "runA,runB", "--dir", str(tmp_path / "mine"), "--stored",
+                str(tmp_path / "stored"), "--out", str(out)])
+
+
+def test_select_two_phases(tmp_path):
+    import textspot7_select as SEL
+    vns = [f"v{i}" for i in range(12)]
+    uid = [f"{v}:{k}" for v in vns for k in range(3)]
+    g = fake_result(tmp_path / "grad.json", {u: 4 for u in uid})
+    fix = fake_result(tmp_path / "fix.json", {u: 3 for u in uid})
+    good = fake_result(tmp_path / "good.json", {u: 1 for u in uid})
+    meh = fake_result(tmp_path / "meh.json", {u: (1 if i % 2 else 9) for i, u in enumerate(uid)})
+    cg = fake_result(tmp_path / "cg.json", {u: 2 for u in uid})
+    cf = fake_result(tmp_path / "cf.json", {u: 2 for u in uid})
+    cand = {"arm": "a", "run": "a_s1", "vtsp_bytes": 52176, "est_ms_333": 280.0, "est_ms_444": 210.0, "arena": 244607,
+            "c_equal": True}
+    tab = {"baseline": {"dev": g, "hval": g}, "rubi_next": {"name": "rubi,fix=1", "dev": fix, "hval": fix,
+                                                            "confirm": cf},
+           "seen_dev_clusters": [],
+           "candidates": [dict(cand, name="a|F", decode="F", dev=good, hval=good, confirm=cg),
+                          dict(cand, name="a|D", decode="D", dev=meh, hval=meh),
+                          dict(cand, name="b|D", decode="D", dev=good, hval=good, est_ms_333=301.0)]}
+    tp = tmp_path / "tab.json"
+    tp.write_text(json.dumps(tab))
+    dev = tmp_path / "dev.json"
+    SEL.main(["--table", str(tp), "--phase", "dev", "--out", str(dev)])
+    d = json.loads(dev.read_text())
+    assert d["qualifiers"] == ["a|F"]                                    # b|D is not eligible (301 ms)
+    conf = tmp_path / "conf.json"
+    SEL.main(["--table", str(tp), "--phase", "confirm", "--dev-record", str(dev), "--out", str(conf)])
+    c = json.loads(conf.read_text())
+    assert c["pick"] == "a|F" and c["rubi_default"]["finder"] == "spotter"
+    tab["candidates"][0]["confirm"] = fake_result(tmp_path / "cbad.json", {u: 9 for u in uid})
+    tp.write_text(json.dumps(tab))
+    SEL.main(["--table", str(tp), "--phase", "confirm", "--dev-record", str(dev), "--out", str(conf)])
+    assert json.loads(conf.read_text())["pick"] is None

@@ -168,8 +168,11 @@ def f_choices(units, sbox, grows, p):
 def cmd_fit_f(a):
     units = units_of(a.set)
     _, spot = spot_rows(a.spot, a.set)
-    sbox = spotter_boxes(units, spot)
     srows, grows = load_rows(a.s_rows), load_rows(a.g_rows)
+    if a.s_boxes:                                   # F+D: the spotter's boxes are D's (eval/textspot7.py boxes-d)
+        sbox = {r["unit"]: [tuple(b) for b in r["boxes6"]] for r in read_jsonl(a.s_boxes)}
+    else:
+        sbox = spotter_boxes(units, spot)
     check_reproduction(sbox, srows)
     chars = sum(srows[u["uid"]]["chars"] for u in units)
     se = sum(srows[u["uid"]]["errors"] for u in units)
@@ -184,7 +187,7 @@ def cmd_fit_f(a):
     doc = {"kind": "textspot7-fit-f", "set": a.set, "units": len(units), "chars": chars, "spotter_errors": se,
            "grad_errors": ge, "oracle_errors": sum(min(srows[u["uid"]]["errors"], grows[u["uid"]]["errors"])
                                                    for u in units),
-           "spot_sha256": sha256_file(a.spot), "s_rows_sha256": sha256_file(a.s_rows),
+           "s_boxes": a.s_boxes, "spot_sha256": sha256_file(a.spot), "s_rows_sha256": sha256_file(a.s_rows),
            "g_rows_sha256": sha256_file(a.g_rows), "grid": points, "fit": points[best],
            "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
@@ -499,6 +502,7 @@ def main(argv=None):
     for k in ("spot", "s-rows", "g-rows", "out"):
         p.add_argument(f"--{k}", required=True)
     p.add_argument("--set", default="hval")
+    p.add_argument("--s-boxes", help="D's boxes-d file (F+D)")
     p.set_defaults(fn=cmd_fit_f)
     p = sub.add_parser("boxes-f")
     for k in ("spot", "s-rows", "g-rows", "set", "params", "out"):

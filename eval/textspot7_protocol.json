@@ -299,6 +299,13 @@
    "kind": "process only (no read, no rule of the selection changes)",
    "what": "vocr6-lead's rulings (2026-10-27 10:35Z and ~12:52Z): Rubi gets ONE spotter. vocr6-spotter2's textspot8 student (#149) passed its own registered default test, so it ships as Rubi's default finder; textspot7's pick is released in vita-vn-ocr (v0.3.9-textspot7.1) and is NOT pinned in Rubi, so rule.with_pick's Rubi PR is not opened",
    "unchanged": "the pick, every record, the release and the test reads"
+  },
+  {
+   "n": 5,
+   "utc": "2026-10-27T15:10Z",
+   "kind": "erratum and disclosure (audit-vocr6-spotter3 F1, F2); no read, no rule change",
+   "F1_post_pass_rewrite": "the post-pass's C contrast pass was rewritten row-separable at about 08:23-08:26Z, AFTER the dev and hval reads (08:13-08:22Z) and before the dev record (f62c2e8, 08:35Z), with the results in view. Its output is the same (C == twin re-checked on every dev, hval and confirmation unit), and the rule reads the code's cost. But it decided the eligible set: with the first code's A9 rows (max 95.1-98.8 ms) only base_qS4|D was within 300 ms (294.6 ms) and it would have been the pick (it qualifies and passes the confirmation condition); with the rewritten code base_t64n8c16|D (296.3 ms), kd|D and qL5|D became eligible and t64|D, the cheapest by bytes, is the pick, 3.7 ms under the budget (an estimate). Rubi's default is grad either way",
+   "F2_erratum": "amendment 3's labelling_as_done says 323 frames were decided; the batches' decision files hold 343 (43, 46, 48, 40, 48, 39, 35, 23, 21): 170 accepted + 173 skipped, as the public manifest's decisions count says. Corrected in docs/textspot7.md; amendment 3 is left as committed"
   }
  ]
 }

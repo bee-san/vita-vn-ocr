@@ -97,7 +97,8 @@ size_t vocr_textspot7_rows_arena_bytes_steps(unsigned max_width, unsigned max_he
 /* vocr_textspot7_post for a region read row by row (vocr_lines_rows.h), as a caller that streams the frame (Rubi's
  * game worker) has it: the same boxes for the same pixels, or VOCR_LINES_E_SOURCE when a row could not be read.
  * EXTEND reads each box's rows (one above and one below included) twice, top to bottom; TIGHTEN is
- * vocr_refine_lines_rows. */
+ * vocr_refine_lines_rows. A box whose EXTEND scan would pass 1,024 columns on a side (a box over 682 rows tall) is
+ * refused with VOCR_T7_E_ARG; no box of a 960 x 544 frame comes near it. */
 int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
                              const VocrLinesRows *region, unsigned steps, void *arena, size_t arena_bytes,
                              VocrT7Box *out, unsigned *n_out);

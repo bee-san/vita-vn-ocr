@@ -63,6 +63,9 @@ view, and a region keeps the horizontal boxes whose centre lies in it, clipped t
   reading; the fitted F is then run through the page path, which must reproduce it unit for unit.
 - Amendment 1 (before any read of a new arm) made the coverage test a union of the S boxes (as first written, it
   would have sent v27449 to GRAD), added κ, and fixed every definition in integers for the C twin.
+- **Not in amendment 1's text** (audit N2): the twin and the C count an S box in S_short's row only when it also
+  overlaps the G box horizontally. With amendment 1's literal definition, 68-72 of the 117 grid points' hval errors
+  change per representative, but all four fits stay the same (and F is ineligible anyway).
 
 **D: decode post-pass on the spotter's boxes** (no GRAD), steps in this order:
 - *assign*: a frame box also belongs to the region when its part inside the region is at least 0.6 of its height tall
@@ -165,10 +168,16 @@ A9 cycle model, high bound × 1.0007 at 333 MHz (textspot6's calibration):
 
 - **So F and F+D are over the 300 ms budget for every shape:** 199-264 ms of spotter + 122 ms of GRAD.
 - **D fits:** t64 264.2 + 32.0 = 296.3 ms; qS4 231.3; qL5 270.4; kd 296.8.
-- **Disclosed:** the post-pass's first C code computed each pixel's 3×3 contrast with 9 reads (est. 95-99 ms on the
-  largest regions). After the first A9 row (and after the dev reads), its threshold histogram was rewritten
-  row-separable. The output is the same: C == twin was re-checked on every dev and hval unit. The rule reads the
-  final code's rows; the first rows are in the A9 record.
+- **Disclosed, and it decided the pick (amendment 5).** The post-pass's first C code computed each pixel's 3×3
+  contrast with 9 reads (est. 95-99 ms on the largest regions). It was rewritten row-separable after the dev and hval
+  reads, with their results in view, and before the dev record was committed. The output is the same (C == twin was
+  re-checked on every dev, hval and confirmation unit), and the rule reads the code's cost. The final code's rows are
+  the ones above; the first rows are in the A9 record.
+  - With the first code, only `base_qS4` D was within the budget (199.1 + 95.5 = 294.6 ms). It qualifies and passes the
+    confirmation condition, so it would have been the pick.
+  - With the rewritten code, `base_t64n8c16` D (296.3 ms), `kd_t64n8c16` D and `base_qL5` D became eligible, and t64 D,
+    the cheapest by bytes, is the pick: 3.7 ms under the budget, an estimate.
+  - Rubi's default is GRAD either way.
 
 ### Unseen dev and hval (the dev phase of the rule)
 
@@ -232,9 +241,10 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
   accepted Japanese dialogue frame within the view cap). 170 frames, 172 base regions (516 units with the +4 / +8
   variants), 320 lines, 4,737 characters; PSP 154 and Vita 18 base regions. The public manifest is
   `eval/textspot7_confirm_units_v1.json` (amendment 3): ids, VNs, URLs, sha256, regions and line boxes, no text.
-- **How it was labelled:** 9 Claude helpers reviewed 323 of the 383 sheets offered (one frame each, ≤ 6 accepted
-  frames per VN, in the frozen order). The second look covered the 30 accepted lines whose text matched neither
-  engine's reading or that were added by hand: 29 confirmed, 1 corrected.
+- **How it was labelled:** 9 Claude helpers decided 343 of the 383 sheets offered (one frame each, ≤ 6 accepted
+  frames per VN, in the frozen order; amendment 3's "323" is an erratum, corrected by amendment 5). The second look
+  covered the 30 accepted lines whose text matched neither engine's reading or that were added by hand: 29 confirmed,
+  1 corrected.
   - **Deviation:** amendment 2 named another helper for the second look. No agent capacity was free, so this
     label's own session did it: a different Claude session than every first reviewer, which had seen no arm output
     on any confirmation frame.
@@ -243,6 +253,11 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
   reviewers never saw an arm's output, and no arm ran on a confirmation frame before the freeze.
 - **The read:** once (an attempt record refuses a second), for the three qualifiers and the baselines, with F and
   F+D of the same spotters as report rows. C == twin held for D on every unit.
+- **Checked by the audit** (N4, N5): the thumbnail cross-check against vocr6-spotter2's training pool that this round
+  had promised was not run before the freeze (only duplicates within the list were dropped). The auditor's check by
+  sha256 and VNDB screenshot number over 445 manifests and textspot2's samples found no accepted frame anywhere else.
+  Two confirmation VNs (v6006, v6011) share their only release; counted as one cluster, the pick's interval against
+  `rubi,fix=1` is [−5.45, −0.15] instead of [−5.49, −0.18], and no decision changes.
 
 | finder | confirmation CER | PSP / Vita | − `rubi,fix=1` | − GRAD + refine |
 |---|---:|---|---|---|
@@ -297,16 +312,23 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
 | CLANNAD, each page's region (2,052 dialogue lines, page path) | 0.82 | 0.92 | 0.82 | 0.95 | −0.13 [−0.36, +0.04] |
 | CLANNAD whole frames, dialogue (textspot3's read) | 1.06 | 1.02 | | | (textspot3 0.99) |
 | vita-test + psp-test whole frames, dialogue CER | 2.15 | 2.19 | | | (textspot3 2.29) |
+| vita-test + psp-test whole frames, **all-text CER** | **30.23** | 22.52 | | | (textspot3 20.57) |
 | vita-test + psp-test whole frames, box F1 | 0.667 | 0.748 | | | (textspot3 0.776) |
+| vita-test + psp-test whole frames, name recall (Vita / PSP) | 0.509 / 0.477 | 0.912 / 0.908 | | | (textspot3 0.930 / 0.908) |
 
 Values are CER in % unless marked F1. Intervals are page clusters (one title, CLANNAD) and VN clusters (vita-test +
 psp-test).
 
 - **Dance with Devils:** D is resolved better than `rubi,fix=1` (the det decode alone is worse than it).
 - **CLANNAD's regions:** level with both baselines.
-- **Whole frames:** dialogue CER is level with det and with textspot3's pick. Box F1 drops (−0.08 [−0.12, −0.05]
-  against det), because D read on a whole frame joins the boxes of one row (names, UI labels) that the box metric
-  scores apart.
-  - D is a decode for the player's region, which is how Rubi reads. The whole-frame rows apply it to the frame
-    only to keep textspot6's harness.
+- **Whole frames: D loses names and UI text there.** Dialogue CER is level with det and with textspot3's pick. But
+  all-text CER is resolved worse than det's (+7.71 [+5.77, +9.94]) and than textspot3's (+9.66 [+6.97, +12.79]), box F1
+  drops (−0.08 [−0.12, −0.05] against det), name recall roughly halves (Vita 0.912 → 0.509, PSP 0.908 → 0.477), and
+  the tagged dialogue CER rises from 11.88% to 13.36%.
+  - The cause, measured on the stored per-frame boxes (counts only): of the 187 speaker-name references, det gives
+    173 a box of their own; after D only 102 keep one, 83 lie inside a box more than twice their width (D's join has
+    merged them with a neighbour on the same row), and 2 lose their box.
+  - **D is a decode for the player's region**, which is how Rubi reads (and where it was fit and decided). It is not
+    for a whole frame: a scan-screen mode should read the det decode. The whole-frame rows apply D to the frame only
+    to keep textspot6's harness.
 - **Disclosed** (as textspot6): three training titles share a VNDB release with CLANNAD or with a vita-test VN.

@@ -157,6 +157,22 @@
    },
    "stopped": "the across-shrink-1.0 seed-1 run ($A/vocr6-spotter2/runs/t8_t64n8c16_seed1) was stopped at 07:48Z, never scored, and is not a candidate",
    "rule": "unchanged"
+  },
+  {
+   "n": 3,
+   "utc": "2026-10-27T07:55:36Z",
+   "before": "every score of a t8 run (seeds 1-2 are training since 07:49Z; nothing of them has been read)",
+   "title": "vocr6-spotter3's post-pass D and fallback F as extra decodes of the student",
+   "why": "vocr6-spotter3 builds D (a decode post-pass on the spotter's det boxes: region assignment, joining on one row, extending over ink, tightening) and F (a per-region fallback to rubi,fix=1) as boxes-in / boxes-out rules any spotter can use (its prompt; eval/textspot7_protocol.json on feat/textspot7). textspot6's measured losses are the cuts D aims at; the student is scored with them too, by their own definitions, so the two lines stay comparable",
+   "decodes": {
+    "det+D": "textspot7's D exactly as vocr6-spotter3's hval fit records it (the steps it keeps, the same for every spotter), applied to the student's det boxes with textspot7's code (eval/textspot7.py boxes-d, synth/textspot7_twin.post, runtime/vocr_textspot7.c); the fit record is the one on feat/textspot7 when the first t8 run is scored; if no D fit is recorded then, or D keeps no step, det+D is not a textspot8 decode",
+    "F": "textspot7's F family and grid (its protocol's arms.F with amendment 1), fit on hval for each t8 seed from the stored rows by textspot7's fit rule (eval/textspot7.py fit-f: the fewest hval errors; its ties), then read through eval/pagepath.py --boxes (eval/textspot7.py boxes-f); G = textspot6's stored rubi,fix=1 rows (the same pins)",
+    "F+D": "textspot7's F+D (F refit over det+D's boxes), only when det+D is a decode"
+   },
+   "costs": "textspot7's cost rules (its rule's cost_of_F / cost_of_D: the spotter's row of record plus GRAD's or D's A9 estimate), so F can be ineligible if the trunk plus GRAD passes 300 ms @333",
+   "cost_order": "textspot6's four decodes, then det+D, F, F+D",
+   "code": "a worktree of feat/textspot7 at the commit that holds the D fit record, pinned in the scores",
+   "rule": "unchanged; the representative is the median seed of each decode"
   }
  ],
  "corrections": [

@@ -1,0 +1,2435 @@
+{
+ "kind": "textspot7-fit",
+ "schema": 1,
+ "issue": 128,
+ "protocol": "eval/textspot7_protocol.json (amendment 1)",
+ "protocol_sha256": "2380a2e31b45e3cb5309a837ba87780e6d495a19af4d3c118df340bc6147720a",
+ "created": "2026-10-27T07:10:27Z",
+ "note": "F fit on hval only, from the stored page-path rows (eval/textspot7.py fit-f): no unseen-dev or confirmation unit was read for it. hval: 6,327 units, 162,471 reference characters. Counts only.",
+ "F": {
+  "base_t64n8c16_seed1": {
+   "units": 6327,
+   "chars": 162471,
+   "spotter_errors": 2116,
+   "grad_errors": 5349,
+   "oracle_errors": 1415,
+   "spot_sha256": "192692176dc71015688d1d3f81261f869fb02bc6c5c46c8d7aa585f888ed9cf6",
+   "s_rows_sha256": "149fe277f15369bd80d1137eabf89d107af5c241ca797415261c575bd7bdf322",
+   "g_rows_sha256": "be3a3b0fc2d5dd6244521e35020d39033b570d71c4909b0ff41a5537b4adcf2f",
+   "fit": {
+    "params": "S_t8_l0_k0",
+    "mode": "S",
+    "tau": 8,
+    "lam": 0,
+    "kappa": 0,
+    "errors": 2106,
+    "grad_units": 4
+   },
+   "grid": [
+    {
+     "params": "S_t96_l600_k500",
+     "errors": 4410,
+     "grad_units": 1819
+    },
+    {
+     "params": "S_t96_l600_k1000",
+     "errors": 4431,
+     "grad_units": 1486
+    },
+    {
+     "params": "S_t96_l600_k0",
+     "errors": 4352,
+     "grad_units": 1307
+    },
+    {
+     "params": "S_t96_l750_k500",
+     "errors": 3799,
+     "grad_units": 1792
+    },
+    {
+     "params": "S_t96_l750_k1000",
+     "errors": 3786,
+     "grad_units": 1456
+    },
+    {
+     "params": "S_t96_l750_k0",
+     "errors": 3707,
+     "grad_units": 1277
+    },
+    {
+     "params": "S_t96_l900_k500",
+     "errors": 3419,
+     "grad_units": 1779
+    },
+    {
+     "params": "S_t96_l900_k1000",
+     "errors": 3409,
+     "grad_units": 1440
+    },
+    {
+     "params": "S_t96_l900_k0",
+     "errors": 3330,
+     "grad_units": 1261
+    },
+    {
+     "params": "S_t96_l0_k500",
+     "errors": 3416,
+     "grad_units": 1778
+    },
+    {
+     "params": "S_t96_l0_k1000",
+     "errors": 3406,
+     "grad_units": 1439
+    },
+    {
+     "params": "S_t96_l0_k0",
+     "errors": 3327,
+     "grad_units": 1260
+    },
+    {
+     "params": "S_t80_l600_k500",
+     "errors": 3738,
+     "grad_units": 1026
+    },
+    {
+     "params": "S_t80_l600_k1000",
+     "errors": 3757,
+     "grad_units": 656
+    },
+    {
+     "params": "S_t80_l600_k0",
+     "errors": 3723,
+     "grad_units": 408
+    },
+    {
+     "params": "S_t80_l750_k500",
+     "errors": 2929,
+     "grad_units": 988
+    },
+    {
+     "params": "S_t80_l750_k1000",
+     "errors": 2914,
+     "grad_units": 614
+    },
+    {
+     "params": "S_t80_l750_k0",
+     "errors": 2877,
+     "grad_units": 365
+    },
+    {
+     "params": "S_t80_l900_k500",
+     "errors": 2459,
+     "grad_units": 973
+    },
+    {
+     "params": "S_t80_l900_k1000",
+     "errors": 2447,
+     "grad_units": 596
+    },
+    {
+     "params": "S_t80_l900_k0",
+     "errors": 2410,
+     "grad_units": 347
+    },
+    {
+     "params": "S_t80_l0_k500",
+     "errors": 2456,
+     "grad_units": 970
+    },
+    {
+     "params": "S_t80_l0_k1000",
+     "errors": 2444,
+     "grad_units": 593
+    },
+    {
+     "params": "S_t80_l0_k0",
+     "errors": 2407,
+     "grad_units": 344
+    },
+    {
+     "params": "S_t64_l600_k500",
+     "errors": 3719,
+     "grad_units": 841
+    },
+    {
+     "params": "S_t64_l600_k1000",
+     "errors": 3738,
+     "grad_units": 465
+    },
+    {
+     "params": "S_t64_l600_k0",
+     "errors": 3727,
+     "grad_units": 198
+    },
+    {
+     "params": "S_t64_l750_k500",
+     "errors": 2910,
+     "grad_units": 803
+    },
+    {
+     "params": "S_t64_l750_k1000",
+     "errors": 2895,
+     "grad_units": 423
+    },
+    {
+     "params": "S_t64_l750_k0",
+     "errors": 2881,
+     "grad_units": 155
+    },
+    {
+     "params": "S_t64_l900_k500",
+     "errors": 2440,
+     "grad_units": 788
+    },
+    {
+     "params": "S_t64_l900_k1000",
+     "errors": 2428,
+     "grad_units": 405
+    },
+    {
+     "params": "S_t64_l900_k0",
+     "errors": 2414,
+     "grad_units": 137
+    },
+    {
+     "params": "S_t64_l0_k500",
+     "errors": 2437,
+     "grad_units": 785
+    },
+    {
+     "params": "S_t64_l0_k1000",
+     "errors": 2425,
+     "grad_units": 402
+    },
+    {
+     "params": "S_t64_l0_k0",
+     "errors": 2411,
+     "grad_units": 134
+    },
+    {
+     "params": "S_t48_l600_k500",
+     "errors": 3680,
+     "grad_units": 801
+    },
+    {
+     "params": "S_t48_l600_k1000",
+     "errors": 3698,
+     "grad_units": 419
+    },
+    {
+     "params": "S_t48_l600_k0",
+     "errors": 3595,
+     "grad_units": 146
+    },
+    {
+     "params": "S_t48_l750_k500",
+     "errors": 2869,
+     "grad_units": 762
+    },
+    {
+     "params": "S_t48_l750_k1000",
+     "errors": 2853,
+     "grad_units": 376
+    },
+    {
+     "params": "S_t48_l750_k0",
+     "errors": 2747,
+     "grad_units": 102
+    },
+    {
+     "params": "S_t48_l900_k500",
+     "errors": 2399,
+     "grad_units": 747
+    },
+    {
+     "params": "S_t48_l900_k1000",
+     "errors": 2386,
+     "grad_units": 358
+    },
+    {
+     "params": "S_t48_l900_k0",
+     "errors": 2280,
+     "grad_units": 84
+    },
+    {
+     "params": "S_t48_l0_k500",
+     "errors": 2396,
+     "grad_units": 744
+    },
+    {
+     "params": "S_t48_l0_k1000",
+     "errors": 2383,
+     "grad_units": 355
+    },
+    {
+     "params": "S_t48_l0_k0",
+     "errors": 2277,
+     "grad_units": 81
+    },
+    {
+     "params": "S_t32_l600_k500",
+     "errors": 3693,
+     "grad_units": 774
+    },
+    {
+     "params": "S_t32_l600_k1000",
+     "errors": 3711,
+     "grad_units": 392
+    },
+    {
+     "params": "S_t32_l600_k0",
+     "errors": 3608,
+     "grad_units": 118
+    },
+    {
+     "params": "S_t32_l750_k500",
+     "errors": 2882,
+     "grad_units": 735
+    },
+    {
+     "params": "S_t32_l750_k1000",
+     "errors": 2866,
+     "grad_units": 349
+    },
+    {
+     "params": "S_t32_l750_k0",
+     "errors": 2760,
+     "grad_units": 74
+    },
+    {
+     "params": "S_t32_l900_k500",
+     "errors": 2412,
+     "grad_units": 720
+    },
+    {
+     "params": "S_t32_l900_k1000",
+     "errors": 2399,
+     "grad_units": 331
+    },
+    {
+     "params": "S_t32_l900_k0",
+     "errors": 2293,
+     "grad_units": 56
+    },
+    {
+     "params": "S_t32_l0_k500",
+     "errors": 2409,
+     "grad_units": 717
+    },
+    {
+     "params": "S_t32_l0_k1000",
+     "errors": 2396,
+     "grad_units": 328
+    },
+    {
+     "params": "S_t32_l0_k0",
+     "errors": 2290,
+     "grad_units": 53
+    },
+    {
+     "params": "S_t24_l600_k500",
+     "errors": 3693,
+     "grad_units": 773
+    },
+    {
+     "params": "S_t24_l600_k1000",
+     "errors": 3711,
+     "grad_units": 391
+    },
+    {
+     "params": "S_t24_l600_k0",
+     "errors": 3497,
+     "grad_units": 106
+    },
+    {
+     "params": "S_t24_l750_k500",
+     "errors": 2882,
+     "grad_units": 734
+    },
+    {
+     "params": "S_t24_l750_k1000",
+     "errors": 2866,
+     "grad_units": 348
+    },
+    {
+     "params": "S_t24_l750_k0",
+     "errors": 2649,
+     "grad_units": 62
+    },
+    {
+     "params": "S_t24_l900_k500",
+     "errors": 2412,
+     "grad_units": 719
+    },
+    {
+     "params": "S_t24_l900_k1000",
+     "errors": 2399,
+     "grad_units": 330
+    },
+    {
+     "params": "S_t24_l900_k0",
+     "errors": 2182,
+     "grad_units": 44
+    },
+    {
+     "params": "S_t24_l0_k500",
+     "errors": 2409,
+     "grad_units": 716
+    },
+    {
+     "params": "S_t24_l0_k1000",
+     "errors": 2396,
+     "grad_units": 327
+    },
+    {
+     "params": "S_t24_l0_k0",
+     "errors": 2179,
+     "grad_units": 41
+    },
+    {
+     "params": "S_t16_l600_k500",
+     "errors": 3693,
+     "grad_units": 773
+    },
+    {
+     "params": "S_t16_l600_k1000",
+     "errors": 3711,
+     "grad_units": 391
+    },
+    {
+     "params": "S_t16_l600_k0",
+     "errors": 3488,
+     "grad_units": 100
+    },
+    {
+     "params": "S_t16_l750_k500",
+     "errors": 2882,
+     "grad_units": 734
+    },
+    {
+     "params": "S_t16_l750_k1000",
+     "errors": 2866,
+     "grad_units": 348
+    },
+    {
+     "params": "S_t16_l750_k0",
+     "errors": 2640,
+     "grad_units": 56
+    },
+    {
+     "params": "S_t16_l900_k500",
+     "errors": 2412,
+     "grad_units": 719
+    },
+    {
+     "params": "S_t16_l900_k1000",
+     "errors": 2399,
+     "grad_units": 330
+    },
+    {
+     "params": "S_t16_l900_k0",
+     "errors": 2173,
+     "grad_units": 38
+    },
+    {
+     "params": "S_t16_l0_k500",
+     "errors": 2409,
+     "grad_units": 716
+    },
+    {
+     "params": "S_t16_l0_k1000",
+     "errors": 2396,
+     "grad_units": 327
+    },
+    {
+     "params": "S_t16_l0_k0",
+     "errors": 2170,
+     "grad_units": 35
+    },
+    {
+     "params": "S_t8_l600_k500",
+     "errors": 3705,
+     "grad_units": 750
+    },
+    {
+     "params": "S_t8_l600_k1000",
+     "errors": 3732,
+     "grad_units": 364
+    },
+    {
+     "params": "S_t8_l600_k0",
+     "errors": 3424,
+     "grad_units": 69
+    },
+    {
+     "params": "S_t8_l750_k500",
+     "errors": 2894,
+     "grad_units": 711
+    },
+    {
+     "params": "S_t8_l750_k1000",
+     "errors": 2887,
+     "grad_units": 321
+    },
+    {
+     "params": "S_t8_l750_k0",
+     "errors": 2576,
+     "grad_units": 25
+    },
+    {
+     "params": "S_t8_l900_k500",
+     "errors": 2424,
+     "grad_units": 696
+    },
+    {
+     "params": "S_t8_l900_k1000",
+     "errors": 2420,
+     "grad_units": 303
+    },
+    {
+     "params": "S_t8_l900_k0",
+     "errors": 2109,
+     "grad_units": 7
+    },
+    {
+     "params": "S_t8_l0_k500",
+     "errors": 2421,
+     "grad_units": 693
+    },
+    {
+     "params": "S_t8_l0_k1000",
+     "errors": 2417,
+     "grad_units": 300
+    },
+    {
+     "params": "S_t8_l0_k0",
+     "errors": 2106,
+     "grad_units": 4
+    },
+    {
+     "params": "S_t0_l600_k500",
+     "errors": 3705,
+     "grad_units": 749
+    },
+    {
+     "params": "S_t0_l600_k1000",
+     "errors": 3732,
+     "grad_units": 363
+    },
+    {
+     "params": "S_t0_l600_k0",
+     "errors": 3434,
+     "grad_units": 65
+    },
+    {
+     "params": "S_t0_l750_k500",
+     "errors": 2894,
+     "grad_units": 710
+    },
+    {
+     "params": "S_t0_l750_k1000",
+     "errors": 2887,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t0_l750_k0",
+     "errors": 2586,
+     "grad_units": 21
+    },
+    {
+     "params": "S_t0_l900_k500",
+     "errors": 2424,
+     "grad_units": 695
+    },
+    {
+     "params": "S_t0_l900_k1000",
+     "errors": 2420,
+     "grad_units": 302
+    },
+    {
+     "params": "S_t0_l900_k0",
+     "errors": 2119,
+     "grad_units": 3
+    },
+    {
+     "params": "S_t0_l0_k500",
+     "errors": 2421,
+     "grad_units": 692
+    },
+    {
+     "params": "S_t0_l0_k1000",
+     "errors": 2417,
+     "grad_units": 299
+    },
+    {
+     "params": "S_t0_l0_k0",
+     "errors": 2116,
+     "grad_units": 0
+    },
+    {
+     "params": "G_t96_l0_k0",
+     "errors": 5109,
+     "grad_units": 6232
+    },
+    {
+     "params": "G_t80_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t64_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t48_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t32_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t24_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t16_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t8_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t0_l0_k0",
+     "errors": 4909,
+     "grad_units": 6226
+    }
+   ]
+  },
+  "kd_t64n8c16_seed2": {
+   "units": 6327,
+   "chars": 162471,
+   "spotter_errors": 2164,
+   "grad_errors": 5349,
+   "oracle_errors": 1471,
+   "spot_sha256": "2dbe88ddaa3c5f68af9588a3e26861de84f5ffdb44c7291f65084067fa145d9c",
+   "s_rows_sha256": "1072432952e1713f31adb5f735a6d51cbeb68230e7e8ffe57afbfb7665c38da7",
+   "g_rows_sha256": "be3a3b0fc2d5dd6244521e35020d39033b570d71c4909b0ff41a5537b4adcf2f",
+   "fit": {
+    "params": "S_t0_l900_k0",
+    "mode": "S",
+    "tau": 0,
+    "lam": 900,
+    "kappa": 0,
+    "errors": 2164,
+    "grad_units": 2
+   },
+   "grid": [
+    {
+     "params": "S_t96_l600_k500",
+     "errors": 4516,
+     "grad_units": 1975
+    },
+    {
+     "params": "S_t96_l600_k1000",
+     "errors": 4521,
+     "grad_units": 1688
+    },
+    {
+     "params": "S_t96_l600_k0",
+     "errors": 3824,
+     "grad_units": 1553
+    },
+    {
+     "params": "S_t96_l750_k500",
+     "errors": 3873,
+     "grad_units": 1948
+    },
+    {
+     "params": "S_t96_l750_k1000",
+     "errors": 3790,
+     "grad_units": 1657
+    },
+    {
+     "params": "S_t96_l750_k0",
+     "errors": 3090,
+     "grad_units": 1520
+    },
+    {
+     "params": "S_t96_l900_k500",
+     "errors": 3643,
+     "grad_units": 1936
+    },
+    {
+     "params": "S_t96_l900_k1000",
+     "errors": 3560,
+     "grad_units": 1643
+    },
+    {
+     "params": "S_t96_l900_k0",
+     "errors": 2860,
+     "grad_units": 1506
+    },
+    {
+     "params": "S_t96_l0_k500",
+     "errors": 3643,
+     "grad_units": 1934
+    },
+    {
+     "params": "S_t96_l0_k1000",
+     "errors": 3560,
+     "grad_units": 1641
+    },
+    {
+     "params": "S_t96_l0_k0",
+     "errors": 2860,
+     "grad_units": 1504
+    },
+    {
+     "params": "S_t80_l600_k500",
+     "errors": 4227,
+     "grad_units": 1005
+    },
+    {
+     "params": "S_t80_l600_k1000",
+     "errors": 4229,
+     "grad_units": 683
+    },
+    {
+     "params": "S_t80_l600_k0",
+     "errors": 3522,
+     "grad_units": 492
+    },
+    {
+     "params": "S_t80_l750_k500",
+     "errors": 3367,
+     "grad_units": 967
+    },
+    {
+     "params": "S_t80_l750_k1000",
+     "errors": 3281,
+     "grad_units": 641
+    },
+    {
+     "params": "S_t80_l750_k0",
+     "errors": 2571,
+     "grad_units": 448
+    },
+    {
+     "params": "S_t80_l900_k500",
+     "errors": 3086,
+     "grad_units": 954
+    },
+    {
+     "params": "S_t80_l900_k1000",
+     "errors": 3000,
+     "grad_units": 626
+    },
+    {
+     "params": "S_t80_l900_k0",
+     "errors": 2290,
+     "grad_units": 433
+    },
+    {
+     "params": "S_t80_l0_k500",
+     "errors": 3086,
+     "grad_units": 952
+    },
+    {
+     "params": "S_t80_l0_k1000",
+     "errors": 3000,
+     "grad_units": 624
+    },
+    {
+     "params": "S_t80_l0_k0",
+     "errors": 2290,
+     "grad_units": 431
+    },
+    {
+     "params": "S_t64_l600_k500",
+     "errors": 4184,
+     "grad_units": 748
+    },
+    {
+     "params": "S_t64_l600_k1000",
+     "errors": 4187,
+     "grad_units": 422
+    },
+    {
+     "params": "S_t64_l600_k0",
+     "errors": 3507,
+     "grad_units": 206
+    },
+    {
+     "params": "S_t64_l750_k500",
+     "errors": 3322,
+     "grad_units": 709
+    },
+    {
+     "params": "S_t64_l750_k1000",
+     "errors": 3237,
+     "grad_units": 379
+    },
+    {
+     "params": "S_t64_l750_k0",
+     "errors": 2554,
+     "grad_units": 161
+    },
+    {
+     "params": "S_t64_l900_k500",
+     "errors": 3041,
+     "grad_units": 696
+    },
+    {
+     "params": "S_t64_l900_k1000",
+     "errors": 2956,
+     "grad_units": 364
+    },
+    {
+     "params": "S_t64_l900_k0",
+     "errors": 2273,
+     "grad_units": 146
+    },
+    {
+     "params": "S_t64_l0_k500",
+     "errors": 3041,
+     "grad_units": 694
+    },
+    {
+     "params": "S_t64_l0_k1000",
+     "errors": 2956,
+     "grad_units": 362
+    },
+    {
+     "params": "S_t64_l0_k0",
+     "errors": 2273,
+     "grad_units": 144
+    },
+    {
+     "params": "S_t48_l600_k500",
+     "errors": 4159,
+     "grad_units": 675
+    },
+    {
+     "params": "S_t48_l600_k1000",
+     "errors": 4162,
+     "grad_units": 346
+    },
+    {
+     "params": "S_t48_l600_k0",
+     "errors": 3488,
+     "grad_units": 125
+    },
+    {
+     "params": "S_t48_l750_k500",
+     "errors": 3297,
+     "grad_units": 636
+    },
+    {
+     "params": "S_t48_l750_k1000",
+     "errors": 3212,
+     "grad_units": 303
+    },
+    {
+     "params": "S_t48_l750_k0",
+     "errors": 2535,
+     "grad_units": 80
+    },
+    {
+     "params": "S_t48_l900_k500",
+     "errors": 3016,
+     "grad_units": 623
+    },
+    {
+     "params": "S_t48_l900_k1000",
+     "errors": 2931,
+     "grad_units": 288
+    },
+    {
+     "params": "S_t48_l900_k0",
+     "errors": 2254,
+     "grad_units": 65
+    },
+    {
+     "params": "S_t48_l0_k500",
+     "errors": 3016,
+     "grad_units": 621
+    },
+    {
+     "params": "S_t48_l0_k1000",
+     "errors": 2931,
+     "grad_units": 286
+    },
+    {
+     "params": "S_t48_l0_k0",
+     "errors": 2254,
+     "grad_units": 63
+    },
+    {
+     "params": "S_t32_l600_k500",
+     "errors": 4180,
+     "grad_units": 652
+    },
+    {
+     "params": "S_t32_l600_k1000",
+     "errors": 4183,
+     "grad_units": 323
+    },
+    {
+     "params": "S_t32_l600_k0",
+     "errors": 3447,
+     "grad_units": 97
+    },
+    {
+     "params": "S_t32_l750_k500",
+     "errors": 3318,
+     "grad_units": 613
+    },
+    {
+     "params": "S_t32_l750_k1000",
+     "errors": 3233,
+     "grad_units": 280
+    },
+    {
+     "params": "S_t32_l750_k0",
+     "errors": 2494,
+     "grad_units": 52
+    },
+    {
+     "params": "S_t32_l900_k500",
+     "errors": 3037,
+     "grad_units": 600
+    },
+    {
+     "params": "S_t32_l900_k1000",
+     "errors": 2952,
+     "grad_units": 265
+    },
+    {
+     "params": "S_t32_l900_k0",
+     "errors": 2213,
+     "grad_units": 37
+    },
+    {
+     "params": "S_t32_l0_k500",
+     "errors": 3037,
+     "grad_units": 598
+    },
+    {
+     "params": "S_t32_l0_k1000",
+     "errors": 2952,
+     "grad_units": 263
+    },
+    {
+     "params": "S_t32_l0_k0",
+     "errors": 2213,
+     "grad_units": 35
+    },
+    {
+     "params": "S_t24_l600_k500",
+     "errors": 4192,
+     "grad_units": 649
+    },
+    {
+     "params": "S_t24_l600_k1000",
+     "errors": 4195,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t24_l600_k0",
+     "errors": 3465,
+     "grad_units": 91
+    },
+    {
+     "params": "S_t24_l750_k500",
+     "errors": 3330,
+     "grad_units": 610
+    },
+    {
+     "params": "S_t24_l750_k1000",
+     "errors": 3245,
+     "grad_units": 277
+    },
+    {
+     "params": "S_t24_l750_k0",
+     "errors": 2512,
+     "grad_units": 46
+    },
+    {
+     "params": "S_t24_l900_k500",
+     "errors": 3049,
+     "grad_units": 597
+    },
+    {
+     "params": "S_t24_l900_k1000",
+     "errors": 2964,
+     "grad_units": 262
+    },
+    {
+     "params": "S_t24_l900_k0",
+     "errors": 2231,
+     "grad_units": 31
+    },
+    {
+     "params": "S_t24_l0_k500",
+     "errors": 3049,
+     "grad_units": 595
+    },
+    {
+     "params": "S_t24_l0_k1000",
+     "errors": 2964,
+     "grad_units": 260
+    },
+    {
+     "params": "S_t24_l0_k0",
+     "errors": 2231,
+     "grad_units": 29
+    },
+    {
+     "params": "S_t16_l600_k500",
+     "errors": 4189,
+     "grad_units": 639
+    },
+    {
+     "params": "S_t16_l600_k1000",
+     "errors": 4192,
+     "grad_units": 309
+    },
+    {
+     "params": "S_t16_l600_k0",
+     "errors": 3427,
+     "grad_units": 78
+    },
+    {
+     "params": "S_t16_l750_k500",
+     "errors": 3327,
+     "grad_units": 600
+    },
+    {
+     "params": "S_t16_l750_k1000",
+     "errors": 3242,
+     "grad_units": 266
+    },
+    {
+     "params": "S_t16_l750_k0",
+     "errors": 2474,
+     "grad_units": 33
+    },
+    {
+     "params": "S_t16_l900_k500",
+     "errors": 3046,
+     "grad_units": 587
+    },
+    {
+     "params": "S_t16_l900_k1000",
+     "errors": 2961,
+     "grad_units": 251
+    },
+    {
+     "params": "S_t16_l900_k0",
+     "errors": 2193,
+     "grad_units": 18
+    },
+    {
+     "params": "S_t16_l0_k500",
+     "errors": 3046,
+     "grad_units": 585
+    },
+    {
+     "params": "S_t16_l0_k1000",
+     "errors": 2961,
+     "grad_units": 249
+    },
+    {
+     "params": "S_t16_l0_k0",
+     "errors": 2193,
+     "grad_units": 16
+    },
+    {
+     "params": "S_t8_l600_k500",
+     "errors": 4206,
+     "grad_units": 633
+    },
+    {
+     "params": "S_t8_l600_k1000",
+     "errors": 4209,
+     "grad_units": 303
+    },
+    {
+     "params": "S_t8_l600_k0",
+     "errors": 3448,
+     "grad_units": 69
+    },
+    {
+     "params": "S_t8_l750_k500",
+     "errors": 3344,
+     "grad_units": 594
+    },
+    {
+     "params": "S_t8_l750_k1000",
+     "errors": 3259,
+     "grad_units": 260
+    },
+    {
+     "params": "S_t8_l750_k0",
+     "errors": 2495,
+     "grad_units": 24
+    },
+    {
+     "params": "S_t8_l900_k500",
+     "errors": 3063,
+     "grad_units": 581
+    },
+    {
+     "params": "S_t8_l900_k1000",
+     "errors": 2978,
+     "grad_units": 245
+    },
+    {
+     "params": "S_t8_l900_k0",
+     "errors": 2214,
+     "grad_units": 9
+    },
+    {
+     "params": "S_t8_l0_k500",
+     "errors": 3063,
+     "grad_units": 579
+    },
+    {
+     "params": "S_t8_l0_k1000",
+     "errors": 2978,
+     "grad_units": 243
+    },
+    {
+     "params": "S_t8_l0_k0",
+     "errors": 2214,
+     "grad_units": 7
+    },
+    {
+     "params": "S_t0_l600_k500",
+     "errors": 4206,
+     "grad_units": 631
+    },
+    {
+     "params": "S_t0_l600_k1000",
+     "errors": 4209,
+     "grad_units": 301
+    },
+    {
+     "params": "S_t0_l600_k0",
+     "errors": 3398,
+     "grad_units": 62
+    },
+    {
+     "params": "S_t0_l750_k500",
+     "errors": 3344,
+     "grad_units": 592
+    },
+    {
+     "params": "S_t0_l750_k1000",
+     "errors": 3259,
+     "grad_units": 258
+    },
+    {
+     "params": "S_t0_l750_k0",
+     "errors": 2445,
+     "grad_units": 17
+    },
+    {
+     "params": "S_t0_l900_k500",
+     "errors": 3063,
+     "grad_units": 579
+    },
+    {
+     "params": "S_t0_l900_k1000",
+     "errors": 2978,
+     "grad_units": 243
+    },
+    {
+     "params": "S_t0_l900_k0",
+     "errors": 2164,
+     "grad_units": 2
+    },
+    {
+     "params": "S_t0_l0_k500",
+     "errors": 3063,
+     "grad_units": 577
+    },
+    {
+     "params": "S_t0_l0_k1000",
+     "errors": 2978,
+     "grad_units": 241
+    },
+    {
+     "params": "S_t0_l0_k0",
+     "errors": 2164,
+     "grad_units": 0
+    },
+    {
+     "params": "G_t96_l0_k0",
+     "errors": 4963,
+     "grad_units": 6229
+    },
+    {
+     "params": "G_t80_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t64_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t48_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t32_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t24_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t16_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t8_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    },
+    {
+     "params": "G_t0_l0_k0",
+     "errors": 4883,
+     "grad_units": 6226
+    }
+   ]
+  },
+  "base_qS4_seed2": {
+   "units": 6327,
+   "chars": 162471,
+   "spotter_errors": 2552,
+   "grad_errors": 5349,
+   "oracle_errors": 1650,
+   "spot_sha256": "4ca924ec0746ce8fba5020124557eebf1b93b306e2ec70194c116eeab1d530f8",
+   "s_rows_sha256": "be2631a7f8bed075fe54a4a4a3865162522d4a7ced523a8b3ae7967ee3607c9c",
+   "g_rows_sha256": "be3a3b0fc2d5dd6244521e35020d39033b570d71c4909b0ff41a5537b4adcf2f",
+   "fit": {
+    "params": "S_t0_l900_k0",
+    "mode": "S",
+    "tau": 0,
+    "lam": 900,
+    "kappa": 0,
+    "errors": 2552,
+    "grad_units": 2
+   },
+   "grid": [
+    {
+     "params": "S_t96_l600_k500",
+     "errors": 4979,
+     "grad_units": 1719
+    },
+    {
+     "params": "S_t96_l600_k1000",
+     "errors": 5000,
+     "grad_units": 1423
+    },
+    {
+     "params": "S_t96_l600_k0",
+     "errors": 4348,
+     "grad_units": 1294
+    },
+    {
+     "params": "S_t96_l750_k500",
+     "errors": 4835,
+     "grad_units": 1710
+    },
+    {
+     "params": "S_t96_l750_k1000",
+     "errors": 4856,
+     "grad_units": 1414
+    },
+    {
+     "params": "S_t96_l750_k0",
+     "errors": 4201,
+     "grad_units": 1283
+    },
+    {
+     "params": "S_t96_l900_k500",
+     "errors": 4730,
+     "grad_units": 1703
+    },
+    {
+     "params": "S_t96_l900_k1000",
+     "errors": 4754,
+     "grad_units": 1403
+    },
+    {
+     "params": "S_t96_l900_k0",
+     "errors": 3976,
+     "grad_units": 1270
+    },
+    {
+     "params": "S_t96_l0_k500",
+     "errors": 4730,
+     "grad_units": 1701
+    },
+    {
+     "params": "S_t96_l0_k1000",
+     "errors": 4754,
+     "grad_units": 1401
+    },
+    {
+     "params": "S_t96_l0_k0",
+     "errors": 3976,
+     "grad_units": 1268
+    },
+    {
+     "params": "S_t80_l600_k500",
+     "errors": 4877,
+     "grad_units": 924
+    },
+    {
+     "params": "S_t80_l600_k1000",
+     "errors": 4889,
+     "grad_units": 587
+    },
+    {
+     "params": "S_t80_l600_k0",
+     "errors": 3749,
+     "grad_units": 397
+    },
+    {
+     "params": "S_t80_l750_k500",
+     "errors": 4726,
+     "grad_units": 910
+    },
+    {
+     "params": "S_t80_l750_k1000",
+     "errors": 4738,
+     "grad_units": 573
+    },
+    {
+     "params": "S_t80_l750_k0",
+     "errors": 3595,
+     "grad_units": 381
+    },
+    {
+     "params": "S_t80_l900_k500",
+     "errors": 4561,
+     "grad_units": 901
+    },
+    {
+     "params": "S_t80_l900_k1000",
+     "errors": 4576,
+     "grad_units": 560
+    },
+    {
+     "params": "S_t80_l900_k0",
+     "errors": 3310,
+     "grad_units": 366
+    },
+    {
+     "params": "S_t80_l0_k500",
+     "errors": 4561,
+     "grad_units": 899
+    },
+    {
+     "params": "S_t80_l0_k1000",
+     "errors": 4576,
+     "grad_units": 558
+    },
+    {
+     "params": "S_t80_l0_k0",
+     "errors": 3310,
+     "grad_units": 364
+    },
+    {
+     "params": "S_t64_l600_k500",
+     "errors": 4855,
+     "grad_units": 721
+    },
+    {
+     "params": "S_t64_l600_k1000",
+     "errors": 4868,
+     "grad_units": 371
+    },
+    {
+     "params": "S_t64_l600_k0",
+     "errors": 3712,
+     "grad_units": 157
+    },
+    {
+     "params": "S_t64_l750_k500",
+     "errors": 4704,
+     "grad_units": 707
+    },
+    {
+     "params": "S_t64_l750_k1000",
+     "errors": 4717,
+     "grad_units": 357
+    },
+    {
+     "params": "S_t64_l750_k0",
+     "errors": 3558,
+     "grad_units": 141
+    },
+    {
+     "params": "S_t64_l900_k500",
+     "errors": 4539,
+     "grad_units": 698
+    },
+    {
+     "params": "S_t64_l900_k1000",
+     "errors": 4555,
+     "grad_units": 344
+    },
+    {
+     "params": "S_t64_l900_k0",
+     "errors": 3273,
+     "grad_units": 126
+    },
+    {
+     "params": "S_t64_l0_k500",
+     "errors": 4539,
+     "grad_units": 696
+    },
+    {
+     "params": "S_t64_l0_k1000",
+     "errors": 4555,
+     "grad_units": 342
+    },
+    {
+     "params": "S_t64_l0_k0",
+     "errors": 3273,
+     "grad_units": 124
+    },
+    {
+     "params": "S_t48_l600_k500",
+     "errors": 4871,
+     "grad_units": 660
+    },
+    {
+     "params": "S_t48_l600_k1000",
+     "errors": 4884,
+     "grad_units": 310
+    },
+    {
+     "params": "S_t48_l600_k0",
+     "errors": 3573,
+     "grad_units": 83
+    },
+    {
+     "params": "S_t48_l750_k500",
+     "errors": 4720,
+     "grad_units": 646
+    },
+    {
+     "params": "S_t48_l750_k1000",
+     "errors": 4733,
+     "grad_units": 296
+    },
+    {
+     "params": "S_t48_l750_k0",
+     "errors": 3419,
+     "grad_units": 67
+    },
+    {
+     "params": "S_t48_l900_k500",
+     "errors": 4555,
+     "grad_units": 637
+    },
+    {
+     "params": "S_t48_l900_k1000",
+     "errors": 4571,
+     "grad_units": 283
+    },
+    {
+     "params": "S_t48_l900_k0",
+     "errors": 3134,
+     "grad_units": 52
+    },
+    {
+     "params": "S_t48_l0_k500",
+     "errors": 4555,
+     "grad_units": 635
+    },
+    {
+     "params": "S_t48_l0_k1000",
+     "errors": 4571,
+     "grad_units": 281
+    },
+    {
+     "params": "S_t48_l0_k0",
+     "errors": 3134,
+     "grad_units": 50
+    },
+    {
+     "params": "S_t32_l600_k500",
+     "errors": 4861,
+     "grad_units": 651
+    },
+    {
+     "params": "S_t32_l600_k1000",
+     "errors": 4874,
+     "grad_units": 299
+    },
+    {
+     "params": "S_t32_l600_k0",
+     "errors": 3203,
+     "grad_units": 54
+    },
+    {
+     "params": "S_t32_l750_k500",
+     "errors": 4710,
+     "grad_units": 637
+    },
+    {
+     "params": "S_t32_l750_k1000",
+     "errors": 4723,
+     "grad_units": 285
+    },
+    {
+     "params": "S_t32_l750_k0",
+     "errors": 3049,
+     "grad_units": 38
+    },
+    {
+     "params": "S_t32_l900_k500",
+     "errors": 4545,
+     "grad_units": 628
+    },
+    {
+     "params": "S_t32_l900_k1000",
+     "errors": 4561,
+     "grad_units": 272
+    },
+    {
+     "params": "S_t32_l900_k0",
+     "errors": 2764,
+     "grad_units": 23
+    },
+    {
+     "params": "S_t32_l0_k500",
+     "errors": 4545,
+     "grad_units": 626
+    },
+    {
+     "params": "S_t32_l0_k1000",
+     "errors": 4561,
+     "grad_units": 270
+    },
+    {
+     "params": "S_t32_l0_k0",
+     "errors": 2764,
+     "grad_units": 21
+    },
+    {
+     "params": "S_t24_l600_k500",
+     "errors": 4864,
+     "grad_units": 643
+    },
+    {
+     "params": "S_t24_l600_k1000",
+     "errors": 4877,
+     "grad_units": 291
+    },
+    {
+     "params": "S_t24_l600_k0",
+     "errors": 3100,
+     "grad_units": 42
+    },
+    {
+     "params": "S_t24_l750_k500",
+     "errors": 4713,
+     "grad_units": 629
+    },
+    {
+     "params": "S_t24_l750_k1000",
+     "errors": 4726,
+     "grad_units": 277
+    },
+    {
+     "params": "S_t24_l750_k0",
+     "errors": 2946,
+     "grad_units": 26
+    },
+    {
+     "params": "S_t24_l900_k500",
+     "errors": 4548,
+     "grad_units": 620
+    },
+    {
+     "params": "S_t24_l900_k1000",
+     "errors": 4564,
+     "grad_units": 264
+    },
+    {
+     "params": "S_t24_l900_k0",
+     "errors": 2661,
+     "grad_units": 11
+    },
+    {
+     "params": "S_t24_l0_k500",
+     "errors": 4548,
+     "grad_units": 618
+    },
+    {
+     "params": "S_t24_l0_k1000",
+     "errors": 4564,
+     "grad_units": 262
+    },
+    {
+     "params": "S_t24_l0_k0",
+     "errors": 2661,
+     "grad_units": 9
+    },
+    {
+     "params": "S_t16_l600_k500",
+     "errors": 4864,
+     "grad_units": 643
+    },
+    {
+     "params": "S_t16_l600_k1000",
+     "errors": 4877,
+     "grad_units": 291
+    },
+    {
+     "params": "S_t16_l600_k0",
+     "errors": 3052,
+     "grad_units": 39
+    },
+    {
+     "params": "S_t16_l750_k500",
+     "errors": 4713,
+     "grad_units": 629
+    },
+    {
+     "params": "S_t16_l750_k1000",
+     "errors": 4726,
+     "grad_units": 277
+    },
+    {
+     "params": "S_t16_l750_k0",
+     "errors": 2898,
+     "grad_units": 23
+    },
+    {
+     "params": "S_t16_l900_k500",
+     "errors": 4548,
+     "grad_units": 620
+    },
+    {
+     "params": "S_t16_l900_k1000",
+     "errors": 4564,
+     "grad_units": 264
+    },
+    {
+     "params": "S_t16_l900_k0",
+     "errors": 2613,
+     "grad_units": 8
+    },
+    {
+     "params": "S_t16_l0_k500",
+     "errors": 4548,
+     "grad_units": 618
+    },
+    {
+     "params": "S_t16_l0_k1000",
+     "errors": 4564,
+     "grad_units": 262
+    },
+    {
+     "params": "S_t16_l0_k0",
+     "errors": 2613,
+     "grad_units": 6
+    },
+    {
+     "params": "S_t8_l600_k500",
+     "errors": 4861,
+     "grad_units": 640
+    },
+    {
+     "params": "S_t8_l600_k1000",
+     "errors": 4874,
+     "grad_units": 288
+    },
+    {
+     "params": "S_t8_l600_k0",
+     "errors": 3049,
+     "grad_units": 36
+    },
+    {
+     "params": "S_t8_l750_k500",
+     "errors": 4710,
+     "grad_units": 626
+    },
+    {
+     "params": "S_t8_l750_k1000",
+     "errors": 4723,
+     "grad_units": 274
+    },
+    {
+     "params": "S_t8_l750_k0",
+     "errors": 2895,
+     "grad_units": 20
+    },
+    {
+     "params": "S_t8_l900_k500",
+     "errors": 4545,
+     "grad_units": 617
+    },
+    {
+     "params": "S_t8_l900_k1000",
+     "errors": 4561,
+     "grad_units": 261
+    },
+    {
+     "params": "S_t8_l900_k0",
+     "errors": 2610,
+     "grad_units": 5
+    },
+    {
+     "params": "S_t8_l0_k500",
+     "errors": 4545,
+     "grad_units": 615
+    },
+    {
+     "params": "S_t8_l0_k1000",
+     "errors": 4561,
+     "grad_units": 259
+    },
+    {
+     "params": "S_t8_l0_k0",
+     "errors": 2610,
+     "grad_units": 3
+    },
+    {
+     "params": "S_t0_l600_k500",
+     "errors": 4861,
+     "grad_units": 640
+    },
+    {
+     "params": "S_t0_l600_k1000",
+     "errors": 4874,
+     "grad_units": 288
+    },
+    {
+     "params": "S_t0_l600_k0",
+     "errors": 2991,
+     "grad_units": 33
+    },
+    {
+     "params": "S_t0_l750_k500",
+     "errors": 4710,
+     "grad_units": 626
+    },
+    {
+     "params": "S_t0_l750_k1000",
+     "errors": 4723,
+     "grad_units": 274
+    },
+    {
+     "params": "S_t0_l750_k0",
+     "errors": 2837,
+     "grad_units": 17
+    },
+    {
+     "params": "S_t0_l900_k500",
+     "errors": 4545,
+     "grad_units": 617
+    },
+    {
+     "params": "S_t0_l900_k1000",
+     "errors": 4561,
+     "grad_units": 261
+    },
+    {
+     "params": "S_t0_l900_k0",
+     "errors": 2552,
+     "grad_units": 2
+    },
+    {
+     "params": "S_t0_l0_k500",
+     "errors": 4545,
+     "grad_units": 615
+    },
+    {
+     "params": "S_t0_l0_k1000",
+     "errors": 4561,
+     "grad_units": 259
+    },
+    {
+     "params": "S_t0_l0_k0",
+     "errors": 2552,
+     "grad_units": 0
+    },
+    {
+     "params": "G_t96_l0_k0",
+     "errors": 5026,
+     "grad_units": 6229
+    },
+    {
+     "params": "G_t80_l0_k0",
+     "errors": 5026,
+     "grad_units": 6229
+    },
+    {
+     "params": "G_t64_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t48_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t32_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t24_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t16_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t8_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    },
+    {
+     "params": "G_t0_l0_k0",
+     "errors": 5027,
+     "grad_units": 6228
+    }
+   ]
+  },
+  "base_qL5_seed1": {
+   "units": 6327,
+   "chars": 162471,
+   "spotter_errors": 2121,
+   "grad_errors": 5349,
+   "oracle_errors": 1424,
+   "spot_sha256": "b1c98f4d493b93491dfb953e5ad9230f69653d7f6323ef55ba4c9f0c284503a2",
+   "s_rows_sha256": "f549ab6b2ba21037104ea232fcddecf935eaafb857bc2974837c8cc8b2ca9a9f",
+   "g_rows_sha256": "be3a3b0fc2d5dd6244521e35020d39033b570d71c4909b0ff41a5537b4adcf2f",
+   "fit": {
+    "params": "S_t8_l900_k0",
+    "mode": "S",
+    "tau": 8,
+    "lam": 900,
+    "kappa": 0,
+    "errors": 2121,
+    "grad_units": 0
+   },
+   "grid": [
+    {
+     "params": "S_t96_l600_k500",
+     "errors": 4159,
+     "grad_units": 1795
+    },
+    {
+     "params": "S_t96_l600_k1000",
+     "errors": 4164,
+     "grad_units": 1406
+    },
+    {
+     "params": "S_t96_l600_k0",
+     "errors": 3922,
+     "grad_units": 1196
+    },
+    {
+     "params": "S_t96_l750_k500",
+     "errors": 3590,
+     "grad_units": 1768
+    },
+    {
+     "params": "S_t96_l750_k1000",
+     "errors": 3561,
+     "grad_units": 1377
+    },
+    {
+     "params": "S_t96_l750_k0",
+     "errors": 3319,
+     "grad_units": 1167
+    },
+    {
+     "params": "S_t96_l900_k500",
+     "errors": 3400,
+     "grad_units": 1755
+    },
+    {
+     "params": "S_t96_l900_k1000",
+     "errors": 3371,
+     "grad_units": 1363
+    },
+    {
+     "params": "S_t96_l900_k0",
+     "errors": 3035,
+     "grad_units": 1152
+    },
+    {
+     "params": "S_t96_l0_k500",
+     "errors": 3400,
+     "grad_units": 1755
+    },
+    {
+     "params": "S_t96_l0_k1000",
+     "errors": 3371,
+     "grad_units": 1363
+    },
+    {
+     "params": "S_t96_l0_k0",
+     "errors": 3035,
+     "grad_units": 1152
+    },
+    {
+     "params": "S_t80_l600_k500",
+     "errors": 3894,
+     "grad_units": 975
+    },
+    {
+     "params": "S_t80_l600_k1000",
+     "errors": 3902,
+     "grad_units": 539
+    },
+    {
+     "params": "S_t80_l600_k0",
+     "errors": 3515,
+     "grad_units": 258
+    },
+    {
+     "params": "S_t80_l750_k500",
+     "errors": 3218,
+     "grad_units": 940
+    },
+    {
+     "params": "S_t80_l750_k1000",
+     "errors": 3192,
+     "grad_units": 501
+    },
+    {
+     "params": "S_t80_l750_k0",
+     "errors": 2802,
+     "grad_units": 219
+    },
+    {
+     "params": "S_t80_l900_k500",
+     "errors": 3026,
+     "grad_units": 926
+    },
+    {
+     "params": "S_t80_l900_k1000",
+     "errors": 3000,
+     "grad_units": 486
+    },
+    {
+     "params": "S_t80_l900_k0",
+     "errors": 2516,
+     "grad_units": 203
+    },
+    {
+     "params": "S_t80_l0_k500",
+     "errors": 3026,
+     "grad_units": 926
+    },
+    {
+     "params": "S_t80_l0_k1000",
+     "errors": 3000,
+     "grad_units": 486
+    },
+    {
+     "params": "S_t80_l0_k0",
+     "errors": 2516,
+     "grad_units": 203
+    },
+    {
+     "params": "S_t64_l600_k500",
+     "errors": 3866,
+     "grad_units": 854
+    },
+    {
+     "params": "S_t64_l600_k1000",
+     "errors": 3874,
+     "grad_units": 414
+    },
+    {
+     "params": "S_t64_l600_k0",
+     "errors": 3480,
+     "grad_units": 120
+    },
+    {
+     "params": "S_t64_l750_k500",
+     "errors": 3190,
+     "grad_units": 819
+    },
+    {
+     "params": "S_t64_l750_k1000",
+     "errors": 3164,
+     "grad_units": 376
+    },
+    {
+     "params": "S_t64_l750_k0",
+     "errors": 2767,
+     "grad_units": 81
+    },
+    {
+     "params": "S_t64_l900_k500",
+     "errors": 2998,
+     "grad_units": 805
+    },
+    {
+     "params": "S_t64_l900_k1000",
+     "errors": 2972,
+     "grad_units": 361
+    },
+    {
+     "params": "S_t64_l900_k0",
+     "errors": 2481,
+     "grad_units": 65
+    },
+    {
+     "params": "S_t64_l0_k500",
+     "errors": 2998,
+     "grad_units": 805
+    },
+    {
+     "params": "S_t64_l0_k1000",
+     "errors": 2972,
+     "grad_units": 361
+    },
+    {
+     "params": "S_t64_l0_k0",
+     "errors": 2481,
+     "grad_units": 65
+    },
+    {
+     "params": "S_t48_l600_k500",
+     "errors": 3884,
+     "grad_units": 830
+    },
+    {
+     "params": "S_t48_l600_k1000",
+     "errors": 3892,
+     "grad_units": 390
+    },
+    {
+     "params": "S_t48_l600_k0",
+     "errors": 3498,
+     "grad_units": 96
+    },
+    {
+     "params": "S_t48_l750_k500",
+     "errors": 3208,
+     "grad_units": 795
+    },
+    {
+     "params": "S_t48_l750_k1000",
+     "errors": 3182,
+     "grad_units": 352
+    },
+    {
+     "params": "S_t48_l750_k0",
+     "errors": 2785,
+     "grad_units": 57
+    },
+    {
+     "params": "S_t48_l900_k500",
+     "errors": 3016,
+     "grad_units": 781
+    },
+    {
+     "params": "S_t48_l900_k1000",
+     "errors": 2990,
+     "grad_units": 337
+    },
+    {
+     "params": "S_t48_l900_k0",
+     "errors": 2499,
+     "grad_units": 41
+    },
+    {
+     "params": "S_t48_l0_k500",
+     "errors": 3016,
+     "grad_units": 781
+    },
+    {
+     "params": "S_t48_l0_k1000",
+     "errors": 2990,
+     "grad_units": 337
+    },
+    {
+     "params": "S_t48_l0_k0",
+     "errors": 2499,
+     "grad_units": 41
+    },
+    {
+     "params": "S_t32_l600_k500",
+     "errors": 3896,
+     "grad_units": 826
+    },
+    {
+     "params": "S_t32_l600_k1000",
+     "errors": 3904,
+     "grad_units": 385
+    },
+    {
+     "params": "S_t32_l600_k0",
+     "errors": 3306,
+     "grad_units": 80
+    },
+    {
+     "params": "S_t32_l750_k500",
+     "errors": 3220,
+     "grad_units": 791
+    },
+    {
+     "params": "S_t32_l750_k1000",
+     "errors": 3194,
+     "grad_units": 347
+    },
+    {
+     "params": "S_t32_l750_k0",
+     "errors": 2593,
+     "grad_units": 41
+    },
+    {
+     "params": "S_t32_l900_k500",
+     "errors": 3028,
+     "grad_units": 777
+    },
+    {
+     "params": "S_t32_l900_k1000",
+     "errors": 3002,
+     "grad_units": 332
+    },
+    {
+     "params": "S_t32_l900_k0",
+     "errors": 2307,
+     "grad_units": 25
+    },
+    {
+     "params": "S_t32_l0_k500",
+     "errors": 3028,
+     "grad_units": 777
+    },
+    {
+     "params": "S_t32_l0_k1000",
+     "errors": 3002,
+     "grad_units": 332
+    },
+    {
+     "params": "S_t32_l0_k0",
+     "errors": 2307,
+     "grad_units": 25
+    },
+    {
+     "params": "S_t24_l600_k500",
+     "errors": 3896,
+     "grad_units": 818
+    },
+    {
+     "params": "S_t24_l600_k1000",
+     "errors": 3904,
+     "grad_units": 376
+    },
+    {
+     "params": "S_t24_l600_k0",
+     "errors": 3306,
+     "grad_units": 71
+    },
+    {
+     "params": "S_t24_l750_k500",
+     "errors": 3220,
+     "grad_units": 783
+    },
+    {
+     "params": "S_t24_l750_k1000",
+     "errors": 3194,
+     "grad_units": 338
+    },
+    {
+     "params": "S_t24_l750_k0",
+     "errors": 2593,
+     "grad_units": 32
+    },
+    {
+     "params": "S_t24_l900_k500",
+     "errors": 3028,
+     "grad_units": 769
+    },
+    {
+     "params": "S_t24_l900_k1000",
+     "errors": 3002,
+     "grad_units": 323
+    },
+    {
+     "params": "S_t24_l900_k0",
+     "errors": 2307,
+     "grad_units": 16
+    },
+    {
+     "params": "S_t24_l0_k500",
+     "errors": 3028,
+     "grad_units": 769
+    },
+    {
+     "params": "S_t24_l0_k1000",
+     "errors": 3002,
+     "grad_units": 323
+    },
+    {
+     "params": "S_t24_l0_k0",
+     "errors": 2307,
+     "grad_units": 16
+    },
+    {
+     "params": "S_t16_l600_k500",
+     "errors": 3896,
+     "grad_units": 816
+    },
+    {
+     "params": "S_t16_l600_k1000",
+     "errors": 3904,
+     "grad_units": 374
+    },
+    {
+     "params": "S_t16_l600_k0",
+     "errors": 3177,
+     "grad_units": 63
+    },
+    {
+     "params": "S_t16_l750_k500",
+     "errors": 3220,
+     "grad_units": 781
+    },
+    {
+     "params": "S_t16_l750_k1000",
+     "errors": 3194,
+     "grad_units": 336
+    },
+    {
+     "params": "S_t16_l750_k0",
+     "errors": 2464,
+     "grad_units": 24
+    },
+    {
+     "params": "S_t16_l900_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t16_l900_k1000",
+     "errors": 3002,
+     "grad_units": 321
+    },
+    {
+     "params": "S_t16_l900_k0",
+     "errors": 2178,
+     "grad_units": 8
+    },
+    {
+     "params": "S_t16_l0_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t16_l0_k1000",
+     "errors": 3002,
+     "grad_units": 321
+    },
+    {
+     "params": "S_t16_l0_k0",
+     "errors": 2178,
+     "grad_units": 8
+    },
+    {
+     "params": "S_t8_l600_k500",
+     "errors": 3896,
+     "grad_units": 816
+    },
+    {
+     "params": "S_t8_l600_k1000",
+     "errors": 3904,
+     "grad_units": 373
+    },
+    {
+     "params": "S_t8_l600_k0",
+     "errors": 3120,
+     "grad_units": 55
+    },
+    {
+     "params": "S_t8_l750_k500",
+     "errors": 3220,
+     "grad_units": 781
+    },
+    {
+     "params": "S_t8_l750_k1000",
+     "errors": 3194,
+     "grad_units": 335
+    },
+    {
+     "params": "S_t8_l750_k0",
+     "errors": 2407,
+     "grad_units": 16
+    },
+    {
+     "params": "S_t8_l900_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t8_l900_k1000",
+     "errors": 3002,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t8_l900_k0",
+     "errors": 2121,
+     "grad_units": 0
+    },
+    {
+     "params": "S_t8_l0_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t8_l0_k1000",
+     "errors": 3002,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t8_l0_k0",
+     "errors": 2121,
+     "grad_units": 0
+    },
+    {
+     "params": "S_t0_l600_k500",
+     "errors": 3896,
+     "grad_units": 816
+    },
+    {
+     "params": "S_t0_l600_k1000",
+     "errors": 3904,
+     "grad_units": 373
+    },
+    {
+     "params": "S_t0_l600_k0",
+     "errors": 3120,
+     "grad_units": 55
+    },
+    {
+     "params": "S_t0_l750_k500",
+     "errors": 3220,
+     "grad_units": 781
+    },
+    {
+     "params": "S_t0_l750_k1000",
+     "errors": 3194,
+     "grad_units": 335
+    },
+    {
+     "params": "S_t0_l750_k0",
+     "errors": 2407,
+     "grad_units": 16
+    },
+    {
+     "params": "S_t0_l900_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t0_l900_k1000",
+     "errors": 3002,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t0_l900_k0",
+     "errors": 2121,
+     "grad_units": 0
+    },
+    {
+     "params": "S_t0_l0_k500",
+     "errors": 3028,
+     "grad_units": 767
+    },
+    {
+     "params": "S_t0_l0_k1000",
+     "errors": 3002,
+     "grad_units": 320
+    },
+    {
+     "params": "S_t0_l0_k0",
+     "errors": 2121,
+     "grad_units": 0
+    },
+    {
+     "params": "G_t96_l0_k0",
+     "errors": 4831,
+     "grad_units": 6222
+    },
+    {
+     "params": "G_t80_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t64_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t48_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t32_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t24_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t16_l0_k0",
+     "errors": 4738,
+     "grad_units": 6219
+    },
+    {
+     "params": "G_t8_l0_k0",
+     "errors": 4738,
+     "grad_units": 6217
+    },
+    {
+     "params": "G_t0_l0_k0",
+     "errors": 4738,
+     "grad_units": 6217
+    }
+   ]
+  }
+ }
+}

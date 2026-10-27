@@ -31,6 +31,8 @@ protected set was read: not CLANNAD, vita-test, psp-test or the hooked test titl
   - **Most of the page-path gain is one title.** PCSG00854's box decoration, read by the finder as a line of junk,
     accounts for −1,519 of the −1,575 hp errors. Without that title, the objective is −0.027 (−0.058 to −0.000),
     still resolved.
+  - By platform (in-sample, shipped → new): hp Vita 4.474 → 3.230 and PSP 3.047 → 3.026; hc Vita 0.326 → 0.320 and
+    PSP 0.376 → 0.353. PCSG00854 is a Vita title.
   - Large jobs at 2 MB keep the shipped setting: −0.244 (−0.781 to +0.010), not resolved.
 - **The counter thresholds stay 6 / 4 nats at every tier.** No cell of the 5 × 3 grid changes a single real
   development or hval unit, so none can be resolved better on the objective. On the synthetic counter set, larger
@@ -213,10 +215,16 @@ gate off, at the 1 MB setting:
   with 47-77 units changed.
 - **Counter set.** The crops keeping the counter go 3,127 → 3,093, 3,064 → 2,987 and 3,200 → 3,179 (kept share
   resolved lower at every tier). The CER rises +0.06 / +0.15 / +0.06 points (resolved).
-- **Where the losses are.** Checked on N alone: 75 crops lose the counter and 0 gain one. They are crops cut inside
-  the numeral (left edge 6-10 px into the line), whose greedy text has no numeral. With the gate off, the LM restores
-  the numeral from the edge frames' top-K. With the gate on, those frames are skipped, and with no numeral there is
-  no counter context, so Rubi's re-read does not fire. 42 of the 75 have identical greedy text.
+- **Where the losses are** (N alone at the 1 MB setting, no cascade, no display rules; `eval/vocr6_final_lm.py
+  counter-loss`, in the result's `reports.counter_loss_vocr5_N_1000k`):
+  - 75 crops lose the counter, and 0 gain one.
+  - All 75 are the bare and `…」` forms (33 and 42), whose first character is the numeral. No `「…」` crop is among
+    them.
+  - They are cut 2-10 px into the ink: 8 / 19 / 19 / 24 / 5 crops at 2 / 4 / 6 / 8 / 10 px.
+  - With the gate on, none of the 75 greedy texts starts with a numeral (53 of 75 with the gate off), and 42 of the
+    75 have identical greedy text both ways.
+  - With the gate off, the LM restores the numeral from the edge frames' top-K. With the gate on, all 75 runs skip
+    frames there, none finds a counter context, so none is read again.
 
 **The blobs as they ship.** vocr6-final-gate's result of 09:45:42Z gives N and L the two-level head and no gate;
 Small keeps `VOCR5_S_w8g`. Read this way (amendment 1, report only):
@@ -226,12 +234,14 @@ Small keeps `VOCR5_S_w8g`. Read this way (amendment 1, report only):
   - counter set: kept 3,295 → 3,287, CER −0.076 (−0.119 to −0.028);
   - the 4b blob's own (memorised) hval pages: hc −0.020 (−0.041 to −0.002), hp −0.279 (−0.961 to +0.040).
 
-  These are close to the gate-off figures above: dev −0.036, counter-set CER −0.076.
+  These are close to the same comparison with the gate off: new − shipped at fixed settings, dev −0.034 (−0.098 to
+  +0.022), counter-set CER −0.076.
 - **The two-level head against no two-level head**, same weights and setting, at 1 MB, at the shipped 2 MB setting
   and at the new one:
   - Normal job: objective +0.003 / +0.004 / +0.005, with 22-26 units changed; the counter set moves by at most one
     crop.
-  - Large: the objective is within ±0.001, and the counter set is unchanged.
+  - Large: the objective is within ±0.001. The kept count is unchanged in all three comparisons, and the errors move
+    by at most one crop.
   - Small, with its head gate in front of the cascade (report only): 13-15 fewer crops keep the counter (kept share
     −0.33 to −0.38 points, resolved). The objective moves +0.009 to +0.014.
 
@@ -247,23 +257,34 @@ Files: `artifacts/vocr6-final-lm/gateon_final_*.json`, embedded in the result as
 - **The development references** are engine-agreement labels with an assistant reviewer, not hand-checked.
 - **N's sibling `v6s2cil_N_seed1` is vocr6-lm's #141 S2cil seed 1.** Its N-alone retune numbers were known before
   this protocol.
-- **Two-fold cross-validation over 1,056 options is noisy.** The folds chose different settings at most tiers (in the
-  result's `chosen`).
+- **Two-fold cross-validation over 1,056 options is noisy.** At all 12 job tiers × LM tiers, the two folds chose
+  different options (in the result's `chosen`).
 - **No console run;** reads with the head gate off except the report-only section.
 
 ## Reproduce
 
 ```sh
-A=$HERD/shared/artifacts/vocr6-final-lm
-# the reads (vocr6_lm.py dev-cache / hval-cache, vocr6_final_lm.py counter-cache), the four LM tiers' tunes, the rule
+ART=$HERD/shared/artifacts; A=$ART/vocr6-final-lm
+# 1. the reads (vocr6_lm.py dev-cache / hval-cache, vocr6_final_lm.py counter-cache), the four LM tiers' tunes, the rule
 HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/final.sh S=$ART/vocr5-train/blobs/v5f_S_seed2_w8.vocr \
-  N=FINAL_N RN=SIBLING_N L=FINAL_L RL=SIBLING_L
+  N=$ART/vocr6-final-train/blobs/v6f4h_N_seed1_w8.vocr RN=$ART/vocr6-s2-a/blobs/v6s2cil_N_seed1_w8.vocr \
+  L=$ART/vocr6-final-train/blobs/v6f4h_L_seed1_w8.vocr RL=$ART/vocr6-final-train/blobs/v6f4_L_seed1_w8.vocr
+# 2. report only: the VOCR5 dry run (gate-off tune + continuity), Rubi 0.9.8 gate on, the shipped VOCR6 blobs gate on,
+#    and the counter-loss breakdown
+HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/dry.sh
+HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/gateon.sh
+HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/gateon_final.sh
+HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/counter_loss.sh
+# 3. the record (every report embedded)
 .venv-ci/bin/python eval/vocr6_final_lm.py summary --select $A/select.json --protocol eval/vocr6_final_lm_protocol.json \
   --extra gateon_vocr5_1000k=$A/gateon_vocr5_1000k.json --extra continuity_vocr5_N=$A/continuity_N.json \
-  --out $A/result.json --md $A/result.md
-# the gate-on report: gated-cache per gated blob, tune at the setting, compare-runs against the gate-off tune
-HEAVY_SLOTS=15 $HERD/heavy.sh bash $A/gateon.sh
-# continuity with vocr6-rubi-ship's VOCR5-N counter numbers
-.venv-ci/bin/python eval/vocr6_final_lm.py continuity --cache CS_N.pkl --blob VOCR5_N.vocr \
-  --lm old:CTCLM2_1000K.vlm:500:3500:2 --lm new:LM6_1000K.vlm:600:2500:1 --out CONT.json
+  --extra gateon_final_2000k_new_minus_shipped=$A/gateon_final_2000k_new_minus_shipped.json \
+  --extra gateon_final_2000k_new_on_minus_off=$A/gateon_final_2000k_new_on_minus_off.json \
+  --extra gateon_final_2000k_ship_on_minus_off=$A/gateon_final_2000k_ship_on_minus_off.json \
+  --extra gateon_final_1000k_ship_on_minus_off=$A/gateon_final_1000k_ship_on_minus_off.json \
+  --extra counter_loss_vocr5_N_1000k=$A/counter_loss_vocr5_N_1000k.json \
+  --out $A/result.json --md $A/result.md     # = eval/vocr6_final_lm_result_20261027.json except created
 ```
+
+`continuity_N.json` is the dry run's `continuity` output (`$HERD/shared/private/vocr6-final-lm/dry/continuity_N.json`,
+copied to `$A`).

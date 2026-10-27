@@ -1,7 +1,7 @@
 {
  "kind": "vocr6-final-lm-summary",
  "schema": 1,
- "created": "2026-10-27T10:02:25Z",
+ "created": "2026-10-27T12:16:42Z",
  "protocol_sha256": "7c1d38eb130dcac74af641e50cb4a2ac3555fe3dc7e74576a1d758386fb64666",
  "decisions": {
   "S": {
@@ -10045,6 +10045,59 @@
      }
     }
    }
+  },
+  "counter_loss_vocr5_N_1000k": {
+   "kind": "vocr6-final-lm-counter-loss",
+   "created": "2026-10-27T12:14:57Z",
+   "what": "Rubi 0.9.8's VOCR5-N alone: VOCR5_N_w8g2 as Rubi reads it (y) against v5f_N_seed3 gate off (x), 1 MB shipped, no cascade, no display rules",
+   "config": {
+    "alpha": 600,
+    "beam": 8,
+    "beta": 2500,
+    "bracket": 8000,
+    "flags": 1,
+    "gate": 8000,
+    "topk": 8
+   },
+   "x": {
+    "blob_sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+   },
+   "y": {
+    "blob_sha256": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b",
+    "two_level": true
+   },
+   "crops": 3969,
+   "kept": [
+    3015,
+    2940
+   ],
+   "lost": 75,
+   "gained": 0,
+   "lost_by_cut_px": {
+    "10": 5,
+    "8": 24,
+    "6": 19,
+    "4": 19,
+    "2": 8,
+    "0": 0,
+    "-3": 0
+   },
+   "lost_by_form": {
+    "brackets": 0,
+    "bare": 33,
+    "continuation": 42
+   },
+   "lost_greedy_equal": 42,
+   "lost_greedy_without_leading_numeral": {
+    "x": 53,
+    "y": 75
+   },
+   "lost_y_run": {
+    "skipped_frames": 75,
+    "counter_context": 0,
+    "read_again": 0
+   },
+   "note": "cut_px: the crop's left edge, px into the first ink column (negative: before it)"
   }
  }
 }

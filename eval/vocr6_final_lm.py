@@ -777,6 +777,70 @@ def cmd_compare_runs(a):
               "counter kept", r["counter"]["kept"], "errors", r["counter"]["errors"], flush=True)
 
 
+def cmd_counter_loss(a):
+    """Report only: which counter-set crops lose (or gain) the counter between two readings of the same weights, e.g.
+    a gated blob read as Rubi reads it (gated-cache) against its ungated blob with the gate off, one job tier alone
+    (no cascade, no display rules), at one setting. Counts only: lost / gained, by left-edge cut and by form, whether
+    the greedy text starts with a numeral, and for the lost crops whether the gated run skipped frames, found a
+    counter context or was read again."""
+    from pyvocr import Vocr, VocrLM, post_counters
+    numeral = re.compile("^[0-9０-９〇一二三四五六七八九十百千万何数幾]")
+    cfg = json.loads(a.config)
+    _, rows = counter_units(a.synth)
+    meta = {("cs", r["id"]): r for r in rows}
+
+    def texts(cache, blob):
+        d = pickle.loads(Path(cache).read_bytes())
+        if d["blob_sha256"] != sha256(blob):
+            raise SystemExit(f"{cache}: read another blob than {blob}")
+        rt = Vocr(str(blob), mode="w8i", max_width=1024)
+        dec = VocrLM(rt, a.lm, check_crc=False, **V.lm_opts(cfg))
+        out = {}
+        for k, o in d["reads"]:
+            if not o["text"]:
+                out[k] = ("", "")
+                continue
+            res, st = rt.redecode(o, 6000, 4000)
+            s = res if st["edits"] else o
+            out[k] = (o["text"], norm(post_counters(dec.decode(s["topv"], s["topc"], s["blank"]), rt.lib)[0]))
+        return out
+    tx, ty = texts(a.x_cache, a.x_blob), texts(a.y_cache, a.y_blob)
+    lost = [k for k in tx if SITE.search(tx[k][1]) and not SITE.search(ty[k][1])]
+    gained = [k for k in tx if not SITE.search(tx[k][1]) and SITE.search(ty[k][1])]
+
+    def form(k):
+        t = meta[k]["text"]
+        return "brackets" if t.startswith("「") else "continuation" if t.endswith("」") else "bare"
+    two = a.two_level == "on"
+    rt = Vocr(str(a.y_blob), mode="w8i", max_width=1024, head_gate="on" if Vocr(str(a.y_blob), mode="w8i",
+              max_width=1024).has_gate else "off", **({"two_level": 1} if two else {}))
+    skipped = ctx = again = 0
+    for k in lost:                                      # the gated run of each lost crop, again
+        o = rt.run_topk(np.ascontiguousarray(meta[k]["img"]), K, invert=False)
+        _, st = rt.redecode(o, 6000, 4000)
+        sk = o["gated"] > 0 or (two and o["escaped"] + o["gated"] < o["frames"])
+        skipped += sk
+        ctx += bool(st["contexts"])
+        again += bool(sk and (st["contexts"] or (two and KANA_COUNTER.search(o["text"]))))
+    cuts = sorted({r["cut"] for r in rows})
+    out = {"kind": "vocr6-final-lm-counter-loss", "created": utc_now(), "what": a.what, "config": cfg,
+           "x": {"blob_sha256": sha256(a.x_blob)}, "y": {"blob_sha256": sha256(a.y_blob), "two_level": two},
+           "crops": len(tx), "kept": [sum(bool(SITE.search(v[1])) for v in tx.values()),
+                                      sum(bool(SITE.search(v[1])) for v in ty.values())],
+           "lost": len(lost), "gained": len(gained),
+           "lost_by_cut_px": {str(-c): sum(meta[k]["cut"] == c for k in lost) for c in cuts},
+           "lost_by_form": {f: sum(form(k) == f for k in lost) for f in ("brackets", "bare", "continuation")},
+           "lost_greedy_equal": sum(tx[k][0] == ty[k][0] for k in lost),
+           "lost_greedy_without_leading_numeral": {"x": sum(not numeral.search(tx[k][0]) for k in lost),
+                                                   "y": sum(not numeral.search(ty[k][0]) for k in lost)},
+           "lost_y_run": {"skipped_frames": int(skipped), "counter_context": int(ctx), "read_again": int(again)},
+           "note": "cut_px: the crop's left edge, px into the first ink column (negative: before it)"}
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({k: out[k] for k in ("kept", "lost", "gained", "lost_by_cut_px", "lost_by_form",
+                                          "lost_greedy_equal", "lost_greedy_without_leading_numeral", "lost_y_run")}),
+          flush=True)
+
+
 # ---------------------------------------------------------------- summary (result.json, tables)
 
 def _pt(c):
@@ -922,9 +986,21 @@ def main():
     p.add_argument("--config-y", help="another setting for y (JSON; default --config): two settings on one file")
     p.add_argument("--what", default="")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("counter-loss")
+    p.add_argument("--x-cache", required=True)
+    p.add_argument("--x-blob", required=True)
+    p.add_argument("--y-cache", required=True)
+    p.add_argument("--y-blob", required=True)
+    p.add_argument("--two-level", choices=("on", "off"), default="off", help="y's reads ran the two-level head")
+    p.add_argument("--lm", required=True)
+    p.add_argument("--config", required=True)
+    p.add_argument("--synth", default=str(SYNTH))
+    p.add_argument("--what", default="")
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
     {"counter-cache": cmd_counter_cache, "tune": cmd_tune, "select": cmd_select, "continuity": cmd_continuity,
-     "summary": cmd_summary, "gated-cache": cmd_gated_cache, "compare-runs": cmd_compare_runs}[a.cmd](a)
+     "summary": cmd_summary, "gated-cache": cmd_gated_cache, "compare-runs": cmd_compare_runs,
+     "counter-loss": cmd_counter_loss}[a.cmd](a)
 
 
 if __name__ == "__main__":

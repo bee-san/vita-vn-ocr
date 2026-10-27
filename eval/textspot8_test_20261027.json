@@ -1,0 +1,4740 @@
+{
+ "kind": "textspot6-test-record",
+ "computed": "2026-10-27T16:42:57Z",
+ "out": "$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop",
+ "reads": {
+  "title": {
+   "attempt": {
+    "started": "2026-10-27T16:33:16Z",
+    "sha256": "3c14cef5bea2650edd203b044522772a148d9e22cb7da2fd92e655c09ed54d15"
+   },
+   "result_sha256": "2e7031442953dc69f7d54d93b8cd604bd37d55d19a50f7abc87b9af60c539217",
+   "result": {
+    "kind": "textspot6-test-title",
+    "computed": "2026-10-27T16:35:39Z",
+    "split": "test",
+    "titles": [
+     "PCSG00807"
+    ],
+    "selection": {
+     "path": "eval/textspot8_dev_20261027.json",
+     "sha256": "163e5fc28398e741e8f74f6d80388ccf37d1ccab66326c2f599a6220726bd99a",
+     "pick": {
+      "arm": "t8_t64n8c16",
+      "decode": "crop",
+      "seed": 3
+     },
+     "commit": "20c852c464d779e11c27f502763f32a3b728fd33",
+     "committed": "2026-10-27T12:51:36Z"
+    },
+    "final": {
+     "run": "t8_t64n8c16_seed3_final",
+     "recipe": "t8",
+     "shape": "t64n8c16",
+     "seed": 3,
+     "hook_splits": "train,guard,hval",
+     "teacher": null,
+     "blob_sha256": "e129d41adfa02c658a7d13d6f98064e6ab6ce9a2bc8c7a56da700a21357b5e1c",
+     "blob_bytes": 52176
+    },
+    "decode": "crop",
+    "textspot3": {
+     "blob": "$HERD/shared/artifacts/textspot3/release/v0.3.4-textspot3.1/textspot3_t64n8c16_kd_w8.vtsp",
+     "blob_sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a",
+     "arm": "T3_kd_t64n8c16_seed3_detref"
+    },
+    "pagepath_sha256": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea",
+    "units": 2055,
+    "units_sha256": "d66a38d0ff765840c627ca3e069684d632c5796a1089047004a4433e9694773d",
+    "pages": 685,
+    "clusters": "pages (<title>:<page>)",
+    "arms": {
+     "grad_refine": {
+      "units": 2055,
+      "cer": 1.2409,
+      "platform": {
+       "vita": 1.2409
+      },
+      "errors": 519,
+      "chars": 41823,
+      "by_platform": {
+       "test:vita": {
+        "units": 2055,
+        "errors": 519,
+        "chars": 41823,
+        "lines": 3501,
+        "boxes": 3466,
+        "whole": 3379,
+        "cut": 41,
+        "missed": 81,
+        "noink": 0,
+        "merged": 0,
+        "junk": 42,
+        "frames": 126892,
+        "cer": 1.2409,
+        "line_recall": 0.9652,
+        "box_precision": 0.9879
+       }
+      },
+      "finder": {
+       "mode": "textbox_recovery",
+       "probe": 1,
+       "refine": "psp",
+       "fix": 0,
+       "preset": "rubi",
+       "lines": null,
+       "impl": "frozen",
+       "driver_sha256": "937478248443243840831118108dfdf86d3b936a8fce4c50a8bb19d37ff82a04",
+       "sources": {
+        "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+        "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+        "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca"
+       }
+      },
+      "textnorm": {
+       "textnorm_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe",
+       "rubi_head": ""
+      },
+      "result_sha256": "f214e506527f704525c940f53794750c218b15295ddeca662cdced3a58fd09b9"
+     },
+     "rubi_fix1": {
+      "units": 2055,
+      "cer": 0.9779,
+      "platform": {
+       "vita": 0.9779
+      },
+      "errors": 409,
+      "chars": 41823,
+      "by_platform": {
+       "test:vita": {
+        "units": 2055,
+        "errors": 409,
+        "chars": 41823,
+        "lines": 3501,
+        "boxes": 3465,
+        "whole": 3407,
+        "cut": 13,
+        "missed": 81,
+        "noink": 0,
+        "merged": 0,
+        "junk": 42,
+        "frames": 127177,
+        "cer": 0.9779,
+        "line_recall": 0.9732,
+        "box_precision": 0.9879
+       }
+      },
+      "finder": {
+       "mode": "textbox_recovery",
+       "probe": 1,
+       "refine": "psp",
+       "fix": 1,
+       "preset": "rubi",
+       "lines": null,
+       "impl": "fix",
+       "driver_sha256": "36a91d758a5fc3a649f8d5f8786c231f9a2c6fdb33228f96ec62fe1728929e72",
+       "sources": {
+        "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+        "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+        "runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+        "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+        "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca"
+       }
+      },
+      "textnorm": {
+       "textnorm_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe",
+       "rubi_head": ""
+      },
+      "result_sha256": "d311cb02161c2fc8af4801bb582b3f2b3b34e2bb8b3e7275bbebd39957dc5597"
+     },
+     "textspot6": {
+      "units": 2055,
+      "cer": 0.966,
+      "platform": {
+       "vita": 0.966
+      },
+      "errors": 404,
+      "chars": 41823,
+      "by_platform": {
+       "test:vita": {
+        "units": 2055,
+        "errors": 404,
+        "chars": 41823,
+        "lines": 3501,
+        "boxes": 3519,
+        "whole": 3435,
+        "cut": 66,
+        "missed": 0,
+        "noink": 0,
+        "merged": 0,
+        "junk": 1,
+        "frames": 116554,
+        "cer": 0.966,
+        "line_recall": 0.9811,
+        "box_precision": 0.9997
+       }
+      },
+      "finder": {
+       "boxes": "$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop/title/private/title/boxes_textspot6.jsonl",
+       "boxes_sha256": "dc1fea3cacc7ef00f58c89709602b4d1b19b8fade2da1e673d1a66e037cfcf0e",
+       "boxes_clipped": 0,
+       "boxes_dropped": 0,
+       "units_without_boxes": 0
+      },
+      "textnorm": {
+       "textnorm_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe",
+       "rubi_head": ""
+      },
+      "result_sha256": "55a534daa9e9fa7fa8aa323eb8494ad9fbb7424832ca8330b57cdd5097b3f0bf"
+     },
+     "textspot3": {
+      "units": 2055,
+      "cer": 1.4777,
+      "platform": {
+       "vita": 1.4777
+      },
+      "errors": 618,
+      "chars": 41823,
+      "by_platform": {
+       "test:vita": {
+        "units": 2055,
+        "errors": 618,
+        "chars": 41823,
+        "lines": 3501,
+        "boxes": 3553,
+        "whole": 3342,
+        "cut": 155,
+        "missed": 4,
+        "noink": 0,
+        "merged": 0,
+        "junk": 0,
+        "frames": 115826,
+        "cer": 1.4777,
+        "line_recall": 0.9546,
+        "box_precision": 1.0
+       }
+      },
+      "finder": {
+       "boxes": "$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop/title/private/title/boxes_textspot3.jsonl",
+       "boxes_sha256": "d628428ebe7551d02e176e8014734ede28c12dfc8f4dc02582540c20194d9737",
+       "boxes_clipped": 0,
+       "boxes_dropped": 0,
+       "units_without_boxes": 4
+      },
+      "textnorm": {
+       "textnorm_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe",
+       "rubi_head": ""
+      },
+      "result_sha256": "b422f7967d5bb4de598886876b30a9af53cab2a7c9b8e4aaa767a26dc48ea019"
+     }
+    },
+    "pairs": {
+     "textspot6-grad_refine": {
+      "delta": -0.275,
+      "clusters": 685,
+      "min_clusters": 5,
+      "reps": 10000,
+      "seed": 0,
+      "ci95": [
+       -0.576348,
+       -0.004555
+      ],
+      "dropped_resamples": 0
+     },
+     "textspot6-textspot3": {
+      "delta": -0.5117,
+      "clusters": 685,
+      "min_clusters": 5,
+      "reps": 10000,
+      "seed": 0,
+      "ci95": [
+       -0.682925,
+       -0.362156
+      ],
+      "dropped_resamples": 0
+     },
+     "textspot6-rubi_fix1": {
+      "delta": -0.012,
+      "clusters": 685,
+      "min_clusters": 5,
+      "reps": 10000,
+      "seed": 0,
+      "ci95": [
+       -0.260231,
+       0.220428
+      ],
+      "dropped_resamples": 0
+     },
+     "textspot3-grad_refine": {
+      "delta": 0.2367,
+      "clusters": 685,
+      "min_clusters": 5,
+      "reps": 10000,
+      "seed": 0,
+      "ci95": [
+       -0.073059,
+       0.534906
+      ],
+      "dropped_resamples": 0
+     }
+    }
+   }
+  },
+  "tests": {
+   "attempt": {
+    "started": "2026-10-27T16:35:43Z",
+    "sha256": "f1d3e71d1daff9e8eb5a1351ae4cdccc1b56b0be7b2749946f34541dad41b1c4"
+   },
+   "result_sha256": "c9aee4408f7aeb22c23571cc10e9e354c1f710ea2d17b01d39a29a7f704b2e18",
+   "result": {
+    "kind": "textspot6-test-tests",
+    "computed": "2026-10-27T16:36:00Z",
+    "manifest": {
+     "path": "eval/manifests/textspot-test.jsonl",
+     "sha256": "233b96d80a452e0585c717f4d65ec73758810262663f71e57bed04402b452fb5",
+     "frames": 259
+    },
+    "report_only_frames": 83,
+    "scored_frames": 176,
+    "selection": {
+     "path": "eval/textspot8_dev_20261027.json",
+     "sha256": "163e5fc28398e741e8f74f6d80388ccf37d1ccab66326c2f599a6220726bd99a",
+     "pick": {
+      "arm": "t8_t64n8c16",
+      "decode": "crop",
+      "seed": 3
+     },
+     "commit": "20c852c464d779e11c27f502763f32a3b728fd33",
+     "committed": "2026-10-27T12:51:36Z"
+    },
+    "final": {
+     "run": "t8_t64n8c16_seed3_final",
+     "recipe": "t8",
+     "shape": "t64n8c16",
+     "seed": 3,
+     "hook_splits": "train,guard,hval",
+     "teacher": null,
+     "blob_sha256": "e129d41adfa02c658a7d13d6f98064e6ab6ce9a2bc8c7a56da700a21357b5e1c",
+     "blob_bytes": 52176
+    },
+    "decode": "crop",
+    "primary": "textspot6_det",
+    "textspot3": {
+     "blob": "$HERD/shared/artifacts/textspot3/release/v0.3.4-textspot3.1/textspot3_t64n8c16_kd_w8.vtsp",
+     "blob_sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a",
+     "arm": "T3_kd_t64n8c16_seed3_detref"
+    },
+    "models": [
+     "VOCR5-N"
+    ],
+    "read": 1749,
+    "cache_seed": {
+     "source": "$HERD/shared/private/textspot3/cache",
+     "files": {
+      "20261019T184648-1802344.jsonl": "31c49141188867ee568ff35f8ef1c567871ce92c9ff9795f22b6c834f077c220",
+      "20261019T184743-1802640.jsonl": "bc0ade6fe0afc73105c8d3148b91d2ab93355a398b6f7bcdbdf8e27a52f8fe1a",
+      "20261022T003443-1961691.jsonl": "d55d6905dbd013be639ed9becd2fe2cbc0277eeea01ab595d94eea9307c731d8",
+      "20261022T003630-1967809.jsonl": "9eca2616c00bb443e5730fa2ea7e699c9c29ece8bcb7d1c61c60a76ac7f5c54f"
+     },
+     "seeded": "2026-10-27T16:35:43Z"
+    },
+    "reader": {
+     "library_sha256": "5a87ea81c0014133cf42ec6b47d9f7f09a7980b108841bc14dd913255c54da80",
+     "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+     "scalar_flags": [
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wpedantic",
+      "-Wshadow",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wcast-align",
+      "-Wpointer-arith",
+      "-fPIC",
+      "-shared"
+     ],
+     "source": {
+      "commit": "d214a05deeef503a5e1d1853fe9fa4c91eb60bc2",
+      "vocr_c_sha256": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+      "pyvocr_sha256": "b32db8a0e5d5e9dc9f3a659c92c2c48b7fa796cc4e7835c4b2d9eedd789f78f8"
+     }
+    },
+    "arms": {
+     "textspot6_det": {
+      "frames": 176,
+      "vns": 28,
+      "boxes": 753,
+      "vertical_boxes": 19,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 542,
+       "fp": 143,
+       "fn": 172,
+       "precision": 0.7912408759124088,
+       "recall": 0.7591036414565826,
+       "f1": 0.7748391708363116
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 312,
+        "tp": 309,
+        "recall": 0.990385
+       },
+       "name": {
+        "refs": 122,
+        "tp": 108,
+        "recall": 0.885246
+       },
+       "choice": {
+        "refs": 31,
+        "tp": 26,
+        "recall": 0.83871
+       },
+       "ui": {
+        "refs": 229,
+        "tp": 91,
+        "recall": 0.39738
+       },
+       "scene": {
+        "refs": 20,
+        "tp": 8,
+        "recall": 0.4
+       }
+      },
+      "tightness": {
+       "pairs": 542,
+       "mean_iou": 0.7986139593367948,
+       "mean_ink_coverage": 0.9824968353761269
+      },
+      "cer_all": {
+       "errors": 1341,
+       "chars": 6229,
+       "cer": 21.5283
+      },
+      "cer_dialogue": {
+       "errors": 90,
+       "chars": 4707,
+       "cer": 1.912
+      },
+      "junk_chars": 486,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 1,
+       "share_with_any_box": 0.052632,
+       "boxes_per_frame": 0.105263,
+       "with_scored_box": 1,
+       "share_with_scored_box": 0.052632,
+       "scored_boxes_per_frame": 0.105263
+      },
+      "pick": {
+       "frames_with_dialogue": 157,
+       "hits": 123,
+       "hit_share": 0.783439,
+       "cer": {
+        "errors": 931,
+        "chars": 4707,
+        "cer": 19.7791
+       }
+      },
+      "c_equal": null,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 176,
+      "per_part": {
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 384,
+        "vertical_boxes": 16,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 288,
+         "fp": 73,
+         "fn": 65,
+         "precision": 0.7977839335180056,
+         "recall": 0.8158640226628895,
+         "f1": 0.8067226890756303
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 167,
+          "recall": 0.988166
+         },
+         "name": {
+          "refs": 65,
+          "tp": 57,
+          "recall": 0.876923
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 14,
+          "recall": 0.933333
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 46,
+          "recall": 0.46
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 288,
+         "mean_iou": 0.8027205139749278,
+         "mean_ink_coverage": 0.980514416680595
+        },
+        "cer_all": {
+         "errors": 536,
+         "chars": 2997,
+         "cer": 17.8846
+        },
+        "cer_dialogue": {
+         "errors": 49,
+         "chars": 2305,
+         "cer": 2.1258
+        },
+        "junk_chars": 180,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 68,
+         "hit_share": 0.819277,
+         "cer": {
+          "errors": 361,
+          "chars": 2305,
+          "cer": 15.6616
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 2,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 2,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 0,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 1,
+         "share_with_any_box": 0.052632,
+         "boxes_per_frame": 0.105263,
+         "with_scored_box": 1,
+         "share_with_scored_box": 0.052632,
+         "scored_boxes_per_frame": 0.105263
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 367,
+        "vertical_boxes": 3,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 254,
+         "fp": 68,
+         "fn": 107,
+         "precision": 0.7888198757763976,
+         "recall": 0.703601108033241,
+         "f1": 0.7437774524158126
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 142,
+          "recall": 0.993007
+         },
+         "name": {
+          "refs": 57,
+          "tp": 51,
+          "recall": 0.894737
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 12,
+          "recall": 0.75
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 45,
+          "recall": 0.348837
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 4,
+          "recall": 0.25
+         }
+        },
+        "tightness": {
+         "pairs": 254,
+         "mean_iou": 0.793957708408518,
+         "mean_ink_coverage": 0.9847446172041311
+        },
+        "cer_all": {
+         "errors": 805,
+         "chars": 3232,
+         "cer": 24.9072
+        },
+        "cer_dialogue": {
+         "errors": 41,
+         "chars": 2402,
+         "cer": 1.7069
+        },
+        "junk_chars": 306,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 55,
+         "hit_share": 0.743243,
+         "cer": {
+          "errors": 570,
+          "chars": 2402,
+          "cer": 23.7302
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "all_frames_per_part": {
+       "adrenaline": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 373,
+        "vertical_boxes": 17,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 281,
+         "fp": 68,
+         "fn": 72,
+         "precision": 0.8051575931232091,
+         "recall": 0.7960339943342776,
+         "f1": 0.8005698005698005
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 166,
+          "recall": 0.982249
+         },
+         "name": {
+          "refs": 65,
+          "tp": 54,
+          "recall": 0.830769
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 13,
+          "recall": 0.866667
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 44,
+          "recall": 0.44
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 281,
+         "mean_iou": 0.8062026220824605,
+         "mean_ink_coverage": 0.9761446156259876
+        },
+        "cer_all": {
+         "errors": 544,
+         "chars": 2997,
+         "cer": 18.1515
+        },
+        "cer_dialogue": {
+         "errors": 54,
+         "chars": 2305,
+         "cer": 2.3427
+        },
+        "junk_chars": 171,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 67,
+         "hit_share": 0.807229,
+         "cer": {
+          "errors": 407,
+          "chars": 2305,
+          "cer": 17.6573
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 384,
+        "vertical_boxes": 16,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 288,
+         "fp": 73,
+         "fn": 65,
+         "precision": 0.7977839335180056,
+         "recall": 0.8158640226628895,
+         "f1": 0.8067226890756303
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 167,
+          "recall": 0.988166
+         },
+         "name": {
+          "refs": 65,
+          "tp": 57,
+          "recall": 0.876923
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 14,
+          "recall": 0.933333
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 46,
+          "recall": 0.46
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 288,
+         "mean_iou": 0.8027205139749278,
+         "mean_ink_coverage": 0.980514416680595
+        },
+        "cer_all": {
+         "errors": 536,
+         "chars": 2997,
+         "cer": 17.8846
+        },
+        "cer_dialogue": {
+         "errors": 49,
+         "chars": 2305,
+         "cer": 2.1258
+        },
+        "junk_chars": 180,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 68,
+         "hit_share": 0.819277,
+         "cer": {
+          "errors": 361,
+          "chars": 2305,
+          "cer": 15.6616
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 2,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 2,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 0,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 1,
+         "share_with_any_box": 0.052632,
+         "boxes_per_frame": 0.105263,
+         "with_scored_box": 1,
+         "share_with_scored_box": 0.052632,
+         "scored_boxes_per_frame": 0.105263
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 367,
+        "vertical_boxes": 3,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 254,
+         "fp": 68,
+         "fn": 107,
+         "precision": 0.7888198757763976,
+         "recall": 0.703601108033241,
+         "f1": 0.7437774524158126
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 142,
+          "recall": 0.993007
+         },
+         "name": {
+          "refs": 57,
+          "tp": 51,
+          "recall": 0.894737
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 12,
+          "recall": 0.75
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 45,
+          "recall": 0.348837
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 4,
+          "recall": 0.25
+         }
+        },
+        "tightness": {
+         "pairs": 254,
+         "mean_iou": 0.793957708408518,
+         "mean_ink_coverage": 0.9847446172041311
+        },
+        "cer_all": {
+         "errors": 805,
+         "chars": 3232,
+         "cer": 24.9072
+        },
+        "cer_dialogue": {
+         "errors": 41,
+         "chars": 2402,
+         "cer": 1.7069
+        },
+        "junk_chars": 306,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 55,
+         "hit_share": 0.743243,
+         "cer": {
+          "errors": 570,
+          "chars": 2402,
+          "cer": 23.7302
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "tagged_dialogue": {
+       "errors": 684,
+       "chars": 4520,
+       "cer": 15.1327
+      },
+      "presence_text_free": {
+       "frames": 19,
+       "with_dialogue_box": 1
+      }
+     },
+     "textspot6_detref": {
+      "frames": 176,
+      "vns": 28,
+      "boxes": 763,
+      "vertical_boxes": 19,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 533,
+       "fp": 162,
+       "fn": 181,
+       "precision": 0.7669064748201438,
+       "recall": 0.7464985994397759,
+       "f1": 0.7565649396735273
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 312,
+        "tp": 306,
+        "recall": 0.980769
+       },
+       "name": {
+        "refs": 122,
+        "tp": 109,
+        "recall": 0.893443
+       },
+       "choice": {
+        "refs": 31,
+        "tp": 25,
+        "recall": 0.806452
+       },
+       "ui": {
+        "refs": 229,
+        "tp": 85,
+        "recall": 0.371179
+       },
+       "scene": {
+        "refs": 20,
+        "tp": 8,
+        "recall": 0.4
+       }
+      },
+      "tightness": {
+       "pairs": 533,
+       "mean_iou": 0.826179553564825,
+       "mean_ink_coverage": 0.9770935514407955
+      },
+      "cer_all": {
+       "errors": 1318,
+       "chars": 6229,
+       "cer": 21.1591
+      },
+      "cer_dialogue": {
+       "errors": 115,
+       "chars": 4707,
+       "cer": 2.4432
+      },
+      "junk_chars": 439,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 1,
+       "share_with_any_box": 0.052632,
+       "boxes_per_frame": 0.157895,
+       "with_scored_box": 1,
+       "share_with_scored_box": 0.052632,
+       "scored_boxes_per_frame": 0.157895
+      },
+      "pick": {
+       "frames_with_dialogue": 157,
+       "hits": 124,
+       "hit_share": 0.789809,
+       "cer": {
+        "errors": 864,
+        "chars": 4707,
+        "cer": 18.3556
+       }
+      },
+      "c_equal": null,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 176,
+      "per_part": {
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 386,
+        "vertical_boxes": 16,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 284,
+         "fp": 79,
+         "fn": 69,
+         "precision": 0.7823691460055097,
+         "recall": 0.8045325779036827,
+         "f1": 0.7932960893854749
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 166,
+          "recall": 0.982249
+         },
+         "name": {
+          "refs": 65,
+          "tp": 57,
+          "recall": 0.876923
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 14,
+          "recall": 0.933333
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 43,
+          "recall": 0.43
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 284,
+         "mean_iou": 0.8204557805529545,
+         "mean_ink_coverage": 0.9774813096878
+        },
+        "cer_all": {
+         "errors": 519,
+         "chars": 2997,
+         "cer": 17.3173
+        },
+        "cer_dialogue": {
+         "errors": 56,
+         "chars": 2305,
+         "cer": 2.4295
+        },
+        "junk_chars": 148,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 67,
+         "hit_share": 0.807229,
+         "cer": {
+          "errors": 369,
+          "chars": 2305,
+          "cer": 16.0087
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 3,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 3,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 1,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 1,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 1,
+         "share_with_any_box": 0.052632,
+         "boxes_per_frame": 0.157895,
+         "with_scored_box": 1,
+         "share_with_scored_box": 0.052632,
+         "scored_boxes_per_frame": 0.157895
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 374,
+        "vertical_boxes": 3,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 249,
+         "fp": 80,
+         "fn": 112,
+         "precision": 0.756838905775076,
+         "recall": 0.6897506925207756,
+         "f1": 0.7217391304347827
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 140,
+          "recall": 0.979021
+         },
+         "name": {
+          "refs": 57,
+          "tp": 52,
+          "recall": 0.912281
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 11,
+          "recall": 0.6875
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 42,
+          "recall": 0.325581
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 4,
+          "recall": 0.25
+         }
+        },
+        "tightness": {
+         "pairs": 249,
+         "mean_iou": 0.8327078729839864,
+         "mean_ink_coverage": 0.9766512890225254
+        },
+        "cer_all": {
+         "errors": 798,
+         "chars": 3232,
+         "cer": 24.6906
+        },
+        "cer_dialogue": {
+         "errors": 59,
+         "chars": 2402,
+         "cer": 2.4563
+        },
+        "junk_chars": 290,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 57,
+         "hit_share": 0.77027,
+         "cer": {
+          "errors": 495,
+          "chars": 2402,
+          "cer": 20.6078
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "all_frames_per_part": {
+       "adrenaline": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 383,
+        "vertical_boxes": 17,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 275,
+         "fp": 83,
+         "fn": 78,
+         "precision": 0.7681564245810056,
+         "recall": 0.7790368271954674,
+         "f1": 0.7735583684950773
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 165,
+          "recall": 0.976331
+         },
+         "name": {
+          "refs": 65,
+          "tp": 56,
+          "recall": 0.861538
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 13,
+          "recall": 0.866667
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 37,
+          "recall": 0.37
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 275,
+         "mean_iou": 0.8264875064584738,
+         "mean_ink_coverage": 0.9765481344077993
+        },
+        "cer_all": {
+         "errors": 549,
+         "chars": 2997,
+         "cer": 18.3183
+        },
+        "cer_dialogue": {
+         "errors": 57,
+         "chars": 2305,
+         "cer": 2.4729
+        },
+        "junk_chars": 151,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 68,
+         "hit_share": 0.819277,
+         "cer": {
+          "errors": 387,
+          "chars": 2305,
+          "cer": 16.7896
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 386,
+        "vertical_boxes": 16,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 284,
+         "fp": 79,
+         "fn": 69,
+         "precision": 0.7823691460055097,
+         "recall": 0.8045325779036827,
+         "f1": 0.7932960893854749
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 166,
+          "recall": 0.982249
+         },
+         "name": {
+          "refs": 65,
+          "tp": 57,
+          "recall": 0.876923
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 14,
+          "recall": 0.933333
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 43,
+          "recall": 0.43
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 4,
+          "recall": 1.0
+         }
+        },
+        "tightness": {
+         "pairs": 284,
+         "mean_iou": 0.8204557805529545,
+         "mean_ink_coverage": 0.9774813096878
+        },
+        "cer_all": {
+         "errors": 519,
+         "chars": 2997,
+         "cer": 17.3173
+        },
+        "cer_dialogue": {
+         "errors": 56,
+         "chars": 2305,
+         "cer": 2.4295
+        },
+        "junk_chars": 148,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 67,
+         "hit_share": 0.807229,
+         "cer": {
+          "errors": 369,
+          "chars": 2305,
+          "cer": 16.0087
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 3,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 3,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 1,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 1,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 1,
+         "share_with_any_box": 0.052632,
+         "boxes_per_frame": 0.157895,
+         "with_scored_box": 1,
+         "share_with_scored_box": 0.052632,
+         "scored_boxes_per_frame": 0.157895
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 374,
+        "vertical_boxes": 3,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 249,
+         "fp": 80,
+         "fn": 112,
+         "precision": 0.756838905775076,
+         "recall": 0.6897506925207756,
+         "f1": 0.7217391304347827
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 140,
+          "recall": 0.979021
+         },
+         "name": {
+          "refs": 57,
+          "tp": 52,
+          "recall": 0.912281
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 11,
+          "recall": 0.6875
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 42,
+          "recall": 0.325581
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 4,
+          "recall": 0.25
+         }
+        },
+        "tightness": {
+         "pairs": 249,
+         "mean_iou": 0.8327078729839864,
+         "mean_ink_coverage": 0.9766512890225254
+        },
+        "cer_all": {
+         "errors": 798,
+         "chars": 3232,
+         "cer": 24.6906
+        },
+        "cer_dialogue": {
+         "errors": 59,
+         "chars": 2402,
+         "cer": 2.4563
+        },
+        "junk_chars": 290,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 57,
+         "hit_share": 0.77027,
+         "cer": {
+          "errors": 495,
+          "chars": 2402,
+          "cer": 20.6078
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "tagged_dialogue": {
+       "errors": 717,
+       "chars": 4520,
+       "cer": 15.8628
+      },
+      "presence_text_free": {
+       "frames": 19,
+       "with_dialogue_box": 1
+      }
+     },
+     "textspot3_reread": {
+      "frames": 176,
+      "vns": 28,
+      "boxes": 752,
+      "vertical_boxes": 11,
+      "truncated_frames": 0,
+      "detection": {
+       "tp": 538,
+       "fp": 134,
+       "fn": 176,
+       "precision": 0.8005952380952381,
+       "recall": 0.7535014005602241,
+       "f1": 0.7763347763347763
+      },
+      "recall_by_class": {
+       "dialogue": {
+        "refs": 312,
+        "tp": 307,
+        "recall": 0.983974
+       },
+       "name": {
+        "refs": 122,
+        "tp": 112,
+        "recall": 0.918033
+       },
+       "choice": {
+        "refs": 31,
+        "tp": 26,
+        "recall": 0.83871
+       },
+       "ui": {
+        "refs": 229,
+        "tp": 85,
+        "recall": 0.371179
+       },
+       "scene": {
+        "refs": 20,
+        "tp": 8,
+        "recall": 0.4
+       }
+      },
+      "tightness": {
+       "pairs": 538,
+       "mean_iou": 0.8439288116930468,
+       "mean_ink_coverage": 0.9798381359761521
+      },
+      "cer_all": {
+       "errors": 1281,
+       "chars": 6229,
+       "cer": 20.5651
+      },
+      "cer_dialogue": {
+       "errors": 108,
+       "chars": 4707,
+       "cer": 2.2945
+      },
+      "junk_chars": 417,
+      "text_free": {
+       "frames": 19,
+       "with_any_box": 2,
+       "share_with_any_box": 0.105263,
+       "boxes_per_frame": 0.315789,
+       "with_scored_box": 2,
+       "share_with_scored_box": 0.105263,
+       "scored_boxes_per_frame": 0.315789
+      },
+      "pick": {
+       "frames_with_dialogue": 157,
+       "hits": 102,
+       "hit_share": 0.649682,
+       "cer": {
+        "errors": 977,
+        "chars": 4707,
+        "cer": 20.7563
+       }
+      },
+      "c_equal": null,
+      "c_unequal_frames": 0,
+      "c_unchecked_frames": 176,
+      "per_part": {
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 383,
+        "vertical_boxes": 6,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 279,
+         "fp": 70,
+         "fn": 74,
+         "precision": 0.7994269340974212,
+         "recall": 0.7903682719546742,
+         "f1": 0.7948717948717948
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 165,
+          "recall": 0.976331
+         },
+         "name": {
+          "refs": 65,
+          "tp": 59,
+          "recall": 0.907692
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 15,
+          "recall": 1.0
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 38,
+          "recall": 0.38
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 2,
+          "recall": 0.5
+         }
+        },
+        "tightness": {
+         "pairs": 279,
+         "mean_iou": 0.8405868090370303,
+         "mean_ink_coverage": 0.980239636594261
+        },
+        "cer_all": {
+         "errors": 521,
+         "chars": 2997,
+         "cer": 17.3841
+        },
+        "cer_dialogue": {
+         "errors": 60,
+         "chars": 2305,
+         "cer": 2.603
+        },
+        "junk_chars": 140,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 56,
+         "hit_share": 0.674699,
+         "cer": {
+          "errors": 499,
+          "chars": 2305,
+          "cer": 21.6486
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 6,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 6,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 3,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 3,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 2,
+         "share_with_any_box": 0.105263,
+         "boxes_per_frame": 0.315789,
+         "with_scored_box": 2,
+         "share_with_scored_box": 0.105263,
+         "scored_boxes_per_frame": 0.315789
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 363,
+        "vertical_boxes": 5,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 259,
+         "fp": 58,
+         "fn": 102,
+         "precision": 0.8170347003154574,
+         "recall": 0.7174515235457064,
+         "f1": 0.7640117994100295
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 142,
+          "recall": 0.993007
+         },
+         "name": {
+          "refs": 57,
+          "tp": 53,
+          "recall": 0.929825
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 11,
+          "recall": 0.6875
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 47,
+          "recall": 0.364341
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 6,
+          "recall": 0.375
+         }
+        },
+        "tightness": {
+         "pairs": 259,
+         "mean_iou": 0.8475288840522307,
+         "mean_ink_coverage": 0.9794056314493089
+        },
+        "cer_all": {
+         "errors": 757,
+         "chars": 3232,
+         "cer": 23.422
+        },
+        "cer_dialogue": {
+         "errors": 48,
+         "chars": 2402,
+         "cer": 1.9983
+        },
+        "junk_chars": 274,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 46,
+         "hit_share": 0.621622,
+         "cer": {
+          "errors": 478,
+          "chars": 2402,
+          "cer": 19.9001
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "all_frames_per_part": {
+       "adrenaline": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 347,
+        "vertical_boxes": 4,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 267,
+         "fp": 52,
+         "fn": 86,
+         "precision": 0.8369905956112853,
+         "recall": 0.7563739376770539,
+         "f1": 0.7946428571428571
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 166,
+          "recall": 0.982249
+         },
+         "name": {
+          "refs": 65,
+          "tp": 58,
+          "recall": 0.892308
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 14,
+          "recall": 0.933333
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 29,
+          "recall": 0.29
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 0,
+          "recall": 0.0
+         }
+        },
+        "tightness": {
+         "pairs": 267,
+         "mean_iou": 0.8455434416219738,
+         "mean_ink_coverage": 0.9764298783854334
+        },
+        "cer_all": {
+         "errors": 511,
+         "chars": 2997,
+         "cer": 17.0504
+        },
+        "cer_dialogue": {
+         "errors": 64,
+         "chars": 2305,
+         "cer": 2.7766
+        },
+        "junk_chars": 110,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 60,
+         "hit_share": 0.722892,
+         "cer": {
+          "errors": 461,
+          "chars": 2305,
+          "cer": 20.0
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "psp": {
+        "frames": 83,
+        "vns": 14,
+        "boxes": 383,
+        "vertical_boxes": 6,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 279,
+         "fp": 70,
+         "fn": 74,
+         "precision": 0.7994269340974212,
+         "recall": 0.7903682719546742,
+         "f1": 0.7948717948717948
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 169,
+          "tp": 165,
+          "recall": 0.976331
+         },
+         "name": {
+          "refs": 65,
+          "tp": 59,
+          "recall": 0.907692
+         },
+         "choice": {
+          "refs": 15,
+          "tp": 15,
+          "recall": 1.0
+         },
+         "ui": {
+          "refs": 100,
+          "tp": 38,
+          "recall": 0.38
+         },
+         "scene": {
+          "refs": 4,
+          "tp": 2,
+          "recall": 0.5
+         }
+        },
+        "tightness": {
+         "pairs": 279,
+         "mean_iou": 0.8405868090370303,
+         "mean_ink_coverage": 0.980239636594261
+        },
+        "cer_all": {
+         "errors": 521,
+         "chars": 2997,
+         "cer": 17.3841
+        },
+        "cer_dialogue": {
+         "errors": 60,
+         "chars": 2305,
+         "cer": 2.603
+        },
+        "junk_chars": 140,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 83,
+         "hits": 56,
+         "hit_share": 0.674699,
+         "cer": {
+          "errors": 499,
+          "chars": 2305,
+          "cer": 21.6486
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 83
+       },
+       "text-free": {
+        "frames": 19,
+        "vns": 8,
+        "boxes": 6,
+        "vertical_boxes": 0,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 0,
+         "fp": 6,
+         "fn": 0,
+         "precision": 0.0,
+         "recall": null,
+         "f1": 0.0
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "name": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "choice": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "ui": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         },
+         "scene": {
+          "refs": 0,
+          "tp": 0,
+          "recall": null
+         }
+        },
+        "tightness": {
+         "pairs": 0,
+         "mean_iou": null,
+         "mean_ink_coverage": null
+        },
+        "cer_all": {
+         "errors": 3,
+         "chars": 0,
+         "cer": null
+        },
+        "cer_dialogue": {
+         "errors": 0,
+         "chars": 0,
+         "cer": null
+        },
+        "junk_chars": 3,
+        "text_free": {
+         "frames": 19,
+         "with_any_box": 2,
+         "share_with_any_box": 0.105263,
+         "boxes_per_frame": 0.315789,
+         "with_scored_box": 2,
+         "share_with_scored_box": 0.105263,
+         "scored_boxes_per_frame": 0.315789
+        },
+        "pick": {
+         "frames_with_dialogue": 0,
+         "hits": 0,
+         "hit_share": null
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 19
+       },
+       "vita": {
+        "frames": 74,
+        "vns": 16,
+        "boxes": 363,
+        "vertical_boxes": 5,
+        "truncated_frames": 0,
+        "detection": {
+         "tp": 259,
+         "fp": 58,
+         "fn": 102,
+         "precision": 0.8170347003154574,
+         "recall": 0.7174515235457064,
+         "f1": 0.7640117994100295
+        },
+        "recall_by_class": {
+         "dialogue": {
+          "refs": 143,
+          "tp": 142,
+          "recall": 0.993007
+         },
+         "name": {
+          "refs": 57,
+          "tp": 53,
+          "recall": 0.929825
+         },
+         "choice": {
+          "refs": 16,
+          "tp": 11,
+          "recall": 0.6875
+         },
+         "ui": {
+          "refs": 129,
+          "tp": 47,
+          "recall": 0.364341
+         },
+         "scene": {
+          "refs": 16,
+          "tp": 6,
+          "recall": 0.375
+         }
+        },
+        "tightness": {
+         "pairs": 259,
+         "mean_iou": 0.8475288840522307,
+         "mean_ink_coverage": 0.9794056314493089
+        },
+        "cer_all": {
+         "errors": 757,
+         "chars": 3232,
+         "cer": 23.422
+        },
+        "cer_dialogue": {
+         "errors": 48,
+         "chars": 2402,
+         "cer": 1.9983
+        },
+        "junk_chars": 274,
+        "text_free": {
+         "frames": 0,
+         "with_any_box": 0,
+         "share_with_any_box": null,
+         "boxes_per_frame": null,
+         "with_scored_box": 0,
+         "share_with_scored_box": null,
+         "scored_boxes_per_frame": null
+        },
+        "pick": {
+         "frames_with_dialogue": 74,
+         "hits": 46,
+         "hit_share": 0.621622,
+         "cer": {
+          "errors": 478,
+          "chars": 2402,
+          "cer": 19.9001
+         }
+        },
+        "c_equal": null,
+        "c_unequal_frames": 0,
+        "c_unchecked_frames": 74
+       }
+      },
+      "tagged_dialogue": {
+       "errors": 1575,
+       "chars": 4520,
+       "cer": 34.8451
+      },
+      "presence_text_free": {
+       "frames": 19,
+       "with_dialogue_box": 2
+      }
+     }
+    },
+    "comparisons": {
+     "textspot6_det": {
+      "B_h2_s4_c24n4_seed2_detref": {
+       "f1": {
+        "delta": 0.080758,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.04068,
+         0.124389
+        ]
+       },
+       "cer_all": {
+        "delta": 1.5091,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.879,
+         5.139
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -1.0835,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -2.1564,
+         -0.1186
+        ]
+       }
+      },
+      "grad": {
+       "f1": {
+        "delta": 0.510464,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.44186,
+         0.584116
+        ]
+       },
+       "cer_all": {
+        "delta": -59.2551,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -72.4441,
+         -45.8118
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -43.1273,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -56.3893,
+         -30.7382
+        ]
+       }
+      },
+      "grad_refine": {
+       "f1": {
+        "delta": 0.508521,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.441329,
+         0.580873
+        ]
+       },
+       "cer_all": {
+        "delta": -57.5052,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -70.8027,
+         -44.2554
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -41.7888,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -55.101,
+         -29.4039
+        ]
+       }
+      },
+      "grad_refine_gate": {
+       "f1": {
+        "delta": 0.501197,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.434783,
+         0.57329
+        ]
+       },
+       "cer_all": {
+        "delta": -57.0878,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -70.3067,
+         -43.8716
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -41.7888,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -55.101,
+         -29.4039
+        ]
+       }
+      },
+      "s8c24_textdet": {
+       "f1": {
+        "delta": 0.20255,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.156576,
+         0.24731
+        ]
+       },
+       "cer_all": {
+        "delta": -9.1507,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -13.2082,
+         -5.2613
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -6.9683,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -13.7238,
+         -2.0511
+        ]
+       }
+      },
+      "s8c24_textdet_refine": {
+       "f1": {
+        "delta": 0.204265,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.157549,
+         0.248296
+        ]
+       },
+       "cer_all": {
+        "delta": -7.4972,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -11.5416,
+         -3.8222
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -6.6284,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -13.4364,
+         -1.8627
+        ]
+       }
+      },
+      "s8c24_spot": {
+       "f1": {
+        "delta": 0.19465,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.148887,
+         0.243328
+        ]
+       },
+       "cer_all": {
+        "delta": -6.6945,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -10.174,
+         -3.7268
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -3.6329,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -6.5907,
+         -1.3709
+        ]
+       }
+      },
+      "columns": {
+       "f1": {
+        "delta": 0.772267,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.71856,
+         0.826619
+        ]
+       },
+       "cer_all": {
+        "delta": -137.3254,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -153.3638,
+         -122.303
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -95.2624,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -96.4704,
+         -93.7977
+        ]
+       }
+      },
+      "grad_refine_columns": {
+       "f1": {
+        "delta": 0.589988,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.532832,
+         0.649213
+        ]
+       },
+       "cer_all": {
+        "delta": -89.9342,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -99.617,
+         -79.9386
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -42.1075,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -55.3112,
+         -29.8494
+        ]
+       }
+      },
+      "T3_kd_t64n8c16_seed3_detref": {
+       "f1": {
+        "delta": -0.001496,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -0.031603,
+         0.026636
+        ]
+       },
+       "cer_all": {
+        "delta": 0.9632,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.0032,
+         2.9094
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -0.3824,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.3927,
+         0.4315
+        ]
+       }
+      }
+     },
+     "textspot6_detref": {
+      "B_h2_s4_c24n4_seed2_detref": {
+       "f1": {
+        "delta": 0.062484,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.018247,
+         0.107572
+        ]
+       },
+       "cer_all": {
+        "delta": 1.1398,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.4966,
+         4.2188
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -0.5524,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.4732,
+         0.3269
+        ]
+       }
+      },
+      "grad": {
+       "f1": {
+        "delta": 0.49219,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.422239,
+         0.569203
+        ]
+       },
+       "cer_all": {
+        "delta": -59.6243,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -72.5375,
+         -46.2468
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -42.5961,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -55.8344,
+         -30.299
+        ]
+       }
+      },
+      "grad_refine": {
+       "f1": {
+        "delta": 0.490246,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.421725,
+         0.564886
+        ]
+       },
+       "cer_all": {
+        "delta": -57.8745,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -70.9906,
+         -44.6441
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -41.2577,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -54.4935,
+         -28.9892
+        ]
+       }
+      },
+      "grad_refine_gate": {
+       "f1": {
+        "delta": 0.482923,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.414937,
+         0.557925
+        ]
+       },
+       "cer_all": {
+        "delta": -57.4571,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -70.472,
+         -44.2779
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -41.2577,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -54.4935,
+         -28.9892
+        ]
+       }
+      },
+      "s8c24_textdet": {
+       "f1": {
+        "delta": 0.184276,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.139264,
+         0.229385
+        ]
+       },
+       "cer_all": {
+        "delta": -9.52,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -14.3415,
+         -4.9277
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -6.4372,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -13.3322,
+         -1.2878
+        ]
+       }
+      },
+      "s8c24_textdet_refine": {
+       "f1": {
+        "delta": 0.185991,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.141342,
+         0.228439
+        ]
+       },
+       "cer_all": {
+        "delta": -7.8664,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -12.5038,
+         -3.6197
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -6.0973,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -12.897,
+         -1.2897
+        ]
+       }
+      },
+      "s8c24_spot": {
+       "f1": {
+        "delta": 0.176376,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.129307,
+         0.226345
+        ]
+       },
+       "cer_all": {
+        "delta": -7.0637,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -10.861,
+         -3.8397
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -3.1018,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -6.2208,
+         -0.682
+        ]
+       }
+      },
+      "columns": {
+       "f1": {
+        "delta": 0.753993,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.696311,
+         0.814222
+        ]
+       },
+       "cer_all": {
+        "delta": -137.6947,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -153.5294,
+         -122.6641
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -94.7313,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -96.1459,
+         -93.0566
+        ]
+       }
+      },
+      "grad_refine_columns": {
+       "f1": {
+        "delta": 0.571714,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         0.511762,
+         0.634092
+        ]
+       },
+       "cer_all": {
+        "delta": -90.3034,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -99.7647,
+         -80.1766
+        ]
+       },
+       "cer_dialogue": {
+        "delta": -41.5764,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -54.7007,
+         -29.4527
+        ]
+       }
+      },
+      "T3_kd_t64n8c16_seed3_detref": {
+       "f1": {
+        "delta": -0.01977,
+        "clusters": 28,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -0.054011,
+         0.012394
+        ]
+       },
+       "cer_all": {
+        "delta": 0.594,
+        "clusters": 28,
+        "chars": 6229,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -1.1398,
+         2.3822
+        ]
+       },
+       "cer_dialogue": {
+        "delta": 0.1487,
+        "clusters": 28,
+        "chars": 4707,
+        "reps": 10000,
+        "seed": 0,
+        "min_clusters": 5,
+        "ci95": [
+         -0.5059,
+         0.7706
+        ]
+       }
+      }
+     }
+    },
+    "recall_by_class": {
+     "textspot6_det": {
+      "dialogue": {
+       "tp": 309,
+       "n": 312,
+       "recall": 0.9904
+      },
+      "name": {
+       "tp": 108,
+       "n": 122,
+       "recall": 0.8852
+      },
+      "choice": {
+       "tp": 26,
+       "n": 31,
+       "recall": 0.8387
+      },
+      "ui": {
+       "tp": 91,
+       "n": 229,
+       "recall": 0.3974
+      },
+      "scene": {
+       "tp": 8,
+       "n": 20,
+       "recall": 0.4
+      }
+     },
+     "textspot6_detref": {
+      "dialogue": {
+       "tp": 306,
+       "n": 312,
+       "recall": 0.9808
+      },
+      "name": {
+       "tp": 109,
+       "n": 122,
+       "recall": 0.8934
+      },
+      "choice": {
+       "tp": 25,
+       "n": 31,
+       "recall": 0.8065
+      },
+      "ui": {
+       "tp": 85,
+       "n": 229,
+       "recall": 0.3712
+      },
+      "scene": {
+       "tp": 8,
+       "n": 20,
+       "recall": 0.4
+      }
+     },
+     "textspot3_reread": {
+      "dialogue": {
+       "tp": 307,
+       "n": 312,
+       "recall": 0.984
+      },
+      "name": {
+       "tp": 112,
+       "n": 122,
+       "recall": 0.918
+      },
+      "choice": {
+       "tp": 26,
+       "n": 31,
+       "recall": 0.8387
+      },
+      "ui": {
+       "tp": 85,
+       "n": 229,
+       "recall": 0.3712
+      },
+      "scene": {
+       "tp": 8,
+       "n": 20,
+       "recall": 0.4
+      }
+     },
+     "T3_kd_t64n8c16_seed3_detref": {
+      "dialogue": {
+       "tp": 307,
+       "n": 312,
+       "recall": 0.984
+      },
+      "name": {
+       "tp": 112,
+       "n": 122,
+       "recall": 0.918
+      },
+      "choice": {
+       "tp": 26,
+       "n": 31,
+       "recall": 0.8387
+      },
+      "ui": {
+       "tp": 85,
+       "n": 229,
+       "recall": 0.3712
+      },
+      "scene": {
+       "tp": 8,
+       "n": 20,
+       "recall": 0.4
+      }
+     }
+    },
+    "stored_sha256": {
+     "B_h2_s4_c24n4_seed2_detref": {
+      "boxes": "a7b8a12baa6fa690a78c6d24516a8667dbd0bd9fbd33ff469f5e88c72682164e",
+      "VOCR5-N": "cb889859195449a42fb170032bd8463031d8d9e4f361c70d580964941fc14723"
+     },
+     "grad": {
+      "boxes": "f4002306b5d2eac9126b2a0491c58aedabfe8daf1d27c9834dfb0a517b01d806",
+      "VOCR5-N": "b8da7340fa687b412a96fdac80669bcd0de1a4f1b1c9bc4b4b09cd0dc021a138"
+     },
+     "grad_refine": {
+      "boxes": "b552f63da3f03907057295b89619ef9a606e0dda8a537296fe272a24f93dd46c",
+      "VOCR5-N": "d275a69aac5a8df3dfce042d27b548ea4ede22201f0f47d02e1fb5f9ad86e978"
+     },
+     "grad_refine_gate": {
+      "boxes": "2dc08f65edf1491bf1edb6dcdc25b8d5f82751a45dbfd10c370539fe47239aa6",
+      "VOCR5-N": "c88c1b6d078142b8399ee344d5374e9a7ee052ef89862edd85d98aa14065965e"
+     },
+     "s8c24_textdet": {
+      "boxes": "056f3047a5206e63a3346a8079cab00a66db742386c1cdbdf99cf1fb50a2cc77",
+      "VOCR5-N": "531b8bb6cb8690638f3ac8ed2157b195a62e1c80fab99a91f632fc7e851f41bf"
+     },
+     "s8c24_textdet_refine": {
+      "boxes": "dd6275256a2a2d946c4894426246b8262b3b8bb6bcf3ded0370901382572f112",
+      "VOCR5-N": "a9323ce2aa7320e5e60672c57c39e767b39272a51c85b41dc4e5f3b1865f312d"
+     },
+     "s8c24_spot": {
+      "boxes": "579d1995b8618b4a991ded00a5c1c92028c273fe494fc03ec7184d94540bf76a",
+      "VOCR5-N": "577328acf5f80696a8ff9aef5559fb1577ec3cee5c80cfd3d671958d33f499e5"
+     },
+     "columns": {
+      "boxes": "82c12d51d41bc5f56a5e0ae7fc7b27a316c3bac94c68620e60b22706af2a9556",
+      "VOCR5-N": "15ce45d5e9f1a481edf3d1963ec9ec84893ba776ac8e014c631a18ebf4b7b19c"
+     },
+     "grad_refine_columns": {
+      "boxes": "8b6181df526bf6f93cba891074a973be3fe35b7a7f167125b30e2ddbfdc15602",
+      "VOCR5-N": "10b866527cb16894f43b6e651e7d11ceb75920e0adca4e7de1b2a0607206bba6"
+     },
+     "T3_kd_t64n8c16_seed3_detref": "99656c514af2728e5577249070d4a14c37e733c40a937238e23a3e17780d3e87"
+    },
+    "textspot3_reread_equals_stored": false
+   }
+  },
+  "clannad": {
+   "attempt": {
+    "started": "2026-10-27T16:36:05Z",
+    "sha256": "b47120fbfb201f575ee2b25e4b0bbfd6d13a363ee9f89c10b409aa20489a73e3"
+   },
+   "result_sha256": "dd33d0980b6fff00baecd241fd2525a26d652657087ebd24b3d87b21a33a7b5b",
+   "result": {
+    "kind": "textspot6-test-clannad",
+    "computed": "2026-10-27T16:42:14Z",
+    "refs_sha256": "35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b",
+    "selection": {
+     "path": "eval/textspot8_dev_20261027.json",
+     "sha256": "163e5fc28398e741e8f74f6d80388ccf37d1ccab66326c2f599a6220726bd99a",
+     "pick": {
+      "arm": "t8_t64n8c16",
+      "decode": "crop",
+      "seed": 3
+     },
+     "commit": "20c852c464d779e11c27f502763f32a3b728fd33",
+     "committed": "2026-10-27T12:51:36Z"
+    },
+    "final": {
+     "run": "t8_t64n8c16_seed3_final",
+     "recipe": "t8",
+     "shape": "t64n8c16",
+     "seed": 3,
+     "hook_splits": "train,guard,hval",
+     "teacher": null,
+     "blob_sha256": "e129d41adfa02c658a7d13d6f98064e6ab6ce9a2bc8c7a56da700a21357b5e1c",
+     "blob_bytes": 52176
+    },
+    "decode": "crop",
+    "textspot3": {
+     "blob": "$HERD/shared/artifacts/textspot3/release/v0.3.4-textspot3.1/textspot3_t64n8c16_kd_w8.vtsp",
+     "blob_sha256": "20c3f7cc4f07b443741bbb45fe4270f6fa8c74ce29045a796a5ed8887a3fb26a",
+     "arm": "T3_kd_t64n8c16_seed3_detref"
+    },
+    "models": [
+     "VOCR5-N"
+    ],
+    "pagepath_sha256": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea",
+    "reader": {
+     "library_sha256": "5a87ea81c0014133cf42ec6b47d9f7f09a7980b108841bc14dd913255c54da80",
+     "compiler": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+     "scalar_flags": [
+      "-std=c99",
+      "-O2",
+      "-ffp-contract=off",
+      "-DVOCR_NO_NEON",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wpedantic",
+      "-Wshadow",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wcast-align",
+      "-Wpointer-arith",
+      "-fPIC",
+      "-shared"
+     ],
+     "source": {
+      "commit": "d214a05deeef503a5e1d1853fe9fa4c91eb60bc2",
+      "vocr_c_sha256": "3e1756138b2e1d9aff15abdda95b02e0c015a5ba0af99678bdd678377b73f559",
+      "pyvocr_sha256": "b32db8a0e5d5e9dc9f3a659c92c2c48b7fa796cc4e7835c4b2d9eedd789f78f8"
+     }
+    },
+    "whole_frames": {
+     "scored_lines": 3048,
+     "counts": {
+      "pages": 2177,
+      "pages_with_ref": 2044,
+      "no_text_pages": 133,
+      "unmatched": 0,
+      "matched": 3048
+     },
+     "arms": {
+      "textspot6_det": {
+       "boxes": 8193,
+       "vertical": 184,
+       "boxes_on_no_text_pages": 424,
+       "boxes_outside_ref_boxes": 4695,
+       "c_equal_pages": 0,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 2177
+      },
+      "textspot6_detref": {
+       "boxes": 8568,
+       "vertical": 184,
+       "boxes_on_no_text_pages": 461,
+       "boxes_outside_ref_boxes": 5024,
+       "c_equal_pages": 0,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 2177
+      },
+      "textspot3_reread": {
+       "boxes": 9021,
+       "vertical": 0,
+       "boxes_on_no_text_pages": 504,
+       "boxes_outside_ref_boxes": 5456,
+       "c_equal_pages": 0,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 2177
+      },
+      "B_h2_s4_c24n4_seed2_detref": {
+       "boxes": 11494,
+       "vertical": 80,
+       "boxes_on_no_text_pages": 790,
+       "boxes_outside_ref_boxes": 7537,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "grad": {
+       "boxes": 8511,
+       "vertical": 0,
+       "boxes_on_no_text_pages": 463,
+       "boxes_outside_ref_boxes": 5998,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "grad_refine": {
+       "boxes": 8638,
+       "vertical": 0,
+       "boxes_on_no_text_pages": 471,
+       "boxes_outside_ref_boxes": 6087,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "grad_refine_gate": {
+       "boxes": 8616,
+       "vertical": 0,
+       "boxes_on_no_text_pages": 466,
+       "boxes_outside_ref_boxes": 6070,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "s8c24_textdet": {
+       "boxes": 14018,
+       "vertical": 1715,
+       "boxes_on_no_text_pages": 877,
+       "boxes_outside_ref_boxes": 9799,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "s8c24_textdet_refine": {
+       "boxes": 14117,
+       "vertical": 1715,
+       "boxes_on_no_text_pages": 884,
+       "boxes_outside_ref_boxes": 9885,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "s8c24_spot": {
+       "boxes": 14432,
+       "vertical": 2123,
+       "boxes_on_no_text_pages": 952,
+       "boxes_outside_ref_boxes": 10135,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "columns": {
+       "boxes": 25763,
+       "vertical": 25763,
+       "boxes_on_no_text_pages": 1326,
+       "boxes_outside_ref_boxes": 20283,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "grad_refine_columns": {
+       "boxes": 14803,
+       "vertical": 6165,
+       "boxes_on_no_text_pages": 771,
+       "boxes_outside_ref_boxes": 11675,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      },
+      "T3_kd_t64n8c16_seed3_detref": {
+       "boxes": 9021,
+       "vertical": 0,
+       "boxes_on_no_text_pages": 504,
+       "boxes_outside_ref_boxes": 5456,
+       "c_equal_pages": 2177,
+       "c_differ_pages": 0,
+       "c_unchecked_pages": 0
+      }
+     },
+     "read": 14109,
+     "cache_seed": {
+      "source": "$HERD/shared/private/textspot3/cache",
+      "files": {
+       "20261019T184648-1802344.jsonl": "31c49141188867ee568ff35f8ef1c567871ce92c9ff9795f22b6c834f077c220",
+       "20261019T184743-1802640.jsonl": "bc0ade6fe0afc73105c8d3148b91d2ab93355a398b6f7bcdbdf8e27a52f8fe1a",
+       "20261022T003443-1961691.jsonl": "d55d6905dbd013be639ed9becd2fe2cbc0277eeea01ab595d94eea9307c731d8",
+       "20261022T003630-1967809.jsonl": "9eca2616c00bb443e5730fa2ea7e699c9c29ece8bcb7d1c61c60a76ac7f5c54f"
+      },
+      "seeded": "2026-10-27T16:36:05Z"
+     },
+     "primary": "textspot6_det",
+     "scopes": {
+      "dialogue": {
+       "lines": 2052,
+       "pages": 1867,
+       "systems": {
+        "textspot6_det": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 370,
+         "exact_lines": 1797,
+         "cer": 1.105,
+         "cer_ci95": [
+          0.9438,
+          1.281
+         ],
+         "exact": 87.5731,
+         "exact_ci95": [
+          86.1124,
+          88.9966
+         ],
+         "hiragana_errors": 186,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.927
+        },
+        "textspot6_detref": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 394,
+         "exact_lines": 1779,
+         "cer": 1.1766,
+         "cer_ci95": [
+          1.0081,
+          1.3557
+         ],
+         "exact": 86.6959,
+         "exact_ci95": [
+          85.2102,
+          88.1694
+         ],
+         "hiragana_errors": 202,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 1.0067
+        },
+        "textspot3_reread": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 331,
+         "exact_lines": 1816,
+         "cer": 0.9885,
+         "cer_ci95": [
+          0.8305,
+          1.1614
+         ],
+         "exact": 88.499,
+         "exact_ci95": [
+          87.0415,
+          89.9131
+         ],
+         "hiragana_errors": 180,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.8971
+        },
+        "B_h2_s4_c24n4_seed2_detref": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 383,
+         "exact_lines": 1794,
+         "cer": 1.1438,
+         "cer_ci95": [
+          0.9667,
+          1.3372
+         ],
+         "exact": 87.4269,
+         "exact_ci95": [
+          85.9306,
+          88.8834
+         ],
+         "hiragana_errors": 195,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.9718
+        },
+        "grad": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 6042,
+         "exact_lines": 1249,
+         "cer": 18.0439,
+         "cer_ci95": [
+          16.4119,
+          19.7568
+         ],
+         "exact": 60.8674,
+         "exact_ci95": [
+          58.7062,
+          63.0382
+         ],
+         "hiragana_errors": 3584,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 17.8619
+        },
+        "grad_refine": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 5571,
+         "exact_lines": 1453,
+         "cer": 16.6373,
+         "cer_ci95": [
+          15.0074,
+          18.3408
+         ],
+         "exact": 70.809,
+         "exact_ci95": [
+          68.8114,
+          72.7981
+         ],
+         "hiragana_errors": 3331,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 16.601
+        },
+        "grad_refine_gate": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 5571,
+         "exact_lines": 1453,
+         "cer": 16.6373,
+         "cer_ci95": [
+          15.0074,
+          18.3408
+         ],
+         "exact": 70.809,
+         "exact_ci95": [
+          68.8114,
+          72.7981
+         ],
+         "hiragana_errors": 3331,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 16.601
+        },
+        "s8c24_textdet": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 471,
+         "exact_lines": 1748,
+         "cer": 1.4066,
+         "cer_ci95": [
+          1.1771,
+          1.679
+         ],
+         "exact": 85.1852,
+         "exact_ci95": [
+          83.6398,
+          86.7214
+         ],
+         "hiragana_errors": 206,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 1.0267
+        },
+        "s8c24_textdet_refine": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 483,
+         "exact_lines": 1746,
+         "cer": 1.4424,
+         "cer_ci95": [
+          1.2051,
+          1.7238
+         ],
+         "exact": 85.0877,
+         "exact_ci95": [
+          83.5179,
+          86.6305
+         ],
+         "hiragana_errors": 233,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 1.1612
+        },
+        "s8c24_spot": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 433,
+         "exact_lines": 1750,
+         "cer": 1.2931,
+         "cer_ci95": [
+          1.12,
+          1.4761
+         ],
+         "exact": 85.2827,
+         "exact_ci95": [
+          83.7445,
+          86.8164
+         ],
+         "hiragana_errors": 182,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.9071
+        },
+        "columns": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 32135,
+         "exact_lines": 0,
+         "cer": 95.9683,
+         "cer_ci95": [
+          95.7749,
+          96.1625
+         ],
+         "exact": 0.0,
+         "exact_ci95": [
+          0.0,
+          0.0
+         ],
+         "hiragana_errors": 19166,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 95.5196
+        },
+        "grad_refine_columns": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 5433,
+         "exact_lines": 1452,
+         "cer": 16.2252,
+         "cer_ci95": [
+          14.641,
+          17.8828
+         ],
+         "exact": 70.7602,
+         "exact_ci95": [
+          68.7651,
+          72.7495
+         ],
+         "hiragana_errors": 3242,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 16.1575
+        },
+        "T3_kd_t64n8c16_seed3_detref": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 331,
+         "exact_lines": 1816,
+         "cer": 0.9885,
+         "cer_ci95": [
+          0.8305,
+          1.1614
+         ],
+         "exact": 88.499,
+         "exact_ci95": [
+          87.0415,
+          89.9131
+         ],
+         "hiragana_errors": 180,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.8971
+        }
+       },
+       "pairs": {
+        "textspot6_det-textspot6_detref": {
+         "cer_delta": -0.071674,
+         "cer_ci95": [
+          -0.175341,
+          0.03248
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 394,
+         "chars": 33485
+        },
+        "textspot6_det-textspot3_reread": {
+         "cer_delta": 0.11647,
+         "cer_ci95": [
+          0.005943,
+          0.227815
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 331,
+         "chars": 33485
+        },
+        "textspot6_det-B_h2_s4_c24n4_seed2_detref": {
+         "cer_delta": -0.038823,
+         "cer_ci95": [
+          -0.175615,
+          0.09641
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 383,
+         "chars": 33485
+        },
+        "textspot6_det-grad": {
+         "cer_delta": -16.938928,
+         "cer_ci95": [
+          -18.654701,
+          -15.31738
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 6042,
+         "chars": 33485
+        },
+        "textspot6_det-grad_refine": {
+         "cer_delta": -15.532328,
+         "cer_ci95": [
+          -17.227419,
+          -13.918686
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 5571,
+         "chars": 33485
+        },
+        "textspot6_det-grad_refine_gate": {
+         "cer_delta": -15.532328,
+         "cer_ci95": [
+          -17.227419,
+          -13.918686
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 5571,
+         "chars": 33485
+        },
+        "textspot6_det-s8c24_textdet": {
+         "cer_delta": -0.301628,
+         "cer_ci95": [
+          -0.559138,
+          -0.086452
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 471,
+         "chars": 33485
+        },
+        "textspot6_det-s8c24_textdet_refine": {
+         "cer_delta": -0.337465,
+         "cer_ci95": [
+          -0.603423,
+          -0.11343
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 483,
+         "chars": 33485
+        },
+        "textspot6_det-s8c24_spot": {
+         "cer_delta": -0.188144,
+         "cer_ci95": [
+          -0.343844,
+          -0.029949
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 433,
+         "chars": 33485
+        },
+        "textspot6_det-columns": {
+         "cer_delta": -94.863372,
+         "cer_ci95": [
+          -95.110811,
+          -94.610134
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 32135,
+         "chars": 33485
+        },
+        "textspot6_det-grad_refine_columns": {
+         "cer_delta": -15.120203,
+         "cer_ci95": [
+          -16.780431,
+          -13.544315
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 5433,
+         "chars": 33485
+        },
+        "textspot6_det-T3_kd_t64n8c16_seed3_detref": {
+         "cer_delta": 0.11647,
+         "cer_ci95": [
+          0.005943,
+          0.227815
+         ],
+         "candidate_errors": 370,
+         "baseline_errors": 331,
+         "chars": 33485
+        },
+        "textspot6_detref-textspot6_det": {
+         "cer_delta": 0.071674,
+         "cer_ci95": [
+          -0.03248,
+          0.175341
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 370,
+         "chars": 33485
+        },
+        "textspot6_detref-textspot3_reread": {
+         "cer_delta": 0.188144,
+         "cer_ci95": [
+          0.100115,
+          0.276443
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 331,
+         "chars": 33485
+        },
+        "textspot6_detref-B_h2_s4_c24n4_seed2_detref": {
+         "cer_delta": 0.032851,
+         "cer_ci95": [
+          -0.070814,
+          0.134153
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 383,
+         "chars": 33485
+        },
+        "textspot6_detref-grad": {
+         "cer_delta": -16.867254,
+         "cer_ci95": [
+          -18.575967,
+          -15.256614
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 6042,
+         "chars": 33485
+        },
+        "textspot6_detref-grad_refine": {
+         "cer_delta": -15.460654,
+         "cer_ci95": [
+          -17.16159,
+          -13.865974
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 5571,
+         "chars": 33485
+        },
+        "textspot6_detref-grad_refine_gate": {
+         "cer_delta": -15.460654,
+         "cer_ci95": [
+          -17.16159,
+          -13.865974
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 5571,
+         "chars": 33485
+        },
+        "textspot6_detref-s8c24_textdet": {
+         "cer_delta": -0.229954,
+         "cer_ci95": [
+          -0.481656,
+          -0.023779
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 471,
+         "chars": 33485
+        },
+        "textspot6_detref-s8c24_textdet_refine": {
+         "cer_delta": -0.265791,
+         "cer_ci95": [
+          -0.517289,
+          -0.06032
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 483,
+         "chars": 33485
+        },
+        "textspot6_detref-s8c24_spot": {
+         "cer_delta": -0.11647,
+         "cer_ci95": [
+          -0.264436,
+          0.03365
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 433,
+         "chars": 33485
+        },
+        "textspot6_detref-columns": {
+         "cer_delta": -94.791698,
+         "cer_ci95": [
+          -95.048433,
+          -94.530639
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 32135,
+         "chars": 33485
+        },
+        "textspot6_detref-grad_refine_columns": {
+         "cer_delta": -15.048529,
+         "cer_ci95": [
+          -16.708719,
+          -13.48758
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 5433,
+         "chars": 33485
+        },
+        "textspot6_detref-T3_kd_t64n8c16_seed3_detref": {
+         "cer_delta": 0.188144,
+         "cer_ci95": [
+          0.100115,
+          0.276443
+         ],
+         "candidate_errors": 394,
+         "baseline_errors": 331,
+         "chars": 33485
+        }
+       }
+      },
+      "all": {
+       "lines": 3048,
+       "pages": 2044,
+       "systems": {
+        "textspot6_det": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 416,
+         "exact_lines": 2762,
+         "cer": 1.1655,
+         "cer_ci95": [
+          1.0043,
+          1.3362
+         ],
+         "exact": 90.6168,
+         "exact_ci95": [
+          89.5827,
+          91.6366
+         ],
+         "hiragana_errors": 193,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.9592
+        },
+        "textspot6_detref": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 647,
+         "exact_lines": 2559,
+         "cer": 1.8126,
+         "cer_ci95": [
+          1.6225,
+          2.0158
+         ],
+         "exact": 83.9567,
+         "exact_ci95": [
+          82.6345,
+          85.2443
+         ],
+         "hiragana_errors": 209,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 1.0388
+        },
+        "textspot3_reread": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 616,
+         "exact_lines": 2594,
+         "cer": 1.7258,
+         "cer_ci95": [
+          1.5316,
+          1.9308
+         ],
+         "exact": 85.105,
+         "exact_ci95": [
+          83.8269,
+          86.3667
+         ],
+         "hiragana_errors": 187,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.9294
+        },
+        "B_h2_s4_c24n4_seed2_detref": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 673,
+         "exact_lines": 2570,
+         "cer": 1.8855,
+         "cer_ci95": [
+          1.6793,
+          2.1066
+         ],
+         "exact": 84.3176,
+         "exact_ci95": [
+          83.0,
+          85.6224
+         ],
+         "hiragana_errors": 202,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 1.004
+        },
+        "grad": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 7361,
+         "exact_lines": 1586,
+         "cer": 20.6225,
+         "cer_ci95": [
+          19.0477,
+          22.2907
+         ],
+         "exact": 52.0341,
+         "exact_ci95": [
+          50.1972,
+          53.8739
+         ],
+         "hiragana_errors": 3657,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 18.1759
+        },
+        "grad_refine": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 6867,
+         "exact_lines": 1800,
+         "cer": 19.2385,
+         "cer_ci95": [
+          17.6838,
+          20.9025
+         ],
+         "exact": 59.0551,
+         "exact_ci95": [
+          57.2635,
+          60.8278
+         ],
+         "hiragana_errors": 3399,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 16.8936
+        },
+        "grad_refine_gate": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 6867,
+         "exact_lines": 1800,
+         "cer": 19.2385,
+         "cer_ci95": [
+          17.6838,
+          20.9025
+         ],
+         "exact": 59.0551,
+         "exact_ci95": [
+          57.2635,
+          60.8278
+         ],
+         "hiragana_errors": 3399,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 16.8936
+        },
+        "s8c24_textdet": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 511,
+         "exact_lines": 2719,
+         "cer": 1.4316,
+         "cer_ci95": [
+          1.2078,
+          1.683
+         ],
+         "exact": 89.206,
+         "exact_ci95": [
+          88.0881,
+          90.29
+         ],
+         "hiragana_errors": 213,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 1.0586
+        },
+        "s8c24_textdet_refine": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 893,
+         "exact_lines": 2479,
+         "cer": 2.5018,
+         "cer_ci95": [
+          2.2249,
+          2.7966
+         ],
+         "exact": 81.332,
+         "exact_ci95": [
+          79.9081,
+          82.7294
+         ],
+         "hiragana_errors": 241,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 1.1978
+        },
+        "s8c24_spot": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 473,
+         "exact_lines": 2721,
+         "cer": 1.3252,
+         "cer_ci95": [
+          1.1548,
+          1.5094
+         ],
+         "exact": 89.2717,
+         "exact_ci95": [
+          88.1622,
+          90.3532
+         ],
+         "hiragana_errors": 189,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.9394
+        },
+        "columns": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 34554,
+         "exact_lines": 4,
+         "cer": 96.8062,
+         "cer_ci95": [
+          96.5726,
+          97.0451
+         ],
+         "exact": 0.1312,
+         "exact_ci95": [
+          0.0325,
+          0.2657
+         ],
+         "hiragana_errors": 19324,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 96.0437
+        },
+        "grad_refine_columns": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 6724,
+         "exact_lines": 1800,
+         "cer": 18.8379,
+         "cer_ci95": [
+          17.3121,
+          20.4579
+         ],
+         "exact": 59.0551,
+         "exact_ci95": [
+          57.2572,
+          60.8353
+         ],
+         "hiragana_errors": 3311,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 16.4563
+        },
+        "T3_kd_t64n8c16_seed3_detref": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 616,
+         "exact_lines": 2594,
+         "cer": 1.7258,
+         "cer_ci95": [
+          1.5316,
+          1.9308
+         ],
+         "exact": 85.105,
+         "exact_ci95": [
+          83.8269,
+          86.3667
+         ],
+         "hiragana_errors": 187,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.9294
+        }
+       },
+       "pairs": {
+        "textspot6_det-textspot6_detref": {
+         "cer_delta": -0.647168,
+         "cer_ci95": [
+          -0.783473,
+          -0.517292
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 647,
+         "chars": 35694
+        },
+        "textspot6_det-textspot3_reread": {
+         "cer_delta": -0.560318,
+         "cer_ci95": [
+          -0.707832,
+          -0.417268
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 616,
+         "chars": 35694
+        },
+        "textspot6_det-B_h2_s4_c24n4_seed2_detref": {
+         "cer_delta": -0.720009,
+         "cer_ci95": [
+          -0.882985,
+          -0.561306
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 673,
+         "chars": 35694
+        },
+        "textspot6_det-grad": {
+         "cer_delta": -19.457052,
+         "cer_ci95": [
+          -21.125671,
+          -17.882673
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 7361,
+         "chars": 35694
+        },
+        "textspot6_det-grad_refine": {
+         "cer_delta": -18.073066,
+         "cer_ci95": [
+          -19.728721,
+          -16.504339
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 6867,
+         "chars": 35694
+        },
+        "textspot6_det-grad_refine_gate": {
+         "cer_delta": -18.073066,
+         "cer_ci95": [
+          -19.728721,
+          -16.504339
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 6867,
+         "chars": 35694
+        },
+        "textspot6_det-s8c24_textdet": {
+         "cer_delta": -0.266151,
+         "cer_ci95": [
+          -0.501629,
+          -0.059148
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 511,
+         "chars": 35694
+        },
+        "textspot6_det-s8c24_textdet_refine": {
+         "cer_delta": -1.336359,
+         "cer_ci95": [
+          -1.612235,
+          -1.084963
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 893,
+         "chars": 35694
+        },
+        "textspot6_det-s8c24_spot": {
+         "cer_delta": -0.159691,
+         "cer_ci95": [
+          -0.313296,
+          -0.00841
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 473,
+         "chars": 35694
+        },
+        "textspot6_det-columns": {
+         "cer_delta": -95.640724,
+         "cer_ci95": [
+          -95.910582,
+          -95.370204
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 34554,
+         "chars": 35694
+        },
+        "textspot6_det-grad_refine_columns": {
+         "cer_delta": -17.672438,
+         "cer_ci95": [
+          -19.299077,
+          -16.143925
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 6724,
+         "chars": 35694
+        },
+        "textspot6_det-T3_kd_t64n8c16_seed3_detref": {
+         "cer_delta": -0.560318,
+         "cer_ci95": [
+          -0.707832,
+          -0.417268
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 616,
+         "chars": 35694
+        },
+        "textspot6_detref-textspot6_det": {
+         "cer_delta": 0.647168,
+         "cer_ci95": [
+          0.517292,
+          0.783473
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 416,
+         "chars": 35694
+        },
+        "textspot6_detref-textspot3_reread": {
+         "cer_delta": 0.086849,
+         "cer_ci95": [
+          0.002668,
+          0.173706
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 616,
+         "chars": 35694
+        },
+        "textspot6_detref-B_h2_s4_c24n4_seed2_detref": {
+         "cer_delta": -0.072841,
+         "cer_ci95": [
+          -0.173553,
+          0.025608
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 673,
+         "chars": 35694
+        },
+        "textspot6_detref-grad": {
+         "cer_delta": -18.809884,
+         "cer_ci95": [
+          -20.456069,
+          -17.238943
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 7361,
+         "chars": 35694
+        },
+        "textspot6_detref-grad_refine": {
+         "cer_delta": -17.425898,
+         "cer_ci95": [
+          -19.080827,
+          -15.869069
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 6867,
+         "chars": 35694
+        },
+        "textspot6_detref-grad_refine_gate": {
+         "cer_delta": -17.425898,
+         "cer_ci95": [
+          -19.080827,
+          -15.869069
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 6867,
+         "chars": 35694
+        },
+        "textspot6_detref-s8c24_textdet": {
+         "cer_delta": 0.381016,
+         "cer_ci95": [
+          0.140156,
+          0.605995
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 511,
+         "chars": 35694
+        },
+        "textspot6_detref-s8c24_textdet_refine": {
+         "cer_delta": -0.689191,
+         "cer_ci95": [
+          -0.935948,
+          -0.475389
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 893,
+         "chars": 35694
+        },
+        "textspot6_detref-s8c24_spot": {
+         "cer_delta": 0.487477,
+         "cer_ci95": [
+          0.320611,
+          0.662541
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 473,
+         "chars": 35694
+        },
+        "textspot6_detref-columns": {
+         "cer_delta": -94.993556,
+         "cer_ci95": [
+          -95.273207,
+          -94.714743
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 34554,
+         "chars": 35694
+        },
+        "textspot6_detref-grad_refine_columns": {
+         "cer_delta": -17.02527,
+         "cer_ci95": [
+          -18.636152,
+          -15.512691
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 6724,
+         "chars": 35694
+        },
+        "textspot6_detref-T3_kd_t64n8c16_seed3_detref": {
+         "cer_delta": 0.086849,
+         "cer_ci95": [
+          0.002668,
+          0.173706
+         ],
+         "candidate_errors": 647,
+         "baseline_errors": 616,
+         "chars": 35694
+        }
+       }
+      }
+     },
+     "stored": {
+      "sha256": {
+       "B_h2_s4_c24n4_seed2_detref": "a2206eb4c3de1b5f1135910b26cd92ab2d96057f527137ff69de5873201e06d9",
+       "grad": "05e574e5cda1d6321ab425984fd327fa619917f52e0c1d18151ce6ea8a671bb9",
+       "grad_refine": "8733dae3d9af14d60f04dee238d3abbbf5775d512efbd73b46df96e296738ba3",
+       "grad_refine_gate": "dfacf51c25a40d476c3ecf3c363d1fe5fb4bdc6cbc6f3daa10f0f001ef247bc2",
+       "s8c24_textdet": "f3493863b01ccdce07a9748ae1fe2553f132e2ab297cca2dc2754ab52ad6e570",
+       "s8c24_textdet_refine": "82e3ba5f86b579ee55141ab4d6a47ed0887a3b437882523e394d96dc0c7bf7dd",
+       "s8c24_spot": "e73e26eaf44f6dfce81e40c52cc97c3136e655932628f6ebc0a48ea692b2e970",
+       "columns": "bcd34fa8bbe92bdc471a78889c9e822b0d6b86c8601988f3c040725c205206be",
+       "grad_refine_columns": "dacab1114e5b73b9255b5248ec5e7246d1fef7ac537c10ef01defb4de4eb1f2a",
+       "T3_kd_t64n8c16_seed3_detref": "695213b207455845a5cdc2ea2c064a4a586aa3cfc526ebcda27dd480c9a75d1c"
+      },
+      "reproduces_records": true,
+      "differences": [],
+      "textspot3_reread_same_boxes_pages": 2177
+     }
+    },
+    "roi_page_path": {
+     "units": 2044,
+     "units_sha256": "a20af24779516f4180a8a877e0c87b76462367e7279c4d5afcd47fdab63da615",
+     "decode": "crop",
+     "scored_lines": 3048,
+     "assignment": "pagepath's boxes (ROI px) go to the GRAD box of the ROI they lie mostly inside (textdet_protected.assign); a reference line reads its boxes' page-path texts in box order",
+     "pagepath_finder": {
+      "grad_refine": {
+       "mode": "textbox_recovery",
+       "probe": 1,
+       "refine": "psp",
+       "fix": 0,
+       "preset": "rubi",
+       "lines": null,
+       "impl": "frozen",
+       "driver_sha256": "937478248443243840831118108dfdf86d3b936a8fce4c50a8bb19d37ff82a04",
+       "sources": {
+        "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+        "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+        "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca"
+       }
+      },
+      "rubi_fix1": {
+       "mode": "textbox_recovery",
+       "probe": 1,
+       "refine": "psp",
+       "fix": 1,
+       "preset": "rubi",
+       "lines": null,
+       "impl": "fix",
+       "driver_sha256": "36a91d758a5fc3a649f8d5f8786c231f9a2c6fdb33228f96ec62fe1728929e72",
+       "sources": {
+        "eval/pagepath_find.c": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a",
+        "runtime/vocr_lines_refine.c": "f4fb08aa995379c5ee9cb746307ed2c2d357574d71e5556f2b40d8ce1584e797",
+        "runtime/vocr_lines_fix.c": "242a0a9eacaf38dc901eb35c54639f69c94cc0419eeb36467dfc74ab79c70fb4",
+        "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+        "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca"
+       }
+      },
+      "textspot6": {
+       "boxes": "$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop/clannad/private/roi_boxes_textspot6.jsonl",
+       "boxes_sha256": "cdb9425369c78b6042ee9664212421615a293cabddf115a66cbe6de7eded95aa",
+       "boxes_clipped": 0,
+       "boxes_dropped": 0,
+       "units_without_boxes": 0
+      },
+      "textspot3": {
+       "boxes": "$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop/clannad/private/roi_boxes_textspot3.jsonl",
+       "boxes_sha256": "4a7b0fc07a2fe3a309c55eb5db4d76de2b516472d94b74ffcb770d7e9fc7c702",
+       "boxes_clipped": 0,
+       "boxes_dropped": 0,
+       "units_without_boxes": 0
+      }
+     },
+     "scopes": {
+      "dialogue": {
+       "lines": 2052,
+       "pages": 1867,
+       "systems": {
+        "grad_refine": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 275,
+         "exact_lines": 1868,
+         "cer": 0.8213,
+         "cer_ci95": [
+          0.6387,
+          1.0563
+         ],
+         "exact": 91.0331,
+         "exact_ci95": [
+          89.7436,
+          92.2663
+         ],
+         "hiragana_errors": 171,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.8522
+        },
+        "rubi_fix1": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 318,
+         "exact_lines": 1861,
+         "cer": 0.9497,
+         "cer_ci95": [
+          0.7411,
+          1.2032
+         ],
+         "exact": 90.692,
+         "exact_ci95": [
+          89.3917,
+          91.945
+         ],
+         "hiragana_errors": 190,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.9469
+        },
+        "textspot6": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 326,
+         "exact_lines": 1864,
+         "cer": 0.9736,
+         "cer_ci95": [
+          0.7941,
+          1.1761
+         ],
+         "exact": 90.8382,
+         "exact_ci95": [
+          89.5303,
+          92.0926
+         ],
+         "hiragana_errors": 157,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.7825
+        },
+        "textspot3": {
+         "pages": 1867,
+         "lines": 2052,
+         "chars": 33485,
+         "errors": 284,
+         "exact_lines": 1889,
+         "cer": 0.8481,
+         "cer_ci95": [
+          0.6707,
+          1.0414
+         ],
+         "exact": 92.0565,
+         "exact_ci95": [
+          90.8252,
+          93.232
+         ],
+         "hiragana_errors": 146,
+         "hiragana_chars": 20065,
+         "hiragana_cer": 0.7276
+        }
+       },
+       "pairs": {
+        "textspot6-grad_refine": {
+         "cer_delta": 0.152307,
+         "cer_ci95": [
+          -0.094289,
+          0.358531
+         ],
+         "candidate_errors": 326,
+         "baseline_errors": 275,
+         "chars": 33485
+        },
+        "textspot6-rubi_fix1": {
+         "cer_delta": 0.023891,
+         "cer_ci95": [
+          -0.210212,
+          0.207029
+         ],
+         "candidate_errors": 326,
+         "baseline_errors": 318,
+         "chars": 33485
+        },
+        "textspot6-textspot3": {
+         "cer_delta": 0.125429,
+         "cer_ci95": [
+          0.036048,
+          0.219483
+         ],
+         "candidate_errors": 326,
+         "baseline_errors": 284,
+         "chars": 33485
+        }
+       }
+      },
+      "all": {
+       "lines": 3048,
+       "pages": 2044,
+       "systems": {
+        "grad_refine": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 833,
+         "exact_lines": 2557,
+         "cer": 2.3337,
+         "cer_ci95": [
+          2.0454,
+          2.6528
+         ],
+         "exact": 83.8911,
+         "exact_ci95": [
+          82.6115,
+          85.1852
+         ],
+         "hiragana_errors": 381,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 1.8936
+        },
+        "rubi_fix1": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 1011,
+         "exact_lines": 2492,
+         "cer": 2.8324,
+         "cer_ci95": [
+          2.5078,
+          3.187
+         ],
+         "exact": 81.7585,
+         "exact_ci95": [
+          80.4355,
+          83.0959
+         ],
+         "hiragana_errors": 405,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 2.0129
+        },
+        "textspot6": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 416,
+         "exact_lines": 2818,
+         "cer": 1.1655,
+         "cer_ci95": [
+          0.9753,
+          1.3678
+         ],
+         "exact": 92.4541,
+         "exact_ci95": [
+          91.5033,
+          93.3882
+         ],
+         "hiragana_errors": 171,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.8499
+        },
+        "textspot3": {
+         "pages": 2044,
+         "lines": 3048,
+         "chars": 35694,
+         "errors": 299,
+         "exact_lines": 2881,
+         "cer": 0.8377,
+         "cer_ci95": [
+          0.6695,
+          1.0165
+         ],
+         "exact": 94.521,
+         "exact_ci95": [
+          93.6949,
+          95.3351
+         ],
+         "hiragana_errors": 153,
+         "hiragana_chars": 20120,
+         "hiragana_cer": 0.7604
+        }
+       },
+       "pairs": {
+        "textspot6-grad_refine": {
+         "cer_delta": -1.168264,
+         "cer_ci95": [
+          -1.489685,
+          -0.871479
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 833,
+         "chars": 35694
+        },
+        "textspot6-rubi_fix1": {
+         "cer_delta": -1.666947,
+         "cer_ci95": [
+          -1.995733,
+          -1.366303
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 1011,
+         "chars": 35694
+        },
+        "textspot6-textspot3": {
+         "cer_delta": 0.327786,
+         "cer_ci95": [
+          0.218855,
+          0.438962
+         ],
+         "candidate_errors": 416,
+         "baseline_errors": 299,
+         "chars": 35694
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "textspot3_tests_reread": {
+  "stored_units_sha256": "99656c514af2728e5577249070d4a14c37e733c40a937238e23a3e17780d3e87",
+  "scores_equal_stored": true,
+  "note": "every score field of the re-read equals textspot3's stored units'; only the C == twin fields differ (textspot3's protected read ran its C driver on each frame, this harness does not)"
+ }
+}

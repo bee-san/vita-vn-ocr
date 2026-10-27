@@ -1053,6 +1053,290 @@
     ],
     "opts": "inv=0.5"
    }
+  ],
+  "r3all": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tt_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-lead/pools/tvt_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ink_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m4_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_m8_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_grad_g1.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr6-lead/pools/own_ref_g1.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   },
+   {
+    "name": "cc",
+    "weight": 0.06,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console/*.npz"
+    ],
+    "opts": "inv=0.5"
+   },
+   {
+    "name": "ccj",
+    "weight": 0.04,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v1/train/console_jitter/*.npz"
+    ],
+    "opts": "inv=0.5"
+   }
+  ],
+  "r3all_fold": [
+   {
+    "name": "nv",
+    "weight": 0.225,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_0[0-3]?_b*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/nvsynth/full/train/nv_train_04[01]_b*.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s2",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_000[0-2]?.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth2/shards/synth_0003[0-8].npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2,fa=0.15"
+   },
+   {
+    "name": "s3v3",
+    "weight": 0.1125,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/synth3-v3/shards/train_v3/synth3_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "s4",
+    "weight": 0.05,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/render/s4v5631/shards/synth4_000??.npz"
+    ],
+    "opts": "stream=1,pool=3,inv=0.2"
+   },
+   {
+    "name": "tt",
+    "weight": 0.075,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tt.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/tvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rd",
+    "weight": 0.0375,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rd.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rvt.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpi",
+    "weight": 0.0518785,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "rpg",
+    "weight": 0.0356215,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/rp3_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "owi",
+    "weight": 0.0294135,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m4.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_m8.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "owg",
+    "weight": 0.0080865,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/private/vocr5-train/pools/v3/own_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "nti",
+    "weight": 0.0065205,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ink.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ink.npz"
+    ],
+    "opts": "kd=0,inv=0.5,fa=0.3"
+   },
+   {
+    "name": "ntg",
+    "weight": 0.0059795,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_grad.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/nat_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dntv_ref.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/pools/v3/dnst_ref.npz"
+    ],
+    "opts": "kd=0,inv=0.5"
+   },
+   {
+    "name": "hk",
+    "weight": 0.15,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/guard/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/hval_fold/line/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/train/name/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/guard/name/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-ingest/pools/v1/hval_fold/name/*.npz"
+    ],
+    "opts": "inv=0.5,fa=0.3"
+   },
+   {
+    "name": "cc",
+    "weight": 0.06,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/train/console/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/hval/console/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/guard/console/*.npz"
+    ],
+    "opts": "inv=0.5"
+   },
+   {
+    "name": "ccj",
+    "weight": 0.04,
+    "globs": [
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/train/console_jitter/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/hval/console_jitter/*.npz",
+     "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-finder/crops/v2/guard/console_jitter/*.npz"
+    ],
+    "opts": "inv=0.5"
+   }
   ]
  },
  "mix_notes": {
@@ -1063,7 +1347,9 @@
   "m1_r30": "m1 with the real half scaled to 0.3 and the synthetic half to 0.7 (every source's weight x0.6 / x1.4)",
   "m1_r70": "m1 with the real half scaled to 0.7 and the synthetic half to 0.3 (x1.4 / x0.6)",
   "m1_fa2": "m1 with every source's finder-augmentation probability doubled (nv/s2 0.15 -> 0.30; the real ink pools and hk 0.3 -> 0.6; the GRAD-crop pools keep none)",
-  "m1_cil": "m1 with the hooked share split: hk 0.15 + vocr6-finder's console crops of the train pages (finder rubi,fix=5 = F13; console view: Vita as is, PSP 2x) 0.06 whole-line crops (cc, 98,324) + 0.04 jittered boxes (ccj, 304,524); no finder augmentation on them (they are finder crops); hval and guard pages' crops never used"
+  "m1_cil": "m1 with the hooked share split: hk 0.15 + vocr6-finder's console crops of the train pages (finder rubi,fix=5 = F13; console view: Vita as is, PSP 2x) 0.06 whole-line crops (cc, 98,324) + 0.04 jittered boxes (ccj, 304,524); no finder augmentation on them (they are finder crops); hval and guard pages' crops never used",
+  "r3all": "m1 + adopted stage-2 factors ['cil'] (stages.2.decision.recipe order)",
+  "r3all_fold": "r3all with hval folded back in (stage 4b): hooked train + guard + hval_fold, console crops train + hval + guard, VOCR5's real pools as pinned"
  },
  "data_pins": {
   "hooked": {
@@ -1716,6 +2002,13 @@
      "why": "the shipped finder is COLGAP alone (#129 amendment 3, #135); crops v1 were cut with COLGAP|JUNK. The 4b retrain should see the crops Rubi's finder makes",
      "change": "stage 4b's fold-in mix (r3all_fold) takes its cc / ccj sources from console crops v2 (train + hval + guard), pinned in data_pins.extra_pools[console_crops_v2]; 4a and every earlier stage keep v1 (their decisions were made on it). Weights unchanged",
      "lm_release": "v0.3.7-lm6.2 (vocr6-lm, #137 merged ffb088c) carries the same 1 MB LM bytes as lm6.1 (sha256 41591acc…) with the same settings, so amendment 3's pins stand"
+    },
+    {
+     "n": 5,
+     "time": "this commit (see git log); 2026-10-27T03:5xZ, before any stage-4 run or score",
+     "why": "stages 2 and 3 are decided (experiment log, vocr6-lead decision lines 2026-10-26T16:20Z to 2026-10-27T03:53Z)",
+     "fill": "stage 2 adopted S2cil alone (S2x2, S2s6, S2t5, S2r70, S2r30 and S2fa2 not adopted); stage 3 adopted nothing (S3attn and S3rep not adopted, S3gtc not run, S3long decides stage 4c only). So R3 = R2 = A15 + S2cil and mixes.r3all (fill_stage4.py --adopted S2cil) is json-identical to mixes.m1_cil. With one adopted factor stages.3.decision.recipe needs no combined pair: stages.R3all is written for the record and NOT trained; its Normal pair is S2cil's own runs v6s2cil_N_seed1 and v6s2cil_N_seed3 (stage 2, tag vocr6-runner-1677de9, crops v1 4adb00c9), which are stage 4a's Normal seeds 1 and 3. Stage 4 runs: 4a F4S_s1, F4S_s2, F4S_s3, F4L_s1, F4L_s2, F4L_s3, F4N_s2 (mix r3all); 4b F4Sh_s1, F4Nh_s1, F4Lh_s1 (mix r3all_fold, crops v2). 15,000 steps, the A family's VOCR5 fine-tuned inits (stages.4.inits), no arch or train extras",
+     "decision_unchanged": "4a's adoption per tier (three seed pairs against the released VOCR5 tier on the shipped path, stages.4.4a.adopt), 4b's check and 4c (stages.4.amendments[1]) stand as registered"
     }
    ],
    "plans": {
@@ -1730,7 +2023,171 @@
      "what": "#119's 1,161 whole-dialogue units cut again by the same driver (console view; its fixed-line crops unchanged), eval/vocr6_score.py dev-plan"
     },
     "built": "2026-10-26T19:28-19:37Z (heavy.sh slot 4), before any stage-4 read of a VOCR6 model; the VOCR5 incumbents were read on them in the same job (scores4/)"
-   }
+   },
+   "arms": {
+    "F4S_s1": {
+     "run": "v6f4_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": []
+    },
+    "F4S_s2": {
+     "run": "v6f4_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 2,
+     "init_sha256": {
+      "2": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": []
+    },
+    "F4S_s3": {
+     "run": "v6f4_S",
+     "tier": "S",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed2/ckpt_step15000.pt",
+     "seed_only": 3,
+     "init_sha256": {
+      "3": "02ddf5978e3820cfcc80b5ca57d808d80a18bcd013cbecbb3461522f479276e9"
+     },
+     "arch_extra": []
+    },
+    "F4Sh_s1": {
+     "run": "v6f4h_S",
+     "tier": "S",
+     "mix": "r3all_fold",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": []
+    },
+    "F4N_s2": {
+     "run": "v6f4_N",
+     "tier": "N",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed2/ckpt_step15000.pt",
+     "seed_only": 2,
+     "init_sha256": {
+      "2": "edb6e0f3b3690b5688a3c66d17adc5dc46a05c6c5fb2fbc861418f44b31b4cec"
+     },
+     "arch_extra": []
+    },
+    "F4Nh_s1": {
+     "run": "v6f4h_N",
+     "tier": "N",
+     "mix": "r3all_fold",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266"
+     },
+     "arch_extra": []
+    },
+    "F4L_s1": {
+     "run": "v6f4_L",
+     "tier": "L",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "08b748cf45c2c07d2b127268eb0a3eb0c78e04ef993a7c4960fe84b09bb77066"
+     },
+     "arch_extra": []
+    },
+    "F4L_s2": {
+     "run": "v6f4_L",
+     "tier": "L",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed2/ckpt_step15000.pt",
+     "seed_only": 2,
+     "init_sha256": {
+      "2": "42dccc7ed03a92b47c7a1eb0c73fad0d84fad9ecb9d249e1997fc8772258a746"
+     },
+     "arch_extra": []
+    },
+    "F4L_s3": {
+     "run": "v6f4_L",
+     "tier": "L",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed3/ckpt_step15000.pt",
+     "seed_only": 3,
+     "init_sha256": {
+      "3": "7cfe3f798df6c8ebc7e465f03f0e554513fb82862a0d5bde6349d6e4d7502d3c"
+     },
+     "arch_extra": []
+    },
+    "F4Lh_s1": {
+     "run": "v6f4h_L",
+     "tier": "L",
+     "mix": "r3all_fold",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "08b748cf45c2c07d2b127268eb0a3eb0c78e04ef993a7c4960fe84b09bb77066"
+     },
+     "arch_extra": []
+    }
+   },
+   "defaults": {
+    "mix": "m1",
+    "batch": 96,
+    "final_lr": 0.05,
+    "wd": 0.01,
+    "ema": 0.999
+   },
+   "seeds": [
+    1,
+    2,
+    3
+   ]
   },
   "P1L": {
    "name": "Large probe: stage 1's A15 recipe at the Large tier, to measure the gap to the owner's target (< 1% dialogue CER through Rubi's page path, Large first; conductor 15:37Z) early",
@@ -1761,6 +2218,49 @@
     }
    },
    "decision": "adopts nothing: reported against VOCR5-L (hval page, clean, dev; the decomposition), as the Large tier's gap to 1%. Stage 4a's Large runs are separate (R3's recipe, 3 seeds)"
+  },
+  "R3all": {
+   "name": "R3all: the combined pair (stages.2.amendments[1]; its N runs double as stage 4a's, stages.4.amendments[1])",
+   "tier": "N",
+   "seeds": [
+    1,
+    3
+   ],
+   "defaults": {
+    "mix": "m1",
+    "batch": 96,
+    "final_lr": 0.05,
+    "wd": 0.01,
+    "ema": 0.999
+   },
+   "recipe": {
+    "factors": [
+     "S2cil"
+    ],
+    "composed": [
+     "cil"
+    ],
+    "attn": false,
+    "rep": false,
+    "steps": 15000
+   },
+   "arms": {
+    "R3all": {
+     "run": "v6r3all_N",
+     "mix": "r3all",
+     "steps": 15000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed{seed}/ckpt_step15000.pt",
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266",
+      "3": "2dee5021a85486cf188e85751ff0a9994dae7e68d482e2f8dd51ec94e40c5aba"
+     },
+     "arch_extra": []
+    }
+   },
+   "not_trained": "one adopted factor (S2cil): R3all == S2cil's recipe; its pair is v6s2cil_N_seed1/3 (stages.4.amendments[4])"
   }
  },
  "incumbents": {

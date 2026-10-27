@@ -125,6 +125,21 @@
    "frozen_only_runs": "a --frozen-only run decides its next tier when that is Large (no next tier of its own), and leaves the report-only shipped cascade out when the next tier has no decision (audit N3); no rule changes",
    "runtime": "the branch is rebased onto main e8cf4f3, whose runtime/vocr.c (8ff76d83..., #138) adds the head gate and the two-level head in W8F; the W8I arithmetic is unchanged in the diff. Step 2 runs again on it before step 5 (every development read compared bit for bit with the first run's, the A9 measurements re-made: every estimate a rule reads is this runtime's), and step 5 runs on it (audit N7). The dry run's records stay as made, on vocr.c e2d43c50",
    "affects": "no decision of the dry run: its route reached no kept arm, its frozen-only paths were not used, and its estimates are reported as measured on the earlier runtime"
+  },
+  {
+   "n": 3,
+   "date": "2026-10-27T06:16:29Z",
+   "why": "vocr6-lead's request (2026-10-27 ~06:05Z, pane message): to shorten the critical path, run the driver provisionally on stage 4b's blobs as they land, before its FINAL BLOBS message (~09:15Z), which then confirms each tier's blob",
+   "provisional_inputs": {
+    "S": "$HERD/shared/artifacts/vocr6-final-train/blobs/v6f4h_S_seed1_w8.vocr",
+    "N": "$HERD/shared/artifacts/vocr6-final-train/blobs/v6f4h_N_seed1_w8.vocr",
+    "L": "$HERD/shared/artifacts/vocr6-final-train/blobs/v6f4h_L_seed1_w8.vocr",
+    "note": "each one's sha256 enters OUT/<T>/input.json when its preparation starts; none existed at this amendment"
+   },
+   "confirmation": "FINAL BLOBS names one blob per tier. A tier whose provisional input has the named blob's sha256 is confirmed: its provisional work is the run's. A tier named otherwise (a 4a sibling, VOCR5) is redone on the named blob: its provisional directories move to OUT/superseded/ and PRIV/superseded/ (recorded in OUT/superseded.jsonl; their steps are reported apart in the timing, not as the run's), and every tier whose cascade chain reaches a redone tier is decided again (S if N is redone; N and S if L is redone; eval/vocr6_gate.py redo_plan). Nothing provisional is reported to vocr6-lead as the result, or ships, unless FINAL BLOBS names it",
+   "order": "tiers are prepared as their blobs land (S, N, L) and decided in the protocol's order (L, N, S: decision.order, unchanged), each cascade into the next tier's blob of the same seed (stage 4b's seed 1 at every tier)",
+   "jobs": "with two slots, a second job makes a tier's VOCR6-path dumps, its fallback arms' reads, A9 measurements and dumps, and its primary arms' counter sets while the first runs the fits; the jobs share the driver's step records under a lock per step (flock, released when a job dies), so each step runs once and nothing waits on a dead job. A step made ahead (a fallback arm's) is the step decide would make: no rule, threshold or arm changes",
+   "affects": "no rule and no decision: the same steps, rules and order; only when steps run and on which provisional inputs, confirmed before anything is reported"
   }
  ]
 }

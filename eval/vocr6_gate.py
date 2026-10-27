@@ -34,7 +34,9 @@ one heavy.sh slot). Features, development reads and VOCR6-path dumps hold owner-
 --priv; OUT holds blobs, fit records, scores (numbers only) and A9 measurements.
 """
 import argparse
+import contextlib
 import datetime
+import fcntl
 import hashlib
 import json
 import os
@@ -375,14 +377,18 @@ def shipping_name(prefix, tier, arm):
     return f"{prefix}_{tier}_w8g2.vocr" if p["gate"] else f"{prefix}_{tier}_w8_2l.vocr"
 
 
-def parse_final_blobs(text):
-    """vocr6-lead's message 'FINAL BLOBS S=<path> N=<path> L=<path>' (the last one in text) -> {tier: path}."""
+def parse_final_blobs(text, exists=os.path.isfile):
+    """vocr6-lead's message 'FINAL BLOBS S=<path> N=<path> L=<path>' -> {tier: path}: the last one in text whose three
+    paths exist (a template's placeholders never do), quotes, backticks and trailing punctuation stripped; else None."""
     found = None
     for m in re.finditer(r"FINAL BLOBS((?:\s+[SNL]=\S+){3})", text):
-        found = dict(kv.split("=", 1) for kv in m.group(1).split())
-    if not found or set(found) != set(TIERS):
-        return None
-    return {t: found[t].rstrip(".,;") for t in TIERS}
+        kv = dict(x.split("=", 1) for x in m.group(1).split())
+        if set(kv) != set(TIERS):
+            continue
+        paths = {t: kv[t].strip("`'\"").rstrip(".,;:)`'\"") for t in TIERS}
+        if all(exists(v) for v in paths.values()):
+            found = paths
+    return found
 
 
 # ---------------------------------------------------------------- the run's context
@@ -456,11 +462,32 @@ def git_head():
     return subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
 
+@contextlib.contextmanager
+def locked(path):
+    """An exclusive lock on path (a lock file beside what it guards): one process at a time, the others wait."""
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+
 def step(ctx, tier, name, fn):
-    """Run fn once: OUT/<tier>/steps/<name>.json records it (wall clock, slot-hours at one slot) and what it returns."""
+    """Run fn once: OUT/<tier>/steps/<name>.json records it (wall clock, slot-hours at one slot) and what it returns.
+    A lock per step lets two jobs prepare one tier (e.g. the VOCR6 path's dumps in a second slot): the second waits and
+    then reads the first's record."""
     rec = ctx.tdir(tier, "steps") / f"{name}.json"
     if rec.exists():
         return json.loads(rec.read_text())
+    with locked(rec.with_suffix(".lock")):
+        if rec.exists():
+            return json.loads(rec.read_text())
+        return _run_step(ctx, tier, name, fn, rec)
+
+
+def _run_step(ctx, tier, name, fn, rec):
     t0, start = time.time(), now()
     print(f"step {tier} {name}: started {start}", flush=True)
     info = fn() or {}
@@ -560,7 +587,8 @@ def ensure_two_fit(ctx, tier):
 
 
 def ensure_blob(ctx, tier, arm):
-    """The arm's blob (gate blobs come from the gate fit; two-level blobs are built and composed here)."""
+    """The arm's blob (gate blobs come from the gate fit; two-level blobs are built and composed here, each under a
+    lock and through a temporary file, so two jobs never write one blob)."""
     path = ctx.blob(tier, arm)
     if path.exists():
         return path
@@ -568,14 +596,21 @@ def ensure_blob(ctx, tier, arm):
     if not p["two"]:
         raise SystemExit(f"{path}: missing (the gate fit writes it)")
     base = ctx.blob(tier, arm_name(True, None, p["rc"]))
-    if not base.exists():
-        K = ctx.kalt(tier)
-        sh(ctx, tier, "two_build", [PY, "eval/head2level_fit.py", "build", "--tier", tier, "--blob", ctx.perm(tier),
-                                    "--fit", ctx.out / tier / "fit_2l.json", "--K", K, "--recall", p["rc"],
-                                    "--out", base])
+    with locked(str(base) + ".lock"):
+        if not base.exists():
+            K = ctx.kalt(tier)
+            tmp = base.with_name(base.name + ".tmp")
+            sh(ctx, tier, "two_build", [PY, "eval/head2level_fit.py", "build", "--tier", tier, "--blob",
+                                        ctx.perm(tier), "--fit", ctx.out / tier / "fit_2l.json", "--K", K,
+                                        "--recall", p["rc"], "--out", tmp])
+            tmp.replace(base)
     if p["gate"]:
-        sh(ctx, tier, "two_compose", [PY, "eval/head2level_fit.py", "compose", "--two", base,
-                                      "--gated", ctx.blob(tier, gate_arm_of(arm)), "--out", path])
+        with locked(str(path) + ".lock"):
+            if not path.exists():
+                tmp = path.with_name(path.name + ".tmp")
+                sh(ctx, tier, "two_compose", [PY, "eval/head2level_fit.py", "compose", "--two", base,
+                                              "--gated", ctx.blob(tier, gate_arm_of(arm)), "--out", tmp])
+                tmp.replace(path)
     return path
 
 
@@ -1329,6 +1364,12 @@ def ensure_a9(ctx, tier, arm):
 
     def one(j):
         cfg, pld, d = j
+        with locked(str(d) + ".lock"):           # another job's step may measure the same configuration
+            if (d / "report.json").exists():
+                return None
+            return measure_one(cfg, pld, d)
+
+    def measure_one(cfg, pld, d):
         blob, cli = a9_blob_cli(ctx, tier, cfg)
         d.mkdir(parents=True, exist_ok=True)
         cmd = [PY, "vita/a9_layers.py", "measure", "--blob", str(blob), "--pack", str(PACK), "--out", str(d), "--mode",
@@ -1556,7 +1597,11 @@ def ensure_path_hygiene(ctx, tier):
                     if TEST_TITLE in t4:
                         raise SystemExit(f"{pp} holds {TEST_TITLE}")
         return {"hval_titles": len(titles), "test_title_absent": True, "lm": lms, "lm_opts": ctx.cfg["path_lm_opts"],
-                "plans4": ctx.cfg.get("plans4")}
+                "plans4": ctx.cfg.get("plans4"),
+                "kit_runtime": {"vocr_c_sha256": sha256(ctx.kit / "runtime" / "vocr.c"),
+                                "libvocr_sha256": sha256(ctx.kit / "runtime" / "build" / "libvocr.so"),
+                                "note": "the VOCR6 path's reads load the kit's own build; W8I reads are bit for bit "
+                                        "the same on vocr.c e2d43c50 and 8ff76d83 (step 2's runtime recheck)"}}
     return step(ctx, tier, "path_hygiene", run)
 
 
@@ -1596,7 +1641,9 @@ def path_score(ctx, tier, arm, name, up_tier, up_arm, four=False):
     sub = ctx.tdir(tier, "path4" if four else "path", "X" if name == "X" else arm)
     out = sub / f"score_{name}.json"
     casc = sub / f"cascade_{name}.json"
-    want = {"tier": up_tier, "arm": up_arm}
+    # the cascade's identity includes the next tier's blob: a next tier redone on another blob re-scores this one
+    want = {"tier": up_tier, "arm": up_arm, "blob_sha256": sha256(ensure_blob(ctx, tier, arm)),
+            "up_blob_sha256": sha256(ensure_blob(ctx, up_tier, up_arm)) if up_tier else None}
     if out.exists() and casc.exists() and json.loads(casc.read_text()) == want:
         return sub
     for f in [out, casc] + list(sub.glob("compare_*.json")):
@@ -1689,6 +1736,59 @@ def prepare(ctx, tier, blob):
     for a in ["today", "gate"] + (["2Lg"] if tier in TWO_LEVEL_TIERS else []):
         ensure_dumps(ctx, tier, a)
     (ctx.out / tier / "prepared.json").write_text(json.dumps({"tier": tier, "at": now()}) + "\n")
+
+
+EXTRA_ARMS = {"S": ("gate_e4",), "N": ("gate_e4", "2Lg_e4"), "L": ("gate_e4", "2Lg_e4")}
+
+
+def prepare_extra(ctx, tier):
+    """Optional, ahead of decide (no decision changes): the fallback arms' reads, A9 and dumps (the ε = 1e-4 gate, and
+    the two-level head on it), and the counter set of the primary arms, which decide would otherwise compute when it
+    needs them. A step made here is the step decide would make."""
+    for a in EXTRA_ARMS[tier]:
+        ensure_reads(ctx, tier, a)
+        ensure_a9(ctx, tier, a)
+        ensure_dumps(ctx, tier, a)
+    for a in ["today", "gate"] + (["2Lg"] if tier in TWO_LEVEL_TIERS else []):
+        ensure_counter(ctx, tier, a)
+
+
+def wait_for(paths, timeout_s=4 * 3600, every_s=300):
+    """Wait until every path exists: a line every every_s, SystemExit after timeout_s."""
+    t0 = last = time.time()
+    while not all(Path(p).exists() for p in paths):
+        missing = [str(p) for p in paths if not Path(p).exists()]
+        if time.time() - t0 > timeout_s:
+            raise SystemExit(f"waited {timeout_s} s for {missing}")
+        if time.time() - last >= every_s:
+            print(f"waiting {time.time() - t0:.0f} s for {missing}", flush=True)
+            last = time.time()
+        time.sleep(15)
+
+
+def dumps_job(ctx, tier, arms, extra=False):
+    """The VOCR6 path's dumps of a tier in a job of their own (a second slot while prepare runs the fits): each arm
+    once its blob's step is done (the gate fit; the escapes and the 2L blob for a two-level arm); with extra, then the
+    fallback arms' reads, A9 and dumps and the primary arms' counter sets (prepare_extra). The step locks keep the two
+    jobs off each other's steps; nothing here decides anything."""
+    st = ctx.out / tier / "steps"
+
+    def ready(a):
+        need = [] if a == "today" else [st / "gate_fit.json"]
+        wait_for(need + ([st / "two_timing_blobs.json"] if arm_parts(a)["two"] else []))
+    wait_for([ctx.out / tier / "input.json"])
+    for a in arms:
+        ready(a)
+        ensure_dumps(ctx, tier, a)
+    if extra:
+        for a in EXTRA_ARMS[tier]:
+            ready(a)
+            ensure_reads(ctx, tier, a)
+            ensure_a9(ctx, tier, a)
+            ensure_dumps(ctx, tier, a)
+        for a in ["today", "gate"] + (["2Lg"] if tier in TWO_LEVEL_TIERS else []):
+            ready(a)
+            ensure_counter(ctx, tier, a)
 
 
 def decide(ctx, tier):
@@ -1792,6 +1892,59 @@ def run_tier(ctx, tier, blob, next_blob):
         cmd_input(ctx, nt, next_blob)
     prepare(ctx, tier, blob)
     return decide(ctx, tier)
+
+
+# ---------------------------------------------------------------- provisional runs (protocol amendment 3)
+
+def redo_plan(provisional, final):
+    """{tier: sha256} of the provisional inputs and of the FINAL BLOBS -> (tiers to redo, tiers to decide again), in
+    the decision order L, N, S: a tier named otherwise is redone, and every tier whose cascade chain reaches a redone
+    tier (S above N above L) is decided again."""
+    redo = [t for t in ORDER if provisional.get(t) != final[t]]
+    again = []
+    for t in ORDER:
+        chain, n = [t], NEXT[t]
+        while n:
+            chain.append(n)
+            n = NEXT[n]
+        if any(x in redo for x in chain):
+            again.append(t)
+    return redo, again
+
+
+def cmd_confirm(a):
+    """FINAL BLOBS (poll.sh's final_blobs.json) against the provisional run's inputs: OUT/confirm.json with the tiers
+    confirmed, to redo and to decide again (no work done here)."""
+    ctx = Ctx(a.out)
+    fb = json.loads(Path(a.final_blobs).read_text())
+    prov = {t: json.loads((ctx.out / t / "input.json").read_text())["sha256"]
+            for t in TIERS if (ctx.out / t / "input.json").exists()}
+    final = {t: fb[t]["sha256"] for t in TIERS}
+    redo, again = redo_plan(prov, final)
+    doc = {"at": now(), "final_blobs": fb, "provisional": prov,
+           "confirmed": [t for t in TIERS if prov.get(t) == final[t]], "redo": redo, "decide_again": again}
+    (ctx.out / "confirm.json").write_text(json.dumps(doc, indent=1) + "\n")
+    print(json.dumps({k: doc[k] for k in ("confirmed", "redo", "decide_again")}))
+
+
+def cmd_supersede(a):
+    """Move a provisional tier's directories aside (OUT/superseded/, PRIV/superseded/), before it is redone on another
+    blob; recorded in OUT/superseded.jsonl, and its steps are reported apart in the timing."""
+    ctx = Ctx(a.out)
+    inp = json.loads((ctx.out / a.tier / "input.json").read_text())
+    tag = f"{a.tier}-{inp['sha256'][:12]}-{datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S')}"
+    moved = {}
+    for root in (ctx.out, ctx.priv):
+        src = root / a.tier
+        if src.exists():
+            dst = root / "superseded" / tag
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            src.rename(dst)
+            moved[str(src)] = str(dst)
+    rec = {"at": now(), "tier": a.tier, "input": inp, "moved": moved, "reason": a.reason}
+    with open(ctx.out / "superseded.jsonl", "a") as f:
+        f.write(json.dumps(rec) + "\n")
+    print(json.dumps({"tier": a.tier, "moved": list(moved.values())}))
 
 
 # ---------------------------------------------------------------- result, timing, the VOCR5 check
@@ -1916,8 +2069,16 @@ def timing(ctx):
             rows.append({"tier": t, "step": "decide", "start": dec["at"], "end": end, "wall_s": round(own, 1),
                          "slot_hours": round(own / 3600, 4), "wall_s_with_inner_steps": wall})
     tot = {t: round(sum(r["slot_hours"] for r in rows if r["tier"] == t), 3) for t in ("dev",) + TIERS}
-    return {"rows": [{k: r[k] for k in ("tier", "step", "start", "end", "wall_s", "slot_hours")} for r in rows],
-            "slot_hours": tot, "slot_hours_total": round(sum(tot.values()), 3)}
+    sup = []
+    for d in sorted((ctx.out / "superseded").glob("*/steps")) if (ctx.out / "superseded").exists() else []:
+        sup += [dict(json.loads(q.read_text()), tier=f"{d.parent.name} (superseded)") for q in sorted(d.glob("*.json"))]
+    out = {"rows": [{k: r[k] for k in ("tier", "step", "start", "end", "wall_s", "slot_hours")} for r in rows],
+           "slot_hours": tot, "slot_hours_total": round(sum(tot.values()), 3)}
+    if sup:
+        out["superseded_rows"] = [{k: r[k] for k in ("tier", "step", "start", "end", "wall_s", "slot_hours")}
+                                  for r in sup]
+        out["superseded_slot_hours"] = round(sum(r["slot_hours"] for r in sup), 3)
+    return out
 
 
 def cmd_timing(a):
@@ -2074,13 +2235,18 @@ def cmd_check_vocr5(a):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
-    for name in ("run", "prepare", "decide", "init"):
+    for name in ("run", "prepare", "decide", "init", "dumps"):
         p = sub.add_parser(name)
         p.add_argument("--out", required=True)
         if name != "init":
             p.add_argument("--tier", required=True, choices=TIERS)
         if name in ("run", "prepare"):
             p.add_argument("--blob", required=True)
+        if name == "prepare":
+            p.add_argument("--extra", action="store_true", help="also the fallback arms and the counter sets")
+        if name == "dumps":
+            p.add_argument("--arms", default="today,gate,2Lg", help="the arms whose VOCR6-path dumps to make")
+            p.add_argument("--extra", action="store_true", help="then the fallback arms and the counter sets")
         if name == "run":
             p.add_argument("--next-blob", default="")
         p.add_argument("--priv", default="", help="private outputs (features, reads, dumps); default "
@@ -2096,13 +2262,20 @@ def main():
     p = sub.add_parser("result")
     p.add_argument("--out", required=True)
     p.add_argument("--result", required=True)
+    p = sub.add_parser("confirm")
+    p.add_argument("--out", required=True)
+    p.add_argument("--final-blobs", required=True)
+    p = sub.add_parser("supersede")
+    p.add_argument("--out", required=True)
+    p.add_argument("--tier", required=True, choices=TIERS)
+    p.add_argument("--reason", required=True)
     p = sub.add_parser("timing")
     p.add_argument("--out", required=True)
     p = sub.add_parser("check-vocr5")
     p.add_argument("--out", required=True)
     p.add_argument("--record", required=True)
     a = ap.parse_args()
-    if a.cmd in ("run", "prepare", "decide", "init"):
+    if a.cmd in ("run", "prepare", "decide", "init", "dumps"):
         ctx = Ctx(a.out, a)
         if a.cmd == "init":
             ensure_dev_lines(ctx)
@@ -2111,10 +2284,16 @@ def main():
             run_tier(ctx, a.tier, a.blob, a.next_blob)
         elif a.cmd == "prepare":
             prepare(ctx, a.tier, a.blob)
+            if a.extra:
+                prepare_extra(ctx, a.tier)
+        elif a.cmd == "dumps":
+            dumps_job(ctx, a.tier, [x for x in a.arms.split(",") if x if a.tier in TWO_LEVEL_TIERS or
+                                    not arm_parts(x)["two"]], a.extra)
         else:
             decide(ctx, a.tier)
     else:
-        {"result": cmd_result, "timing": cmd_timing, "check-vocr5": cmd_check_vocr5}[a.cmd](a)
+        {"result": cmd_result, "timing": cmd_timing, "check-vocr5": cmd_check_vocr5, "confirm": cmd_confirm,
+         "supersede": cmd_supersede}[a.cmd](a)
 
 
 if __name__ == "__main__":

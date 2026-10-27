@@ -40,6 +40,11 @@ for s in dev hval; do
   "$PY" "$T7/eval/textspot7.py" parity --spot "$D/spot_$s.jsonl" --set $s --steps $STEPS --out "$D/parity_D_$s.json" \
     --work "$OUT/bin7" --workers "$WORKERS"
 done
+# D's cost (textspot7's rule cost_of_D: its A9 method on the dev units' boxes, the largest region of the five largest)
+mkdir -p "$D/a9"
+"$PY" "$T7/eval/textspot7.py" a9-batch --spot "$D/spot_dev.jsonl" --set dev --steps $STEPS --out "$D/a9/D.bin"
+(cd "$T7" && "$PY" eval/textspot7_a9.py t7 --out "$D/a9/out" --batch "$D/a9/D.bin" --name D --units 387 \
+  --one "$D/a9/D.bin.one1.bin" "$D/a9/D.bin.one2.bin" "$D/a9/D.bin.one3.bin" "$D/a9/D.bin.one4.bin" "$D/a9/D.bin.one5.bin")
 # F and F+D: report only (textspot7's cost rule makes them ineligible for a T trunk)
 "$PY" "$T7/eval/textspot7.py" fit-f --spot "$D/spot_hval.jsonl" --s-rows "$D/hval_det.rows.jsonl" --g-rows "$G/hval.rows.jsonl" \
   --set hval --out "$D/fit_F.json"

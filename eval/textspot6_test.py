@@ -31,6 +31,11 @@ counts, rates, intervals and hashes only; units, boxes and readings stay under O
 --research (amendment 15): with a negative verdict, the research pre-release's blob (the selection record's
 best_eligible_if_negative, as trained on train: --final is its own run) is read the same way, report only.
 
+`textspot6_test.py record --out OUT --json eval/textspot6_test_<date>.json` writes the committed record from OUT's
+public JSONs and attempt records (files only, no pixel read): paths under $HERD written as $HERD/..., the
+worktrees' as repo-relative; and the check that textspot3's re-read scores equal its stored units' (the C == twin
+fields left out: this harness runs no C check on test frames).
+
 --dry-run reads a non-protected stand-in through the same code, for testing before the one read: title with
 --split hval --titles A,B; tests with the development manifest (no stored arms); clannad with --work a stand-in
 directory built from hval pages by `textspot6_test.py standin`. A dry run refuses the protected inputs, and the
@@ -678,6 +683,64 @@ def cmd_clannad(a):
     return result
 
 
+# ----------------------------------------------------------------------------- the committed record
+
+def sanitize(v):
+    """Paths in a record: $HERD/... for the shared tree, repo-relative for a clone or worktree of this repo."""
+    import re
+    if isinstance(v, dict):
+        return {k: sanitize(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [sanitize(x) for x in v]
+    if isinstance(v, str):
+        v = re.sub(r"(/local)?/home/[^/]+/herd-vita-ocr", "$HERD", v)
+        return re.sub(r"(/local)?/home/[^/]+/herd-synth3/clones/[^/]+/", "", v)
+    return v
+
+
+def without_c_check(v):
+    if isinstance(v, dict):
+        return {k: without_c_check(x) for k, x in v.items() if not k.startswith("c_")}
+    if isinstance(v, list):
+        return [without_c_check(x) for x in v]
+    return v
+
+
+def cmd_record(a):
+    import textspot as TS
+    import textspot2_protected as TP2
+    import textspot_protected as TP
+    out = Path(a.out)
+    rec = {"kind": "textspot6-test-record", "computed": utc(), "out": str(out), "reads": {}}
+    for c in ("title", "tests", "clannad"):
+        att, res = out / c / f"{c}.attempt.json", out / c / f"{c}.json"
+        if not att.exists() or not res.exists():
+            raise SystemExit(f"{c}: no finished read under {out}")
+        doc = json.loads(res.read_text(encoding="utf-8"))
+        TS.assert_public(doc)
+        a_doc = json.loads(att.read_text(encoding="utf-8"))
+        rec["reads"][c] = {"attempt": {"started": a_doc["started"], "sha256": sha256_file(att)},
+                           "result_sha256": sha256_file(res), "result": doc}
+    rows = TS.jsonl(ROOT / "eval" / "manifests" / "textspot-test.jsonl")
+    rep_ids = TP2.report_ids_of(rows, TP.REPORT_PARTS)
+    mine = json.loads((out / "tests" / "private" / "textspot3_reread" / f"units_{RULE_MODEL}.json")
+                      .read_text(encoding="utf-8"))["units"]
+    f3 = T3_STORED / "tests" / "private" / T3_ARM / f"units_{RULE_MODEL}.json"
+    stored = json.loads(f3.read_text(encoding="utf-8"))["units"]
+    sa, sb = TS.summarize(TP.scored(mine, rep_ids)), TS.summarize(TP.scored(stored, rep_ids))
+    rec["textspot3_tests_reread"] = {
+        "stored_units_sha256": sha256_file(f3),
+        "scores_equal_stored": without_c_check(sa) == without_c_check(sb),
+        "note": "every score field of the re-read equals textspot3's stored units'; only the C == twin fields "
+                "differ (textspot3's protected read ran its C driver on each frame, this harness does not)"}
+    TS.assert_public(rec)
+    rec = sanitize(rec)
+    Path(a.json).write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"{a.json}: textspot3 re-read scores equal its stored units: "
+          f"{rec['textspot3_tests_reread']['scores_equal_stored']}")
+    return rec
+
+
 # ----------------------------------------------------------------------------- the dry run's CLANNAD stand-in
 
 def cmd_standin(a):
@@ -774,6 +837,9 @@ def main(argv=None):
         if name == "tests":
             p.add_argument("--data", default=str(ART / "eval"), help="eval's data directory (vita/shots, psp/shots)")
             p.add_argument("--shots", action="append", default=[], help="more source directories (text-free shots)")
+    p = sub.add_parser("record")
+    p.add_argument("--out", required=True, help="the reads' OUT directory (title/, tests/, clannad/)")
+    p.add_argument("--json", required=True, help="eval/textspot6_test_<date>.json")
     p = sub.add_parser("standin")
     p.add_argument("--units", required=True, help="hval units (eval/pagepath.py units)")
     p.add_argument("--titles")
@@ -781,7 +847,8 @@ def main(argv=None):
     p.add_argument("--no-text", type=int, default=3)
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
-    {"title": cmd_title, "clannad": cmd_clannad, "tests": cmd_tests, "standin": cmd_standin}[a.cmd](a)
+    {"title": cmd_title, "clannad": cmd_clannad, "tests": cmd_tests, "record": cmd_record,
+     "standin": cmd_standin}[a.cmd](a)
 
 
 if __name__ == "__main__":

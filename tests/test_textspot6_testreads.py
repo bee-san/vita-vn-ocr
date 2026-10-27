@@ -126,3 +126,11 @@ def test_keyed_refs_match_grad_boxes():
     rs = [{"id": "a", "box": [1, 2, 30, 10]}, {"id": "b", "box": [1, 20, 30, 10]}, {"id": "c", "box": [0, 0, 5, 5]}]
     got = T.keyed_refs(rs, refs, [(1, 20, 30, 10), (1, 2, 30, 10)])
     assert [(r["id"], k) for r, k in got] == [("a", 1)]
+
+
+def test_record_paths_and_c_check_fields():
+    v = {"a": "/local/home/u/herd-vita-ocr/shared/x.json", "b": ["/home/u/herd-synth3/clones/vocr6-wt/eval/s.json"],
+         "c": 3}
+    assert T.sanitize(v) == {"a": "$HERD/shared/x.json", "b": ["eval/s.json"], "c": 3}
+    x = {"cer": 1.0, "c_equal": True, "per_part": {"vita": {"cer": 2.0, "c_unchecked_frames": 3}}}
+    assert T.without_c_check(x) == {"cer": 1.0, "per_part": {"vita": {"cer": 2.0}}}

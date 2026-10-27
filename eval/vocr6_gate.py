@@ -116,6 +116,10 @@ PLANS4 = {
     "dev4": (ART / "vocr6-lead" / "plans" / "dev_plan_v2.pkl",
              "abb37391c4086f690e11b0d0021dbc498cfeb004795379ffabd7d0c58e173e6e")}
 
+# the released v0.3.0 blobs: a tier whose final blob is one keeps #120's / #122's verdict (protocol models.vocr5_final)
+VOCR5_RELEASED = {"f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d": ("S", "gate", None),
+                  "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc": ("N", "gate", "2Lg"),
+                  "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3": ("L", "gate", "2Lg")}
 # the committed records of #120 and #122 the VOCR5 run is checked against (step 2)
 REF = {"gate_release": ART / "head-gate" / "release", "gate_blobs": ART / "head-gate" / "blobs",
        "two_blobs": ART / "head-2level" / "blobs", "two_release": ART / "head-2level" / "release",
@@ -1510,6 +1514,13 @@ def decide(ctx, tier):
             if ok:
                 two_final = arm
                 break
+    released = VOCR5_RELEASED.get(ctx.input(tier)["sha256"])
+    if released and released[0] == tier and not ctx.all_vns:
+        # models.vocr5_final: the released VOCR5 blob keeps #120's / #122's verdict and blobs (step 2 reproduces them
+        # byte for byte); the rules above are reported beside it
+        dec["kept_vocr5_verdict"] = {"by_the_rules": {"gate": gate_final, "two_level": two_final},
+                                     "kept": {"gate": released[1], "two_level": released[2]}}
+        gate_final, two_final = released[1], released[2]
     fa = final_arm(gate_final, two_final)
     dec.update(gate_final=gate_final, two_final=two_final, final_arm=fa)
     dec["estimate"] = {"today": config_estimate(ctx, tier, "today"), "final": config_estimate(ctx, tier, fa)}

@@ -293,6 +293,14 @@ def test_step_runs_once_and_records_slot_hours(tmp_path):
     assert again.exclude == frozenset(G.EXCLUDE_VNS) and again.frozen_only
 
 
+def test_vocr5_released_pins_match_the_protocols():
+    for f in ("headgate_protocol.json", "head2level_protocol.json"):
+        models = json.loads((ROOT / "eval" / f).read_text(encoding="utf-8"))["models"]
+        for t in G.TIERS:
+            tier, gate, two = G.VOCR5_RELEASED[models[t]["sha256"]]
+            assert tier == t and gate == "gate" and two == (None if t == "S" else "2Lg")
+
+
 def test_parse_final_blobs():
     msg = "vocr6-lead: FINAL BLOBS S=/a/S_w8.vocr N=/a/N_w8.vocr L=/a/L_w8.vocr."
     assert G.parse_final_blobs(msg) == {"S": "/a/S_w8.vocr", "N": "/a/N_w8.vocr", "L": "/a/L_w8.vocr"}

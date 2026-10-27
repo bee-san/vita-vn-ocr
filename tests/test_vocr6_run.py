@@ -137,3 +137,41 @@ def test_file_counts_sum_over_a_versions_files(tmp_path):
 def test_fold_in_mixes_are_marked_hval_in_training():
     assert R.hval_in_training({"mix": "r3all_fold"}) and not R.hval_in_training({"mix": "r3all"})
     assert not R.hval_in_training({"mix": "m1_cil"}) and not R.hval_in_training({})
+
+
+def _finished_run(tmp_path, monkeypatch, mix):
+    """A run whose training has finished, its blob exported and its score file written (subprocess stubbed)."""
+    monkeypatch.setattr(R, "HERD", tmp_path)
+    log = tmp_path / "explog.jsonl"
+    monkeypatch.setattr(R, "EXPLOG", log)
+    runs, scores, blobs = R.dirs("lab")
+    rd = runs / "v6f4h_S_seed1"
+    rd.mkdir(parents=True)
+    (rd / "ckpt_step10.pt").write_bytes(b"ckpt")
+    (rd / "vocr6_run.json").write_text(json.dumps({"config_sha256": "c", "inputs": {}, "segments": [{"seconds": 36}]}))
+    blobs.mkdir(parents=True)
+    (blobs / "v6f4h_S_seed1_w8.vocr").write_bytes(b"blob")
+    scores.mkdir(parents=True)
+    rubi = {"hval_clean_dlg": 0.4, "hval_page": 1.0, "hval_page_all": 1.5, "dev_score": 2.0}
+    (scores / "score_v6f4h_S_seed1.json").write_text(json.dumps({"blob_sha256": "b", "blob_bytes": 4, "arena_bytes": 1,
+                                                                   "summary": {"rubi": rubi}}))
+    monkeypatch.setattr(R.subprocess, "run", lambda *a, **k: None)
+    args = type("A", (), {"label": "lab", "stage": "4", "arm": "F4Sh_s1", "seed": 1, "protocol": "p.json"})()
+    spec = {"run": "v6f4h_S", "tier": "S", "mix": mix, "steps": 10}
+    R.finish(args, {}, {}, spec)
+    return json.loads(log.read_text().splitlines()[-1])
+
+
+def test_a_fold_in_runs_done_line_says_hval_in_training(tmp_path, monkeypatch):
+    rec = _finished_run(tmp_path, monkeypatch, "r3all_fold")
+    assert rec["hval_held_out"] is False and "hval in training" in rec["notes"]
+
+
+def test_a_screening_runs_done_line_has_no_marker(tmp_path, monkeypatch):
+    rec = _finished_run(tmp_path, monkeypatch, "r3all")
+    assert "hval_held_out" not in rec and "hval in training" not in rec["notes"]
+
+
+def test_s2fa2_seed3_is_refused():
+    p = json.loads((ROOT / "eval/vocr6_protocol.json").read_text(encoding="utf-8"))
+    assert p["stages"]["2"]["arms"]["S2fa2"].get("seed_only") == 1

@@ -139,5 +139,7 @@ def test_runs_read_on_different_plans_are_refused():
 def test_every_hval_plan_the_protocol_pins_is_known():
     import json
     p = json.loads((Path(__file__).resolve().parents[1] / "eval/vocr6_protocol.json").read_text(encoding="utf-8"))
-    pinned = {p["scoring"]["hval_plan"]["sha256"], p["stages"]["4"]["plans"]["hval"]["sha256"]}
+    pinned = {v["sha256"] for k, v in p["scoring"].items() if k.startswith("hval_plan") and isinstance(v, dict)}
+    pinned.add(p["stages"]["4"]["plans"]["hval"]["sha256"])
+    assert len(pinned) >= 3
     assert pinned <= set(S.KNOWN_PLANS)

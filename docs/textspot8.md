@@ -149,6 +149,52 @@ Every number is measured on the host unless it is labelled an estimate.
 - `rubi,fix=1`'s +1 px gain is one title, PCSG00854 (2,581 errors in 3,861 characters as stored, 383 at +1 px, 1,576 at
   +2 px): a knife-edge font, every other title within ±30 errors. Report only.
 
+### Step 1: MeikiOCR's detector, the reference (measured 07:4xZ)
+
+Page-path dialogue CER in %, through textspot6's pinned page path (VOCR5-N W8I, the counter re-decode, beam 8 + the 1 MB
+LM, the cascade to L, Rubi's textnorm). Dev is the headline set: unseen games, without v12188. Line R / box P are
+eval/pagepath.py's (whole lines / lines, boxes that are not junk / boxes). Intervals are VN clusters on dev and title
+clusters on hval.
+
+| finder | dev | dev Vita / PSP | hval | hval Vita / PSP | dev line R / box P / F1 | hval line R / box P / F1 | dev − GRAD + refine | dev − `rubi,fix=1` | hval − `rubi,fix=1` |
+|---|---:|---|---:|---|---|---|---|---|---|
+| GRAD + refine (`rubi`) | 3.08 | 2.95 / 3.21 | 3.88 | 4.53 / 2.70 | 0.970 / 0.950 / 0.960 | 0.960 / 0.959 / 0.960 | | +0.71 [+0.25, +1.29] | +0.58 [+0.31, +0.93] |
+| `rubi,fix=1` (Rubi's finder) | 2.38 | 1.97 / 2.74 | 3.29 | 3.90 / 2.20 | 0.986 / 0.950 / 0.968 | 0.976 / 0.959 / 0.967 | −0.71 [−1.29, −0.25] | | |
+| textspot6 `base_qS4` s2 crop (its research release) | 1.39 | 0.96 / 1.77 | 1.61 | 1.84 / 1.21 | 0.930 / 0.992 / 0.960 | 0.941 / 0.985 / 0.963 | −1.70 [−4.33, +0.08] | −0.99 [−3.65, +0.65] | −1.68 [−5.21, +0.31] |
+| textspot6 `base_t64n8c16` s1 det | 1.41 | 1.47 / 1.35 | 1.30 | 1.37 / 1.18 | 0.979 / 0.995 / 0.987 | 0.970 / 0.990 / 0.980 | −1.68 [−4.31, +0.12] | −0.97 [−3.59, +0.71] | −1.99 [−5.64, −0.05] |
+| MeikiOCR, raw boxes, det | 2.25 | 1.94 / 2.52 | 3.51 | 4.13 / 2.40 | 0.998 / 0.997 / 0.998 | 0.920 / 0.957 / 0.938 | −0.84 [−3.54, +0.89] | −0.13 [−2.83, +1.54] | +0.22 [−3.65, +2.59] |
+| MeikiOCR, raw, det+refine | 2.46 | 2.12 / 2.77 | 3.60 | 4.25 / 2.43 | 0.993 / 0.995 / 0.994 | 0.917 / 0.956 / 0.936 | −0.62 [−3.35, +1.11] | +0.08 [−2.62, +1.73] | +0.30 [−3.51, +2.68] |
+| **MeikiOCR, +4 px, det** | **0.72** | 0.50 / 0.92 | 2.22 | 3.00 / 0.83 | 0.998 / 0.997 / 0.998 | 0.972 / 0.957 / 0.965 | −2.36 [−4.96, −0.67] | −1.65 [−4.24, −0.09] | −1.07 [−5.01, +1.75] |
+| **MeikiOCR, +4 px, det+refine (row of record)** | **0.91** | 0.62 / 1.17 | **1.65** | 2.08 / 0.88 | 0.997 / 0.997 / 0.997 | 0.969 / 0.957 / 0.963 | −2.17 [−4.84, −0.47] | −1.47 [−4.15, +0.10] | −1.65 [−5.41, +0.60] |
+| MeikiOCR, ink + 4 px, det | 2.48 | 0.80 / 3.97 | 3.40 | 3.40 / 3.40 | 0.936 / 0.997 / 0.966 | 0.875 / 0.957 / 0.914 | −0.61 [−3.32, +1.32] | +0.10 [−2.61, +1.91] | +0.11 [−4.03, +3.13] |
+| MeikiOCR, ink + 4 px, det+refine | 2.67 | 0.85 / 4.30 | 2.81 | 2.41 / 3.54 | 0.933 / 0.995 / 0.963 | 0.872 / 0.956 / 0.912 | −0.41 [−3.11, +1.44] | +0.29 [−2.44, +2.03] | −0.48 [−4.43, +2.06] |
+
+- **The row of record** by the registered rule (the lowest hval CER) is +4 px det+refine: unseen dev **0.91%**, hval
+  1.65%. Its interval against GRAD + refine lies below 0 (−2.17 [−4.84, −0.47]); against `rubi,fix=1` it reaches
+  +0.10. The plain +4 px decode reads unseen dev at **0.72%**, and its interval is below 0 against both (`rubi,fix=1`:
+  −1.65 [−4.24, −0.09]). So MeikiOCR's line boxes, given a margin, pass the rule this study applies to the student.
+- **Meiki finds the lines; the margin makes the reading.** On dev it finds nearly every line whole and boxes almost no
+  junk (line recall 0.998, box precision 0.997; textspot6 0.93-0.98 / 0.99, GRAD 0.97 / 0.95). Its boxes are tight to
+  the ink, though, and without a margin the recognizer misreads their edges: raw boxes read dev at 2.25%, the same
+  boxes grown by 4 px at 0.72%. Refining the box to ink first and then padding (ink) is worse on PSP (3.97% against
+  0.92%); why was not checked.
+- **Per VN** (+4 px det against `rubi,fix=1`): 26 VNs better, 9 worse, 57 level. Without v27449 the difference is
+  −0.54 [−1.32, +0.04]. Its largest gains are v27449 (311 → 24 errors), v17972 (68 → 0) and v10972 (38 → 12). Its
+  largest losses are v1971 (28 → 54: the side-by-side choice buttons every spotter loses), v6985 (6 → 21), v18163
+  (8 → 15) and v25796 (0 → 8). Against textspot6's research release it is better on 44 VNs and worse on 6.
+- **On hval** Meiki's errors are concentrated in 3 Vita titles: PCSG00917, PCSG00918 and PCSG00509 make 784 / 765 / 252
+  errors with +4 px det against textspot6 t64's 24 / 6 / 15. The refinement brings the first two down to 279 / 241.
+  Every other title is within a few dozen errors of textspot6.
+- **Whole frames** (textspot's 188 development frames, +4 px det): box F1 0.895 (precision 0.948, recall 0.847),
+  all-text CER 15.1%, dialogue CER 1.45%, UI recall 0.77. textspot6's runs: F1 0.57, all-text 40-42%, dialogue
+  1.9-2.0%, UI recall 0.22.
+- **hval boxes** against the verified lines (F1, +4 px): Vita 0.940, PSP 2x 0.979, PSP native 0.982 (textspot6 t64 s1:
+  0.901 / 0.966 / 0.952).
+- **Size and speed:** a DETR-style network (102 convolutions, 66 matrix products) of 3,547,383 float32 parameters,
+  14,503,825 B of ONNX, reading a 960 × 544 colour frame. On this host it takes 137 ms per frame on 1 thread and 95 ms
+  on 5 (median of 100 dev frames on the 64-core EPYC under the shared box's load). That is about 70 times the parameters
+  of the student's 52 KB of int8 weights, and about 3.5 MB even in int8. It is the quality bar, not a console model.
+
 <!-- STEP1 -->
 
 <!-- STUDENT -->

@@ -430,9 +430,9 @@ cascading into the same seed's VOCR6-N.
     (+0.067 / +0.075 points there; +17 / +19 errors, spread over VNs, the largest v2817 with +7). teacher_val and
     devnative move little (into 4c-N: +0.000 and +0.012; into 4b-N: -0.025 and -0.025).
   - Moving both Smalls' cascade from 4b-N to 4c-N lowers both scores by 0.14-0.16 points (VOCR5-S 1.667 → 1.509,
-    74 fewer whole-dialogue errors; the new Small 1.688 → 1.549, 72 fewer). 33 of those 74 are one VN's junk-box text (v21004), the display-rule effect the
-    final test saw on CLANNAD's pages (below). That swing is the same for both Smalls, so it does not explain the
-    difference between them.
+    74 fewer whole-dialogue errors; the new Small 1.688 → 1.549, 72 fewer). 33 of VOCR5-S's 74 are one VN's junk-box
+    text (v21004), the display-rule effect the final test saw on CLANNAD's pages (above, in v0.4.0-vocr6.1's final
+    test). That swing is the same for both Smalls, so it does not explain the difference between them.
 
 **The development score of each set as it ships** (Rubi's cascade S -> N -> L; hval is in the training of every VOCR6
 blob here):
@@ -445,8 +445,9 @@ blob here):
 
 **The gap to the owner's < 1% target** (dialogue CER through Rubi's full page path):
 - **Other games:** whole dialogue on #119's development units reads 2.47 / 2.37 / 2.39% (S / N / L, the set as it
-  ships), against VOCR5's 2.70 / 2.48 / 2.41%. The same tiers read those games' fixed lines at 0.40-0.68%, so about
-  75-85% of the remaining whole-dialogue error is the line finder's. Rubi's new default finder, the textspot8 spotter
+  ships), against VOCR5's 2.70 / 2.48 / 2.41%. The same tiers read those games' fixed lines at 0.39-0.68%, so about
+  74-83% of the remaining whole-dialogue error is the line finder's (1 - the mean of teacher_val's and devnative's
+  fixed-line CER over whole dialogue, per tier). Rubi's new default finder, the textspot8 spotter
   (#149), targets it; the GRAD path measured here is not Rubi's default any more.
 - **The hooked games' pages:** the held-out evidence is the recipes' seeds above: Normal 0.936% and Large 0.917%,
   under 1%; Small 1.049%. The shipped blobs' own hval reads (0.98 / 0.88 / 0.87%) are not held out.
@@ -489,9 +490,9 @@ Development score, gated − ungated, in points [95% VN-cluster interval]; the r
     est. 194 ms per box. VOCR6-L runs at est. 1.88 s per box (v0.4.0's: 1.87 s).
 - **The release names** add `.2` to the family: `VOCR6.2_*`. One file name then always means one set of bytes;
   v0.4.0-vocr6.1's `VOCR6_N_w8_2l.vocr` and `VOCR6_L_w8_2l.vocr` keep theirs.
-- **The record.** The driver's `result.json` records `repo_head` 0d3dffe: main 2e63b74 plus feat/vocr6-s4d's two
-  protocol commits, which the clone was switched to during the run. Every file the driver reads is main's, its
-  protocol sha256 `491e3865…` included.
+- **The record.** The driver's `result.json` records `repo_head` 0d3dffe (reachable from the tag
+  `vocr6-followup-read-27e0126`): main 2e63b74 plus feat/vocr6-s4d's two protocol commits, which the clone was
+  switched to during the run. Every file the driver reads is main's, its protocol sha256 `491e3865…` included.
 
 ### The follow-up's final test (read once, report only)
 
@@ -538,8 +539,9 @@ In bold: resolved (the interval excludes 0).
   +0.27, both resolved). Against VOCR5 the pages are still better or level (-0.13, and -0.52 resolved).
   - Large has no cascade, and its loss sits in the counter + LM stage: its greedy pages read level with v0.4.0's
     (6.07% / 6.10%), but the counter and LM gain less (6.03% against 5.78%).
-  - Normal's gap is +0.35 points greedy (8.29% / 7.94%), +0.07 after the counter and LM, +0.24 after the cascade and
-    +0.34 as shown: it comes from its greedy reads and from the cascade.
+  - Normal's gap, from the error counts (30,436 reference characters), is +0.34 points greedy (8.29% / 7.94%), +0.07
+    after the counter and LM, +0.24 after the cascade and +0.33 as shown: it comes from its greedy reads and from the
+    cascade.
   - Lines and pages differ in their crops. The pages are the finder's crops of whole ROIs, junk boxes included; the
     lines are the frozen line crops.
 - **vita-test + psp-test:** level against VOCR5 at every tier on path (b). vita-test is better (Small -0.25

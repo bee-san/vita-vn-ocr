@@ -223,3 +223,53 @@ hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D �
 - The det decode reads the whole frame, so D does not depend on how the player draws the region.
 - On both hval tight sets, all three qualifiers are resolved better than `rubi,fix=1` (qS4: −0.20 [−0.34, −0.07]
   and −0.27 [−0.42, −0.14]; qL5: −0.47 [−1.14, −0.08] and −0.58 [−1.28, −0.19]).
+
+### The confirmation set
+
+- **What it holds:** 41 unseen VNs with accepted frames (out of the 50 in the frozen frame list; the others had no
+  accepted Japanese dialogue frame within the view cap). 170 frames, 172 base regions (516 units with the +4 / +8
+  variants), 320 lines, 4,737 characters; PSP 154 and Vita 18 base regions. The public manifest is
+  `eval/textspot7_confirm_units_v1.json` (amendment 3): ids, VNs, URLs, sha256, regions and line boxes, no text.
+- **How it was labelled:** 9 Claude helpers reviewed 323 of the 383 sheets offered (one frame each, ≤ 6 accepted
+  frames per VN, in the frozen order). The second look covered the 30 accepted lines whose text matched neither
+  engine's reading or that were added by hand: 29 confirmed, 1 corrected.
+  - **Deviation:** amendment 2 named another helper for the second look. No agent capacity was free, so this
+    label's own session did it: a different Claude session than every first reviewer, which had seen no arm output
+    on any confirmation frame.
+- **Ordering, disclosed:** the arms' dev and hval reads (and the dev-phase record) came before the units were frozen.
+  The frame list, the review order and the review rules were frozen before any arm read (amendments 1-2), the
+  reviewers never saw an arm's output, and no arm ran on a confirmation frame before the freeze.
+- **The read:** once (an attempt record refuses a second), for the three qualifiers and the baselines, with F and
+  F+D of the same spotters as report rows. C == twin held for D on every unit.
+
+| finder | confirmation CER | PSP / Vita | − `rubi,fix=1` | − GRAD + refine |
+|---|---:|---|---|---|
+| GRAD + refine (`rubi`) | 5.01 | 5.40 / 1.43 | +0.72 [+0.06, +1.92] | |
+| `rubi,fix=1` | 4.29 | 4.67 / 0.79 | | −0.72 [−1.92, −0.06] |
+| `base_t64n8c16` det | 2.42 | 2.56 / 1.07 | −1.87 [−5.00, +0.41] | −2.59 [−5.73, −0.11] |
+| **`base_t64n8c16` D (the pick)** | **1.92** | 2.06 / 0.64 | **−2.37 [−5.49, −0.18]** | −3.09 [−6.17, −0.70] |
+| `base_qS4` D | 2.81 | 3.12 / 0.00 | −1.48 [−3.21, +0.06] | −2.20 [−4.09, −0.42] |
+| `base_qL5` D | 2.09 | 2.31 / 0.07 | −2.21 [−3.95, −0.78] | −2.92 [−4.81, −1.27] |
+| report: `base_qL5` F+D (over budget) | 2.14 | 2.36 / 0.07 | −2.16 [−3.90, −0.75] | −2.87 [−4.74, −1.22] |
+
+- **All three qualifiers pass the confirmation condition** (not resolved worse than `rubi,fix=1`). On these fresh
+  games they are all lower, and t64 and qL5 are resolved lower.
+- **The gain spreads over VNs.** For the pick, 20 VNs get better, 6 worse and 15 are level against `rubi,fix=1`. One
+  VN (a translucent text box) goes 282 → 73 errors; without it the pick is still lower.
+- **D adds** −0.50 points to the plain det decode here (t64: 2.42 → 1.92), as it did on dev and hval.
+
+### The decision
+
+`eval/textspot7_confirm_20261027.json`:
+
+- **The pick is `base_t64n8c16` D.** It is the cheapest confirmed qualifier: 52,176 B, est. 296.3 ms per 960×544
+  frame at 333 MHz, arena 244,607 B. qS4 D (231 ms but 118 KB) and qL5 D (448 KB) cost more bytes, and neither is
+  resolved better on dev against it.
+- **Rubi's default stays GRAD (`ocr_finder = grad`).** Against `rubi,fix=1`, the pick's unseen-dev difference
+  (−1.20 [−3.83, +0.47]) is not resolved, so by the rule the spotter ships behind its setting, off by default. (It is
+  resolved lower than `rubi,fix=1` on the confirmation set and on hval.)
+- **The VOCR6 guard is moot:** no VOCR6 recognizer was released at the decision (vocr6-lead's release was staged,
+  not out).
+- **Next, by the rule:** the pick's spotter is retrained on train + guard + hval (`base` recipe, t64n8c16, seed 1:
+  54,771 hooked pages), then released, read once on the test sets (report only), and wired into Rubi behind
+  `ocr_finder = spotter`.

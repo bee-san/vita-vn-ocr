@@ -662,10 +662,10 @@ READ_KEYS = ("text", "topv", "topc", "blank", "conf_min", "frames")
 _G = {}
 
 
-def _ginit(blob, two):
+def _ginit(blob, two, gate=True):
     from pyvocr import Vocr
     kw = {"two_level": 1} if two else {}
-    _G["rt"] = Vocr(str(blob), mode="w8i", max_width=1024, head_gate="on", **kw)
+    _G["rt"] = Vocr(str(blob), mode="w8i", max_width=1024, head_gate="on" if gate else "off", **kw)
     _G["two"] = bool(two)
 
 
@@ -704,8 +704,9 @@ def cmd_gated_cache(a):
         except ValueError:
             return False
     two = has_two_level(a.blob) if a.two_level == "auto" else a.two_level == "on"
-    if not Vocr(str(a.blob), mode="w8i", max_width=1024).has_gate:
-        raise SystemExit(f"{a.blob}: no head gate in this blob")
+    gate = bool(Vocr(str(a.blob), mode="w8i", max_width=1024).has_gate)
+    if not (gate or two):
+        raise SystemExit(f"{a.blob}: neither a head gate nor a two-level head in this blob")
     bs, stem = sha256(a.blob), Path(a.blob).stem
     out = {}
     t0 = time.time()
@@ -718,11 +719,12 @@ def cmd_gated_cache(a):
     groups = {"dev": [(keys[i], img, inv) for i, (_, img, inv) in enumerate(rd)],
               "hval": [(k, g, inv) for k, (g, inv) in crops.items()],
               "cs": [(("cs", r["id"]), r["img"], False) for r in rows]}
-    with mp.get_context("fork").Pool(a.procs, initializer=_ginit, initargs=(a.blob, two)) as pool:
+    with mp.get_context("fork").Pool(a.procs, initializer=_ginit, initargs=(a.blob, two, gate)) as pool:
         for g, jobs in groups.items():
             res = {k: (r, again) for k, r, again in pool.imap_unordered(_gwork, jobs, chunksize=16)}
             out[g] = ([(k, res[k][0]) for k, _, _ in jobs], sum(v[1] for v in res.values()))
-    base = {"tier": a.tier, "blob": str(a.blob), "blob_sha256": bs, "head_gate": "on", "two_level": two,
+    base = {"tier": a.tier, "blob": str(a.blob), "blob_sha256": bs, "head_gate": "on" if gate else "none in blob",
+            "two_level": two,
             "counter_reread": "rubi core/vocr_ocr.c read_again at 6000 / 4000", "created": utc_now()}
     Path(a.dev_out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.dev_out).write_bytes(pickle.dumps(dict(base, reads=out["dev"][0], rereads=out["dev"][1],
@@ -753,8 +755,10 @@ def cmd_compare_runs(a):
     cs_idx = np.array([u[0] == "cs" for u in units])
     cs = [u for u in U if u.part == "cs"]
     cfg = json.loads(a.config)
-    jx, jy = mx["configs"].index(cfg), my["configs"].index(cfg)
+    cfg_y = json.loads(a.config_y) if a.config_y else cfg
+    jx, jy = mx["configs"].index(cfg), my["configs"].index(cfg_y)
     out = {"kind": "vocr6-final-lm-compare-runs", "created": utc_now(), "what": a.what, "config": cfg,
+           "config_y": cfg_y,
            "x": {"tune": Path(a.x).name, "tiers": mx["tiers"]}, "y": {"tune": Path(a.y).name, "tiers": my["tiers"]},
            "paths": {}}
     for key in sorted(set(ex_["b"]) & set(ey_["b"])):
@@ -915,6 +919,7 @@ def main():
     p.add_argument("--x", required=True)
     p.add_argument("--y", required=True)
     p.add_argument("--config", required=True, help="the setting (JSON), present in both files' configs")
+    p.add_argument("--config-y", help="another setting for y (JSON; default --config): two settings on one file")
     p.add_argument("--what", default="")
     p.add_argument("--out", required=True)
     a = ap.parse_args()

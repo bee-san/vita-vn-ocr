@@ -407,21 +407,12 @@ static int tighten(const VocrLinesImage *im, VocrT7Box *b, unsigned n, void *are
     return VOCR_T7_OK;
 }
 
-int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
-                        const VocrLinesImage *region, unsigned steps, void *arena, size_t arena_bytes,
+/* assign (the centre rule, or VOCR_T7_ASSIGN's) and join: the steps both forms share */
+static void assign_join(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1, unsigned steps,
                         VocrT7Box *out, unsigned *n_out)
 {
     int W = x1 - x0, H = y1 - y0;
     unsigned i, m = 0;
-    if (!out || !n_out || (n && !fb) || n > VOCR_T7_MAX_BOXES || (steps & ~VOCR_T7_STEPS) || W <= 0 || H <= 0)
-        return VOCR_T7_E_ARG;
-    if (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) {
-        if (!region || !region->pixels || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
-            (int)region->height != H || region->stride < region->width)
-            return VOCR_T7_E_ARG;
-        if (!arena || arena_bytes < vocr_textspot7_arena_bytes_steps(region->width, region->height, steps))
-            return VOCR_T7_E_ARENA;
-    }
     for (i = 0; i < n; i++) {
         const VocrT7Box *b = &fb[i];
         int cx = 2 * b->x + b->w, cy = 2 * b->y + b->h;
@@ -452,6 +443,25 @@ int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1,
         join(out, &m, 10);
     else if (steps & VOCR_T7_JOIN5)
         join(out, &m, 5);
+    *n_out = m;
+}
+
+int vocr_textspot7_post(const VocrT7Box *fb, unsigned n, int x0, int y0, int x1, int y1,
+                        const VocrLinesImage *region, unsigned steps, void *arena, size_t arena_bytes,
+                        VocrT7Box *out, unsigned *n_out)
+{
+    int W = x1 - x0, H = y1 - y0;
+    unsigned m = 0;
+    if (!out || !n_out || (n && !fb) || n > VOCR_T7_MAX_BOXES || (steps & ~VOCR_T7_STEPS) || W <= 0 || H <= 0)
+        return VOCR_T7_E_ARG;
+    if (steps & (VOCR_T7_EXTEND | VOCR_T7_TIGHTEN)) {
+        if (!region || !region->pixels || region->bpp != VOCR_LINES_GREY || (int)region->width != W ||
+            (int)region->height != H || region->stride < region->width)
+            return VOCR_T7_E_ARG;
+        if (!arena || arena_bytes < vocr_textspot7_arena_bytes_steps(region->width, region->height, steps))
+            return VOCR_T7_E_ARENA;
+    }
+    assign_join(fb, n, x0, y0, x1, y1, steps, out, &m);
     if (steps & VOCR_T7_EXTEND)
         extend(region, out, m, (unsigned char *)arena);
     if (steps & VOCR_T7_TIGHTEN) {
@@ -617,10 +627,7 @@ int vocr_textspot7_post_rows(const VocrT7Box *fb, unsigned n, int x0, int y0, in
         if (!arena || arena_bytes < vocr_textspot7_rows_arena_bytes_steps(region->width, region->height, steps))
             return VOCR_T7_E_ARENA;
     }
-    rc = vocr_textspot7_post(fb, n, x0, y0, x1, y1, NULL, steps & (VOCR_T7_ASSIGN | VOCR_T7_JOIN5 | VOCR_T7_JOIN10),
-                             NULL, 0, out, &m);
-    if (rc != VOCR_T7_OK)
-        return rc;
+    assign_join(fb, n, x0, y0, x1, y1, steps, out, &m);
     if (steps & VOCR_T7_EXTEND) {
         VocrT7Box orig[VOCR_T7_MAX_BOXES];
         RowWin w;

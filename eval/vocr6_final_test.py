@@ -1706,15 +1706,22 @@ def markdown(rep, proto):
           "VOCR6 - VOCR5 paired over the same units. Host measurements; nothing ran on a console.", ""]
     m = rep["models"]["tiers"]
     res = (rep.get("path_a") or {}).get("tool_outputs", {}).get("resources", {})
-    md += ["| tier | VOCR6 blob | sha256 | bytes | W8I arena (VOCR6 / VOCR5) | head gate | two-level |",
-           "|---|---|---|---:|---|---|---|"]
+    md += ["| tier | shipped blob (the VOCR6 column) | sha256 | bytes | W8I arena (VOCR6 / VOCR5) | head gate | "
+           "two-level | is a VOCR5 blob |", "|---|---|---|---:|---|---|---|---|"]
+    known = {proto["models"]["VOCR5"][k][t]["sha256"]: f"VOCR5-{t} ({'v0.3.0' if k == 'path_a' else 'gated'})"
+             for k in ("path_a", "gated") for t in TIERS}
     for t in TIERS:
         e = m[t]
         ar6, ar5 = (res.get(f"VOCR6_{t}") or {}).get("arena_w8i"), (res.get(f"VOCR5_{t}") or {}).get("arena_w8i")
         arena = f"{ar6:,} / {ar5:,} B" if ar6 and ar5 else "-"
         md.append(f"| {t} | `{e['file']}` | `{e['sha256'][:16]}…` | {e['bytes']:,} | {arena} | {e['head_gate']} | "
-                  f"{e['two_level']} |")
+                  f"{e['two_level']} | {known.get(e['sha256'], 'no')} |")
     md.append("")
+    same = [t for t in TIERS if m[t]["sha256"] in known]
+    if same:
+        md += [f"Tier(s) {', '.join(same)} ship a VOCR5 blob (VOCR6 was not adopted there): its VOCR6 column is that "
+               "blob, which on path (b) cascades to the shipped next tier (Rubi's cascade S -> N -> L), so it can "
+               "differ from VOCR5's column there; on path (a) the two read the same weights.", ""]
     v = rep.get("validation")
     if v:
         md += [f"VOCR5 on path (a) against its published records, in this read: {v['equal']} of {v['checks']} checks "

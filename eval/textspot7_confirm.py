@@ -49,6 +49,8 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 for _p in (ROOT, ROOT / "eval", ROOT / "synth", ROOT / "teacher"):
     if str(_p) not in sys.path:
@@ -293,6 +295,281 @@ def cmd_freeze_frames(a):
           f"sha256 {sha256_file(a.out)}")
 
 
+
+# ----------------------------------------------------------------------------- proposals
+
+def frame_list(path, include_dropped=False):
+    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    return [f for f in doc["frames"] if include_dropped or "dropped" not in f]
+
+
+def frame_file(dirpath, fid):
+    got = fetched(dirpath)
+    return Path(dirpath) / got[fid]["file"]
+
+
+def cmd_propose(a):
+    """MeikiOCR (det_thr 0.3, its recognizer) and PP-OCRv6 small on each horizontal Meiki box (eval's pad)."""
+    import cv2
+    import engines as E
+    frames = frame_list(a.frames)
+    got = fetched(a.dir)
+    meiki = E.Meiki(det_thr=0.3)
+    v6 = E.PaddleRec("v6s")
+    done = set()
+    out = Path(a.out)
+    if out.exists():
+        done = {r["id"] for r in read_jsonl(out)}
+    t0 = time.time()
+    n = 0
+    with open(out, "a", encoding="utf-8") as f:
+        for fr in frames:
+            if fr["id"] in done:
+                continue
+            path = Path(a.dir) / got[fr["id"]]["file"]
+            if sha256_file(path) != fr["sha256"]:
+                raise SystemExit(f"{path}: sha256 differs from the frozen frame list")
+            bgr = cv2.imread(str(path), cv2.IMREAD_COLOR)
+            H, W = bgr.shape[:2]
+            pad = PAD[fr["platform"]]
+            boxes = []
+            for k, ln in enumerate(meiki.ocr(bgr)):
+                x0, y0, x1, y1 = ln["det"]
+                rec = {"k": k + 1, "det": [int(v) for v in ln["det"]], "det_conf": ln["det_conf"],
+                       "vertical": ln["vertical"], "meiki": ln["text"]}
+                if not ln["vertical"] and x1 > x0 and y1 > y0:
+                    c = bgr[max(0, y0 - pad):min(H, y1 + pad), max(0, x0 - pad):min(W, x1 + pad)]
+                    t, mean, mn = v6(np.ascontiguousarray(c))[:3]
+                    rec.update(v6=t, v6_conf=round(float(mn), 3))
+                boxes.append(rec)
+            f.write(json.dumps({"id": fr["id"], "vn": fr["vn"], "platform": fr["platform"], "dims": [W, H],
+                                "boxes": boxes}, ensure_ascii=False) + "\n")
+            f.flush()
+            n += 1
+    print(f"propose: {n} frames in {time.time() - t0:.0f} s -> {out}")
+
+
+# ----------------------------------------------------------------------------- sheets
+
+FONT = "/usr/share/fonts/google-droid-sans-fonts/DroidSansFallbackFull.ttf"
+SHEET_W = 1280
+COLOURS = [(255, 64, 64), (64, 200, 255), (255, 200, 0), (80, 255, 80), (255, 80, 255), (255, 140, 0)]
+
+
+def console_view(bgr, platform):
+    """The frame as the reviewers see it: Vita as it is, PSP 2x (bilinear), RGB."""
+    import cv2
+    rgb = np.ascontiguousarray(bgr[:, :, ::-1])
+    if platform == "psp":
+        rgb = cv2.resize(rgb, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+    return rgb
+
+
+def make_sheet(rgb_console, platform, boxes, title):
+    """One review sheet: the console view with a 100-px grid and the numbered proposals, then each horizontal
+    proposal's crop with its two readings. <= 1280 px a side."""
+    from PIL import Image, ImageDraw, ImageFont
+    s = 2 if platform == "psp" else 1
+    font = ImageFont.truetype(FONT, 20)
+    small = ImageFont.truetype(FONT, 14)
+    fr = Image.fromarray(rgb_console)
+    H, W = rgb_console.shape[:2]
+    d = ImageDraw.Draw(fr)
+    for x in range(100, W, 100):
+        d.line([(x, 0), (x, H)], fill=(128, 128, 128), width=1)
+        d.text((x + 2, 2), str(x), fill=(255, 255, 0), font=small, stroke_width=2, stroke_fill=(0, 0, 0))
+    for y in range(100, H, 100):
+        d.line([(0, y), (W, y)], fill=(128, 128, 128), width=1)
+        d.text((2, y + 2), str(y), fill=(255, 255, 0), font=small, stroke_width=2, stroke_fill=(0, 0, 0))
+    for b in boxes:
+        col = COLOURS[(b["k"] - 1) % len(COLOURS)]
+        x0, y0, x1, y1 = (v * s for v in b["det"])
+        d.rectangle([x0, y0, x1 - 1, y1 - 1], outline=col, width=2)
+        d.text((x0 + 1, max(0, y0 - 18)), str(b["k"]), fill=col, font=font, stroke_width=2, stroke_fill=(0, 0, 0))
+    rows = []
+    for b in boxes:
+        if b["vertical"]:
+            continue
+        x0, y0, x1, y1 = (v * s for v in b["det"])
+        pad = 4
+        cx0, cy0, cx1, cy1 = max(0, x0 - pad), max(0, y0 - pad), min(W, x1 + pad), min(H, y1 + pad)
+        crop = Image.fromarray(np.ascontiguousarray(rgb_console[cy0:cy1, cx0:cx1]))
+        if crop.width > SHEET_W - 60:
+            crop = crop.resize((SHEET_W - 60, max(1, round(crop.height * (SHEET_W - 60) / crop.width))))
+        rows.append((b, crop))
+    text_h = 26
+    body = sum(c.height + text_h + 6 for _, c in rows) + 34
+    sheet_h = H + body
+    scale = 1.0
+    if sheet_h > SHEET_W:
+        scale = SHEET_W / sheet_h
+    sheet = Image.new("RGB", (SHEET_W, sheet_h), (40, 40, 40))
+    sheet.paste(fr, (0, 0))
+    d = ImageDraw.Draw(sheet)
+    d.text((W + 10, 10), title, fill=(255, 255, 255), font=small)
+    y = H + 4
+    d.text((4, y), "proposals: [k] M = MeikiOCR, P = PP-OCRv6 small (min conf); crops below at console scale",
+           fill=(200, 200, 200), font=small)
+    y += 26
+    for b, crop in rows:
+        col = COLOURS[(b["k"] - 1) % len(COLOURS)]
+        d.text((4, y), f"[{b['k']}] M: {b['meiki']}", fill=col, font=font)
+        d.text((SHEET_W // 2 + 10, y), f"P: {b.get('v6', '')}  ({b.get('v6_conf', '')})", fill=col, font=font)
+        y += text_h
+        sheet.paste(crop, (40, y))
+        y += crop.height + 6
+    if scale < 1.0:
+        sheet = sheet.resize((max(1, round(SHEET_W * scale)), SHEET_W))
+    return sheet
+
+
+def cmd_sheets(a):
+    import cv2
+    frames = frame_list(a.frames)
+    props = {r["id"]: r for r in read_jsonl(a.proposals)}
+    got = fetched(a.dir)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    by_vn = defaultdict(list)
+    for fr in frames:
+        by_vn[fr["vn"]].append(fr)
+    vns = sorted(by_vn)
+    batches = [vns[i::a.batches] for i in range(a.batches)]
+    for bi, bvns in enumerate(batches, 1):
+        items = []
+        for vn in bvns:
+            for fr in sorted(by_vn[vn], key=lambda f: f["review_rank"]):
+                bgr = cv2.imread(str(Path(a.dir) / got[fr["id"]]["file"]), cv2.IMREAD_COLOR)
+                p = props[fr["id"]]
+                sheet = make_sheet(console_view(bgr, fr["platform"]), fr["platform"], p["boxes"],
+                                   f"{fr['id']}  ({fr['platform']}, rank {fr['review_rank']} of {vn})")
+                name = f"b{bi:02d}_{fr['id']}.png"
+                sheet.save(out / name)
+                items.append({"frame": fr["id"], "vn": vn, "platform": fr["platform"], "rank": fr["review_rank"],
+                              "sheet": name, "proposals": [{k: b.get(k) for k in ("k", "det", "vertical", "meiki",
+                                                                                     "v6", "v6_conf")}
+                                                           for b in p["boxes"]]})
+        (out / f"batch_{bi:02d}.json").write_text(json.dumps({"batch": bi, "vns": bvns, "per_vn": a.per_vn,
+                                                              "items": items}, ensure_ascii=False, indent=1) + "\n",
+                                                  encoding="utf-8")
+        print(f"batch {bi}: {len(bvns)} VNs, {len(items)} sheets")
+
+
+# ----------------------------------------------------------------------------- build
+
+def split_rows(grey, box, n):
+    """A box holding n stacked lines cut at the n - 1 emptiest rows between them (ink = 3x3 contrast >= 40),
+    each cut at least a sixth of the box's height from the others and the edges. -> n boxes [x0, y0, x1, y1]."""
+    from common import contrast3
+    x0, y0, x1, y1 = box
+    c = contrast3(grey[y0:y1, x0:x1]) >= 40
+    prof = c.sum(axis=1)
+    h = y1 - y0
+    cuts, minsep = [], max(2, h // (3 * n))
+    for _ in range(n - 1):
+        best = None
+        for yy in range(minsep, h - minsep):
+            if any(abs(yy - k) < minsep for k in cuts):
+                continue
+            if best is None or prof[yy] < prof[best]:
+                best = yy
+        if best is None:
+            break
+        cuts.append(best)
+    cuts = sorted(cuts)
+    edges = [0, *cuts, h]
+    return [[x0, y0 + edges[i], x1, y0 + edges[i + 1]] for i in range(len(edges) - 1)]
+
+
+def cmd_build(a):
+    """The units from the reviewers' decisions (DIR/*.jsonl): #119's format (a pickle {"units": [...]}: unit, variant,
+    vn, kind, src_kind, scale 1.0, shot, cohort, region [x0, y0, x1, y1] native, image (grey region), lines [{id,
+    text, box [x0, y0, x1, y1] in region px}]) and the public manifest (no text)."""
+    import cv2
+    import geometry as GEO
+
+    from common import to_gray
+    frames = {f["id"]: f for f in frame_list(a.frames)}
+    props = {r["id"]: r for r in read_jsonl(a.proposals)}
+    got = fetched(a.dir)
+    dec = {}
+    for f in sorted(Path(a.decisions).glob("*.jsonl")):
+        for r in read_jsonl(f):
+            dec[r["frame"]] = r                                    # the last decision of a frame wins
+    accepted = defaultdict(list)
+    for fid, r in dec.items():
+        if r.get("accept"):
+            accepted[frames[fid]["vn"]].append(fid)
+    units, public, skipped = [], [], Counter()
+    for vn in sorted(accepted):
+        fids = sorted(accepted[vn], key=lambda i: frames[i]["review_rank"])[:a.per_vn]
+        for fid in fids:
+            fr, r, p = frames[fid], dec[fid], props[fid]
+            bgr = cv2.imread(str(Path(a.dir) / got[fid]["file"]), cv2.IMREAD_COLOR)
+            rgb = np.ascontiguousarray(bgr[:, :, ::-1])
+            grey = to_gray(rgb)
+            H, W = grey.shape
+            s = 2 if fr["platform"] == "psp" else 1
+            kb = {b["k"]: b for b in p["boxes"]}
+            for gi, grp in enumerate(r["units"]):
+                lines = []
+                for ln in grp["lines"]:
+                    if "k" in ln and ln.get("split"):
+                        parts = split_rows(grey, kb[ln["k"]]["det"], int(ln["split"]))
+                        texts = ln["texts"]
+                        if len(parts) != len(texts):
+                            raise SystemExit(f"{fid}: box {ln['k']} split into {len(parts)}, {len(texts)} texts")
+                        for bx, t in zip(parts, texts):
+                            lines.append((bx, t))
+                    elif "k" in ln:
+                        lines.append((kb[ln["k"]]["det"], ln["text"]))
+                    else:
+                        x, y, w, h = ln["add"]
+                        lines.append(([x // s, y // s, (x + w + s - 1) // s, (y + h + s - 1) // s], ln["text"]))
+                ink = []
+                for bx, t in lines:
+                    ib, _ = GEO.refine(rgb, [max(0, bx[0]), max(0, bx[1]), min(W, bx[2]), min(H, bx[3])])
+                    ink.append((ib, t))
+                m = MARGIN[fr["platform"]]
+                rx0 = max(0, min(b[0] for b, _ in ink) - m)
+                ry0 = max(0, min(b[1] for b, _ in ink) - m)
+                rx1 = min(W, max(b[2] for b, _ in ink) + m)
+                ry1 = min(H, max(b[3] for b, _ in ink) + m)
+                for var, e in VARIANTS.items():
+                    x0, y0 = max(0, rx0 - e), max(0, ry0 - e)
+                    x1, y1 = min(W, rx1 + e), min(H, ry1 + e)
+                    uid = f"{fid}@{rx0},{ry0},{rx1},{ry1}"
+                    rl = [{"id": f"{fid}_{gi}_{li}", "text": t,
+                           "box": [b[0] - x0, b[1] - y0, b[2] - x0, b[3] - y0]} for li, (b, t) in enumerate(ink)]
+                    units.append({"unit": uid, "variant": var, "vn": vn, "kind": fr["platform"],
+                                  "src_kind": fr["platform"], "scale": 1.0, "shot": fid,
+                                  "cohort": "textspot7_confirm", "region": [x0, y0, x1, y1],
+                                  "image": np.ascontiguousarray(grey[y0:y1, x0:x1]), "lines": rl,
+                                  "group_kind": grp.get("kind", "dialogue")})
+                    public.append({"unit": uid, "variant": var, "vn": vn, "platform": fr["platform"], "frame": fid,
+                                   "frame_sha256": fr["sha256"], "url": fr["url"], "region": [x0, y0, x1, y1],
+                                   "lines": [{"id": x["id"], "box": x["box"], "chars": len(x["text"])} for x in rl],
+                                   "kind": grp.get("kind", "dialogue")})
+        skipped[vn] = len(accepted[vn]) - len(fids)
+    out = Path(a.out)
+    with open(out, "wb") as f:
+        pickle.dump({"units": units, "kind": "textspot7-confirm-units", "created": time.strftime(
+            "%Y-%m-%dT%H:%M:%SZ", time.gmtime())}, f)
+    doc = {"kind": "textspot7-confirm-units", "schema": 1, "issue": 128, "units_pkl_sha256": sha256_file(out),
+           "frames_manifest": a.frames, "frames_manifest_sha256": sha256_file(a.frames),
+           "reviewer_kind": "assistant", "decisions": len(dec),
+           "accepted_frames": sum(min(len(v), a.per_vn) for v in accepted.values()),
+           "vns": len({u["vn"] for u in units}), "units": len(units),
+           "base_regions": sum(1 for u in units if u["variant"] == "base"),
+           "lines": sum(len(u["lines"]) for u in units if u["variant"] == "base"),
+           "chars": sum(len(x["text"]) for u in units if u["variant"] == "base" for x in u["lines"]),
+           "by_platform": dict(Counter(u["kind"] for u in units if u["variant"] == "base")),
+           "units_public": public}
+    Path(a.manifest).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"build: {doc['base_regions']} base regions ({len(units)} units) of {doc['vns']} VNs, {doc['lines']} "
+          f"lines -> {out} (sha256 {doc['units_pkl_sha256'][:12]}); {a.manifest}")
+
+
 # ----------------------------------------------------------------------------- main
 
 def main(argv=None):
@@ -313,6 +590,28 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--per-vn", type=int, default=6)
     p.set_defaults(fn=cmd_freeze_frames)
+    p = sub.add_parser("propose")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--dir", required=True)
+    p.add_argument("--out", required=True)
+    p.set_defaults(fn=cmd_propose)
+    p = sub.add_parser("sheets")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--dir", required=True)
+    p.add_argument("--proposals", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--batches", type=int, default=8)
+    p.add_argument("--per-vn", type=int, default=6)
+    p.set_defaults(fn=cmd_sheets)
+    p = sub.add_parser("build")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--dir", required=True)
+    p.add_argument("--proposals", required=True)
+    p.add_argument("--decisions", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--per-vn", type=int, default=6)
+    p.set_defaults(fn=cmd_build)
     a = ap.parse_args(argv)
     a.fn(a)
 

@@ -1,0 +1,53 @@
+{
+ "kind": "textspot8-protocol",
+ "schema": 1,
+ "issue": 149,
+ "tracking": [125, 128],
+ "label": "vocr6-spotter2",
+ "registered_utc": "2026-10-27T06:36:58Z",
+ "registered_before": "any textspot8 read: MeikiOCR's benchmark, the geometry diagnostic and every student run",
+ "doc": "docs/textspot8.md",
+ "what": "MeikiOCR's text detector as the reference line spotter (step 1), a crop-geometry diagnostic on hval (step 2), then a <= 500 KB int8 spotter distilled from it for Rubi's plain-C runtime (step 3, arms by amendment 1 before any training run), decided by textspot6's rule with two guards (step 4)",
+ "pins": {
+  "pagepath": {"path": "$A/vocr6-spotter/pagepath_snap135/repo/eval/pagepath.py", "sha256": "2e09e1c70779b951ca88881fd4ade4ec67a4b7e221f112d60f0e14d8596a03ea", "pagepath_find_c_sha256": "863374fce26f715f68e71c41d9ac8e9a85448ae9a2724b5201ce992f618f498a", "note": "textspot6's pin (main 8a71eec + vocr6-finder #135 2d3971b, its libvocr.so built): every number pairs with textspot6's"},
+  "textnorm": {"path": "$A/vocr6-spotter/rubi_textnorm", "textnorm_c_sha256": "3fa190177bb23244692cabe743c239a7721bf5ead4f082212a06e7d0077bb6fe", "note": "Rubi 213fd60 core/textnorm.{c,h}, as textspot6"},
+  "models": {"dir": "$A/vvo-public/v030", "VOCR5_N_w8.vocr": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc", "VOCR5_L_w8.vocr": "50413b37dbd85b2acb0908967bdeaf7ca67803850e0627a7b7cc3d274edc0ba3", "VOCR5_S_w8.vocr": "f175bfcb8cec65d69e85dd5f2cf707c9a711ada7203c0d1099cd2d0142978b8d", "vocr_lm_o3_1000k.vlm": "993000611555171daf6361e29a503b0871a5f3dd240a19555d55f16aaa3ab3d9"},
+  "units": {"dev": {"path": "$A/vocr5-analysis/work/units.pkl", "sha256": "73384ae1020608ebbdf45440d8855f8dc793f5068ef05981b71aef75b031cc7b", "note": "#119's 1,161 whole-dialogue units, 93 VNs; the headline leaves v12188 (hooked title PCSG00576) out: 92 VNs, 1,143 units"}, "hval": {"path": "$A/vocr6-spotter/eval/units/hval_v1.jsonl", "sha256": "0d2a89459d57bb6f71e2b87ef6ac9a58892b48df54211825b2fcab1faa21310f", "note": "6,327 units of 46 train titles' hval pages (textspot6's)"}},
+  "meiki_detector": {"class": "teacher/engines.Meiki", "repo": "rtr46/meiki.text.detect.v0", "revision": "a9cffa4f60cbf72ddb87edf19c6f98a01cd042e6", "file": "meiki.text.detect.v0.1.960x544.onnx", "sha256": "40b6a016667745cae7d3055929ae3b8b1e7716aac795f5904cd3c2c7c3b8404b", "package": "meikiocr 0.3.5, onnxruntime 1.30.0 (teacher/requirements.lock)", "input": "BGR (cv2's order, as teacher/label.py and textspot6's cache feed it); MeikiOCR's preprocessing: fit to 960 x 544 INTER_LINEAR, /255, top-left padded"},
+  "baselines": "textspot6's stored page-path results ($A/vocr6-spotter/eval/: grad_refine = --finder rubi, grad_refine_fix1 = rubi,fix=1 (Rubi's finder since Rubi_for_vita#330), textspot6's runs and textspot3's pick), read with the same pins"
+ },
+ "step1_meiki_benchmark": {
+  "frames": "eval/textspot8.py meiki-spot: dev (#119's units' frames, console view: PSP at 2x bilinear on the colour), hval (the hval pages, views vita / psp2x / psp), tsdev (textspot's 188 development frames); every box with score > 0.2 kept",
+  "threshold": 0.5,
+  "decodes": {"raw": "Meiki's boxes", "pad": "grown by 4 px on every side (2 px on a native PSP view)", "ink": "refined to ink as textspot2 refines meiki boxes (refine_h / refine_t, P1) then grown by the same pad"},
+  "page_path": "each decode as det (the horizontal boxes whose centre lies in a unit's region, clipped: eval/textspot6.py pagepath-boxes --decode det) and det+refine (VOCR_REFINE_DEFAULT on the frame: --decode detref), on dev and hval through the pinned eval/pagepath.py",
+  "primary": "the reference row of record is the decode (of the six) with the lowest hval page-path dialogue CER; hval only, never dev; every decode is reported",
+  "metrics": "page-path dialogue CER (dev headline without v12188, Vita / PSP, hval), pagepath's line recall (whole lines / lines), box precision (non-junk boxes / boxes) and their F1 on dev and hval units, eval/textspot6.py hval-boxes (P / R / F1 against the verified lines per view) and tsdev (textspot's F1, all-text and dialogue CER), the per-VN errors against GRAD + refine, rubi,fix=1 and textspot6's representatives, the detector's file size and parameter count, host ms per frame at 1 and 5 threads",
+  "intervals": "eval/pagepath.py compare: paired, 10,000 cluster-bootstrap resamples, seed 0 (VNs on dev, titles on hval)",
+  "role": "a reference only (not a candidate: 14.5 MB of float32 ONNX cannot run on a Vita)"
+ },
+ "step2_geometry_diagnostic": {
+  "what": "how much the crop margin costs the recognizer, on hval only (train titles, the screening set)",
+  "arms": ["rubi,fix=1's boxes grown by 1 and 2 px vertically (shift-boxes --dy 1, 2) and by 4 px horizontally (--dx 4)", "textspot6 base_t64n8c16_seed1 det boxes shrunk by 1 and 2 px vertically", "textspot6 base_qS4_seed2 crop boxes shrunk by 1 and 2 px vertically"],
+  "role": "report only; it chooses the student's target geometry (amendment 1)"
+ },
+ "step3_student": "registered by amendment 1 before any training run: shapes, data (frames and their exclusions), targets, recipe, seeds 1-3",
+ "rule": {
+  "eligible": "VTSP bytes <= 512,000, est. ms @333 per 960 x 544 frame <= 300 (textspot6's A9 cycle model, eval/textspot6_a9.py, plus any decode step's cost), arena <= 262,144, C == twin on every development frame",
+  "representative": "each arm and decode: its median seed of 3 by unseen-dev page-path dialogue CER (never the best)",
+  "beats_grad_refine": "unseen dev (without v12188): page-path dialogue CER difference (candidate - GRAD + refine) with a VN-cluster 95% interval entirely below 0; hval: the difference not resolved above 0 (textspot6's rule, unchanged)",
+  "guard_confirmation": "not resolved worse (95% VN-cluster interval not entirely above 0) than rubi,fix=1 on vocr6-spotter3's fresh confirmation set (>= 40 VNs no spotter trained on), read once per candidate set at the end",
+  "cost_order": "VTSP bytes, est. ms @333, arena, decode (crop, crop+refine, det, det+refine, then any registered decode), then the name",
+  "pick": "the cheapest qualifier; a costlier qualifier replaces it when, against it, unseen-dev page-path CER is resolved below 0 and hval is not resolved above 0; repeated until none does",
+  "rubi_default": "the pick becomes Rubi's default line picker only if, against rubi,fix=1 on the same units, unseen dev is resolved below 0 and hval not resolved above 0 (and the confirmation guard holds); otherwise it ships behind a setting that is off by default. Only one spotter is Rubi's default: if vocr6-spotter3's pick also qualifies, the better of the two under this test, agreed with vocr6-spotter3 and vocr6-lead before any Rubi merge",
+  "no_qualifier": "negative verdict; the eligible representative with the lowest unseen-dev page-path CER is released as a research pre-release; no Rubi PR",
+  "with_pick": "retrain the pick on train + guard + hval (same recipe and seed) -> pre-release with SHA256SUMS, the test sets read once (report only), a normal Rubi_for_vita PR (memory ledger exact, both Vita builds, the fast gate, an off-switch defaulting to the measured best, GRAD as the fallback on low confidence) merged under Rubi's rules, then TEST_READY for rubi-test-consolidate's single test build"
+ },
+ "test": "after the selection commit only, once: the hooked test title (PCSG00807) through the page path, CLANNAD and vita-test + psp-test as whole frames, as eval/textspot6_test.py reads them; Meiki's benchmark never reads a protected set",
+ "estimates": "console times are textspot6's A9 cycle-model estimates at 333 and 444 MHz; nothing runs on a console",
+ "disclosures": [
+  "the student's design (target geometry, augmentation for side-by-side choices, translucent boxes and tight regions) is informed by textspot6's per-VN analysis of the same unseen-dev units; the confirmation set guards against the resulting optimism",
+  "the geometry diagnostic reads hval only"
+ ],
+ "amendments": []
+}

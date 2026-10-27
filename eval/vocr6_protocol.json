@@ -2165,7 +2165,8 @@
      "why": "Small (R3-S) was not adopted: hval page -0.134 [-0.198, -0.079] (every pair below 0) but dev +0.070 [+0.004, +0.138] (resolved worse; tv +0.081, dn +0.125, wd +0.037). Hypothesis: m1 halves VOCR5's real pools to make room for the hooked data, and Small, the smallest model, loses some of what they taught it (teacher_val and devnative are the same VNDB-screenshot domain); a smaller step size keeps it closer to VOCR5-S",
      "arms": "4d-r: F4Sdr_s{1,2,3} (run v6f4dr_S), mix r3all_v5r (VOCR5's real pools at full weight 0.5, synthetic 0.25, hooked 0.25); 4d-lr: F4Sdl_s{1,2,3} (run v6f4dl_S), mix r3all at lr 6e-4. Otherwise as F4S_s{seed} (15,000 steps, warmup 500, init v5f_S_seed1 / seed2 / seed2 with training seeds 1-3)",
      "decision": "each arm against the released VOCR5-S: decision.adopt with three seed pairs on stage 4's shipped path (hval plan v3 + screening LM, dev plan v2 + shipped 1 MB LM, alpha 600 / beta 2500 / BOS, Small cascading into the same seed's VOCR6-N: v6s2cil_N_seed1, v6f4_N_seed2, v6s2cil_N_seed3; X = VOCR5-S into VOCR5-N). If both arms are adopted, the one with the lower mean dev score. If one is adopted: its seed 1 is retrained with hval folded in (mix r3all_v5r_fold or r3all_fold at lr 6e-4; registered with the fill) and must not be resolved worse on dev than its 4a sibling; then #120's head-gate rule on the blob; then one final-test read of the new Small with its cascade into the shipped VOCR6-N (report only) and a follow-up release. If neither: Small stays VOCR5-S",
-     "notes": "the final test of the shipped set has been read once (11:05Z); no 4d choice may use it"
+     "notes": "the final test of the shipped set has been read once (11:05Z); no 4d choice may use it",
+     "fill": "2026-10-27T16:1xZ, after 4d's decisions and before this run: F4Sdr NOT adopted (dev +0.076 [+0.005, +0.149] resolved worse); F4Sdl ADOPTED (hval page -0.128 [-0.189, -0.074], all three pairs below 0, dev +0.064 [-0.009, +0.138] not resolved above 0). The fold-in arm is F4Sdlh_s1: mix r3all_fold (as F4Sh_s1), lr 6e-4, init v5f_S_seed1, seed 1, 15,000 steps; it ships iff its dev is not resolved worse than F4Sdl's seed 1 (one pair, shipped path, cascade into the shipped VOCR6-N 4b)"
     }
    ],
    "plans": {
@@ -2475,6 +2476,22 @@
      },
      "arch_extra": [],
      "what": "stage 4d arm lr: r3all at half the learning rate"
+    },
+    "F4Sdlh_s1": {
+     "run": "v6f4dlh_S",
+     "tier": "S",
+     "mix": "r3all_fold",
+     "steps": 15000,
+     "lr": 0.0006,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": [],
+     "what": "stage 4d: the adopted arm F4Sdl (r3all at lr 6e-4) with hval folded in (mix r3all_fold), seed 1"
     }
    },
    "defaults": {

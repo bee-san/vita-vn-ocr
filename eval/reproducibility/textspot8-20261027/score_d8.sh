@@ -31,7 +31,8 @@ pp() {
     --cache "$OUT/pp_cache/reads.sqlite" --work "$OUT/pp_work" --workers "$WORKERS" --rows "$base.rows.jsonl" \
     --out "$base.json"
 }
-# det+D: the candidate
+# det+D: the candidate (ONLY_F=1: the F / F+D part alone, over the stored det+D rows)
+if [ "${ONLY_F:-0}" != 1 ]; then
 for s in dev hval; do
   "$PY" "$T7/eval/textspot7.py" boxes-d --spot "$D/spot_$s.jsonl" --set $s --steps $STEPS --out "$D/boxes_${s}_det+D.jsonl" \
     --workers "$WORKERS"
@@ -47,10 +48,11 @@ mkdir -p "$D/a9"
 "$PY" "$T7/eval/textspot7.py" a9-batch --spot "$D/spot_dev.jsonl" --set dev --steps $STEPS --out "$D/a9/D.bin"
 (cd "$T7" && "$PY" eval/textspot7_a9.py t7 --out "$D/a9/out" --batch "$D/a9/D.bin" --name D --units 387 \
   --one "$D/a9/D.bin.one1.bin" "$D/a9/D.bin.one2.bin" "$D/a9/D.bin.one3.bin" "$D/a9/D.bin.one4.bin" "$D/a9/D.bin.one5.bin")
+fi
 # F and F+D: report only (textspot7's cost rule makes them ineligible for a T trunk)
 "$PY" "$T7/eval/textspot7.py" fit-f --spot "$D/spot_hval.jsonl" --s-rows "$D/hval_det.rows.jsonl" --g-rows "$G/hval.rows.jsonl" \
   --set hval --out "$D/fit_F.json"
-P=$("$PY" -c "import json;print(json.load(open('$D/fit_F.json'))['fit']['params'])")
+P=$("$PY" -c "import json;f=json.load(open('$D/fit_F.json'))['fit'];print(f\"{f['mode']},{f['tau']},{f['lam']},{f['kappa']}\")")
 "$PY" "$T7/eval/textspot7.py" boxes-f --spot "$D/spot_hval.jsonl" --s-rows "$D/hval_det.rows.jsonl" --g-rows "$G/hval.rows.jsonl" \
   --set hval --params "$P" --out "$D/boxes_hval_F.jsonl"
 "$PY" "$T7/eval/textspot7.py" boxes-f --spot "$D/spot_dev.jsonl" --s-rows "$D/dev_det.rows.jsonl" --g-rows "$G/dev.rows.jsonl" \
@@ -59,7 +61,7 @@ pp dev "$UNITS_DEV" "$D/dev_F" --boxes "$D/boxes_dev_F.jsonl"
 pp hval "$UNITS_HVAL" "$D/hval_F" --boxes "$D/boxes_hval_F.jsonl"
 "$PY" "$T7/eval/textspot7.py" fit-f --spot "$D/spot_hval.jsonl" --s-rows "$D/hval_det+D.rows.jsonl" \
   --g-rows "$G/hval.rows.jsonl" --s-boxes "$D/boxes_hval_det+D.jsonl" --set hval --out "$D/fit_FD.json"
-P=$("$PY" -c "import json;print(json.load(open('$D/fit_FD.json'))['fit']['params'])")
+P=$("$PY" -c "import json;f=json.load(open('$D/fit_FD.json'))['fit'];print(f\"{f['mode']},{f['tau']},{f['lam']},{f['kappa']}\")")
 "$PY" "$T7/eval/textspot7.py" boxes-f --spot "$D/spot_hval.jsonl" --s-rows "$D/hval_det+D.rows.jsonl" \
   --g-rows "$G/hval.rows.jsonl" --s-boxes "$D/boxes_hval_det+D.jsonl" --set hval --params "$P" --out "$D/boxes_hval_F+D.jsonl"
 "$PY" "$T7/eval/textspot7.py" boxes-f --spot "$D/spot_dev.jsonl" --s-rows "$D/dev_det+D.rows.jsonl" \

@@ -2009,6 +2009,14 @@
      "why": "stages 2 and 3 are decided (experiment log, vocr6-lead decision lines 2026-10-26T16:20Z to 2026-10-27T03:53Z)",
      "fill": "stage 2 adopted S2cil alone (S2x2, S2s6, S2t5, S2r70, S2r30 and S2fa2 not adopted); stage 3 adopted nothing (S3attn and S3rep not adopted, S3gtc not run, S3long decides stage 4c only). So R3 = R2 = A15 + S2cil and mixes.r3all (fill_stage4.py --adopted S2cil) is json-identical to mixes.m1_cil. With one adopted factor stages.3.decision.recipe needs no combined pair: stages.R3all is written for the record and NOT trained; its Normal pair is S2cil's own runs v6s2cil_N_seed1 and v6s2cil_N_seed3 (stage 2, tag vocr6-runner-1677de9, crops v1 4adb00c9), which are stage 4a's Normal seeds 1 and 3. Stage 4 runs: 4a F4S_s1, F4S_s2, F4S_s3, F4L_s1, F4L_s2, F4L_s3, F4N_s2 (mix r3all); 4b F4Sh_s1, F4Nh_s1, F4Lh_s1 (mix r3all_fold, crops v2). 15,000 steps, the A family's VOCR5 fine-tuned inits (stages.4.inits), no arch or train extras",
      "decision_unchanged": "4a's adoption per tier (three seed pairs against the released VOCR5 tier on the shipped path, stages.4.4a.adopt), 4b's check and 4c (stages.4.amendments[1]) stand as registered"
+    },
+    {
+     "n": 6,
+     "time": "2026-10-27T04:09:15Z in the experiment log (vocr6-lead preregistration-amendment line), committed here before any 4c run or score",
+     "why": "stages.4.amendments[1] decides 4c by decision.adopt with the 4b blob as X on the shipped path, but both blobs train on hval (folded in), so their hval page comparison is not held out and would reward memorising hval, which a longer schedule does more. The held-out evidence for the long schedule is stage 3's S3long pair (hval out, seeds 1 and 3)",
+     "rule": "4c's blob of tier T replaces 4b's iff (i) S3long is adopted over A15 under stage 3's rule (seeds 1 and 3, hval plan v2, decision.adopt) and (ii) the 4c blob is not resolved worse than the 4b blob on the dev score on the shipped path (VN bootstrap, one pair; the same check as 4b against its 4a sibling). The hval page of 4b and 4c is reported only, marked 'hval in training'. If (i) fails, 4c is not used, whatever its scores",
+     "arms": "F4Sc_s1, F4Nc_s1, F4Lc_s1: F4{T}h_s1 at 45,000 steps (run v6f4c_{T}_seed1; mix r3all_fold, lr 1.2e-3, warmup 500, init the tier's VOCR5 fine-tuned seed-1 checkpoint)",
+     "compute": "4c runs may start before S3long seed 3 is scored, in slots stage 4a/4b free; they are used only under the rule above"
     }
    ],
    "plans": {
@@ -2174,6 +2182,54 @@
       "1": "08b748cf45c2c07d2b127268eb0a3eb0c78e04ef993a7c4960fe84b09bb77066"
      },
      "arch_extra": []
+    },
+    "F4Sc_s1": {
+     "run": "v6f4c_S",
+     "tier": "S",
+     "mix": "r3all_fold",
+     "steps": 45000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_S_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "9bfad7d735ba8d0d828f6be758bc8f7f4219434f0e1706c5a11d945e02d9523b"
+     },
+     "arch_extra": [],
+     "what": "stage 4c: 4b at 45,000 steps (S3long's schedule); used only under amendment 6"
+    },
+    "F4Nc_s1": {
+     "run": "v6f4c_N",
+     "tier": "N",
+     "mix": "r3all_fold",
+     "steps": 45000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_N_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "541baef99c0962a007234bb0f3d870235aee242b6a7adb7db79ff8e24b035266"
+     },
+     "arch_extra": [],
+     "what": "stage 4c: 4b at 45,000 steps (S3long's schedule); used only under amendment 6"
+    },
+    "F4Lc_s1": {
+     "run": "v6f4c_L",
+     "tier": "L",
+     "mix": "r3all_fold",
+     "steps": 45000,
+     "lr": 0.0012,
+     "warmup": 500,
+     "eval_every": 5000,
+     "init": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr5-train/runs/v5f_L_seed1/ckpt_step15000.pt",
+     "seed_only": 1,
+     "init_sha256": {
+      "1": "08b748cf45c2c07d2b127268eb0a3eb0c78e04ef993a7c4960fe84b09bb77066"
+     },
+     "arch_extra": [],
+     "what": "stage 4c: 4b at 45,000 steps (S3long's schedule); used only under amendment 6"
     }
    },
    "defaults": {

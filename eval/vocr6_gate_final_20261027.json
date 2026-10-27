@@ -2,7 +2,81 @@
  "kind": "vocr6-gate-final",
  "issue": 125,
  "step": 5,
- "what": "eval/vocr6_gate.py on vocr6-lead's final blobs (stage 4b, seed 1), L then N then S, each cascade into the next tier's final blob; the protocol's rules (eval/vocr6_gate_protocol.json with amendments 1-2)",
+ "what": "eval/vocr6_gate.py on vocr6-lead's final blobs (Small kept as VOCR5-S; Normal and Large stage 4b, seed 1), prepared provisionally as they landed and confirmed by FINAL BLOBS, decided L then N, each cascade into the next tier's final blob; the protocol's rules (eval/vocr6_gate_protocol.json with amendments 1-4)",
+ "final_blobs_transcription": "final_blobs.json was written by hand from vocr6-lead's message (it does not match the parser's pattern: S named as 'VOCR5 (kept ...)', sha256 notes between the tokens); N and L carry the message's full paths, S the released gated asset it names, each checked by sha256; the message is kept verbatim in final_blobs.json",
+ "provisional_note": "amendment 3 (06:16:29Z) says no provisional input existed at it; Small's v6f4h_S_seed1_w8 had landed at 06:14:49Z. Nothing of it was prepared, fit or scored (amendment 4 dropped it)",
+ "s_shipped_cascade": {
+  "kind": "vocr6-gate-S-shipped-cascade",
+  "report_only": true,
+  "what": "S: VOCR5-S's gate (VOCR5_S_w8g) cascading under 700 into VOCR6-N's 2L (VOCR6_N_w8_2l), against VOCR5-S ungated into VOCR6-N ungated; rubi decode (VOCR5's 1 MB LM at Rubi's settings, counter re-decode, counter rule); VOCR5's development cohorts without v12188 / v18432",
+  "sources": {
+   "S": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-final-gate/repro_vocr5_r2/S",
+   "N": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr6-final-gate/final/N"
+  },
+  "scores": {
+   "ungated": 3.13535,
+   "shipped": 3.14849
+  },
+  "cascaded_lines": {
+   "ungated": 1788,
+   "shipped": 1746
+  },
+  "shipped_vs_ungated": {
+   "tv": {
+    "delta_points": 0.019,
+    "ci95": [
+     0.0,
+     0.051
+    ],
+    "vns": 92,
+    "cer_x": 0.006879,
+    "cer_y": 0.00707
+   },
+   "dn": {
+    "delta_points": 0.037,
+    "ci95": [
+     0.0,
+     0.084
+    ],
+    "vns": 33,
+    "cer_x": 0.009103,
+    "cer_y": 0.009477
+   },
+   "wd": {
+    "delta_points": -0.002,
+    "ci95": [
+     -0.034,
+     0.029
+    ],
+    "vns": 91,
+    "cer_x": 0.054716,
+    "cer_y": 0.054696
+   },
+   "score": {
+    "delta_points": 0.013,
+    "ci95": [
+     -0.008,
+     0.033
+    ]
+   }
+  }
+ },
+ "slots_held": {
+  "job_A": {
+   "slot": "slot7",
+   "from": "2026-10-27T07:32:42Z",
+   "to": "2026-10-27T09:45:43Z",
+   "seconds": 7981
+  },
+  "job_B": {
+   "slot": "slot2",
+   "from": "2026-10-27T08:50:27Z",
+   "to": "2026-10-27T09:39:22Z",
+   "seconds": 2935
+  },
+  "slot_hours": 3.03,
+  "note": "heavy.log; includes job A's wait for L's blob (08:14:58-08:29:59Z); the result's steps.slot_hours count the steps' compute"
+ },
  "final_blobs": {
   "S": {
    "name": "VOCR5_S_w8g.vocr",
@@ -62,8 +136,8 @@
    "repo_head": "b5ed4fa77ace78a5e123fc68d22c8f5251e3e2ed",
    "protocol_sha256": "9537eabe3b266df34dbb29cc0202201f91a20d88d60566770b6feea3a7aa610c"
   },
-  "created": "2026-10-27T09:45:42Z",
-  "repo_head": "4acd044c671cc9ab108b1f405da2aa75d68118fe",
+  "created": "2026-10-27T12:44:45Z",
+  "repo_head": "dcf9e06413d8609eee7cd6c4c2ebbc7fa41a40d3",
   "estimates_note": "every millisecond is an estimate (vita/a9_layers.py under qemu x 1.000676, VOCR3-H15's measured console rate, 333 MHz; nothing ran on a console)",
   "tiers": {
    "L": {
@@ -5668,8 +5742,8 @@
     {
      "tier": "S",
      "step": "decide",
-     "start": "2026-10-27T07:35:44Z",
-     "end": "2026-10-27T07:35:44Z",
+     "start": "2026-10-27T12:44:44Z",
+     "end": "2026-10-27T12:44:44Z",
      "wall_s": 0.0,
      "slot_hours": 0.0
     },
@@ -6192,7 +6266,20 @@
     "N": 0.776,
     "L": 1.567
    },
-   "slot_hours_total": 2.345
+   "slot_hours_total": 2.345,
+   "note": "slot_hours: each step's compute in its job's slot; a tier's decide row is the decision's wall clock less the steps that ran inside it (in either job), so it can read 0 when two jobs overlap; the slots held are heavy.log's"
+  },
+  "vocr6_path_runtime": {
+   "N": {
+    "vocr_c_sha256": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+    "libvocr_sha256": "7ec1c8810e4e8ecde9b3b7315381cfc7a93bcb28c8b7b124a4b4ca0c1b0bda55",
+    "note": "the VOCR6 path's reads load the kit's own build; W8I reads are bit for bit the same on vocr.c e2d43c50 and 8ff76d83 (step 2's runtime recheck)"
+   },
+   "L": {
+    "vocr_c_sha256": "e2d43c501e8cec076fd21539feb03b1178bb920cc85782cba0e6422c66d9cd60",
+    "libvocr_sha256": "7ec1c8810e4e8ecde9b3b7315381cfc7a93bcb28c8b7b124a4b4ca0c1b0bda55",
+    "note": "the VOCR6 path's reads load the kit's own build; W8I reads are bit for bit the same on vocr.c e2d43c50 and 8ff76d83 (step 2's runtime recheck)"
+   }
   }
  }
 }

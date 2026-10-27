@@ -1957,7 +1957,9 @@ def cmd_keep_vocr5(a):
     fin = ctx.tdir("final")
     (fin / asset).write_bytes(data)
     dec = {"kind": "vocr6-gate-decision", "tier": a.tier, "at": now(), "frozen_only": ctx.frozen_only,
-           "exclude_vns": sorted(ctx.exclude), "gate": {}, "two_level": {},
+           # the numbers are the reproduction's, made on every VN (#120 / #122's setting), not this run's exclusion
+           "exclude_vns": r.get("exclude_vns", []), "run_exclude_vns": sorted(ctx.exclude), "gate": {},
+           "two_level": {},
            "kept_vocr5_verdict": {
                "kept": {"gate": rel[1], "two_level": rel[2]}, "by_the_rules": None, "kept_arms_report": {},
                "released_asset": {"path": str(asset_dir / asset), "sha256": hashlib.sha256(data).hexdigest(),
@@ -2078,6 +2080,16 @@ def cmd_result(a):
         if (ctx.out / t / "decision.json").exists():
             res["tiers"][t] = summarise_tier(ctx, t)
     res["steps"] = timing(ctx)
+    res["steps"]["note"] = ("slot_hours: each step's compute in its job's slot; a tier's decide row is the decision's "
+                            "wall clock less the steps that ran inside it (in either job), so it can read 0 when "
+                            "two jobs overlap; the slots held are heavy.log's")
+    kits = {}
+    for t in TIERS:                 # the VOCR6 path's reads load the kit's own build (audit -b G5, -c H9)
+        hp = ctx.out / t / "steps" / "path_hygiene.json"
+        if hp.exists() and "kit_runtime" in json.loads(hp.read_text()):
+            kits[t] = json.loads(hp.read_text())["kit_runtime"]
+    if kits:
+        res["vocr6_path_runtime"] = kits
     txt = json.dumps(res, indent=1, ensure_ascii=False) + "\n"
     if re.search(r"[A-Z0-9_]+_(DONE|BLOCKED)\b", txt):
         raise SystemExit("the result holds a completion-style token")

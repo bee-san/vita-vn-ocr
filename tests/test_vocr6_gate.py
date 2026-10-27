@@ -722,3 +722,34 @@ def test_confirm_compares_the_version1_part(monkeypatch, tmp_path):
     G.cmd_confirm(argparse.Namespace(out=str(ctx.out), final_blobs=str(tmp_path / "fb.json")))
     doc = json.loads((ctx.out / "confirm.json").read_text())
     assert doc["confirmed"] == ["S", "L"] and doc["redo"] == ["N"] and doc["decide_again"] == ["N", "S"]
+
+
+def test_base_sha256_of_a_gated_blob(tmp_path):
+    import hashlib
+    import struct
+    base = bytearray(64)
+    base[:4] = b"VOCR"
+    struct.pack_into("<I", base, 8, 64)                     # the version-1 blob's byte count (header field 8)
+    gated = bytes(base) + b"VOCG" + bytes(60)               # a section after it
+    (tmp_path / "b.vocr").write_bytes(bytes(base))
+    (tmp_path / "g.vocr").write_bytes(gated)
+    want = hashlib.sha256(bytes(base)).hexdigest()
+    assert G.base_sha256(tmp_path / "b.vocr") == G.base_sha256(tmp_path / "g.vocr") == want
+    assert hashlib.sha256(gated).hexdigest() != want
+
+
+def test_keep_vocr5_refuses_a_reproduction_of_another_verdict(monkeypatch, tmp_path):
+    import argparse
+    import hashlib
+    ctx = G.Ctx(tmp_path / "out", _Live(tmp_path / "priv"))
+    base = tmp_path / "VOCR5_N_w8.vocr"
+    base.write_bytes(b"n-int8")
+    monkeypatch.setattr(G, "VOCR5_RELEASED", {hashlib.sha256(b"n-int8").hexdigest(): ("N", "gate", "2Lg")})
+    monkeypatch.setattr(G, "blob_info", lambda p: {"n_classes": 5631, "has_gate": False, "attention": None})
+    repro = tmp_path / "repro" / "N"
+    repro.mkdir(parents=True)
+    (repro / "decision.json").write_text(json.dumps({"final_arm": "gate", "estimate": {},
+                                                     "final_blob": {"sha256": "-"}}))
+    with pytest.raises(SystemExit):
+        G.cmd_keep_vocr5(argparse.Namespace(out=str(ctx.out), tier="N", blob=str(base), repro=str(tmp_path / "repro"),
+                                            reason="-"))

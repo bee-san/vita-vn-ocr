@@ -325,9 +325,20 @@ psp-test).
   all-text CER is resolved worse than det's (+7.71 [+5.77, +9.94]) and than textspot3's (+9.66 [+6.97, +12.79]), box F1
   drops (−0.08 [−0.12, −0.05] against det), name recall roughly halves (Vita 0.912 → 0.509, PSP 0.908 → 0.477), and
   the tagged dialogue CER rises from 11.88% to 13.36%.
-  - The cause, measured on the stored per-frame boxes (counts only): of the 187 speaker-name references, det gives
-    173 a box of their own; after D only 102 keep one, 83 lie inside a box more than twice their width (D's join has
-    merged them with a neighbour on the same row), and 2 lose their box.
+  - **The cause is D's edge extension (EXTEND), not its join.** On a whole frame, EXTEND grows short boxes such as
+    speaker names and UI labels over the ink beside them, past the box metric's overlap threshold. No name loses its
+    box to D: on a whole frame every det box lies inside a D box.
+    - The re-audit (audit-vocr6-spotter3-b) measured this on the one read's stored spotter boxes alone, counts only.
+      Its rule: a box covers a name when it holds half the name's reference box, and is the name's own when it is at
+      most twice the name's width.
+    - Of the 187 speaker-name references (the 122 scored ones and 65 in the report-only Adrenaline copies), det gives
+      173 a box of their own and the join alone 175. The join alone has the same 705 boxes as D, and by the box
+      metric scores better than det on whole frames (F1 0.771 against 0.748, no interval). EXTEND then loses 52
+      names and 13 UI labels between the join alone and D.
+    - That is not measured through OCR, so the advice below stands.
+  - **Disclosed:** a first count of D's name boxes in this round re-ran D on the test frames' pixels after the one read
+    (no OCR; no decision depends on it). That went beyond the one test read, so its numbers are withdrawn; the counts
+    above need only the stored boxes.
   - **D is a decode for the player's region**, which is how Rubi reads (and where it was fit and decided). It is not
     for a whole frame: a scan-screen mode should read the det decode. The whole-frame rows apply D to the frame only
     to keep textspot6's harness.

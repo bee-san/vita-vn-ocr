@@ -2018,7 +2018,7 @@ def cmd_selftest(a):
 
 # ----------------------------------------------------------------------------- dryrun (development data only)
 
-DRY_TESTS = {"vita-test": ("PCSG00576", "PCSG00146"), "psp-test": ("NPJH50001", "ULJM05674")}
+DRY_TESTS = {"vita-test": ("PCSG00576", "PCSG00146", "PCSG00653"), "psp-test": ("NPJH50001", "ULJM05674")}
 DRY_CLANNAD, DRY_PCSG = "PCSG00620", "PCSG00576"
 
 
@@ -2043,6 +2043,20 @@ def dry_tests_rows(pagepool, titles, n):
                     out.append({"id": lid, "vn": t, "title": t, "session": r["page"], "url": "", "page": r["page"],
                                 "sha256": r["image_sha256"], "dims": r["dims"], "region": [x0, y0, x1 - x0, y1 - y0],
                                 "box": ln.get("box_main") or ln["box"], "text": ln["text"], "styles": []})
+        # a vertical title's pages (no horizontal region): a region drawn around its columns, so that the stand-in
+        # exercises API 47's auto switch (the column read by the vertical model) end to end
+        rows = [r for r in read_jsonl(Path(pagepool) / f"{t}.jsonl") if r["split"] == "hval" and
+                sum(1 for ln in r["lines"] if ln.get("vertical")) >= 2][:n]
+        for r in rows:
+            v = [ln for ln in r["lines"] if ln.get("vertical")]
+            W, H = r["dims"]
+            x0, y0 = max(0, min(ln["box"][0] for ln in v) - 12), max(0, min(ln["box"][1] for ln in v) - 12)
+            x1 = min(W, max(ln["box"][0] + ln["box"][2] for ln in v) + 12)
+            y1 = min(H, max(ln["box"][1] + ln["box"][3] for ln in v) + 12)
+            for ln in sorted(v, key=lambda q: -q["box"][0]):
+                out.append({"id": ln["id"], "vn": t, "title": t, "session": r["page"], "url": "", "page": r["page"],
+                            "sha256": r["image_sha256"], "dims": r["dims"], "region": [x0, y0, x1 - x0, y1 - y0],
+                            "box": ln["box"], "text": ln["text"], "styles": []})
     return out
 
 

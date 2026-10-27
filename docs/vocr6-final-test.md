@@ -181,7 +181,9 @@ Records:
 
 - `eval/vocr6_final_test_20261027.json`: every measure, with counts, rates and intervals.
 - `docs/vocr6-final-test-report-20261027.md`: the full tables (per title, Vita and PSP apart, names, path (b)'s
-  stages).
+  stages). Its blob table's "W8I arena" column is the arena with the heads off, as path (a) reads the blobs: 124,832 /
+  182,944 / 261,024 B for S / N / L. As Rubi runs the shipped blobs, with their heads on, they need 124,880 / 184,400 /
+  262,480 B (`eval/vocr6_gate_final_20261027.json`, `estimate.final.arena_w8i_1024`; audit N18).
 
 Dialogue CER, VOCR5 → VOCR6, and VOCR6 − VOCR5 in points [paired 95% interval]:
 
@@ -216,11 +218,15 @@ What the read shows:
   - psp-test: N +0.22 [+0.00, +0.41], L +0.09 [−0.12, +0.30].
 
   On path (a) with the LM, psp-test's Normal is resolved worse (+0.30 [+0.12, +0.53]).
-- **PCSG00807.** Every tier is within 0.05 points of VOCR5. On path (b), Normal's clean lines are resolved better.
+- **PCSG00807.** Every tier is within about 0.05 points of VOCR5 (at most 0.05 at two decimals). On path (b), Normal's
+  clean lines are resolved better (−0.05 [−0.10, −0.01]).
 - **Small.** The shipped Small is VOCR5-S, so path (a) reads the same weights in both columns, apart from PCSG00807's
   Rubi-cascade decode. On path (b) its column differs only through the cascade, which now goes to VOCR6 Normal. That
   makes CLANNAD's pages worse (+0.32 [+0.14, +0.50]); most of the difference arises after the cascade, in textnorm and
-  the line filter (the report's stage table). Elsewhere, Small is within the noise.
+  the line filter (the report's stage table). Elsewhere, Small's dialogue is within the noise. Its speaker names, a
+  secondary column, are another matter (the report's Names table). On path (b), CLANNAD's names are resolved worse:
+  6.02 → 9.78%, +3.76 [+2.54, +5.07]. vita-test + psp-test's fixed name lines are +1.05 [+0.00, +2.38], an interval
+  whose lower bound is 0.
 
 ## Seen flags (every table carries them)
 
@@ -233,7 +239,8 @@ What the read shows:
   dialogue in a font whose 32 px glyphs are CLANNAD's own raster re-quantised (39,447 glyphs of 1,201 characters), and
   synth6 v3 draws it too. So every VOCR6 model has seen CLANNAD's glyph raster (vocr6-lead's stage-4 seen flag,
   vocr6-synth6's finding).
-- ctclm.2's Jiten word list includes CLANNAD's script and those of 7 vita-test and 1 psp-test games.
+- ctclm.2's Jiten word list includes CLANNAD's script and those of 7 vita-test and 1 psp-test games. lm6, which path
+  (b) uses for both families, keeps the same Jiten word lists, so the caveat holds for path (b) too.
 - PCSG00807 (v18432) is a VOCR5 development-sample VN. No VOCR6 run trained on it, and no LM holds its text.
 
 ## Reproduce

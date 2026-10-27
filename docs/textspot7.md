@@ -120,3 +120,106 @@ re-decode, beam 8 + the 1 MB LM, the cascade to VOCR5-L, Rubi's text rules), so 
   read.
 - **Read:** the console view (PSP upscaled 2x), the spotter on the whole frame, every finder on the unit's region, the
   same page path, once.
+
+## Results
+
+Every number is measured on the host unless it is labelled an estimate. Page-path CER is dialogue CER through
+textspot6's pinned page path. Intervals are 95% paired cluster bootstraps: VNs on dev and on the confirmation set,
+titles on hval. Dev is the unseen dev set without v12188 (92 VNs, 1,143 units); hval is 6,327 units of 46 titles. The
+records are:
+- `eval/textspot7_fit_20261027.json`: the fits of F and D, both on hval only;
+- `eval/textspot7_a9_20261027.json`: the A9 rows;
+- `eval/textspot7_dev_20261027.json`: the selection's dev phase, committed before the confirmation set was read.
+
+### The fits (hval only)
+
+- **F barely fires on hval.** Its fitted parameters fall back on 0-4 of 6,327 units and change the four arms' hval
+  errors from 2,116 / 2,164 / 2,552 / 2,121 to 2,106 / 2,164 / 2,552 / 2,121. On their own training titles the
+  spotters rarely fail in the ways F detects; F's structure tests (λ, κ) cost errors there wherever GRAD has extra
+  rows. The fit keeps the always-on rule "the spotter found nothing and GRAD found a line → GRAD", τ 8 for
+  `base_t64n8c16` and `base_qL5`, and λ 0.9 for `kd_t64n8c16`, `base_qS4` and `base_qL5`.
+- **D = join10, then extend.** Pooled hval errors of the four arms, each step alone:
+
+  | plain | assign | join5 | join10 | extend | tighten |
+  |---:|---:|---:|---:|---:|---:|
+  | 8,953 | 8,953 | 8,713 | 8,641 | 8,361 | 9,513 |
+
+  The plain decode through `--boxes` reproduces textspot6's stored det rows unit for unit. Combined, D reads hval at
+  1.000 / 1.165 / 1.506 / 1.097% (t64 / kd / qS4 / qL5). F+D's fit on D's hval rows is D itself (it falls back on no
+  hval unit beyond the empty-spotter rule).
+
+### Cost (estimates)
+
+A9 cycle model, high bound × 1.0007 at 333 MHz (textspot6's calibration):
+
+| part | est. ms @333 |
+|---|---:|
+| `rubi,fix=1` (GRAD + refine with COLGAP, the probe) on the largest development region (834×220, PSP view) | 122.4 |
+| ... on the mean / median development region | 17.2 / 14.7 |
+| ... on a full 960×544 region (Vita / PSP title) | 230.3 / 248.5 |
+| D's post-pass (join10 + extend) on the largest development regions (max of the five largest) | 31.5-33.5 |
+| ... on the mean development region | 4.3 |
+| F's choice | < 0.02 |
+
+- **So F and F+D are over the 300 ms budget for every shape:** 199-264 ms of spotter + 122 ms of GRAD.
+- **D fits:** t64 264.2 + 32.0 = 296.3 ms; qS4 231.3; qL5 270.4; kd 296.8.
+- **Disclosed:** the post-pass's first C code computed each pixel's 3×3 contrast with 9 reads (est. 95-99 ms on the
+  largest regions). After the first A9 row (and after the dev reads), its threshold histogram was rewritten
+  row-separable. The output is the same: C == twin was re-checked on every dev and hval unit. The rule reads the
+  final code's rows; the first rows are in the A9 record.
+
+### Unseen dev and hval (the dev phase of the rule)
+
+GRAD + refine reads dev at 3.08% and hval at 3.88%; `rubi,fix=1` at 2.38% and 3.29%. Rows are page-path CER in %.
+
+| candidate | est. ms @333 | dev | dev − GRAD+refine | hval | hval − GRAD+refine | dev − `rubi,fix=1` | qualifies |
+|---|---:|---:|---|---:|---|---|---|
+| `base_t64n8c16` det (textspot6) | 264.2 | 1.41 | −1.68 [−4.31, +0.12] | 1.30 | −2.57 [−6.23, −0.54] | −0.97 [−3.59, +0.71] | no |
+| **`base_t64n8c16` D** | 296.3 | **1.18** | **−1.91 [−4.55, −0.12]** | **1.00** | −2.88 [−6.59, −0.81] | −1.20 [−3.83, +0.47] | **yes** |
+| `base_t64n8c16` F | 386.7 | 1.10 | −1.98 [−4.59, −0.26] | 1.30 | −2.58 [−6.24, −0.54] | −1.28 [−3.87, +0.32] | no (time) |
+| `base_t64n8c16` F+D | 418.7 | 1.01 | −2.07 [−4.70, −0.31] | 1.00 | −2.88 [−6.59, −0.81] | −1.36 [−3.99, +0.27] | no (time) |
+| `kd_t64n8c16` D | 296.8 | 1.40 | −1.69 [−4.25, +0.14] | 1.17 | −2.71 [−6.29, −0.77] | −0.98 [−3.55, +0.75] | no |
+| `kd_t64n8c16` F+D | 419.2 | 1.03 | −2.06 [−4.58, −0.38] | 1.17 | −2.71 [−6.29, −0.77] | −1.35 [−3.87, +0.20] | no (time) |
+| **`base_qS4` D** | 231.3 | **1.14** | **−1.94 [−4.52, −0.17]** | 1.51 | −2.37 [−5.71, −0.63] | −1.23 [−3.78, +0.42] | **yes** |
+| `base_qS4` F+D | 353.7 | 0.88 | −2.21 [−4.75, −0.56] | 1.51 | −2.37 [−5.71, −0.63] | −1.50 [−4.02, +0.02] | no (time) |
+| **`base_qL5` D** | 270.4 | **1.16** | **−1.93 [−4.57, −0.13]** | 1.10 | −2.78 [−6.35, −0.80] | −1.22 [−3.86, +0.46] | **yes** |
+| `base_qL5` F+D | 392.9 | 0.83 | −2.26 [−4.89, −0.54] | 1.10 | −2.78 [−6.35, −0.80] | −1.55 [−4.14, +0.04] | no (time) |
+
+- **Three qualifiers:** `base_t64n8c16` D, `base_qS4` D and `base_qL5` D. Every F row is shown in
+  `eval/textspot7_dev_20261027.json`.
+- **None is resolved against `rubi,fix=1`** on dev. So, by the rule, even a pick does not become Rubi's default
+  finder.
+
+### The diagnosed VNs under each arm (dev errors per VN, all three variants)
+
+| VN | GRAD + refine | `rubi,fix=1` | t64 det | t64 D | t64 F | t64 F+D | qS4 D | qL5 D |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| v27449 | 311 | 311 | 24 | 22 | 24 | 22 | 30 | 21 |
+| v1971 | 28 | 28 | 56 | 57 | 56 | 57 | 57 | 56 |
+| v20524 | 0 | 0 | 36 | 21 | 0 | 21 | 24 | 21 |
+| v8410 | 1 | 1 | 24 | 24 | 0 | 0 | 24 | 24 |
+| v3496 | 0 | 0 | 21 | 21 | 21 | 21 | 21 | 21 |
+| v20170 | 3 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
+| v454 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+
+- **D** removes most cut lines. Over dev (without v12188), the cut lines go 30 → 6 (t64), 21 → 6 (qS4) and 42 → 6
+  (qL5), and the errors 358 → 300, 375 → 291 and 383 → 295 (v20524 36 → 21). It cannot reach the GRAD-shaped losses
+  (missed and merged lines stay at 6-9 and 3).
+- **F** reaches v8410 (no spotter box → GRAD) and, at λ 0.9 (qS4, qL5), v3496. But F is over the time budget.
+- **v1971** is the reference-order artifact: every spotter reads both choices whole and correct.
+- **Without v27449** (report only), t64 D is −0.80 [−1.79, +0.12] against GRAD + refine.
+
+### Regions drawn tight to the text (report only)
+
+vocr6-finder's tight units: dev_tight has 1 px around the ink (381 units without v12188); hval_tight (0 px) and
+hval_tight2 (2 px) have 2,109 units each. Values are page-path CER in %, and D − `rubi,fix=1` with its 95% interval.
+
+| set | GRAD + refine | `rubi,fix=1` | t64 det → D | qS4 det → D | qL5 det → D | t64 D − `rubi,fix=1` |
+|---|---:|---:|---|---|---|---|
+| dev_tight | 3.16 | 2.16 | 1.69 → 1.39 | 1.78 → 1.50 | 1.86 → 1.52 | −0.77 [−3.36, +0.84] |
+| hval_tight | 2.57 | 1.93 | 1.65 → 1.58 | 1.92 → 1.74 | 1.67 → 1.46 | −0.35 [−0.65, −0.14] |
+| hval_tight2 | 2.24 | 1.62 | 1.30 → 0.99 | 1.56 → 1.35 | 1.30 → 1.04 | −0.63 [−1.39, −0.21] |
+
+- The det decode reads the whole frame, so D does not depend on how the player draws the region.
+- On both hval tight sets, all three qualifiers are resolved better than `rubi,fix=1` (qS4: −0.20 [−0.34, −0.07]
+  and −0.27 [−0.42, −0.14]; qL5: −0.47 [−1.14, −0.08] and −0.58 [−1.28, −0.19]).

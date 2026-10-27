@@ -53,6 +53,9 @@ PAGES = ART / "vocr6-ingest" / "pages"
 PRIV = HERD / "shared" / "private" / "vocr6-spotter3" / "confirm"
 CONFIRM_UNITS = Path(os.environ.get("T7_CONFIRM_UNITS", str(PRIV / "units_v1.pkl")))
 CONFIRM_SHOTS = PRIV / "shots"
+TIGHT = ART / "vocr6-finder" / "units_v1"
+UNIT_FILES = {"hval": HVAL_UNITS, "hval_tight": TIGHT / "hval_tight.jsonl", "hval_tight2": TIGHT / "hval_tight2.jsonl",
+              "dev": DEV_UNITS, "dev_tight": TIGHT / "dev_tight.pkl"}
 TAUS = (0, 8, 16, 24, 32, 48, 64, 80, 96)
 LAMS = (600, 750, 900, 0)
 KAPPAS = (500, 1000, 0)
@@ -97,13 +100,24 @@ def dev_frame_key(u):
 
 
 def units_of(set_name):
-    """[{uid, cluster, platform, region (frame px, console view), frame key, s}] in the units file's order."""
+    """[{uid, cluster, platform, region (frame px, console view), frame key, s}] in the units file's order. The
+    tight sets (vocr6-finder's units_v1, report only): hval_tight / hval_tight2 as hval; dev_tight's units are cut
+    from inside their original region, located by eval/textspot6.true_region."""
     out = []
-    if set_name == "dev":
-        for i, u in enumerate(pickle.load(open(DEV_UNITS, "rb"))["units"]):
+    if set_name in ("dev", "dev_tight"):
+        units = pickle.load(open(UNIT_FILES[set_name], "rb"))["units"]
+        originals = None
+        if set_name == "dev_tight":
+            import textspot6 as S6E
+            originals = {}
+            for ou in pickle.load(open(DEV_UNITS, "rb"))["units"]:
+                originals.setdefault(ou["unit"], []).append(ou)
+        for i, u in enumerate(units):
             s = 2 if u["kind"] == "psp" else 1
+            reg = S6E.true_region(u, originals) if originals is not None else u["region"]
             out.append({"uid": f"dev:{i}:{u['unit']}:{u['variant']}", "cluster": u["vn"], "platform": u["kind"],
-                        "region": [v * s for v in u["region"]], "key": dev_frame_key(u), "s": s, "i": i})
+                        "region": [v * s for v in reg], "key": dev_frame_key(u), "s": s, "i": i,
+                        "units_file": str(UNIT_FILES[set_name])})
         return out
     if set_name == "confirm":
         for i, u in enumerate(pickle.load(open(CONFIRM_UNITS, "rb"))["units"]):
@@ -111,9 +125,9 @@ def units_of(set_name):
             out.append({"uid": f"dev:{i}:{u['unit']}:{u['variant']}", "cluster": u["vn"], "platform": u["kind"],
                         "region": [v * s for v in u["region"]], "key": u["shot"], "s": s, "i": i, "confirm": True})
         return out
-    if set_name != "hval":
+    if set_name not in ("hval", "hval_tight", "hval_tight2"):
         raise SystemExit(f"unknown set {set_name}")
-    for r in read_jsonl(HVAL_UNITS)[1:]:
+    for r in read_jsonl(UNIT_FILES[set_name])[1:]:
         s = 2 if r["platform"] == "psp" else 1
         view = "psp2x" if s == 2 else "vita"
         out.append({"uid": r["uid"], "cluster": r["cluster"], "platform": r["platform"],
@@ -125,7 +139,7 @@ def units_of(set_name):
 def spot_rows(path, set_name):
     rows = read_jsonl(path)
     meta, rows = rows[0]["meta"], rows[1:]
-    if set_name in ("dev", "confirm"):
+    if set_name in ("dev", "dev_tight", "confirm"):
         return meta, {r["frame"]: r for r in rows}
     return meta, {(r["title"], r["page"], r["view"]): r for r in rows}
 
@@ -236,7 +250,8 @@ def region_images(units):
 
     from common import to_gray
     if units and units[0]["uid"].startswith("dev:"):
-        pk = pickle.load(open(CONFIRM_UNITS if units[0].get("confirm") else DEV_UNITS, "rb"))["units"]
+        src = CONFIRM_UNITS if units[0].get("confirm") else Path(units[0].get("units_file") or DEV_UNITS)
+        pk = pickle.load(open(src, "rb"))["units"]
         for u in units:
             img = pk[u["i"]]["image"]
             if u["s"] == 2:

@@ -16,7 +16,8 @@ Every number is a host measurement. Nothing ran on a console.
   - 7462538: Rubi #335's vertical text (API 47, `ocr_vertical = auto` by default), modelled and checked
     against Rubi's own code, and the audit's optional nits;
   - 5c9c23c: Rubi #330 (API 50), which ships #129's COLGAP fix by default: re-pinned and re-checked; Rubi's
-    pinned runtime files must equal this checkout's. The hashes are those of the original commits (tag
+    pinned runtime files must equal this checkout's;
+  - 05a23e1: the audit's optional nits N11-N16. The hashes are those of the original commits (tag
   `vocr6-final-test-history-20261026a`); the branch was rebased onto main after them.
 - **Driver:** `eval/reproducibility/vocr6-final/report.sh MODELS_DIR OUT`: the S/N/L blobs in, every table out.
   `MODELS_DIR` is written by `eval/vocr6_final_test.py stage` from vocr6-lead's `FINAL READ` message.
@@ -133,13 +134,18 @@ Rubi main moved twice during the wait:
 
 Rubi's host tool `vjo-page-ocr` runs the game worker's job on the defaults of `config.ini`, with `--vertical auto`
 and `--line-fix on`, through textnorm and the line filter. Built from `0994afc`, it read development regions of the
-train titles: horizontal ones, counter ones, and regions drawn around the columns of the vertical title PCSG00653.
-Path (b)'s model was compared with it at every tier on four things: the switch to columns, the boxes, the line texts,
-and the text shown.
+train titles: horizontal ones, counter ones, regions drawn around the columns of the vertical title PCSG00653, and
+those regions widened toward square, which Rubi checks on the frozen finder's rows. Path (b)'s model was compared with
+it at every tier on four things: the switch to columns, the boxes, the line texts, and the text shown.
 
-All 299 regions are equal at S, N and L: 184 horizontal, 55 with a counter, and 60 vertical, which both switched to
-columns. That is 537 lines per tier. The same regions were equal against `b6c715c` at fix 0 too. Every runtime file
-Rubi pins (18) equals this checkout's, so path (b) reads with Rubi's runtime code.
+All 379 regions are equal at S, N and L, 943 lines per tier:
+
+- 184 horizontal and 55 with a counter, read as rows;
+- 60 vertical, read as columns by both;
+- 80 widened tall ones, 54 of them read as columns by both.
+
+The first 299 regions were equal against `b6c715c` at fix 0 too. Every runtime file Rubi pins (18) equals this
+checkout's, so path (b) reads with Rubi's runtime code.
 
 `vocr6_final_test.py dryrun` then runs the final read's whole path (b) and its report on stand-ins of the four sets,
 built from the same development data.

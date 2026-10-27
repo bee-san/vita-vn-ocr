@@ -6,6 +6,7 @@
  "kinds": {
   "counter": 55,
   "horizontal": 184,
+  "tall": 80,
   "vertical": 60
  },
  "lm": "vocr_lm6_o3_1000k.vlm",
@@ -18,37 +19,39 @@
   "gate": 8000,
   "topk": 8
  },
- "note": "development data only (hooked train titles' train and hval regions; no protected set): vocr6_final_test.py pagecheck at 5c9c23c's code, path (b)'s model (finder fix 1 = COLGAP, as Rubi main 0994afc ships it; API 47's auto check with the frozen-finder check of tall regions, and the column read by VOCR5-V) against Rubi main 0994afc's own vjo-page-ocr --vertical auto --line-fix on (the game worker's job on config.ini's defaults: tier, LM tier 2 = lm6, cascade, head gate, counters, probe, refinement on PSP, textnorm, line filter), with the models and LM that checkout pins; per tier: the switch to columns, boxes, dark flags, each line's text, the text shown. It replaces the record of b6c715c at fix 0 (same regions: 299/299 equal there too)",
- "regions": 299,
+ "note": "development data only (hooked train titles' train and hval regions; no protected set): vocr6_final_test.py pagecheck at repo_head, path (b)'s model (finder fix 1 = COLGAP, as Rubi main 0994afc ships it; API 47's auto check with the frozen-finder check of tall regions, and the column read by VOCR5-V) against Rubi main 0994afc's own vjo-page-ocr --vertical auto --line-fix on (page_ocr_sha256; the game worker's job on config.ini's defaults: tier, LM tier 2 = lm6, cascade, head gate, counters, probe, refinement on PSP, textnorm, line filter), with the models and LM that checkout pins; per tier: the switch to columns, boxes, dark flags, each line's text, the text shown. The sample: 4 hval regions per title, 55 counter regions, 60 regions around PCSG00653's columns and 80 of those widened toward square (still at least as tall as wide: the frozen-finder branch). It replaces the records of b6c715c at fix 0 and of 0994afc without the tall regions (299 regions, all equal in both)",
+ "page_ocr_sha256": "d7cbd7eabd6a2f1686006dcaced945feb20606f59472eade263d485b3eee9efb",
+ "regions": 379,
+ "repo_head": "05a23e1d36162123803d1550f51741dfb1cddecc",
  "rubi_head": "0994afcd13d3bcd4ed3b650e14ef27a5708057a2",
- "switched_mine": 60,
+ "switched_mine": 114,
  "tiers": {
   "L": {
-   "boxes_equal": 299,
-   "columns": 60,
-   "line_text_equal": 537,
-   "lines": 537,
-   "regions": 299,
-   "shown_equal": 299,
-   "switched_equal": 299
+   "boxes_equal": 379,
+   "columns": 114,
+   "line_text_equal": 943,
+   "lines": 943,
+   "regions": 379,
+   "shown_equal": 379,
+   "switched_equal": 379
   },
   "N": {
-   "boxes_equal": 299,
-   "columns": 60,
-   "line_text_equal": 537,
-   "lines": 537,
-   "regions": 299,
-   "shown_equal": 299,
-   "switched_equal": 299
+   "boxes_equal": 379,
+   "columns": 114,
+   "line_text_equal": 943,
+   "lines": 943,
+   "regions": 379,
+   "shown_equal": 379,
+   "switched_equal": 379
   },
   "S": {
-   "boxes_equal": 299,
-   "columns": 60,
-   "line_text_equal": 537,
-   "lines": 537,
-   "regions": 299,
-   "shown_equal": 299,
-   "switched_equal": 299
+   "boxes_equal": 379,
+   "columns": 114,
+   "line_text_equal": 943,
+   "lines": 943,
+   "regions": 379,
+   "shown_equal": 379,
+   "switched_equal": 379
   }
  },
  "vertical_check": true

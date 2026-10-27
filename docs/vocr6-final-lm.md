@@ -221,10 +221,10 @@ gate off, at the 1 MB setting:
   - All 75 are the bare and `…」` forms (33 and 42), whose first character is the numeral. No `「…」` crop is among
     them.
   - They are cut 2-10 px into the ink: 8 / 19 / 19 / 24 / 5 crops at 2 / 4 / 6 / 8 / 10 px.
-  - With the gate on, none of the 75 greedy texts starts with a numeral (53 of 75 with the gate off), and 42 of the
-    75 have identical greedy text both ways.
-  - With the gate off, the LM restores the numeral from the edge frames' top-K. With the gate on, all 75 runs skip
-    frames there, none finds a counter context, so none is read again.
+  - With the gate on, none of the 75 greedy texts starts with a numeral; with the gate off, 22 do. 42 of the 75 have
+    identical greedy text both ways.
+  - With the gate off, the numeral is in the edge frames' top-K, and the decode keeps it. With the gate on, all 75
+    runs skip frames there, none finds a counter context, so none is read again.
 
 **The blobs as they ship.** vocr6-final-gate's result of 09:45:42Z gives N and L the two-level head and no gate;
 Small keeps `VOCR5_S_w8g`. Read this way (amendment 1, report only):

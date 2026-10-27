@@ -8,7 +8,14 @@ eval/vocr6_final_lm_protocol.json (registered before any read of a final blob); 
       --blob S=FINAL_S --blob N=FINAL_N --blob L=FINAL_L --dev-cache S=FILE ... --hval-blob S=READER_S ... \\
       --counter-cache S=FILE ... --out DIR/1000k.npz [--configs FILE] [--arms b,c,g] [--procs 5]
   vocr6_final_lm.py select --protocol P --tune 1000k=FILE ... [--own 1000k=FILE ...] --out RESULT.json
+  vocr6_final_lm.py summary --select RESULT.json --protocol P [--extra NAME=FILE ...] --out FILE [--md FILE]
   vocr6_final_lm.py continuity --cache FILE --blob B --out FILE.json   vocr6-rubi-ship's VOCR5-N counter numbers
+Report only (protocol amendment 1; nothing here feeds select or the rule):
+  vocr6_final_lm.py gated-cache --tier T --blob GATED --hval-dir DIR --dev-out FILE --counter-out FILE
+                                                    reads as Rubi reads them with ocr_head_gate = on (private)
+  vocr6_final_lm.py compare-runs --x TUNE --y TUNE --config JSON [--config-y JSON] --out FILE   y - x per job path
+  vocr6_final_lm.py counter-loss --x-cache F --x-blob B --y-cache F --y-blob B --lm LM --config JSON --out FILE
+                                                    which counter crops one reading loses against another
 
 Reads (eval/vocr6_lm.py's, unchanged): the dev units are VOCR5's development cohorts (tv, dn in both views, wd
 through GRAD and GRAD + refine) without v12188 / v18432, read by each final blob (vocr6_lm.py dev-cache); the hval
@@ -788,11 +795,14 @@ def cmd_counter_loss(a):
     cfg = json.loads(a.config)
     _, rows = counter_units(a.synth)
     meta = {("cs", r["id"]): r for r in rows}
+    synth_sha = sha256(a.synth)
 
     def texts(cache, blob):
         d = pickle.loads(Path(cache).read_bytes())
         if d["blob_sha256"] != sha256(blob):
             raise SystemExit(f"{cache}: read another blob than {blob}")
+        if d.get("synth_sha256") != synth_sha:
+            raise SystemExit(f"{cache}: read another counter set than {a.synth} (or records none)")
         rt = Vocr(str(blob), mode="w8i", max_width=1024)
         dec = VocrLM(rt, a.lm, check_crc=False, **V.lm_opts(cfg))
         out = {}
@@ -824,20 +834,25 @@ def cmd_counter_loss(a):
         again += bool(sk and (st["contexts"] or (two and KANA_COUNTER.search(o["text"]))))
     cuts = sorted({r["cut"] for r in rows})
     out = {"kind": "vocr6-final-lm-counter-loss", "created": utc_now(), "what": a.what, "config": cfg,
-           "x": {"blob_sha256": sha256(a.x_blob)}, "y": {"blob_sha256": sha256(a.y_blob), "two_level": two},
+           "lm_sha256": sha256(a.lm), "synth_sha256": synth_sha,
+           "x": {"blob_sha256": sha256(a.x_blob), "cache": Path(a.x_cache).name},
+           "y": {"blob_sha256": sha256(a.y_blob), "cache": Path(a.y_cache).name, "two_level": two},
            "crops": len(tx), "kept": [sum(bool(SITE.search(v[1])) for v in tx.values()),
                                       sum(bool(SITE.search(v[1])) for v in ty.values())],
            "lost": len(lost), "gained": len(gained),
            "lost_by_cut_px": {str(-c): sum(meta[k]["cut"] == c for k in lost) for c in cuts},
            "lost_by_form": {f: sum(form(k) == f for k in lost) for f in ("brackets", "bare", "continuation")},
            "lost_greedy_equal": sum(tx[k][0] == ty[k][0] for k in lost),
+           "lost_greedy_with_leading_numeral": {"x": sum(bool(numeral.search(tx[k][0])) for k in lost),
+                                                "y": sum(bool(numeral.search(ty[k][0])) for k in lost)},
            "lost_greedy_without_leading_numeral": {"x": sum(not numeral.search(tx[k][0]) for k in lost),
                                                    "y": sum(not numeral.search(ty[k][0]) for k in lost)},
            "lost_y_run": {"skipped_frames": int(skipped), "counter_context": int(ctx), "read_again": int(again)},
            "note": "cut_px: the crop's left edge, px into the first ink column (negative: before it)"}
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("kept", "lost", "gained", "lost_by_cut_px", "lost_by_form",
-                                          "lost_greedy_equal", "lost_greedy_without_leading_numeral", "lost_y_run")}),
+                                          "lost_greedy_equal", "lost_greedy_with_leading_numeral",
+                                          "lost_greedy_without_leading_numeral", "lost_y_run")}),
           flush=True)
 
 

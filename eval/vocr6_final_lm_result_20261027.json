@@ -1,7 +1,7 @@
 {
  "kind": "vocr6-final-lm-summary",
  "schema": 1,
- "created": "2026-10-27T12:16:42Z",
+ "created": "2026-10-27T14:40:47Z",
  "protocol_sha256": "7c1d38eb130dcac74af641e50cb4a2ac3555fe3dc7e74576a1d758386fb64666",
  "decisions": {
   "S": {
@@ -10048,7 +10048,7 @@
   },
   "counter_loss_vocr5_N_1000k": {
    "kind": "vocr6-final-lm-counter-loss",
-   "created": "2026-10-27T12:14:57Z",
+   "created": "2026-10-27T14:40:03Z",
    "what": "Rubi 0.9.8's VOCR5-N alone: VOCR5_N_w8g2 as Rubi reads it (y) against v5f_N_seed3 gate off (x), 1 MB shipped, no cascade, no display rules",
    "config": {
     "alpha": 600,
@@ -10059,11 +10059,15 @@
     "gate": 8000,
     "topk": 8
    },
+   "lm_sha256": "41591accf8499f1c34557e585cca382de2c4b5ca15f270c985612c32487e251f",
+   "synth_sha256": "6abe211482d11d8f17f13535c411b4d2c2cc214657351ed036f57b00663cc5da",
    "x": {
-    "blob_sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc"
+    "blob_sha256": "20be179def8033171435ba62388657b3d3c932b365093737948c636e025e3bdc",
+    "cache": "cs_N.pkl"
    },
    "y": {
     "blob_sha256": "f0c8e52c9c1d9f2a714d5ca3ecfba9c0b031ee7ac51a522a2c29fd558d51761b",
+    "cache": "cs_VOCR5_N_w8g2.pkl",
     "two_level": true
    },
    "crops": 3969,
@@ -10088,6 +10092,10 @@
     "continuation": 42
    },
    "lost_greedy_equal": 42,
+   "lost_greedy_with_leading_numeral": {
+    "x": 22,
+    "y": 0
+   },
    "lost_greedy_without_leading_numeral": {
     "x": 53,
     "y": 75

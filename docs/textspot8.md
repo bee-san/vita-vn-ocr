@@ -369,7 +369,8 @@ Rubi hands a region to GRAD's rows when the spotter's crop decode returns more v
 (`eval/textspot8_orient.py`, seed 3): **0 of 1,161** development units and **0 of 516** confirmation units
 (horizontal dialogue), and **172 of 181** vertical development regions (79 of 84 VN pages, 93 of 97 manga windows;
 eval/manifests/vertical-dev-regions.jsonl). So horizontal dialogue reads with the spotter and vertical text goes to
-auto's rule as before.
+auto's rule as before. The final blob: 0 of 1,161 and 0 of 516, and 160 of 181 (77 of 84 VN pages, 83 of 97 manga
+windows; [below](#the-final-model-and-the-test-reads-measured)).
 
 ### Cost (estimates; nothing has run on a console)
 
@@ -399,9 +400,60 @@ VTSP 52,176 B. MeikiOCR's detector, the reference: 3,547,383 float32 parameters,
 - **Release partners of training titles:** as textspot6's (PCSG00007 and ULJM05383 share VNDB release r3748 with
   CLANNAD; PCSG00866 shares releases with v21789, a vita-test VN). The owner's 2026-10-25 policy allows them.
 
-<!-- TESTS -->
+## The final model and the test reads (measured)
 
-### Reproduction
+**The final blob.** The rule ships the pick's recipe, shape and seed (`t8_t64n8c16`, seed 3) retrained on the
+hooked pool's train, guard and hval pages: 48 titles and 54,771 pages (the test title is not among them), 30,000
+steps from 12:47 to 16:33Z, at the training worktree's commit with no modified file (`run.json`).
+`textspot8_t64n8c16_w8.vtsp`: 52,176 B, SHA-256 `e129d41adfa02c658a7d13d6f98064e6ab6ce9a2bc8c7a56da700a21357b5e1c`.
+C == twin holds on every record: 354 dev frames, 1,161 dev regions, 188 tsdev frames, 3,033 hval frames and 6,327
+hval regions.
+
+**Its own development scores** (crop decode; VOCR5-N + the 1 MB LM through the pinned page path):
+- unseen dev **1.03%** (Vita 0.84 / PSP 1.20), level with the selected seed-3 run's 0.99% (+0.05 [−0.11, +0.22]);
+  against `rubi,fix=1` −1.34 [−3.93, +0.21], against GRAD + refine −2.05 [−4.63, −0.36];
+- hval, now in its training data, 1.52%: worse than seed 3's 1.31% (+0.21 [+0.04, +0.45]), within the three seeds'
+  spread (1.31-1.71%); against `rubi,fix=1` −1.77 [−4.94, −0.01];
+- with VOCR6-N → L (amendment 6's setup): unseen dev **0.99%** (Vita 0.85 / PSP 1.11) against `rubi,fix=1`'s 2.41%,
+  −1.43 [−4.03, +0.15]; hval 1.15% against 1.52%, −0.38 [−1.17, +0.10]. Neither is resolved above 0.
+
+**The test reads**, once each with the final blob (16:33-16:42Z, after the selection record 12:51Z and the
+confirmation record; `eval/textspot8_test.py`, the attempt records in the private directory;
+`eval/textspot8_test_20261027.json`, counts only). Dialogue CER, the page path's crop decode on each unit's region
+unless the row says whole frames; paired 95% intervals over pages (the title, CLANNAD) or VNs (vita-test + psp-test):
+
+| set | the spotter | GRAD + refine | `rubi,fix=1` | textspot3's pick |
+|---|---:|---:|---:|---:|
+| Dance with Devils, the hooked test title (2,055 units) | **0.97%** | 1.24% (−0.28 [−0.58, −0.005]) | 0.98% (−0.01 [−0.26, +0.22]) | 1.48% (−0.51 [−0.68, −0.36]) |
+| CLANNAD, each page's region: 2,052 dialogue lines | 0.97% | **0.82%** (+0.15 [−0.09, +0.36]) | 0.95% (+0.02 [−0.21, +0.21]) | 0.85% (+0.13 [+0.04, +0.22]) |
+| CLANNAD, each page's region: all 3,048 lines, names included | 1.17% | 2.33% (−1.17 [−1.49, −0.87]) | 2.83% (−1.67 [−2.00, −1.37]) | **0.84%** (+0.33 [+0.22, +0.44]) |
+| CLANNAD whole frames (det decode): dialogue | 1.11% | | | **0.99%** (+0.12 [+0.01, +0.23]) |
+| CLANNAD whole frames: all lines | **1.17%** | | | 1.73% (−0.56 [−0.71, −0.42]) |
+| vita-test + psp-test whole frames (176 frames): dialogue | **1.91%** | | | 2.29% (−0.38 [−1.39, +0.43]) |
+| the same frames: box F1 | 0.775 | | | 0.776 (−0.001 [−0.032, +0.027]) |
+
+- The title, the one hooked game no model trained on, is where textspot6's research blob read 1.39% (resolved worse
+  than `rubi,fix=1`); this spotter reads it as well as Rubi's finder and better than GRAD + refine.
+- On CLANNAD's regions the dialogue lines are level with both GRAD paths, and with the speaker names it reads less
+  than half their CER: GRAD's paths cut or merge the name plates. textspot3's pick, a whole-frame spotter, is better
+  there, and on CLANNAD's whole frames.
+- vita-test + psp-test whole frames: all text 21.5% (textspot3's 20.6%), tagged dialogue 15.1%, 1 of the 19
+  text-free frames given a dialogue box; recall dialogue 0.99, names 0.89, choices 0.84, UI 0.40.
+
+**Report-only checks of the final blob:**
+- empty regions: 36 of 66 development and 17 of 25 report regions left empty (seed 3: 39 and 18);
+- spinners and page cursors: the icon inside a line box on 85.9% / 92.4% of the 276 units (trained / unseen
+  shapes; seed 3 81.2 / 93.8%), CER 0.78% / 1.37% (`rubi,fix=1` 2.33 / 2.98%);
+- orientation: 0 of 1,161 development and 0 of 516 confirmation horizontal regions with more vertical than
+  horizontal boxes; 160 of 181 vertical development regions (77 of 84 VN pages, 83 of 97 manga windows; seed 3 172:
+  79 and 93);
+- tsdev whole frames: F1 0.580 (seed 3 0.577); hval boxes F1 Vita 0.900, PSP 2× 0.942, PSP 0.936, tag accuracy of
+  the dialogue boxes 0.998-1.000.
+- **Disclosed:** the orientation check ran the spotter (boxes only: no reading, no reference) on the confirmation
+  set's 516 regions for seed 3 and for the final blob, after the confirmation record. It decides nothing.
+
+
+## Reproduction
 
 ```sh
 S=eval/reproducibility/textspot8-20261027
@@ -425,5 +477,18 @@ bash $S/guard_vocr6.sh t8_t64n8c16_seed3 crop
 # report only
 .venv/bin/python eval/textspot8_empty.py --blob B.vtsp --out EMPTY.json
 .venv/bin/python eval/textspot8_orient.py --blob B.vtsp --out ORIENT.json
+# the final retrain (the pick on train + guard + hval), its C == twin check, its scores and the guard
+HEAVY_SLOTS=12 $HERD/heavy.sh bash $S/run_train8.sh t64n8c16 3 $RUNS '{"across_shrink": 0.0}' train,guard,hval
+.venv/bin/python eval/textspot6_parity.py --blob $FINAL/final.vtsp --out PARITY.json \\
+    --sets dev,dev-crop,tsdev,hval,hval-crop --cbin CBUILD
+bash $S/score_run8.sh $FINAL t8_t64n8c16_seed3_final crop
+bash $S/guard_vocr6.sh t8_t64n8c16_seed3_final crop
+# the test reads, once each (an attempt record refuses a second), and the public record
+P=$HERD/shared/private/vocr6-spotter2/protected/final_t8_t64n8c16_seed3_crop
+for t in title tests clannad; do
+  .venv/bin/python eval/textspot8_test.py $t --selection eval/textspot8_dev_20261027.json --final $FINAL --out $P/$t \\
+      [--pagepath PAGEPATH] [--reader-src READER_CHECKOUT]
+done
+.venv/bin/python eval/textspot8_test.py record --out $P --json eval/textspot8_test_20261027.json
 ```
 

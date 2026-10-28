@@ -1,0 +1,292 @@
+{
+ "kind": "vita-vn-ocr-vertical-shards",
+ "generator": "synth/vertical_render.py",
+ "gen_version": 3,
+ "code_sha256": "004941340b8c07de46f05fdc30fe8f168831285e33a3fe0acc326c5300edaa18",
+ "vocab": "data/vocab_4987_proof.txt",
+ "seed": 20261028,
+ "shards": [
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00000.npz",
+   "sha256": "fda983603c0433ef68ea29a79fd1793cd26f8c6d1d256723886fb8d62b44cf24",
+   "bytes": 76208361,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00001.npz",
+   "sha256": "e57eb1b0a1c004ed519193d89f78e9567700b60c61c6523931d55eb53b8489ea",
+   "bytes": 75349631,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00002.npz",
+   "sha256": "c38318a5871d93fea322bcc804da91877e5465385343666f86f9cbaeac177c9a",
+   "bytes": 75503392,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00003.npz",
+   "sha256": "35ca89b239c25788bbb6c55f9bdc7b26377382a4e1fbcdc41bdaadb36323c9f1",
+   "bytes": 76332468,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00004.npz",
+   "sha256": "d040d99da901b878d645b125dfa1a5728a6a64baef45967dd8b123d1a2185bcf",
+   "bytes": 76287605,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00005.npz",
+   "sha256": "d4de8bd944277238df40d97c24166580c3924468deb17d4891cc25a440d9966b",
+   "bytes": 75958506,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00006.npz",
+   "sha256": "6dd27e1eb79c7eee7eb5e321cedd512aab792db95bf25204ede329d0b2a1fabd",
+   "bytes": 75923450,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00007.npz",
+   "sha256": "7f5779cc020f5e06ab6fba2cee92b62dcde9f5a6fb214e1841801d5207fab754",
+   "bytes": 75878273,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00008.npz",
+   "sha256": "e2afc76937e3cc2085033d2293fd76d63be69c942eedbc4f2570f1a5dbd85cec",
+   "bytes": 76396995,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00009.npz",
+   "sha256": "a0102f1071dd6a25a70e9b0117ec737ea0d86f2aa2a10dfb5df9749d1c3641fa",
+   "bytes": 75219375,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00010.npz",
+   "sha256": "d3563037dcdf2feb9335fffcc5a0f9c811a506de5281dc4f50a5a6e1ddbb5932",
+   "bytes": 75811244,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00011.npz",
+   "sha256": "31953f76d672214ec86723b761709831387c981c4fd98b0bed0df102d96c11b7",
+   "bytes": 76715207,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00012.npz",
+   "sha256": "f76f78ad8cbd8d06365fa842fa599858f0a8ef00b056d42719b5baecfa14f9ad",
+   "bytes": 76652298,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00013.npz",
+   "sha256": "7dd4b79b7b480a290f916cf7b2e351776ebd39499f46b97d4fe8e8967a1ebd29",
+   "bytes": 75407890,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00014.npz",
+   "sha256": "4a49d146b9bb8154f9c56ae8a99a34ad1953f29797a300e79566891c66ebc313",
+   "bytes": 76554498,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00015.npz",
+   "sha256": "fa5fb7ad91630fb941fda165bac8472596f15ba52bcf7988e34f4c54bc90fe67",
+   "bytes": 75561187,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00016.npz",
+   "sha256": "10ab2a9131833800c2c0e5b450be50bc2de0f8a2908e898102d41bc5f8d5ea72",
+   "bytes": 75385072,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00017.npz",
+   "sha256": "22f67c255b37fab25cc50aaf376a2f03c7c0f02d99374c8a985af43452d65fab",
+   "bytes": 75914384,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00018.npz",
+   "sha256": "bd996336f39ba39726a9721208de1449fb162da61c0ba7aa463f59f679144f01",
+   "bytes": 75972110,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00019.npz",
+   "sha256": "7b7efd9c4eaf822edbd637709d99de53a9903be4f8febb8748a407a15d74ea52",
+   "bytes": 76180636,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00020.npz",
+   "sha256": "fc8bc6c338e56fc31beeff4f831c873a8cc29dc29fb80542354253b5fcc9d80a",
+   "bytes": 75399143,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00021.npz",
+   "sha256": "3b6189be31b2ef0d2acec41eab2192202115b5620ad449824317321197e63aaf",
+   "bytes": 76505258,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00022.npz",
+   "sha256": "1683bc1fb6e6804a19669716cec448fbea97f72345932fd03e290043340eebf3",
+   "bytes": 75862405,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00023.npz",
+   "sha256": "57b64d2ec915aa69e39fd2962fedc0210f3af21cabf14bea9e31294bfd33b427",
+   "bytes": 75583992,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00024.npz",
+   "sha256": "fed2dd67425335e37cf5cafc98034c2705ea799eb980b76b1d1f0729dea34566",
+   "bytes": 75900583,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00025.npz",
+   "sha256": "e82f7af6392b6aaa746c719f0956ee07ada1ac729b6e03da6c105b967af5eda1",
+   "bytes": 74970501,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00026.npz",
+   "sha256": "a0059c4f20fb62c826eaa6e2e197afb6d1e3b2e644ce45d9c90abf7643e398ff",
+   "bytes": 76160990,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00027.npz",
+   "sha256": "61decccc4cccdbf1fc989cac1c4d19b63e867fff298ab454a225297e53ff14d3",
+   "bytes": 75497332,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00028.npz",
+   "sha256": "5bdba6b56f6645646189e5b73066eff9f31bc3d4f24db4dae9d4739f7a5dac74",
+   "bytes": 76225455,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00029.npz",
+   "sha256": "f002f14b8eb7f0604af020735ad38d83e67a82ce7f19262e170ca96e7b35e36b",
+   "bytes": 76005826,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00030.npz",
+   "sha256": "8e03b7112fb78cc84238c52eb7094a650d38e5040a37c6b65d0e77a7be1c6bf9",
+   "bytes": 75960181,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00031.npz",
+   "sha256": "09f90b45639ae5d55089ab6701cdc0c714115073b1e5d37a1c419e31a534c7c9",
+   "bytes": 76212830,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00032.npz",
+   "sha256": "9b2e27608d083c8c3dd08ed170943129b5506dfa4efc2694ff667e2d672a84b4",
+   "bytes": 75815491,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00033.npz",
+   "sha256": "47efb39efd7a0f8e09139e8fa87f10686d2b2bc2bce636ce65cdaf6bf74a8d83",
+   "bytes": 75054890,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00034.npz",
+   "sha256": "9acc1e29b37c4b0dc0a4f176832fed305b3cba299045639ead8c82586c7c91f0",
+   "bytes": 76161300,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00035.npz",
+   "sha256": "634eceda03f8d9c52077f74165a6abca423170954873f51260db8bb75cf0f7fa",
+   "bytes": 76470843,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00036.npz",
+   "sha256": "cc1cbf72c659d102e5ffef6d090720c8740cca69cddbcb40c7aeaedde2b6babe",
+   "bytes": 75310683,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00037.npz",
+   "sha256": "885bc1b974f547afa2ef8cefef8ebba06aaa91ddabe9eb124c8a17280b4ae517",
+   "bytes": 75768702,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00038.npz",
+   "sha256": "29c905a17ae1f00257c131ec8bcff189a051af9c86a6dd5116cc61cd38f5eb00",
+   "bytes": 75699565,
+   "crops": 10000
+  },
+  {
+   "dir": "shards_g3",
+   "file": "vsyn_00039.npz",
+   "sha256": "f8415cb4cde51e7eb0f93cbbdcd16208701ee9e840f214aab9993f6a575b05f3",
+   "bytes": 74886434,
+   "crops": 10000
+  }
+ ],
+ "crops": 400000,
+ "bytes": 3034664986
+}

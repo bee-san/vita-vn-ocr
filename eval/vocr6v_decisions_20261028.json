@@ -1,0 +1,359 @@
+{
+ "kind": "vocr6v-decisions",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/159",
+ "protocol": "eval/vocr6v_protocol.json (tag vocr6v-protocol-2bbb9e1, sha256 0a09feca...)",
+ "measured": "host, Rubi main eef0fc41's job (vjo-page-ocr --vertical on --line-fix on) with rubi_measure; dialogue CER (eval/vocr6v.py unit_errors); hval: Yunohana SpRING! hval tight units, screening LM h64_1000k; dev: #103's 181 development regions, shipped LM",
+ "runs": {
+  "vocr5v": {
+   "hval_tight": 7.92,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 20.93,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 23.23,
+   "dev_psp": 1.2,
+   "dev_manga": 4.18,
+   "blob_sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+   "hval_clean_box_crops": 1.98,
+   "hval_console_columns": 9.09,
+   "dev_fixed_columns_vn": 10.64,
+   "dev_fixed_columns_manga": 2.7
+  },
+  "v6h_s1": {
+   "hval_tight": 4.84,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 11.9,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.69,
+   "dev_psp": 0.86,
+   "dev_manga": 3.71,
+   "blob_sha256": "dcc22530587acbfb69e93d46b9dd6b369b1e5877085aeeff28e359c9421f8193",
+   "hval_clean_box_crops": 0.61,
+   "hval_console_columns": 2.78,
+   "dev_fixed_columns_vn": 9.14,
+   "dev_fixed_columns_manga": 2.76
+  },
+  "v6h_s2": {
+   "hval_tight": 4.55,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 12.35,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.39,
+   "dev_psp": 0.51,
+   "dev_manga": 3.64,
+   "blob_sha256": "c308d18e60d8f8589bf5da9b4f02c7e3f8c4d6dcbc5e67bbee7ab7a786e8ae50",
+   "hval_clean_box_crops": 0.15,
+   "hval_console_columns": 2.41,
+   "dev_fixed_columns_vn": 9.76,
+   "dev_fixed_columns_manga": 2.76
+  },
+  "v6h_s3": {
+   "hval_tight": 4.55,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 10.84,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.34,
+   "dev_psp": 0.51,
+   "dev_manga": 3.71,
+   "blob_sha256": "3729188bf0d961fc6aa2ef2b30137d55768e6838d9b3bfa4194f6fb470254c74",
+   "hval_clean_box_crops": 0.3,
+   "hval_console_columns": 2.6,
+   "dev_fixed_columns_vn": 9.54,
+   "dev_fixed_columns_manga": 2.7
+  },
+  "v6hm_s1": {
+   "hval_tight": 4.4,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 12.2,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.45,
+   "dev_psp": 0.51,
+   "dev_manga": 3.78,
+   "blob_sha256": "48a33192ad972a88ea809a319728bf94eb5b68df06127461b5325f072d7d1123",
+   "hval_clean_box_crops": 0.15,
+   "hval_console_columns": 2.78
+  },
+  "v6hm_s2": {
+   "hval_tight": 4.55,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 10.99,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.28,
+   "dev_psp": 0.51,
+   "dev_manga": 3.78,
+   "blob_sha256": "279eebc09f5a41839aeb093af336c10aa2ac6acb9bd8df6addcad8b9cf2fb91a",
+   "hval_clean_box_crops": 0.15,
+   "hval_console_columns": 2.41
+  },
+  "v6hm_s3": {
+   "hval_tight": 4.55,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 12.95,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 20.98,
+   "dev_psp": 0.69,
+   "dev_manga": 3.91,
+   "blob_sha256": "d5d744192e6fead15ee11740e4951cee1f198081a251713eb3f6fc67e90dee83",
+   "hval_clean_box_crops": 0.3,
+   "hval_console_columns": 2.78
+  },
+  "v6hfold_s1": {
+   "hval_tight": 3.67,
+   "hval_tight_recall": 0.8909,
+   "hval_tight_precision": 0.98,
+   "hval_fixed": 11.45,
+   "hval_fixed_precision": 0.5542,
+   "dev_pc": 21.39,
+   "dev_psp": 0.86,
+   "dev_manga": 3.91,
+   "blob_sha256": "40485fceaef46a666bcec7781eca88bc005e9211786638ae0dddfac2eb4eea81",
+   "hval_clean_box_crops": 0.0,
+   "hval_console_columns": 0.19,
+   "dev_fixed_columns_vn": 9.54,
+   "dev_fixed_columns_manga": 2.63
+  }
+ },
+ "comparisons": {
+  "V6h_vs_VOCR5V": {
+   "hval": {
+    "unit": "page",
+    "cohort": null,
+    "clusters": 35,
+    "chars": 682,
+    "x": [
+     7.918,
+     7.918,
+     7.918
+    ],
+    "y": [
+     4.839,
+     4.545,
+     4.545
+    ],
+    "diff": -3.275,
+    "ci95": [
+     -4.476,
+     -2.142
+    ],
+    "pairs": [
+     -3.079,
+     -3.372,
+     -3.372
+    ]
+   },
+   "dev_vn": {
+    "unit": "cluster",
+    "cohort": "vn",
+    "clusters": 25,
+    "chars": 2275,
+    "x": [
+     17.582,
+     17.582,
+     17.582
+    ],
+    "y": [
+     16.352,
+     16.044,
+     16.0
+    ],
+    "diff": -1.451,
+    "ci95": [
+     -2.248,
+     -0.584
+    ],
+    "pairs": [
+     -1.231,
+     -1.538,
+     -1.582
+    ]
+   },
+   "dev_manga": {
+    "unit": "book",
+    "cohort": "manga",
+    "clusters": 18,
+    "chars": 1483,
+    "x": [
+     4.181,
+     4.181,
+     4.181
+    ],
+    "y": [
+     3.709,
+     3.641,
+     3.709
+    ],
+    "diff": -0.494,
+    "ci95": [
+     -1.137,
+     -0.057
+    ],
+    "pairs": [
+     -0.472,
+     -0.539,
+     -0.472
+    ]
+   },
+   "adopted": true
+  },
+  "V6hm_vs_V6h": {
+   "hval": {
+    "unit": "page",
+    "cohort": null,
+    "clusters": 35,
+    "chars": 682,
+    "x": [
+     4.839,
+     4.545,
+     4.545
+    ],
+    "y": [
+     4.399,
+     4.545,
+     4.545
+    ],
+    "diff": -0.147,
+    "ci95": [
+     -0.37,
+     0.052
+    ],
+    "pairs": [
+     -0.44,
+     0.0,
+     0.0
+    ]
+   },
+   "dev_vn": {
+    "unit": "cluster",
+    "cohort": "vn",
+    "clusters": 25,
+    "chars": 2275,
+    "x": [
+     16.352,
+     16.044,
+     16.0
+    ],
+    "y": [
+     16.088,
+     15.956,
+     15.78
+    ],
+    "diff": -0.19,
+    "ci95": [
+     -0.751,
+     0.471
+    ],
+    "pairs": [
+     -0.264,
+     -0.088,
+     -0.22
+    ]
+   },
+   "dev_manga": {
+    "unit": "book",
+    "cohort": "manga",
+    "clusters": 18,
+    "chars": 1483,
+    "x": [
+     3.709,
+     3.641,
+     3.709
+    ],
+    "y": [
+     3.776,
+     3.776,
+     3.911
+    ],
+    "diff": 0.135,
+    "ci95": [
+     -0.091,
+     0.548
+    ],
+    "pairs": [
+     0.067,
+     0.135,
+     0.202
+    ]
+   },
+   "adopted": false,
+   "why": "the dev manga interval does not lie below 0"
+  },
+  "fold": {
+   "dev_vn": {
+    "unit": "cluster",
+    "cohort": "vn",
+    "clusters": 25,
+    "chars": 2275,
+    "x": [
+     16.352
+    ],
+    "y": [
+     16.132
+    ],
+    "diff": -0.22,
+    "ci95": [
+     -0.762,
+     0.152
+    ],
+    "pairs": [
+     -0.22
+    ]
+   },
+   "dev_manga": {
+    "unit": "book",
+    "cohort": "manga",
+    "clusters": 18,
+    "chars": 1483,
+    "x": [
+     3.709
+    ],
+    "y": [
+     3.911
+    ],
+    "diff": 0.202,
+    "ci95": [
+     -0.071,
+     0.532
+    ],
+    "pairs": [
+     0.202
+    ]
+   },
+   "hval_report_only": {
+    "unit": "page",
+    "cohort": null,
+    "clusters": 35,
+    "chars": 682,
+    "x": [
+     4.839
+    ],
+    "y": [
+     3.666
+    ],
+    "diff": -1.173,
+    "ci95": [
+     -2.362,
+     -0.316
+    ],
+    "pairs": [
+     -1.173
+    ]
+   },
+   "passes": true,
+   "note": "the fold-in run trained on hval: its hval figure is not held out"
+  }
+ },
+ "ships": {
+  "name": "VOCR6_V_w8.vocr",
+  "run": "v6hfold_s1 (V6h's mix with Yunohana's train + hval + guard columns, seed 1, step 10,000, EMA)",
+  "bytes": 819792,
+  "sha256": "40485fceaef46a666bcec7781eca88bc005e9211786638ae0dddfac2eb4eea81",
+  "manga109": "none (V6hm not adopted)"
+ },
+ "fixed_columns_note": "#103's fixed-column metric (report only): eval/vertical.py columns, arm rot, W8I greedy"
+}

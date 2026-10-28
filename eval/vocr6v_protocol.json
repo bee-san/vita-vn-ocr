@@ -1,0 +1,54 @@
+{
+ "kind": "vita-vn-ocr-vocr6v-protocol",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/159",
+ "frozen": "2026-10-28, before any score of any arm here (the incumbent's included) on the hval or development units below",
+ "owner": "2026-10-28 07:25Z: \"I have obtained manga109 by applying, we can use it to improve our vertical text ocr.\" The download is Manga109's super-resolution benchmark version (109 volume covers, 810x1080, and tiles cut from them; no interior pages, no annotations): issue #159",
+ "goal": "VOCR6-V: VOCR5-V's successor at the same shape (VOCR5-S's: width 1.0, bottleneck 96, 4,987 classes; 819,792 B of int8 weights, W8I arena 124,832 B, 967,392 MACs per frame), so the console's memory and est. time per column are VOCR5-V's",
+ "incumbent": {
+  "name": "VOCR5-V",
+  "blob": "v0.3.2-vertical.1 VOCR5_V_w8.vocr",
+  "sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+  "checkpoint": "vertical/runs/vV_S_seed1/ckpt_last.pt (step 30,000, EMA): its int8 export is the released blob byte for byte (checked 2026-10-28)"
+ },
+ "data": {
+  "vsyn": "synthetic columns, synth/vertical_render.py generation 3 (the scene pools leave out every screenshot of the vertical development and test sets' VNs: vertical_set_vns, 78 VNs; 20 screenshots of 9 of them were still in generation 2's pools), 40 shards x 10,000, seed 20261028, vocab data/vocab_4987_proof.txt",
+  "vra": "#103's real training columns, MeikiOCR == PP-OCRv6 small (vertical/data/shards/vreal_agree.npz, sha256 1395bf2b...)",
+  "vps": "#103's real training columns, PP-OCRv6 small alone at lowest character confidence >= 0.9 (vreal_ps.npz, sha256 8d1be8cc...)",
+  "vhk": "the owner's hooked vertical columns, box crops: vocr6-ingest pools/v1/train/vertical/PCSG00653.npz (Yunohana SpRING!, PCSG00653; 1,461 train columns of 798 train pages; turned anticlockwise, console polarity)",
+  "vcil": "the same pages' console columns: data/vertical_hooked.py cil (the column finder P1 on each train page's tight region, the found boxes that hold exactly one hooked column's glyph cells and nothing else, labelled with its hooked text; the crop as Rubi's job cuts, turns and inverts it)",
+  "vm109": "Manga109-s cover columns: the vertical text of the 87 Manga109-s volume covers (MeikiOCR's detector, column_box), labelled where MeikiOCR and PP-OCRv6 small agree or Claude's reading after a look agrees with one of them; the 22 Manga109-only covers are never training data",
+  "held_out": "Yunohana's hval pages (35 pages, 50 columns) and guard pages (30) are in no training source until the fold-in run; #103's development and test sets are in none"
+ },
+ "recipe": {
+  "init": "vertical/runs/vV_S_seed1/ckpt_last.pt",
+  "train": "train/train2.py --steps 10000 --batch 96 --lr 0.0005 --final-lr 0.05 --warmup 300 --wd 0.01 --width 1.0 --bottleneck 96 --vocab data/vocab_4987_proof.txt --ema 0.999 --threads 5 --eval-every 2500 --keep-evals --init <init> --seed <s> --val vval:<vertical/synth/val_v1/vsyn_00000.npz>:n=3000 --val vhv:<pools/v1/hval/vertical/PCSG00653.npz>:n=50 --select vval (monitoring only)",
+  "model_of_a_run": "its last checkpoint (step 10,000, EMA weights), exported int8 by train/export.py",
+  "seeds": [1, 2, 3]
+ },
+ "arms": {
+  "V6h": {"src": ["vsyn:0.60:stream=1,pool=6,inv=0.2", "vra:0.10:inv=0.2", "vps:0.05:inv=0.2", "vhk:0.15:inv=0.2", "vcil:0.10:inv=0.2"]},
+  "V6hm": {"src": ["vsyn:0.57:stream=1,pool=6,inv=0.2", "vra:0.10:inv=0.2", "vps:0.05:inv=0.2", "vhk:0.15:inv=0.2", "vcil:0.10:inv=0.2", "vm109:0.03:inv=0.2"]},
+  "fold": {"what": "the adopted arm's mix with vhk and vcil built from Yunohana's train + hval + guard pages, seed 1, the same recipe", "ships_if": "comparison fold"}
+ },
+ "scoring": {
+  "job": "bee-san/Rubi_for_vita main eef0fc41's host/page_ocr.c (vjo-page-ocr, the game worker's job) with vita-vn-ocr runtime f8a1856 and spotter sources 4674e54 (cmake/VocrOCR.cmake's pins), built with the measurement-only patch rubi_measure (read_verified accepts any blob of the pinned size: the candidate replaces VOCR5_V_w8.vocr, nothing else of the job changes; and, for hval, the 1 MB LM tier is the screening build h64_1000k)",
+  "tool": "Rubi tools/vertical_eval.py run --tool-args '--vertical on --line-fix on' --workers 5 (ocr_vertical = on, Rubi's other defaults: Normal tier for the rows' check, ocr_lm = 1000k with its settings, ocr_head_gate = on, ocr_line_fix = on); per-unit errors by eval/vocr6v.py (vertical_eval's score_unit)",
+  "hval": "vertical_eval.py units --titles PCSG00653 --regions tight,fixed (places from all of the title's pages), split hval: 35 tight units (decision), 34 fixed units (report only); LM tier 2 = h64_1000k (987,216 B, sha256 b104bd19...; built by vocr6-lm from the train titles' text only: the shipped vocr_lm6_o3_1000k holds hval's text)",
+  "dev": "vertical_eval.py ext-units --vdev <#103's regions_dev.jsonl>: the 181 tight regions of eval/manifests/vertical-dev-regions.jsonl (VN 84 regions in 25 series clusters, PSP 2x and PC pages fit to 960x544; manga 97 regions of 18 book pages of Black Jack ni Yoroshiku vol. 1 in NOBORU's fit-to-width view); the shipped LM (vocr_lm6_o3_1000k)",
+  "metric": "dialogue CER of the job's text (eval/vocr6v.py unit_errors)",
+  "intervals": "10,000 bootstrap resamples, seed 0, 95%: hval by page, dev VN by series cluster, dev manga by book page; with several runs a side's statistic is the mean of its runs' CERs",
+  "report_only": ["hval fixed units", "#103's fixed column crops (eval/vertical.py columns, W8I greedy) and Yunohana's hval column crops", "the dev regions' full pages", "#103's vertical test set read once after the last decision (its 2 Yunohana columns are seen: flagged)"]
+ },
+ "comparisons": {
+  "V6h_vs_VOCR5V": {"x": "VOCR5-V (the same blob for every seed)", "y": "V6h seeds 1-3", "rule": "adopt"},
+  "V6hm_vs_V6h": {"x": "V6h seeds 1-3", "y": "V6hm seeds 1-3 (pairs 1-1, 2-2, 3-3)", "rule": "manga", "runs_if": "always (pre-registered); it decides only if V6h is adopted"},
+  "fold": {"x": "the adopted arm's seed 1", "y": "its fold-in run", "rule": "fold"}
+ },
+ "rules": {
+  "adopt": "Y over X iff the hval interval of mean(Y) - mean(X) lies below 0, every seed pair's hval point difference is below 0, and neither the dev VN nor the dev manga interval lies above 0 (eval/vocr6_protocol.json decision.adopt, with manga as a second guard)",
+  "manga": "V6hm over V6h iff the dev manga interval of mean(V6hm) - mean(V6h) lies below 0 and neither the hval nor the dev VN interval lies above 0; otherwise no Manga109 material is in a shipped model",
+  "fold": "the fold-in run ships iff neither its dev VN nor its dev manga interval against its seed-1 sibling lies above 0 (one pair)",
+  "ship": "the shipped arm is V6hm if V6h is adopted and V6hm is adopted over it, else V6h if adopted, else nothing; its fold-in run ships if it passes 'fold', else its seed-1 run (trained without hval)"
+ },
+ "estimates": "unchanged from VOCR5-V (same shape): est. 66 / 50 ms per median VN column and 140 / 106 ms per median VN region at 333 / 444 MHz on one A9 core (docs/vertical.md); nothing has run on a console"
+}

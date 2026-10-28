@@ -1,0 +1,133 @@
+{
+ "attempt": {
+  "kind": "vocr6v-test-attempt",
+  "start": "2026-10-28T09:59:14Z",
+  "head": "d6499da48eefd20e245bcff5c28b8791f32a0764",
+  "inputs": {
+   "columns_test.jsonl": "9289084a915d8863c4f6dada60f41f4778efb24795fd56d0ced27a3a50a5eed7",
+   "regions_test.jsonl": "ba9043aa8069ec4f47a1be119d6132274f7c465a8b3baafdcbb3939a63386d5a",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vertical/release/v0.3.2-vertical.1/VOCR5_V_w8.vocr": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-manga109/blobs/v6hfold_s1.vocr": "40485fceaef46a666bcec7781eca88bc005e9211786638ae0dddfac2eb4eea81",
+   "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-manga109/rubi-build/m-dev/vjo-page-ocr": "312cc2ead3ddbe7c25a3ac144b24e2523a6be4da06e44ab9dc2324d97d401ed3"
+  },
+  "end": "2026-10-28T09:59:29Z"
+ },
+ "seen": {
+  "v17343": "Yunohana SpRING! (PCSG00653): the new arms trained on its hooked train pages; the shipped LM's text holds its train pages' script"
+ },
+ "job": {
+  "vn": {
+   "old": 7.26,
+   "old_ci95": [
+    3.95,
+    9.67
+   ],
+   "new": 7.05,
+   "new_ci95": [
+    3.68,
+    9.69
+   ],
+   "diff": -0.204,
+   "ci95": [
+    -0.687,
+    0.243
+   ],
+   "clusters": 16,
+   "chars": 2453
+  },
+  "vn_public": {
+   "old": 8.01,
+   "old_ci95": [
+    4.91,
+    10.08
+   ],
+   "new": 7.74,
+   "new_ci95": [
+    4.33,
+    10.11
+   ],
+   "diff": -0.273,
+   "ci95": [
+    -0.818,
+    0.195
+   ],
+   "clusters": 15,
+   "chars": 2196
+  },
+  "vn_private": {
+   "old": 0.78,
+   "old_ci95": [
+    0.78,
+    0.78
+   ],
+   "new": 1.17,
+   "new_ci95": [
+    1.17,
+    1.17
+   ],
+   "diff": 0.389,
+   "ci95": [
+    0.389,
+    0.389
+   ],
+   "clusters": 1,
+   "chars": 257
+  },
+  "vn_unseen": {
+   "old": 7.35,
+   "old_ci95": [
+    4.03,
+    9.74
+   ],
+   "new": 7.14,
+   "new_ci95": [
+    3.7,
+    9.74
+   ],
+   "diff": -0.206,
+   "ci95": [
+    -0.713,
+    0.228
+   ],
+   "clusters": 15,
+   "chars": 2423
+  },
+  "manga": {
+   "old": 2.88,
+   "old_ci95": [
+    0.72,
+    4.99
+   ],
+   "new": 2.74,
+   "new_ci95": [
+    0.65,
+    4.78
+   ],
+   "diff": -0.144,
+   "ci95": [
+    -0.485,
+    0.0
+   ],
+   "clusters": 12,
+   "chars": 694
+  }
+ },
+ "fixed_columns": {
+  "old": {
+   "vn": 7.17,
+   "vn_chars": 2453,
+   "vn_public": 7.79,
+   "vn_private": 1.95,
+   "manga": 0.86,
+   "manga_chars": 694
+  },
+  "new": {
+   "vn": 7.13,
+   "vn_chars": 2453,
+   "vn_public": 7.74,
+   "vn_private": 1.95,
+   "manga": 0.86,
+   "manga_chars": 694
+  }
+ }
+}

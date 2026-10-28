@@ -1,0 +1,1250 @@
+{
+ "kind": "vita-vn-ocr-manga109-download",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/159",
+ "what": "the owner's Manga109 download (2026-10-28): Manga109's super-resolution benchmark version: 109 volume covers (Originals 89, ValidOriginals 20) and 128x128 HR / 32x32 LR tiles cut from them; no interior pages, no annotations. Private: never committed, uploaded or sent to any service (manga109.org terms); this file holds names, sizes and sha256 only",
+ "zip": {
+  "name": "manga109databse.zip",
+  "bytes": 166820233,
+  "sha256": "0cbea25282f2f45dfea8a3e95214b5d06f95fb35e825be86cc449abb52d967f2"
+ },
+ "terms": "Manga109: academic, non-commercial use, no redistribution of any part; Manga109-s (87 volumes): machine-learning use and publishing results (pre-trained models included) allowed when the published work states that Manga109-s was used (manga109.org/en/, 2026-10-28)",
+ "titles_source": "manga109.org explore-data.js (2026-10-28): folder, author, pages and the Manga109-s flag of each of the 109 volumes",
+ "covers": [
+  {
+   "path": "Originals/GOOD_KISS_Ver2.jpg",
+   "bytes": 851225,
+   "sha256": "c4a2f6da54fa62a4338179d00877e84d2993093489717732ee3ef810ab77fe3e",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "GOOD_KISS_Ver2",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/GakuenNoise.jpg",
+   "bytes": 1057683,
+   "sha256": "d7954b7bdee86c4ccddd8087a9f9fb987b8d80b25313708d82cbb0d15670135b",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "GakuenNoise",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/GarakutayaManta.jpg",
+   "bytes": 1000037,
+   "sha256": "92cf9b34ea5f92ab4ca60bd23611976b933cb8c93ef8dfd996cc7aebe4843a77",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "GarakutayaManta",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/GinNoChimera.jpg",
+   "bytes": 674514,
+   "sha256": "eacbe0f378fa47ec28abc73ade13aef078b6cc70c49ae2bc4744b18febb5ccec",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "GinNoChimera",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/Hamlet.jpg",
+   "bytes": 640053,
+   "sha256": "1cb7260555838940b40d1b48e354b06fb65f2194fd961b75918fcba30f5826fc",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Hamlet",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HanzaiKousyouninMinegishiEitarou.jpg",
+   "bytes": 931096,
+   "sha256": "26f1354049b0e874c5b5518d141abb137d219a71f382ab7b40b10f77b2310efa",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HanzaiKousyouninMinegishiEitarou",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HaruichibanNoFukukoro.jpg",
+   "bytes": 780894,
+   "sha256": "30ffaa686dbedb589d19157bc5948b5e5d8589ccbca3d3aee20f9121d8d841b8",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HaruichibanNoFukukoro",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HarukaRefrain.jpg",
+   "bytes": 799722,
+   "sha256": "ca2fbdc4763733b4be2fb53618a6bb7c90498de8b4ff1eaa166f728a9bd6dcc6",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HarukaRefrain",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HealingPlanet.jpg",
+   "bytes": 864480,
+   "sha256": "7ad3d1ed3b3d1250a6f60fbb198086af4ea19fe90fc92969211833c0c58039e8",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HealingPlanet",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HeiseiJimen.jpg",
+   "bytes": 900226,
+   "sha256": "039546583e0412b2708f35167e06d6139783811817585444fe7a8d82bbac5f14",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HeiseiJimen",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HighschoolKimengumi_vol01.jpg",
+   "bytes": 1104623,
+   "sha256": "56b6a7e0dc2062cdd2f4a831179c941a9ed4c85ac5a53bbd5d79e1731f12859a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HighschoolKimengumi_vol01",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/HighschoolKimengumi_vol20.jpg",
+   "bytes": 1060986,
+   "sha256": "3a0a89e5a413436394c7f41aad78c2c6fe34526a1b313d9c33832293e27ad62a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HighschoolKimengumi_vol20",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/HinagikuKenzan.jpg",
+   "bytes": 1084505,
+   "sha256": "8966ab058aa59f26faeb5e6f489566fe42210b9530593bbe101295838861d174",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HinagikuKenzan",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/HisokaReturns.jpg",
+   "bytes": 1195114,
+   "sha256": "ffa96cd58d8daf714b7f473a94c9f5603b1e5af65846b410b3bbf5c5f0df7cdf",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "HisokaReturns",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/JangiriPonpon.jpg",
+   "bytes": 1070358,
+   "sha256": "3f3eec4f4a977f7f6522935e12664ba01aca95e95eb44b692affaa606a5ea927",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "JangiriPonpon",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/JijiBabaFight.jpg",
+   "bytes": 1030224,
+   "sha256": "f0b6d5f9f87451edd0b56279bf67bfcf04277eedf19fdec908a637953d79a652",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "JijiBabaFight",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/Joouari.jpg",
+   "bytes": 1162869,
+   "sha256": "de40fc5262de56dd606a3ee0c1ce8b8d975ecb6fdcf22e5e0b53117bd93be6f8",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Joouari",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/Jyovolley.jpg",
+   "bytes": 756108,
+   "sha256": "d140733e7fc290e37f9d9042c94fd05f7e4f1e14503af2dc0b1b0d998b1be76c",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Jyovolley",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/KarappoHighschool.jpg",
+   "bytes": 804719,
+   "sha256": "1e9fb8c504897d742915b7b6028be5edf88075238460b03254c70e3cefa23cd1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "KarappoHighschool",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/KimiHaBokuNoTaiyouDa.jpg",
+   "bytes": 1409252,
+   "sha256": "cf2f91269770288165bb146b48a62577e53bbe0f64b9303c0ca05d0dfe777d16",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "KimiHaBokuNoTaiyouDa",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/KoukouNoHitotachi.jpg",
+   "bytes": 1148421,
+   "sha256": "43c20ca80c85f25c6788204a454a50de22d66804f7b75a850a90f222f8ef195a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "KoukouNoHitotachi",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/KuroidoGanka.jpg",
+   "bytes": 953773,
+   "sha256": "492ffcf509f696c92e387dff8b0490d9f81eebc3668376bc5bfe0641ff708774",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "KuroidoGanka",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/KyokugenCyclone.jpg",
+   "bytes": 1261084,
+   "sha256": "c401d0dbbbea03e59d32b8d6b82fbca00f592077e64d9a00d1640b1996eb8660",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "KyokugenCyclone",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/LancelotFullThrottle.jpg",
+   "bytes": 672154,
+   "sha256": "ceeb379b47c538e8971c16af94af8dabe2f77ccb242372f189465c2fa47eb046",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "LancelotFullThrottle",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/LoveHina_vol01.jpg",
+   "bytes": 331849,
+   "sha256": "1de26d71071472f4ddc0dd748abf899cd49462d38277e3eaccf072cd415ff4d4",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "LoveHina_vol01",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/LoveHina_vol14.jpg",
+   "bytes": 1154131,
+   "sha256": "839e1c5ec661e8733f9aaf6c7603ea1f2cba56aea67d3f0b46f80619e67f7002",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "LoveHina_vol14",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MAD_STONE.jpg",
+   "bytes": 811288,
+   "sha256": "a5c7e28f37d2b3e649d135d24acd448431f66f8883ea834b0fea2c9dfdf7143c",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MAD_STONE",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MadouTaiga.jpg",
+   "bytes": 1237685,
+   "sha256": "62eb4bb65316e07c0d15faa8b342668c4d397c8188854ee5363ba0c898bda884",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MadouTaiga",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MagicStarGakuin.jpg",
+   "bytes": 1184715,
+   "sha256": "ab783681c9e0a991032b3b32f62f492e867e50cf5f81a27139ec23d7e5aba1c3",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MagicStarGakuin",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MagicianLoad.jpg",
+   "bytes": 1139458,
+   "sha256": "56ad14cc60f6582e18266c2bb59b7a730f8a12a551fad0c660df36f815c336fa",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MagicianLoad",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MariaSamaNihaNaisyo.jpg",
+   "bytes": 892022,
+   "sha256": "7495d1f5db28618dcc553e1d13960b5b33a7c0a43a9f2a01a941bc5eed519a13",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MariaSamaNihaNaisyo",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MayaNoAkaiKutsu.jpg",
+   "bytes": 840276,
+   "sha256": "af9ee78c463893d4bf7b77007afc0ba342412a69029da042086b9bc4f6bc6234",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MayaNoAkaiKutsu",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/MemorySeijin.jpg",
+   "bytes": 769599,
+   "sha256": "88c23aa772ab2d750a6ad65d1526438d2f9c996151db0ce64b29810dd623efbe",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MemorySeijin",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MeteoSanStrikeDesu.jpg",
+   "bytes": 922295,
+   "sha256": "c74ea0b374a0dccf2356a7a9ca4ccfc1f53a056f2751d4698f5632e9b3770da1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MeteoSanStrikeDesu",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/MiraiSan.jpg",
+   "bytes": 1520898,
+   "sha256": "3bfc6efa53d44e80f739f2012a54ddc806dccd57cd4a7b9449f02edb350f14a7",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MiraiSan",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MisutenaideDaisy.jpg",
+   "bytes": 595188,
+   "sha256": "6da21c81d7a2109185ceeceb8aabda3b48e39c336ec90d324fd3ab2c85ab1b45",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MisutenaideDaisy",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MoeruOnisan_vol01.jpg",
+   "bytes": 958126,
+   "sha256": "919cfb538ef67f9e2ae06c57d583f716a08567a80bdd27675aa2a24c3dca60df",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MoeruOnisan_vol01",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/MoeruOnisan_vol19.jpg",
+   "bytes": 1033539,
+   "sha256": "c11eaadedf3665a36ed12e8f8541cff7f4f06c345bfec24485d02b5635f38ee1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MoeruOnisan_vol19",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/MomoyamaHaikagura.jpg",
+   "bytes": 1089264,
+   "sha256": "62e8836bb1edf1f3c76040d041c135af6ba9d935db6b6972fe8be82fdf203a4e",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MomoyamaHaikagura",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MukoukizuNoChonbo.jpg",
+   "bytes": 624963,
+   "sha256": "79a8372201419a42b6783c9cdab56c82a290e84d9a939831fe31ad1f26dab312",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MukoukizuNoChonbo",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/MutekiBoukenSyakuma.jpg",
+   "bytes": 1001219,
+   "sha256": "5dc4325612d981825c8d03d25d67435cb646ebd312fa5ef939dadda5f2e0adc1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "MutekiBoukenSyakuma",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/Nekodama.jpg",
+   "bytes": 993670,
+   "sha256": "b63c478d86ee367bacf77a31eb728647fddc261e36a3cae1583e079bcf14e4f7",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Nekodama",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/NichijouSoup.jpg",
+   "bytes": 881781,
+   "sha256": "e25c0a9220a8451226401d8ee21f4e61e1e73c4034a8b78940e09ecaafe60a6b",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "NichijouSoup",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/Ningyoushi.jpg",
+   "bytes": 859937,
+   "sha256": "1cf7d592db548c319974c275b190f4cccc07ebf655c74176c5f83c9068f57565",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Ningyoushi",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/OL_Lunch.jpg",
+   "bytes": 761796,
+   "sha256": "00fef00a60a816e3e6ae3e175f2f25c27ed40e2b1924628d8a1cddd04e18b291",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "OL_Lunch",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/OhWareraRettouSeitokai.jpg",
+   "bytes": 882413,
+   "sha256": "2beaf980c3ca31e07cc04066da729f3514f7bf02516a491ba30b936e508e6338",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "OhWareraRettouSeitokai",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/PLANET7.jpg",
+   "bytes": 985829,
+   "sha256": "8a0bb8c109dbbe8c1ac8a0352c68e4983b1ac9db30b8d34820751212191c895c",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "PLANET7",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/ParaisoRoad.jpg",
+   "bytes": 1041933,
+   "sha256": "1d143fde8335bd764365f8d42cf2abf41e1b8d3301bbf8f9a33e6cc164d0d5a9",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ParaisoRoad",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/PikaruGenkiDesu.jpg",
+   "bytes": 1011818,
+   "sha256": "a40f19729b0797a5db33225422442394b2beb24eb5a8b66d1d7ae5d989ba9184",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "PikaruGenkiDesu",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/PlatinumJungle.jpg",
+   "bytes": 1016610,
+   "sha256": "7d92aaa5f387dd5116e0afd359f6779cd142f3fbaa4e905bc460a5326db3a476",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "PlatinumJungle",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/PrayerHaNemurenai.jpg",
+   "bytes": 829720,
+   "sha256": "4e89780f8e0c77283a7ca68bfb40ca2544faac5f4feb848c0b6369da04c99678",
+   "dims": [
+    742,
+    1072
+   ],
+   "title": "PrayerHaNemurenai",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/PrismHeart.jpg",
+   "bytes": 696322,
+   "sha256": "21499e02ef74fa979edfd6723ab4540f3cfeb0a1f8c73d7b6269d7a61d6faea5",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "PrismHeart",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/PsychoStaff.jpg",
+   "bytes": 856841,
+   "sha256": "77b4e7a7d756a9b874390405ff53fd7aa601be6bc473cd8912600888b359b78d",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "PsychoStaff",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/Raphael.jpg",
+   "bytes": 1099581,
+   "sha256": "d4ddfa5858b2e33bc4f46f1043f0689a9ef984fc736282db32787f0ddb9077d0",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Raphael",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/ReveryEarth.jpg",
+   "bytes": 1045310,
+   "sha256": "289dd1e1b377cbc541c555d9540d511067dd7d124fe4e2e1d7c637f9be6f719b",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ReveryEarth",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/RinToSiteSippuNoNaka.jpg",
+   "bytes": 933731,
+   "sha256": "b1968ac80fc4afcdb8ce6f39caf860cf0b0a9ae754120255990d834917eb0bc8",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "RinToSiteSippuNoNaka",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/RisingGirl.jpg",
+   "bytes": 1266591,
+   "sha256": "298fcb9b132a391ed17be450e094a8f7e2530dfdba16ae38a46a162916fdad00",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "RisingGirl",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/Saisoku.jpg",
+   "bytes": 1310758,
+   "sha256": "2067b555ac124f097b1a0acf2d2d3bd4b6af0884d95097bd10cc1bfbfe6d6079",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Saisoku",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/SaladDays_vol01.jpg",
+   "bytes": 767247,
+   "sha256": "a03d0aa273b286f243b843534176eb89b79e9d95ee3a1bc81264047fdad724c1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SaladDays_vol01",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/SaladDays_vol18.jpg",
+   "bytes": 749846,
+   "sha256": "bdcaeea0b189f5f0c98a4c32b377c8bfff2379c24db3ee5f08713ae25a54557a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SaladDays_vol18",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/SamayoeruSyonenNiJunaiWo.jpg",
+   "bytes": 1111964,
+   "sha256": "ad01d6ad96d778675417274dd69d564da6a3d223c8ebdf2949f57ad4ab7ac3c1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SamayoeruSyonenNiJunaiWo",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/SeisinkiVulnus.jpg",
+   "bytes": 970049,
+   "sha256": "b4656cececae2a47c9e7f12232fc125d4d4e77decdea41afe8df49761227f72d",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SeisinkiVulnus",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/ShimatteIkouze_vol01.jpg",
+   "bytes": 990077,
+   "sha256": "aba05be9c130d2832a5ac6cc6ddb91077ee8b3d57937ab562a0fe33626ad0dbd",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ShimatteIkouze_vol01",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/ShimatteIkouze_vol26.jpg",
+   "bytes": 1039326,
+   "sha256": "7f22580c48ac5a8462d35510c8d9bf9e988351eecf0bdc0f27c4291911787eae",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ShimatteIkouze_vol26",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/SonokiDeABC.jpg",
+   "bytes": 1047973,
+   "sha256": "29c84163a13671daa9f85054072491793d47a22403679b12e31caec96c154f39",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SonokiDeABC",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/SyabondamaKieta.jpg",
+   "bytes": 1067539,
+   "sha256": "a1fb89ee936347a5f6ee05df765b632c6d2c135d940c3c4cb1fb9006d48ad66d",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "SyabondamaKieta",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TaiyouNiSmash.jpg",
+   "bytes": 925748,
+   "sha256": "6f692d5a49f56b4c87bc9bb4acf273e7be5857bec4775abe15c0ad7a710e40dc",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TaiyouNiSmash",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TapkunNoTanteisitsu.jpg",
+   "bytes": 763488,
+   "sha256": "5889ab2c8d3e586f71063781317e318aec1c43cc5bad9f6c206b8dd2e2bb8cce",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TapkunNoTanteisitsu",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TasogareTsushin.jpg",
+   "bytes": 840231,
+   "sha256": "8b8a783c5663287a3114a667a0f864d79fe417949486d10b5147068567ebcbcb",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TasogareTsushin",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TennenSenshiG.jpg",
+   "bytes": 1321519,
+   "sha256": "2e8eb04937d543e3825e95e9472f9fdebc1df25be9bad9c44db4fd11e1a704d4",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TennenSenshiG",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TensiNoHaneToAkumaNoShippo.jpg",
+   "bytes": 1091298,
+   "sha256": "357b39eb2399a3c4d662a6b03710e19c68171b74aae6216486878926c6039d40",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TensiNoHaneToAkumaNoShippo",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TetsuSan.jpg",
+   "bytes": 417596,
+   "sha256": "2a75f3233bb5816b355b43cad2721647757a7af573a9c31120c972a97a2651f4",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TetsuSan",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/ThatsIzumiko_000.jpg",
+   "bytes": 1713767,
+   "sha256": "8faaecc07f291a1bad758dffa34736f6d40b4447f547b5dfe03ee48a52775a17",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ThatsIzumiko_000",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TotteokiNoABC.jpg",
+   "bytes": 841680,
+   "sha256": "fb00c5c1eb82708d7f862a98af24d56a6d49c2e6c6b99e44b2eb385dbddd3fa2",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TotteokiNoABC",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/ToutaMairimasu.jpg",
+   "bytes": 1236433,
+   "sha256": "a9472fc7ea346366fd638dbe473cbd8d0735903b1217f80afed12678fc255982",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ToutaMairimasu",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TouyouKidan.jpg",
+   "bytes": 1141636,
+   "sha256": "68e7c12fafd5360d86fd3c8903921d3baa05e0ad9f9e810c84b25fa5b214c41e",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TouyouKidan",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/TsubasaNoKioku.jpg",
+   "bytes": 1093680,
+   "sha256": "1ca044e1c5529c64bababd830b4dd4fbb721c5e83ab31e8a0354ba68ad1850b0",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "TsubasaNoKioku",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/UchiNoNyansDiary_000.jpg",
+   "bytes": 648845,
+   "sha256": "8524180d2effc0908fbccb41e0f4af53a020b3dc4d706297093bede3eb757cec",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "UchiNoNyansDiary_000",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/UchuKigekiM774.jpg",
+   "bytes": 1309455,
+   "sha256": "a57fce34c98e9fd9dc24937c1bb8847770875b598d90f4429113dc35c9b7adef",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "UchuKigekiM774",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/UltraEleven.jpg",
+   "bytes": 1331373,
+   "sha256": "1891c24a1a34c714dc40f6a5c2a0a562fe81d3860c4e7960c6fe13a98362f404",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "UltraEleven",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/UnbalanceTokyo.jpg",
+   "bytes": 964023,
+   "sha256": "75217c8a836081b35d0a3f5b8c39eee557022f9d2c8c32b869241fa68e8250e0",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "UnbalanceTokyo",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/WarewareHaOniDearu.jpg",
+   "bytes": 1545551,
+   "sha256": "6f4b7750f43617997bbcfcb78bb8590bc545198dee30fd34962141d609769e2f",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "WarewareHaOniDearu",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YamatoNoHane.jpg",
+   "bytes": 881070,
+   "sha256": "553113838dae2154a390cccad74d8b20373244a5d0f8655458cd2e9afb48afc6",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YamatoNoHane",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YasasiiAkuma.jpg",
+   "bytes": 881907,
+   "sha256": "9ab8747981adb66dd9c76ac251feaa074725d1853f266ed5c39516def4e46fa0",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YasasiiAkuma",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YouchienBoueigumi.jpg",
+   "bytes": 684935,
+   "sha256": "bec751796c00c383b39d4ec1ad670baab65ec192459890d951b4db7f2495182a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YouchienBoueigumi",
+   "manga109s": false
+  },
+  {
+   "path": "Originals/YoumaKourin.jpg",
+   "bytes": 1141435,
+   "sha256": "5d30cc07360a6b977f3af9a6a7f5d15a9cfd90c41f3fdea6c2564feb61a5cca0",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YoumaKourin",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YukiNoFuruMachi.jpg",
+   "bytes": 824047,
+   "sha256": "052fec59cf06deb40cad5666fca7c0d76d5fca797ecbb4c8a794be0b4cb481e8",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YukiNoFuruMachi",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YumeNoKayoiji.jpg",
+   "bytes": 1107532,
+   "sha256": "0bf8b67c62ec5f096b252f5260facd8090e3fbc1334ee3d2b5925a4270cdb7ae",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YumeNoKayoiji",
+   "manga109s": true
+  },
+  {
+   "path": "Originals/YumeiroCooking.jpg",
+   "bytes": 1078559,
+   "sha256": "f7a3e2a1a7fa87b82b3f64d2ca8c8aced50aab94e64b575d528ceb5837b1a0f3",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "YumeiroCooking",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/ARMS.jpg",
+   "bytes": 1200898,
+   "sha256": "9026349906f938579fa369b6fc21f0f2da392cd4fe3ab7f103e1d7fdccfe8948",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ARMS",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/AisazuNihaIrarenai.jpg",
+   "bytes": 1332959,
+   "sha256": "62c2776bca42d4c90535b0793e109ab0a2354ce74140c43a21b427d3e1768a16",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "AisazuNihaIrarenai",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/AkkeraKanjinchou.jpg",
+   "bytes": 1110942,
+   "sha256": "b86014a58a75a8750ddf8c19fc97af6568339a1c960c55c313fd4766d042cda7",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "AkkeraKanjinchou",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/Akuhamu.jpg",
+   "bytes": 853539,
+   "sha256": "0fa767c0e1fa64bdb3c0ea22958afa17a7eef30e296c42f81f0cbcc6c5e8ac1a",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Akuhamu",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/AosugiruHaru.jpg",
+   "bytes": 687044,
+   "sha256": "71444c2840592af86ccbe6c770a3c56394e0e1e0c53367498be89f660efde4cf",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "AosugiruHaru",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/AppareKappore.jpg",
+   "bytes": 1071900,
+   "sha256": "678c6e7df2583cde6aefd22b4b1632450e901710dc4eb5cdbb8a0c76444c4abd",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "AppareKappore",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/Arisa.jpg",
+   "bytes": 943745,
+   "sha256": "9eeb72fd41f5ee068500a27eab8418f99f5251744c26c312546edc7130c0f84e",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Arisa",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/BEMADER_P.jpg",
+   "bytes": 919863,
+   "sha256": "9101b196510b7f2bb6c26869f9e465d8f69e63fdf3a311c681ae27600d582b40",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "BEMADER_P",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/BakuretsuKungFuGirl.jpg",
+   "bytes": 1134534,
+   "sha256": "c7d805446fa5664e89d43683b957beaccbdd55361db8657c3b69507625a07436",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "BakuretsuKungFuGirl",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/Belmondo.jpg",
+   "bytes": 1075205,
+   "sha256": "f53dd9034a1dd8d75e650814f4e786530451b921c5a123a3fa3d467fae82e684",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Belmondo",
+   "manga109s": false
+  },
+  {
+   "path": "ValidOriginals/BokuHaSitatakaKun.jpg",
+   "bytes": 926669,
+   "sha256": "8f1f7f185cfbf90efda137c83ca4518556fde785097279610f1de2be39daab5d",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "BokuHaSitatakaKun",
+   "manga109s": false
+  },
+  {
+   "path": "ValidOriginals/BurariTessenTorimonocho.jpg",
+   "bytes": 1274072,
+   "sha256": "b4c06f00764c59878c430ba8fc53a67d6257d6bbdc7b7821445574f6ee3eaa52",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "BurariTessenTorimonocho",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/ByebyeC-BOY.jpg",
+   "bytes": 805454,
+   "sha256": "e48371ef1e95c1b77f1ae5dce3ceadbffb2c5e52a4b1d8e937bd4f6ce7c99b2b",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "ByebyeC-BOY",
+   "manga109s": false
+  },
+  {
+   "path": "ValidOriginals/Count3DeKimeteAgeru.jpg",
+   "bytes": 1124076,
+   "sha256": "64381d226498bf035ad84f493297b6a02669da4b856477717e64f5aea8b100b1",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Count3DeKimeteAgeru",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/DollGun.jpg",
+   "bytes": 1132498,
+   "sha256": "e2a611ac864889c5d39221c47271075cb87c513fe16f3a6d306f3c1c15b3edfc",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "DollGun",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/Donburakokko.jpg",
+   "bytes": 1207439,
+   "sha256": "55a0966d8244c66721ade3640f1692385180e6309354393bf3263407e6d5ceb5",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "Donburakokko",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/DualJustice.jpg",
+   "bytes": 869519,
+   "sha256": "49dd66231793a5a24e02cfad648ac2b9fa86c20f3760aa55d8c9a7506d12206d",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "DualJustice",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/EienNoWith.jpg",
+   "bytes": 525508,
+   "sha256": "03a1410ce09c0f7137e8f6b450dbe584c7aa7767a2561fdd9f051a900576f7d2",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "EienNoWith",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/EvaLady.jpg",
+   "bytes": 846642,
+   "sha256": "acacb1a71d15d9359fbb9c5372e5efd2d74a0a76eb956cf471afed12efb0e6d2",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "EvaLady",
+   "manga109s": true
+  },
+  {
+   "path": "ValidOriginals/EverydayOsakanaChan.jpg",
+   "bytes": 430577,
+   "sha256": "4a6f20aeec6b35c334213e554649923400632c4ddf3e89f23e1c5d8a13cb6724",
+   "dims": [
+    810,
+    1080
+   ],
+   "title": "EverydayOsakanaChan",
+   "manga109s": true
+  }
+ ],
+ "tile_dirs": {
+  "HR": {
+   "files": 2670,
+   "bytes": 44247748,
+   "list_sha256": "7988b53b7d619535cfec22a1d2691b843c569c529c3895643c5dd06562be064c",
+   "titles": 89
+  },
+  "LR": {
+   "files": 2670,
+   "bytes": 4986373,
+   "list_sha256": "df3342e58e2ead3d16813b11e9b1b894d124a54db18719588a93de5361d41134",
+   "titles": 89
+  },
+  "ValidHR": {
+   "files": 600,
+   "bytes": 9685566,
+   "list_sha256": "4823c7ddd41489fa3ba8e83e91eda0f27bfa7214cf33eb33fe5d72a16cf10c9b",
+   "titles": 20
+  },
+  "ValidLR": {
+   "files": 600,
+   "bytes": 1102676,
+   "list_sha256": "79669c6614605e300bbaaecae252e8f17699a2b2366e4ecea479f94fd33c0825",
+   "titles": 20
+  }
+ },
+ "other_files": [
+  {
+   "path": "ValidHR/BatchTile.sh",
+   "bytes": 115,
+   "sha256": "483c4925411fcf5b6a61eba45bd65ef88b16948ab9048ca0b07b23076d7e235b"
+  }
+ ],
+ "counts": {
+  "covers": 109,
+  "covers_manga109s": 87
+ }
+}

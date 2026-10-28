@@ -47,6 +47,11 @@ Rubi 0.10.0's pins (bee-san/Rubi_for_vita release
   `VOCR4_W20_w8.vocr`, the cascade model of a request by name; `VOCR3_H15_w8.vocr` and `VOCR3_FL10_w8.vocr`.
 - **Rubi 0.9.8**, the release before, pins VOCR5's v0.3.6-head2level.1 blobs as its sizes (`VOCR5_S_w8g.vocr`,
   `VOCR5_N_w8g2.vocr`, `VOCR5_L_w8g2.vocr`) and no spotter; its LMs, vertical model and gate are the ones above.
+- **Rubi main after 0.10.0** (bee-san/Rubi_for_vita#505, `1c9303c`) pins **VOCR6-V** as its vertical model:
+  `VOCR6_V_w8.vocr` (819,792 B, sha256 `40485fce…2eb4eea81`) of pre-release
+  [v0.4.2-vertical6.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.4.2-vertical6.1) (#159,
+  `docs/vocr6v.md`), with that release's `ATTRIBUTION.md` as `VERTICAL-ATTRIBUTION.md`. It is not in this release,
+  whose table stays Rubi 0.10.0's; Rubi's next release ships it.
 
 ## The recognizers
 

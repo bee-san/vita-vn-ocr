@@ -51,6 +51,14 @@ def input_paths(a):
             "blob_old": Path(a.blob_old), "blob_new": Path(a.blob_new), "tool": Path(a.tool)}
 
 
+def attempt_doc(a, head, start):
+    """The attempt record main() writes before anything is read: every input's sha256 and path under its own key."""
+    files = input_paths(a)
+    return {"kind": "vocr6v-test-attempt", "start": start, "head": head,
+            "inputs": {key: sha(path) for key, path in files.items()},
+            "paths": {key: str(path) for key, path in files.items()}}
+
+
 def models_dir(base, blob, out):
     out.mkdir(parents=True, exist_ok=True)
     for f in Path(base).iterdir():
@@ -89,11 +97,8 @@ def main():
     rec = Path(a.attempts) / "vocr6v-test.json"
     if rec.exists():
         raise SystemExit(f"{rec} exists: the test set has been read already")
-    files = input_paths(a)
     head = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"]).decode().strip()
-    doc = {"kind": "vocr6v-test-attempt", "start": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": head,
-           "inputs": {key: sha(path) for key, path in files.items()},
-           "paths": {key: str(path) for key, path in files.items()}}
+    doc = attempt_doc(a, head, time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     Path(a.attempts).mkdir(parents=True, exist_ok=True)
     rec.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     work = Path(a.work)

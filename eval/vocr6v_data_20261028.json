@@ -3,7 +3,7 @@
  "issue": "https://github.com/bee-san/vita-vn-ocr/issues/159",
  "what": "counts, hashes and report-only checks that docs/vocr6v.md cites beside the decisions record (audit-vocr-manga109 N3, N7, N8, F2); nothing here decides anything. Written after the test read; it holds no test-set score",
  "console_columns": {
-  "tool": "data/vertical_hooked.py cil (rebuilt 2026-10-28 ~11:40Z: every rebuilt shard is byte for byte the one the runs trained on)",
+  "tool": "data/vertical_hooked.py cil (rebuilt 2026-10-28 11:35:02-09Z (heavy.log): every rebuilt shard is byte for byte the one the runs trained on)",
   "pools": {
    "vcil_train": {
     "splits": [

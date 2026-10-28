@@ -143,7 +143,9 @@ column finder has no weights, so there was nothing to train on the covers for it
   Of the train pages' 1,498 columns, 1,286 came out whole; the finder's other boxes were 179 partial and 2 empty
   (`eval/vocr6v_data_20261028.json`, `console_columns`: a rebuild gives the same shards byte for byte). A
   contact sheet of 40 random crops, checked by eye (Claude), had no wrong label.
-- **Held out:** Yunohana's 35 hval pages (50 columns) and the 30 guard pages around them, until the fold-in run.
+- **Held out:** Yunohana's 35 hval pages and the 30 guard pages around them, until the fold-in run. The hval pages
+  hold 55 dialogue columns, the ones the tight units score; 50 of them are in the hval box-crop pool
+  (`pools/v1/hval/vertical`).
   #103's development and test sets are in no source.
 
 ## Protocol (`eval/vocr6v_protocol.json`, tag `vocr6v-protocol-2bbb9e1`)
@@ -161,8 +163,9 @@ EMA 0.999. The last checkpoint is the model. Seeds 1, 2 and 3.
   otherwise), with vita-vn-ocr runtime `f8a1856` (Rubi's pin), through Rubi's `tools/vertical_eval.py`.
 - The build is measurement-only (`eval/vocr6v_rubi_measure.patch`):
   - the job skips the SHA-256 check of every file it reads (their sizes are still checked), so the candidate blob
-    can sit in `VOCR5_V_w8.vocr`'s place. Every other file of each arm's models directory was checked instead: all
-    15 equal Rubi `eef0fc41`'s pins (`eval/vocr6v_data_20261028.json`, `scoring_models_dirs`);
+    can sit in `VOCR5_V_w8.vocr`'s place. The other files of each arm's models directory were checked instead: its
+    15 Rubi-pinned files all equal Rubi `eef0fc41`'s pins, and its one other file is the screening LM `h64_1000k`
+    (below; `eval/vocr6v_data_20261028.json`, `scoring_models_dirs`);
   - for hval, the 1 MB LM tier is the screening build `h64_1000k`, whose text holds no hval page: the shipped
     `vocr_lm6_o3_1000k` holds hval's text (docs/vocr6-lm.md).
 - The metric is dialogue CER per unit (`eval/vocr6v.py`, `vertical_eval.py`'s own `score_unit`).
@@ -259,9 +262,9 @@ hard PC clusters, so the test cohort has less error to remove.
   #103's development set, where both cohorts improved (VN by 1.45 points). On the test set the change is level.
 - **Yunohana SpRING! is seen in #103's test set.** It is one PS Vita page there (30 characters) and the hooked title
   VOCR6-V trained on. Rubi's 1 MB LM holds its hooked text too. The table gives the test VN without it.
-- **Repeated text in hval.** 4 of hval's 55 columns (23 of 682 characters) have the same text as a train page's
-  column. Without the 4 pages that hold them, V6h − VOCR5-V on hval is −3.39 [−4.61, −2.24], every pair below 0
-  (`eval/vocr6v_data_20261028.json`, `hval_repeated_text`), so the result does not rest on them.
+- **Repeated text in hval.** 4 of the hval pages' 55 scored columns (23 of 682 characters) have the same text as a
+  train page's column. Without the 4 pages that hold them, V6h − VOCR5-V on hval is −3.39 [−4.61, −2.24], every pair
+  below 0 (`eval/vocr6v_data_20261028.json`, `hval_repeated_text`), so the result does not rest on them.
 - **The cover labels** come from one Claude review pass plus an engine's agreement, not #103's two blind passes. They
   are in no released model.
 - **\* A deviation from the protocol:** V6hm's cover source holds each of the 19 columns at full and at half scale

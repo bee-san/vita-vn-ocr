@@ -123,6 +123,10 @@ def test_test_once_records_every_input_under_its_own_key(tmp_path):
     assert len({T.sha(p) for p in files.values()}) == 7
     assert files["public/columns_test.jsonl"].parent.name == "pub"
     assert files["private/columns_test.jsonl"].parent.name == "priv"
+    doc = T.attempt_doc(a, "0" * 40, "2026-10-28T00:00:00Z")   # the record main() writes (audit -b n1)
+    assert set(doc["inputs"]) == set(doc["paths"]) == set(files) and len(doc["inputs"]) == 7
+    assert len(set(doc["inputs"].values())) == 7
+    assert doc["inputs"]["public/columns_test.jsonl"] != doc["inputs"]["private/columns_test.jsonl"]
 
 
 def test_console_column_classify():

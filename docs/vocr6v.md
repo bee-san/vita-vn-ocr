@@ -5,7 +5,8 @@ This document covers four things:
 - what that download holds;
 - what could be taken from it;
 - VOCR6-V, VOCR5-V's successor (#99, `docs/vertical.md`);
-- the record of the pre-registered protocol (`eval/vocr6v_protocol.json`, frozen before any score) and its results.
+- the record of the pre-registered protocol (`eval/vocr6v_protocol.json`, frozen before any score of this
+  workstream; Rubi #335's figures for the incumbent through the same job were known) and its results.
 
 Every number is a host measurement unless it is marked as an estimate. Nothing here has run on a console.
 
@@ -67,17 +68,28 @@ and each tile directory's file count, bytes and list hash.
 
 87 covers are of Manga109-s volumes and 22 of volumes in Manga109 only (manga109.org's title list, 2026-10-28).
 
-**Licence.** No terms came in the zip, so the published ones apply (manga109.org; the Hugging Face cards):
+**Licence.** Which terms the owner's application came with is not known: none came in the zip, and none was passed
+on. The published ones (manga109.org; the Hugging Face cards) are:
 
 - **Manga109:** academic, non-commercial use only; no part may be redistributed to third parties.
 - **Manga109-s:** machine-learning use is allowed, and so is publishing the results, pre-trained models included,
   when the published work says clearly that Manga109-s was used. Its images may not be redistributed, sold or
   treated as products.
 
-Here the files stay on the box (`shared/private/manga109`, 700/600). They are never committed, uploaded or sent to a
-service (no Codex, no Lens). The readers are local: MeikiOCR, PP-OCRv6 small, and Claude on local contact sheets.
-Only the 87 Manga109-s covers could have entered a training set; none is in a released model (above). The private
-licence note is `shared/private/manga109/LICENCE_NOTE.md`.
+The download holds all 109 volumes' covers, the 22 Manga109-only ones included, which points to the Manga109
+(academic) route. So until the owner confirms Manga109-s terms (or applies for Manga109-s, below), the whole
+download is treated as Manga109 under the academic terms: no training data for a released model. V6hm trained on 19
+Manga109-s cover columns (below); it was not adopted, and its blobs and checkpoints stay private, never released.
+
+How the files were handled:
+- They stay on the box (`shared/private/manga109`, 700/600), and are never committed, uploaded or sent to Codex,
+  Lens or any other service.
+- MeikiOCR and PP-OCRv6 small read them offline (`unshare -rn`).
+- Claude (the fleet's assistant reviewer, the model this workstream runs on) viewed 8 contact sheets of the covers'
+  columns, as the task and the fleet's rules direct for its own sheet reviews. Claude is a hosted model, so those
+  sheets' pixels reached its API as part of that review; they went nowhere else.
+
+The private licence note is `shared/private/manga109/LICENCE_NOTE.md`.
 
 ### What the covers gave (`data/manga109_covers.py`)
 
@@ -128,7 +140,8 @@ column finder has no weights, so there was nothing to train on the covers for it
     another text box;
   - it is labelled with that column's hooked text, and cut, turned and inverted as Rubi's job does.
 
-  Of the train pages' 1,498 columns, 1,286 came out whole; the finder's other boxes were 179 partial and 2 empty. A
+  Of the train pages' 1,498 columns, 1,286 came out whole; the finder's other boxes were 179 partial and 2 empty
+  (`eval/vocr6v_data_20261028.json`, `console_columns`: a rebuild gives the same shards byte for byte). A
   contact sheet of 40 random crops, checked by eye (Claude), had no wrong label.
 - **Held out:** Yunohana's 35 hval pages (50 columns) and the 30 guard pages around them, until the fold-in run.
   #103's development and test sets are in no source.
@@ -141,13 +154,15 @@ EMA 0.999. The last checkpoint is the model. Seeds 1, 2 and 3.
 | arm | vsyn | vra | vps | vhk | vcil | Manga109-s covers |
 |---|---:|---:|---:|---:|---:|---:|
 | V6h | 0.60 | 0.10 | 0.05 | 0.15 | 0.10 | |
-| V6hm | 0.57 | 0.10 | 0.05 | 0.15 | 0.10 | 0.03 (38 crops: 19 columns, each also at half scale) |
+| V6hm | 0.57 | 0.10 | 0.05 | 0.15 | 0.10 | 0.03 (38 crops: 19 columns, each also at half scale\*) |
 
 **Scoring: Rubi's own job.**
 - The tool: Rubi main `eef0fc41`'s `host/page_ocr.c` (`vjo-page-ocr --vertical on --line-fix on`, Rubi's defaults
   otherwise), with vita-vn-ocr runtime `f8a1856` (Rubi's pin), through Rubi's `tools/vertical_eval.py`.
 - The build is measurement-only (`eval/vocr6v_rubi_measure.patch`):
-  - the job takes any blob of the pinned size in `VOCR5_V_w8.vocr`'s place;
+  - the job skips the SHA-256 check of every file it reads (their sizes are still checked), so the candidate blob
+    can sit in `VOCR5_V_w8.vocr`'s place. Every other file of each arm's models directory was checked instead: all
+    15 equal Rubi `eef0fc41`'s pins (`eval/vocr6v_data_20261028.json`, `scoring_models_dirs`);
   - for hval, the 1 MB LM tier is the screening build `h64_1000k`, whose text holds no hval page: the shipped
     `vocr_lm6_o3_1000k` holds hval's text (docs/vocr6-lm.md).
 - The metric is dialogue CER per unit (`eval/vocr6v.py`, `vertical_eval.py`'s own `score_unit`).
@@ -167,6 +182,10 @@ guard folded in, ships unless its dev VN or manga interval against its sibling l
 bootstrap resamples, seed 0, by page (hval), series cluster (VN) and book page (manga).
 
 ## Results (`eval/vocr6v_decisions_20261028.json`)
+
+The decisions record was committed before the test read (tag `vocr6v-selection-d6499da`). Since then it has
+only gained each comparison's bootstrap `unit` (page, cluster, book), no value. The counts and report-only checks
+below are in `eval/vocr6v_data_20261028.json`.
 
 **V6h over VOCR5-V: adopted.**
 
@@ -201,15 +220,24 @@ Its hval, 3.67%, is not held out. The released blob is `VOCR6_V_w8.vocr`, sha256
 | dev, #103's fixed VN columns (its primary metric) | 10.64% | 9.14 / 9.76 / 9.54% | 9.54% |
 | dev, #103's fixed manga columns | 2.70% | 2.76 / 2.76 / 2.70% | 2.63% |
 
-#103's fixed-column metric agrees on VN: V6h − VOCR5-V is −1.50, −0.88 and −1.10 points, each interval below 0.
+#103's fixed-column metric agrees on VN: V6h − VOCR5-V is −1.50, −0.88 and −1.10 points, each interval below 0
+(`eval/vocr6v_data_20261028.json`, `fixed_columns_dev`).
 Manga columns are level. Column recall on the tight units is 0.891 on hval for every model and 0.83 on development
 regions (PC 0.69, PSP 1.00): the finder did not change.
 
 ## The test set, once (`eval/vocr6v_test_20261028.json`)
 
 After the selection was committed and pushed (tag `vocr6v-selection-d6499da`), `eval/vocr6v_test_once.py` read
-#103's vertical test set once, 2026-10-28T09:59:14Z to 09:59:29Z. Its attempt record hashes the inputs. A dry run
-before it, on development data relabelled as test, read no test data. Report only:
+#103's vertical test set once, 2026-10-28T09:59:14Z to 09:59:29Z. A dry run before it, on development data
+relabelled as test, read no test data.
+
+**The attempt record hashes 5 of the read's 7 inputs:** the private sets, both blobs and the tool. The script keyed
+the four sets by file name, and the private sets share the public ones' names, so the public manifests' hashes were
+lost to that collision. The script now keys every input apart, and a test checks it. As provenance, the public
+manifests' sha256 today equal #103's attempt record's (`731051b9…`, `4ad6df40…`), and the files were last modified on
+2026-10-18 (`eval/vocr6v_data_20261028.json`, `test_inputs_provenance`). The read used those bytes.
+
+Report only:
 
 | test, dialogue CER | VOCR5-V | VOCR6-V (released) | difference [95%] |
 |---|---:|---:|---|
@@ -231,8 +259,14 @@ hard PC clusters, so the test cohort has less error to remove.
   #103's development set, where both cohorts improved (VN by 1.45 points). On the test set the change is level.
 - **Yunohana SpRING! is seen in #103's test set.** It is one PS Vita page there (30 characters) and the hooked title
   VOCR6-V trained on. Rubi's 1 MB LM holds its hooked text too. The table gives the test VN without it.
+- **Repeated text in hval.** 4 of hval's 55 columns (23 of 682 characters) have the same text as a train page's
+  column. Without the 4 pages that hold them, V6h − VOCR5-V on hval is −3.39 [−4.61, −2.24], every pair below 0
+  (`eval/vocr6v_data_20261028.json`, `hval_repeated_text`), so the result does not rest on them.
 - **The cover labels** come from one Claude review pass plus an engine's agreement, not #103's two blind passes. They
   are in no released model.
+- **\* A deviation from the protocol:** V6hm's cover source holds each of the 19 columns at full and at half scale
+  (`manga109_covers.py shard --half`, as #103's real columns are), which the frozen protocol does not say. It was
+  decided at 08:16Z, after the protocol and before any V6hm score. V6hm was not adopted.
 - **The finder's bias in development.** P1's design saw #103's development regions (docs/vertical.md, "Before the
   freeze"). The finder is the same for both arms here, so the comparison between recognizers is not affected.
 - **Speed and memory** are VOCR5-V's (same shape): est. 140 / 106 ms per median VN region at 333 / 444 MHz on one A9

@@ -122,6 +122,7 @@
  "comparisons": {
   "V6h_vs_VOCR5V": {
    "hval": {
+    "unit": "page",
     "cohort": null,
     "clusters": 35,
     "chars": 682,
@@ -147,6 +148,7 @@
     ]
    },
    "dev_vn": {
+    "unit": "cluster",
     "cohort": "vn",
     "clusters": 25,
     "chars": 2275,
@@ -172,6 +174,7 @@
     ]
    },
    "dev_manga": {
+    "unit": "book",
     "cohort": "manga",
     "clusters": 18,
     "chars": 1483,
@@ -200,6 +203,7 @@
   },
   "V6hm_vs_V6h": {
    "hval": {
+    "unit": "page",
     "cohort": null,
     "clusters": 35,
     "chars": 682,
@@ -225,6 +229,7 @@
     ]
    },
    "dev_vn": {
+    "unit": "cluster",
     "cohort": "vn",
     "clusters": 25,
     "chars": 2275,
@@ -250,6 +255,7 @@
     ]
    },
    "dev_manga": {
+    "unit": "book",
     "cohort": "manga",
     "clusters": 18,
     "chars": 1483,
@@ -279,6 +285,7 @@
   },
   "fold": {
    "dev_vn": {
+    "unit": "cluster",
     "cohort": "vn",
     "clusters": 25,
     "chars": 2275,
@@ -298,6 +305,7 @@
     ]
    },
    "dev_manga": {
+    "unit": "book",
     "cohort": "manga",
     "clusters": 18,
     "chars": 1483,
@@ -317,6 +325,7 @@
     ]
    },
    "hval_report_only": {
+    "unit": "page",
     "cohort": null,
     "clusters": 35,
     "chars": 682,

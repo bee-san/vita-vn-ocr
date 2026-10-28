@@ -1,0 +1,356 @@
+{
+ "kind": "vocr6v-data-and-checks",
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/159",
+ "what": "counts, hashes and report-only checks that docs/vocr6v.md cites beside the decisions record (audit-vocr-manga109 N3, N7, N8, F2); nothing here decides anything. Written after the test read; it holds no test-set score",
+ "console_columns": {
+  "tool": "data/vertical_hooked.py cil (rebuilt 2026-10-28 ~11:40Z: every rebuilt shard is byte for byte the one the runs trained on)",
+  "pools": {
+   "vcil_train": {
+    "splits": [
+     "train"
+    ],
+    "pages": 798,
+    "columns": 1498,
+    "whole": 1286,
+    "partial": 179,
+    "merged": 0,
+    "other": 0,
+    "empty": 2,
+    "crops": 1286,
+    "sha256": "582f98faf453988385d15aee691997db4414dc4bf6ea02b74f61bafd4fb756e1"
+   },
+   "vcil_hval": {
+    "splits": [
+     "hval"
+    ],
+    "pages": 35,
+    "columns": 55,
+    "whole": 40,
+    "partial": 10,
+    "merged": 0,
+    "other": 0,
+    "empty": 0,
+    "crops": 40,
+    "sha256": "52885826e4bf673ef961ef700ed7a3bb1441dff637962fdfdef346315db995a4"
+   },
+   "vcil_fold": {
+    "splits": [
+     "guard",
+     "hval",
+     "train"
+    ],
+    "pages": 863,
+    "columns": 1611,
+    "whole": 1374,
+    "partial": 198,
+    "merged": 0,
+    "other": 0,
+    "empty": 2,
+    "crops": 1374,
+    "sha256": "a7ae806949925941b505242d57c5f92473c8ef4b0c2f26829ff5e0ac5c555ae6"
+   }
+  }
+ },
+ "covers": {
+  "views": 327,
+  "views_by_split": {
+   "m109s": 261,
+   "m109only": 66
+  },
+  "horizontal_lines": 404,
+  "vertical_columns": 83,
+  "covers_with_a_vertical_column": 33,
+  "covers": 109,
+  "label_outcomes": {
+   "m109only:cut": 8,
+   "m109only:furigana": 1,
+   "m109only:label": 5,
+   "m109only:no_engine_agrees": 1,
+   "m109only:ui": 3,
+   "m109only:unsure": 1,
+   "m109s:cut": 31,
+   "m109s:furigana": 2,
+   "m109s:label": 19,
+   "m109s:no_engine_agrees": 4,
+   "m109s:ui": 8
+  },
+  "label_characters_m109s": 74,
+  "shard_m109s_crops": 38,
+  "reviewer_kind": "assistant (one pass; a label needs an engine's reading to equal the decision)",
+  "detection": {
+   "m109s": {
+    "views": 261,
+    "meiki_vertical": 64,
+    "spot_vertical": 68,
+    "spot_horizontal": 263,
+    "p1_columns": 2487,
+    "meiki_matched_by_spot": 9,
+    "meiki_matched_by_p1": 24,
+    "labelled": 19,
+    "labelled_matched_by_spot": 2,
+    "labelled_matched_by_p1": 6
+   },
+   "m109only": {
+    "views": 66,
+    "meiki_vertical": 19,
+    "spot_vertical": 64,
+    "spot_horizontal": 177,
+    "p1_columns": 614,
+    "meiki_matched_by_spot": 5,
+    "meiki_matched_by_p1": 9,
+    "labelled": 5,
+    "labelled_matched_by_spot": 2,
+    "labelled_matched_by_p1": 2
+   },
+   "all": {
+    "views": 327,
+    "meiki_vertical": 83,
+    "spot_vertical": 132,
+    "spot_horizontal": 440,
+    "p1_columns": 3101,
+    "meiki_matched_by_spot": 14,
+    "meiki_matched_by_p1": 33,
+    "labelled": 24,
+    "labelled_matched_by_spot": 4,
+    "labelled_matched_by_p1": 8
+   }
+  }
+ },
+ "hval_repeated_text": {
+  "what": "hval columns whose normalised text (eval/metrics.norm) equals a train page's column, and V6h - VOCR5-V without the pages holding one (page bootstrap, 10,000 resamples, seed 0)",
+  "hval_units": 35,
+  "hval_columns": 55,
+  "columns_with_train_text": 4,
+  "chars_of_those": 23,
+  "chars_all": 682,
+  "units_without_them": 31,
+  "all": {
+   "vocr5v": 7.918,
+   "v6h": [
+    4.839,
+    4.545,
+    4.545
+   ],
+   "diff": -3.275,
+   "ci95": [
+    -4.476,
+    -2.142
+   ],
+   "pairs": [
+    -3.079,
+    -3.372,
+    -3.372
+   ]
+  },
+  "without_repeated_text_pages": {
+   "vocr5v": 5.918,
+   "v6h": [
+    2.731,
+    2.428,
+    2.428
+   ],
+   "diff": -3.389,
+   "ci95": [
+    -4.609,
+    -2.237
+   ],
+   "pairs": [
+    -3.187,
+    -3.49,
+    -3.49
+   ]
+  }
+ },
+ "fixed_columns_dev": {
+  "what": "#103's fixed development columns (eval/vertical.py columns, arm rot, W8I greedy; eval/vertical.py diff: a = VOCR5-V, b = the run, cluster bootstrap)",
+  "diffs": {
+   "v6h_s1:vn": {
+    "a": 10.637,
+    "b": 9.143,
+    "diff": -1.495,
+    "lo": -2.429,
+    "hi": -0.804,
+    "clusters": 25,
+    "chars": 2275
+   },
+   "v6h_s1:manga": {
+    "a": 2.697,
+    "b": 2.765,
+    "diff": 0.067,
+    "lo": 0.0,
+    "hi": 0.223,
+    "clusters": 18,
+    "chars": 1483
+   },
+   "v6h_s2:vn": {
+    "a": 10.637,
+    "b": 9.758,
+    "diff": -0.879,
+    "lo": -1.803,
+    "hi": -0.211,
+    "clusters": 25,
+    "chars": 2275
+   },
+   "v6h_s2:manga": {
+    "a": 2.697,
+    "b": 2.765,
+    "diff": 0.067,
+    "lo": 0.0,
+    "hi": 0.248,
+    "clusters": 18,
+    "chars": 1483
+   },
+   "v6h_s3:vn": {
+    "a": 10.637,
+    "b": 9.538,
+    "diff": -1.099,
+    "lo": -1.9,
+    "hi": -0.296,
+    "clusters": 25,
+    "chars": 2275
+   },
+   "v6h_s3:manga": {
+    "a": 2.697,
+    "b": 2.697,
+    "diff": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "clusters": 18,
+    "chars": 1483
+   },
+   "v6hfold_s1:vn": {
+    "a": 10.637,
+    "b": 9.538,
+    "diff": -1.099,
+    "lo": -1.938,
+    "hi": -0.302,
+    "clusters": 25,
+    "chars": 2275
+   },
+   "v6hfold_s1:manga": {
+    "a": 2.697,
+    "b": 2.63,
+    "diff": -0.067,
+    "lo": -0.202,
+    "hi": 0.0,
+    "clusters": 18,
+    "chars": 1483
+   }
+  }
+ },
+ "scoring_models_dirs": {
+  "what": "every file of each arm's models directory for the measurement job, hashed against Rubi eef0fc41's tools/prepare_ocr.py pins: the measurement patch skips the SHA-256 check of every file, so this check stands in for it",
+  "rubi": "eef0fc41 tools/prepare_ocr.py",
+  "dirs": {
+   "v6h_s1": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "dcc22530587acbfb69e93d46b9dd6b369b1e5877085aeeff28e359c9421f8193",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6h_s2": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "c308d18e60d8f8589bf5da9b4f02c7e3f8c4d6dcbc5e67bbee7ab7a786e8ae50",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6h_s3": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "3729188bf0d961fc6aa2ef2b30137d55768e6838d9b3bfa4194f6fb470254c74",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6hfold_s1": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "40485fceaef46a666bcec7781eca88bc005e9211786638ae0dddfac2eb4eea81",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6hm_s1": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "48a33192ad972a88ea809a319728bf94eb5b68df06127461b5325f072d7d1123",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6hm_s2": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "279eebc09f5a41839aeb093af336c10aa2ac6acb9bd8df6addcad8b9cf2fb91a",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "v6hm_s3": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "d5d744192e6fead15ee11740e4951cee1f198081a251713eb3f6fc67e90dee83",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   },
+   "vocr5v": {
+    "pinned_files_equal_to_rubi_pins": 15,
+    "pinned_files_differing": [],
+    "vertical_candidate_sha256": "ccd20c63bb2620f054538b456904bdf19b74d483d3da8de865009e282bb04172",
+    "extra": [
+     {
+      "name": "h64_1000k.vlm",
+      "bytes": 987216,
+      "sha256": "b104bd1904d8f80e7e191e01ecb7decaf9fd81dacccc4d79e4040182b82727ca"
+     }
+    ]
+   }
+  }
+ },
+ "test_inputs_provenance": {
+  "what": "the public test manifests the one read used (its attempt record lost their hashes to a key collision: F2): their sha256 and last modification, against #103's attempt record (eval/vertical_test_attempt_20261018.json)",
+  "columns_test.jsonl": {
+   "sha256": "731051b95a2bc07a873095d63e202cd82b0ad9d9f800ba90ef7dad951855483f",
+   "modified": "2026-10-18T10:24:05Z",
+   "equals_103": true
+  },
+  "regions_test.jsonl": {
+   "sha256": "4ad6df407d5c17015048b5904ae7b32a55523044272eadec0f132b4c569cbc71",
+   "modified": "2026-10-18T10:24:05Z",
+   "equals_103": true
+  }
+ }
+}

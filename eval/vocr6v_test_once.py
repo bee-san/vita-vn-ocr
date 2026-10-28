@@ -40,6 +40,17 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def input_paths(a):
+    """The read's seven inputs, each under its own key: the public and the private sets share their file names.
+    (The one read of 2026-10-28 keyed the four sets by file name, so its attempt record holds the private sets'
+    hashes and not the public ones', which were lost to that collision: docs/vocr6v.md, "The test set, once".)"""
+    return {"public/columns_test.jsonl": Path(a.sets) / "columns_test.jsonl",
+            "public/regions_test.jsonl": Path(a.sets) / "regions_test.jsonl",
+            "private/columns_test.jsonl": Path(a.private) / "columns_test.jsonl",
+            "private/regions_test.jsonl": Path(a.private) / "regions_test.jsonl",
+            "blob_old": Path(a.blob_old), "blob_new": Path(a.blob_new), "tool": Path(a.tool)}
+
+
 def models_dir(base, blob, out):
     out.mkdir(parents=True, exist_ok=True)
     for f in Path(base).iterdir():
@@ -78,12 +89,11 @@ def main():
     rec = Path(a.attempts) / "vocr6v-test.json"
     if rec.exists():
         raise SystemExit(f"{rec} exists: the test set has been read already")
-    files = [Path(a.sets) / "columns_test.jsonl", Path(a.sets) / "regions_test.jsonl",
-             Path(a.private) / "columns_test.jsonl", Path(a.private) / "regions_test.jsonl", Path(a.blob_old),
-             Path(a.blob_new), Path(a.tool)]
+    files = input_paths(a)
     head = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"]).decode().strip()
     doc = {"kind": "vocr6v-test-attempt", "start": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": head,
-           "inputs": {f.name if i < 4 else str(f): sha(f) for i, f in enumerate(files)}}
+           "inputs": {key: sha(path) for key, path in files.items()},
+           "paths": {key: str(path) for key, path in files.items()}}
     Path(a.attempts).mkdir(parents=True, exist_ok=True)
     rec.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     work = Path(a.work)

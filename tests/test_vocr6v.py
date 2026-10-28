@@ -33,6 +33,21 @@ def test_unit_errors_order_names_and_failures():
     assert vocr6v.unit_errors(u, {"rc": -7, "lines": r["lines"]}) == (5, 5)  # a failed job reads nothing
 
 
+def test_unit_errors_mostly_inside_is_half_the_line():
+    """A line is left out when at least half of its box lies inside another text box of the page (a name tag):
+    60% inside is dropped, 40% inside is kept (Rubi tools/vertical_eval.py mostly_inside)."""
+    region = (100, 50, 300, 300)
+    ignore = [(280, 60, 18, 60)]                       # page pixels: x 280-298, y 60-120
+    u = _unit("T:p1:tight", [([150, 60, 20, 200], "あいう")], region=region, ignore=ignore)
+    name60 = {"box": [180, 10, 18, 100], "text": "名前"}  # page [280, 60, 18, 100]: 1,080 of 1,800 px inside
+    col = {"box": [50, 10, 20, 200], "text": "あいう"}
+    assert vocr6v.unit_errors(u, {"rc": 0, "lines": [name60, col]}) == (0, 3)
+    u2 = _unit("T:p2:tight", [([150, 60, 20, 200], "あいう"), ([280, 60, 18, 150], "えお")], region=region,
+               ignore=ignore)
+    line40 = {"box": [180, 10, 18, 150], "text": "えお"}  # page [280, 60, 18, 150]: 1,080 of 2,700 px inside
+    assert vocr6v.unit_errors(u2, {"rc": 0, "lines": [col, line40]}) == (0, 5)
+
+
 def test_cluster_keys_and_cohorts():
     regions = {"v1_10_r0": {"cluster": "c1", "cohort": "vn", "page": "v1_10"},
                "bj01_p009_w1_r2": {"cluster": "blackjack", "cohort": "manga", "page": "bj01_p009_w1"}}
@@ -75,10 +90,39 @@ def test_decide_rules(tmp_path, capsys):
                                 ("manga", level, level, {"diff": -1.0, "ci95": [-1.5, -0.2]}, True),
                                 ("manga", level, level, level, False),
                                 ("fold", worse, level, level, True),
-                                ("fold", level, worse, level, False)):
+                                ("fold", level, worse, level, False),
+                                # each guard on its own (audit-vocr-manga109 F3): the hval interval's upper end,
+                                # the manga rule's dev VN and hval guards, the fold rule's manga guard
+                                ("adopt", {"diff": -0.3, "ci95": [-1.0, 0.5], "pairs": [-0.2, -0.3, -0.4]}, level,
+                                 level, False),
+                                ("manga", level, worse, {"diff": -1.0, "ci95": [-1.5, -0.2]}, False),
+                                ("manga", worse, level, {"diff": -1.0, "ci95": [-1.5, -0.2]}, False),
+                                ("fold", level, level, worse, False)):
         p, hp, vp, gp = _decide(tmp_path, rule, h, v, g)
         vocr6v.main(["decide", "--protocol", p, "--comparison", "c", "--hval", hp, "--vn", vp, "--manga", gp])
         assert json.loads(capsys.readouterr().out)["adopted"] is want, (rule, h, v, g)
+
+
+def test_test_once_records_every_input_under_its_own_key(tmp_path):
+    """The attempt record keys the seven inputs apart: the public and private sets share their file names
+    (audit-vocr-manga109 F2: the read of 2026-10-28 lost the public sets' hashes to that collision)."""
+    import argparse
+
+    import vocr6v_test_once as T
+    for part in ("pub", "priv"):
+        (tmp_path / part).mkdir()
+        for name in ("columns_test.jsonl", "regions_test.jsonl"):
+            (tmp_path / part / name).write_text(f"{part} {name}\n", encoding="utf-8")
+    for name in ("old.vocr", "new.vocr", "tool"):
+        (tmp_path / name).write_bytes(name.encode())
+    a = argparse.Namespace(sets=str(tmp_path / "pub"), private=str(tmp_path / "priv"),
+                           blob_old=str(tmp_path / "old.vocr"), blob_new=str(tmp_path / "new.vocr"),
+                           tool=str(tmp_path / "tool"))
+    files = T.input_paths(a)
+    assert len(files) == 7 and len({str(p) for p in files.values()}) == 7
+    assert len({T.sha(p) for p in files.values()}) == 7
+    assert files["public/columns_test.jsonl"].parent.name == "pub"
+    assert files["private/columns_test.jsonl"].parent.name == "priv"
 
 
 def test_console_column_classify():

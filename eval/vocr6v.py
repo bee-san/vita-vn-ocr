@@ -146,10 +146,11 @@ def cmd_score(a):
     res = read_jsonl(a.results)
     out = {}
     for cohort in (["vn", "manga"] if regions else [None]):
-        cl = per_cluster(units, res, a.unit, regions, cohort)
+        how = "book" if cohort == "manga" and a.unit == "cluster" else a.unit   # manga's unit: the book page
+        cl = per_cluster(units, res, how, regions, cohort)
         if not cl:
             continue
-        out[cohort or "all"] = {"cer": round(cer(cl), 2), "ci95": boot_cer(cl), "clusters": len(cl),
+        out[cohort or "all"] = {"cer": round(cer(cl), 2), "ci95": boot_cer(cl), "unit": how, "clusters": len(cl),
                                 "chars": sum(v[1] for v in cl.values()), "errors": sum(v[0] for v in cl.values())}
     text = json.dumps(out, ensure_ascii=False, indent=1)
     if a.out:
@@ -201,9 +202,42 @@ def cmd_decide(a):
     print(json.dumps(out, indent=1))
 
 
+def cmd_crops(a):
+    """Diagnostic: CER of a train2-format shard's crops (already turned and in console polarity) read by the C
+    runtime's CLI (runtime/build/vocr_cli BLOB --mode w8i --stdin: greedy), one PGM per crop."""
+    import subprocess
+    import tempfile
+
+    import numpy as np
+    z = np.load(a.shard)
+    labels = json.loads(str(z["labels"]))
+    with tempfile.TemporaryDirectory() as td:
+        paths = []
+        for i, lab in enumerate(labels):
+            h, w = (int(v) for v in z["shapes"][i])
+            g = z["data"][int(z["offsets"][i]):int(z["offsets"][i + 1])].reshape(h, w)
+            p = Path(td) / f"{i:06d}.pgm"
+            p.write_bytes(f"P5\n{w} {h}\n255\n".encode() + g.tobytes())
+            paths.append(str(p))
+        out = subprocess.run([a.cli, a.blob, "--mode", "w8i", "--stdin"], input="\n".join(paths) + "\n",
+                             capture_output=True, text=True, check=True).stdout.splitlines()
+    if len(out) != len(labels):
+        raise SystemExit(f"{len(out)} readings for {len(labels)} crops")
+    errs = sum(lev(norm(t), norm(p)) for t, p in zip(labels, out))
+    chars = sum(len(norm(t)) for t in labels)
+    res = {"shard": Path(a.shard).name, "crops": len(labels), "chars": chars, "errors": errs,
+           "cer": round(100.0 * errs / max(1, chars), 2),
+           "exact": round(sum(norm(t) == norm(p) for t, p in zip(labels, out)) / max(1, len(labels)), 4)}
+    print(json.dumps(res))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("crops")
+    p.add_argument("--shard", required=True)
+    p.add_argument("--blob", required=True)
+    p.add_argument("--cli", default=str(HERE.parent / "runtime" / "build" / "vocr_cli"))
     p = sub.add_parser("score")
     p.add_argument("--units", required=True)
     p.add_argument("--results", required=True)
@@ -226,7 +260,7 @@ def main(argv=None):
     p.add_argument("--vn", required=True)
     p.add_argument("--manga", required=True)
     a = ap.parse_args(argv)
-    {"score": cmd_score, "diff": cmd_diff, "decide": cmd_decide}[a.cmd](a)
+    {"score": cmd_score, "diff": cmd_diff, "decide": cmd_decide, "crops": cmd_crops}[a.cmd](a)
 
 
 if __name__ == "__main__":

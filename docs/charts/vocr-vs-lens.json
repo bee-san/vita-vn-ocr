@@ -2240,7 +2240,7 @@
  "sources": {
   "readers": {
    "file": "eval/other_readers_20261028.json",
-   "sha256": "4199337b134afcd942aa0a51a7b428f1ab878b4065500f9dac1e77c015c9b6a4"
+   "sha256": "a14afbe7a0216683605f74fd009321a27f133ef7adb4e3163efc856d81693943"
   },
   "vocr6": {
    "file": "eval/vocr6_results_20261027.json",
@@ -2365,7 +2365,7 @@
  "copy": {
   "eyebrow": "VOCR6  ·  Japanese OCR for PS Vita and PSP visual novels",
   "headline": "Reads dialogue better than Google Lens. Offline.",
-  "subhead": "Character error rate on visual-novel dialogue; every reader got the same line crops. Lower is better.",
+  "subhead": "Character error rate on visual-novel dialogue; every reader read the same lines. Lower is better.",
   "row_notes": {
    "VOCR6_S": "{MB} int8 · est. {S444}-{S333} s per text box",
    "VOCR6_N": "{MB} int8 · est. {S444}-{S333} s per text box",
@@ -2394,7 +2394,7 @@
    }
   },
   "footnote": [
-   "The same crops for every reader. CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough, references read by Claude. vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots). Dance with Devils: {DD_LINES} lines of the hooked test game VOCR6 held out, its own text as reference. VOCR read each crop alone and greedy, with no language model; the other engines use their own decoders. On vita-test and psp-test VOCR read the crops in the console's polarity and the others in screen colours; on CLANNAD and Dance with Devils every reader read the same grey crops.",
+   "The same lines for every reader. CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough, references read by Claude. vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots). Dance with Devils: {DD_LINES} lines of the hooked test game VOCR6 held out, its own text as reference. VOCR read each crop alone and greedy, with no language model; the other engines use their own decoders. On vita-test and psp-test VOCR read the crops in the console's polarity and the others in screen colours; on CLANNAD and Dance with Devils every reader read the same grey crops.",
    "* Lens also reads the furigana the references omit: {PT_FUR_ERR} of its {PT_ALL_ERR} psp-test and {VT_FUR_ERR} of its {VT_ALL_ERR} vita-test errors (names included) fall on the {PT_FUR_LINES} and {VT_FUR_LINES} lines with furigana. Private game data never goes to Lens, so it did not read Dance with Devils.",
    "Seen: two of VOCR6's training games draw dialogue in CLANNAD's glyph raster and two share a release with it, so CLANNAD is not an unseen game for VOCR6. MeikiOCR's and PP-OCRv6 small's readings were the first candidates of CLANNAD's references (Lens's among the later rounds'); PP-OCRv6 small's and manga-ocr's were among those of vita-test and psp-test. Time: estimated for a 3-line box on one Cortex-A9 core at 444 / 333 MHz; VOCR6 has not run on a console yet."
   ],
@@ -2585,12 +2585,12 @@
   ]
  },
  "rendered": {
-  "inputs_sha256": "6ffc1a891a626660bf138dfa249ecdaf54d9d265124181c7ab6fde850b19839c",
+  "inputs_sha256": "a5352a1d34343cc8b1a4b405c44ca9270b720cc85f01ec8bc3235141ac0112ef",
   "files": {
-   "vocr-vs-lens-dark-2x.png": "236daf4e37b2e6214c48a60bb304ce4c91f28db7d27621d7980f886563bb80ef",
-   "vocr-vs-lens-dark.svg": "11f3f19580f182bfad57109459bbf51021a0f8594077be11051923094b900d21",
-   "vocr-vs-lens-light-2x.png": "277834c4ad246ab39e4520de5945874797dce276dc506c26a12653cf5c93e260",
-   "vocr-vs-lens-light.svg": "b9279541ed3efae74e6375ebba4d226a32723ac76beec889c8e279dfbde8e062"
+   "vocr-vs-lens-dark-2x.png": "c52f4b1179bdf9c24323008335241521c7e9733cf193812edcb1c46d95f54f3e",
+   "vocr-vs-lens-dark.svg": "e78cf06a47d1b3aad20d332dcc143ad1297f6bd5ef0981d6eb7fd81a770eed2d",
+   "vocr-vs-lens-light-2x.png": "8283108539ef6d889a289a836f6e4646963261356d6c8ecbbb0c8e7ce6837251",
+   "vocr-vs-lens-light.svg": "ccb62c74e165cfce133ac1e3be4010947a1f781284785b1d94a1dfbda04dc642"
   }
  }
 }

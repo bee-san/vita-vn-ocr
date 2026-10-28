@@ -1,15 +1,15 @@
 # Models: every asset of release v0.5.0
 
 Release [v0.5.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.0) collects every model this repository
-has published since VOCR3 in one place: the VOCR6 recognizers, the dialogue-line spotter, the character LMs, and every
+has published since VOCR2 in one place: the VOCR6 recognizers, the dialogue-line spotter, the character LMs, and every
 earlier model of those rounds, each byte for byte as its own release published it. Nothing was retrained, re-exported
-or changed. 84 files come from 19 releases; with `SHA256SUMS` and `v0.5.0-assets.json` (this document's
-`docs/models.json`) the release has 86.
+or changed. 86 files come from 20 releases; with `SHA256SUMS` and `v0.5.0-assets.json` (this document's
+`docs/models.json`) the release has 88.
 
 - **Checked.** Every file was downloaded from its source release and checked against GitHub's sha256 digest of that
-  asset and, for the 76 files its release's `SHA256SUMS` lists, against that file too (`docs/models.py manifest`
-  repeats the second check and checks Rubi's pins). The release's own `SHA256SUMS` lists all 86 files; the published
-  release is downloaded again and every file checked against it and against `docs/models.json`
+  asset and, for the 78 files its release's `SHA256SUMS` lists, against that file too (`docs/models.py manifest`
+  repeats the second check and checks Rubi's pins). The release's own `SHA256SUMS` lists the other 87 files; the
+  published release is downloaded again and every file checked against it and against `docs/models.json`
   (`docs/models.py verify`).
 - **Names.** A file keeps its release name, except where two releases hold different bytes under one name, or the
   name says nothing on its own:
@@ -52,13 +52,21 @@ SHA-256) name these files of this release, byte for byte:
 Dialogue CER, measured on the host. "Rubi's path" is the final reads' model of Rubi's line path (the 1 MB LM at Rubi's
 settings, the cascade S → N → L, Rubi 892cfb9's GRAD finder with its COLGAP fix); "greedy" is the recognizer alone.
 Sources: `docs/vocr6.md` and `eval/vocr6_final_test_followup_20261027.json` (VOCR6), `docs/vocr5.md` (VOCR5),
-`docs/vocr4.md`, `docs/vocr3.md`, `docs/vertical.md`, `docs/vocr6-psp.md`.
+`docs/vocr4.md`, `docs/vocr3.md`, `docs/vocr2-qualification.md`, `docs/vertical.md`, `docs/vocr6-psp.md`.
+
+For VOCR6, two kinds of number are not the shipped blobs' own read:
+- **The held-out pages** are the mean of three seeds of each tier's recipe, held out from hval: stage 4d's for Small,
+  stage 4a's (v0.4.0-vocr6.1's 15,000-step recipe) for Normal and Large. The shipped blobs then trained on hval too,
+  and Normal and Large three times as long, so their own hval reads (0.98 / 0.88 / 0.87%) are not held out.
+- **The dev score** (VOCR5's development score on other games) is for the set as it ships, Rubi's cascade S → N → L,
+  in point. Small's drop comes from the better Normal above it: VOCR6-S against VOCR5-S in the same cascade reads
+  +0.041 [−0.016, +0.099], worse in point (not resolved).
 
 | file | model, tier | W8I arena | est. s per 3-line box, 333 / 444 MHz | measured |
 |---|---|---:|---|---|
-| `VOCR6.2_S_w8.vocr` | VOCR6-S, Small | 124,832 | 0.63 / 0.50 | hooked games' held-out pages 1.049% (VOCR5-S 1.177%, 3 seeds); other games' dev score 1.549 (VOCR5-S 1.674); read once: CLANNAD 0.47% on Rubi's path, 0.72% greedy; vita-test + psp-test 0.58%; Dance with Devils 0.21% |
-| `VOCR6.2_N_w8g2.vocr` | VOCR6-N, Normal (default) | 184,448 | 0.77 / 0.61 | held-out pages 0.936% (VOCR5-N 1.008%); dev score 1.389 (1.482); read once: CLANNAD 0.33% (0.40% greedy), vita-test + psp-test 0.36%, Dance with Devils 0.19% |
-| `VOCR6.2_L_w8_2l.vocr` | VOCR6-L, Large | 262,480 | 1.88 / 1.47 | held-out pages 0.917% (VOCR5-L 0.990%); dev score 1.396 (1.439); read once: CLANNAD 0.31% (0.26% greedy), vita-test + psp-test 0.40%, Dance with Devils 0.19% |
+| `VOCR6.2_S_w8.vocr` | VOCR6-S, Small | 124,832 | 0.63 / 0.50 | hooked games' held-out pages, the recipe's 3 seeds: 1.049% (VOCR5-S 1.177%); other games' dev score, the set as it ships: 1.549 (VOCR5-S's set 1.674; like for like +0.041, above); read once: CLANNAD 0.47% on Rubi's path, 0.72% greedy; vita-test + psp-test 0.58%; Dance with Devils 0.21% |
+| `VOCR6.2_N_w8g2.vocr` | VOCR6-N, Normal (default) | 184,448 | 0.77 / 0.61 | held-out pages, stage 4a's recipe, 3 seeds: 0.936% (VOCR5-N 1.008%); dev score, the set as it ships: 1.389 (1.482); read once: CLANNAD 0.33% (0.40% greedy), vita-test + psp-test 0.36%, Dance with Devils 0.19% |
+| `VOCR6.2_L_w8_2l.vocr` | VOCR6-L, Large | 262,480 | 1.88 / 1.47 | held-out pages, stage 4a's recipe, 3 seeds: 0.917% (VOCR5-L 0.990%); dev score, the set as it ships: 1.396 (1.439); read once: CLANNAD 0.31% (0.26% greedy), vita-test + psp-test 0.40%, Dance with Devils 0.19% |
 | `VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr` | the same Normal and Large, plain | 182,944 / 261,024 | 0.92 / 0.71, 2.07 / 1.62 | the shipped blobs' weights without their speed sections, each of which moved the development score by 0.000 to +0.008 points (`docs/vocr6.md`, the follow-up's gate fits) |
 | `VOCR6_N_w8_2l.vocr`, `VOCR6_L_w8_2l.vocr` (and their plain `_w8`) | VOCR6-N and -L of v0.4.0-vocr6.1 | 184,400 / 262,480 | 0.79 / 0.62, 1.87 / 1.46 | dev score 1.451 / 1.442; read once: CLANNAD 0.44% / 0.36%, vita-test + psp-test 0.49% / 0.43% |
 | `VOCR5_S_w8g.vocr`, `VOCR5_N_w8g2.vocr`, `VOCR5_L_w8g2.vocr` | VOCR5 with its head sections (Rubi 0.9.8) | 124,880 / 184,448 / 262,528 | 0.52, about 0.76, about 1.79 (333 MHz) | VOCR5's numbers (below); read once on the protected sets, the gate changes dialogue CER by −0.043 to +0.006 points and the two-level head by at most +0.009 more |
@@ -67,6 +75,7 @@ Sources: `docs/vocr6.md` and `eval/vocr6_final_test_followup_20261027.json` (VOC
 | `VOCR5_V_w8.vocr` | VOCR5-V, vertical text | 124,832 | 0.14 / 0.11 per median vertical region | test vertical VN 7.17% fixed columns, 11.29% end to end; manga 0.86% / 2.45% |
 | `VOCR4_FL10_w8.vocr`, `VOCR4_H15_w8.vocr`, `VOCR4_W20_w8.vocr` | VOCR4 Small / Normal / Large | 124,832 / 182,944 / 241,056 | 125-239 / 221-403 / 314-554 ms per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.15 / 1.83 / 1.40%; CLANNAD (all lines) 3.05 / 2.79 / 1.81% |
 | `VOCR3_FL10_w8.vocr`, `VOCR3_H15_w8.vocr` | VOCR3 Small / Normal | 124,832 / 182,944 | 125-239 / 221-403 ms per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.13 / 1.73% |
+| `VOCR2_FL10_w8.vocr` | VOCR2-FL10, the overlay's opt-in trial | 124,832 | VOCR3-FL10's shape: 125-239 ms per 640-px line (333 MHz) | fixed lines (all lines): vita-test 59 / 2,564 errors (FL10 61), psp-test 119 / 2,510 (FL10 133); promotion rejected on the whole-textbox guard |
 | `MODELB_B24_w8g2.vocr`, `MODELB_S32_w8g2.vocr` | model B, PSP candidates | memory in all 1,042,498 / 1,291,938 B | 1.21 / 2.05 per box on the PSP's scalar build at 333 MHz (PPSSPP-based estimates) | development PSP whole dialogue against VOCR5-S: +3.93 points [+2.63, +5.59] (B24); plain S32 +0.04 [−0.24, +0.31] |
 
 How VOCR6 compares with the other OCR engines on the same crops is in the README ("VOCR6 against other OCRs",
@@ -191,11 +200,13 @@ per tier are in `LM-settings.json`.
 | `VOCR3_FL10_w8.vocr` | recognizer: VOCR3-FL10 | Small | used by Rubi (host tools and tests only, not shipped) | Rubi's Small before VOCR5; now pinned by Rubi's host tools | none in its release (see Licences) | non-commercial use only (non-commercial fonts and texts in its synthetic training data) |
 | `VOCR3_H15_w8.vocr` | recognizer: VOCR3-H15 | Normal (default) | used by Rubi (host tools and tests only, not shipped) | Rubi's Normal before VOCR5 (the model the console timings are calibrated to); now pinned by Rubi's host tools | none in its release (see Licences) | non-commercial use only (non-commercial fonts and texts in its synthetic training data) |
 | `vocr3-assets.json` | asset list: VOCR3 | - | documentation | v0.2.5-vocr3.1's list of its blobs | none in its release (see Licences) | non-commercial use only (non-commercial fonts and texts in its synthetic training data) |
+| `VOCR2_FL10_w8.vocr` | recognizer: VOCR2-FL10 | - | research / not selected | promotion rejected: it failed the strict whole-textbox guard (19 of 372 title checks regressed); the overlay's opt-in VOCR2 trial (v0.7.12-vocr2.1, removed after v0.8.0-test.1) | none in its release (see Licences) | no attribution file: its release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, through v0.2.0's FL10); the README lists the rest of its training data |
+| `vocr2-qualification.md` | qualification notes: VOCR2-FL10 | - | documentation | VOCR2's qualification notes | none in its release (see Licences) | no attribution file: its release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, through v0.2.0's FL10); the README lists the rest of its training data |
 <!-- /models.py:files -->
 
 ## Licences
 
-- **Non-commercial use only:** every recognizer, spotter, the gate and the detector.
+- **Non-commercial use only:** every recognizer since VOCR3, every spotter, the gate and the detector.
   - VOCR6, textspot6/7/8 and model B were trained on the owner's hooked PS Vita and PSP captures, copyrighted game
     data used for training only and never redistributed.
   - Every model since VOCR3 was trained on synthetic renders whose `personal` profile holds fonts and texts free for
@@ -203,10 +214,14 @@ per tier are in `LM-settings.json`.
   - Each file's attribution file is in the table above. v0.2.5-vocr3.1 and v0.2.5-vocr4.1 published no attribution
     file: their release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0), and the README lists the
     rest of their training data.
+- **VOCR2** (v0.2.3-vocr2.1, before the non-commercial synthetic profile) published no attribution file either: its
+  release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, through v0.2.0's FL10), and the README
+  lists the fl10 research's renders.
 - **The LMs: CC BY-SA 4.0** (`LM-ATTRIBUTION.md`, `ATTRIBUTION_v0.2.6-ctclm.2.md`). The 1 MB and 4 MB game-text tiers
   also carry character 3-gram counts of the owner's hooked captures; the games' text belongs to its publishers.
 - **The test-set disclosures** (seen titles, CLANNAD's glyph raster in VOCR6's training pages, the LMs' word lists)
-  are in each attribution file and in `docs/vocr6.md`.
+  are in VOCR6's and the LMs' attribution files and in `docs/vocr6.md`; the spotters' attribution files name the
+  training titles that share a release with CLANNAD or a vita-test game.
 
 ## Left out
 
@@ -216,8 +231,10 @@ per tier are in `LM-settings.json`.
 | v0.2.6-ctclm.1 | superseded by v0.2.6-ctclm.2 the same day: built before the protected-title name filter |
 | v0.3.7-modelb-test.1's `vocr6_psp_console_test.zip` | the PSP console test apps (9 EBOOTs with generated test lines), not a model: its two blobs are here, and the zip stays on its release for issue #145's console test |
 | every source release's `SHA256SUMS` | replaced by this release's `SHA256SUMS` |
-| v0.2.2-meiki.1, v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.3-vocr2.1, v0.2.4-fl10-head.1 | the research snapshots before VOCR3, each rejected or research only: 3,164,185 B (v0.2.3-vocr2.1) to 363,004,078 B (v0.2.2-fl10-training.1), 647,796,319 B together, so not trivially small; they stay on their own pre-releases |
-| v0.1.0-baseline, v0.2.0, v0.2.1 | the releases before VOCR3 (v1; FL10, H15 and F20): normal releases already, which stay where they are; Rubi's host tools pin v0.2.0's int8 blobs from there |
+| v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.4-fl10-head.1 | the FL10 research snapshots before VOCR3, each rejected or research only: archives of training checkpoints, code and results of 54,417,095 to 363,004,078 B each, 639,150,581 B together, so not trivially small; they stay on their own pre-releases |
+| v0.2.3-vocr2.1's checkpoint and result files | VOCR2's training checkpoint (2,426,644 B) and its result and identity files stay on its pre-release; its int8 blob and qualification notes are here |
+| v0.2.2-meiki.1 | MeikiOCR's own recognizer converted to MNN for the overlay's Meiki trial: a third-party model (LGPL-3.0 weights), not one of this repository's, which keeps its licence files on its release |
+| v0.1.0-baseline, v0.2.0, v0.2.1 | the releases before VOCR2 (v1; FL10, H15 and F20): normal releases already, which stay where they are; Rubi's host tools pin v0.2.0's int8 blobs from there |
 
 ## Checksums
 
@@ -310,6 +327,8 @@ The same as the release's `SHA256SUMS`, with each file's source.
 | `VOCR3_FL10_w8.vocr` | v0.2.5-vocr3.1 | 657,664 | `87fb4d0c18416f5f3771cecd274c8db3cf69b8b4a4ee9f204edebb4b82079154` |
 | `VOCR3_H15_w8.vocr` | v0.2.5-vocr3.1 | 1,155,968 | `cb3c61a8f91f9aeeb3efcc0e79313f664112f25c4bd55865bae9df52522b360c` |
 | `vocr3-assets.json` | v0.2.5-vocr3.1 | 1,205 | `e5b829d8bc56237280117398b145bdf00eb50e93868a544073d5b5059bb9008d` |
+| `VOCR2_FL10_w8.vocr` | v0.2.3-vocr2.1 | 657,664 | `d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766` |
+| `vocr2-qualification.md` | v0.2.3-vocr2.1 | 9,877 | `f7dda3316dfa969c4096da4605b7092864dc1e848672aff1cdfd3e706cd04e32` |
 <!-- /models.py:checksums -->
 
 ## Reproduce

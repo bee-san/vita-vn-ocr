@@ -207,7 +207,7 @@ def test_the_committed_images_are_drawn_from_this_json():
 
 # The chart's words, frozen: a change to the headline, subhead, row notes, footnote or marks must be re-read for
 # truthfulness against the data and this sha256 updated in the same PR.
-WORDS_SHA256 = "5ef385e78370c915cb51291d4cf7746becda05271ad2699237eae72b3d623e47"
+WORDS_SHA256 = "0be99a8d1abb93954ad403b099e80332dc1db2b879e7cb88f8ce53811a1776f8"
 
 
 @needs_data
@@ -313,10 +313,87 @@ def test_the_readme_rubi_path_table_is_the_final_reads():
 @needs_data
 def test_the_readme_filter_note_is_the_final_reads_floor():
     d = data()
-    fl = source(d, "followup")["path_b"]["filter_floor"]["pcsg00807_clean"]
+    floors = source(d, "followup")["path_b"]["filter_floor"]
     note = section(readme(), "- **Rubi's text filter**", "- **The sets.**")
+    fl = floors["pcsg00807_clean"]
     assert f"costs {fl['points']:.2f} points ({fl['lines']} lines,\n  {fl['chars']} reference characters)" in note
-    assert d["rubi_path"]["pcsg00807"]["VOCR6_L"]["errors"] >= fl["chars"], "the floor is part of every Rubi-path read"
+    fc = floors["clannad_lines"]
+    assert f"on CLANNAD {fc['points']:.2f} ({fc['lines']} lines, {fc['chars']} reference characters)" in note
+    for s, f in (("pcsg00807", fl), ("clannad", fc)):
+        assert d["rubi_path"][s]["VOCR6_L"]["errors"] >= f["chars"], "the floor is part of every Rubi-path read"
+
+
+@needs_data
+def test_the_readme_names_note_is_the_records():
+    """Speaker names, outside the dialogue metric: Lens against VOCR6 S / N / L, CLANNAD from the readers' record,
+    vita-test and psp-test from the final read (VOCR6, console polarity) and VOCR5's dialogue tables (Lens)."""
+    d = data()
+    note = section(readme(), "- **Speaker names**", "- **Against the other engines:**")
+    cl = source(d, "readers")["sets"]["clannad"]["names"]
+    fu = source(d, "followup")["path_a"]["vita_psp_fixed_lines"]
+    lens = source(d, "lens_dialogue")["arms"]["native"]["Lens"]["names"]
+
+    def lens_rate(s):
+        return 100 * lens[s]["errors"] / lens[s]["chars"]
+
+    def ours(s):
+        return " / ".join(f"{fu[f'{s}|names']['rates'][f'VOCR6:{t}:greedy']['cer']:.2f}" for t in "SNL") + "%"
+    lens_cl, lens_vt = cl["Lens"]["cer"], lens_rate("vita-test")
+    assert f"Lens reads\n  CLANNAD's at {lens_cl:.2f}% and vita-test's at {lens_vt:.2f}%" in note
+    assert " / ".join(f"{cl[k]['cer']:.2f}" for k in VOCR6) + "% and\n  " + ours("vita-test") in note
+    assert f"psp-test's at {lens_rate('psp-test'):.2f}%, against {ours('psp-test')}" in note
+    for k in VOCR6:                                           # names go either way: Lens ahead on two sets
+        assert cl[k]["cer"] > cl["Lens"]["cer"]
+    assert all(fu["psp-test|names"]["rates"][f"VOCR6:{t}:greedy"]["cer"] < lens_rate("psp-test") for t in "SNL")
+
+
+@needs_data
+def test_the_readme_names_small_s_level_leads_with_their_intervals():
+    d = data()
+    V = d["values"]
+    notes = section(readme(), "- **VOCR6 Small**", "- MeikiOCR, PP-OCRv6 small and manga-ocr ran on the host")
+    level = []
+    for s in SET_KEYS:
+        for o, p in V[s]["VOCR6_S"]["vs"].items():
+            if p["delta"] < 0 and p["ci95"][0] < 0 < p["ci95"][1]:
+                level.append((s, o, p))
+    assert len(level) == 4 and "Four of its leads are level" in notes
+    for _, _, p in level:
+        assert f"({p['delta']:+.2f} [{p['ci95'][0]:+.2f}, {p['ci95'][1]:+.2f}])".replace("-", "−") \
+            in notes.replace("\n    ", " "), p
+
+
+@needs_data
+def test_the_readme_whole_page_table_is_the_spotter_s_test_read():
+    rec = json.loads((ROOT / "eval/textspot8_test_20261027.json").read_text(encoding="utf-8"))["reads"]
+    title = rec["title"]["result"]["arms"]
+    cl = rec["clannad"]["result"]["roi_page_path"]["scopes"]["dialogue"]["systems"]
+    tests = rec["tests"]["result"]["arms"]
+    sec = section(readme(), "### The whole page", "## VOCR6 (release")
+    rows = table_rows(sec)
+    want = {"textspot8 spotter (Rubi's default)": ("textspot6", "textspot6_det"),   # the record names the spotter's arm
+            "Rubi's previous finder (GRAD with its COLGAP fix)": ("rubi_fix1", None),  # by its runtime, textspot6
+            "GRAD + refine": ("grad_refine", None),
+            "textspot3's whole-frame spotter": ("textspot3", "textspot3_reread")}
+    best_t = min(title[a]["cer"] for a, _ in want.values())
+    best_c = min(cl[a]["cer"] for a, _ in want.values())
+    for label, (arm, frames) in want.items():
+        cells = rows[label]
+        bold = lambda x, best: f"**{x:.2f}%**" if x == best else f"{x:.2f}%"   # noqa: E731
+        assert cells[2] == bold(title[arm]["cer"], best_t), label
+        assert cells[3] == bold(cl[arm]["cer"], best_c), label
+        if frames:
+            x = tests[frames]["cer_dialogue"]["cer"]
+            assert cells[4].strip("*") == f"{x:.2f}%", label
+        else:
+            assert cells[4] == "", label
+    assert title["textspot6"]["units"] == 2055 and "2,055 page regions" in sec
+    assert rec["tests"]["result"]["scored_frames"] == 176 and "176 whole frames" in sec
+    # VOCR6 through Rubi's previous finder on the title's page regions (the final read, path b, all variants)
+    pg = source(data(), "followup")["path_b"]["pcsg00807_page"]["page|all-variants"]["rates"]
+    for fam in ("VOCR6", "VOCR5"):
+        trio = " / ".join(f"{pg[f'{fam}:{t}:shipped']['cer']:.2f}" for t in "SNL") + "%"
+        assert trio in sec, fam
 
 
 @needs_data

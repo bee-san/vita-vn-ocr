@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Release v0.5.0's assets: every model so far, collected from the releases that published them (docs/models.md).
+"""Release v0.5.0's assets: every model since VOCR2, collected from the releases that published them (docs/models.md).
 
   python docs/models.py manifest [--src DIR]          # docs/models.json from the source releases' files
   python docs/models.py md                            # docs/models.md's generated tables from docs/models.json
@@ -36,6 +36,9 @@ NC_GAME = "non-commercial use only (trained on the owner's hooked game captures 
 NC_SYNTH = "non-commercial use only (non-commercial fonts and texts in its synthetic training data)"
 BYSA = "CC BY-SA 4.0"
 BYSA_GAME = "CC BY-SA 4.0; carries character 3-gram counts of the owner's hooked game captures"
+
+VOCR2_LIC = ("no attribution file: its release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, "
+             "through v0.2.0's FL10); the README lists the rest of its training data")
 
 RUBI = "used by Rubi"
 RUBI_TOOLS = "used by Rubi (host tools and tests only, not shipped)"
@@ -258,6 +261,12 @@ ASSETS = [
       "tools", None, NC_SYNTH),
     a("vocr3-assets.json", "v0.2.5-vocr3.1", "asset list", "VOCR3", "-", DOC, "v0.2.5-vocr3.1's list of its blobs",
       None, NC_SYNTH),
+    # ------------------------------------------------------------------ VOCR2 (the trial before VOCR3)
+    a("VOCR2_FL10_w8.vocr", "v0.2.3-vocr2.1", "recognizer", "VOCR2-FL10", "-", RESEARCH,
+      "promotion rejected: it failed the strict whole-textbox guard (19 of 372 title checks regressed); the overlay's "
+      "opt-in VOCR2 trial (v0.7.12-vocr2.1, removed after v0.8.0-test.1)", None, VOCR2_LIC),
+    a("vocr2-qualification.md", "v0.2.3-vocr2.1", "qualification notes", "VOCR2-FL10", "-", DOC,
+      "VOCR2's qualification notes", None, VOCR2_LIC),
 ]
 
 LEFT_OUT = [
@@ -270,12 +279,19 @@ LEFT_OUT = [
      "why": "the PSP console test apps (9 EBOOTs with generated test lines), not a model: its two blobs are here, "
      "and the zip stays on v0.3.7-modelb-test.1 for issue #145's console test"},
     {"tag": "every source release", "asset": "SHA256SUMS",
-     "why": "replaced by this release's SHA256SUMS, which lists every file of v0.5.0 under its v0.5.0 name"},
-    {"tag": "v0.2.2-meiki.1, v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.3-vocr2.1, "
-     "v0.2.4-fl10-head.1", "why": "the research snapshots before VOCR3, each rejected or research only: 3,164,185 B "
-     "(v0.2.3-vocr2.1) to 363,004,078 B (v0.2.2-fl10-training.1), 647,796,319 B together, so not trivially small; "
-     "they stay on their own pre-releases"},
-    {"tag": "v0.1.0-baseline, v0.2.0, v0.2.1", "why": "the releases before VOCR3 (v1; FL10, H15 and F20): normal "
+     "why": "replaced by this release's SHA256SUMS, which lists every other file of v0.5.0 under its v0.5.0 name"},
+    {"tag": "v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.4-fl10-head.1",
+     "why": "the FL10 research snapshots before VOCR3, each rejected or research only: archives of training "
+     "checkpoints, code and results of 54,417,095 to 363,004,078 B each, 639,150,581 B together, so not trivially "
+     "small; they stay on their own pre-releases"},
+    {"tag": "v0.2.3-vocr2.1", "asset": "vocr2-quarter-checkpoint.pt, snapshot.json, export-verification.json, "
+     "vocr2-candidate-20261012.json",
+     "why": "VOCR2's training checkpoint (2,426,644 B) and its result and identity files stay on its pre-release; "
+     "its int8 blob and qualification notes are here"},
+    {"tag": "v0.2.2-meiki.1", "why": "MeikiOCR's own recognizer converted to MNN for the overlay's Meiki trial: a "
+     "third-party model (LGPL-3.0 weights), not one of this repository's, which keeps its licence files on its "
+     "release"},
+    {"tag": "v0.1.0-baseline, v0.2.0, v0.2.1", "why": "the releases before VOCR2 (v1; FL10, H15 and F20): normal "
      "releases already, and they stay where they are; Rubi's host tools pin v0.2.0's int8 blobs from there"},
 ]
 

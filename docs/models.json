@@ -2,7 +2,7 @@
  "kind": "vita-vn-ocr-release-assets",
  "schema": 1,
  "release": "v0.5.0",
- "files": 86,
+ "files": 88,
  "assets": [
   {
    "name": "VOCR6.2_S_w8.vocr",
@@ -1431,6 +1431,40 @@
    "licence": "non-commercial use only (non-commercial fonts and texts in its synthetic training data)",
    "bytes": 1205,
    "sha256": "e5b829d8bc56237280117398b145bdf00eb50e93868a544073d5b5059bb9008d"
+  },
+  {
+   "name": "VOCR2_FL10_w8.vocr",
+   "from": {
+    "tag": "v0.2.3-vocr2.1",
+    "name": "VOCR2_FL10_w8.vocr",
+    "in_release_sha256sums": true
+   },
+   "kind": "recognizer",
+   "model": "VOCR2-FL10",
+   "tier": "-",
+   "status": "research / not selected",
+   "why": "promotion rejected: it failed the strict whole-textbox guard (19 of 372 title checks regressed); the overlay's opt-in VOCR2 trial (v0.7.12-vocr2.1, removed after v0.8.0-test.1)",
+   "attribution": null,
+   "licence": "no attribution file: its release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, through v0.2.0's FL10); the README lists the rest of its training data",
+   "bytes": 657664,
+   "sha256": "d3adc52e5cf62b548af04c5ab07a2f57cf0419386bbdf49ba19c9703be6e1766"
+  },
+  {
+   "name": "vocr2-qualification.md",
+   "from": {
+    "tag": "v0.2.3-vocr2.1",
+    "name": "vocr2-qualification.md",
+    "in_release_sha256sums": true
+   },
+   "kind": "qualification notes",
+   "model": "VOCR2-FL10",
+   "tier": "-",
+   "status": "documentation",
+   "why": "VOCR2's qualification notes",
+   "attribution": null,
+   "licence": "no attribution file: its release notes credit NVIDIA's OCR-Synthetic-Multilingual-v1 (CC BY 4.0, through v0.2.0's FL10); the README lists the rest of its training data",
+   "bytes": 9877,
+   "sha256": "f7dda3316dfa969c4096da4605b7092864dc1e848672aff1cdfd3e706cd04e32"
   }
  ],
  "rubi": {
@@ -1485,15 +1519,24 @@
   {
    "tag": "every source release",
    "asset": "SHA256SUMS",
-   "why": "replaced by this release's SHA256SUMS, which lists every file of v0.5.0 under its v0.5.0 name"
+   "why": "replaced by this release's SHA256SUMS, which lists every other file of v0.5.0 under its v0.5.0 name"
   },
   {
-   "tag": "v0.2.2-meiki.1, v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.3-vocr2.1, v0.2.4-fl10-head.1",
-   "why": "the research snapshots before VOCR3, each rejected or research only: 3,164,185 B (v0.2.3-vocr2.1) to 363,004,078 B (v0.2.2-fl10-training.1), 647,796,319 B together, so not trivially small; they stay on their own pre-releases"
+   "tag": "v0.2.2-fl10-training.1, v0.2.2-fl10-bitmap.1, v0.2.2-fl10-general.1, v0.2.4-fl10-head.1",
+   "why": "the FL10 research snapshots before VOCR3, each rejected or research only: archives of training checkpoints, code and results of 54,417,095 to 363,004,078 B each, 639,150,581 B together, so not trivially small; they stay on their own pre-releases"
+  },
+  {
+   "tag": "v0.2.3-vocr2.1",
+   "asset": "vocr2-quarter-checkpoint.pt, snapshot.json, export-verification.json, vocr2-candidate-20261012.json",
+   "why": "VOCR2's training checkpoint (2,426,644 B) and its result and identity files stay on its pre-release; its int8 blob and qualification notes are here"
+  },
+  {
+   "tag": "v0.2.2-meiki.1",
+   "why": "MeikiOCR's own recognizer converted to MNN for the overlay's Meiki trial: a third-party model (LGPL-3.0 weights), not one of this repository's, which keeps its licence files on its release"
   },
   {
    "tag": "v0.1.0-baseline, v0.2.0, v0.2.1",
-   "why": "the releases before VOCR3 (v1; FL10, H15 and F20): normal releases already, and they stay where they are; Rubi's host tools pin v0.2.0's int8 blobs from there"
+   "why": "the releases before VOCR2 (v1; FL10, H15 and F20): normal releases already, and they stay where they are; Rubi's host tools pin v0.2.0's int8 blobs from there"
   }
  ],
  "statuses": [

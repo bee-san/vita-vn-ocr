@@ -66,6 +66,9 @@ def test_rubis_three_sizes_and_spotter_are_vocr6_and_textspot8():
 
 def test_the_models_trained_on_game_data_are_non_commercial():
     for x in ASSETS:
+        if x["from"]["tag"] == "v0.2.3-vocr2.1":      # before the personal synthetic profile; no attribution file
+            assert x["licence"] == M.VOCR2_LIC and x["attribution"] is None, x["name"]
+            continue
         if x["kind"] in ("recognizer", "line spotter", "recognizer (PSP candidate)", "recognizer (vertical)",
                          "text spotter (whole frame)", "text-presence gate", "text detector"):
             assert x["licence"].startswith("non-commercial use only"), x["name"]
@@ -80,7 +83,7 @@ def test_the_models_trained_on_game_data_are_non_commercial():
 def test_every_attribution_file_of_the_source_releases_is_included():
     tags = {x["from"]["tag"] for x in ASSETS}
     have = {x["from"]["tag"] for x in ASSETS if x["kind"] == "attribution"}
-    no_attribution = {"v0.2.5-vocr3.1", "v0.2.5-vocr4.1"}       # those releases published none
+    no_attribution = {"v0.2.5-vocr3.1", "v0.2.5-vocr4.1", "v0.2.3-vocr2.1"}       # those releases published none
     assert have == tags - no_attribution | {"v0.3.7-lm6.1"}
     assert {BY[n]["kind"] for n in ("VOCR6-ATTRIBUTION.md", "MODEL-ATTRIBUTION.md", "LM-ATTRIBUTION.md",
                                      "SPOTTER-ATTRIBUTION.md", "GATE-ATTRIBUTION.md", "VERTICAL-ATTRIBUTION.md")} == \
@@ -90,9 +93,14 @@ def test_every_attribution_file_of_the_source_releases_is_included():
 def test_the_research_snapshots_before_vocr3_are_left_out_and_said_so():
     tags = {x["from"]["tag"] for x in ASSETS}
     for t in ("v0.2.2-meiki.1", "v0.2.2-fl10-training.1", "v0.2.2-fl10-bitmap.1", "v0.2.2-fl10-general.1",
-              "v0.2.3-vocr2.1", "v0.2.4-fl10-head.1"):
+              "v0.2.4-fl10-head.1"):
         assert t not in tags
         assert any(t in x["tag"] for x in DOC["left_out"]), t
+    # VOCR2's small int8 blob and its notes are in; its checkpoint and result files are left out, and said so
+    assert {x["name"] for x in ASSETS if x["from"]["tag"] == "v0.2.3-vocr2.1"} == {"VOCR2_FL10_w8.vocr",
+                                                                                   "vocr2-qualification.md"}
+    assert BY["VOCR2_FL10_w8.vocr"]["status"] == M.RESEARCH
+    assert any(x["tag"] == "v0.2.3-vocr2.1" and "vocr2-quarter-checkpoint.pt" in x["asset"] for x in DOC["left_out"])
 
 
 def test_the_md_tables_are_generated_from_the_manifest():
@@ -110,7 +118,7 @@ def test_the_counts_the_documents_give_are_the_manifests():
     assert f"{n} files come from {tags} releases; with `SHA256SUMS` and `v0.5.0-assets.json`" in md
     assert f"the release has {n + 2}." in md
     assert f"for the {listed} files its release's `SHA256SUMS` lists" in md
-    assert f"lists all {n + 2} files" in md
+    assert f"`SHA256SUMS` lists the other {n + 1} files" in md, "SHA256SUMS lists every file but itself"
     assert f"({n} files from {tags} releases, plus `SHA256SUMS` and `v0.5.0-assets.json`" in readme
     left = sum(int(b.replace(",", "")) for b in re.findall(r"(\d[\d,]+) B together", json.dumps(DOC["left_out"])))
     assert f"({round(left / 1e6)} MB together)" in readme
@@ -196,3 +204,60 @@ def test_the_readers_table_and_pair_helpers():
     assert t["pairs"]["VOCR6_N-VOCR5_N"]["delta"] == -10.0
     assert OR.neutral(str(OR.ROOT / "eval" / "x.py")) == "eval/x.py"
     assert OR.neutral(str(OR.HERD / "a")) == "$HERD/a"
+
+
+# ----------------------------------------------------------------------------- VOCR6's numbers in the documents
+
+FOLLOWUP = ROOT / "eval" / "vocr6_final_test_followup_20261027.json"
+RESULTS = ROOT / "eval" / "vocr6_results_20261027.json"
+
+
+def followup():
+    return json.loads(FOLLOWUP.read_text(encoding="utf-8"))
+
+
+def shipped(node, fam, tier):
+    return node["rates"][f"{fam}:{tier}:shipped"]["cer"]
+
+
+def test_the_vocr6_rows_of_docs_models_are_the_records():
+    """docs/models.md's VOCR6.2 rows: the follow-up's read-once numbers (Rubi's path and greedy) and its gate fits'
+    arenas and estimated box times; the held-out and dev numbers carry their caveats."""
+    md = (ROOT / "docs" / "models.md").read_text(encoding="utf-8")
+    fu = followup()
+    b, a = fu["path_b"], fu["path_a"]
+    gate = json.loads(RESULTS.read_text(encoding="utf-8"))["follow_up_gate"]["tiers"]
+    sec = md[md.index("## The recognizers"):md.index("## The line finders")]
+    rows = {m.group(1): m.group(0) for m in re.finditer(r"^\| `(VOCR6\.2_[SNL]_w8[_a-z0-9]*\.vocr)` \|.*$", sec, re.M)}
+    names = {"S": "VOCR6.2_S_w8.vocr", "N": "VOCR6.2_N_w8g2.vocr", "L": "VOCR6.2_L_w8_2l.vocr"}
+    for t, name in names.items():
+        row = rows[name]
+        g = gate[t]
+        assert f"| {g['arena_w8i_1024']:,} |" in row, t
+        assert f"| {g['est_box_ms']['shipped_333'] / 1000:.2f} / {g['est_box_ms']['shipped_444'] / 1000:.2f} |" in row
+        cl_b = shipped(b["clannad_lines"]["dialogue"], "VOCR6", t)
+        cl_a = a["clannad_lines"]["dialogue"]["rates"][f"VOCR6:{t}:greedy"]["cer"]
+        vp = shipped(b["vita_psp_fixed_lines"]["pooled|dialogue"], "VOCR6", t)
+        dd = shipped(b["pcsg00807_clean"], "VOCR6", t)
+        for x in (cl_b, cl_a, vp, dd):
+            assert f"{x:.2f}%" in row, (t, x)
+        assert "3 seeds" in row and "as it ships" in row, f"{t}: the held-out and dev caveats"
+    assert "+0.041 [−0.016, +0.099]" in md and "not held out" in md
+
+
+def test_the_changelog_vocr6_numbers_are_the_records():
+    ch = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    entry = ch[ch.index("## [0.5.0]"):ch.index("## Earlier releases")]
+    b = followup()["path_b"]
+    node = b["clannad_lines"]["dialogue"]
+    trio = lambda fam: " / ".join(f"{shipped(node, fam, t):.2f}" for t in "SNL") + "%"   # noqa: E731
+    assert f"CLANNAD's dialogue lines {trio('VOCR5')} → {trio('VOCR6')}" in entry
+    assert all(node["pairs"][f"{t}:shipped"]["ci95"][1] < 0 for t in "SNL"), "CLANNAD resolved better at every tier"
+    for words in ("the mean of three seeds", "as it ships", "+0.041 [−0.016, +0.099]", "not resolved",
+                  "glyph raster", "Est. 0.63 / 0.77 / 1.88 s"):
+        assert words in entry.replace("\n    ", " ").replace("\n  ", " "), words
+    n, tags = len(ASSETS), len({x["from"]["tag"] for x in ASSETS})
+    assert f"({n} files from {tags} releases, plus" in entry.replace("\n", " ")
+    rec = record()
+    assert all(rec["sets"][s]["values"]["VOCR6_L"]["cer"] == min(v["cer"] for v in rec["sets"][s]["values"].values())
+               for s in ("clannad", "vita-test", "psp-test", "pcsg00807")), "Large lowest on all four sets"

@@ -26,6 +26,7 @@ import json
 import os
 import pickle
 import platform
+import re
 import sys
 import time
 from pathlib import Path
@@ -349,9 +350,16 @@ def checks(tables):
     return {"compared": len(out), "equal": sum(x["equal"] for x in out), "rows": out}
 
 
+CLONE_PATH = re.compile(r"(?:(?<=^)|(?<=[\s:]))/\S*?/(?=(?:\.venv[^/\s]*|eval)/)")
+
+
 def neutral(text):
-    """A spec or model string with this checkout's and $HERD's absolute paths written relatively."""
-    return None if text is None else str(text).replace(str(ROOT) + "/", "").replace(str(HERD), "$HERD")
+    """A spec or model string with $HERD's and any checkout's absolute paths written relatively: the reading clone's
+    (a `cmd:` spec names its interpreter and script by absolute path) is not always the scoring one."""
+    if text is None:
+        return None
+    t = str(text).replace(str(ROOT) + "/", "").replace(str(HERD), "$HERD")
+    return CLONE_PATH.sub("", t)
 
 
 def reader_identities(into):

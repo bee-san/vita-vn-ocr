@@ -370,6 +370,13 @@
   "PPOCRv5_mobile_int8": "PPOCRv5_mobile_int8",
   "manga_ocr": "manga_ocr"
  },
+ "score_code_sha256": {
+  "eval/other_readers.py": "ea967404f907a9f646f3a3e8839169158f348225732f4c3b4973de6d747c59ce",
+  "eval/backends.py": "89571c2580b6141f1640e251c0f723895b6576b515fbd61466a9b64c8f8c2db0",
+  "eval/meiki_cmd.py": "e1dc16620eca2c7835c9d8f97da799322613fc34d9d8e8cb0ffc02cf284d4fb8",
+  "eval/metrics.py": "aba11d69fb7ea34c62e5d42ca8a5e08284c84a7421daa8d939d94b7e721ff189",
+  "eval/other_readers_protocol.json": "077249c9cf50e7db35289e388383bb6f7d805ef944781394ad3f6e36186a908e"
+ },
  "inputs_sha256": {
   "clannad": {
    "vocr_arms": "ca907b78bff0644b4c7f3efc55412901aa07352b9337bc33f37fadc4f2579763",
@@ -4390,9 +4397,10 @@
   ]
  },
  "notes": [
-  "PP-OCRv6 small was first read with onnxruntime at 5 intra-op threads (heavy.sh's OMP_NUM_THREADS); the protocol says one thread, so it was read again with OMP_NUM_THREADS=1, and every one of its 4,804 readings (vita-test 206, psp-test 245, CLANNAD 3,048, the hooked title 1,152) is the same; the record scores the one-thread read"
+  "PP-OCRv6 small was first read with onnxruntime at 5 intra-op threads (heavy.sh's OMP_NUM_THREADS); the protocol says one thread, so it was read again with OMP_NUM_THREADS=1, and every one of its 4,804 readings (vita-test 206, psp-test 245, CLANNAD 3,048, the hooked title 1,152) is the same; the record scores the one-thread read",
+  "The read path (cmd_read, clannad_crops, pcsg_crops and the helpers they call) is the registered commit e707898's in every read; each read's meta hashes eval/other_readers.py when it is written, and the scorer gained sizes(), --note and path-neutral reader names while the reads ran, so some metas name a later file. The scorer's own code is score_code_sha256"
  ],
  "lens_on_pcsg00807": "not read: private game data never goes to a third-party service",
  "training_or_selection_use": false,
- "created": "2026-10-28T07:40:37Z"
+ "created": "2026-10-28T07:59:36Z"
 }

@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""The README's "VOCR vs Google Lens" chart: dialogue CER per protected set, light and dark, SVG + 2x PNG.
+"""The README's chart: VOCR6 against VOCR5 and the other OCR engines, dialogue CER per test set, light and dark,
+SVG + 2x PNG.
 
-Every number comes from docs/charts/vocr-vs-lens.json, which `data` builds from the committed score files
-(VOCR5's dialogue tables, CLANNAD comparison, locked report and protocol) and which records where each number
-came from. The words live in that JSON's "copy" object (kept when `data` runs again); the panel's and the
-footnote's numbers are filled into them from the data. Nothing here scores anything.
+Every number comes from docs/charts/vocr-vs-lens.json, which `data` builds from committed records: the other
+engines' read (eval/other_readers_*.json: every system's dialogue CER on the same line crops, greedy for VOCR, and the
+pairs), VOCR6's follow-up records (Rubi's path for the table, its gate fits for the box times), VOCR5's protocol and
+locked report (its box times), and VOCR5's dialogue tables (Lens's furigana counts). The JSON records where each
+number came from. The words live in its "copy" object (kept when `data` runs again); the numbers in the row notes
+and the footnote are filled into them from the data. Nothing here scores anything.
 
-  python docs/charts/vocr_vs_lens.py fonts                 # Inter 4.1 (OFL-1.1) into the cache, sha256-checked
-  python docs/charts/vocr_vs_lens.py data --dialogue eval/vocr5_dialogue_20261016.json \\
-      --clannad eval/vocr5_clannad_20261016.json --report eval/vocr5_report_20261016.json \\
-      --protocol eval/vocr5_protocol.json --arms 'VOCR5_S=VOCR5 Small,VOCR5_N=VOCR5 Normal,VOCR5_L=VOCR5 Large'
-  python docs/charts/vocr_vs_lens.py check                 # the charted numbers, and copy.claims tested on them
-  python docs/charts/vocr_vs_lens.py render                # -> docs/charts/vocr-vs-lens-{light,dark}{.svg,-2x.png}
+  python docs/charts/vocr_vs_lens.py fonts            # Inter 4.1 (OFL-1.1) into the cache, sha256-checked
+  python docs/charts/vocr_vs_lens.py data --readers eval/other_readers_20261028.json \\
+      --vocr6 eval/vocr6_results_20261027.json --followup eval/vocr6_final_test_followup_20261027.json \\
+      --vocr5-report eval/vocr5_report_20261016.json --vocr5-protocol eval/vocr5_protocol.json \\
+      --lens-dialogue eval/vocr5_dialogue_20261016.json
+  python docs/charts/vocr_vs_lens.py check            # the charted numbers, and copy.claims tested on them
+  python docs/charts/vocr_vs_lens.py render           # -> docs/charts/vocr-vs-lens-{light,dark}{.svg,-2x.png}
 
 Environment: docs/charts/requirements.lock (matplotlib; not a repo or CI dependency). The font is never
 committed: `fonts` downloads it to $VOCR_CACHE (default ~/.cache/vita-vn-ocr) and the SVGs hold the glyphs
@@ -36,13 +40,27 @@ FACES = {  # role -> file inside the zip
     "regular": "extras/ttf/Inter-Regular.ttf",
 }
 
+# key, label, family: the chart's rows, top to bottom
+SYSTEMS = (("VOCR6_S", "VOCR6 Small", "vocr6"), ("VOCR6_N", "VOCR6 Normal", "vocr6"),
+           ("VOCR6_L", "VOCR6 Large", "vocr6"), ("VOCR5_S", "VOCR5 Small", "vocr5"),
+           ("VOCR5_N", "VOCR5 Normal", "vocr5"), ("VOCR5_L", "VOCR5 Large", "vocr5"),
+           ("Lens", "Google Lens", "other"), ("MeikiOCR", "MeikiOCR", "other"),
+           ("PPOCRv6_small", "PP-OCRv6 small", "other"), ("PPOCRv5_mobile_int8", "PP-OCRv5 mobile int8", "other"),
+           ("manga_ocr", "manga-ocr", "other"))
+# key, label, platform: the chart's columns, left to right
+SETS = (("clannad", "CLANNAD", "PS Vita"), ("vita-test", "vita-test", "PS Vita"), ("psp-test", "psp-test", "PSP"),
+        ("pcsg00807", "Dance with Devils", "PS Vita"))
+TIERS = {"S": "Small", "N": "Normal", "L": "Large"}
+
 THEMES = {
     "light": {"bg": ("#FFFFFF", "#F2F2F7"), "text": "#1D1D1F", "dim": "#6E6E73", "faint": "#6E6E73",
-              "accent": "#0071E3", "lens": "#86868B", "lens_text": "#6E6E73", "rule": "#D2D2D7",
-              "tiers": [("#8EC5FF", "#5AA9FF"), ("#3D8BFF", "#0A6CFF"), ("#7B61FF", "#3A3AFF")]},
+              "accent": "#0071E3", "rule": "#D2D2D7",
+              "vocr6": [("#8EC5FF", "#5AA9FF"), ("#3D8BFF", "#0A6CFF"), ("#7B61FF", "#3A3AFF")],
+              "vocr5": "#B7C9E2", "other": "#9E9EA3", "other_text": "#6E6E73"},
     "dark": {"bg": ("#000000", "#141416"), "text": "#F5F5F7", "dim": "#A1A1A6", "faint": "#A1A1A6",
-             "accent": "#2997FF", "lens": "#636366", "lens_text": "#A1A1A6", "rule": "#333336",
-             "tiers": [("#6BB6FF", "#3A93F5"), ("#2F80FF", "#0060F0"), ("#8C7BFF", "#4B3BFF")]},
+             "accent": "#2997FF", "rule": "#333336",
+             "vocr6": [("#6BB6FF", "#3A93F5"), ("#2F80FF", "#0060F0"), ("#8C7BFF", "#4B3BFF")],
+             "vocr5": "#44546E", "other": "#5E5E63", "other_text": "#A1A1A6"},
 }
 
 
@@ -81,49 +99,60 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def rate(errors, chars):
-    return round(100.0 * errors / chars, 4)
+def load(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-SHAPES = {"VOCR5_S": "s_w100v4987", "VOCR5_N": "n_w150v5631", "VOCR5_L": "l_lw300v5631"}
+VOCR5_SHAPES = {"VOCR5_S": "s_w100v4987", "VOCR5_N": "n_w150v5631", "VOCR5_L": "l_lw300v5631"}
 
 
-def resources(report_path, protocol_path):
-    """Per-model int8 bytes and W8I arena (the locked report) and the estimated seconds per 3-line box (the
-    protocol's estimate table, #85's runtime without prefetch credit: the figure the release and the overlay use)."""
-    rep = json.loads(Path(report_path).read_text())["shared"]["resources"]
-    est = json.loads(Path(protocol_path).read_text())["estimates"]["table"]
+def resources(vocr6_path, report_path, protocol_path, readers_path):
+    """Per system: the weights' bytes and form, and for VOCR the W8I arena and the estimated seconds per nominal
+    3-line box at 333 / 444 MHz (one A9 core, no prefetch credit). VOCR6: the follow-up's gate fits, as the blobs ship
+    (their head sections on, as Rubi runs them); VOCR5: its protocol's table for v0.3.0's plain blobs (#85's runtime);
+    the other engines: their weight files as they read (eval/other_readers_*.json "sizes")."""
     out = {}
-    for arm, shape in SHAPES.items():
+    g = load(vocr6_path)["follow_up_gate"]["tiers"]
+    for t in TIERS:
+        e = g[t]
+        out[f"VOCR6_{t}"] = {"bytes": e["blob"]["bytes"], "form": "int8", "arena_w8i": e["arena_w8i_1024"],
+                             "box_s_333": round(e["est_box_ms"]["shipped_333"] / 1000, 4),
+                             "box_s_444": round(e["est_box_ms"]["shipped_444"] / 1000, 4),
+                             "path": f"follow_up_gate.tiers.{t}"}
+    rep = load(report_path)["shared"]["resources"]
+    est = load(protocol_path)["estimates"]["table"]
+    for arm, shape in VOCR5_SHAPES.items():
         e = est[shape]["#85 no-PLD"]
         assert est[shape]["bytes"] == rep[arm]["blob_bytes"], arm
-        out[arm] = {"bytes": rep[arm]["blob_bytes"], "arena_w8i": rep[arm]["arena_w8i"], "shape": shape,
-                    "box_s_333": e["333"][1], "box_s_444": e["444"][1]}
+        out[arm] = {"bytes": rep[arm]["blob_bytes"], "form": "int8", "arena_w8i": rep[arm]["arena_w8i"],
+                    "box_s_333": e["333"][1], "box_s_444": e["444"][1], "path": f"estimates.table.{shape}"}
+    for k, v in load(readers_path)["sizes"].items():
+        out[k] = {"bytes": v["bytes"], "form": v["form"], "path": f"sizes.{k}"}
+    out["Lens"] = {"bytes": None, "form": "cloud service", "path": None}
     return out
 
 
 def mb(n):
-    return f"{n / 1e6:.1f} MB"
+    return f"{n / 1e6:.1f} MB" if n < 1e8 else f"{n / 1e6:.0f} MB"
 
 
-def panel_text(data):
-    """The panel's words with their numbers filled from `resources`: {N_MB}, {S_MB}, {L_MB}, {N_S444}."""
-    r = data["resources"]
-    vals = {"N_MB": mb(r["VOCR5_N"]["bytes"]), "S_MB": mb(r["VOCR5_S"]["bytes"]), "L_MB": mb(r["VOCR5_L"]["bytes"]),
-            "N_S444": f"{r['VOCR5_N']['box_s_444']:.1f}", "N_S333": f"{r['VOCR5_N']['box_s_333']:.1f}"}
-    p = data["copy"]["panel"]
-    return {k: (v.format(**vals) if isinstance(v, str) else [x.format(**vals) for x in v]) for k, v in p.items()}
+def row_note(data, key):
+    """The line under a row's name: size and form, and VOCR's estimated box time, filled from `resources`."""
+    r = data["resources"][key]
+    tmpl = data["copy"]["row_notes"].get(key) or data["copy"]["row_notes"]["default"]
+    vals = {"MB": mb(r["bytes"]) if r.get("bytes") else "", "FORM": r.get("form", ""),
+            "S333": f"{r['box_s_333']:.1f}" if r.get("box_s_333") else "",
+            "S444": f"{r['box_s_444']:.1f}" if r.get("box_s_444") else ""}
+    return tmpl.format(**vals)
 
 
 def footnote_text(data):
-    """The footnote paragraphs with their numbers filled from `values`, `sets` and `facts`."""
-    V, F = data["values"], data["facts"]
+    """The footnote paragraphs with their numbers filled from `sets` and `facts`."""
+    F = data["facts"]
     sets = {x["key"]: x for x in data["sets"]}
-    vals = {"CL_LINES": f"{sets['clannad']['lines']:,}", "VT_LINES": f"{sets['vita-test']['lines']:,}",
-            "PT_LINES": f"{sets['psp-test']['lines']:,}",
-            "CL_LENS_EXACT": f"{V['clannad']['Lens']['exact_pct']:.1f}",
-            "CL_N_EXACT": f"{V['clannad']['VOCR5_N']['exact_pct']:.1f}",
-            "VT_GAMES": F["games_vita-test"]["games"], "PT_GAMES": F["games_psp-test"]["games"]}
+    vals = {f"{tag}_LINES": f"{sets[k]['lines']:,}" for k, tag in
+            (("clannad", "CL"), ("vita-test", "VT"), ("psp-test", "PT"), ("pcsg00807", "DD"))}
+    vals.update(VT_GAMES=F["games_vita-test"]["games"], PT_GAMES=F["games_psp-test"]["games"])
     for key, tag in (("psp-test", "PT"), ("vita-test", "VT")):
         f = F[f"lens_furigana_{key}"]
         vals[f"{tag}_FUR_ERR"], vals[f"{tag}_ALL_ERR"] = f["furigana_errors"], f["all_errors"]
@@ -131,77 +160,75 @@ def footnote_text(data):
     return [x.format(**vals) for x in data["copy"]["footnote"]]
 
 
-def dialogue_value(dlg, arm, set_name):
-    """One arm's dialogue counts (lines without the 'name' style) on vita-test or psp-test from VOCR5's dialogue
-    tables (eval/vocr5_dialogue_*.json): console polarity for our models, screen polarity for Lens, which reads
-    the screen."""
-    view = "native" if arm == "Lens" else "console"
-    v = dlg["arms"][view][arm]["dialogue"][set_name]
-    return {"errors": v["errors"], "chars": v["chars"], "lines": v["lines"], "exact_lines": v["exact"],
-            "cer": rate(v["errors"], v["chars"]), "exact_pct": round(100.0 * v["exact"] / v["lines"], 2),
-            "path": f"arms.{view}.{arm}.dialogue.{set_name}"}
+def value_of(v, path):
+    return {"errors": v["errors"], "chars": v["chars"], "lines": v["lines"], "exact_lines": v["exact_lines"],
+            "cer": v["cer"], "ci95": v["ci95"], "clusters": v["clusters"], "path": path}
 
 
-def dialogue_pair(dlg, arm, set_name):
-    """ARM - Lens on dialogue, CER points: paired bootstrap over lines and over games (VN clusters)."""
-    p = dlg["pairs"][f"{arm}-Lens"]["console_vs_lens_native"]["dialogue"][set_name]
-    return {"delta": round(p["delta"], 4), "ci95": [round(x, 4) for x in p["lines_ci95"]],
-            "vn_ci95": [round(x, 4) for x in p["vn_ci95"]],
-            "path": f"pairs.{arm}-Lens.console_vs_lens_native.dialogue.{set_name}"}
+def pair_of(p, path):
+    return {"delta": p["delta"], "ci95": p["ci95"], "unit_ci95": p["unit_ci95"], "path": path}
+
+
+RUBI_KEYS = {"clannad": ("clannad_lines", "dialogue"), "vita-test": ("vita_psp_fixed_lines", "vita-test|dialogue"),
+             "psp-test": ("vita_psp_fixed_lines", "psp-test|dialogue"), "pcsg00807": ("pcsg00807_clean", None)}
+
+
+def rubi_path(followup):
+    """VOCR6 / VOCR5 as Rubi runs them (path b, 'shipped': beam + the 1 MB LM, the cascade, textnorm, the line
+    filter) on the same lines: the follow-up's final read."""
+    b = load(followup)["path_b"]
+    out = {}
+    for s, (k1, k2) in RUBI_KEYS.items():
+        node = b[k1] if k2 is None else b[k1][k2]
+        out[s] = {}
+        for g in (6, 5):
+            for t in TIERS:
+                r = node["rates"][f"VOCR{g}:{t}:shipped"]
+                p = f"path_b.{k1}" + (f".{k2}" if k2 else "") + f".rates.VOCR{g}:{t}:shipped"
+                out[s][f"VOCR{g}_{t}"] = {"errors": r["errors"], "chars": r["chars"], "cer": r["cer"], "path": p}
+    return out
 
 
 def cmd_data(a):
-    arms = dict(x.split("=", 1) for x in a.arms.split(","))
-    old = json.loads(DATA.read_text()) if DATA.exists() else {}
-    out = {"kind": "vocr-vs-lens-chart-data", "schema": 2,
-           "metric": "dialogue CER: character edit distance / reference characters over the lines without the "
-                     "'name' style (eval/metrics.norm), in percent; lower is better",
-           "systems": [{"key": k, "label": v} for k, v in arms.items()] + [{"key": "Lens", "label": "Google Lens"}],
-           "sets": [], "values": {}, "sources": {}, "facts": {}}
-    if a.clannad:
-        c = json.loads(Path(a.clannad).read_text())
-        out["sources"]["clannad"] = {"file": a.clannad, "sha256": sha256(a.clannad)}
-        S = c["scores"]["systems"]
+    old = load(DATA) if DATA.exists() else {}
+    R = load(a.readers)
+    out = {"kind": "vocr-vs-ocrs-chart-data", "schema": 3,
+           "metric": "dialogue CER: character edit distance / reference characters over the dialogue lines "
+                     "(eval/metrics.norm), in percent; lower is better",
+           "systems": [{"key": k, "label": lab, "family": fam} for k, lab, fam in SYSTEMS],
+           "sets": [], "values": {}, "rubi_path": rubi_path(a.followup), "sources": {}, "facts": {}}
+    for name, path in (("readers", a.readers), ("vocr6", a.vocr6), ("followup", a.followup),
+                       ("vocr5_report", a.vocr5_report), ("vocr5_protocol", a.vocr5_protocol),
+                       ("lens_dialogue", a.lens_dialogue)):
+        out["sources"][name] = {"file": path, "sha256": sha256(path)}
+    for key, label, platform in SETS:
+        t = R["sets"][key]
         vals = {}
-        for k in [*arms, "Lens"]:
-            v = S[k]["not_name"]
-            vals[k] = {"errors": v["errors"], "chars": v["chars"], "lines": v["lines"], "cer": v["cer"],
-                       "cer_ci95": v["cer_ci95"], "exact_lines": v["exact_lines"],
-                       "exact_pct": round(100.0 * v["exact_lines"] / v["lines"], 2),
-                       "path": f"scores.systems.{k}.not_name"}
-        out["sets"].append({"key": "clannad", "label": "CLANNAD", "platform": "PS Vita",
-                            "lines": vals["Lens"]["lines"], "chars": vals["Lens"]["chars"]})
-        out["values"]["clannad"] = vals
-    if a.dialogue:
-        d = json.loads(Path(a.dialogue).read_text())
-        out["sources"]["dialogue"] = {"file": a.dialogue, "sha256": sha256(a.dialogue)}
-        for set_name, platform in (("vita-test", "PS Vita"), ("psp-test", "PSP")):
-            vals = {k: dialogue_value(d, k, set_name) for k in [*arms, "Lens"]}
-            for k in arms:
-                vals[k]["vs"] = {"Lens": dialogue_pair(d, k, set_name)}
-            out["sets"].append({"key": set_name, "label": set_name, "platform": platform,
-                                "lines": vals["Lens"]["lines"], "chars": vals["Lens"]["chars"]})
-            out["values"][set_name] = vals
-            first = next(iter(arms))
-            pair = d["pairs"][f"{first}-Lens"]["console_vs_lens_native"]["dialogue"][set_name]
-            out["facts"][f"games_{set_name}"] = {
-                "games": pair["vn_clusters"],
-                "path": f"pairs.{first}-Lens.console_vs_lens_native.dialogue.{set_name}.vn_clusters"}
-            fur = d["arms"]["native"]["Lens"]["styles"]["furigana"][set_name]
-            allv = d["arms"]["native"]["Lens"]["all"][set_name]
-            out["facts"][f"lens_furigana_{set_name}"] = {
-                "furigana_lines": fur["lines"], "furigana_errors": fur["errors"], "all_errors": allv["errors"],
-                "all_lines": allv["lines"],
-                "path": f"arms.native.Lens.styles.furigana.{set_name} / arms.native.Lens.all.{set_name}"}
-    if a.report and a.protocol:
-        out["resources"] = resources(a.report, a.protocol)
-        out["sources"]["report"] = {"file": a.report, "sha256": sha256(a.report)}
-        out["sources"]["protocol"] = {"file": a.protocol, "sha256": sha256(a.protocol)}
-    else:
-        out["resources"] = old.get("resources", {})
-    out["copy"] = old.get("copy", {"eyebrow": "", "headline": "", "subhead": "", "panel": {}, "footnote": [],
-                                   "claims": []})
-    DATA.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n")
+        for k, _, _ in SYSTEMS:
+            v = t["values"].get(k)
+            vals[k] = None if v is None else value_of(v, f"sets.{key}.values.{k}")
+        for k, _, fam in SYSTEMS:
+            if fam == "other" or vals[k] is None:
+                continue
+            vals[k]["vs"] = {o: pair_of(t["pairs"][f"{k}-{o}"], f"sets.{key}.pairs.{k}-{o}")
+                             for o, _, f2 in SYSTEMS if f2 == "other" and f"{k}-{o}" in t["pairs"]}
+        first = vals["VOCR6_N"]
+        out["sets"].append({"key": key, "label": label, "platform": platform, "lines": first["lines"],
+                            "chars": first["chars"], "cluster": t["cluster"], "clusters": t["clusters"]})
+        out["values"][key] = vals
+    for s in ("vita-test", "psp-test"):
+        out["facts"][f"games_{s}"] = {"games": R["sets"][s]["clusters"], "path": f"sets.{s}.clusters"}
+    d = load(a.lens_dialogue)
+    for s in ("vita-test", "psp-test"):
+        fur = d["arms"]["native"]["Lens"]["styles"]["furigana"][s]
+        allv = d["arms"]["native"]["Lens"]["all"][s]
+        out["facts"][f"lens_furigana_{s}"] = {
+            "furigana_lines": fur["lines"], "furigana_errors": fur["errors"], "all_errors": allv["errors"],
+            "all_lines": allv["lines"], "path": f"arms.native.Lens.styles.furigana.{s} / arms.native.Lens.all.{s}"}
+    out["resources"] = resources(a.vocr6, a.vocr5_report, a.vocr5_protocol, a.readers)
+    out["copy"] = old.get("copy", {"eyebrow": "", "headline": "", "subhead": "", "row_notes": {"default": ""},
+                                   "not_measured": {}, "footnote": [], "claims": []})
+    DATA.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print("wrote", DATA)
 
 
@@ -219,7 +246,18 @@ def vgrad(top, bottom, n=256):
     return (t * (1 - k) + b * k)[:, None, :]
 
 
-FOOT_PT, FOOT_LH = 13.0, 20.0               # footnote size (pt) and line height (px)
+def hgrad(left, right, n=256):
+    import numpy as np
+    t, b = np.array(hex2rgb(left)), np.array(hex2rgb(right))
+    k = np.linspace(0, 1, n)[None, :, None]
+    return t * (1 - k) + b * k
+
+
+FOOT_PT, FOOT_LH = 12.5, 19.0               # footnote size (pt) and line height (px)
+W, H = 1600, 1000                           # logical px; the PNG is rendered at 2x
+X0 = 80                                     # left margin
+LABEL_W = 345                               # the row-label column
+ROW_PITCH, GROUP_GAP, BAR_H = 41.0, 14.0, 17.0
 
 
 def wrap(text, prop, size_pt, width_px):
@@ -240,6 +278,18 @@ def fmt_pct(x):
     return f"{x:.2f}%" if x < 10 else f"{x:.1f}%"
 
 
+def row_ys(systems, top):
+    """Each row's centre line, top to bottom, with a gap between families."""
+    ys, y, last = [], top, None
+    for s in systems:
+        if last is not None and s["family"] != last:
+            y -= GROUP_GAP
+        ys.append(y)
+        y -= ROW_PITCH
+        last = s["family"]
+    return ys
+
+
 def render(data, theme, out_stem, F):
     import matplotlib
     matplotlib.use("Agg")
@@ -249,7 +299,6 @@ def render(data, theme, out_stem, F):
     plt.rcParams["svg.fonttype"] = "path"
     plt.rcParams["svg.hashsalt"] = "vocr-vs-lens"
     T = THEMES[theme]
-    W, H = 1600, 900                       # logical px; the PNG is rendered at 2x
     fig = plt.figure(figsize=(W / 100, H / 100), dpi=100)
     bg = fig.add_axes([0, 0, 1, 1])
     bg.imshow(vgrad(*T["bg"]), extent=[0, W, 0, H], aspect="auto", interpolation="bicubic", zorder=0)
@@ -261,76 +310,55 @@ def render(data, theme, out_stem, F):
     def txt(x, y, s, face, size, color, **kw):
         bg.text(x, y, s, fontproperties=F[face], fontsize=size, color=color, zorder=5, **kw)
 
-    X0 = 96
-    txt(X0, 806, c.get("eyebrow", ""), "semibold", 15, T["accent"], va="baseline")
-    txt(X0, 742, c.get("headline", ""), "display", 44, T["text"], va="baseline")
-    txt(X0, 700, c.get("subhead", ""), "regular", 17, T["dim"], va="baseline")
+    txt(X0, H - 92, c.get("eyebrow", ""), "semibold", 15, T["accent"], va="baseline")
+    txt(X0, H - 152, c.get("headline", ""), "display", 42, T["text"], va="baseline")
+    txt(X0, H - 192, c.get("subhead", ""), "regular", 17, T["dim"], va="baseline")
 
-    # --- the bars: one group per set, one bar per system (VOCR tiers, then Lens)
-    systems = data["systems"]
-    sets = data["sets"]
-    vals = data["values"]
-    cmax = max(v["cer"] for s in sets for v in vals[s["key"]].values() if v)
-    top_px, base = 330.0, 290.0            # bar area: base line y and the tallest bar's height
-    scale = top_px / (cmax * 1.08)
-    gx0, gx1 = X0, 1066                    # bar groups span this x range; the panel sits right of it
-    gw = (gx1 - gx0) / len(sets)
-    bw, gap = 56.0, 24.0
-    for gi, s in enumerate(sets):
-        n = len(systems)
-        span = n * bw + (n - 1) * gap
-        x = gx0 + gi * gw + (gw - span) / 2
-        for si, sysm in enumerate(systems):
+    systems, sets, vals = data["systems"], data["sets"], data["values"]
+    head_y = H - 262                         # set names; their platform and line count under them
+    ys = row_ys(systems, head_y - 62)
+    px0 = X0 + LABEL_W
+    pw = (W - X0 - px0) / len(sets)          # one panel per set
+    bar_max = pw - 96                        # room right of the longest bar for its value
+
+    for si, s in enumerate(sets):
+        x = px0 + si * pw
+        txt(x, head_y, s["label"], "semibold", 19, T["text"], va="baseline")
+        txt(x, head_y - 24, f'{s["platform"]} · {s["lines"]:,} lines', "regular", 13.5, T["dim"], va="baseline")
+        col = [v["cer"] for v in vals[s["key"]].values() if v]
+        scale = bar_max / max(col)
+        for ri, sysm in enumerate(systems):
+            y = ys[ri]
             v = vals[s["key"]].get(sysm["key"])
-            bx = x + si * (bw + gap)
-            lens = sysm["key"] == "Lens"
-            label = "Lens" if lens else sysm["label"].split()[-1]
-            txt(bx + bw / 2, base - 28, label, "medium", 14, T["dim"], ha="center", va="baseline")
             if v is None:
-                txt(bx + bw / 2, base + 14, "not\nmeasured", "regular", 12.5, T["faint"], ha="center",
-                    va="bottom", linespacing=1.15)
-                bg.plot([bx + 6, bx + bw - 6], [base, base], color=T["rule"], lw=1.2, zorder=3)
+                txt(x + 10, y, c.get("not_measured", {}).get(s["key"], {}).get(sysm["key"], "not measured"),
+                    "regular", 12.5, T["faint"], va="center")
                 continue
-            h = max(v["cer"] * scale, 3.0)
-            r = min(12.0, bw / 2, h / 2)
-            patch = FancyBboxPatch((bx, base), bw, h, boxstyle=f"round,pad=0,rounding_size={r}",
+            w = max(v["cer"] * scale, BAR_H)
+            patch = FancyBboxPatch((x, y - BAR_H / 2), w, BAR_H, boxstyle=f"round,pad=0,rounding_size={BAR_H / 2}",
                                    linewidth=0, facecolor="none", zorder=3)
             bg.add_patch(patch)
-            if lens:
-                patch.set_facecolor(T["lens"])
-            else:
-                tier = min(si, len(T["tiers"]) - 1)
-                im = bg.imshow(vgrad(*T["tiers"][tier]), extent=[bx, bx + bw, base, base + h], aspect="auto",
-                               interpolation="bicubic", zorder=3)
+            fam = sysm["family"]
+            if fam == "vocr6":
+                tier = "SNL".index(sysm["key"][-1])
+                im = bg.imshow(hgrad(*T["vocr6"][tier]), extent=[x, x + w, y - BAR_H / 2, y + BAR_H / 2],
+                               aspect="auto", interpolation="bicubic", zorder=3)
                 im.set_clip_path(patch)
+            else:
+                patch.set_facecolor(T["vocr5"] if fam == "vocr5" else T["other"])
             mark = c.get("marks", {}).get(s["key"], {}).get(sysm["key"], "")
-            txt(bx + bw / 2, base + h + 10, fmt_pct(v["cer"]) + mark, "semibold", 16,
-                T["lens_text"] if lens else T["text"], ha="center", va="bottom")
-        cx = gx0 + gi * gw + gw / 2
-        txt(cx, base - 66, s["label"], "semibold", 20, T["text"], ha="center", va="baseline")
-        txt(cx, base - 92, f'{s["platform"]} · {s["lines"]:,} lines', "regular", 14, T["dim"], ha="center",
-            va="baseline")
-    bg.plot([gx0, gx1], [base, base], color=T["rule"], lw=1.0, zorder=2)
+            txt(x + w + 8, y, fmt_pct(v["cer"]) + mark, "semibold" if fam == "vocr6" else "medium",
+                14.5 if fam == "vocr6" else 13.5, T["text"] if fam != "other" else T["other_text"], va="center")
+    for ri, sysm in enumerate(systems):
+        y = ys[ri]
+        fam = sysm["family"]
+        txt(X0, y + 4, sysm["label"], "semibold" if fam == "vocr6" else "medium", 16 if fam == "vocr6" else 15,
+            T["text"] if fam != "other" else T["other_text"], va="baseline")
+        txt(X0, y - 13, row_note(data, sysm["key"]), "regular", 11.5, T["dim"], va="baseline")
+    bg.plot([X0, W - X0], [ys[-1] - ROW_PITCH / 2 - 4] * 2, color=T["rule"], lw=1.0, zorder=2)
 
-    # --- the right panel: where it runs
-    p = panel_text(data)
-    px = 1134
-    bg.plot([px - 36, px - 36], [base - 90, base + top_px + 10], color=T["rule"], lw=1.0, zorder=2)
-    txt(px, base + top_px - 18, p.get("kicker", ""), "semibold", 15, T["accent"], va="baseline")
-    txt(px, base + top_px - 92, p.get("big", ""), "display", 58, T["text"], va="baseline")
-    txt(px, base + top_px - 128, p.get("big_sub", ""), "regular", 15, T["dim"], va="baseline")
-    yy = base + top_px - 180
-    for line in p.get("lines", []):
-        txt(px, yy, line, "medium", 14.5, T["text"], va="baseline")
-        yy -= 27
-    yy -= 14
-    for line in p.get("lens_lines", []):
-        txt(px, yy, line, "regular", 13.5, T["lens_text"], va="baseline")
-        yy -= 23
-
-    # --- footnote: each paragraph wrapped to the content width, the block set on the bottom margin
     lines = [ln for para in footnote_text(data) for ln in wrap(para, F["regular"], FOOT_PT, W - 2 * X0)]
-    y = 34 + (len(lines) - 1) * FOOT_LH
+    y = 30 + (len(lines) - 1) * FOOT_LH
     for line in lines:
         txt(X0, y, line, "regular", FOOT_PT, T["faint"], va="baseline")
         y -= FOOT_LH
@@ -345,7 +373,7 @@ def render(data, theme, out_stem, F):
 
 
 def cmd_render(a):
-    data = json.loads(Path(a.data).read_text())
+    data = load(a.data)
     problems = check(data)
     if problems:
         raise SystemExit("claims not supported by the data:\n" + "\n".join(problems))
@@ -358,7 +386,7 @@ def cmd_render(a):
         data["rendered"] = {"inputs_sha256": inputs_sha256(data),
                             "files": {f.name: sha256(f) for f in sorted(out.glob("vocr-vs-lens-*"))
                                       if f.suffix in (".svg", ".png")}}
-        DATA.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n")
+        DATA.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
 def inputs_sha256(data):
@@ -375,7 +403,8 @@ OPS = {"<": lambda a, b: a < b, "<=": lambda a, b: a <= b, ">": lambda a, b: a >
 def check(data):
     """Each entry of copy.claims is {"set", "system", "op", "than"} on dialogue CER point estimates (than: a system
     key or a number in percent), optionally "ci": true, which also needs the pair's 95% interval (values[set][system]
-    ["vs"][than]["ci95"], in points) entirely on the claimed side of 0. Returns the claims the data does not support."""
+    ["vs"][than]["ci95"], in points: the cluster bootstrap's) entirely on the claimed side of 0. Returns the claims
+    the data does not support."""
     bad = []
     for c in data.get("copy", {}).get("claims", []):
         vals = data["values"].get(c["set"]) or {}
@@ -396,9 +425,9 @@ def check(data):
 
 
 def cmd_check(a):
-    data = json.loads(Path(a.data).read_text())
+    data = load(a.data)
     for s in data["sets"]:
-        row = [f"{s['label']:>10} ({s['lines']:,} lines)"]
+        row = [f"{s['label']:>18} ({s['lines']:,} lines)"]
         for sysm in data["systems"]:
             v = data["values"][s["key"]].get(sysm["key"])
             row.append(f"{sysm['label']}: " + ("not measured" if v is None else f"{v['cer']:.2f}%"))
@@ -413,11 +442,12 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("fonts")
     d = sub.add_parser("data")
-    d.add_argument("--dialogue", help="VOCR5's dialogue tables JSON (vita-test, psp-test, Lens)")
-    d.add_argument("--clannad", help="the CLANNAD comparison JSON (eval/clannad_refs.py score output)")
-    d.add_argument("--arms", required=True, help="ARM=Label,... in bar order, e.g. VOCR5_S=VOCR5 Small,...")
-    d.add_argument("--report", help="VOCR5's locked report JSON (int8 bytes, W8I arenas)")
-    d.add_argument("--protocol", help="VOCR5's protocol JSON (the box-time estimate table)")
+    d.add_argument("--readers", required=True, help="eval/other_readers_*.json (every system's dialogue CER)")
+    d.add_argument("--vocr6", required=True, help="eval/vocr6_results_*.json (the follow-up's gate fits)")
+    d.add_argument("--followup", required=True, help="eval/vocr6_final_test_followup_*.json (Rubi's path)")
+    d.add_argument("--vocr5-report", required=True, help="VOCR5's locked report JSON (int8 bytes, W8I arenas)")
+    d.add_argument("--vocr5-protocol", required=True, help="VOCR5's protocol JSON (the box-time estimate table)")
+    d.add_argument("--lens-dialogue", required=True, help="VOCR5's dialogue tables (Lens's furigana counts)")
     r = sub.add_parser("render")
     r.add_argument("--data", default=str(DATA))
     r.add_argument("--out-dir", default=str(HERE))

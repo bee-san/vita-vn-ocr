@@ -1,23 +1,62 @@
 {
- "kind": "vocr-vs-lens-chart-data",
- "schema": 2,
- "metric": "dialogue CER: character edit distance / reference characters over the lines without the 'name' style (eval/metrics.norm), in percent; lower is better",
+ "kind": "vocr-vs-ocrs-chart-data",
+ "schema": 3,
+ "metric": "dialogue CER: character edit distance / reference characters over the dialogue lines (eval/metrics.norm), in percent; lower is better",
  "systems": [
   {
+   "key": "VOCR6_S",
+   "label": "VOCR6 Small",
+   "family": "vocr6"
+  },
+  {
+   "key": "VOCR6_N",
+   "label": "VOCR6 Normal",
+   "family": "vocr6"
+  },
+  {
+   "key": "VOCR6_L",
+   "label": "VOCR6 Large",
+   "family": "vocr6"
+  },
+  {
    "key": "VOCR5_S",
-   "label": "VOCR5 Small"
+   "label": "VOCR5 Small",
+   "family": "vocr5"
   },
   {
    "key": "VOCR5_N",
-   "label": "VOCR5 Normal"
+   "label": "VOCR5 Normal",
+   "family": "vocr5"
   },
   {
    "key": "VOCR5_L",
-   "label": "VOCR5 Large"
+   "label": "VOCR5 Large",
+   "family": "vocr5"
   },
   {
    "key": "Lens",
-   "label": "Google Lens"
+   "label": "Google Lens",
+   "family": "other"
+  },
+  {
+   "key": "MeikiOCR",
+   "label": "MeikiOCR",
+   "family": "other"
+  },
+  {
+   "key": "PPOCRv6_small",
+   "label": "PP-OCRv6 small",
+   "family": "other"
+  },
+  {
+   "key": "PPOCRv5_mobile_int8",
+   "label": "PP-OCRv5 mobile int8",
+   "family": "other"
+  },
+  {
+   "key": "manga_ocr",
+   "label": "manga-ocr",
+   "family": "other"
   }
  ],
  "sets": [
@@ -26,99 +65,854 @@
    "label": "CLANNAD",
    "platform": "PS Vita",
    "lines": 2052,
-   "chars": 33485
+   "chars": 33485,
+   "cluster": "page",
+   "clusters": 1867
   },
   {
    "key": "vita-test",
    "label": "vita-test",
    "platform": "PS Vita",
    "lines": 153,
-   "chars": 2392
+   "chars": 2392,
+   "cluster": "vn",
+   "clusters": 16
   },
   {
    "key": "psp-test",
    "label": "psp-test",
    "platform": "PSP",
    "lines": 183,
-   "chars": 2301
+   "chars": 2301,
+   "cluster": "vn",
+   "clusters": 14
+  },
+  {
+   "key": "pcsg00807",
+   "label": "Dance with Devils",
+   "platform": "PS Vita",
+   "lines": 1152,
+   "chars": 13911,
+   "cluster": "page",
+   "clusters": 670
   }
  ],
  "values": {
   "clannad": {
+   "VOCR6_S": {
+    "errors": 242,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1852,
+    "cer": 0.7227,
+    "ci95": [
+     0.6161,
+     0.8305
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR6_S",
+    "vs": {
+     "Lens": {
+      "delta": -0.803345,
+      "ci95": [
+       -1.529094,
+       -0.174807
+      ],
+      "unit_ci95": [
+       -1.533584,
+       -0.174932
+      ],
+      "path": "sets.clannad.pairs.VOCR6_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.059728,
+      "ci95": [
+       -0.19134,
+       0.068725
+      ],
+      "unit_ci95": [
+       -0.19045,
+       0.066534
+      ],
+      "path": "sets.clannad.pairs.VOCR6_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -1.373749,
+      "ci95": [
+       -1.545457,
+       -1.20525
+      ],
+      "unit_ci95": [
+       -1.545367,
+       -1.198608
+      ],
+      "path": "sets.clannad.pairs.VOCR6_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -2.550396,
+      "ci95": [
+       -2.771044,
+       -2.327375
+      ],
+      "unit_ci95": [
+       -2.772392,
+       -2.329967
+      ],
+      "path": "sets.clannad.pairs.VOCR6_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -1.334926,
+      "ci95": [
+       -1.542478,
+       -1.130001
+      ],
+      "unit_ci95": [
+       -1.539975,
+       -1.130277
+      ],
+      "path": "sets.clannad.pairs.VOCR6_S-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_N": {
+    "errors": 135,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1943,
+    "cer": 0.4032,
+    "ci95": [
+     0.3239,
+     0.4858
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR6_N",
+    "vs": {
+     "Lens": {
+      "delta": -1.122891,
+      "ci95": [
+       -1.849075,
+       -0.497036
+      ],
+      "unit_ci95": [
+       -1.860212,
+       -0.494018
+      ],
+      "path": "sets.clannad.pairs.VOCR6_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.379274,
+      "ci95": [
+       -0.500565,
+       -0.262291
+      ],
+      "unit_ci95": [
+       -0.502607,
+       -0.264204
+      ],
+      "path": "sets.clannad.pairs.VOCR6_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -1.693296,
+      "ci95": [
+       -1.870982,
+       -1.519819
+      ],
+      "unit_ci95": [
+       -1.868162,
+       -1.516316
+      ],
+      "path": "sets.clannad.pairs.VOCR6_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -2.869942,
+      "ci95": [
+       -3.092757,
+       -2.650156
+      ],
+      "unit_ci95": [
+       -3.091504,
+       -2.652094
+      ],
+      "path": "sets.clannad.pairs.VOCR6_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -1.654472,
+      "ci95": [
+       -1.857208,
+       -1.456163
+      ],
+      "unit_ci95": [
+       -1.857288,
+       -1.460749
+      ],
+      "path": "sets.clannad.pairs.VOCR6_N-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_L": {
+    "errors": 86,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1981,
+    "cer": 0.2568,
+    "ci95": [
+     0.1922,
+     0.3263
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR6_L",
+    "vs": {
+     "Lens": {
+      "delta": -1.269225,
+      "ci95": [
+       -1.991123,
+       -0.634092
+      ],
+      "unit_ci95": [
+       -2.001335,
+       -0.641472
+      ],
+      "path": "sets.clannad.pairs.VOCR6_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.525608,
+      "ci95": [
+       -0.659577,
+       -0.39641
+      ],
+      "unit_ci95": [
+       -0.659685,
+       -0.395466
+      ],
+      "path": "sets.clannad.pairs.VOCR6_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -1.83963,
+      "ci95": [
+       -2.005791,
+       -1.676475
+      ],
+      "unit_ci95": [
+       -2.005116,
+       -1.674946
+      ],
+      "path": "sets.clannad.pairs.VOCR6_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -3.016276,
+      "ci95": [
+       -3.242439,
+       -2.7925
+      ],
+      "unit_ci95": [
+       -3.241266,
+       -2.799926
+      ],
+      "path": "sets.clannad.pairs.VOCR6_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -1.800806,
+      "ci95": [
+       -1.998033,
+       -1.611485
+      ],
+      "unit_ci95": [
+       -1.992046,
+       -1.618112
+      ],
+      "path": "sets.clannad.pairs.VOCR6_L-manga_ocr"
+     }
+    }
+   },
    "VOCR5_S": {
     "errors": 463,
     "chars": 33485,
     "lines": 2052,
+    "exact_lines": 1692,
     "cer": 1.3827,
-    "cer_ci95": [
+    "ci95": [
      1.2334,
      1.5359
     ],
-    "exact_lines": 1692,
-    "exact_pct": 82.46,
-    "path": "scores.systems.VOCR5_S.not_name"
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR5_S",
+    "vs": {
+     "Lens": {
+      "delta": -0.143348,
+      "ci95": [
+       -0.879422,
+       0.489183
+      ],
+      "unit_ci95": [
+       -0.874797,
+       0.49437
+      ],
+      "path": "sets.clannad.pairs.VOCR5_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": 0.600269,
+      "ci95": [
+       0.45254,
+       0.748847
+      ],
+      "unit_ci95": [
+       0.450517,
+       0.744065
+      ],
+      "path": "sets.clannad.pairs.VOCR5_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.713752,
+      "ci95": [
+       -0.895033,
+       -0.537321
+      ],
+      "unit_ci95": [
+       -0.890976,
+       -0.532779
+      ],
+      "path": "sets.clannad.pairs.VOCR5_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.890399,
+      "ci95": [
+       -2.115358,
+       -1.668214
+      ],
+      "unit_ci95": [
+       -2.113634,
+       -1.665859
+      ],
+      "path": "sets.clannad.pairs.VOCR5_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -0.674929,
+      "ci95": [
+       -0.904752,
+       -0.446465
+      ],
+      "unit_ci95": [
+       -0.901089,
+       -0.456876
+      ],
+      "path": "sets.clannad.pairs.VOCR5_S-manga_ocr"
+     }
+    }
    },
    "VOCR5_N": {
     "errors": 322,
     "chars": 33485,
     "lines": 2052,
+    "exact_lines": 1793,
     "cer": 0.9616,
-    "cer_ci95": [
+    "ci95": [
      0.8432,
      1.0846
     ],
-    "exact_lines": 1793,
-    "exact_pct": 87.38,
-    "path": "scores.systems.VOCR5_N.not_name"
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR5_N",
+    "vs": {
+     "Lens": {
+      "delta": -0.564432,
+      "ci95": [
+       -1.289959,
+       0.063095
+      ],
+      "unit_ci95": [
+       -1.293712,
+       0.065138
+      ],
+      "path": "sets.clannad.pairs.VOCR5_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": 0.179185,
+      "ci95": [
+       0.041639,
+       0.316208
+      ],
+      "unit_ci95": [
+       0.036249,
+       0.315629
+      ],
+      "path": "sets.clannad.pairs.VOCR5_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -1.134836,
+      "ci95": [
+       -1.300399,
+       -0.973316
+      ],
+      "unit_ci95": [
+       -1.296844,
+       -0.971907
+      ],
+      "path": "sets.clannad.pairs.VOCR5_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -2.311483,
+      "ci95": [
+       -2.53632,
+       -2.087985
+      ],
+      "unit_ci95": [
+       -2.533452,
+       -2.094646
+      ],
+      "path": "sets.clannad.pairs.VOCR5_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -1.096013,
+      "ci95": [
+       -1.32292,
+       -0.875749
+      ],
+      "unit_ci95": [
+       -1.319066,
+       -0.882909
+      ],
+      "path": "sets.clannad.pairs.VOCR5_N-manga_ocr"
+     }
+    }
    },
    "VOCR5_L": {
     "errors": 246,
     "chars": 33485,
     "lines": 2052,
+    "exact_lines": 1845,
     "cer": 0.7347,
-    "cer_ci95": [
+    "ci95": [
      0.629,
      0.846
     ],
-    "exact_lines": 1845,
-    "exact_pct": 89.91,
-    "path": "scores.systems.VOCR5_L.not_name"
+    "clusters": 1867,
+    "path": "sets.clannad.values.VOCR5_L",
+    "vs": {
+     "Lens": {
+      "delta": -0.791399,
+      "ci95": [
+       -1.521229,
+       -0.157558
+      ],
+      "unit_ci95": [
+       -1.516997,
+       -0.165641
+      ],
+      "path": "sets.clannad.pairs.VOCR5_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.047783,
+      "ci95": [
+       -0.185997,
+       0.086641
+      ],
+      "unit_ci95": [
+       -0.186723,
+       0.086814
+      ],
+      "path": "sets.clannad.pairs.VOCR5_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -1.361804,
+      "ci95": [
+       -1.524713,
+       -1.200363
+      ],
+      "unit_ci95": [
+       -1.520573,
+       -1.201835
+      ],
+      "path": "sets.clannad.pairs.VOCR5_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -2.53845,
+      "ci95": [
+       -2.760604,
+       -2.319025
+      ],
+      "unit_ci95": [
+       -2.75433,
+       -2.3207
+      ],
+      "path": "sets.clannad.pairs.VOCR5_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -1.32298,
+      "ci95": [
+       -1.530479,
+       -1.122866
+      ],
+      "unit_ci95": [
+       -1.527833,
+       -1.122218
+      ],
+      "path": "sets.clannad.pairs.VOCR5_L-manga_ocr"
+     }
+    }
    },
    "Lens": {
     "errors": 511,
     "chars": 33485,
     "lines": 2052,
+    "exact_lines": 1981,
     "cer": 1.5261,
-    "cer_ci95": [
+    "ci95": [
      0.897,
      2.2547
     ],
-    "exact_lines": 1981,
-    "exact_pct": 96.54,
-    "path": "scores.systems.Lens.not_name"
+    "clusters": 1867,
+    "path": "sets.clannad.values.Lens"
+   },
+   "MeikiOCR": {
+    "errors": 262,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1868,
+    "cer": 0.7824,
+    "ci95": [
+     0.6509,
+     0.9263
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.MeikiOCR"
+   },
+   "PPOCRv6_small": {
+    "errors": 702,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1515,
+    "cer": 2.0965,
+    "ci95": [
+     1.9249,
+     2.2735
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.PPOCRv6_small"
+   },
+   "PPOCRv5_mobile_int8": {
+    "errors": 1096,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1316,
+    "cer": 3.2731,
+    "ci95": [
+     3.0381,
+     3.5095
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.PPOCRv5_mobile_int8"
+   },
+   "manga_ocr": {
+    "errors": 689,
+    "chars": 33485,
+    "lines": 2052,
+    "exact_lines": 1585,
+    "cer": 2.0576,
+    "ci95": [
+     1.8641,
+     2.2611
+    ],
+    "clusters": 1867,
+    "path": "sets.clannad.values.manga_ocr"
    }
   },
   "vita-test": {
+   "VOCR6_S": {
+    "errors": 22,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 138,
+    "cer": 0.9197,
+    "ci95": [
+     0.452,
+     1.6265
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR6_S",
+    "vs": {
+     "Lens": {
+      "delta": -2.801003,
+      "ci95": [
+       -6.039971,
+       -0.747191
+      ],
+      "unit_ci95": [
+       -4.983484,
+       -0.914758
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.459866,
+      "ci95": [
+       -1.089414,
+       0.099858
+      ],
+      "unit_ci95": [
+       -1.186944,
+       0.256309
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.41806,
+      "ci95": [
+       -0.828248,
+       0.042159
+      ],
+      "unit_ci95": [
+       -1.145047,
+       0.302916
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.421405,
+      "ci95": [
+       -2.166818,
+       -0.699544
+      ],
+      "unit_ci95": [
+       -2.243264,
+       -0.553644
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -7.023411,
+      "ci95": [
+       -11.207808,
+       -3.975167
+      ],
+      "unit_ci95": [
+       -9.168459,
+       -5.113578
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_S-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_N": {
+    "errors": 11,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 145,
+    "cer": 0.4599,
+    "ci95": [
+     0.1305,
+     0.9511
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR6_N",
+    "vs": {
+     "Lens": {
+      "delta": -3.26087,
+      "ci95": [
+       -6.555858,
+       -1.19243
+      ],
+      "unit_ci95": [
+       -5.37545,
+       -1.46155
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.919732,
+      "ci95": [
+       -1.698699,
+       -0.323922
+      ],
+      "unit_ci95": [
+       -1.559982,
+       -0.331538
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.877926,
+      "ci95": [
+       -1.402415,
+       -0.360154
+      ],
+      "unit_ci95": [
+       -1.573807,
+       -0.247015
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.881271,
+      "ci95": [
+       -2.738354,
+       -1.120442
+      ],
+      "unit_ci95": [
+       -2.682192,
+       -1.088321
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -7.483278,
+      "ci95": [
+       -11.882307,
+       -4.283453
+      ],
+      "unit_ci95": [
+       -9.57886,
+       -5.624717
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_N-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_L": {
+    "errors": 10,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 146,
+    "cer": 0.4181,
+    "ci95": [
+     0.1196,
+     0.8547
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR6_L",
+    "vs": {
+     "Lens": {
+      "delta": -3.302676,
+      "ci95": [
+       -6.577947,
+       -1.252443
+      ],
+      "unit_ci95": [
+       -5.400553,
+       -1.518939
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.961538,
+      "ci95": [
+       -1.813131,
+       -0.328005
+      ],
+      "unit_ci95": [
+       -1.582803,
+       -0.418747
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.919732,
+      "ci95": [
+       -1.539844,
+       -0.333055
+      ],
+      "unit_ci95": [
+       -1.602037,
+       -0.333608
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.923077,
+      "ci95": [
+       -2.776297,
+       -1.148533
+      ],
+      "unit_ci95": [
+       -2.684278,
+       -1.189509
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -7.525084,
+      "ci95": [
+       -11.961776,
+       -4.331994
+      ],
+      "unit_ci95": [
+       -9.594733,
+       -5.687591
+      ],
+      "path": "sets.vita-test.pairs.VOCR6_L-manga_ocr"
+     }
+    }
+   },
    "VOCR5_S": {
     "errors": 24,
     "chars": 2392,
     "lines": 153,
     "exact_lines": 136,
     "cer": 1.0033,
-    "exact_pct": 88.89,
-    "path": "arms.console.VOCR5_S.dialogue.vita-test",
+    "ci95": [
+     0.4789,
+     1.7967
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR5_S",
     "vs": {
      "Lens": {
-      "delta": -2.7174,
+      "delta": -2.717391,
       "ci95": [
-       -4.8658,
-       -0.8754
+       -6.025602,
+       -0.53737
       ],
-      "vn_ci95": [
-       -6.0256,
-       -0.5374
+      "unit_ci95": [
+       -4.86579,
+       -0.875362
       ],
-      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test"
+      "path": "sets.vita-test.pairs.VOCR5_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.376254,
+      "ci95": [
+       -1.253252,
+       0.437889
+      ],
+      "unit_ci95": [
+       -1.04654,
+       0.254793
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.334448,
+      "ci95": [
+       -0.906588,
+       0.356372
+      ],
+      "unit_ci95": [
+       -1.029665,
+       0.28665
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.337793,
+      "ci95": [
+       -2.137408,
+       -0.57946
+      ],
+      "unit_ci95": [
+       -2.097046,
+       -0.61677
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -6.939799,
+      "ci95": [
+       -11.305448,
+       -3.732783
+      ],
+      "unit_ci95": [
+       -9.019331,
+       -5.088307
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_S-manga_ocr"
      }
     }
    },
@@ -128,20 +922,72 @@
     "lines": 153,
     "exact_lines": 133,
     "cer": 0.9615,
-    "exact_pct": 86.93,
-    "path": "arms.console.VOCR5_N.dialogue.vita-test",
+    "ci95": [
+     0.3717,
+     1.9705
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR5_N",
     "vs": {
      "Lens": {
-      "delta": -2.7592,
+      "delta": -2.759197,
       "ci95": [
-       -4.8224,
-       -0.9816
+       -5.943032,
+       -0.583162
       ],
-      "vn_ci95": [
-       -5.943,
-       -0.5832
+      "unit_ci95": [
+       -4.822381,
+       -0.981616
       ],
-      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.vita-test"
+      "path": "sets.vita-test.pairs.VOCR5_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.41806,
+      "ci95": [
+       -1.314735,
+       0.582826
+      ],
+      "unit_ci95": [
+       -1.064294,
+       0.209468
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.376254,
+      "ci95": [
+       -1.096507,
+       0.5425
+      ],
+      "unit_ci95": [
+       -1.03351,
+       0.208425
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.379599,
+      "ci95": [
+       -2.180532,
+       -0.536383
+      ],
+      "unit_ci95": [
+       -2.083356,
+       -0.717868
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -6.981605,
+      "ci95": [
+       -11.349888,
+       -3.726211
+      ],
+      "unit_ci95": [
+       -9.001717,
+       -5.212353
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_N-manga_ocr"
      }
     }
    },
@@ -151,20 +997,72 @@
     "lines": 153,
     "exact_lines": 141,
     "cer": 0.5853,
-    "exact_pct": 92.16,
-    "path": "arms.console.VOCR5_L.dialogue.vita-test",
+    "ci95": [
+     0.229,
+     1.0911
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.VOCR5_L",
     "vs": {
      "Lens": {
-      "delta": -3.1355,
+      "delta": -3.135452,
       "ci95": [
-       -5.1948,
-       -1.3983
+       -6.42498,
+       -1.034458
       ],
-      "vn_ci95": [
-       -6.425,
-       -1.0345
+      "unit_ci95": [
+       -5.194805,
+       -1.398261
       ],
-      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.vita-test"
+      "path": "sets.vita-test.pairs.VOCR5_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.794314,
+      "ci95": [
+       -1.634206,
+       -0.131919
+      ],
+      "unit_ci95": [
+       -1.374581,
+       -0.258707
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.752508,
+      "ci95": [
+       -1.35011,
+       -0.182548
+      ],
+      "unit_ci95": [
+       -1.338771,
+       -0.248651
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.755853,
+      "ci95": [
+       -2.585525,
+       -0.970874
+      ],
+      "unit_ci95": [
+       -2.486455,
+       -1.072165
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -7.35786,
+      "ci95": [
+       -11.738222,
+       -4.179077
+      ],
+      "unit_ci95": [
+       -9.40507,
+       -5.544061
+      ],
+      "path": "sets.vita-test.pairs.VOCR5_L-manga_ocr"
      }
     }
    },
@@ -174,31 +1072,364 @@
     "lines": 153,
     "exact_lines": 132,
     "cer": 3.7207,
-    "exact_pct": 86.27,
-    "path": "arms.native.Lens.dialogue.vita-test"
+    "ci95": [
+     1.6102,
+     7.0784
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.Lens"
+   },
+   "MeikiOCR": {
+    "errors": 33,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 130,
+    "cer": 1.3796,
+    "ci95": [
+     0.6803,
+     2.4779
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.MeikiOCR"
+   },
+   "PPOCRv6_small": {
+    "errors": 32,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 132,
+    "cer": 1.3378,
+    "ci95": [
+     0.6906,
+     2.1739
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.PPOCRv6_small"
+   },
+   "PPOCRv5_mobile_int8": {
+    "errors": 56,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 114,
+    "cer": 2.3411,
+    "ci95": [
+     1.5498,
+     3.2769
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.PPOCRv5_mobile_int8"
+   },
+   "manga_ocr": {
+    "errors": 190,
+    "chars": 2392,
+    "lines": 153,
+    "exact_lines": 77,
+    "cer": 7.9431,
+    "ci95": [
+     4.6417,
+     12.6106
+    ],
+    "clusters": 16,
+    "path": "sets.vita-test.values.manga_ocr"
    }
   },
   "psp-test": {
+   "VOCR6_S": {
+    "errors": 39,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 156,
+    "cer": 1.6949,
+    "ci95": [
+     0.8179,
+     2.8954
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR6_S",
+    "vs": {
+     "Lens": {
+      "delta": -5.823555,
+      "ci95": [
+       -11.377376,
+       -1.80563
+      ],
+      "unit_ci95": [
+       -8.872736,
+       -3.145162
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.521512,
+      "ci95": [
+       -1.699751,
+       0.25708
+      ],
+      "unit_ci95": [
+       -1.183165,
+       0.087955
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": 0.608431,
+      "ci95": [
+       -0.351054,
+       1.768496
+      ],
+      "unit_ci95": [
+       -0.253175,
+       1.531489
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -3.824424,
+      "ci95": [
+       -4.883536,
+       -2.840883
+      ],
+      "unit_ci95": [
+       -5.076418,
+       -2.586939
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -10.691004,
+      "ci95": [
+       -15.286712,
+       -6.421902
+      ],
+      "unit_ci95": [
+       -12.72888,
+       -8.680807
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_S-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_N": {
+    "errors": 27,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 165,
+    "cer": 1.1734,
+    "ci95": [
+     0.4047,
+     2.1709
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR6_N",
+    "vs": {
+     "Lens": {
+      "delta": -6.345067,
+      "ci95": [
+       -12.161861,
+       -2.095919
+      ],
+      "unit_ci95": [
+       -9.37507,
+       -3.668193
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -1.043025,
+      "ci95": [
+       -2.519931,
+       -0.045248
+      ],
+      "unit_ci95": [
+       -1.758352,
+       -0.403221
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": 0.086919,
+      "ci95": [
+       -0.671141,
+       1.025892
+      ],
+      "unit_ci95": [
+       -0.638697,
+       0.858217
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -4.345937,
+      "ci95": [
+       -5.320001,
+       -3.280016
+      ],
+      "unit_ci95": [
+       -5.61899,
+       -3.142482
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -11.212516,
+      "ci95": [
+       -15.883115,
+       -6.894538
+      ],
+      "unit_ci95": [
+       -13.240876,
+       -9.249033
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_N-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_L": {
+    "errors": 16,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 171,
+    "cer": 0.6953,
+    "ci95": [
+     0.3516,
+     1.0975
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR6_L",
+    "vs": {
+     "Lens": {
+      "delta": -6.82312,
+      "ci95": [
+       -13.122639,
+       -2.391849
+      ],
+      "unit_ci95": [
+       -10.066263,
+       -4.021495
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -1.521078,
+      "ci95": [
+       -3.446681,
+       -0.391092
+      ],
+      "unit_ci95": [
+       -2.293419,
+       -0.824638
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.391134,
+      "ci95": [
+       -0.925072,
+       0.07335
+      ],
+      "unit_ci95": [
+       -1.076726,
+       0.306617
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -4.82399,
+      "ci95": [
+       -6.108204,
+       -3.584226
+      ],
+      "unit_ci95": [
+       -6.078635,
+       -3.624978
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -11.690569,
+      "ci95": [
+       -16.097609,
+       -7.580293
+      ],
+      "unit_ci95": [
+       -13.712131,
+       -9.741869
+      ],
+      "path": "sets.psp-test.pairs.VOCR6_L-manga_ocr"
+     }
+    }
+   },
    "VOCR5_S": {
     "errors": 51,
     "chars": 2301,
     "lines": 183,
     "exact_lines": 153,
     "cer": 2.2164,
-    "exact_pct": 83.61,
-    "path": "arms.console.VOCR5_S.dialogue.psp-test",
+    "ci95": [
+     0.8446,
+     4.1608
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR5_S",
     "vs": {
      "Lens": {
-      "delta": -5.302,
+      "delta": -5.302043,
       "ci95": [
-       -8.2832,
-       -2.6892
+       -10.250882,
+       -1.466769
       ],
-      "vn_ci95": [
-       -10.2509,
-       -1.4668
+      "unit_ci95": [
+       -8.28321,
+       -2.689174
       ],
-      "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test"
+      "path": "sets.psp-test.pairs.VOCR5_S-Lens"
+     },
+     "MeikiOCR": {
+      "delta": 0.0,
+      "ci95": [
+       -0.578653,
+       0.511951
+      ],
+      "unit_ci95": [
+       -0.695431,
+       0.700226
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": 1.129944,
+      "ci95": [
+       -0.349803,
+       3.082723
+      ],
+      "unit_ci95": [
+       0.09061,
+       2.265795
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -3.302912,
+      "ci95": [
+       -4.672478,
+       -1.991613
+      ],
+      "unit_ci95": [
+       -4.713699,
+       -1.842529
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -10.169492,
+      "ci95": [
+       -15.002545,
+       -5.548304
+      ],
+      "unit_ci95": [
+       -12.267022,
+       -8.071127
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_S-manga_ocr"
      }
     }
    },
@@ -208,20 +1439,72 @@
     "lines": 183,
     "exact_lines": 164,
     "cer": 1.3038,
-    "exact_pct": 89.62,
-    "path": "arms.console.VOCR5_N.dialogue.psp-test",
+    "ci95": [
+     0.4066,
+     2.5317
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR5_N",
     "vs": {
      "Lens": {
-      "delta": -6.2147,
+      "delta": -6.214689,
       "ci95": [
-       -9.1802,
-       -3.5758
+       -11.855242,
+       -2.043123
       ],
-      "vn_ci95": [
-       -11.8552,
-       -2.0431
+      "unit_ci95": [
+       -9.180161,
+       -3.575813
       ],
-      "path": "pairs.VOCR5_N-Lens.console_vs_lens_native.dialogue.psp-test"
+      "path": "sets.psp-test.pairs.VOCR5_N-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -0.912647,
+      "ci95": [
+       -2.101182,
+       -0.108728
+      ],
+      "unit_ci95": [
+       -1.598963,
+       -0.281313
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": 0.217297,
+      "ci95": [
+       -0.762699,
+       1.395795
+      ],
+      "unit_ci95": [
+       -0.599649,
+       1.121091
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -4.215558,
+      "ci95": [
+       -5.282257,
+       -3.169453
+      ],
+      "unit_ci95": [
+       -5.513157,
+       -2.897875
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -11.082138,
+      "ci95": [
+       -15.825607,
+       -6.719787
+      ],
+      "unit_ci95": [
+       -13.095251,
+       -9.109402
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_N-manga_ocr"
      }
     }
    },
@@ -231,20 +1514,72 @@
     "lines": 183,
     "exact_lines": 164,
     "cer": 0.9996,
-    "exact_pct": 89.62,
-    "path": "arms.console.VOCR5_L.dialogue.psp-test",
+    "ci95": [
+     0.396,
+     1.7031
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.VOCR5_L",
     "vs": {
      "Lens": {
-      "delta": -6.5189,
+      "delta": -6.518905,
       "ci95": [
-       -9.6689,
-       -3.8326
+       -12.691657,
+       -2.144462
       ],
-      "vn_ci95": [
-       -12.6917,
-       -2.1445
+      "unit_ci95": [
+       -9.66888,
+       -3.832628
       ],
-      "path": "pairs.VOCR5_L-Lens.console_vs_lens_native.dialogue.psp-test"
+      "path": "sets.psp-test.pairs.VOCR5_L-Lens"
+     },
+     "MeikiOCR": {
+      "delta": -1.216862,
+      "ci95": [
+       -2.988715,
+       -0.20325
+      ],
+      "unit_ci95": [
+       -1.894647,
+       -0.600324
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.086919,
+      "ci95": [
+       -0.727109,
+       0.537868
+      ],
+      "unit_ci95": [
+       -0.762675,
+       0.599848
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -4.519774,
+      "ci95": [
+       -5.5657,
+       -3.47474
+      ],
+      "unit_ci95": [
+       -5.70679,
+       -3.406638
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -11.386354,
+      "ci95": [
+       -15.794805,
+       -7.366388
+      ],
+      "unit_ci95": [
+       -13.389906,
+       -9.480995
+      ],
+      "path": "sets.psp-test.pairs.VOCR5_L-manga_ocr"
      }
     }
    },
@@ -254,33 +1589,688 @@
     "lines": 183,
     "exact_lines": 148,
     "cer": 7.5185,
-    "exact_pct": 80.87,
-    "path": "arms.native.Lens.dialogue.psp-test"
+    "ci95": [
+     2.9691,
+     14.0532
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.Lens"
+   },
+   "MeikiOCR": {
+    "errors": 51,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 152,
+    "cer": 2.2164,
+    "ci95": [
+     0.8052,
+     4.4912
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.MeikiOCR"
+   },
+   "PPOCRv6_small": {
+    "errors": 25,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 165,
+    "cer": 1.0865,
+    "ci95": [
+     0.6518,
+     1.5632
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.PPOCRv6_small"
+   },
+   "PPOCRv5_mobile_int8": {
+    "errors": 127,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 107,
+    "cer": 5.5193,
+    "ci95": [
+     4.0262,
+     7.1226
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.PPOCRv5_mobile_int8"
+   },
+   "manga_ocr": {
+    "errors": 285,
+    "chars": 2301,
+    "lines": 183,
+    "exact_lines": 74,
+    "cer": 12.3859,
+    "ci95": [
+     8.2214,
+     16.7943
+    ],
+    "clusters": 14,
+    "path": "sets.psp-test.values.manga_ocr"
+   }
+  },
+  "pcsg00807": {
+   "VOCR6_S": {
+    "errors": 16,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1140,
+    "cer": 0.115,
+    "ci95": [
+     0.0504,
+     0.192
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR6_S",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.776364,
+      "ci95": [
+       -0.971979,
+       -0.598241
+      ],
+      "unit_ci95": [
+       -0.967723,
+       -0.602059
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.632593,
+      "ci95": [
+       -0.834894,
+       -0.447988
+      ],
+      "unit_ci95": [
+       -0.83793,
+       -0.444474
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.948099,
+      "ci95": [
+       -2.278259,
+       -1.642059
+      ],
+      "unit_ci95": [
+       -2.267278,
+       -1.642183
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -4.952915,
+      "ci95": [
+       -5.438289,
+       -4.491157
+      ],
+      "unit_ci95": [
+       -5.423706,
+       -4.485999
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_S-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_N": {
+    "errors": 12,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1141,
+    "cer": 0.0863,
+    "ci95": [
+     0.0374,
+     0.1445
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR6_N",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.805118,
+      "ci95": [
+       -1.024731,
+       -0.609663
+      ],
+      "unit_ci95": [
+       -1.020427,
+       -0.614515
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.661347,
+      "ci95": [
+       -0.875261,
+       -0.464199
+      ],
+      "unit_ci95": [
+       -0.882086,
+       -0.459663
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.976853,
+      "ci95": [
+       -2.313864,
+       -1.664424
+      ],
+      "unit_ci95": [
+       -2.30599,
+       -1.662366
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -4.981669,
+      "ci95": [
+       -5.472635,
+       -4.516266
+      ],
+      "unit_ci95": [
+       -5.459168,
+       -4.50855
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_N-manga_ocr"
+     }
+    }
+   },
+   "VOCR6_L": {
+    "errors": 2,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1150,
+    "cer": 0.0144,
+    "ci95": [
+     0.0,
+     0.0366
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR6_L",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.877004,
+      "ci95": [
+       -1.10854,
+       -0.673155
+      ],
+      "unit_ci95": [
+       -1.098426,
+       -0.676216
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.733233,
+      "ci95": [
+       -0.946697,
+       -0.538142
+      ],
+      "unit_ci95": [
+       -0.953073,
+       -0.534486
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -2.048738,
+      "ci95": [
+       -2.39394,
+       -1.734347
+      ],
+      "unit_ci95": [
+       -2.384554,
+       -1.728165
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -5.053555,
+      "ci95": [
+       -5.538876,
+       -4.588688
+      ],
+      "unit_ci95": [
+       -5.530756,
+       -4.580255
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR6_L-manga_ocr"
+     }
+    }
+   },
+   "VOCR5_S": {
+    "errors": 38,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1130,
+    "cer": 0.2732,
+    "ci95": [
+     0.1483,
+     0.4219
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR5_S",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.618216,
+      "ci95": [
+       -0.774618,
+       -0.467255
+      ],
+      "unit_ci95": [
+       -0.773032,
+       -0.471189
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_S-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.474445,
+      "ci95": [
+       -0.660466,
+       -0.302964
+      ],
+      "unit_ci95": [
+       -0.664288,
+       -0.293505
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_S-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.78995,
+      "ci95": [
+       -2.093857,
+       -1.499933
+      ],
+      "unit_ci95": [
+       -2.088586,
+       -1.499425
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_S-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -4.794767,
+      "ci95": [
+       -5.27849,
+       -4.339122
+      ],
+      "unit_ci95": [
+       -5.256379,
+       -4.336668
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_S-manga_ocr"
+     }
+    }
+   },
+   "VOCR5_N": {
+    "errors": 24,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1133,
+    "cer": 0.1725,
+    "ci95": [
+     0.0945,
+     0.2645
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR5_N",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.718856,
+      "ci95": [
+       -0.900513,
+       -0.551289
+      ],
+      "unit_ci95": [
+       -0.897718,
+       -0.548793
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_N-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.575084,
+      "ci95": [
+       -0.769407,
+       -0.39595
+      ],
+      "unit_ci95": [
+       -0.773836,
+       -0.393046
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_N-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.89059,
+      "ci95": [
+       -2.210152,
+       -1.591319
+      ],
+      "unit_ci95": [
+       -2.204152,
+       -1.590612
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_N-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -4.895407,
+      "ci95": [
+       -5.377095,
+       -4.435275
+      ],
+      "unit_ci95": [
+       -5.362187,
+       -4.433272
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_N-manga_ocr"
+     }
+    }
+   },
+   "VOCR5_L": {
+    "errors": 15,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1142,
+    "cer": 0.1078,
+    "ci95": [
+     0.0422,
+     0.1927
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.VOCR5_L",
+    "vs": {
+     "MeikiOCR": {
+      "delta": -0.783553,
+      "ci95": [
+       -0.977427,
+       -0.606996
+      ],
+      "unit_ci95": [
+       -0.972629,
+       -0.608752
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_L-MeikiOCR"
+     },
+     "PPOCRv6_small": {
+      "delta": -0.639781,
+      "ci95": [
+       -0.821666,
+       -0.468611
+      ],
+      "unit_ci95": [
+       -0.829056,
+       -0.465142
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_L-PPOCRv6_small"
+     },
+     "PPOCRv5_mobile_int8": {
+      "delta": -1.955287,
+      "ci95": [
+       -2.280445,
+       -1.653933
+      ],
+      "unit_ci95": [
+       -2.269926,
+       -1.64859
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_L-PPOCRv5_mobile_int8"
+     },
+     "manga_ocr": {
+      "delta": -4.960104,
+      "ci95": [
+       -5.440366,
+       -4.500141
+      ],
+      "unit_ci95": [
+       -5.428702,
+       -4.494459
+      ],
+      "path": "sets.pcsg00807.pairs.VOCR5_L-manga_ocr"
+     }
+    }
+   },
+   "Lens": null,
+   "MeikiOCR": {
+    "errors": 124,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1060,
+    "cer": 0.8914,
+    "ci95": [
+     0.6805,
+     1.1329
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.MeikiOCR"
+   },
+   "PPOCRv6_small": {
+    "errors": 104,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 1095,
+    "cer": 0.7476,
+    "ci95": [
+     0.5475,
+     0.9674
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.PPOCRv6_small"
+   },
+   "PPOCRv5_mobile_int8": {
+    "errors": 287,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 963,
+    "cer": 2.0631,
+    "ci95": [
+     1.7427,
+     2.4134
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.PPOCRv5_mobile_int8"
+   },
+   "manga_ocr": {
+    "errors": 705,
+    "chars": 13911,
+    "lines": 1152,
+    "exact_lines": 706,
+    "cer": 5.0679,
+    "ci95": [
+     4.5997,
+     5.556
+    ],
+    "clusters": 670,
+    "path": "sets.pcsg00807.values.manga_ocr"
+   }
+  }
+ },
+ "rubi_path": {
+  "clannad": {
+   "VOCR6_S": {
+    "errors": 157,
+    "chars": 33485,
+    "cer": 0.4689,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR6:S:shipped"
+   },
+   "VOCR6_N": {
+    "errors": 111,
+    "chars": 33485,
+    "cer": 0.3315,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR6:N:shipped"
+   },
+   "VOCR6_L": {
+    "errors": 104,
+    "chars": 33485,
+    "cer": 0.3106,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR6:L:shipped"
+   },
+   "VOCR5_S": {
+    "errors": 245,
+    "chars": 33485,
+    "cer": 0.7317,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR5:S:shipped"
+   },
+   "VOCR5_N": {
+    "errors": 221,
+    "chars": 33485,
+    "cer": 0.66,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR5:N:shipped"
+   },
+   "VOCR5_L": {
+    "errors": 201,
+    "chars": 33485,
+    "cer": 0.6003,
+    "path": "path_b.clannad_lines.dialogue.rates.VOCR5:L:shipped"
+   }
+  },
+  "vita-test": {
+   "VOCR6_S": {
+    "errors": 10,
+    "chars": 2392,
+    "cer": 0.4181,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR6:S:shipped"
+   },
+   "VOCR6_N": {
+    "errors": 4,
+    "chars": 2392,
+    "cer": 0.1672,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR6:N:shipped"
+   },
+   "VOCR6_L": {
+    "errors": 8,
+    "chars": 2392,
+    "cer": 0.3344,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR6:L:shipped"
+   },
+   "VOCR5_S": {
+    "errors": 16,
+    "chars": 2392,
+    "cer": 0.6689,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR5:S:shipped"
+   },
+   "VOCR5_N": {
+    "errors": 12,
+    "chars": 2392,
+    "cer": 0.5017,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR5:N:shipped"
+   },
+   "VOCR5_L": {
+    "errors": 10,
+    "chars": 2392,
+    "cer": 0.4181,
+    "path": "path_b.vita_psp_fixed_lines.vita-test|dialogue.rates.VOCR5:L:shipped"
+   }
+  },
+  "psp-test": {
+   "VOCR6_S": {
+    "errors": 17,
+    "chars": 2301,
+    "cer": 0.7388,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR6:S:shipped"
+   },
+   "VOCR6_N": {
+    "errors": 13,
+    "chars": 2301,
+    "cer": 0.565,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR6:N:shipped"
+   },
+   "VOCR6_L": {
+    "errors": 11,
+    "chars": 2301,
+    "cer": 0.4781,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR6:L:shipped"
+   },
+   "VOCR5_S": {
+    "errors": 16,
+    "chars": 2301,
+    "cer": 0.6953,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR5:S:shipped"
+   },
+   "VOCR5_N": {
+    "errors": 11,
+    "chars": 2301,
+    "cer": 0.4781,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR5:N:shipped"
+   },
+   "VOCR5_L": {
+    "errors": 12,
+    "chars": 2301,
+    "cer": 0.5215,
+    "path": "path_b.vita_psp_fixed_lines.psp-test|dialogue.rates.VOCR5:L:shipped"
+   }
+  },
+  "pcsg00807": {
+   "VOCR6_S": {
+    "errors": 29,
+    "chars": 13911,
+    "cer": 0.2085,
+    "path": "path_b.pcsg00807_clean.rates.VOCR6:S:shipped"
+   },
+   "VOCR6_N": {
+    "errors": 27,
+    "chars": 13911,
+    "cer": 0.1941,
+    "path": "path_b.pcsg00807_clean.rates.VOCR6:N:shipped"
+   },
+   "VOCR6_L": {
+    "errors": 26,
+    "chars": 13911,
+    "cer": 0.1869,
+    "path": "path_b.pcsg00807_clean.rates.VOCR6:L:shipped"
+   },
+   "VOCR5_S": {
+    "errors": 37,
+    "chars": 13911,
+    "cer": 0.266,
+    "path": "path_b.pcsg00807_clean.rates.VOCR5:S:shipped"
+   },
+   "VOCR5_N": {
+    "errors": 36,
+    "chars": 13911,
+    "cer": 0.2588,
+    "path": "path_b.pcsg00807_clean.rates.VOCR5:N:shipped"
+   },
+   "VOCR5_L": {
+    "errors": 31,
+    "chars": 13911,
+    "cer": 0.2228,
+    "path": "path_b.pcsg00807_clean.rates.VOCR5:L:shipped"
    }
   }
  },
  "sources": {
-  "clannad": {
-   "file": "eval/vocr5_clannad_20261016.json",
-   "sha256": "6cb9914fcb555b7d26f212b8ab423c3c45cc262b7b45279737c828e5b8090fc0"
+  "readers": {
+   "file": "eval/other_readers_20261028.json",
+   "sha256": "4199337b134afcd942aa0a51a7b428f1ab878b4065500f9dac1e77c015c9b6a4"
   },
-  "dialogue": {
-   "file": "eval/vocr5_dialogue_20261016.json",
-   "sha256": "817b6fece780fcf6d915b51c45024c0a79bbd703278ae7e06f41580e18df652b"
+  "vocr6": {
+   "file": "eval/vocr6_results_20261027.json",
+   "sha256": "5ec4b60f6e096b955c43cb6c5b519dda5aa3154c52f083c2dfe9e43883049aa3"
   },
-  "report": {
+  "followup": {
+   "file": "eval/vocr6_final_test_followup_20261027.json",
+   "sha256": "693915938055383117b0531d021e44dc04b4224c1eec76cadbfb58571ac330c5"
+  },
+  "vocr5_report": {
    "file": "eval/vocr5_report_20261016.json",
    "sha256": "d1d06551483a57fbf9d16ffc4f0fe248aaf04d1342ce8e34c223c8e1e002d915"
   },
-  "protocol": {
+  "vocr5_protocol": {
    "file": "eval/vocr5_protocol.json",
    "sha256": "7b21cd065a61ea682fb0b241473b10a21f4b0dcc50266e9014a0bb465af79177"
+  },
+  "lens_dialogue": {
+   "file": "eval/vocr5_dialogue_20261016.json",
+   "sha256": "817b6fece780fcf6d915b51c45024c0a79bbd703278ae7e06f41580e18df652b"
   }
  },
  "facts": {
   "games_vita-test": {
    "games": 16,
-   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.vita-test.vn_clusters"
+   "path": "sets.vita-test.clusters"
+  },
+  "games_psp-test": {
+   "games": 14,
+   "path": "sets.psp-test.clusters"
   },
   "lens_furigana_vita-test": {
    "furigana_lines": 3,
@@ -288,10 +2278,6 @@
    "all_errors": 89,
    "all_lines": 206,
    "path": "arms.native.Lens.styles.furigana.vita-test / arms.native.Lens.all.vita-test"
-  },
-  "games_psp-test": {
-   "games": 14,
-   "path": "pairs.VOCR5_S-Lens.console_vs_lens_native.dialogue.psp-test.vn_clusters"
   },
   "lens_furigana_psp-test": {
    "furigana_lines": 20,
@@ -302,45 +2288,102 @@
   }
  },
  "resources": {
+  "VOCR6_S": {
+   "bytes": 819792,
+   "form": "int8",
+   "arena_w8i": 124832,
+   "box_s_333": 0.6267,
+   "box_s_444": 0.4952,
+   "path": "follow_up_gate.tiers.S"
+  },
+  "VOCR6_N": {
+   "bytes": 1189408,
+   "form": "int8",
+   "arena_w8i": 184448,
+   "box_s_333": 0.7736,
+   "box_s_444": 0.6054,
+   "path": "follow_up_gate.tiers.N"
+  },
+  "VOCR6_L": {
+   "bytes": 2475680,
+   "form": "int8",
+   "arena_w8i": 262480,
+   "box_s_333": 1.8795,
+   "box_s_444": 1.4697,
+   "path": "follow_up_gate.tiers.L"
+  },
   "VOCR5_S": {
    "bytes": 819792,
+   "form": "int8",
    "arena_w8i": 124832,
-   "shape": "s_w100v4987",
    "box_s_333": 0.631,
-   "box_s_444": 0.499
+   "box_s_444": 0.499,
+   "path": "estimates.table.s_w100v4987"
   },
   "VOCR5_N": {
    "bytes": 1185632,
+   "form": "int8",
    "arena_w8i": 182944,
-   "shape": "n_w150v5631",
    "box_s_333": 0.921,
-   "box_s_444": 0.716
+   "box_s_444": 0.716,
+   "path": "estimates.table.n_w150v5631"
   },
   "VOCR5_L": {
    "bytes": 2473696,
+   "form": "int8",
    "arena_w8i": 261024,
-   "shape": "l_lw300v5631",
    "box_s_333": 2.077,
-   "box_s_444": 1.627
+   "box_s_444": 1.627,
+   "path": "estimates.table.l_lw300v5631"
+  },
+  "MeikiOCR": {
+   "bytes": 18593254,
+   "form": "fp32 ONNX",
+   "path": "sizes.MeikiOCR"
+  },
+  "PPOCRv6_small": {
+   "bytes": 21234383,
+   "form": "fp32 ONNX",
+   "path": "sizes.PPOCRv6_small"
+  },
+  "PPOCRv5_mobile_int8": {
+   "bytes": 2749540,
+   "form": "int8 ncnn",
+   "path": "sizes.PPOCRv5_mobile_int8"
+  },
+  "manga_ocr": {
+   "bytes": 444023808,
+   "form": "fp32 (4 B per parameter)",
+   "path": "sizes.manga_ocr"
+  },
+  "Lens": {
+   "bytes": null,
+   "form": "cloud service",
+   "path": null
   }
  },
  "copy": {
-  "eyebrow": "VOCR5  ·  Japanese OCR for PS Vita and PSP visual novels",
-  "headline": "Reads dialogue as well as Google Lens. Offline.",
-  "subhead": "Character error rate on visual-novel dialogue, three test sets. Lower is better.",
-  "panel": {
-   "kicker": "Built for the console",
-   "big": "{N_MB}",
-   "big_sub": "the default model's int8 weights",
-   "lines": [
-    "Offline, in the game's own memory",
-    "Small {S_MB} · Large {L_MB}",
-    "≈{N_S444}-{N_S333} s per text box (estimated)"
-   ],
-   "lens_lines": [
-    "Google Lens is a cloud service.",
-    "It needs an internet connection."
-   ]
+  "eyebrow": "VOCR6  ·  Japanese OCR for PS Vita and PSP visual novels",
+  "headline": "Reads dialogue better than Google Lens. Offline.",
+  "subhead": "Character error rate on visual-novel dialogue; every reader got the same line crops. Lower is better.",
+  "row_notes": {
+   "VOCR6_S": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "VOCR6_N": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "VOCR6_L": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "VOCR5_S": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "VOCR5_N": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "VOCR5_L": "{MB} int8 · est. {S444}-{S333} s per text box",
+   "Lens": "a cloud service · needs the internet",
+   "MeikiOCR": "{MB} {FORM} · not timed for a console",
+   "PPOCRv6_small": "{MB} {FORM} · not timed for a console",
+   "PPOCRv5_mobile_int8": "{MB} {FORM} · trimmed for the Vita",
+   "manga_ocr": "{MB} fp32 · not timed for a console",
+   "default": "{MB} {FORM}"
+  },
+  "not_measured": {
+   "pcsg00807": {
+    "Lens": "not run (private game data)"
+   }
   },
   "marks": {
    "vita-test": {
@@ -351,80 +2394,203 @@
    }
   },
   "footnote": [
-   "CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough (Vita3K), references read by Claude, Lens's cached readings of the same crops; Lens reads more lines exactly ({CL_LENS_EXACT}% vs {CL_N_EXACT}% for Normal).",
-   "vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked dialogue lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots); every reader got the same crops, Lens in screen polarity. * Lens also reads the furigana the references omit: {PT_FUR_ERR} of its {PT_ALL_ERR} psp-test and {VT_FUR_ERR} of its {VT_ALL_ERR} vita-test errors (names included) fall on the {PT_FUR_LINES} and {VT_FUR_LINES} lines with furigana.",
-   "Dialogue: lines without a speaker name. VOCR5: int8, plain-C runtime, greedy decoding; trained with the owner's captures, incl. planetarian, a Key / Prototype port like CLANNAD's. Time: estimated for a 3-line box on one Cortex-A9 core at 444 / 333 MHz; VOCR5 has not run on a console yet."
+   "The same crops for every reader. CLANNAD: {CL_LINES} dialogue lines of a PS Vita playthrough, references read by Claude. vita-test, psp-test: {VT_LINES} and {PT_LINES} hand-checked lines of {VT_GAMES} and {PT_GAMES} games (VNDB screenshots). Dance with Devils: {DD_LINES} lines of the hooked test game VOCR6 held out, its own text as reference. VOCR read each crop alone and greedy, with no language model; the other engines use their own decoders. On vita-test and psp-test VOCR read the crops in the console's polarity and the others in screen colours; on CLANNAD and Dance with Devils every reader read the same grey crops.",
+   "* Lens also reads the furigana the references omit: {PT_FUR_ERR} of its {PT_ALL_ERR} psp-test and {VT_FUR_ERR} of its {VT_ALL_ERR} vita-test errors (names included) fall on the {PT_FUR_LINES} and {VT_FUR_LINES} lines with furigana. Private game data never goes to Lens, so it did not read Dance with Devils.",
+   "Seen: two of VOCR6's training games draw dialogue in CLANNAD's glyph raster and two share a release with it, so CLANNAD is not an unseen game for VOCR6. MeikiOCR's and PP-OCRv6 small's readings were the first candidates of CLANNAD's references (Lens's among the later rounds'); PP-OCRv6 small's and manga-ocr's were among those of vita-test and psp-test. Time: estimated for a 3-line box on one Cortex-A9 core at 444 / 333 MHz; VOCR6 has not run on a console yet."
   ],
   "claims": [
    {
     "set": "clannad",
-    "system": "VOCR5_S",
+    "system": "VOCR6_S",
     "op": "<",
-    "than": "Lens"
+    "than": "Lens",
+    "ci": true
    },
    {
     "set": "clannad",
-    "system": "VOCR5_N",
+    "system": "VOCR6_N",
     "op": "<",
-    "than": "Lens"
+    "than": "Lens",
+    "ci": true
    },
    {
     "set": "clannad",
-    "system": "VOCR5_L",
-    "op": "<",
-    "than": "Lens"
-   },
-   {
-    "set": "vita-test",
-    "system": "VOCR5_S",
+    "system": "VOCR6_L",
     "op": "<",
     "than": "Lens",
     "ci": true
    },
    {
     "set": "vita-test",
-    "system": "VOCR5_N",
+    "system": "VOCR6_S",
     "op": "<",
     "than": "Lens",
     "ci": true
    },
    {
     "set": "vita-test",
-    "system": "VOCR5_L",
+    "system": "VOCR6_N",
+    "op": "<",
+    "than": "Lens",
+    "ci": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
     "op": "<",
     "than": "Lens",
     "ci": true
    },
    {
     "set": "psp-test",
-    "system": "VOCR5_S",
+    "system": "VOCR6_S",
     "op": "<",
     "than": "Lens",
     "ci": true
    },
    {
     "set": "psp-test",
-    "system": "VOCR5_N",
+    "system": "VOCR6_N",
     "op": "<",
     "than": "Lens",
     "ci": true
    },
    {
     "set": "psp-test",
-    "system": "VOCR5_L",
+    "system": "VOCR6_L",
     "op": "<",
     "than": "Lens",
     "ci": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "MeikiOCR"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv6_small"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv5_mobile_int8"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "manga_ocr"
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "VOCR5_L"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "MeikiOCR"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv6_small"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv5_mobile_int8"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "manga_ocr"
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "VOCR5_L"
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "MeikiOCR"
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv6_small"
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv5_mobile_int8"
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "manga_ocr"
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "VOCR5_L"
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "MeikiOCR"
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv6_small"
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "PPOCRv5_mobile_int8"
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "manga_ocr"
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "op": "<",
+    "than": "VOCR5_L"
    }
   ]
  },
  "rendered": {
-  "inputs_sha256": "508a8d5bbb0723d7f3778eb32b342fb160f9ac6dffa8667b13c0f14acabcf783",
+  "inputs_sha256": "6ffc1a891a626660bf138dfa249ecdaf54d9d265124181c7ab6fde850b19839c",
   "files": {
-   "vocr-vs-lens-dark-2x.png": "20371343a62e38393736baa5757c289d1ba196db7eb5e158f9019cf631432cbe",
-   "vocr-vs-lens-dark.svg": "d17dd524b75448c33622986b1271408a9e6ff97a5562309db7c123de9dfd5ea2",
-   "vocr-vs-lens-light-2x.png": "596aca2f8c2a74b961acc7568312c180d76199b5c984ed1c988cbaea2b83727c",
-   "vocr-vs-lens-light.svg": "2329bac1f8ad0b51d7feb07d5b39dcd1e4e92b95634827771391bd1a461bd9b1"
+   "vocr-vs-lens-dark-2x.png": "236daf4e37b2e6214c48a60bb304ce4c91f28db7d27621d7980f886563bb80ef",
+   "vocr-vs-lens-dark.svg": "11f3f19580f182bfad57109459bbf51021a0f8594077be11051923094b900d21",
+   "vocr-vs-lens-light-2x.png": "277834c4ad246ab39e4520de5945874797dce276dc506c26a12653cf5c93e260",
+   "vocr-vs-lens-light.svg": "b9279541ed3efae74e6375ebba4d226a32723ac76beec889c8e279dfbde8e062"
   }
  }
 }

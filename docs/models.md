@@ -7,9 +7,10 @@ or changed. 84 files come from 19 releases; with `SHA256SUMS` and `v0.5.0-assets
 `docs/models.json`) the release has 86.
 
 - **Checked.** Every file was downloaded from its source release and checked against GitHub's sha256 digest of that
-  asset and, for the 76 files its release's `SHA256SUMS` lists, against that file too
-  (`docs/models.py manifest`). The release's own `SHA256SUMS` lists all 86 files; after publishing, every file was
-  downloaded again and checked against it (`docs/models.py verify`).
+  asset and, for the 76 files its release's `SHA256SUMS` lists, against that file too (`docs/models.py manifest`
+  repeats the second check and checks Rubi's pins). The release's own `SHA256SUMS` lists all 86 files; the published
+  release is downloaded again and every file checked against it and against `docs/models.json`
+  (`docs/models.py verify`).
 - **Names.** A file keeps its release name, except where two releases hold different bytes under one name, or the
   name says nothing on its own:
   - each release's `ATTRIBUTION.md` is `ATTRIBUTION_<tag>.md`, or the name Rubi ships it under (`VOCR6-`, `MODEL-`,
@@ -25,9 +26,9 @@ or changed. 84 files come from 19 releases; with `SHA256SUMS` and `v0.5.0-assets
 
 ## What Rubi uses
 
-Rubi's pins ([bee-san/Rubi_for_vita](https://github.com/bee-san/Rubi_for_vita) main `dc272d1`, 2026-10-28:
-`tools/prepare_ocr.py` and `include/vjo_vocr_sizes.h`, each file by size and SHA-256; its CHANGELOG's Unreleased
-section, the next release, 0.10.0) name these files of this release, byte for byte:
+Rubi's pins ([bee-san/Rubi_for_vita](https://github.com/bee-san/Rubi_for_vita) main `dc272d1`, 2026-10-28, what
+the next Rubi release, 0.10.0, ships: `tools/prepare_ocr.py` and `include/vjo_vocr_sizes.h`, each file by size and
+SHA-256) name these files of this release, byte for byte:
 
 | role in Rubi | file | bytes |
 |---|---|---:|
@@ -58,14 +59,14 @@ Sources: `docs/vocr6.md` and `eval/vocr6_final_test_followup_20261027.json` (VOC
 | `VOCR6.2_S_w8.vocr` | VOCR6-S, Small | 124,832 | 0.63 / 0.50 | hooked games' held-out pages 1.049% (VOCR5-S 1.177%, 3 seeds); other games' dev score 1.549 (VOCR5-S 1.674); read once: CLANNAD 0.47% on Rubi's path, 0.72% greedy; vita-test + psp-test 0.58%; Dance with Devils 0.21% |
 | `VOCR6.2_N_w8g2.vocr` | VOCR6-N, Normal (default) | 184,448 | 0.77 / 0.61 | held-out pages 0.936% (VOCR5-N 1.008%); dev score 1.389 (1.482); read once: CLANNAD 0.33% (0.40% greedy), vita-test + psp-test 0.36%, Dance with Devils 0.19% |
 | `VOCR6.2_L_w8_2l.vocr` | VOCR6-L, Large | 262,480 | 1.88 / 1.47 | held-out pages 0.917% (VOCR5-L 0.990%); dev score 1.396 (1.439); read once: CLANNAD 0.31% (0.26% greedy), vita-test + psp-test 0.40%, Dance with Devils 0.19% |
-| `VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr` | the same Normal and Large, plain | 182,944 / 261,024 | 0.92 / 0.71, 2.07 / 1.62 | the shipped blobs' weights without their speed sections; the sections' measured effect on the development score is at most +0.008 points (`docs/vocr6.md`, the follow-up's gate fits) |
+| `VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr` | the same Normal and Large, plain | 182,944 / 261,024 | 0.92 / 0.71, 2.07 / 1.62 | the shipped blobs' weights without their speed sections, each of which moved the development score by 0.000 to +0.008 points (`docs/vocr6.md`, the follow-up's gate fits) |
 | `VOCR6_N_w8_2l.vocr`, `VOCR6_L_w8_2l.vocr` (and their plain `_w8`) | VOCR6-N and -L of v0.4.0-vocr6.1 | 184,400 / 262,480 | 0.79 / 0.62, 1.87 / 1.46 | dev score 1.451 / 1.442; read once: CLANNAD 0.44% / 0.36%, vita-test + psp-test 0.49% / 0.43% |
 | `VOCR5_S_w8g.vocr`, `VOCR5_N_w8g2.vocr`, `VOCR5_L_w8g2.vocr` | VOCR5 with its head sections (Rubi 0.9.8) | 124,880 / 184,448 / 262,528 | 0.52, about 0.76, about 1.79 (333 MHz) | VOCR5's numbers (below); read once on the protected sets, the gate changes dialogue CER by −0.043 to +0.006 points and the two-level head by at most +0.009 more |
-| `VOCR5_N_w8g.vocr`, `VOCR5_L_w8g.vocr` | VOCR5-N and -L with the head gate alone | 182,992 / 261,072 | −137 / −163 ms against plain | as above |
+| `VOCR5_N_w8g.vocr`, `VOCR5_L_w8g.vocr` | VOCR5-N and -L with the head gate alone | 182,992 / 261,072 | est. 0.14 / 0.16 s less than plain (333 MHz) | as above |
 | `VOCR5_S_w8.vocr`, `VOCR5_N_w8.vocr`, `VOCR5_L_w8.vocr` | VOCR5 (v0.3.0), plain | 124,832 / 182,944 / 261,024 | 0.63 / 0.50, 0.92 / 0.72, 2.08 / 1.63 | CLANNAD 1.38 / 0.96 / 0.73% greedy; vita-test + psp-test fixed lines 1.60 / 1.13 / 0.79% greedy, 1.15 / 0.72 / 0.53% with beam + 1 MB LM |
 | `VOCR5_V_w8.vocr` | VOCR5-V, vertical text | 124,832 | 0.14 / 0.11 per median vertical region | test vertical VN 7.17% fixed columns, 11.29% end to end; manga 0.86% / 2.45% |
-| `VOCR4_FL10_w8.vocr`, `VOCR4_H15_w8.vocr`, `VOCR4_W20_w8.vocr` | VOCR4 Small / Normal / Large | 124,832 / 182,944 / 241,056 | 0.13-0.24 / 0.22-0.40 / 0.31-0.55 per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.15 / 1.83 / 1.40%; CLANNAD (all lines) 3.05 / 2.79 / 1.81% |
-| `VOCR3_FL10_w8.vocr`, `VOCR3_H15_w8.vocr` | VOCR3 Small / Normal | 124,832 / 182,944 | 0.13-0.24 / 0.22-0.40 per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.13 / 1.73% |
+| `VOCR4_FL10_w8.vocr`, `VOCR4_H15_w8.vocr`, `VOCR4_W20_w8.vocr` | VOCR4 Small / Normal / Large | 124,832 / 182,944 / 241,056 | 125-239 / 221-403 / 314-554 ms per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.15 / 1.83 / 1.40%; CLANNAD (all lines) 3.05 / 2.79 / 1.81% |
+| `VOCR3_FL10_w8.vocr`, `VOCR3_H15_w8.vocr` | VOCR3 Small / Normal | 124,832 / 182,944 | 125-239 / 221-403 ms per 640-px line (333 MHz) | vita-test + psp-test fixed lines (all lines) 2.13 / 1.73% |
 | `MODELB_B24_w8g2.vocr`, `MODELB_S32_w8g2.vocr` | model B, PSP candidates | memory in all 1,042,498 / 1,291,938 B | 1.21 / 2.05 per box on the PSP's scalar build at 333 MHz (PPSSPP-based estimates) | development PSP whole dialogue against VOCR5-S: +3.93 points [+2.63, +5.59] (B24); plain S32 +0.04 [−0.24, +0.31] |
 
 How VOCR6 compares with the other OCR engines on the same crops is in the README ("VOCR6 against other OCRs",
@@ -73,9 +74,10 @@ How VOCR6 compares with the other OCR engines on the same crops is in the README
 
 ## The line finders, the gate and the detector
 
-Page-path dialogue CER through `eval/pagepath.py` (VOCR5-N + the 1 MB LM) unless stated; sources `docs/textspot8.md`,
-`docs/textspot7.md`, `docs/textspot6.md`, `docs/textspot3.md`, `docs/textspot.md`, `docs/textgate.md`,
-`docs/textdet.md`.
+Dialogue CER with VOCR5-N reading the lines: through `eval/pagepath.py`'s page path with the 1 MB LM for the line
+spotters, on whole frames for textspot3 and textspot, and on whole dialogue regions for the gate and the detector.
+Sources: `docs/textspot8.md`, `docs/textspot7.md`, `docs/textspot6.md`, `docs/textspot3.md`, `docs/textspot.md`,
+`docs/textgate.md`, `docs/textdet.md`. The arenas are at a whole 960×544 frame.
 
 | file | model | arena | est. ms at 333 MHz | measured |
 |---|---|---:|---|---|

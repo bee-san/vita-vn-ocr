@@ -425,7 +425,8 @@ def cmd_score(a):
                        "VOCR6_L": "VOCR6.2_L_w8_2l.vocr, greedy", "VOCR5_S": "VOCR5_S_w8.vocr, greedy",
                        "VOCR5_N": "VOCR5_N_w8.vocr, greedy", "VOCR5_L": "VOCR5_L_w8.vocr, greedy",
                        "Lens": "Google Lens (owocr 1.26.7), existing readings", **{r: r for r in READERS}},
-           "inputs_sha256": inputs, "sizes": sizes(into), "sets": tables, "checks": checks(tables),
+           "score_code_sha256": code_identity(), "inputs_sha256": inputs, "sizes": sizes(into), "sets": tables,
+           "checks": checks(tables),
            "notes": list(a.note),
            "lens_on_pcsg00807": "not read: private game data never goes to a third-party service",
            "training_or_selection_use": False, "created": now()}

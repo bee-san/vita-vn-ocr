@@ -2,20 +2,149 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/charts/vocr-vs-lens-dark.svg">
-  <img src="docs/charts/vocr-vs-lens-light.svg" width="100%" alt="Bar chart of dialogue character error rate, lower is better. CLANNAD, PS Vita, 2,052 lines: VOCR5 Small 1.38%, Normal 0.96%, Large 0.73%, Google Lens 1.53%. vita-test, PS Vita, 153 lines: 1.00%, 0.96%, 0.59%, Lens 3.72%. psp-test, PSP, 183 lines: 2.22%, 1.30%, 1.00%, Lens 7.52%; Lens's vita-test and psp-test figures include the furigana it reads. The default model is 1.2 MB of int8 weights and is built to run offline in the game's memory; Google Lens is a cloud service that needs an internet connection.">
+  <img src="docs/charts/vocr-vs-lens-light.svg" width="100%" alt="Bar chart of dialogue character error rate, lower is better; every reader read the same line boxes. CLANNAD, PS Vita, 2,052 lines: VOCR6 Small 0.72%, VOCR6 Normal 0.40%, VOCR6 Large 0.26%, VOCR5 Small 1.38%, VOCR5 Normal 0.96%, VOCR5 Large 0.73%, Google Lens 1.53%, MeikiOCR 0.78%, PP-OCRv6 small 2.10%, PP-OCRv5 mobile int8 3.27%, manga-ocr 2.06%. vita-test, PS Vita, 153 lines: VOCR6 Small 0.92%, VOCR6 Normal 0.46%, VOCR6 Large 0.42%, VOCR5 Small 1.00%, VOCR5 Normal 0.96%, VOCR5 Large 0.59%, Google Lens 3.72%, MeikiOCR 1.38%, PP-OCRv6 small 1.34%, PP-OCRv5 mobile int8 2.34%, manga-ocr 7.94%. psp-test, PSP, 183 lines: VOCR6 Small 1.69%, VOCR6 Normal 1.17%, VOCR6 Large 0.70%, VOCR5 Small 2.22%, VOCR5 Normal 1.30%, VOCR5 Large 1.00%, Google Lens 7.52%, MeikiOCR 2.22%, PP-OCRv6 small 1.09%, PP-OCRv5 mobile int8 5.52%, manga-ocr 12.39%. Dance with Devils, PS Vita, 1,152 lines: VOCR6 Small 0.12%, VOCR6 Normal 0.09%, VOCR6 Large 0.01%, VOCR5 Small 0.27%, VOCR5 Normal 0.17%, VOCR5 Large 0.11%, Google Lens not run, MeikiOCR 0.89%, PP-OCRv6 small 0.75%, PP-OCRv5 mobile int8 2.06%, manga-ocr 5.07%. Lens's vita-test and psp-test figures include the furigana it reads. VOCR6 is built to run offline in the game's memory on the console in 0.8 to 2.5 MB of int8 weights and has not run on a console yet; Google Lens is a cloud service that needs an internet connection.">
 </picture>
 
-**VOCR5 reads visual-novel dialogue as well as Google Lens on three test sets, and it needs no internet: it is built to run on the PS Vita itself.**
+**VOCR6 reads visual-novel dialogue better than Google Lens on every test set Lens read, and VOCR6 Large makes the
+fewest errors of every OCR engine we measured, on all four test sets. It needs no internet: it is built to run on the
+PS Vita itself, in 0.8 to 2.5 MB of int8 weights.**
 
 A tiny Japanese OCR made only for visual-novel dialogue on PS Vita and PSP. It is meant to run on the console itself, inside [Rubi](https://github.com/bee-san/Rubi_for_vita) (Rubi for Vita, named vita-jp-overlay before 2026-10-17), in as little memory as possible.
 
 General OCR models are too big for this. The best general option, a trimmed int8 PP-OCRv5 mobile, still peaks at about 13 MiB (see `docs/research-findings.md`). VN dialogue is a much narrower problem: one or a few horizontal lines in a dialogue box, a handful of game fonts, and a fixed screen size (960×544 on Vita, 480×272 on PSP). A recognizer trained only for that case can be an order of magnitude smaller.
 
-## VOCR6 (pre-release [v0.4.1-vocr6.2](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.4.1-vocr6.2)): every tier retrained on the owner's hooked games
+**Release [v0.5.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.0) collects the models:** the three
+VOCR6 recognizers Rubi runs, its dialogue-line spotter, the character LMs, every earlier model from VOCR3 on
+(ctclm.1's superseded LMs aside) and VOCR2's trial blob, byte for byte as their own releases published them, with one
+`SHA256SUMS`. [`docs/models.md`](docs/models.md) lists every file with its size, sha256, role, numbers, status (which
+ones Rubi uses) and licence, and what stays on the older releases.
 
-**VOCR6-S, VOCR6-N and VOCR6-L replace VOCR5-S, VOCR5-N and VOCR5-L.** The first VOCR6 release,
-[v0.4.0-vocr6.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.4.0-vocr6.1), replaced Normal and Large; this
-follow-up replaces all three.
+## VOCR6 against other OCRs
+
+Every reader read the same lines, cut from the same boxes. Every number is dialogue CER: the character error rate on
+the lines without a speaker name, measured on the host; lower is better. VOCR's rows are the recognizer alone
+(greedy, int8 through the C runtime, no language model); the other engines run their own decoders.
+
+| reader | weights | est. time per 3-line text box, one PS Vita core at 444 / 333 MHz | CLANNAD | vita-test | psp-test | Dance with Devils |
+|---|---|---|---:|---:|---:|---:|
+| **VOCR6 Small** [`VOCR6.2_S_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_S_w8.vocr) | 819,792 B int8 | 0.50 / 0.63 s | 0.72% | 0.92% | 1.69% | 0.12% |
+| **VOCR6 Normal** (the default) [`VOCR6.2_N_w8g2.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_N_w8g2.vocr) | 1,189,408 B int8 | 0.61 / 0.77 s | 0.40% | 0.46% | 1.17% | 0.09% |
+| **VOCR6 Large** [`VOCR6.2_L_w8_2l.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_L_w8_2l.vocr) | 2,475,680 B int8 | 1.47 / 1.88 s | **0.26%** | **0.42%** | **0.70%** | **0.01%** |
+| VOCR5 Small `VOCR5_S_w8.vocr` | 819,792 B int8 | 0.50 / 0.63 s | 1.38% | 1.00% | 2.22% | 0.27% |
+| VOCR5 Normal `VOCR5_N_w8.vocr` | 1,185,632 B int8 | 0.72 / 0.92 s | 0.96% | 0.96% | 1.30% | 0.17% |
+| VOCR5 Large `VOCR5_L_w8.vocr` | 2,473,696 B int8 | 1.63 / 2.08 s | 0.73% | 0.59% | 1.00% | 0.11% |
+| Google Lens | a cloud service | needs an internet connection | 1.53% | 3.72%\* | 7.52%\* | not run |
+| MeikiOCR (meikiocr 0.3.5) | 18,593,254 B fp32 ONNX | not timed for a console | 0.78% | 1.38% | 2.22% | 0.89% |
+| PP-OCRv6 small | 21,234,383 B fp32 ONNX | not timed for a console | 2.10% | 1.34% | 1.09% | 0.75% |
+| PP-OCRv5 mobile, trimmed int8 | 2,749,540 B int8 (ncnn) | not estimated in int8; in fp32 about 5 s per 640-px line at 444 MHz (`docs/research-findings.md`, an estimate) | 3.27% | 2.34% | 5.52% | 2.06% |
+| manga-ocr | 444,023,808 B fp32 | not timed for a console | 2.06% | 7.94% | 12.39% | 5.07% |
+
+As Rubi runs them (beam + the 1 MB LM, the cascade S → N → L, Rubi's text filter), on the same lines:
+
+| | CLANNAD | vita-test | psp-test | Dance with Devils |
+|---|---:|---:|---:|---:|
+| VOCR6 Small / Normal / Large | 0.47 / 0.33 / 0.31% | 0.42 / 0.17 / 0.33% | 0.74 / 0.56 / 0.48% | 0.21 / 0.19 / 0.19% |
+| VOCR5 Small / Normal / Large | 0.73 / 0.66 / 0.60% | 0.67 / 0.50 / 0.42% | 0.70 / 0.48 / 0.52% | 0.27 / 0.26 / 0.22% |
+
+- **Rubi's text filter** drops lines with no kana or kanji: on Dance with Devils that alone costs 0.19 points (6 lines,
+  26 reference characters), on CLANNAD 0.08 (4 lines, 26 reference characters). It is why Rubi's path reads Dance
+  with Devils, and CLANNAD at Large, higher than the recognizer alone; at Small and Normal the LM and the cascade gain
+  more on CLANNAD than the filter costs.
+- **The sets.**
+  - CLANNAD: 2,052 dialogue lines of a PS Vita playthrough in Vita3K, references read by Claude and frozen before any
+    score.
+  - vita-test and psp-test: 153 and 183 hand-checked dialogue lines of 16 and 14 games, from VNDB screenshots.
+  - Dance with Devils (PCSG00807): the owner's hooked test game, 1,152 lines, with the game's own text as the
+    reference.
+- **The crops.** On vita-test and psp-test VOCR reads the crops in the console's polarity (dark text inverted), as
+  Rubi does, and the other engines read the colour crops `eval/run.py` cuts, in screen colours. On CLANNAD and Dance
+  with Devils every reader read the same stored grey crops. Lens never reads private game data, so it did not read
+  Dance with Devils.
+- **The blobs.** On CLANNAD, vita-test and psp-test the VOCR blobs read with their head sections off, as VOCR5's
+  published path reads them; on Dance with Devils with them on, as Rubi runs them (VOCR5 as its v0.3.6-head2level.1
+  blobs, the same weights).
+- **Against Google Lens** (95% intervals of the paired difference, clustered by game or page): every VOCR6 model reads
+  CLANNAD, vita-test and psp-test better, with every interval below 0.
+  - Small −0.80 / −2.80 / −5.82 points, Normal −1.12 / −3.26 / −6.35, Large −1.27 / −3.30 / −6.82.
+  - On CLANNAD, VOCR6 Large also reads as many lines exactly as Lens (96.5%).
+  - \* Part of Lens's vita-test and psp-test error is the furigana above a line, which Lens transcribes and the
+    references leave out: 116 of its 227 psp-test errors and 30 of its 89 vita-test errors (names included) fall on
+    the 20 and 3 lines with furigana.
+- **Speaker names** (outside the dialogue metric: Rubi's users crop the name plate out) go either way. Lens reads
+  CLANNAD's at 0.68% and vita-test's at 0.00%, against VOCR6 Small / Normal / Large's 8.24 / 11.23 / 1.45% and
+  3.49 / 0.58 / 1.16%; but psp-test's at 25.84%, against 7.18 / 2.87 / 1.44%.
+- **Against the other engines:**
+  - **VOCR6 Large** has the lowest CER of every reader on all four sets. Its intervals exclude 0 against every
+    engine on every set, except PP-OCRv6 small on psp-test (−0.39 [−0.93, +0.07], level).
+  - **VOCR6 Normal**, the default, reads lower than every other engine on CLANNAD, vita-test and Dance with Devils,
+    each interval below 0. On psp-test PP-OCRv6 small reads 1.09% against its 1.17% (+0.09 [−0.67, +1.03], level).
+  - **VOCR6 Small** reads lower than every other engine in point on every set but psp-test, where PP-OCRv6 small
+    reads 1.09% against its 1.69% (+0.61 [−0.35, +1.77], not resolved). Its intervals are below 0 against every
+    engine on Dance with Devils. Four of its leads are level: MeikiOCR on CLANNAD (−0.06 [−0.19, +0.07]), on
+    vita-test (−0.46 [−1.09, +0.10]) and on psp-test (−0.52 [−1.70, +0.26]), and PP-OCRv6 small on vita-test (−0.42
+    [−0.83, +0.04]).
+  - MeikiOCR, PP-OCRv6 small and manga-ocr ran on the host from 18.6 to 444 MB of fp32 weights; none of them was
+    timed for a console.
+- **Against VOCR5:** VOCR6 is lower at every tier on every set, recognizer alone.
+  - Resolved on CLANNAD (−0.66 / −0.56 / −0.48 points) and on Dance with Devils (−0.16 / −0.09 / −0.09), and for
+    Normal on vita-test (−0.50 [−1.18, −0.08]).
+  - PSP is the exception: as Rubi runs them, VOCR6 Small and Normal read psp-test worse in point (Small 0.74%
+    against 0.70%, Normal 0.56% against 0.48%); Large reads it at 0.48% against 0.52%.
+- **What is not unseen** (VOCR6's training data; every number above carries these):
+  - CLANNAD is not an unseen game for VOCR6. Two hooked training games (Grisaia Spinout, Little Busters!) draw
+    dialogue in CLANNAD's own glyph raster, and Little Busters! and planetarian share the Key 10th Memorial BOX
+    with CLANNAD. Every VOCR5 and VOCR6 model also trained on the owner's console captures, planetarian's PSP port
+    among them.
+  - VOCR5-S, and VOCR6-S through its checkpoint, also trained on synth3 v2, whose renders show CLANNAD's main cast
+    names in 7 crops (speaker names: the dialogue metric leaves them out; `docs/vocr5.md`).
+  - The synthetic renders under every VOCR5 and VOCR6 model (synth3 v2 and v3, synth4; VOCR6 replays synth3 v3 and
+    synth4 too) draw speaker names from a pool that holds the names of 128 characters of 12 VNs sharing a release
+    with a test or development-sample VN (about 0.05-0.06% of the crops). None occurs in a vita-test or psp-test line;
+    two short ones, common words and not CLANNAD names, occur in 8 of CLANNAD's 3,048 reference lines
+    (`docs/vocr5.md`).
+  - VOCR6 trained on Collar x Malice (PCSG00866), which shares releases with vita-test's Collar x Malice
+    -Unlimited-. 38 of the 49 hooked titles' VNs were already in VOCR5's fine-tune pools.
+  - No VOCR6 run trained on Dance with Devils, and the LMs' game text holds none of it. Its VN gave 4 lines to
+    VOCR5's development sample.
+  - Rubi's path: the 1 MB LM carries character 3-gram counts of the hooked train titles' text (Little Busters!,
+    planetarian and Collar x Malice among them), and its Jiten word list counts the scripts of CLANNAD, of 7 of
+    vita-test's 16 games and of 1 of psp-test's 14.
+- **Whose readings the references were read against.** CLANNAD's first round had MeikiOCR's and PP-OCRv6 small's
+  readings as its candidates, and the later rounds Lens's and the earlier VOCR models' among others, unattributed.
+  vita-test's and psp-test's lines were read against PP-OCRv5 server, PP-OCRv6 small and manga-ocr. Dance with
+  Devils' are the game's own text. This favours those engines, not VOCR6.
+- **Times and sizes.** VOCR's times are estimates for one Cortex-A9 core without prefetch credit, calibrated to
+  VOCR3-H15's measured console rate: VOCR6's as Rubi runs its blobs (with their head sections), VOCR5's for its plain
+  blobs. **Nothing of VOCR6 has run on a console.** The other engines' sizes are their weight files (manga-ocr's: 4 B
+  per parameter); they were not timed for a console.
+- **Records.** The engines' read: `eval/other_readers_20261028.json`, registered in `eval/other_readers_protocol.json`
+  before it. Its scorer first recounts VOCR6's, VOCR5's, Lens's and MeikiOCR's committed numbers from their reads'
+  private per-line records (28 of 28 equal). VOCR6's and VOCR5's numbers are their final read, done once after every
+  choice: `eval/vocr6_final_test_followup_20261027.json`. Nothing was tuned on these sets.
+
+### The whole page
+
+Rubi finds the dialogue lines first. Through its finders, with VOCR5-N and the 1 MB LM reading every line
+(`eval/textspot8_test_20261027.json`, read once):
+
+| finder | weights; est. time at 333 MHz | Dance with Devils, 2,055 page regions | CLANNAD, 2,052 dialogue lines in their page regions | vita-test + psp-test, 176 whole frames |
+|---|---|---:|---:|---:|
+| **textspot8 spotter** (Rubi's default) | 52,176 B int8; 82 ms per 900×150 region, at most 264 ms per frame | **0.97%** | 0.97% | **1.91%** |
+| Rubi's previous finder (GRAD with its COLGAP fix) | no weights | 0.98% | 0.95% | |
+| GRAD + refine | no weights | 1.24% | **0.82%** | |
+| textspot3's whole-frame spotter | 51,008 B int8; 268 ms per frame | 1.48% | 0.85% | 2.29% |
+
+- VOCR6 has not been read through the spotter on these sets. On unseen development games the spotter reads 0.99% with
+  v0.4.0-vocr6.1's VOCR6-N → L as the recognizer (1.03% with VOCR5-N).
+- Through Rubi's previous finder, as Rubi runs them, VOCR6 Small / Normal / Large read Dance with Devils' 2,055 page
+  regions at 0.95 / 0.91 / 0.89% (VOCR5: 0.96 / 0.94 / 0.92%; `eval/vocr6_final_test_followup_20261027.json`).
+- The line finder made most of the remaining error: through Rubi's previous finder, about 74-83% of other games'
+  whole-dialogue error (`docs/vocr6.md`). The spotter was built for it.
+
+## VOCR6 (release v0.5.0; first published as pre-release v0.4.1-vocr6.2)
+
+**VOCR6-S, VOCR6-N and VOCR6-L are Rubi's Small, Normal (the default) and Large model sizes.** The first VOCR6
+release, v0.4.0-vocr6.1, replaced Normal and Large; v0.4.1-vocr6.2 replaced all three.
 
 VOCR6 keeps VOCR5's shapes. Each tier is fine-tuned from its VOCR5 checkpoint on VOCR5's data plus two new sources:
 - the owner's hooked PS Vita and PSP corpus: 48 training games, exact game text on native frames (a 49th, Dance with
@@ -31,9 +160,9 @@ console.**
 
 | model | tier | int8 weights | arena (W8I) | hooked games' pages, held out: VOCR5 → VOCR6 | other games' dev score: VOCR5 → VOCR6 | CLANNAD lines, Rubi's path\* | vita-test + psp-test fixed lines, Rubi's path | est. time per 3-line box, 333 / 444 MHz |
 |---|---|---:|---:|---|---|---|---|---|
-| [`VOCR6.2_S_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.4.1-vocr6.2/VOCR6.2_S_w8.vocr) | Small | 819,792 B | 124,832 B | 1.177 → 1.049% | 1.674 → 1.549 | 0.73 → 0.47% | 0.68 → 0.58% | 0.63 / 0.50 s |
-| [`VOCR6.2_N_w8g2.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.4.1-vocr6.2/VOCR6.2_N_w8g2.vocr) | Normal (the default) | 1,189,408 B | 184,448 B | 1.008 → 0.936% | 1.482 → 1.389 | 0.66 → 0.33% | 0.49 → 0.36% | 0.77 / 0.61 s |
-| [`VOCR6.2_L_w8_2l.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.4.1-vocr6.2/VOCR6.2_L_w8_2l.vocr) | Large | 2,475,680 B | 262,480 B | 0.990 → 0.917% | 1.439 → 1.396 | 0.60 → 0.31% | 0.47 → 0.40% | 1.88 / 1.47 s |
+| [`VOCR6.2_S_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_S_w8.vocr) | Small | 819,792 B | 124,832 B | 1.177 → 1.049% | 1.674 → 1.549 | 0.73 → 0.47% | 0.68 → 0.58% | 0.63 / 0.50 s |
+| [`VOCR6.2_N_w8g2.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_N_w8g2.vocr) | Normal (the default) | 1,189,408 B | 184,448 B | 1.008 → 0.936% | 1.482 → 1.389 | 0.66 → 0.33% | 0.49 → 0.36% | 0.77 / 0.61 s |
+| [`VOCR6.2_L_w8_2l.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.5.0/VOCR6.2_L_w8_2l.vocr) | Large | 2,475,680 B | 262,480 B | 0.990 → 0.917% | 1.439 → 1.396 | 0.60 → 0.31% | 0.47 → 0.40% | 1.88 / 1.47 s |
 
 - **The columns:**
   - "hooked games' pages" is dialogue CER through Rubi's finder, LM and cascade on hval pages (held out), as the
@@ -48,14 +177,7 @@ console.**
     Rubi's default finder is now the textspot8 spotter (#149, Rubi #396), whose own test read is in
     `eval/textspot8_test_20261027.json`.
 - **\* The CLANNAD exposure.** Two hooked training games draw dialogue in CLANNAD's own glyph raster, so CLANNAD's
-  gain is not an unseen-game result (`docs/synth6.md`, `docs/vocr6.md`).
-- **Seen flags on the read-once columns.**
-  - VOCR6 trained on Little Busters! and planetarian, which share the Key 10th Memorial BOX with CLANNAD, and on
-    Collar x Malice (PCSG00866), which shares releases with vita-test's Collar x Malice -Unlimited-.
-  - 38 of the 49 hooked titles' VNs were already in VOCR5's own fine-tune pools.
-  - The VOCR6 columns are decoded with the lm6 1 MB LM. Its text holds the hooked train titles' scripts, those three
-    games' included. Its Jiten word list holds the scripts of CLANNAD, of 7 of vita-test's 16 games and of 1 of
-    psp-test's 14.
+  gain is not an unseen-game result (`docs/synth6.md`, `docs/vocr6.md`). The other seen flags are in the notes above.
 - **Against v0.4.0-vocr6.1:** CLANNAD's lines read better (Small -0.21 and Normal -0.10, resolved; Large -0.05
   [-0.10, +0.01]), but its pages through Rubi's finder read worse at Normal and Large (+0.33 / +0.27, resolved; still
   better than VOCR5 or level). vita-test + psp-test: Small better (-0.23 [-0.46, -0.04], resolved), Normal and Large
@@ -65,28 +187,23 @@ console.**
   -0.25, Normal -0.33, resolved).
 - **The blobs:** Normal carries #120's head gate (at ε = 1e-4) and #122's two-level head, Large the two-level head.
   Small has neither: the gate rule kept no gate for it, so it is est. 0.11 s slower than VOCR5-S as Rubi runs it
-  (gated). Plain blobs (`VOCR6.2_S_w8.vocr`, `VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr`) are in the same release.
-- **The remaining error is the line finder:** about 80% of other games' whole-dialogue error.
+  (gated). Plain blobs (`VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr`) are in the same release.
 
-## Models (release [v0.3.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.3.0))
+## VOCR5 (release [v0.3.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.3.0))
 
-| model | tier | int8 weights | arena (W8I) | dialogue CER: CLANNAD / vita-test / psp-test | est. time per 3-line text box, 333 / 444 MHz | model card |
-|---|---|---:|---:|---|---|---|
-| [`VOCR5_S_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/VOCR5_S_w8.vocr) | Small | 819,792 B | 124,832 B | 1.38% / 1.00% / 2.22% | 0.63 / 0.50 s | [Small](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/MODEL_CARD_VOCR5_S.md) |
-| [`VOCR5_N_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/VOCR5_N_w8.vocr) | Normal (the default) | 1,185,632 B | 182,944 B | 0.96% / 0.96% / 1.30% | 0.92 / 0.72 s | [Normal](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/MODEL_CARD_VOCR5_N.md) |
-| [`VOCR5_L_w8.vocr`](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/VOCR5_L_w8.vocr) | Large | 2,473,696 B | 261,024 B | 0.73% / 0.59% / 1.00% | 2.08 / 1.63 s | [Large](https://github.com/bee-san/vita-vn-ocr/releases/download/v0.3.0/MODEL_CARD_VOCR5_L.md) |
-| Google Lens | a cloud service | | | 1.53% / 3.72%\* / 7.52%\* | needs an internet connection | |
+VOCR5 was the round before: `VOCR5_S_w8.vocr`, `VOCR5_N_w8.vocr` and `VOCR5_L_w8.vocr` (819,792 / 1,185,632 /
+2,473,696 B of int8 weights, W8I arenas of 124,832 / 182,944 / 261,024 B), each chosen over its VOCR4 predecessor
+under a pre-registered rule on development data, with model cards on v0.3.0. Rubi 0.9.8 ran them with their head
+sections (v0.3.6-head2level.1); Rubi 0.10.0 runs VOCR6. They are in v0.5.0 too; their numbers are in the tables above, and the details in
+`docs/vocr5.md`, the model cards and v0.3.0's release notes.
 
-They are made for [Rubi](https://github.com/bee-san/Rubi_for_vita)'s three model sizes, Small, Normal (the default) and Large, which its users choose in the Rubi app; when a game has too little free memory for the chosen size, a job runs the next smaller one. The overlay's switch to VOCR5, bee-san/vita-jp-overlay#167, was in review on 2026-10-17; until it ships, the overlay's sizes run VOCR3-FL10, VOCR3-H15 and VOCR4-W20. The times are estimates for one Cortex-A9 core with the runtime the overlay uses (#85), without prefetch credit, calibrated to VOCR3-H15's measured console rate; **VOCR5 has not run on a console yet**. The CER figures are measured on the host through the plain-C W8I runtime with greedy decoding; the overlay's beam search with the 1 MB character LM, which ships in the same release, reads vita-test and psp-test dialogue at 1.15% / 0.72% / 0.53% (Small / Normal / Large). That LM's Jiten word list includes the scripts of CLANNAD, 7 of vita-test's 16 games and 1 of psp-test's 14 (their names removed), so those decoded figures carry that exposure; in CER points the LM's gain on those 8 games is no larger than on the others (within the noise). Details: `docs/vocr5.md`, the model cards and the release notes.
-
-How to read the chart:
-- **Dialogue** means lines without a speaker-name style, the metric the overlay's users care about (they crop name plates out). Speaker names go either way: Lens is far better on CLANNAD's (0.68% against 4.66-12.45%) and vita-test's (0.00% against 0.58-2.33%), far worse on psp-test's (25.84% against 3.83-6.70%).
-- **CLANNAD** (2,052 dialogue lines of a PS Vita playthrough in Vita3K; references read twice by Claude and frozen before any score): every VOCR5 model is below Lens's 1.53%, but Lens's interval is wide (0.90 to 2.25): its errors cluster on a few lines, and it reads more lines exactly (96.5% against 89.9% for Large). Over all 3,048 lines, names included, Large minus Lens is −0.50 points (paired 95% interval −1.15 to +0.09), so on CLANNAD the two are level within the noise. Lens's readings were among the unattributed candidates of the references' second and third reads.
-- **vita-test and psp-test** (153 and 183 dialogue lines of 16 and 14 games, from VNDB screenshots; every reader got the same line crops, Lens in screen polarity): every VOCR5 model is below Lens, with paired 95% intervals below zero over lines and over games. \* Part of Lens's error is the furigana above a line, which Lens transcribes and the references leave out: 116 of its 227 psp-test errors (name lines included) fall on the 20 lines with furigana, 30 of 89 on vita-test's 3.
-- **Disclosures:** every VOCR5 model trained on the owner's console captures, which include planetarian's PSP port, a Key / Prototype release like CLANNAD's Vita port. Small also trained on synth3 v2, whose renders hold CLANNAD's main cast names (7 crops show a full one; single name parts, mostly common words, occur in more; `docs/synth3.md`). The renders' speaker-name pool holds the names of 128 characters of 12 VNs that share a release with a test or development-sample VN (about 0.05-0.06% of the crops); none occurs in a vita-test, psp-test or development line, and two short ones, common in ordinary text and not CLANNAD names, occur in 8 of CLANNAD's 3,048 reference lines (`docs/vocr5.md`).
-- **Lens as the reference** (its reading counted as 100% right): VOCR5 Small / Normal / Large differ from Lens's text in 2.63% / 2.24% / 2.07% of the characters of CLANNAD's dialogue lines ([#90](https://github.com/bee-san/vita-vn-ocr/issues/90)).
-
-The chart is drawn by `docs/charts/vocr_vs_lens.py` from `docs/charts/vocr-vs-lens.json`, which it builds from `eval/vocr5_dialogue_20261016.json`, `eval/vocr5_clannad_20261016.json`, `eval/vocr5_report_20261016.json` and `eval/vocr5_protocol.json`. `tests/test_vocr_vs_lens_chart.py` recomputes the chart's numbers, its panel and footnote figures, and this section's alt text, model table and notes from those files; it checks the SVGs' text against the JSON and the four images against the hashes the render recorded.
+The chart is drawn by `docs/charts/vocr_vs_lens.py` from `docs/charts/vocr-vs-lens.json`, which it builds from
+`eval/other_readers_20261028.json`, `eval/vocr6_results_20261027.json`, `eval/vocr6_final_test_followup_20261027.json`,
+`eval/vocr5_report_20261016.json`, `eval/vocr5_protocol.json` and `eval/vocr5_dialogue_20261016.json`.
+`tests/test_vocr_vs_lens_chart.py` recomputes the chart's numbers, its row notes and footnote figures, and this
+README's alt text, the comparison and Rubi's-path tables, their notes and the whole-page table from those files and
+`eval/textspot8_test_20261027.json`; it checks the SVGs' text against the JSON and the four images against the hashes
+the render recorded.
 
 ## Status
 
@@ -94,6 +211,7 @@ The table records each component and each earlier round. VOCR6's follow-up (v0.4
 
 | | |
 |---|---|
+| **v0.5.0 release (every model so far)** | VOCR2's trial blob and the models of every release from VOCR3 on in one release, byte for byte as published, with one `SHA256SUMS` (86 files from 20 releases, plus `SHA256SUMS` and `v0.5.0-assets.json`; [`docs/models.md`](docs/models.md)): VOCR6-S / N / L and the plain Normal and Large blobs, v0.4.0-vocr6.1's VOCR6-N and -L, the textspot8 spotter and the earlier spotters, the four LM tiers and ctclm.2's replaced ones, VOCR5 with and without its head sections, VOCR5-V, the text-presence gate, the text detector, model B's PSP candidates, VOCR4, VOCR3 and VOCR2's trial blob. Each file is marked used by Rubi (Rubi 0.10.0's pins), previous or research / not selected, with its attribution file. The FL10 research snapshots before VOCR3 (639 MB together) and MeikiOCR's converted recognizer stay on their pre-releases. Report only: the other OCR engines read on the same lines (`eval/other_readers_20261028.json`; the README's chart and table) |
 | Model | `train/model.py`: a CTC line recognizer (stem plus depthwise-separable blocks, factorised head), grey input at height 32. VOCR5 (v0.3.0) ships three sizes: Small (width 1.0, 0.73M parameters in training, 0.72M in the exported blob after BatchNorm folding, 4,987 classes), Normal, the default (width 1.5, 1.07M, 5,631 classes) and Large (late-wide, width 2.0 early and 3.0 late, 2.32M, 5,631 classes). v0.2.0's H15 was width 1.5, 1.04M parameters, 5,355 classes |
 | **v0.4.1-vocr6.2 (VOCR6's follow-up, pre-release)** | VOCR6-S, VOCR6-N and VOCR6-L, all three of Rubi's tiers (`docs/vocr6.md`, "The follow-up", #125). Normal and Large: v0.4.0's recipe trained 3x longer (stage 4c), not resolved worse on other games (dev -0.063 / -0.046 points against v0.4.0's). Small: the recipe at half the learning rate (stage 4d, the third recipe tried at Small), hooked games' held-out pages 1.177 → 1.049% (resolved better), other games +0.064 (not resolved). Read once: CLANNAD lines 0.73 / 0.66 / 0.60 → 0.47 / 0.33 / 0.31% (resolved better; the same seen flags as v0.4.0), vita-test + psp-test level (psp-test not better), CLANNAD pages worse than v0.4.0's at Normal and Large. Normal with the head gate (ε = 1e-4) and the two-level head, Large with the two-level head, Small plain: est. 0.63 / 0.77 / 1.88 s per 3-line box at 333 MHz. Nothing of it has run on a console |
 | **v0.4.0-vocr6.1 (VOCR6, pre-release)** | VOCR6-N and VOCR6-L, Rubi's Normal and Large tiers; Small stays VOCR5-S. Fine-tuned from VOCR5's checkpoints on the owner's hooked corpus and the finder's crops of its pages (`docs/vocr6.md`, #125). On Rubi's shipped path: hooked games' held-out pages 1.008 → 0.936% (N) and 0.990 → 0.917% (L), both resolved better; other games level (dev -0.038 / +0.026 points). Read once: CLANNAD lines 0.66 → 0.44% / 0.60 → 0.36% (seen flags: CLANNAD's glyph raster, the Key box and Collar x Malice games and 38 of 49 hooked VNs in VOCR5's pools; the lm6 LM's text and Jiten lists), vita-test + psp-test level (psp-test's Normal not better). Two-level head, no gate: est. 0.79 / 1.87 s per 3-line box at 333 MHz. Nothing of it has run on a console |
@@ -177,6 +295,8 @@ The recognizers on this repository's releases, except v0.2.2-meiki.1 (MeikiOCR's
   v2, `docs/console-crops.md`); model B's
   console-test candidates (v0.3.7-modelb-test.1, `docs/vocr6-psp.md`) trained on its PSP titles.
 - **Sources of two private research experiments**: the `fresh_anime_s1` run of v0.2.2-fl10-training.1 trained on AnimeText crops ([JustANormalTinkerer/animetext-ocr](https://huggingface.co/datasets/JustANormalTinkerer/animetext-ocr), revision `9c70c6b5609c4378d46ac0df4927c4119ebfd83d`, CC BY-NC-SA 4.0; `docs/hiragana.md`), and both runs of v0.2.2-fl10-bitmap.1 trained on renders of the owner's own CLANNAD PS Vita bitmap fonts, read from the owner's game files (`docs/native-bitmap-fonts.md`, `docs/native-bitmap-training.md`).
+
+Release v0.5.0 republishes these weights unchanged; [`docs/models.md`](docs/models.md) names each file's attribution file and licence.
 
 The screenshots, crops, fonts and texts are training input only; none is redistributed. Google Lens appears as a comparison and never as a training-label source; its readings were among the unattributed candidates of the second and third reads of the CLANNAD test references (`docs/clannad-v1-v2-v3-lens.md`). The character LMs of v0.2.6-ctclm.1, v0.2.6-ctclm.2 and v0.3.7-lm6.2 list their sources and licences in their `ATTRIBUTION.md` (CC BY-SA 4.0); v0.3.7-lm6.2's 1 MB and 4 MB LMs also carry character n-gram counts of the owner's hooked console captures (`docs/vocr6-lm.md`).
 

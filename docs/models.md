@@ -1,10 +1,10 @@
 # Models: every asset of release v0.5.0
 
-Release [v0.5.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.0) collects every model this repository
-has published since VOCR2 in one place: the VOCR6 recognizers, the dialogue-line spotter, the character LMs, and every
-earlier model of those rounds, each byte for byte as its own release published it. Nothing was retrained, re-exported
-or changed. 86 files come from 20 releases; with `SHA256SUMS` and `v0.5.0-assets.json` (this document's
-`docs/models.json`) the release has 88.
+Release [v0.5.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.0) collects in one place every model this
+repository has published from VOCR3 on, ctclm.1's superseded LMs aside, and VOCR2's trial blob: the VOCR6 recognizers,
+the dialogue-line spotter, the character LMs, and every earlier model of those rounds, each byte for byte as its own
+release published it. Nothing was retrained, re-exported or changed. 86 files come from 20 releases; with
+`SHA256SUMS` and `v0.5.0-assets.json` (this document's `docs/models.json`) the release has 88.
 
 - **Checked.** Every file was downloaded from its source release and checked against GitHub's sha256 digest of that
   asset and, for the 78 files its release's `SHA256SUMS` lists, against that file too (`docs/models.py manifest`
@@ -26,9 +26,10 @@ or changed. 86 files come from 20 releases; with `SHA256SUMS` and `v0.5.0-assets
 
 ## What Rubi uses
 
-Rubi's pins ([bee-san/Rubi_for_vita](https://github.com/bee-san/Rubi_for_vita) main `dc272d1`, 2026-10-28, what
-the next Rubi release, 0.10.0, ships: `tools/prepare_ocr.py` and `include/vjo_vocr_sizes.h`, each file by size and
-SHA-256) name these files of this release, byte for byte:
+Rubi 0.10.0's pins (bee-san/Rubi_for_vita release
+[v0.10.0](https://github.com/bee-san/Rubi_for_vita/releases/tag/v0.10.0), tag `efbee95`, 2026-10-28:
+`tools/prepare_ocr.py` and `include/vjo_vocr_sizes.h`, each file by size and SHA-256; the same two files as at main
+`dc272d1`, which this table was built from) name these files of this release, byte for byte:
 
 | role in Rubi | file | bytes |
 |---|---|---:|
@@ -44,7 +45,7 @@ SHA-256) name these files of this release, byte for byte:
 - **Rubi's host tools and tests only** (pinned, never shipped): `VOCR6.2_N_w8.vocr` and `VOCR6.2_L_w8.vocr`, the
   plain Normal and Large weights its tests read against the shipped blobs with the head sections off;
   `VOCR4_W20_w8.vocr`, the cascade model of a request by name; `VOCR3_H15_w8.vocr` and `VOCR3_FL10_w8.vocr`.
-- **Rubi 0.9.8**, the latest Rubi release, pins VOCR5's v0.3.6-head2level.1 blobs as its sizes (`VOCR5_S_w8g.vocr`,
+- **Rubi 0.9.8**, the release before, pins VOCR5's v0.3.6-head2level.1 blobs as its sizes (`VOCR5_S_w8g.vocr`,
   `VOCR5_N_w8g2.vocr`, `VOCR5_L_w8g2.vocr`) and no spotter; its LMs, vertical model and gate are the ones above.
 
 ## The recognizers
@@ -78,7 +79,7 @@ For VOCR6, two kinds of number are not the shipped blobs' own read:
 | `VOCR2_FL10_w8.vocr` | VOCR2-FL10, the overlay's opt-in trial | 124,832 | VOCR3-FL10's shape: 125-239 ms per 640-px line (333 MHz) | fixed lines (all lines): vita-test 59 / 2,564 errors (FL10 61), psp-test 119 / 2,510 (FL10 133); promotion rejected on the whole-textbox guard |
 | `MODELB_B24_w8g2.vocr`, `MODELB_S32_w8g2.vocr` | model B, PSP candidates | memory in all 1,042,498 / 1,291,938 B | 1.21 / 2.05 per box on the PSP's scalar build at 333 MHz (PPSSPP-based estimates) | development PSP whole dialogue against VOCR5-S: +3.93 points [+2.63, +5.59] (B24); plain S32 +0.04 [−0.24, +0.31] |
 
-How VOCR6 compares with the other OCR engines on the same crops is in the README ("VOCR6 against other OCRs",
+How VOCR6 compares with the other OCR engines on the same lines is in the README ("VOCR6 against other OCRs",
 `eval/other_readers_20261028.json`).
 
 ## The line finders, the gate and the detector

@@ -110,9 +110,14 @@ def test_the_md_tables_are_generated_from_the_manifest():
         assert f"| `{x['name']}` |" in text and x["sha256"] in text, x["name"]
 
 
+def flat(text):
+    """Text with its line breaks and indents folded to single spaces (wrapped markdown)."""
+    return re.sub(r"\s*\n\s*", " ", text)
+
+
 def test_the_counts_the_documents_give_are_the_manifests():
-    md = (ROOT / "docs" / "models.md").read_text(encoding="utf-8")
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    md = flat((ROOT / "docs" / "models.md").read_text(encoding="utf-8"))
+    readme = flat((ROOT / "README.md").read_text(encoding="utf-8"))
     n, tags = len(ASSETS), len({x["from"]["tag"] for x in ASSETS})
     listed = sum(x["from"]["in_release_sha256sums"] for x in ASSETS)
     assert f"{n} files come from {tags} releases; with `SHA256SUMS` and `v0.5.0-assets.json`" in md
@@ -242,11 +247,47 @@ def test_the_vocr6_rows_of_docs_models_are_the_records():
         for x in (cl_b, cl_a, vp, dd):
             assert f"{x:.2f}%" in row, (t, x)
         assert "3 seeds" in row and "as it ships" in row, f"{t}: the held-out and dev caveats"
+        # the held-out pages (the recipe's 3-seed means) and the dev score (the set as it ships), VOCR5's beside
+        held, v5_held, dev, v5_dev = vocr6_recipe_numbers(t)
+        assert f"{held:.3f}% (VOCR5-{t} {v5_held:.3f}%)" in row, (t, held)
+        assert f"{dev:.3f} (" in row and f"{v5_dev:.3f}" in row, (t, dev)
     assert "+0.041 [−0.016, +0.099]" in md and "not held out" in md
 
 
+# The records of VOCR6's held-out and dev numbers: eval/vocr6_results_20261027.json. Held-out: the decision of the
+# recipe each tier ships (stage 4d-l for Small, stage 4a for Normal and Large), 3 seeds; dev: the shipped set's runs.
+RECIPE = {"S": "s4d_l", "N": "s4_N", "L": "s4_L"}
+SHIPPED_DEV = {"S": ("v6f4dlh_S_seed1_up4cN", "VOCR5-S"), "N": ("v6f4c_N_seed1", "VOCR5-N"),
+               "L": ("v6f4c_L_seed1", "VOCR5-L")}
+
+
+def vocr6_recipe_numbers(tier):
+    r = json.loads(RESULTS.read_text(encoding="utf-8"))
+    hp = r["decisions"][RECIPE[tier]]["total"]["hval_page"]
+    runs = r["runs"]["shipped"]
+    new, old = SHIPPED_DEV[tier]
+    return hp["cer_y"], hp["cer_x"], runs[new]["summary"]["dev_score"], runs[old]["summary"]["dev_score"]
+
+
+def test_the_held_out_and_dev_numbers_are_the_vocr6_records():
+    """CHANGELOG's VOCR6 held-out and dev numbers, from the decisions and runs they come from."""
+    entry = flat((ROOT / "CHANGELOG.md").read_text(encoding="utf-8"))
+    entry = entry[entry.index("## [0.5.0]"):entry.index("## Earlier releases")]
+    nums = {t: vocr6_recipe_numbers(t) for t in "SNL"}
+    held = ", ".join(f"{nums[t][1]:.3f} → {nums[t][0]:.3f}%" for t in "SNL")
+    dev = ", ".join(f"{nums[t][3]:.3f} → {nums[t][2]:.3f}" for t in "SNL")
+    assert held in entry, held
+    assert dev in entry, dev
+    r = json.loads(RESULTS.read_text(encoding="utf-8"))["decisions"]
+    for t in "SNL":
+        assert r[RECIPE[t]]["total"]["hval_page"]["ci95"][1] < 0, f"{t}: the held-out gain is resolved"
+        assert len(r[RECIPE[t]]["y"]) == 3, f"{t}: three seeds"
+    rep = r["s4d_report_SvsV5S_up4cN"]["total"]["dev"]
+    assert f"+{rep['delta_points']:.3f} [−{abs(rep['ci95'][0]):.3f}, +{rep['ci95'][1]:.3f}]" in entry
+
+
 def test_the_changelog_vocr6_numbers_are_the_records():
-    ch = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    ch = flat((ROOT / "CHANGELOG.md").read_text(encoding="utf-8"))
     entry = ch[ch.index("## [0.5.0]"):ch.index("## Earlier releases")]
     b = followup()["path_b"]
     node = b["clannad_lines"]["dialogue"]
@@ -254,10 +295,10 @@ def test_the_changelog_vocr6_numbers_are_the_records():
     assert f"CLANNAD's dialogue lines {trio('VOCR5')} → {trio('VOCR6')}" in entry
     assert all(node["pairs"][f"{t}:shipped"]["ci95"][1] < 0 for t in "SNL"), "CLANNAD resolved better at every tier"
     for words in ("the mean of three seeds", "as it ships", "+0.041 [−0.016, +0.099]", "not resolved",
-                  "glyph raster", "Est. 0.63 / 0.77 / 1.88 s"):
-        assert words in entry.replace("\n    ", " ").replace("\n  ", " "), words
+                  "glyph raster", "Est. 0.63 / 0.77 / 1.88 s", "since Rubi 0.10.0"):
+        assert words in entry, words
     n, tags = len(ASSETS), len({x["from"]["tag"] for x in ASSETS})
-    assert f"({n} files from {tags} releases, plus" in entry.replace("\n", " ")
+    assert f"({n} files from {tags} releases, plus" in entry
     rec = record()
     assert all(rec["sets"][s]["values"]["VOCR6_L"]["cer"] == min(v["cer"] for v in rec["sets"][s]["values"].values())
                for s in ("clannad", "vita-test", "psp-test", "pcsg00807")), "Large lowest on all four sets"

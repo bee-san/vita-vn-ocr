@@ -4400,9 +4400,9 @@
   "PP-OCRv6 small was first read with onnxruntime at 5 intra-op threads (heavy.sh's OMP_NUM_THREADS, which eval/backends.py passes to onnxruntime); the protocol says one thread, so it was read again with OMP_NUM_THREADS=1, and every one of its 4,651 readings (vita-test 206, psp-test 245, CLANNAD 3,048, the hooked title 1,152) is the same as the first read's; the record scores the one-thread read. The protocol allows a rerun only after a crash, with the same settings: this one instead brought a setting to the protocol's, and changed no reading",
   "The readers' 'threads' field is the OMP_NUM_THREADS that eval/backends.py reports (5 under heavy.sh). MeikiOCR (eval/meiki_cmd.py: clannad_meiki.load_meiki(n_threads=1)) and PP-OCRv5 int8 (eval/ncnn/vocr_ncnn_rec.cpp: num_threads = 1) run one thread whatever it says, so PP-OCRv6 small was the one engine that needed the rerun; manga-ocr's thread count is not fixed by the protocol",
   "The read path (cmd_read, clannad_crops, pcsg_crops and the helpers they call) is the registered commit e707898's in every read; each read's meta hashes eval/other_readers.py when it is written, and the scorer gained sizes(), --note and path-neutral reader names while the reads ran, so some metas name a later file. The scorer's own code is score_code_sha256",
-  "CLANNAD's and the hooked title's intervals resample pages with vocr6_baseline.boot_ratio (each system's CER) and vocr3_report.cluster_bootstrap (the pairs) over page clusters, where the protocol names clannad_refs's rate_ci and paired_bootstrap over page sums: the same page resampling (Lens's and MeikiOCR's CLANNAD intervals equal clannad_meiki_lines_20261014.json's)"
+  "CLANNAD's intervals resample pages with vocr6_baseline.boot_ratio (each system's CER) and vocr3_report.cluster_bootstrap (the pairs) over page clusters, where the protocol names clannad_refs's rate_ci and paired_bootstrap over page sums: the same page resampling (Lens's and MeikiOCR's CLANNAD intervals equal clannad_meiki_lines_20261014.json's). The hooked title's are as the protocol names them"
  ],
  "lens_on_pcsg00807": "not read: private game data never goes to a third-party service",
  "training_or_selection_use": false,
- "created": "2026-10-28T08:58:31Z"
+ "created": "2026-10-28T09:50:23Z"
 }

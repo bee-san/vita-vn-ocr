@@ -3,7 +3,7 @@
 SVG + 2x PNG.
 
 Every number comes from docs/charts/vocr-vs-lens.json, which `data` builds from committed records: the other
-engines' read (eval/other_readers_*.json: every system's dialogue CER on the same line crops, greedy for VOCR, and the
+engines' read (eval/other_readers_*.json: every system's dialogue CER on the same lines, greedy for VOCR, and the
 pairs), VOCR6's follow-up records (Rubi's path for the table, its gate fits for the box times), VOCR5's protocol and
 locked report (its box times), and VOCR5's dialogue tables (Lens's furigana counts). The JSON records where each
 number came from. The words live in its "copy" object (kept when `data` runs again); the numbers in the row notes

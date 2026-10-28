@@ -2240,7 +2240,7 @@
  "sources": {
   "readers": {
    "file": "eval/other_readers_20261028.json",
-   "sha256": "a14afbe7a0216683605f74fd009321a27f133ef7adb4e3163efc856d81693943"
+   "sha256": "06c620ccf7a2543cb12051079dfd9b66877897c58402ec3c487516d35ae902f6"
   },
   "vocr6": {
    "file": "eval/vocr6_results_20261027.json",
@@ -2585,7 +2585,7 @@
   ]
  },
  "rendered": {
-  "inputs_sha256": "a5352a1d34343cc8b1a4b405c44ca9270b720cc85f01ec8bc3235141ac0112ef",
+  "inputs_sha256": "a6a9dab85a5606361aa6c3af3d4b09e3f90f2ea4fe02fa4b415f9dc036de06eb",
   "files": {
    "vocr-vs-lens-dark-2x.png": "c52f4b1179bdf9c24323008335241521c7e9733cf193812edcb1c46d95f54f3e",
    "vocr-vs-lens-dark.svg": "e78cf06a47d1b3aad20d332dcc143ad1297f6bd5ef0981d6eb7fd81a770eed2d",

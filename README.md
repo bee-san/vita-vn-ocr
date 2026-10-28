@@ -14,10 +14,10 @@ A tiny Japanese OCR made only for visual-novel dialogue on PS Vita and PSP. It i
 General OCR models are too big for this. The best general option, a trimmed int8 PP-OCRv5 mobile, still peaks at about 13 MiB (see `docs/research-findings.md`). VN dialogue is a much narrower problem: one or a few horizontal lines in a dialogue box, a handful of game fonts, and a fixed screen size (960×544 on Vita, 480×272 on PSP). A recognizer trained only for that case can be an order of magnitude smaller.
 
 **Release [v0.5.0](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.0) collects the models:** the three
-VOCR6 recognizers Rubi runs, its dialogue-line spotter, the character LMs and every earlier model from VOCR2 on,
-byte for byte as their own releases published them, with one `SHA256SUMS`. [`docs/models.md`](docs/models.md) lists
-every file with its size, sha256, role, numbers, status (which ones Rubi uses) and licence, and what stays on the
-older releases.
+VOCR6 recognizers Rubi runs, its dialogue-line spotter, the character LMs, every earlier model from VOCR3 on
+(ctclm.1's superseded LMs aside) and VOCR2's trial blob, byte for byte as their own releases published them, with one
+`SHA256SUMS`. [`docs/models.md`](docs/models.md) lists every file with its size, sha256, role, numbers, status (which
+ones Rubi uses) and licence, and what stays on the older releases.
 
 ## VOCR6 against other OCRs
 
@@ -47,8 +47,9 @@ As Rubi runs them (beam + the 1 MB LM, the cascade S → N → L, Rubi's text fi
 | VOCR5 Small / Normal / Large | 0.73 / 0.66 / 0.60% | 0.67 / 0.50 / 0.42% | 0.70 / 0.48 / 0.52% | 0.27 / 0.26 / 0.22% |
 
 - **Rubi's text filter** drops lines with no kana or kanji: on Dance with Devils that alone costs 0.19 points (6 lines,
-  26 reference characters), on CLANNAD 0.08 (4 lines, 26 reference characters), so Rubi's path reads them higher
-  than the recognizer alone.
+  26 reference characters), on CLANNAD 0.08 (4 lines, 26 reference characters). It is why Rubi's path reads Dance
+  with Devils, and CLANNAD at Large, higher than the recognizer alone; at Small and Normal the LM and the cascade gain
+  more on CLANNAD than the filter costs.
 - **The sets.**
   - CLANNAD: 2,052 dialogue lines of a PS Vita playthrough in Vita3K, references read by Claude and frozen before any
     score.
@@ -192,8 +193,8 @@ console.**
 
 VOCR5 was the round before: `VOCR5_S_w8.vocr`, `VOCR5_N_w8.vocr` and `VOCR5_L_w8.vocr` (819,792 / 1,185,632 /
 2,473,696 B of int8 weights, W8I arenas of 124,832 / 182,944 / 261,024 B), each chosen over its VOCR4 predecessor
-under a pre-registered rule on development data, with model cards on v0.3.0. Rubi 0.9.8 runs them with their head
-sections (v0.3.6-head2level.1). They are in v0.5.0 too; their numbers are in the tables above, and the details in
+under a pre-registered rule on development data, with model cards on v0.3.0. Rubi 0.9.8 ran them with their head
+sections (v0.3.6-head2level.1); Rubi 0.10.0 runs VOCR6. They are in v0.5.0 too; their numbers are in the tables above, and the details in
 `docs/vocr5.md`, the model cards and v0.3.0's release notes.
 
 The chart is drawn by `docs/charts/vocr_vs_lens.py` from `docs/charts/vocr-vs-lens.json`, which it builds from
@@ -210,7 +211,7 @@ The table records each component and each earlier round. VOCR6's follow-up (v0.4
 
 | | |
 |---|---|
-| **v0.5.0 release (every model so far)** | The models of every release since VOCR2 in one release, byte for byte as published, with one `SHA256SUMS` (86 files from 20 releases, plus `SHA256SUMS` and `v0.5.0-assets.json`; [`docs/models.md`](docs/models.md)): VOCR6-S / N / L and the plain Normal and Large blobs, v0.4.0-vocr6.1's VOCR6-N and -L, the textspot8 spotter and the earlier spotters, the four LM tiers and ctclm.2's replaced ones, VOCR5 with and without its head sections, VOCR5-V, the text-presence gate, the text detector, model B's PSP candidates, VOCR4, VOCR3 and VOCR2's trial blob. Each file is marked used by Rubi (Rubi main's pins), previous or research / not selected, with its attribution file. The FL10 research snapshots before VOCR3 (639 MB together) and MeikiOCR's converted recognizer stay on their pre-releases. Report only: the other OCR engines read on the same lines (`eval/other_readers_20261028.json`; the README's chart and table) |
+| **v0.5.0 release (every model so far)** | VOCR2's trial blob and the models of every release from VOCR3 on in one release, byte for byte as published, with one `SHA256SUMS` (86 files from 20 releases, plus `SHA256SUMS` and `v0.5.0-assets.json`; [`docs/models.md`](docs/models.md)): VOCR6-S / N / L and the plain Normal and Large blobs, v0.4.0-vocr6.1's VOCR6-N and -L, the textspot8 spotter and the earlier spotters, the four LM tiers and ctclm.2's replaced ones, VOCR5 with and without its head sections, VOCR5-V, the text-presence gate, the text detector, model B's PSP candidates, VOCR4, VOCR3 and VOCR2's trial blob. Each file is marked used by Rubi (Rubi 0.10.0's pins), previous or research / not selected, with its attribution file. The FL10 research snapshots before VOCR3 (639 MB together) and MeikiOCR's converted recognizer stay on their pre-releases. Report only: the other OCR engines read on the same lines (`eval/other_readers_20261028.json`; the README's chart and table) |
 | Model | `train/model.py`: a CTC line recognizer (stem plus depthwise-separable blocks, factorised head), grey input at height 32. VOCR5 (v0.3.0) ships three sizes: Small (width 1.0, 0.73M parameters in training, 0.72M in the exported blob after BatchNorm folding, 4,987 classes), Normal, the default (width 1.5, 1.07M, 5,631 classes) and Large (late-wide, width 2.0 early and 3.0 late, 2.32M, 5,631 classes). v0.2.0's H15 was width 1.5, 1.04M parameters, 5,355 classes |
 | **v0.4.1-vocr6.2 (VOCR6's follow-up, pre-release)** | VOCR6-S, VOCR6-N and VOCR6-L, all three of Rubi's tiers (`docs/vocr6.md`, "The follow-up", #125). Normal and Large: v0.4.0's recipe trained 3x longer (stage 4c), not resolved worse on other games (dev -0.063 / -0.046 points against v0.4.0's). Small: the recipe at half the learning rate (stage 4d, the third recipe tried at Small), hooked games' held-out pages 1.177 → 1.049% (resolved better), other games +0.064 (not resolved). Read once: CLANNAD lines 0.73 / 0.66 / 0.60 → 0.47 / 0.33 / 0.31% (resolved better; the same seen flags as v0.4.0), vita-test + psp-test level (psp-test not better), CLANNAD pages worse than v0.4.0's at Normal and Large. Normal with the head gate (ε = 1e-4) and the two-level head, Large with the two-level head, Small plain: est. 0.63 / 0.77 / 1.88 s per 3-line box at 333 MHz. Nothing of it has run on a console |
 | **v0.4.0-vocr6.1 (VOCR6, pre-release)** | VOCR6-N and VOCR6-L, Rubi's Normal and Large tiers; Small stays VOCR5-S. Fine-tuned from VOCR5's checkpoints on the owner's hooked corpus and the finder's crops of its pages (`docs/vocr6.md`, #125). On Rubi's shipped path: hooked games' held-out pages 1.008 → 0.936% (N) and 0.990 → 0.917% (L), both resolved better; other games level (dev -0.038 / +0.026 points). Read once: CLANNAD lines 0.66 → 0.44% / 0.60 → 0.36% (seen flags: CLANNAD's glyph raster, the Key box and Collar x Malice games and 38 of 49 hooked VNs in VOCR5's pools; the lm6 LM's text and Jiten lists), vita-test + psp-test level (psp-test's Normal not better). Two-level head, no gate: est. 0.79 / 1.87 s per 3-line box at 333 MHz. Nothing of it has run on a console |

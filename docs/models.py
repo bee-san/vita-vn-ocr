@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Release v0.5.0's assets: every model since VOCR2, collected from the releases that published them (docs/models.md).
+"""Release v0.5.0's assets: every model from VOCR3 on and VOCR2's trial blob, collected from the releases that published
+them (docs/models.md).
 
   python docs/models.py manifest [--src DIR]          # docs/models.json from the source releases' files
   python docs/models.py md                            # docs/models.md's generated tables from docs/models.json
@@ -10,11 +11,12 @@ ASSETS below is the release's table: each file's name in v0.5.0, the release and
 status and its attribution file. `manifest` reads each source file (SRC/<tag>/<name>, default the downloads under
 $HERD/shared/artifacts/vvo-release/assets, fetched with `gh release download`), checks it against its source
 release's SHA256SUMS when that lists it, and writes docs/models.json with the bytes and sha256 of every asset and
-Rubi's pins (bee-san/Rubi_for_vita main dc272d1: tools/prepare_ocr.py, include/vjo_vocr_sizes.h). A file keeps its
-release name unless two source releases hold different bytes under one name or the name says nothing on its own
-(ATTRIBUTION.md, settings.json, the model cards and asset lists of v0.4.0 and v0.4.1): then it is renamed, and
-docs/models.json records the original. The source releases' own SHA256SUMS are not copied: SHA256SUMS lists every
-file of v0.5.0. Nothing here retrains, re-exports or changes a byte of any model.
+Rubi's pins (bee-san/Rubi_for_vita main dc272d1: tools/prepare_ocr.py, include/vjo_vocr_sizes.h; byte for byte the
+pins of Rubi 0.10.0, tag efbee95). A file keeps its release name unless two source releases hold different bytes under
+one name or the name says nothing on its own (ATTRIBUTION.md, settings.json, the model cards and asset lists of v0.4.0
+and v0.4.1): then it is renamed, and docs/models.json records the original. The source releases' own SHA256SUMS are
+not copied: SHA256SUMS lists every other file of v0.5.0. Nothing here retrains, re-exports or changes a byte of any
+model.
 """
 import argparse
 import hashlib
@@ -319,8 +321,11 @@ RUBI_PINS = {
     "repo": "bee-san/Rubi_for_vita",
     "commit": "dc272d107ee910661e555f70ca5ef1db67425666",
     "files": ["tools/prepare_ocr.py", "include/vjo_vocr_sizes.h", "tools/model_tiers.json"],
-    "note": "Rubi main on 2026-10-28 (its CHANGELOG's Unreleased section, the next release); the latest Rubi release, "
-            "0.9.8, pins VOCR5's v0.3.6-head2level.1 blobs as its sizes and no spotter",
+    "release": "v0.10.0",
+    "release_commit": "efbee95e28eab11a4f960702acc0bc6d183df812",
+    "note": "read at Rubi main dc272d1 (2026-10-28); Rubi 0.10.0 (released 2026-10-28T09:00:56Z, tag efbee95) has "
+            "the same tools/prepare_ocr.py and include/vjo_vocr_sizes.h, byte for byte, so these are the pins it "
+            "ships; the release before, 0.9.8, pins VOCR5's v0.3.6-head2level.1 blobs as its sizes and no spotter",
     "shipped": {
         "VOCR6.2_S_w8.vocr": "864bbd196d5bc5d3a7bd7918cf7274b3503dfe65d440017ef0781ea7e7ba37d2",
         "VOCR6.2_N_w8g2.vocr": "107cf084cc0c1a3a61ce4c3f9b9cf6b31d6dff80f0a1bdb94afd3f7ee9ae3bc9",

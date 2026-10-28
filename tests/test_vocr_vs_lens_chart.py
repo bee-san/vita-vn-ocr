@@ -321,6 +321,37 @@ def test_the_readme_filter_note_is_the_final_reads_floor():
     assert f"on CLANNAD {fc['points']:.2f} ({fc['lines']} lines, {fc['chars']} reference characters)" in note
     for s, f in (("pcsg00807", fl), ("clannad", fc)):
         assert d["rubi_path"][s]["VOCR6_L"]["errors"] >= f["chars"], "the floor is part of every Rubi-path read"
+    # the note's conclusion: Rubi's path reads Dance with Devils, and CLANNAD at Large, higher than the recognizer
+    # alone; CLANNAD at Small and Normal lower
+    rp, V = d["rubi_path"], d["values"]
+    assert "reads Dance\n  with Devils, and CLANNAD at Large, higher than the recognizer alone" in note
+    assert "at Small and Normal the LM and the cascade gain\n  more on CLANNAD than the filter costs" in note
+    for k in VOCR6:
+        assert rp["pcsg00807"][k]["cer"] > V["pcsg00807"][k]["cer"], k
+    assert rp["clannad"]["VOCR6_L"]["cer"] > V["clannad"]["VOCR6_L"]["cer"]
+    for k in ("VOCR6_S", "VOCR6_N"):
+        assert rp["clannad"][k]["cer"] < V["clannad"][k]["cer"], k
+
+
+@needs_data
+def test_the_readme_disclosure_counts_are_the_records():
+    """The 'what is not unseen' notes' counts, from the final read's seen flags and docs/vocr5.md."""
+    d = data()
+    notes = section(readme(), "- **What is not unseen**", "- **Whose readings the references were read against.**")
+    flat = re.sub(r"\s*\n\s*", " ", notes)
+    flags = source(d, "followup")["seen_flags"]
+    m = re.search(r"(\d+) of the (\d+) hooked titles' VNs", flags["vocr6_training"])
+    assert f"{m.group(1)} of the {m.group(2)} hooked titles' VNs were already in VOCR5's fine-tune pools" in flat
+    m = re.search(r"CLANNAD, (\d+) of vita-test's (\d+) games and (\d+) of psp-test's (\d+)", flags["lm_ctclm2"])
+    assert f"of {m.group(1)} of vita-test's {m.group(2)} games and of {m.group(3)} of psp-test's {m.group(4)}" in flat
+    for title in ("Little Busters!", "planetarian", "Collar x Malice"):
+        assert title in flags["lm_lm6"] and title in flat, title
+    v5 = re.sub(r"\s*\n\s*", " ", (ROOT / "docs" / "vocr5.md").read_text(encoding="utf-8"))
+    m = re.search(r"names of (\d+) characters of (\d+) VNs", v5)
+    assert f"names of {m.group(1)} characters of {m.group(2)} VNs" in flat
+    m = re.search(r"Two short ones occur in (\d+) of CLANNAD's ([\d,]+) reference lines", v5)
+    assert f"occur in {m.group(1)} of CLANNAD's {m.group(2)} reference lines" in flat
+    assert re.search(r"7 crops show a full cast name", v5) and "names in 7 crops" in flat
 
 
 @needs_data

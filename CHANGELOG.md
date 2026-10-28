@@ -7,16 +7,16 @@ spotter has run on a console.
 
 ## [0.5.0] - 2026-10-28
 
-**VOCR6: recognizers, dialogue-line spotter, LMs and every model so far.** One normal release with every model since
-VOCR2, byte for byte as its own release published it, and one `SHA256SUMS` (86 files from 20 releases, plus
-`SHA256SUMS` and `v0.5.0-assets.json`). [`docs/models.md`](docs/models.md) lists each file's size, sha256, role, tier,
-measured numbers, status and licence.
+**VOCR6: recognizers, dialogue-line spotter, LMs and every model so far.** One normal release with every model from
+VOCR3 on (ctclm.1's superseded LMs aside) and VOCR2's trial blob, byte for byte as its own release published it, and
+one `SHA256SUMS` (86 files from 20 releases, plus `SHA256SUMS` and `v0.5.0-assets.json`).
+[`docs/models.md`](docs/models.md) lists each file's size, sha256, role, tier, measured numbers, status and licence.
 
 ### Added
 
 - **VOCR6-S, VOCR6-N and VOCR6-L** (first published as pre-release v0.4.1-vocr6.2, #125, #157): Rubi's Small, Normal
-  (the default) and Large model sizes. Each is its VOCR5 tier fine-tuned again on the owner's hooked PS Vita and PSP
-  games and the line finder's crops of their pages (`docs/vocr6.md`).
+  (the default) and Large model sizes since Rubi 0.10.0. Each is its VOCR5 tier fine-tuned again on the owner's hooked
+  PS Vita and PSP games and the line finder's crops of their pages (`docs/vocr6.md`).
   - Hooked games' held-out pages, Rubi's shipped path, the mean of three seeds of each tier's recipe (stage 4d's for
     Small; stage 4a's 15,000-step recipe for Normal and Large): 1.177 → 1.049%, 1.008 → 0.936%, 0.990 → 0.917%
     (VOCR5 → VOCR6, each resolved better). The shipped blobs then trained on these pages too, Normal and Large three
@@ -29,9 +29,9 @@ measured numbers, status and licence.
     two training games draw dialogue in CLANNAD's glyph raster, so not an unseen-game result). vita-test + psp-test
     level, psp-test not better.
   - Est. 0.63 / 0.77 / 1.88 s per 3-line box on one 333 MHz Cortex-A9 core (estimates).
-- **The textspot8 dialogue-line spotter** (pre-release v0.3.10-textspot8.1, #149, #156): Rubi's default line finder,
-  52,176 B of int8 weights, est. 82 ms per 900×150 region. Unseen development games 1.03% page-path dialogue CER
-  against Rubi's previous finder's 2.38% (`docs/textspot8.md`).
+- **The textspot8 dialogue-line spotter** (pre-release v0.3.10-textspot8.1, #149, #156): Rubi's default line finder
+  since Rubi 0.10.0, 52,176 B of int8 weights, est. 82 ms per 900×150 region. Unseen development games 1.03% page-path
+  dialogue CER against Rubi's previous finder's 2.38% (`docs/textspot8.md`).
 - **The game-text LMs** (pre-release v0.3.7-lm6.2, #127, #137): Rubi's 1 MB (default) and 4 MB character LM tiers,
   beside ctclm.2's 0.5 MB and 2 MB (`docs/vocr6-lm.md`).
 - **Every earlier model of these rounds**, marked in `docs/models.md` as used by Rubi, previous or research / not
@@ -41,7 +41,7 @@ measured numbers, status and licence.
   attribution file of those releases.
 - **VOCR6 against other OCR engines** (report only; `eval/other_readers_protocol.json`, registered before the read,
   `eval/other_readers_20261028.json`): MeikiOCR, PP-OCRv6 small, trimmed int8 PP-OCRv5 mobile and manga-ocr read the
-  same line crops as VOCR on CLANNAD, vita-test, psp-test and the hooked test title; Google Lens's existing readings.
+  same lines as VOCR on CLANNAD, vita-test, psp-test and the hooked test title; Google Lens's existing readings.
   VOCR6 Large has the lowest dialogue CER on all four sets; every VOCR6 tier reads CLANNAD, vita-test and psp-test
   better than Lens (intervals below 0). The README's chart and table show it (`docs/charts/vocr_vs_lens.py`).
 

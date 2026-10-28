@@ -349,6 +349,11 @@ def checks(tables):
     return {"compared": len(out), "equal": sum(x["equal"] for x in out), "rows": out}
 
 
+def neutral(text):
+    """A spec or model string with this checkout's and $HERD's absolute paths written relatively."""
+    return None if text is None else str(text).replace(str(ROOT) + "/", "").replace(str(HERD), "$HERD")
+
+
 def reader_identities(into):
     out = {}
     for r in READERS:
@@ -357,18 +362,42 @@ def reader_identities(into):
             p = into / f"{s}.{r}.meta.json"
             if p.exists():
                 m = json.loads(p.read_text(encoding="utf-8"))
-                metas[s] = {k: m[k] for k in ("spec", "name", "info", "lines", "jsonl_sha256", "host_ms_per_line",
-                                              "threads", "created", "environment")}
+                metas[s] = {k: m[k] for k in ("info", "lines", "jsonl_sha256", "host_ms_per_line", "threads",
+                                              "created", "environment")}
+                metas[s].update(spec=neutral(m["spec"]), name=neutral(m["name"]))
         for s in ("vita-test", "psp-test"):
             p = into / f"run_{r}_{s}.json"
             if p.exists():
                 d = json.loads(p.read_text(encoding="utf-8"))
-                metas[s] = {"model": d.get("model"), "model_name": d.get("model_name"),
+                metas[s] = {"model": neutral(d.get("model")), "model_name": neutral(d.get("model_name")),
                             "model_info": public_info(d.get("model_info")), "pad": d.get("pad"),
                             "host_ms_per_line": d["sets"][s].get("host_ms_per_line"), "run_sha256": sha256_file(p),
                             "env": {k: v for k, v in (d.get("env") or {}).items() if k != "host"}}
         out[r] = metas
     return out
+
+
+def sizes(into):
+    """Each engine's weights as it read here (files, not a memory measurement)."""
+    import backends
+    mk = json.loads((HERE / "clannad_meiki_resources_20261014.json").read_text(encoding="utf-8"))["models"]["rec"]
+    v6 = HERD / "shared" / "artifacts" / "teacher" / "models" / backends.PPOCR["ppocr-v6-small"]
+    backends.check_pinned(v6)
+    run = {r: json.loads((into / f"run_{r}_vita-test.json").read_text(encoding="utf-8"))["model_info"]
+           for r in ("PPOCRv5_mobile_int8", "manga_ocr")}
+    return {
+        "MeikiOCR": {"bytes": mk["bytes"], "params": mk["params"], "form": "fp32 ONNX", "file": mk["file"],
+                     "source": "eval/clannad_meiki_resources_20261014.json models.rec (its vertical recognizer, "
+                               "12,872,961 B, and its detector, 14,503,825 B, are separate files)"},
+        "PPOCRv6_small": {"bytes": v6.stat().st_size, "form": "fp32 ONNX", "file": v6.name,
+                          "source": "the pinned preset file (eval/backends.py PPOCR_FILES)"},
+        "PPOCRv5_mobile_int8": {"bytes": run["PPOCRv5_mobile_int8"]["weights_file_bytes"], "form": "int8 ncnn",
+                                "file": "model.bin (eval/ncnn/prepare_models.py ppocr-v5-mobile-jis-int8)",
+                                "source": "eval/run.py's model_info"},
+        "manga_ocr": {"bytes": run["manga_ocr"]["fp32_weight_bytes"], "params": run["manga_ocr"]["params"],
+                      "form": "fp32 (4 B per parameter)", "file": run["manga_ocr"]["weights"],
+                      "source": "eval/run.py's model_info"},
+    }
 
 
 def cmd_score(a):
@@ -396,7 +425,8 @@ def cmd_score(a):
                        "VOCR6_L": "VOCR6.2_L_w8_2l.vocr, greedy", "VOCR5_S": "VOCR5_S_w8.vocr, greedy",
                        "VOCR5_N": "VOCR5_N_w8.vocr, greedy", "VOCR5_L": "VOCR5_L_w8.vocr, greedy",
                        "Lens": "Google Lens (owocr 1.26.7), existing readings", **{r: r for r in READERS}},
-           "inputs_sha256": inputs, "sets": tables, "checks": checks(tables),
+           "inputs_sha256": inputs, "sizes": sizes(into), "sets": tables, "checks": checks(tables),
+           "notes": list(a.note),
            "lens_on_pcsg00807": "not read: private game data never goes to a third-party service",
            "training_or_selection_use": False, "created": now()}
     blob = json.dumps(doc, ensure_ascii=False)
@@ -444,6 +474,7 @@ def main(argv=None):
     s.add_argument("--into", required=True)
     s.add_argument("--out", required=True)
     s.add_argument("--md")
+    s.add_argument("--note", action="append", default=[], help="a line for the record's notes (e.g. a rerun)")
     a = ap.parse_args(argv)
     {"read": cmd_read, "score": cmd_score}[a.cmd](a)
 

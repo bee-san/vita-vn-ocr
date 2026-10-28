@@ -1,0 +1,4398 @@
+{
+ "kind": "other-readers-report",
+ "schema": 1,
+ "protocol_sha256": "077249c9cf50e7db35289e388383bb6f7d805ef944781394ad3f6e36186a908e",
+ "metric": "dialogue CER: Levenshtein distance between eval/metrics.norm(prediction) and the normalised reference, summed over the set's dialogue lines, over its reference characters, in percent; exact = lines read exactly. A crop an engine fails on counts as an empty reading.",
+ "readers": {
+  "MeikiOCR": {
+   "pcsg00807": {
+    "info": {},
+    "lines": 1152,
+    "jsonl_sha256": "0749eb54cd71d9dadd9d649f2e6ae55e94647c0842f2752c9146d4b83ff82d52",
+    "host_ms_per_line": 33.28,
+    "threads": 5,
+    "created": "2026-10-28T07:14:38Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py",
+    "name": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py"
+   },
+   "vita-test": {
+    "model": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py",
+    "model_name": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py",
+    "model_info": {},
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 40.44,
+    "run_sha256": "b6db90dd5c2ca872b88ceebd755b2b39913d5b89db6c14b1cde92d0b2fb1bc26",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:13:41+00:00"
+    }
+   },
+   "psp-test": {
+    "model": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py",
+    "model_name": "cmd:.venv-meiki/bin/python eval/meiki_cmd.py",
+    "model_info": {},
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 37.89,
+    "run_sha256": "d90214e350bade55b0a6c8fa73f9a63dbaf46e1143bc106b63a9c26d7a3b0643",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:13:50+00:00"
+    }
+   }
+  },
+  "PPOCRv6_small": {
+   "clannad": {
+    "info": {
+     "classes": 18710,
+     "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+    },
+    "lines": 3048,
+    "jsonl_sha256": "652a6b203b9a1924500d7289499f762fd8e1bb83039113b9ce10d99029b40090",
+    "host_ms_per_line": 38.61,
+    "threads": 1,
+    "created": "2026-10-28T07:25:37Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "ppocr-v6-small",
+    "name": "ppocr-v6-small"
+   },
+   "pcsg00807": {
+    "info": {
+     "classes": 18710,
+     "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+    },
+    "lines": 1152,
+    "jsonl_sha256": "6a4c81e48aab8ea9347740cc51a9107857096877dd6bd14035b96d6e995cfc67",
+    "host_ms_per_line": 30.05,
+    "threads": 1,
+    "created": "2026-10-28T07:23:38Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "ppocr-v6-small",
+    "name": "ppocr-v6-small"
+   },
+   "vita-test": {
+    "model": "ppocr-v6-small",
+    "model_name": "ppocr-v6-small",
+    "model_info": {
+     "classes": 18710,
+     "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 35.38,
+    "run_sha256": "410d0f80e5dcd016b4ce97f41da177a0c1083941fa4501e5c8c92dd0217d9d8c",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 1,
+     "date": "2026-10-28T07:22:48+00:00"
+    }
+   },
+   "psp-test": {
+    "model": "ppocr-v6-small",
+    "model_name": "ppocr-v6-small",
+    "model_info": {
+     "classes": 18710,
+     "sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 28.62,
+    "run_sha256": "3efcf03f631155250e8ba13d925076f85a090588da3245334259a6ea9230bf69",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 1,
+     "date": "2026-10-28T07:22:56+00:00"
+    }
+   }
+  },
+  "PPOCRv5_mobile_int8": {
+   "clannad": {
+    "info": {
+     "weights_file_bytes": 2749540,
+     "classes": 6513
+    },
+    "lines": 3048,
+    "jsonl_sha256": "7d6503500b428e48ce639a0d0bd207d148297a18fdfc1007e8926057ed0ae78a",
+    "host_ms_per_line": 34.29,
+    "threads": 5,
+    "created": "2026-10-28T07:16:14Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "ncnn:$HERD/shared/artifacts/eval/models/ncnn/ppocr-v5-mobile-jis-int8",
+    "name": "ncnn:ppocr-v5-mobile-jis-int8"
+   },
+   "pcsg00807": {
+    "info": {
+     "weights_file_bytes": 2749540,
+     "classes": 6513
+    },
+    "lines": 1152,
+    "jsonl_sha256": "b84c2b7a7ff4d42186573487a21439f69ea3b15eff3f17c645aa1be17ca46f6c",
+    "host_ms_per_line": 27.16,
+    "threads": 5,
+    "created": "2026-10-28T07:14:28Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "ncnn:$HERD/shared/artifacts/eval/models/ncnn/ppocr-v5-mobile-jis-int8",
+    "name": "ncnn:ppocr-v5-mobile-jis-int8"
+   },
+   "vita-test": {
+    "model": "ncnn:$HERD/shared/artifacts/eval/models/ncnn/ppocr-v5-mobile-jis-int8",
+    "model_name": "ncnn:ppocr-v5-mobile-jis-int8",
+    "model_info": {
+     "weights_file_bytes": 2749540,
+     "classes": 6513
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 35.91,
+    "run_sha256": "d54a169c7d9a4d100217b2ed8280d00d07393f5d64fb47d2b28800fa6613623b",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:13:41+00:00"
+    }
+   },
+   "psp-test": {
+    "model": "ncnn:$HERD/shared/artifacts/eval/models/ncnn/ppocr-v5-mobile-jis-int8",
+    "model_name": "ncnn:ppocr-v5-mobile-jis-int8",
+    "model_info": {
+     "weights_file_bytes": 2749540,
+     "classes": 6513
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 29.84,
+    "run_sha256": "e4487976f8695ef059dd0f4f4c9a5d7d27010453567678ae8aa050676f87021b",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:13:49+00:00"
+    }
+   }
+  },
+  "manga_ocr": {
+   "clannad": {
+    "info": {
+     "params": 111005952,
+     "fp32_weight_bytes": 444023808,
+     "weights": "kha-white/manga-ocr-base@aa6573bd10b0d446cbf622e29c3e084914df9741"
+    },
+    "lines": 3048,
+    "jsonl_sha256": "b02f5bd18aa1ec252b702d407dcc3ecba18f492dbf44d1ea3f5d1a28a549a715",
+    "host_ms_per_line": 336.93,
+    "threads": 5,
+    "created": "2026-10-28T07:39:09Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "manga-ocr",
+    "name": "manga-ocr"
+   },
+   "pcsg00807": {
+    "info": {
+     "params": 111005952,
+     "fp32_weight_bytes": 444023808,
+     "weights": "kha-white/manga-ocr-base@aa6573bd10b0d446cbf622e29c3e084914df9741"
+    },
+    "lines": 1152,
+    "jsonl_sha256": "5a4f197657eff8bae07408b60dba9ce6977c5cb4158e8e117ec12e92695b2aa5",
+    "host_ms_per_line": 298.39,
+    "threads": 5,
+    "created": "2026-10-28T07:21:56Z",
+    "environment": {
+     "python": "3.11.15",
+     "system": "Linux",
+     "machine": "x86_64",
+     "packages": {
+      "numpy": "2.4.6",
+      "onnxruntime": "1.30.0",
+      "opencv-python-headless": "5.0.0.93",
+      "torch": "2.5.1+cpu",
+      "manga-ocr": "0.1.16",
+      "transformers": "4.46.3",
+      "pillow": "12.3.0"
+     }
+    },
+    "spec": "manga-ocr",
+    "name": "manga-ocr"
+   },
+   "vita-test": {
+    "model": "manga-ocr",
+    "model_name": "manga-ocr",
+    "model_info": {
+     "params": 111005952,
+     "fp32_weight_bytes": 444023808,
+     "weights": "kha-white/manga-ocr-base@aa6573bd10b0d446cbf622e29c3e084914df9741"
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 309.0,
+    "run_sha256": "7d242e3a5c748e59683092a2f8286b5aaea6006900ac2febbd3541e03f7641ef",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:13:50+00:00"
+    }
+   },
+   "psp-test": {
+    "model": "manga-ocr",
+    "model_name": "manga-ocr",
+    "model_info": {
+     "params": 111005952,
+     "fp32_weight_bytes": 444023808,
+     "weights": "kha-white/manga-ocr-base@aa6573bd10b0d446cbf622e29c3e084914df9741"
+    },
+    "pad": {
+     "vita": 4,
+     "psp": 2
+    },
+    "host_ms_per_line": 278.53,
+    "run_sha256": "d2ce9e4246cdb5742a0bb3c0ab9877cb1a4ed9c5d13aec98164b62620e8e39fa",
+    "env": {
+     "git": "e707898",
+     "python": "3.11.15",
+     "threads": 5,
+     "date": "2026-10-28T07:14:59+00:00"
+    }
+   }
+  }
+ },
+ "systems": {
+  "VOCR6_S": "VOCR6.2_S_w8.vocr, greedy",
+  "VOCR6_N": "VOCR6.2_N_w8g2.vocr, greedy",
+  "VOCR6_L": "VOCR6.2_L_w8_2l.vocr, greedy",
+  "VOCR5_S": "VOCR5_S_w8.vocr, greedy",
+  "VOCR5_N": "VOCR5_N_w8.vocr, greedy",
+  "VOCR5_L": "VOCR5_L_w8.vocr, greedy",
+  "Lens": "Google Lens (owocr 1.26.7), existing readings",
+  "MeikiOCR": "MeikiOCR",
+  "PPOCRv6_small": "PPOCRv6_small",
+  "PPOCRv5_mobile_int8": "PPOCRv5_mobile_int8",
+  "manga_ocr": "manga_ocr"
+ },
+ "inputs_sha256": {
+  "clannad": {
+   "vocr_arms": "ca907b78bff0644b4c7f3efc55412901aa07352b9337bc33f37fadc4f2579763",
+   "meiki_arms": "3c3595ffeb6657ab892695622963c95410b5cb5b01475faca27b1c5effbfb8c1",
+   "PPOCRv6_small": "652a6b203b9a1924500d7289499f762fd8e1bb83039113b9ce10d99029b40090",
+   "PPOCRv5_mobile_int8": "7d6503500b428e48ce639a0d0bd207d148297a18fdfc1007e8926057ed0ae78a",
+   "manga_ocr": "b02f5bd18aa1ec252b702d407dcc3ecba18f492dbf44d1ea3f5d1a28a549a715"
+  },
+  "vita-test": {
+   "Lens": "fb4540fbb997e880211dd17e991874a46a20b6158e531e6035f2357d8ab84d91",
+   "MeikiOCR": "b6db90dd5c2ca872b88ceebd755b2b39913d5b89db6c14b1cde92d0b2fb1bc26",
+   "PPOCRv6_small": "410d0f80e5dcd016b4ce97f41da177a0c1083941fa4501e5c8c92dd0217d9d8c",
+   "PPOCRv5_mobile_int8": "d54a169c7d9a4d100217b2ed8280d00d07393f5d64fb47d2b28800fa6613623b",
+   "manga_ocr": "7d242e3a5c748e59683092a2f8286b5aaea6006900ac2febbd3541e03f7641ef"
+  },
+  "psp-test": {
+   "Lens": "44b3023ef71722f05c9d54bfb7aef8c00edbbd2d7d3bdc745d2d7ac43c84d3c6",
+   "MeikiOCR": "d90214e350bade55b0a6c8fa73f9a63dbaf46e1143bc106b63a9c26d7a3b0643",
+   "PPOCRv6_small": "3efcf03f631155250e8ba13d925076f85a090588da3245334259a6ea9230bf69",
+   "PPOCRv5_mobile_int8": "e4487976f8695ef059dd0f4f4c9a5d7d27010453567678ae8aa050676f87021b",
+   "manga_ocr": "d2ce9e4246cdb5742a0bb3c0ab9877cb1a4ed9c5d13aec98164b62620e8e39fa"
+  },
+  "pcsg00807": {
+   "VOCR6": "52eeabf28aac007112f5687b828dd15339ad0636885a99386de7359e5286a03f",
+   "VOCR5": "9100360e65f1204ef8dc3098726d4cde4d0ca97e0316705bf718a24444e7e306",
+   "MeikiOCR": "0749eb54cd71d9dadd9d649f2e6ae55e94647c0842f2752c9146d4b83ff82d52",
+   "PPOCRv6_small": "6a4c81e48aab8ea9347740cc51a9107857096877dd6bd14035b96d6e995cfc67",
+   "PPOCRv5_mobile_int8": "b84c2b7a7ff4d42186573487a21439f69ea3b15eff3f17c645aa1be17ca46f6c",
+   "manga_ocr": "5a4f197657eff8bae07408b60dba9ce6977c5cb4158e8e117ec12e92695b2aa5"
+  }
+ },
+ "sizes": {
+  "MeikiOCR": {
+   "bytes": 18593254,
+   "params": 4567437,
+   "form": "fp32 ONNX",
+   "file": "meiki.text.rec.v0.960x32.onnx",
+   "source": "eval/clannad_meiki_resources_20261014.json models.rec (its vertical recognizer, 12,872,961 B, and its detector, 14,503,825 B, are separate files)"
+  },
+  "PPOCRv6_small": {
+   "bytes": 21234383,
+   "form": "fp32 ONNX",
+   "file": "PP-OCRv6_rec_small.onnx",
+   "source": "the pinned preset file (eval/backends.py PPOCR_FILES)"
+  },
+  "PPOCRv5_mobile_int8": {
+   "bytes": 2749540,
+   "form": "int8 ncnn",
+   "file": "model.bin (eval/ncnn/prepare_models.py ppocr-v5-mobile-jis-int8)",
+   "source": "eval/run.py's model_info"
+  },
+  "manga_ocr": {
+   "bytes": 444023808,
+   "params": 111005952,
+   "form": "fp32 (4 B per parameter)",
+   "file": "kha-white/manga-ocr-base@aa6573bd10b0d446cbf622e29c3e084914df9741",
+   "source": "eval/run.py's model_info"
+  }
+ },
+ "sets": {
+  "clannad": {
+   "units": 2052,
+   "chars": 33485,
+   "clusters": 1867,
+   "cluster": "page",
+   "values": {
+    "VOCR6_S": {
+     "cer": 0.7227,
+     "errors": 242,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.6161,
+      0.8305
+     ],
+     "lines": 2052,
+     "exact_lines": 1852
+    },
+    "VOCR6_N": {
+     "cer": 0.4032,
+     "errors": 135,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.3239,
+      0.4858
+     ],
+     "lines": 2052,
+     "exact_lines": 1943
+    },
+    "VOCR6_L": {
+     "cer": 0.2568,
+     "errors": 86,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.1922,
+      0.3263
+     ],
+     "lines": 2052,
+     "exact_lines": 1981
+    },
+    "VOCR5_S": {
+     "cer": 1.3827,
+     "errors": 463,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      1.2334,
+      1.5359
+     ],
+     "lines": 2052,
+     "exact_lines": 1692
+    },
+    "VOCR5_N": {
+     "cer": 0.9616,
+     "errors": 322,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.8432,
+      1.0846
+     ],
+     "lines": 2052,
+     "exact_lines": 1793
+    },
+    "VOCR5_L": {
+     "cer": 0.7347,
+     "errors": 246,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.629,
+      0.846
+     ],
+     "lines": 2052,
+     "exact_lines": 1845
+    },
+    "Lens": {
+     "cer": 1.5261,
+     "errors": 511,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.897,
+      2.2547
+     ],
+     "lines": 2052,
+     "exact_lines": 1981
+    },
+    "MeikiOCR": {
+     "cer": 0.7824,
+     "errors": 262,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      0.6509,
+      0.9263
+     ],
+     "lines": 2052,
+     "exact_lines": 1868
+    },
+    "PPOCRv6_small": {
+     "cer": 2.0965,
+     "errors": 702,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      1.9249,
+      2.2735
+     ],
+     "lines": 2052,
+     "exact_lines": 1515
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 3.2731,
+     "errors": 1096,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      3.0381,
+      3.5095
+     ],
+     "lines": 2052,
+     "exact_lines": 1316
+    },
+    "manga_ocr": {
+     "cer": 2.0576,
+     "errors": 689,
+     "chars": 33485,
+     "clusters": 1867,
+     "ci95": [
+      1.8641,
+      2.2611
+     ],
+     "lines": 2052,
+     "exact_lines": 1585
+    }
+   },
+   "pairs": {
+    "VOCR6_S-Lens": {
+     "delta": -0.803345,
+     "ci95": [
+      -1.529094,
+      -0.174807
+     ],
+     "unit_ci95": [
+      -1.533584,
+      -0.174932
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      511
+     ]
+    },
+    "VOCR6_S-MeikiOCR": {
+     "delta": -0.059728,
+     "ci95": [
+      -0.19134,
+      0.068725
+     ],
+     "unit_ci95": [
+      -0.19045,
+      0.066534
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      262
+     ]
+    },
+    "VOCR6_S-PPOCRv6_small": {
+     "delta": -1.373749,
+     "ci95": [
+      -1.545457,
+      -1.20525
+     ],
+     "unit_ci95": [
+      -1.545367,
+      -1.198608
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      702
+     ]
+    },
+    "VOCR6_S-PPOCRv5_mobile_int8": {
+     "delta": -2.550396,
+     "ci95": [
+      -2.771044,
+      -2.327375
+     ],
+     "unit_ci95": [
+      -2.772392,
+      -2.329967
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      1096
+     ]
+    },
+    "VOCR6_S-manga_ocr": {
+     "delta": -1.334926,
+     "ci95": [
+      -1.542478,
+      -1.130001
+     ],
+     "unit_ci95": [
+      -1.539975,
+      -1.130277
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      689
+     ]
+    },
+    "VOCR6_N-Lens": {
+     "delta": -1.122891,
+     "ci95": [
+      -1.849075,
+      -0.497036
+     ],
+     "unit_ci95": [
+      -1.860212,
+      -0.494018
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      511
+     ]
+    },
+    "VOCR6_N-MeikiOCR": {
+     "delta": -0.379274,
+     "ci95": [
+      -0.500565,
+      -0.262291
+     ],
+     "unit_ci95": [
+      -0.502607,
+      -0.264204
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      262
+     ]
+    },
+    "VOCR6_N-PPOCRv6_small": {
+     "delta": -1.693296,
+     "ci95": [
+      -1.870982,
+      -1.519819
+     ],
+     "unit_ci95": [
+      -1.868162,
+      -1.516316
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      702
+     ]
+    },
+    "VOCR6_N-PPOCRv5_mobile_int8": {
+     "delta": -2.869942,
+     "ci95": [
+      -3.092757,
+      -2.650156
+     ],
+     "unit_ci95": [
+      -3.091504,
+      -2.652094
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      1096
+     ]
+    },
+    "VOCR6_N-manga_ocr": {
+     "delta": -1.654472,
+     "ci95": [
+      -1.857208,
+      -1.456163
+     ],
+     "unit_ci95": [
+      -1.857288,
+      -1.460749
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      689
+     ]
+    },
+    "VOCR6_L-Lens": {
+     "delta": -1.269225,
+     "ci95": [
+      -1.991123,
+      -0.634092
+     ],
+     "unit_ci95": [
+      -2.001335,
+      -0.641472
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      511
+     ]
+    },
+    "VOCR6_L-MeikiOCR": {
+     "delta": -0.525608,
+     "ci95": [
+      -0.659577,
+      -0.39641
+     ],
+     "unit_ci95": [
+      -0.659685,
+      -0.395466
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      262
+     ]
+    },
+    "VOCR6_L-PPOCRv6_small": {
+     "delta": -1.83963,
+     "ci95": [
+      -2.005791,
+      -1.676475
+     ],
+     "unit_ci95": [
+      -2.005116,
+      -1.674946
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      702
+     ]
+    },
+    "VOCR6_L-PPOCRv5_mobile_int8": {
+     "delta": -3.016276,
+     "ci95": [
+      -3.242439,
+      -2.7925
+     ],
+     "unit_ci95": [
+      -3.241266,
+      -2.799926
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      1096
+     ]
+    },
+    "VOCR6_L-manga_ocr": {
+     "delta": -1.800806,
+     "ci95": [
+      -1.998033,
+      -1.611485
+     ],
+     "unit_ci95": [
+      -1.992046,
+      -1.618112
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      689
+     ]
+    },
+    "VOCR5_S-Lens": {
+     "delta": -0.143348,
+     "ci95": [
+      -0.879422,
+      0.489183
+     ],
+     "unit_ci95": [
+      -0.874797,
+      0.49437
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      463,
+      511
+     ]
+    },
+    "VOCR5_S-MeikiOCR": {
+     "delta": 0.600269,
+     "ci95": [
+      0.45254,
+      0.748847
+     ],
+     "unit_ci95": [
+      0.450517,
+      0.744065
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      463,
+      262
+     ]
+    },
+    "VOCR5_S-PPOCRv6_small": {
+     "delta": -0.713752,
+     "ci95": [
+      -0.895033,
+      -0.537321
+     ],
+     "unit_ci95": [
+      -0.890976,
+      -0.532779
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      463,
+      702
+     ]
+    },
+    "VOCR5_S-PPOCRv5_mobile_int8": {
+     "delta": -1.890399,
+     "ci95": [
+      -2.115358,
+      -1.668214
+     ],
+     "unit_ci95": [
+      -2.113634,
+      -1.665859
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      463,
+      1096
+     ]
+    },
+    "VOCR5_S-manga_ocr": {
+     "delta": -0.674929,
+     "ci95": [
+      -0.904752,
+      -0.446465
+     ],
+     "unit_ci95": [
+      -0.901089,
+      -0.456876
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      463,
+      689
+     ]
+    },
+    "VOCR5_N-Lens": {
+     "delta": -0.564432,
+     "ci95": [
+      -1.289959,
+      0.063095
+     ],
+     "unit_ci95": [
+      -1.293712,
+      0.065138
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      322,
+      511
+     ]
+    },
+    "VOCR5_N-MeikiOCR": {
+     "delta": 0.179185,
+     "ci95": [
+      0.041639,
+      0.316208
+     ],
+     "unit_ci95": [
+      0.036249,
+      0.315629
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      322,
+      262
+     ]
+    },
+    "VOCR5_N-PPOCRv6_small": {
+     "delta": -1.134836,
+     "ci95": [
+      -1.300399,
+      -0.973316
+     ],
+     "unit_ci95": [
+      -1.296844,
+      -0.971907
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      322,
+      702
+     ]
+    },
+    "VOCR5_N-PPOCRv5_mobile_int8": {
+     "delta": -2.311483,
+     "ci95": [
+      -2.53632,
+      -2.087985
+     ],
+     "unit_ci95": [
+      -2.533452,
+      -2.094646
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      322,
+      1096
+     ]
+    },
+    "VOCR5_N-manga_ocr": {
+     "delta": -1.096013,
+     "ci95": [
+      -1.32292,
+      -0.875749
+     ],
+     "unit_ci95": [
+      -1.319066,
+      -0.882909
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      322,
+      689
+     ]
+    },
+    "VOCR5_L-Lens": {
+     "delta": -0.791399,
+     "ci95": [
+      -1.521229,
+      -0.157558
+     ],
+     "unit_ci95": [
+      -1.516997,
+      -0.165641
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      246,
+      511
+     ]
+    },
+    "VOCR5_L-MeikiOCR": {
+     "delta": -0.047783,
+     "ci95": [
+      -0.185997,
+      0.086641
+     ],
+     "unit_ci95": [
+      -0.186723,
+      0.086814
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      246,
+      262
+     ]
+    },
+    "VOCR5_L-PPOCRv6_small": {
+     "delta": -1.361804,
+     "ci95": [
+      -1.524713,
+      -1.200363
+     ],
+     "unit_ci95": [
+      -1.520573,
+      -1.201835
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      246,
+      702
+     ]
+    },
+    "VOCR5_L-PPOCRv5_mobile_int8": {
+     "delta": -2.53845,
+     "ci95": [
+      -2.760604,
+      -2.319025
+     ],
+     "unit_ci95": [
+      -2.75433,
+      -2.3207
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      246,
+      1096
+     ]
+    },
+    "VOCR5_L-manga_ocr": {
+     "delta": -1.32298,
+     "ci95": [
+      -1.530479,
+      -1.122866
+     ],
+     "unit_ci95": [
+      -1.527833,
+      -1.122218
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      246,
+      689
+     ]
+    },
+    "VOCR6_S-VOCR5_S": {
+     "delta": -0.659997,
+     "ci95": [
+      -0.779233,
+      -0.540586
+     ],
+     "unit_ci95": [
+      -0.779657,
+      -0.541955
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      242,
+      463
+     ]
+    },
+    "VOCR6_N-VOCR5_N": {
+     "delta": -0.558459,
+     "ci95": [
+      -0.663214,
+      -0.454598
+     ],
+     "unit_ci95": [
+      -0.665958,
+      -0.453789
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      135,
+      322
+     ]
+    },
+    "VOCR6_L-VOCR5_L": {
+     "delta": -0.477826,
+     "ci95": [
+      -0.574132,
+      -0.385626
+     ],
+     "unit_ci95": [
+      -0.57155,
+      -0.383665
+     ],
+     "units": 2052,
+     "clusters": 1867,
+     "chars": 33485,
+     "errors": [
+      86,
+      246
+     ]
+    }
+   },
+   "names": {
+    "VOCR6_S": {
+     "cer": 8.239,
+     "errors": 182,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      6.6547,
+      9.8726
+     ]
+    },
+    "VOCR6_N": {
+     "cer": 11.2268,
+     "errors": 248,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      9.5386,
+      13.0093
+     ]
+    },
+    "VOCR6_L": {
+     "cer": 1.4486,
+     "errors": 32,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      0.935,
+      2.037
+     ]
+    },
+    "VOCR5_S": {
+     "cer": 12.4491,
+     "errors": 275,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      10.464,
+      14.5422
+     ]
+    },
+    "VOCR5_N": {
+     "cer": 8.8728,
+     "errors": 196,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      7.2711,
+      10.543
+     ]
+    },
+    "VOCR5_L": {
+     "cer": 4.6627,
+     "errors": 103,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      3.4868,
+      5.8984
+     ]
+    },
+    "Lens": {
+     "cer": 0.679,
+     "errors": 15,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      0.1335,
+      1.4432
+     ]
+    },
+    "MeikiOCR": {
+     "cer": 217.7456,
+     "errors": 4810,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      199.6841,
+      236.8912
+     ]
+    },
+    "PPOCRv6_small": {
+     "cer": 11.3173,
+     "errors": 250,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      9.9551,
+      12.7239
+     ]
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 49.2078,
+     "errors": 1087,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      42.7605,
+      56.0279
+     ]
+    },
+    "manga_ocr": {
+     "cer": 129.0177,
+     "errors": 2850,
+     "chars": 2209,
+     "clusters": 996,
+     "ci95": [
+      117.6547,
+      140.9175
+     ]
+    }
+   }
+  },
+  "vita-test": {
+   "units": 153,
+   "chars": 2392,
+   "clusters": 16,
+   "cluster": "vn",
+   "values": {
+    "VOCR6_S": {
+     "cer": 0.9197,
+     "errors": 22,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.452,
+      1.6265
+     ],
+     "lines": 153,
+     "exact_lines": 138
+    },
+    "VOCR6_N": {
+     "cer": 0.4599,
+     "errors": 11,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.1305,
+      0.9511
+     ],
+     "lines": 153,
+     "exact_lines": 145
+    },
+    "VOCR6_L": {
+     "cer": 0.4181,
+     "errors": 10,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.1196,
+      0.8547
+     ],
+     "lines": 153,
+     "exact_lines": 146
+    },
+    "VOCR5_S": {
+     "cer": 1.0033,
+     "errors": 24,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.4789,
+      1.7967
+     ],
+     "lines": 153,
+     "exact_lines": 136
+    },
+    "VOCR5_N": {
+     "cer": 0.9615,
+     "errors": 23,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.3717,
+      1.9705
+     ],
+     "lines": 153,
+     "exact_lines": 133
+    },
+    "VOCR5_L": {
+     "cer": 0.5853,
+     "errors": 14,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.229,
+      1.0911
+     ],
+     "lines": 153,
+     "exact_lines": 141
+    },
+    "Lens": {
+     "cer": 3.7207,
+     "errors": 89,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      1.6102,
+      7.0784
+     ],
+     "lines": 153,
+     "exact_lines": 132
+    },
+    "MeikiOCR": {
+     "cer": 1.3796,
+     "errors": 33,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.6803,
+      2.4779
+     ],
+     "lines": 153,
+     "exact_lines": 130
+    },
+    "PPOCRv6_small": {
+     "cer": 1.3378,
+     "errors": 32,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      0.6906,
+      2.1739
+     ],
+     "lines": 153,
+     "exact_lines": 132
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 2.3411,
+     "errors": 56,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      1.5498,
+      3.2769
+     ],
+     "lines": 153,
+     "exact_lines": 114
+    },
+    "manga_ocr": {
+     "cer": 7.9431,
+     "errors": 190,
+     "chars": 2392,
+     "clusters": 16,
+     "ci95": [
+      4.6417,
+      12.6106
+     ],
+     "lines": 153,
+     "exact_lines": 77
+    }
+   },
+   "pairs": {
+    "VOCR6_S-Lens": {
+     "delta": -2.801003,
+     "ci95": [
+      -6.039971,
+      -0.747191
+     ],
+     "unit_ci95": [
+      -4.983484,
+      -0.914758
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      89
+     ]
+    },
+    "VOCR6_S-MeikiOCR": {
+     "delta": -0.459866,
+     "ci95": [
+      -1.089414,
+      0.099858
+     ],
+     "unit_ci95": [
+      -1.186944,
+      0.256309
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      33
+     ]
+    },
+    "VOCR6_S-PPOCRv6_small": {
+     "delta": -0.41806,
+     "ci95": [
+      -0.828248,
+      0.042159
+     ],
+     "unit_ci95": [
+      -1.145047,
+      0.302916
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      32
+     ]
+    },
+    "VOCR6_S-PPOCRv5_mobile_int8": {
+     "delta": -1.421405,
+     "ci95": [
+      -2.166818,
+      -0.699544
+     ],
+     "unit_ci95": [
+      -2.243264,
+      -0.553644
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      56
+     ]
+    },
+    "VOCR6_S-manga_ocr": {
+     "delta": -7.023411,
+     "ci95": [
+      -11.207808,
+      -3.975167
+     ],
+     "unit_ci95": [
+      -9.168459,
+      -5.113578
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      190
+     ]
+    },
+    "VOCR6_N-Lens": {
+     "delta": -3.26087,
+     "ci95": [
+      -6.555858,
+      -1.19243
+     ],
+     "unit_ci95": [
+      -5.37545,
+      -1.46155
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      89
+     ]
+    },
+    "VOCR6_N-MeikiOCR": {
+     "delta": -0.919732,
+     "ci95": [
+      -1.698699,
+      -0.323922
+     ],
+     "unit_ci95": [
+      -1.559982,
+      -0.331538
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      33
+     ]
+    },
+    "VOCR6_N-PPOCRv6_small": {
+     "delta": -0.877926,
+     "ci95": [
+      -1.402415,
+      -0.360154
+     ],
+     "unit_ci95": [
+      -1.573807,
+      -0.247015
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      32
+     ]
+    },
+    "VOCR6_N-PPOCRv5_mobile_int8": {
+     "delta": -1.881271,
+     "ci95": [
+      -2.738354,
+      -1.120442
+     ],
+     "unit_ci95": [
+      -2.682192,
+      -1.088321
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      56
+     ]
+    },
+    "VOCR6_N-manga_ocr": {
+     "delta": -7.483278,
+     "ci95": [
+      -11.882307,
+      -4.283453
+     ],
+     "unit_ci95": [
+      -9.57886,
+      -5.624717
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      190
+     ]
+    },
+    "VOCR6_L-Lens": {
+     "delta": -3.302676,
+     "ci95": [
+      -6.577947,
+      -1.252443
+     ],
+     "unit_ci95": [
+      -5.400553,
+      -1.518939
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      89
+     ]
+    },
+    "VOCR6_L-MeikiOCR": {
+     "delta": -0.961538,
+     "ci95": [
+      -1.813131,
+      -0.328005
+     ],
+     "unit_ci95": [
+      -1.582803,
+      -0.418747
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      33
+     ]
+    },
+    "VOCR6_L-PPOCRv6_small": {
+     "delta": -0.919732,
+     "ci95": [
+      -1.539844,
+      -0.333055
+     ],
+     "unit_ci95": [
+      -1.602037,
+      -0.333608
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      32
+     ]
+    },
+    "VOCR6_L-PPOCRv5_mobile_int8": {
+     "delta": -1.923077,
+     "ci95": [
+      -2.776297,
+      -1.148533
+     ],
+     "unit_ci95": [
+      -2.684278,
+      -1.189509
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      56
+     ]
+    },
+    "VOCR6_L-manga_ocr": {
+     "delta": -7.525084,
+     "ci95": [
+      -11.961776,
+      -4.331994
+     ],
+     "unit_ci95": [
+      -9.594733,
+      -5.687591
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      190
+     ]
+    },
+    "VOCR5_S-Lens": {
+     "delta": -2.717391,
+     "ci95": [
+      -6.025602,
+      -0.53737
+     ],
+     "unit_ci95": [
+      -4.86579,
+      -0.875362
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      24,
+      89
+     ]
+    },
+    "VOCR5_S-MeikiOCR": {
+     "delta": -0.376254,
+     "ci95": [
+      -1.253252,
+      0.437889
+     ],
+     "unit_ci95": [
+      -1.04654,
+      0.254793
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      24,
+      33
+     ]
+    },
+    "VOCR5_S-PPOCRv6_small": {
+     "delta": -0.334448,
+     "ci95": [
+      -0.906588,
+      0.356372
+     ],
+     "unit_ci95": [
+      -1.029665,
+      0.28665
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      24,
+      32
+     ]
+    },
+    "VOCR5_S-PPOCRv5_mobile_int8": {
+     "delta": -1.337793,
+     "ci95": [
+      -2.137408,
+      -0.57946
+     ],
+     "unit_ci95": [
+      -2.097046,
+      -0.61677
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      24,
+      56
+     ]
+    },
+    "VOCR5_S-manga_ocr": {
+     "delta": -6.939799,
+     "ci95": [
+      -11.305448,
+      -3.732783
+     ],
+     "unit_ci95": [
+      -9.019331,
+      -5.088307
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      24,
+      190
+     ]
+    },
+    "VOCR5_N-Lens": {
+     "delta": -2.759197,
+     "ci95": [
+      -5.943032,
+      -0.583162
+     ],
+     "unit_ci95": [
+      -4.822381,
+      -0.981616
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      23,
+      89
+     ]
+    },
+    "VOCR5_N-MeikiOCR": {
+     "delta": -0.41806,
+     "ci95": [
+      -1.314735,
+      0.582826
+     ],
+     "unit_ci95": [
+      -1.064294,
+      0.209468
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      23,
+      33
+     ]
+    },
+    "VOCR5_N-PPOCRv6_small": {
+     "delta": -0.376254,
+     "ci95": [
+      -1.096507,
+      0.5425
+     ],
+     "unit_ci95": [
+      -1.03351,
+      0.208425
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      23,
+      32
+     ]
+    },
+    "VOCR5_N-PPOCRv5_mobile_int8": {
+     "delta": -1.379599,
+     "ci95": [
+      -2.180532,
+      -0.536383
+     ],
+     "unit_ci95": [
+      -2.083356,
+      -0.717868
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      23,
+      56
+     ]
+    },
+    "VOCR5_N-manga_ocr": {
+     "delta": -6.981605,
+     "ci95": [
+      -11.349888,
+      -3.726211
+     ],
+     "unit_ci95": [
+      -9.001717,
+      -5.212353
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      23,
+      190
+     ]
+    },
+    "VOCR5_L-Lens": {
+     "delta": -3.135452,
+     "ci95": [
+      -6.42498,
+      -1.034458
+     ],
+     "unit_ci95": [
+      -5.194805,
+      -1.398261
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      14,
+      89
+     ]
+    },
+    "VOCR5_L-MeikiOCR": {
+     "delta": -0.794314,
+     "ci95": [
+      -1.634206,
+      -0.131919
+     ],
+     "unit_ci95": [
+      -1.374581,
+      -0.258707
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      14,
+      33
+     ]
+    },
+    "VOCR5_L-PPOCRv6_small": {
+     "delta": -0.752508,
+     "ci95": [
+      -1.35011,
+      -0.182548
+     ],
+     "unit_ci95": [
+      -1.338771,
+      -0.248651
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      14,
+      32
+     ]
+    },
+    "VOCR5_L-PPOCRv5_mobile_int8": {
+     "delta": -1.755853,
+     "ci95": [
+      -2.585525,
+      -0.970874
+     ],
+     "unit_ci95": [
+      -2.486455,
+      -1.072165
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      14,
+      56
+     ]
+    },
+    "VOCR5_L-manga_ocr": {
+     "delta": -7.35786,
+     "ci95": [
+      -11.738222,
+      -4.179077
+     ],
+     "unit_ci95": [
+      -9.40507,
+      -5.544061
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      14,
+      190
+     ]
+    },
+    "VOCR6_S-VOCR5_S": {
+     "delta": -0.083612,
+     "ci95": [
+      -0.456834,
+      0.25609
+     ],
+     "unit_ci95": [
+      -0.467498,
+      0.334448
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      22,
+      24
+     ]
+    },
+    "VOCR6_N-VOCR5_N": {
+     "delta": -0.501672,
+     "ci95": [
+      -1.178203,
+      -0.082645
+     ],
+     "unit_ci95": [
+      -0.985626,
+      -0.04078
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      11,
+      23
+     ]
+    },
+    "VOCR6_L-VOCR5_L": {
+     "delta": -0.167224,
+     "ci95": [
+      -0.408372,
+      0.0
+     ],
+     "unit_ci95": [
+      -0.427721,
+      0.083858
+     ],
+     "units": 153,
+     "clusters": 16,
+     "chars": 2392,
+     "errors": [
+      10,
+      14
+     ]
+    }
+   }
+  },
+  "psp-test": {
+   "units": 183,
+   "chars": 2301,
+   "clusters": 14,
+   "cluster": "vn",
+   "values": {
+    "VOCR6_S": {
+     "cer": 1.6949,
+     "errors": 39,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.8179,
+      2.8954
+     ],
+     "lines": 183,
+     "exact_lines": 156
+    },
+    "VOCR6_N": {
+     "cer": 1.1734,
+     "errors": 27,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.4047,
+      2.1709
+     ],
+     "lines": 183,
+     "exact_lines": 165
+    },
+    "VOCR6_L": {
+     "cer": 0.6953,
+     "errors": 16,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.3516,
+      1.0975
+     ],
+     "lines": 183,
+     "exact_lines": 171
+    },
+    "VOCR5_S": {
+     "cer": 2.2164,
+     "errors": 51,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.8446,
+      4.1608
+     ],
+     "lines": 183,
+     "exact_lines": 153
+    },
+    "VOCR5_N": {
+     "cer": 1.3038,
+     "errors": 30,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.4066,
+      2.5317
+     ],
+     "lines": 183,
+     "exact_lines": 164
+    },
+    "VOCR5_L": {
+     "cer": 0.9996,
+     "errors": 23,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.396,
+      1.7031
+     ],
+     "lines": 183,
+     "exact_lines": 164
+    },
+    "Lens": {
+     "cer": 7.5185,
+     "errors": 173,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      2.9691,
+      14.0532
+     ],
+     "lines": 183,
+     "exact_lines": 148
+    },
+    "MeikiOCR": {
+     "cer": 2.2164,
+     "errors": 51,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.8052,
+      4.4912
+     ],
+     "lines": 183,
+     "exact_lines": 152
+    },
+    "PPOCRv6_small": {
+     "cer": 1.0865,
+     "errors": 25,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      0.6518,
+      1.5632
+     ],
+     "lines": 183,
+     "exact_lines": 165
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 5.5193,
+     "errors": 127,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      4.0262,
+      7.1226
+     ],
+     "lines": 183,
+     "exact_lines": 107
+    },
+    "manga_ocr": {
+     "cer": 12.3859,
+     "errors": 285,
+     "chars": 2301,
+     "clusters": 14,
+     "ci95": [
+      8.2214,
+      16.7943
+     ],
+     "lines": 183,
+     "exact_lines": 74
+    }
+   },
+   "pairs": {
+    "VOCR6_S-Lens": {
+     "delta": -5.823555,
+     "ci95": [
+      -11.377376,
+      -1.80563
+     ],
+     "unit_ci95": [
+      -8.872736,
+      -3.145162
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      173
+     ]
+    },
+    "VOCR6_S-MeikiOCR": {
+     "delta": -0.521512,
+     "ci95": [
+      -1.699751,
+      0.25708
+     ],
+     "unit_ci95": [
+      -1.183165,
+      0.087955
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      51
+     ]
+    },
+    "VOCR6_S-PPOCRv6_small": {
+     "delta": 0.608431,
+     "ci95": [
+      -0.351054,
+      1.768496
+     ],
+     "unit_ci95": [
+      -0.253175,
+      1.531489
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      25
+     ]
+    },
+    "VOCR6_S-PPOCRv5_mobile_int8": {
+     "delta": -3.824424,
+     "ci95": [
+      -4.883536,
+      -2.840883
+     ],
+     "unit_ci95": [
+      -5.076418,
+      -2.586939
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      127
+     ]
+    },
+    "VOCR6_S-manga_ocr": {
+     "delta": -10.691004,
+     "ci95": [
+      -15.286712,
+      -6.421902
+     ],
+     "unit_ci95": [
+      -12.72888,
+      -8.680807
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      285
+     ]
+    },
+    "VOCR6_N-Lens": {
+     "delta": -6.345067,
+     "ci95": [
+      -12.161861,
+      -2.095919
+     ],
+     "unit_ci95": [
+      -9.37507,
+      -3.668193
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      173
+     ]
+    },
+    "VOCR6_N-MeikiOCR": {
+     "delta": -1.043025,
+     "ci95": [
+      -2.519931,
+      -0.045248
+     ],
+     "unit_ci95": [
+      -1.758352,
+      -0.403221
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      51
+     ]
+    },
+    "VOCR6_N-PPOCRv6_small": {
+     "delta": 0.086919,
+     "ci95": [
+      -0.671141,
+      1.025892
+     ],
+     "unit_ci95": [
+      -0.638697,
+      0.858217
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      25
+     ]
+    },
+    "VOCR6_N-PPOCRv5_mobile_int8": {
+     "delta": -4.345937,
+     "ci95": [
+      -5.320001,
+      -3.280016
+     ],
+     "unit_ci95": [
+      -5.61899,
+      -3.142482
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      127
+     ]
+    },
+    "VOCR6_N-manga_ocr": {
+     "delta": -11.212516,
+     "ci95": [
+      -15.883115,
+      -6.894538
+     ],
+     "unit_ci95": [
+      -13.240876,
+      -9.249033
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      285
+     ]
+    },
+    "VOCR6_L-Lens": {
+     "delta": -6.82312,
+     "ci95": [
+      -13.122639,
+      -2.391849
+     ],
+     "unit_ci95": [
+      -10.066263,
+      -4.021495
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      173
+     ]
+    },
+    "VOCR6_L-MeikiOCR": {
+     "delta": -1.521078,
+     "ci95": [
+      -3.446681,
+      -0.391092
+     ],
+     "unit_ci95": [
+      -2.293419,
+      -0.824638
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      51
+     ]
+    },
+    "VOCR6_L-PPOCRv6_small": {
+     "delta": -0.391134,
+     "ci95": [
+      -0.925072,
+      0.07335
+     ],
+     "unit_ci95": [
+      -1.076726,
+      0.306617
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      25
+     ]
+    },
+    "VOCR6_L-PPOCRv5_mobile_int8": {
+     "delta": -4.82399,
+     "ci95": [
+      -6.108204,
+      -3.584226
+     ],
+     "unit_ci95": [
+      -6.078635,
+      -3.624978
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      127
+     ]
+    },
+    "VOCR6_L-manga_ocr": {
+     "delta": -11.690569,
+     "ci95": [
+      -16.097609,
+      -7.580293
+     ],
+     "unit_ci95": [
+      -13.712131,
+      -9.741869
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      285
+     ]
+    },
+    "VOCR5_S-Lens": {
+     "delta": -5.302043,
+     "ci95": [
+      -10.250882,
+      -1.466769
+     ],
+     "unit_ci95": [
+      -8.28321,
+      -2.689174
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      51,
+      173
+     ]
+    },
+    "VOCR5_S-MeikiOCR": {
+     "delta": 0.0,
+     "ci95": [
+      -0.578653,
+      0.511951
+     ],
+     "unit_ci95": [
+      -0.695431,
+      0.700226
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      51,
+      51
+     ]
+    },
+    "VOCR5_S-PPOCRv6_small": {
+     "delta": 1.129944,
+     "ci95": [
+      -0.349803,
+      3.082723
+     ],
+     "unit_ci95": [
+      0.09061,
+      2.265795
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      51,
+      25
+     ]
+    },
+    "VOCR5_S-PPOCRv5_mobile_int8": {
+     "delta": -3.302912,
+     "ci95": [
+      -4.672478,
+      -1.991613
+     ],
+     "unit_ci95": [
+      -4.713699,
+      -1.842529
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      51,
+      127
+     ]
+    },
+    "VOCR5_S-manga_ocr": {
+     "delta": -10.169492,
+     "ci95": [
+      -15.002545,
+      -5.548304
+     ],
+     "unit_ci95": [
+      -12.267022,
+      -8.071127
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      51,
+      285
+     ]
+    },
+    "VOCR5_N-Lens": {
+     "delta": -6.214689,
+     "ci95": [
+      -11.855242,
+      -2.043123
+     ],
+     "unit_ci95": [
+      -9.180161,
+      -3.575813
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      30,
+      173
+     ]
+    },
+    "VOCR5_N-MeikiOCR": {
+     "delta": -0.912647,
+     "ci95": [
+      -2.101182,
+      -0.108728
+     ],
+     "unit_ci95": [
+      -1.598963,
+      -0.281313
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      30,
+      51
+     ]
+    },
+    "VOCR5_N-PPOCRv6_small": {
+     "delta": 0.217297,
+     "ci95": [
+      -0.762699,
+      1.395795
+     ],
+     "unit_ci95": [
+      -0.599649,
+      1.121091
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      30,
+      25
+     ]
+    },
+    "VOCR5_N-PPOCRv5_mobile_int8": {
+     "delta": -4.215558,
+     "ci95": [
+      -5.282257,
+      -3.169453
+     ],
+     "unit_ci95": [
+      -5.513157,
+      -2.897875
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      30,
+      127
+     ]
+    },
+    "VOCR5_N-manga_ocr": {
+     "delta": -11.082138,
+     "ci95": [
+      -15.825607,
+      -6.719787
+     ],
+     "unit_ci95": [
+      -13.095251,
+      -9.109402
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      30,
+      285
+     ]
+    },
+    "VOCR5_L-Lens": {
+     "delta": -6.518905,
+     "ci95": [
+      -12.691657,
+      -2.144462
+     ],
+     "unit_ci95": [
+      -9.66888,
+      -3.832628
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      23,
+      173
+     ]
+    },
+    "VOCR5_L-MeikiOCR": {
+     "delta": -1.216862,
+     "ci95": [
+      -2.988715,
+      -0.20325
+     ],
+     "unit_ci95": [
+      -1.894647,
+      -0.600324
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      23,
+      51
+     ]
+    },
+    "VOCR5_L-PPOCRv6_small": {
+     "delta": -0.086919,
+     "ci95": [
+      -0.727109,
+      0.537868
+     ],
+     "unit_ci95": [
+      -0.762675,
+      0.599848
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      23,
+      25
+     ]
+    },
+    "VOCR5_L-PPOCRv5_mobile_int8": {
+     "delta": -4.519774,
+     "ci95": [
+      -5.5657,
+      -3.47474
+     ],
+     "unit_ci95": [
+      -5.70679,
+      -3.406638
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      23,
+      127
+     ]
+    },
+    "VOCR5_L-manga_ocr": {
+     "delta": -11.386354,
+     "ci95": [
+      -15.794805,
+      -7.366388
+     ],
+     "unit_ci95": [
+      -13.389906,
+      -9.480995
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      23,
+      285
+     ]
+    },
+    "VOCR6_S-VOCR5_S": {
+     "delta": -0.521512,
+     "ci95": [
+      -1.393123,
+      0.177816
+     ],
+     "unit_ci95": [
+      -1.268605,
+      0.132112
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      39,
+      51
+     ]
+    },
+    "VOCR6_N-VOCR5_N": {
+     "delta": -0.130378,
+     "ci95": [
+      -0.469311,
+      0.221257
+     ],
+     "unit_ci95": [
+      -0.556269,
+      0.26667
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      27,
+      30
+     ]
+    },
+    "VOCR6_L-VOCR5_L": {
+     "delta": -0.304216,
+     "ci95": [
+      -0.703244,
+      0.046534
+     ],
+     "unit_ci95": [
+      -0.688,
+      0.043898
+     ],
+     "units": 183,
+     "clusters": 14,
+     "chars": 2301,
+     "errors": [
+      16,
+      23
+     ]
+    }
+   }
+  },
+  "vita+psp": {
+   "units": 336,
+   "chars": 4693,
+   "clusters": 28,
+   "cluster": "vn",
+   "values": {
+    "VOCR6_S": {
+     "cer": 1.2998,
+     "errors": 61,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.7797,
+      1.9593
+     ],
+     "lines": 336,
+     "exact_lines": 294
+    },
+    "VOCR6_N": {
+     "cer": 0.8097,
+     "errors": 38,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.3818,
+      1.3404
+     ],
+     "lines": 336,
+     "exact_lines": 310
+    },
+    "VOCR6_L": {
+     "cer": 0.554,
+     "errors": 26,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.3134,
+      0.8321
+     ],
+     "lines": 336,
+     "exact_lines": 317
+    },
+    "VOCR5_S": {
+     "cer": 1.5981,
+     "errors": 75,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.8358,
+      2.6316
+     ],
+     "lines": 336,
+     "exact_lines": 289
+    },
+    "VOCR5_N": {
+     "cer": 1.1293,
+     "errors": 53,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.5487,
+      1.8952
+     ],
+     "lines": 336,
+     "exact_lines": 297
+    },
+    "VOCR5_L": {
+     "cer": 0.7884,
+     "errors": 37,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.4354,
+      1.2276
+     ],
+     "lines": 336,
+     "exact_lines": 305
+    },
+    "Lens": {
+     "cer": 5.5828,
+     "errors": 262,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      2.6436,
+      9.8228
+     ],
+     "lines": 336,
+     "exact_lines": 280
+    },
+    "MeikiOCR": {
+     "cer": 1.7899,
+     "errors": 84,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.9633,
+      2.9579
+     ],
+     "lines": 336,
+     "exact_lines": 282
+    },
+    "PPOCRv6_small": {
+     "cer": 1.2146,
+     "errors": 57,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      0.8257,
+      1.6855
+     ],
+     "lines": 336,
+     "exact_lines": 297
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 3.8994,
+     "errors": 183,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      2.8881,
+      5.006
+     ],
+     "lines": 336,
+     "exact_lines": 221
+    },
+    "manga_ocr": {
+     "cer": 10.1215,
+     "errors": 475,
+     "chars": 4693,
+     "clusters": 28,
+     "ci95": [
+      7.2163,
+      13.557
+     ],
+     "lines": 336,
+     "exact_lines": 151
+    }
+   },
+   "pairs": {
+    "VOCR6_S-Lens": {
+     "delta": -4.282975,
+     "ci95": [
+      -8.008016,
+      -1.611534
+     ],
+     "unit_ci95": [
+      -6.152175,
+      -2.581037
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      262
+     ]
+    },
+    "VOCR6_S-MeikiOCR": {
+     "delta": -0.490092,
+     "ci95": [
+      -1.106494,
+      0.000464
+     ],
+     "unit_ci95": [
+      -0.979965,
+      -0.021128
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      84
+     ]
+    },
+    "VOCR6_S-PPOCRv6_small": {
+     "delta": 0.085233,
+     "ci95": [
+      -0.461281,
+      0.756832
+     ],
+     "unit_ci95": [
+      -0.469248,
+      0.661612
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      57
+     ]
+    },
+    "VOCR6_S-PPOCRv5_mobile_int8": {
+     "delta": -2.599616,
+     "ci95": [
+      -3.383633,
+      -1.865669
+     ],
+     "unit_ci95": [
+      -3.374817,
+      -1.828992
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      183
+     ]
+    },
+    "VOCR6_S-manga_ocr": {
+     "delta": -8.821649,
+     "ci95": [
+      -12.090173,
+      -5.990552
+     ],
+     "unit_ci95": [
+      -10.343394,
+      -7.389157
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      475
+     ]
+    },
+    "VOCR6_N-Lens": {
+     "delta": -4.773066,
+     "ci95": [
+      -8.658408,
+      -1.99729
+     ],
+     "unit_ci95": [
+      -6.59718,
+      -3.121582
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      262
+     ]
+    },
+    "VOCR6_N-MeikiOCR": {
+     "delta": -0.980183,
+     "ci95": [
+      -1.746315,
+      -0.3873
+     ],
+     "unit_ci95": [
+      -1.455799,
+      -0.540976
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      84
+     ]
+    },
+    "VOCR6_N-PPOCRv6_small": {
+     "delta": -0.404858,
+     "ci95": [
+      -0.908502,
+      0.16654
+     ],
+     "unit_ci95": [
+      -0.912553,
+      0.104532
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      57
+     ]
+    },
+    "VOCR6_N-PPOCRv5_mobile_int8": {
+     "delta": -3.089708,
+     "ci95": [
+      -3.902247,
+      -2.303234
+     ],
+     "unit_ci95": [
+      -3.862109,
+      -2.370845
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      183
+     ]
+    },
+    "VOCR6_N-manga_ocr": {
+     "delta": -9.311741,
+     "ci95": [
+      -12.699713,
+      -6.420971
+     ],
+     "unit_ci95": [
+      -10.819289,
+      -7.910104
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      475
+     ]
+    },
+    "VOCR6_L-Lens": {
+     "delta": -5.028766,
+     "ci95": [
+      -9.118153,
+      -2.174746
+     ],
+     "unit_ci95": [
+      -6.939421,
+      -3.318144
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      262
+     ]
+    },
+    "VOCR6_L-MeikiOCR": {
+     "delta": -1.235883,
+     "ci95": [
+      -2.207953,
+      -0.55366
+     ],
+     "unit_ci95": [
+      -1.728508,
+      -0.789484
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      84
+     ]
+    },
+    "VOCR6_L-PPOCRv6_small": {
+     "delta": -0.660558,
+     "ci95": [
+      -1.086976,
+      -0.274894
+     ],
+     "unit_ci95": [
+      -1.140515,
+      -0.204915
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      57
+     ]
+    },
+    "VOCR6_L-PPOCRv5_mobile_int8": {
+     "delta": -3.345408,
+     "ci95": [
+      -4.289732,
+      -2.472628
+     ],
+     "unit_ci95": [
+      -4.098881,
+      -2.635453
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      183
+     ]
+    },
+    "VOCR6_L-manga_ocr": {
+     "delta": -9.567441,
+     "ci95": [
+      -12.904679,
+      -6.736254
+     ],
+     "unit_ci95": [
+      -11.043718,
+      -8.160611
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      475
+     ]
+    },
+    "VOCR5_S-Lens": {
+     "delta": -3.984658,
+     "ci95": [
+      -7.454963,
+      -1.390518
+     ],
+     "unit_ci95": [
+      -5.812447,
+      -2.350077
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      75,
+      262
+     ]
+    },
+    "VOCR5_S-MeikiOCR": {
+     "delta": -0.191775,
+     "ci95": [
+      -0.708931,
+      0.293327
+     ],
+     "unit_ci95": [
+      -0.676258,
+      0.278078
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      75,
+      84
+     ]
+    },
+    "VOCR5_S-PPOCRv6_small": {
+     "delta": 0.38355,
+     "ci95": [
+      -0.450663,
+      1.463854
+     ],
+     "unit_ci95": [
+      -0.215669,
+      1.020414
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      75,
+      57
+     ]
+    },
+    "VOCR5_S-PPOCRv5_mobile_int8": {
+     "delta": -2.3013,
+     "ci95": [
+      -3.178917,
+      -1.49415
+     ],
+     "unit_ci95": [
+      -3.098982,
+      -1.510059
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      75,
+      183
+     ]
+    },
+    "VOCR5_S-manga_ocr": {
+     "delta": -8.523333,
+     "ci95": [
+      -11.956589,
+      -5.548277
+     ],
+     "unit_ci95": [
+      -10.026231,
+      -7.070584
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      75,
+      475
+     ]
+    },
+    "VOCR5_N-Lens": {
+     "delta": -4.453441,
+     "ci95": [
+      -8.180728,
+      -1.679116
+     ],
+     "unit_ci95": [
+      -6.262433,
+      -2.810344
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      53,
+      262
+     ]
+    },
+    "VOCR5_N-MeikiOCR": {
+     "delta": -0.660558,
+     "ci95": [
+      -1.326652,
+      -0.041082
+     ],
+     "unit_ci95": [
+      -1.127484,
+      -0.208637
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      53,
+      84
+     ]
+    },
+    "VOCR5_N-PPOCRv6_small": {
+     "delta": -0.085233,
+     "ci95": [
+      -0.736198,
+      0.698176
+     ],
+     "unit_ci95": [
+      -0.601707,
+      0.451812
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      53,
+      57
+     ]
+    },
+    "VOCR5_N-PPOCRv5_mobile_int8": {
+     "delta": -2.770083,
+     "ci95": [
+      -3.627464,
+      -1.945043
+     ],
+     "unit_ci95": [
+      -3.528714,
+      -2.031741
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      53,
+      183
+     ]
+    },
+    "VOCR5_N-manga_ocr": {
+     "delta": -8.992116,
+     "ci95": [
+      -12.38902,
+      -6.029773
+     ],
+     "unit_ci95": [
+      -10.459741,
+      -7.607793
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      53,
+      475
+     ]
+    },
+    "VOCR5_L-Lens": {
+     "delta": -4.794375,
+     "ci95": [
+      -8.821473,
+      -1.949253
+     ],
+     "unit_ci95": [
+      -6.647528,
+      -3.132978
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      37,
+      262
+     ]
+    },
+    "VOCR5_L-MeikiOCR": {
+     "delta": -1.001492,
+     "ci95": [
+      -1.89877,
+      -0.340953
+     ],
+     "unit_ci95": [
+      -1.445234,
+      -0.584913
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      37,
+      84
+     ]
+    },
+    "VOCR5_L-PPOCRv6_small": {
+     "delta": -0.426167,
+     "ci95": [
+      -0.898359,
+      0.041307
+     ],
+     "unit_ci95": [
+      -0.867726,
+      0.0
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      37,
+      57
+     ]
+    },
+    "VOCR5_L-PPOCRv5_mobile_int8": {
+     "delta": -3.111016,
+     "ci95": [
+      -3.937759,
+      -2.304772
+     ],
+     "unit_ci95": [
+      -3.832474,
+      -2.451714
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      37,
+      183
+     ]
+    },
+    "VOCR5_L-manga_ocr": {
+     "delta": -9.333049,
+     "ci95": [
+      -12.623158,
+      -6.516886
+     ],
+     "unit_ci95": [
+      -10.83231,
+      -7.953837
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      37,
+      475
+     ]
+    },
+    "VOCR6_S-VOCR5_S": {
+     "delta": -0.298317,
+     "ci95": [
+      -0.769535,
+      0.091054
+     ],
+     "unit_ci95": [
+      -0.707754,
+      0.086151
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      61,
+      75
+     ]
+    },
+    "VOCR6_N-VOCR5_N": {
+     "delta": -0.319625,
+     "ci95": [
+      -0.690238,
+      -0.038854
+     ],
+     "unit_ci95": [
+      -0.644449,
+      -0.020692
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      38,
+      53
+     ]
+    },
+    "VOCR6_L-VOCR5_L": {
+     "delta": -0.234392,
+     "ci95": [
+      -0.472335,
+      -0.040374
+     ],
+     "unit_ci95": [
+      -0.468886,
+      -0.020703
+     ],
+     "units": 336,
+     "clusters": 28,
+     "chars": 4693,
+     "errors": [
+      26,
+      37
+     ]
+    }
+   }
+  },
+  "pcsg00807": {
+   "units": 1152,
+   "chars": 13911,
+   "clusters": 670,
+   "cluster": "page",
+   "values": {
+    "VOCR6_S": {
+     "cer": 0.115,
+     "errors": 16,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.0504,
+      0.192
+     ],
+     "lines": 1152,
+     "exact_lines": 1140
+    },
+    "VOCR6_N": {
+     "cer": 0.0863,
+     "errors": 12,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.0374,
+      0.1445
+     ],
+     "lines": 1152,
+     "exact_lines": 1141
+    },
+    "VOCR6_L": {
+     "cer": 0.0144,
+     "errors": 2,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.0,
+      0.0366
+     ],
+     "lines": 1152,
+     "exact_lines": 1150
+    },
+    "VOCR5_S": {
+     "cer": 0.2732,
+     "errors": 38,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.1483,
+      0.4219
+     ],
+     "lines": 1152,
+     "exact_lines": 1130
+    },
+    "VOCR5_N": {
+     "cer": 0.1725,
+     "errors": 24,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.0945,
+      0.2645
+     ],
+     "lines": 1152,
+     "exact_lines": 1133
+    },
+    "VOCR5_L": {
+     "cer": 0.1078,
+     "errors": 15,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.0422,
+      0.1927
+     ],
+     "lines": 1152,
+     "exact_lines": 1142
+    },
+    "MeikiOCR": {
+     "cer": 0.8914,
+     "errors": 124,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.6805,
+      1.1329
+     ],
+     "lines": 1152,
+     "exact_lines": 1060
+    },
+    "PPOCRv6_small": {
+     "cer": 0.7476,
+     "errors": 104,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      0.5475,
+      0.9674
+     ],
+     "lines": 1152,
+     "exact_lines": 1095
+    },
+    "PPOCRv5_mobile_int8": {
+     "cer": 2.0631,
+     "errors": 287,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      1.7427,
+      2.4134
+     ],
+     "lines": 1152,
+     "exact_lines": 963
+    },
+    "manga_ocr": {
+     "cer": 5.0679,
+     "errors": 705,
+     "chars": 13911,
+     "clusters": 670,
+     "ci95": [
+      4.5997,
+      5.556
+     ],
+     "lines": 1152,
+     "exact_lines": 706
+    }
+   },
+   "pairs": {
+    "VOCR6_S-MeikiOCR": {
+     "delta": -0.776364,
+     "ci95": [
+      -0.971979,
+      -0.598241
+     ],
+     "unit_ci95": [
+      -0.967723,
+      -0.602059
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      16,
+      124
+     ]
+    },
+    "VOCR6_S-PPOCRv6_small": {
+     "delta": -0.632593,
+     "ci95": [
+      -0.834894,
+      -0.447988
+     ],
+     "unit_ci95": [
+      -0.83793,
+      -0.444474
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      16,
+      104
+     ]
+    },
+    "VOCR6_S-PPOCRv5_mobile_int8": {
+     "delta": -1.948099,
+     "ci95": [
+      -2.278259,
+      -1.642059
+     ],
+     "unit_ci95": [
+      -2.267278,
+      -1.642183
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      16,
+      287
+     ]
+    },
+    "VOCR6_S-manga_ocr": {
+     "delta": -4.952915,
+     "ci95": [
+      -5.438289,
+      -4.491157
+     ],
+     "unit_ci95": [
+      -5.423706,
+      -4.485999
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      16,
+      705
+     ]
+    },
+    "VOCR6_N-MeikiOCR": {
+     "delta": -0.805118,
+     "ci95": [
+      -1.024731,
+      -0.609663
+     ],
+     "unit_ci95": [
+      -1.020427,
+      -0.614515
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      12,
+      124
+     ]
+    },
+    "VOCR6_N-PPOCRv6_small": {
+     "delta": -0.661347,
+     "ci95": [
+      -0.875261,
+      -0.464199
+     ],
+     "unit_ci95": [
+      -0.882086,
+      -0.459663
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      12,
+      104
+     ]
+    },
+    "VOCR6_N-PPOCRv5_mobile_int8": {
+     "delta": -1.976853,
+     "ci95": [
+      -2.313864,
+      -1.664424
+     ],
+     "unit_ci95": [
+      -2.30599,
+      -1.662366
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      12,
+      287
+     ]
+    },
+    "VOCR6_N-manga_ocr": {
+     "delta": -4.981669,
+     "ci95": [
+      -5.472635,
+      -4.516266
+     ],
+     "unit_ci95": [
+      -5.459168,
+      -4.50855
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      12,
+      705
+     ]
+    },
+    "VOCR6_L-MeikiOCR": {
+     "delta": -0.877004,
+     "ci95": [
+      -1.10854,
+      -0.673155
+     ],
+     "unit_ci95": [
+      -1.098426,
+      -0.676216
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      2,
+      124
+     ]
+    },
+    "VOCR6_L-PPOCRv6_small": {
+     "delta": -0.733233,
+     "ci95": [
+      -0.946697,
+      -0.538142
+     ],
+     "unit_ci95": [
+      -0.953073,
+      -0.534486
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      2,
+      104
+     ]
+    },
+    "VOCR6_L-PPOCRv5_mobile_int8": {
+     "delta": -2.048738,
+     "ci95": [
+      -2.39394,
+      -1.734347
+     ],
+     "unit_ci95": [
+      -2.384554,
+      -1.728165
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      2,
+      287
+     ]
+    },
+    "VOCR6_L-manga_ocr": {
+     "delta": -5.053555,
+     "ci95": [
+      -5.538876,
+      -4.588688
+     ],
+     "unit_ci95": [
+      -5.530756,
+      -4.580255
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      2,
+      705
+     ]
+    },
+    "VOCR5_S-MeikiOCR": {
+     "delta": -0.618216,
+     "ci95": [
+      -0.774618,
+      -0.467255
+     ],
+     "unit_ci95": [
+      -0.773032,
+      -0.471189
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      38,
+      124
+     ]
+    },
+    "VOCR5_S-PPOCRv6_small": {
+     "delta": -0.474445,
+     "ci95": [
+      -0.660466,
+      -0.302964
+     ],
+     "unit_ci95": [
+      -0.664288,
+      -0.293505
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      38,
+      104
+     ]
+    },
+    "VOCR5_S-PPOCRv5_mobile_int8": {
+     "delta": -1.78995,
+     "ci95": [
+      -2.093857,
+      -1.499933
+     ],
+     "unit_ci95": [
+      -2.088586,
+      -1.499425
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      38,
+      287
+     ]
+    },
+    "VOCR5_S-manga_ocr": {
+     "delta": -4.794767,
+     "ci95": [
+      -5.27849,
+      -4.339122
+     ],
+     "unit_ci95": [
+      -5.256379,
+      -4.336668
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      38,
+      705
+     ]
+    },
+    "VOCR5_N-MeikiOCR": {
+     "delta": -0.718856,
+     "ci95": [
+      -0.900513,
+      -0.551289
+     ],
+     "unit_ci95": [
+      -0.897718,
+      -0.548793
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      24,
+      124
+     ]
+    },
+    "VOCR5_N-PPOCRv6_small": {
+     "delta": -0.575084,
+     "ci95": [
+      -0.769407,
+      -0.39595
+     ],
+     "unit_ci95": [
+      -0.773836,
+      -0.393046
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      24,
+      104
+     ]
+    },
+    "VOCR5_N-PPOCRv5_mobile_int8": {
+     "delta": -1.89059,
+     "ci95": [
+      -2.210152,
+      -1.591319
+     ],
+     "unit_ci95": [
+      -2.204152,
+      -1.590612
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      24,
+      287
+     ]
+    },
+    "VOCR5_N-manga_ocr": {
+     "delta": -4.895407,
+     "ci95": [
+      -5.377095,
+      -4.435275
+     ],
+     "unit_ci95": [
+      -5.362187,
+      -4.433272
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      24,
+      705
+     ]
+    },
+    "VOCR5_L-MeikiOCR": {
+     "delta": -0.783553,
+     "ci95": [
+      -0.977427,
+      -0.606996
+     ],
+     "unit_ci95": [
+      -0.972629,
+      -0.608752
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      15,
+      124
+     ]
+    },
+    "VOCR5_L-PPOCRv6_small": {
+     "delta": -0.639781,
+     "ci95": [
+      -0.821666,
+      -0.468611
+     ],
+     "unit_ci95": [
+      -0.829056,
+      -0.465142
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      15,
+      104
+     ]
+    },
+    "VOCR5_L-PPOCRv5_mobile_int8": {
+     "delta": -1.955287,
+     "ci95": [
+      -2.280445,
+      -1.653933
+     ],
+     "unit_ci95": [
+      -2.269926,
+      -1.64859
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      15,
+      287
+     ]
+    },
+    "VOCR5_L-manga_ocr": {
+     "delta": -4.960104,
+     "ci95": [
+      -5.440366,
+      -4.500141
+     ],
+     "unit_ci95": [
+      -5.428702,
+      -4.494459
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      15,
+      705
+     ]
+    },
+    "VOCR6_S-VOCR5_S": {
+     "delta": -0.158148,
+     "ci95": [
+      -0.258015,
+      -0.071194
+     ],
+     "unit_ci95": [
+      -0.258213,
+      -0.070821
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      16,
+      38
+     ]
+    },
+    "VOCR6_N-VOCR5_N": {
+     "delta": -0.086263,
+     "ci95": [
+      -0.161256,
+      -0.020822
+     ],
+     "unit_ci95": [
+      -0.160795,
+      -0.021062
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      12,
+      24
+     ]
+    },
+    "VOCR6_L-VOCR5_L": {
+     "delta": -0.093451,
+     "ci95": [
+      -0.171494,
+      -0.02893
+     ],
+     "unit_ci95": [
+      -0.172516,
+      -0.028794
+     ],
+     "units": 1152,
+     "clusters": 670,
+     "chars": 13911,
+     "errors": [
+      2,
+      15
+     ]
+    }
+   }
+  }
+ },
+ "checks": {
+  "compared": 28,
+  "equal": 28,
+  "rows": [
+   {
+    "set": "clannad",
+    "system": "Lens",
+    "errors_chars_lines": [
+     511,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "MeikiOCR",
+    "errors_chars_lines": [
+     262,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_L",
+    "errors_chars_lines": [
+     246,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_N",
+    "errors_chars_lines": [
+     322,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR5_S",
+    "errors_chars_lines": [
+     463,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_L",
+    "errors_chars_lines": [
+     86,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_N",
+    "errors_chars_lines": [
+     135,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "clannad",
+    "system": "VOCR6_S",
+    "errors_chars_lines": [
+     242,
+     33485,
+     2052
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR5_L",
+    "errors_chars_lines": [
+     15,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR5_N",
+    "errors_chars_lines": [
+     24,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR5_S",
+    "errors_chars_lines": [
+     38,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_L",
+    "errors_chars_lines": [
+     2,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_N",
+    "errors_chars_lines": [
+     12,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "pcsg00807",
+    "system": "VOCR6_S",
+    "errors_chars_lines": [
+     16,
+     13911,
+     1152
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "Lens",
+    "errors_chars_lines": [
+     173,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_L",
+    "errors_chars_lines": [
+     23,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_N",
+    "errors_chars_lines": [
+     30,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR5_S",
+    "errors_chars_lines": [
+     51,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_L",
+    "errors_chars_lines": [
+     16,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_N",
+    "errors_chars_lines": [
+     27,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "psp-test",
+    "system": "VOCR6_S",
+    "errors_chars_lines": [
+     39,
+     2301,
+     183
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "Lens",
+    "errors_chars_lines": [
+     89,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_L",
+    "errors_chars_lines": [
+     14,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_N",
+    "errors_chars_lines": [
+     23,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR5_S",
+    "errors_chars_lines": [
+     24,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_L",
+    "errors_chars_lines": [
+     10,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_N",
+    "errors_chars_lines": [
+     11,
+     2392,
+     153
+    ],
+    "equal": true
+   },
+   {
+    "set": "vita-test",
+    "system": "VOCR6_S",
+    "errors_chars_lines": [
+     22,
+     2392,
+     153
+    ],
+    "equal": true
+   }
+  ]
+ },
+ "notes": [
+  "PP-OCRv6 small was first read with onnxruntime at 5 intra-op threads (heavy.sh's OMP_NUM_THREADS); the protocol says one thread, so it was read again with OMP_NUM_THREADS=1, and every one of its 4,804 readings (vita-test 206, psp-test 245, CLANNAD 3,048, the hooked title 1,152) is the same; the record scores the one-thread read"
+ ],
+ "lens_on_pcsg00807": "not read: private game data never goes to a third-party service",
+ "training_or_selection_use": false,
+ "created": "2026-10-28T07:40:37Z"
+}

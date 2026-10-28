@@ -37,9 +37,24 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
-GEN_VERSION = 2       # 1: the pinned v1 shards (data/manifests/vertical_shards_v1.json); 2: the scenes of the vertical
-                      # development and test pages excluded (data/manifests/vertical_exclude_scenes.json)
+GEN_VERSION = 3       # 1: the pinned v1 shards (data/manifests/vertical_shards_v1.json); 2: the scenes of the vertical
+                      # development and test pages excluded (data/manifests/vertical_exclude_scenes.json); 3: also
+                      # every other screenshot of the vertical sets' VNs (issue #159, docs/vertical.md "Limits")
 EXCLUDE_SCENES = ROOT / "data" / "manifests" / "vertical_exclude_scenes.json"
+VERTICAL_SETS = sorted((ROOT / "eval" / "manifests").glob("vertical-*.jsonl"))
+OWNER_TEST_VNS = ("v11713",)   # Trick x Logic: the owner's private PSP test frames of the vertical test set
+
+
+def vertical_set_vns():
+    """Every VNDB VN with a page in the vertical development or test set (eval/manifests/vertical-*.jsonl, origin
+    vndb) and the owner's private test VN: generation 3 cuts no scene from any of their screenshots."""
+    vns = set(OWNER_TEST_VNS)
+    for path in VERTICAL_SETS:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row.get("origin") == "vndb":
+                vns.add(row["vn"])
+    return vns
 PAD = {"vita": 4, "psp": 2, "manga": 4}
 LOOK = {"vita": 0.45, "psp": 0.25, "manga": 0.30}
 NO_START = set("、。，．」』）】〕〉》ー…‥～・！？!?ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ")
@@ -51,7 +66,9 @@ _FONT_CACHE = {}
 def init(vocab=None, gen=GEN_VERSION):
     """synth3's resources. From generation 2 on, the scene pools leave out every screenshot of the vertical
     development and test sets and their byte-identical copies (version 1, the pinned shards, drew from the whole
-    pools: two test and three development pages were scenes; docs/vertical.md)."""
+    pools: two test and three development pages were scenes; docs/vertical.md). From generation 3 on, they also
+    leave out every other screenshot of those sets' VNs (vertical_set_vns), as docs/vertical.md asks of a later
+    vertical model."""
     global S3
     import cv2
 
@@ -62,6 +79,10 @@ def init(vocab=None, gen=GEN_VERSION):
         ex = set(json.loads(EXCLUDE_SCENES.read_text(encoding="utf-8"))["shots"])
         for k in list(synth3.R.bg):
             synth3.R.bg[k] = [p for p in synth3.R.bg[k] if Path(p).stem not in ex]
+    if gen >= 3:
+        vns = vertical_set_vns()
+        for k in list(synth3.R.bg):
+            synth3.R.bg[k] = [p for p in synth3.R.bg[k] if Path(p).name.split("_")[0] not in vns]
     S3 = synth3
     return synth3
 
@@ -395,17 +416,18 @@ def main():
     p.add_argument("--seed", type=int, default=20261018)
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--vocab")
-    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2),
-                   help="1 reproduces the pinned v1 shards; 2 (default) excludes the vertical sets' scenes")
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2, 3),
+                   help="1 reproduces the pinned v1 shards; 2 excludes the vertical sets' pages from the scenes; "
+                        "3 (default) also every other screenshot of their VNs")
     p = sub.add_parser("preview")
     p.add_argument("--out", required=True)
     p.add_argument("--n", type=int, default=40)
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--vocab")
-    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2))
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2, 3))
     p = sub.add_parser("manifest")
     p.add_argument("--dir", action="append", required=True)
-    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2))
+    p.add_argument("--gen", type=int, default=GEN_VERSION, choices=(1, 2, 3))
     p.add_argument("--vocab", default="data/vocab_4987_proof.txt")
     p.add_argument("--seed", type=int, default=20261018)
     p.add_argument("--out", required=True)

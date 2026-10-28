@@ -1,0 +1,35 @@
+diff --git a/core/vocr_ocr.c b/core/vocr_ocr.c
+index 6e9be155..dd2507c0 100644
+--- a/core/vocr_ocr.c
++++ b/core/vocr_ocr.c
+@@ -955,7 +955,12 @@ static int read_verified(const VjoFile *file, uint32_t bytes, const unsigned cha
+         off += n;
+     }
+     br_sha256_out(&hash, digest);
++#ifdef VJO_MEASURE_NO_PIN /* vita-vn-ocr #159's measurement-only host build: any blob of the pinned size */
++    (void)sha256;
++    return VJO_OK;
++#else
+     return memcmp(digest, sha256, sizeof(digest)) ? VJO_E_OCR_MODEL : VJO_OK;
++#endif
+ }
+ 
+ /* dir/name into path; 0, or -1 when it does not fit. */
+diff --git a/include/vjo_vocr_sizes.h b/include/vjo_vocr_sizes.h
+index f31d439d..102f5d86 100644
+--- a/include/vjo_vocr_sizes.h
++++ b/include/vjo_vocr_sizes.h
+@@ -20,8 +20,13 @@
+ #define VJO_VOCR_LM_TIERS 4u
+ #define VJO_VOCR_LM1_NAME "vocr_lm_o3_500k.vlm"
+ #define VJO_VOCR_LM1_BYTES 499824u
++#ifdef VJO_MEASURE_LM2_SCREEN /* vita-vn-ocr #159: the 1 MB tier's screening build h64_1000k (no hval text) */
++#define VJO_VOCR_LM2_NAME "h64_1000k.vlm"
++#define VJO_VOCR_LM2_BYTES 987216u
++#else
+ #define VJO_VOCR_LM2_NAME "vocr_lm6_o3_1000k.vlm"
+ #define VJO_VOCR_LM2_BYTES 982320u
++#endif
+ #define VJO_VOCR_LM3_NAME "vocr_lm_o3_2000k.vlm"
+ #define VJO_VOCR_LM3_BYTES 1971568u
+ #define VJO_VOCR_LM4_NAME "vocr_lm6_o3_4000k.vlm"

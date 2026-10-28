@@ -8,6 +8,9 @@ here was horizontal-only:
 - the teacher pipeline drops vertical lines;
 - no scored set held vertical text.
 
+**Superseded model:** VOCR6-V (#159, [docs/vocr6v.md](vocr6v.md), pre-release v0.4.2-vertical6.1) replaces VOCR5-V at
+the same shape; the column finder below is unchanged.
+
 This document is the protocol's record (`eval/vertical_protocol.json`, frozen before any recognizer score, amendments
 1-4; the column finder had run on provisional development regions before the freeze: see "Before the freeze") and
 its results. Every number is a host measurement through the C runtime (W8I) unless it is marked as an estimate.
@@ -292,7 +295,8 @@ So 38 of the 4,490 real training crops, from 10 VNs, share a full relation compo
 - **68% of the real training columns are unreviewed single-engine labels:** 1,533 of 2,245 columns are PP-OCRv6 small's reading alone (lowest character confidence ≥ 0.9), against #99's plan, which asked for two engines agreeing or a Claude review agreeing with one. The protocol pre-registered this source (`real_ps`); the evaluation sets are unaffected.
 - **The synthetic shards were rendered by an earlier revision of `synth/vertical_render.py`** (07:51:54Z): it wrote n offsets, which `fix_offsets.py` (an uncommitted tool) extended to train2's n + 1 at 08:07-08:21Z without touching any pixel or label, and it drew one more random number in `look_colours` that a lint fix removed before the first commit. The manifest's `code_sha256` is the file at 08:21Z, not the rendering revision. The committed renderer restores that draw, and with `--gen 1` it reproduces shard 0 crop for crop (data, offsets, shapes, labels and meta equal). The shards are pinned by their sha256.
 - The VitaSDK CI build (`vita/CMakeLists.txt`) compiles `vocr_lines_rows.c` and `vocr_vertical.c` into `libvocr.a` with `-Wconversion -Wsign-conversion` on top of the runtime's `-Werror` flags; its `vocr_vertical.c` object is the 4,312 B of `.text` quoted above. `vocr_textdet.c` is still not in that build. Rubi's Vita builds compile the finder too (Rubi_for_vita#213).
-- Manga109-s: requested from the owner (issue #99); not used by any model here.
+- Manga109-s: requested from the owner (issue #99); not used by any model here. The owner's download of 2026-10-28
+  is the dataset's super-resolution version (volume covers only, no annotations): #159, docs/vocr6v.md.
 - **The vertical test set stays held out** for later vertical models (a Manga109-s retrain would be scored on it). Generation 2 of the renderer excludes only its pages; 20 other screenshots of 9 development and test VNs (7 of 4 test VNs) are still in synth3's scene pools with their vertical text unmasked. Before a later model is trained, its scenes and real pools must exclude the development and test VNs themselves, not only their pages.
 - Nothing ran on a console. The times above are estimates.
 

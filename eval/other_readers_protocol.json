@@ -1,0 +1,50 @@
+{
+ "kind": "other-readers-protocol",
+ "schema": 1,
+ "created": "2026-10-28T07:13:06Z",
+ "label": "vvo-release",
+ "purpose": "Report only, for the README's comparison of VOCR6 with other OCR engines (owner 2026-10-28 06:50Z: \"update the readme too, talk about how good vocr6 is compared to the other OCRs\"). Other engines read the dialogue line crops that VOCR6's final reads scored, and are scored with the same metric. Nothing here trains, selects, tunes or calibrates any model. VOCR6's and VOCR5's numbers are their committed final-test records (eval/vocr6_final_test_followup_20261027.json, path (a): greedy, int8 W8I through the C runtime); they are recounted from those reads' private per-line records, never read again.",
+ "readers": {
+  "Lens": {
+   "what": "Google Lens (cloud), through owocr 1.26.7",
+   "reads": "nothing new: its existing readings only (vita-test and psp-test: VOCR5's Lens arm, $HERD/shared/private/vocr5-train/lens/run_{vita,psp}-test.json, screen polarity; CLANNAD: the long run's cached reading of each stored GRAD line crop). Private game data is never sent to a third-party service, so Lens does not read the hooked test title."
+  },
+  "MeikiOCR": {
+   "what": "rtr46/meikiocr 0.3.5 (GitHub 52aa607), its recognizer meiki.text.rec.v0.960x32.onnx (sha256 3e96bc772fbee9717e536a6353032bb944c3382dd2f6960ef4890decda43b000) with the pinned vertical recognizer beside it, onnxruntime 1.30.0, one thread",
+   "call": "run_recognition([bgr], conf_threshold=0.1, punct_conf_factor=1.0): eval/clannad_meiki.py's arm (a), through eval/meiki_cmd.py (an eval/run.py cmd: reader, .venv-meiki from eval/clannad_meiki_requirements.lock)",
+   "reads": "vita-test, psp-test, the hooked test title; CLANNAD: its existing arm (a) readings ($HERD/shared/private/meiki-clannad/arms.meiki.jsonl, eval/clannad_meiki_lines_20261014.json)"
+  },
+  "PPOCRv6_small": {
+   "what": "PP-OCRv6 small recognizer, eval/backends.py preset ppocr-v6-small: PP-OCRv6_rec_small.onnx (sha256 6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884, the file rapidocr 3.10.0 downloads), full head, greedy CTC, onnxruntime, one thread",
+   "reads": "every set"
+  },
+  "PPOCRv5_mobile_int8": {
+   "what": "PP-OCRv5 mobile recognizer with its head pruned to JIS X 0208 and int8-quantised for ncnn (the research's recommendation, docs/research-findings.md; 2,749,540 B bin), eval/backends.py ncnn:ppocr-v5-mobile-jis-int8 with the files eval/ncnn/prepare_models.py pins, run by eval/ncnn/vocr_ncnn_rec built against ncnn 3798be64 (eval/ncnn/build.sh), one thread",
+   "reads": "every set"
+  },
+  "manga_ocr": {
+   "what": "manga-ocr base, eval/backends.py preset manga-ocr: kha-white/manga-ocr-base at aa6573bd10b0d446cbf622e29c3e084914df9741, long lines re-flowed into a square-ish block first (backends.blockify), CPU",
+   "reads": "every set"
+  }
+ },
+ "sets": {
+  "vita-test": "eval/manifests/vita-test.jsonl through eval/run.py --set vita-test --polarity native (screen polarity, colour, the box plus the default pad), the screenshots of $HERD/shared/artifacts/eval; scored: the 153 dialogue lines (no 'name' style, not uncertain), 2,392 reference characters, 16 games",
+  "psp-test": "the same for psp-test: 183 dialogue lines, 2,301 characters, 14 games",
+  "clannad": "the 2,052 dialogue lines (not 'name') of clannad_refs's frozen references (refs sha256 35411688749b2968b4b47306b65475503644c0bfa1ea8eba0b30885fe4a6212b, lines sha256 a6be0300b651a2cdf3ae58f9705b6f100263b66b7030365b119e6a0a2323ffd1): each line's stored GRAD crop (grey, as every VOCR arm and Lens read it), given to each engine as three identical channels; every scored line is read (3,048, names included, for the names column)",
+  "pcsg00807": "the hooked test title Dance with Devils (PCSG00807): the 1,152 clean dialogue line crops of vocr6-ingest's pools v1 test/line/PCSG00807.npz (sha256 918c487e4fac6215979141e6074323846fb0a55597a7125428290b855a9f8e84), stored grey in screen polarity (every line bright-on-dark, none inverted), as VOCR's path (a) read them, given as three identical channels; 13,911 reference characters"
+ },
+ "metric": "dialogue CER: Levenshtein distance between eval/metrics.norm(prediction) and the normalised reference, summed over the set's dialogue lines, over its reference characters, in percent; exact = lines read exactly. A crop an engine fails on counts as an empty reading.",
+ "intervals": {
+  "vita-test, psp-test": "95% bootstrap, 10,000 resamples, seed 0: each system's CER with VN clusters (vocr6_baseline.boot_ratio); pairs CAND - BASE over the same lines with lines (vocr3_report.paired_bootstrap) and VN clusters (vocr3_report.cluster_bootstrap) resampled",
+  "clannad": "pages resampled (clannad_refs's rate_ci and vocr3_report.paired_bootstrap over page sums)",
+  "pcsg00807": "pages resampled (vocr6_baseline.boot_ratio, vocr3_report.cluster_bootstrap over page clusters)"
+ },
+ "pairs": "each VOCR6 tier (greedy) minus each other engine, per set, on dialogue; VOCR5's tiers likewise, for the record",
+ "rules": [
+  "every engine's settings are the ones written here, fixed before any of its readings of these sets is scored; none changes after a score",
+  "each set is read once per engine; a rerun is allowed only after a crash, with the same settings, and is noted",
+  "the records hold counts, rates, intervals and hashes only; readings and crops stay private under $HERD",
+  "CLANNAD, the hooked title and the protected sets never leave the host: the local engines run offline, and Lens reads nothing new",
+  "the README states each engine's input as here (VOCR in console polarity, the others in screen polarity on vita-test and psp-test; the same grey crops for every engine on CLANNAD and the hooked title) and the CLANNAD entanglement: MeikiOCR's and PP-OCRv6 small's readings were the first-round candidates of the CLANNAD references, and Lens's and VOCR1-VOCR3's among the second and third rounds' unattributed candidates"
+ ]
+}

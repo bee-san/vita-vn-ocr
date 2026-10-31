@@ -15,3 +15,6 @@ h5py==3.16.0
 pyarrow==25.0.1
 pytest==9.1.1
 ruff==0.16.10
+# tools/export_onnx.py, tools/vocr_onnx.py and their tests (docs/onnx.md): onnx builds the graphs, onnxruntime runs them
+onnx==1.23.2
+onnxruntime

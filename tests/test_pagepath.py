@@ -142,6 +142,8 @@ def test_model_tag_names_the_runtime(tmp_path):
     assert t1 != PP.model_tag(blob, lm, PP.LM_OPTS, "b" * 64)                       # another runtime build
     assert t1 != PP.model_tag(blob, lm, dict(PP.LM_OPTS, beta=3000), "a" * 64)      # another decode
     assert t1 == PP.model_tag(blob, lm, dict(PP.LM_OPTS), "a" * 64)
+    assert t1 == PP.model_tag(blob, lm, PP.LM_OPTS, "a" * 64, heads=False)            # the default is unchanged
+    assert PP.model_tag(blob, lm, PP.LM_OPTS, "a" * 64, heads=True) == t1 + "|heads"   # --heads reads apart
 
 
 def test_pages_are_checked_against_their_hash(tmp_path):
@@ -281,3 +283,28 @@ def test_rubi_norm_source_is_replaced_whole(tmp_path):
         assert os.stat(src).st_ino != os.fstat(held.fileno()).st_ino       # a new file took its name
     assert exe2 == exe and PP.textnorm(exe2, ["aa"]) == ["bb"]
     assert sorted(p.name for p in (tmp_path / "bin").iterdir()) == sorted([exe.name, src.name])  # no temp left
+
+
+def test_heads_read_composes_as_rubi_line(monkeypatch):
+    """--heads: a crop's reading is vocr6_final_test.rubi_line's, and pagepath's compose of (g, b, conf / 1000) gives
+    vocr6_final_test.compose's text for own / up readings below and above the cascade's threshold, an empty greedy
+    text and an empty re-read."""
+    import vocr6_final_test as FT
+    reads = {"lo": {"g": "あい", "b": "あい。", "conf": 650, "frames": 9, "used_g": "あい"},
+             "hi": {"g": "かき", "b": "かき！", "conf": 950, "frames": 9, "used_g": "かき"},
+             "empty": {"g": "", "b": "", "conf": 1000, "frames": 4, "used_g": ""},
+             "reread_empty": {"g": "さ", "b": "", "conf": 1000, "frames": 5, "used_g": ""},
+             "up": {"g": "あい", "b": "あいう", "conf": 900, "frames": 9, "used_g": "あい"}}
+    monkeypatch.setattr(FT, "rubi_line", lambda rt, lm, img, inv, two, counter: reads[img])
+    PP._W["t"] = (None, None, True, True)
+    try:
+        got = {k: PP._read((k, "t", k, 0)) for k in reads}
+    finally:
+        PP._W.pop("t")
+    for k, (key, tag, g, b, cmin, frames) in got.items():
+        assert (key, tag, g, b, frames) == (k, "t", reads[k]["g"], reads[k]["b"], reads[k]["frames"])
+        assert PP.line_conf(g, cmin) == (reads[k]["conf"] if g else 1000)
+    up = got["up"][2:5]
+    for k in ("lo", "hi", "empty", "reread_empty"):
+        for upr, upd in ((up, reads["up"]), (None, None)):
+            assert PP.compose(got[k][2:5], upr) == FT.compose(reads[k], upd, PP.CASCADE_CONF), (k, upr)

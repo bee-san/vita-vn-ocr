@@ -29,7 +29,8 @@
 #                         attention op that Rubi links) and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan),
 #                         plus the same parity on stride-16 and stride-12 fixture models and on one
-#                         with the attention op (docs/vocr6-attn.md)
+#                         with the attention op (docs/vocr6-attn.md); on an x86 host with AVX2 the unit tests
+#                         and the fixture parities run once more built with $(AVX2) (the desktop kernels)
 #   make check-all        check with gcc and clang, plus strict release builds of both
 #   make arm              static Cortex-A9 CLIs for qemu-arm: NEON and scalar
 #   make check-arm        the C unit tests as Cortex-A9 NEON and scalar builds (and NEON with -DVOCR_NO_ATTN),
@@ -60,6 +61,10 @@ ifeq ($(origin LDFLAGS),undefined)
 LDFLAGS = $(SAN)
 endif
 LDLIBS = -lm
+# -mavx2 when the host CPU has AVX2: check-vocr and check-textspot6 then also test the desktop AVX2 kernels
+ifeq ($(origin AVX2),undefined)
+AVX2 := $(if $(shell grep -qsw avx2 /proc/cpuinfo && echo y),-mavx2)
+endif
 SAN_ENV ?=
 VOCR_CKPT ?=
 VOCR_SHARD ?=
@@ -91,14 +96,20 @@ $(OUT)/libvocr.so: $(SRC) | $(OUT)
 # ---- check programs: $(CC) $(CFLAGS) ... $(LDFLAGS); rebuilt whenever CC or the flags change
 #      (CFLAGS are kept and extended with $(WARN), which must come last: -ffp-contract=off)
 FLAGS_STAMP = $(OUT)/.check-flags
-$(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' | cmp -s - $(FLAGS_STAMP) || \
-        echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' > $(FLAGS_STAMP))
+$(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(AVX2)' | cmp -s - $(FLAGS_STAMP) || \
+        echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(AVX2)' > $(FLAGS_STAMP))
 
 $(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
 
 $(OUT)/test_vocr_noattn_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -DVOCR_NO_ATTN -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
+
+$(OUT)/test_vocr_avx2_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(AVX2) $(WARN) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
+
+$(OUT)/vocr_cli_avx2_check: $(SRC) $(CLI) $(FLAGS_STAMP) | $(OUT)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(AVX2) $(WARN) -o $@ $(LIBSRC) $(CLI) $(LDFLAGS) $(LDLIBS)
 
 $(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) tests/test_vocr_lm.c $(LDFLAGS) $(LDLIBS)
@@ -124,22 +135,22 @@ include vocr_post.mk
 include vocr_lines_widen.mk
 include vocr_charbox.mk
 
-check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_noattn_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
+check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_noattn_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check \
+            $(if $(AVX2),$(OUT)/test_vocr_avx2_check $(OUT)/vocr_cli_avx2_check)
 	$(SAN_ENV) ./$(OUT)/test_vocr_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_noattn_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_lm_check
+	$(if $(AVX2),$(SAN_ENV) ./$(OUT)/test_vocr_avx2_check)
 	$(PYTHON) tests/parity.py $(if $(VOCR_CKPT),--ckpt "$(VOCR_CKPT)",--fixture) \
 	    $(if $(VOCR_SHARD),--shard "$(VOCR_SHARD)") $(PARITY_ARGS) \
 	    --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(VOCR_REPORT)"
-	for s in 16 12; do \
-	  $(PYTHON) tests/parity.py --fixture --stride $$s --n 24 --tile-lines 12 \
-	      --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(OUT)/parity_report_s$$s.json" > /dev/null \
-	  || { echo "stride-$$s fixture parity failed: $(OUT)/parity_report_s$$s.json"; exit 1; }; \
-	  echo "stride-$$s fixture parity: PARITY_OK"; done
-	$(PYTHON) tests/parity.py --fixture --attn 1 --n 24 --tile-lines 12 \
-	    --cli "$(SAN_ENV) ./$(OUT)/vocr_cli_check" --report "$(OUT)/parity_report_attn.json" > /dev/null \
-	  || { echo "attention fixture parity failed: $(OUT)/parity_report_attn.json"; exit 1; }
-	@echo "attention fixture parity: PARITY_OK"
+	for v in '' $(if $(AVX2),_avx2); do for f in $${v:+base} s16 s12 attn; do \
+	  case $$f in s16) a="--stride 16";; s12) a="--stride 12";; attn) a="--attn 1";; *) a=;; esac; \
+	  r="$(OUT)/parity_report$${v}_$$f.json"; \
+	  $(PYTHON) tests/parity.py --fixture $$a --n 24 --tile-lines 12 \
+	      --cli "$(SAN_ENV) ./$(OUT)/vocr_cli$${v}_check" --report "$$r" > /dev/null \
+	  || { echo "$$f$$v fixture parity failed: $$r"; exit 1; }; \
+	  echo "$$f$$v fixture parity: PARITY_OK"; done; done
 
 check-all:
 	$(MAKE) --no-print-directory clean

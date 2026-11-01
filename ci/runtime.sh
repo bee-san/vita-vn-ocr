@@ -104,6 +104,15 @@ for src in runtime/*.c; do
   echo "+ $cc -Iruntime $CFLAGS -c $src"
   "$cc" -Iruntime "${cflags[@]}" -c "$src" -o "$work/obj/$(basename "$src" .c).o"
 done
+# On x86, the sources with AVX2 kernels once more with -mavx2, and step 3 runs their tests (AVX2=, runtime/Makefile).
+avx2=()
+if [ "$(uname -m)" = x86_64 ]; then
+  avx2=(AVX2=-mavx2)
+  for src in $(grep -l VOCR_NO_AVX2 runtime/*.c); do
+    echo "+ $cc -Iruntime $CFLAGS -mavx2 -c $src"
+    "$cc" -Iruntime "${cflags[@]}" -mavx2 -c "$src" -o "$work/obj/$(basename "$src" .c)_avx2.o"
+  done
+fi
 
 # 3. The runtime's own build and tests.
 if [ ! -f runtime/Makefile ]; then
@@ -122,7 +131,7 @@ fi
 shard="$work/sandbox/repo/data/synth/synth_00000.npz"
 report="$work/parity.json"
 vars=(CC="$cc" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" PYTHON="$PYTHON"
-      VOCR_CKPT="$work/fixture.pt" VOCR_SHARD="$shard" VOCR_REPORT="$report")
+      VOCR_CKPT="$work/fixture.pt" VOCR_SHARD="$shard" VOCR_REPORT="$report" "${avx2[@]}")
 env "${vars[@]}" make -C runtime check "${vars[@]}" || {
   echo "error: 'make -C runtime check' failed with $cc (contract at the top of ci/runtime.sh; inputs kept in $work)" >&2
   exit 1

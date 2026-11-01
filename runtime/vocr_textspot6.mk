@@ -19,6 +19,8 @@
 #        against the twin's refusals and field mutants; and the drivers' --selftest. TEXTSPOT6_ARGS sets the size of
 #        the run (CI: a few seconds; locally, e.g. TEXTSPOT6_ARGS="--t-shapes tinyt,t64n8c16 --m-shapes
 #        tinym,qS4,qM4,qL5 --seeds 2 --frames 4" TEXTSPOT6_SELFTEST=30).
+#     4. when AVX2 is set (an x86 host with AVX2, runtime/Makefile): vocr_textspot6.c strict with $(AVX2), and the
+#        driver built with it through the same parity run (the desktop kernels)
 #
 # Uses CC, CPPFLAGS, CFLAGS, LDFLAGS, PYTHON, OUT, SAN_ENV and LINES_STRICT from the including Makefile and
 # vocr_lines.mk. The drivers are rebuilt on every run, so a change of CC or flags always takes effect.
@@ -40,6 +42,7 @@ check-textspot6:
 	$(CC) $(LINES_STRICT) -O2 -DVOCR_TEXTSPOT6_NO_MS -c vocr_textspot6.c -o $(TEXTSPOT6_OUT)/vocr_textspot6_noms_strict.o
 	$(CC) $(LINES_STRICT) -O2 -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS -c vocr_textspot6.c \
 	    -o $(TEXTSPOT6_OUT)/vocr_textspot6_scalar_noms_strict.o
+	$(if $(AVX2),$(CC) $(LINES_STRICT) -O2 $(AVX2) -c vocr_textspot6.c -o $(TEXTSPOT6_OUT)/vocr_textspot6_avx2_strict.o)
 	$(CC) $(LINES_STRICT) -O2 -c vocr_textspot6_test.c -o $(TEXTSPOT6_OUT)/vocr_textspot6_test_strict.o
 	$(CC) $(CPPFLAGS) -std=c99 -Wall -Wextra -Werror $(CFLAGS) -o $(TEXTSPOT6_OUT)/vocr_textspot6_test \
 	    $(TEXTSPOT6_SRC) $(LDFLAGS)
@@ -47,6 +50,9 @@ check-textspot6:
 	    -o $(TEXTSPOT6_OUT)/vocr_textspot6_test_noms $(TEXTSPOT6_SRC) $(LDFLAGS)
 	$(CC) $(CPPFLAGS) -std=c99 -Wall -Wextra -Werror $(CFLAGS) -o $(TEXTSPOT6_OUT)/vocr_textspot3_test \
 	    vocr_lines.c vocr_lines_rows.c vocr_textspot3.c vocr_textspot3_test.c $(LDFLAGS)
-	$(SAN_ENV) $(PYTHON) ../tests/textspot6_parity.py --bin $(TEXTSPOT6_OUT)/vocr_textspot6_test \
-	    --v3-bin $(TEXTSPOT6_OUT)/vocr_textspot3_test --noms-bin $(TEXTSPOT6_OUT)/vocr_textspot6_test_noms \
-	    --selftest $(TEXTSPOT6_SELFTEST) $(TEXTSPOT6_ARGS)
+	$(if $(AVX2),$(CC) $(CPPFLAGS) -std=c99 -Wall -Wextra -Werror $(CFLAGS) $(AVX2) \
+	    -o $(TEXTSPOT6_OUT)/vocr_textspot6_test_avx2 $(TEXTSPOT6_SRC) $(LDFLAGS))
+	for b in vocr_textspot6_test $(if $(AVX2),vocr_textspot6_test_avx2); do \
+	  $(SAN_ENV) $(PYTHON) ../tests/textspot6_parity.py --bin $(TEXTSPOT6_OUT)/$$b \
+	      --v3-bin $(TEXTSPOT6_OUT)/vocr_textspot3_test --noms-bin $(TEXTSPOT6_OUT)/vocr_textspot6_test_noms \
+	      --selftest $(TEXTSPOT6_SELFTEST) $(TEXTSPOT6_ARGS) || exit 1; done

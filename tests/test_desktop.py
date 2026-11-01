@@ -355,6 +355,9 @@ def test_c_page_reads_like_the_c_runtime(model_files, c_libs, tmp_path):
         boxes = page.detect(g)
         assert lines and len(lines) == sum(1 for b in boxes if VD.crop_of((b.x, b.y, b.w, b.h), 480, 272))
         assert any(t for t, *_ in lines)
+        for threads in (1, 3):                           # the network's row bands and the lines' threads: same bits
+            other = VD.CDesk(d / "d32.vdsk", rp, threads=threads, lib=lib)
+            assert other.page(g) == lines and other.detect(g) == boxes
         import vocr_onnx as V
         r = Vocr(blob, mode="w8i")
         for text, (x, y, w, h), _tag, dark, vertical in lines:

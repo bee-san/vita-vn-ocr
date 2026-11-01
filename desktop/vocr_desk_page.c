@@ -59,7 +59,17 @@ struct vocr_desk_page {
     pthread_cond_t go, done;
     unsigned generation, next, finished, quit, started;
 #endif
+    /* the pool's current job: fn(arg, task, worker) for task = 0 .. ntasks - 1 */
+    void (*fn)(void *arg, unsigned task, unsigned worker);
+    void *arg;
+    unsigned ntasks;
 };
+
+typedef struct {               /* a vocr_desk_runner job on the pool */
+    vocr_desk_task_fn fn;
+    void *arg;
+    unsigned ntasks;
+} runner_job;
 
 static double now_us(void)
 {
@@ -117,17 +127,15 @@ static int read_line(vocr_desk_page *p, worker *wk, unsigned i)
 }
 
 #ifndef VOCR_DESK_NO_THREADS
-static void work_lines(vocr_desk_page *p, worker *wk)
+static void pool_work(vocr_desk_page *p, unsigned worker_index)
 {
     for (;;) {
-        unsigned i;
-        int rc;
+        unsigned t;
         pthread_mutex_lock(&p->mu);
-        i = p->next < p->count ? p->next++ : p->count;
+        t = p->next < p->ntasks ? p->next++ : p->ntasks;
         pthread_mutex_unlock(&p->mu);
-        if (i >= p->count) break;
-        rc = read_line(p, wk, p->order[i]);
-        if (rc) wk->rc = rc;
+        if (t >= p->ntasks) break;
+        p->fn(p->arg, t, worker_index);
     }
 }
 
@@ -145,7 +153,7 @@ static void *thread_main(void *arg)
         }
         seen = p->generation;
         pthread_mutex_unlock(&p->mu);
-        work_lines(p, wk);
+        pool_work(p, wk->index);
         pthread_mutex_lock(&p->mu);
         p->finished++;
         pthread_cond_signal(&p->done);
@@ -153,6 +161,56 @@ static void *thread_main(void *arg)
     }
 }
 #endif
+
+/* run fn(arg, task, worker) for every task on the pool (the calling thread is worker 0); returns when all are done */
+static void pool_run(vocr_desk_page *p, void (*fn)(void *, unsigned, unsigned), void *arg, unsigned ntasks)
+{
+    unsigned t;
+#ifndef VOCR_DESK_NO_THREADS
+    if (p->threads > 1 && ntasks > 1) {
+        pthread_mutex_lock(&p->mu);
+        p->fn = fn;
+        p->arg = arg;
+        p->ntasks = ntasks;
+        p->next = 0;
+        p->finished = 0;
+        p->generation++;
+        pthread_cond_broadcast(&p->go);
+        pthread_mutex_unlock(&p->mu);
+        pool_work(p, 0);
+        pthread_mutex_lock(&p->mu);
+        while (p->finished < p->threads - 1) pthread_cond_wait(&p->done, &p->mu);
+        pthread_mutex_unlock(&p->mu);
+        return;
+    }
+#endif
+    for (t = 0; t < ntasks; t++) fn(arg, t, 0);
+}
+
+static void runner_task(void *arg, unsigned task, unsigned worker_index)
+{
+    const runner_job *j = (const runner_job *)arg;
+    (void)worker_index;
+    j->fn(j->arg, task, j->ntasks);
+}
+
+/* the detector's vocr_desk_runner on the page's pool */
+static void page_runner(void *ctx, vocr_desk_task_fn fn, void *arg, unsigned ntasks)
+{
+    runner_job j;
+    j.fn = fn;
+    j.arg = arg;
+    j.ntasks = ntasks;
+    pool_run((vocr_desk_page *)ctx, runner_task, &j, ntasks);
+}
+
+static void line_task(void *arg, unsigned task, unsigned worker_index)
+{
+    vocr_desk_page *p = (vocr_desk_page *)arg;
+    worker *wk = &p->work[worker_index];
+    int rc = read_line(p, wk, p->order[task]);
+    if (rc) wk->rc = rc;
+}
 
 vocr_desk_page *vocr_desk_page_new(const void *det, size_t det_bytes, const void *rec, size_t rec_bytes,
                                    unsigned threads, int kind, unsigned n, int *err)
@@ -308,7 +366,8 @@ static int detect(vocr_desk_page *p, const unsigned char *grey, unsigned w, unsi
         if (!p->arena) return VOCR_DESK_E_MEM;
     }
     p->count = 0;
-    return vocr_desk_detect(&p->det, grey, w, h, stride, p->kind, p->n, p->arena, p->arena_bytes, &p->set);
+    return vocr_desk_detect_mt(&p->det, grey, w, h, stride, p->kind, p->n, p->arena, p->arena_bytes, &p->set,
+                               page_runner, p, p->threads);
 }
 
 int vocr_desk_page_detect(vocr_desk_page *p, const unsigned char *grey, unsigned w, unsigned h, unsigned stride)
@@ -380,26 +439,7 @@ static int run(vocr_desk_page *p, const unsigned char *grey, unsigned w, unsigne
     p->h = h;
     p->stride = stride;
     for (i = 0; i < p->threads; i++) p->work[i].rc = 0;
-#ifndef VOCR_DESK_NO_THREADS
-    if (p->threads > 1 && k > 1) {
-        pthread_mutex_lock(&p->mu);
-        p->next = 0;
-        p->finished = 0;
-        p->generation++;
-        pthread_cond_broadcast(&p->go);
-        pthread_mutex_unlock(&p->mu);
-        work_lines(p, &p->work[0]);
-        pthread_mutex_lock(&p->mu);
-        while (p->finished < p->threads - 1) pthread_cond_wait(&p->done, &p->mu);
-        pthread_mutex_unlock(&p->mu);
-    } else
-#endif
-    {
-        for (i = 0; i < k; i++) {
-            rc = read_line(p, &p->work[0], i);
-            if (rc) p->work[0].rc = rc;
-        }
-    }
+    pool_run(p, line_task, p, k);
     for (i = 0; i < p->threads; i++)
         if (p->work[i].rc) return p->work[i].rc;
     p->total_us = now_us() - t0;

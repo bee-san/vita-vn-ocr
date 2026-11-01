@@ -31,7 +31,7 @@ void vocr_tsdr_defaults(vocr_tsdr_opts *o)
     o->row_gap = 0; o->valley_pct = 8; o->low_run_pct = 20; o->rise_pct = 50; o->beyond_pct = 15;
     o->gap_pct = 70; o->gap_min = 2; o->gap_start_pct = 35;
     o->bar_pct = 15;
-    o->shrink_a_pct = 10; o->shrink_l_pct = 25;
+    o->shrink_a_pct = 0; o->shrink_l_pct = 25;
     o->floor_ = 28; o->k_pct = 40;
     o->margin_pct = 90; o->margin_gap_pct = 50; o->margin_min = 3; o->noise_add = 12; o->texture_pct = 0;
     o->busy_pct = 25;

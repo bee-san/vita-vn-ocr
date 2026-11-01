@@ -44,7 +44,10 @@ Guards (the edge that fails keeps the detector's value; `status` says why):
   - LIMIT: an edge whose walk ran out of the window within its gap of ink (the window's side not being the frame's
     border): the line goes on beyond the search band (an adjacent line, ruby taller than the band, a busy
     background), so that edge is kept;
-  - SHRINK: an edge never moves inward by more than r(h, shrink_a_pct) rows or r(H', shrink_l_pct) columns;
+  - SHRINK: an edge never moves inward by more than r(h, shrink_a_pct) rows (0 by default: across, the reading pad
+    re-adds any slack, so trimming it never helps the recognizer, while it changes a junk box's aspect ratio) or
+    r(H', shrink_l_pct) columns (a quarter of the line height: it trims slack, it never drops a faint glyph that the
+    grey test misses);
   - BUSY: when more than busy_pct % of the window's pixels outside the new box are ink, the box is kept.
 Vertical boxes are left alone.
 """
@@ -63,7 +66,7 @@ DEFAULTS = {
     "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50, "beyond_pct": 15,
     "gap_pct": 70, "gap_min": 2, "gap_start_pct": 35,
     "bar_pct": 15,
-    "shrink_a_pct": 10, "shrink_l_pct": 25,
+    "shrink_a_pct": 0, "shrink_l_pct": 25,
     "floor": 28, "k_pct": 40,
     "margin_pct": 90, "margin_gap_pct": 50, "margin_min": 3, "noise_add": 12, "texture_pct": 0,
     "busy_pct": 25,

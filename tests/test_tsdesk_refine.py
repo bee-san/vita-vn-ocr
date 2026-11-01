@@ -404,11 +404,13 @@ def test_shrink_bound_keeps_the_edge():
     out2, st2 = _refine1(img, wide, shrink_l_pct=200)
     assert out2[0] == box[0] and not (st2 & TR.ST_SHRINK)
     tall = [box[0], box[1] - 0.3 * h, box[2], box[3]]        # 0.3 line heights of background above the ink
-    out3, st3 = _refine1(img, tall)
-    assert st3 & TR.ST_SHRINK and out3[1] == tall[1]         # past the across shrink bound (10 %): kept
+    out3, st3 = _refine1(img, tall, shrink_a_pct=10)
+    assert st3 & TR.ST_SHRINK and out3[1] == tall[1]         # past an across shrink bound of 10 %: kept
     small = [box[0], box[1] - 1.0, box[2], box[3]]
-    out4, _ = _refine1(img, small)
+    out4, _ = _refine1(img, small, shrink_a_pct=10)
     assert out4[1] == box[1]                                  # 1 px of slack is trimmed
+    out5, st5 = _refine1(img, small)
+    assert out5[1] == small[1] and st5 & TR.ST_SHRINK        # by default the across slack is kept
 
 
 def test_no_ink_keeps_the_box():
@@ -432,7 +434,7 @@ def test_extra_fields_and_order_are_kept():
     rng = np.random.default_rng(1)
     img, box = make_line(rng, "flat", "plain")
     b = [box[0] - 2.5, box[1] - 1.5, box[2] + 1.25, box[3] + 0.5, 0, 0.93, 2]
-    out = TR.refine(img, [b, b])
+    out = TR.refine(img, [b, b], {"shrink_a_pct": 10})
     assert out[0][4:] == [0, 0.93, 2] and out[0] == out[1]
     assert out[0][:4] == [float(v) for v in box]
 

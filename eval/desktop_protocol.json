@@ -797,6 +797,17 @@
     },
     "baseline_arm_pending": "mida-ocr-eval evaluates MeikiOCR's author's new detector (mida_ocr_l.onnx) and will say whether to add it as a registered baseline arm; if so, an amendment registers it before the PC test read"
    }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-01T21:00:17Z",
+   "before": "the PC test set, confirm-v2 and the test titles are read (dev-v2 reads of the final seeds have started: they are not inputs to this amendment, which adds a report-only row)",
+   "what": {
+    "mida_arm": "MeikiOCR's author's new detector, mida_ocr_l.onnx (sha256 9f72bce5...; measurement only: not committed, not redistributed, not trained on), as a REPORT-ONLY baseline arm in every final read: dev-v2, the PC test set, confirm-v2, the test titles and the like-for-like frames, with the timing and memory rows",
+    "configuration": "mida-ocr-eval's recommended one, fixed by that agent before this amendment (reports/mida-ocr-eval.md section 6): eval/mida_det.py (main a50dd8c / 673ee5c) installed into eval/desktop.py, spec mida@box:960x544@along=1.0@min_cells=2 (BGR, the input fit into 960x544 up or down, thr 0, the frame pad), crops cut from the frame and read by VOCR6.2_L_fast.onnx",
+    "role": "none in the decision rule (C against R); reported beside R, MeikiOCR itself and textspot8 + VOCR6.2-L",
+    "source": "mida-ocr-eval's recommendation (pane message and status 2026-11-01T20:52Z); owner 15:49Z: 'Use their model if its useful'"
+   }
   }
  ]
 }

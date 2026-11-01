@@ -503,6 +503,47 @@ def cmd_exact_pctest(a):
     print(f"exact pctest boxes: {len(rows)} frames, {n_fixed} boxes from the erratum -> {a.out}", flush=True)
 
 
+# ----------------------------------------------------------------------------- R6: C path against ONNX path
+
+def cmd_parity(a):
+    """R6's crop equality: two boxes files of the same frames (the C path's ctsd: and the ONNX path's tsd:); per frame,
+    the sorted crops (each horizontal box grown by the pad rule, rounded outward, clipped) are all equal or not."""
+    fa, ma = D.load_boxes(a.a)
+    fb, mb = D.load_boxes(a.b)
+    if ma["frames_sha256"] != mb["frames_sha256"]:
+        raise SystemExit("the two boxes files were found on different frames files")
+    frames, _ = D.load_frames(a.frames)
+    if D.sha256_file(a.frames) != ma["frames_sha256"]:
+        raise SystemExit("the boxes were found on another frames file")
+    kh, kv = PAD_RULES[a.pad]
+    eq = n = 0
+    worst = 0.0
+    diff_frames = []
+    for fr in frames:
+        W, H = fr["W"], fr["H"]
+        p = (pad_px(kh, H), pad_px(kv, H))
+
+        def crops(bs):
+            return sorted(c for c in (crop_hv([float(v) for v in b[:4]], p, W, H) for b in bs if not b[4]) if c)
+        A, B = fa[fr["key"]], fb[fr["key"]]
+        n += 1
+        if crops(A) == crops(B):
+            eq += 1
+        else:
+            diff_frames.append(fr["key"])
+        if len(A) == len(B):
+            sa = sorted([[float(v) for v in b[:4]] for b in A])
+            sb = sorted([[float(v) for v in b[:4]] for b in B])
+            for x, y in zip(sa, sb):
+                worst = max(worst, max(abs(u - v) for u, v in zip(x, y)))
+    doc = {"kind": "textspot-desktop-parity", "a": str(a.a), "a_det": ma["det"], "b": str(a.b), "b_det": mb["det"],
+           "frames_sha256": ma["frames_sha256"], "pad": a.pad, "frames": n, "crops_equal_frames": eq,
+           "crops_equal_share": round(eq / max(1, n), 5), "max_abs_box_diff_px": round(worst, 6),
+           "frames_differing": len(diff_frames)}
+    Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps(doc), flush=True)
+
+
 # ----------------------------------------------------------------------------- the screening table
 
 def _cer(doc, drop=None):
@@ -588,6 +629,12 @@ def main(argv=None):
     p.add_argument("--n", type=int, default=60)
     p.add_argument("--n-pc", type=int, default=30)
     p.add_argument("--out", required=True)
+    p = sub.add_parser("parity")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--a", required=True)
+    p.add_argument("--b", required=True)
+    p.add_argument("--pad", default="k6v4")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("pctest-gate")
     p.add_argument("--what", required=True)
     p = sub.add_parser("exact-pctest")
@@ -600,7 +647,8 @@ def main(argv=None):
     p.add_argument("--workers", type=int, default=5)
     a = ap.parse_args(argv)
     {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads, "exact-boxes": cmd_exact_boxes,
-     "pages": cmd_pages, "pctest-gate": cmd_pctest_gate, "exact-pctest": cmd_exact_pctest}[a.cmd](a)
+     "pages": cmd_pages, "pctest-gate": cmd_pctest_gate, "exact-pctest": cmd_exact_pctest,
+     "parity": cmd_parity}[a.cmd](a)
 
 
 if __name__ == "__main__":

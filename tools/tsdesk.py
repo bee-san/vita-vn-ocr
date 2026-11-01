@@ -263,10 +263,13 @@ class Detector:
     """textspot-desktop's detector (an ONNX file train/tsdesk_det.py exports)."""
 
     def __init__(self, path, threads=1, providers=None, session_options=None, size=None, decode_opts=None,
-                 resize_mode="exact"):
+                 resize_mode="exact", refine=None):
         if resize_mode not in ("exact", "cv2"):
             raise ValueError(f"resize_mode {resize_mode!r}: exact (the C path's integer resize) or cv2")
         self.resize_mode = resize_mode
+        # refine: None (off), True (tools/tsdesk_refine.DEFAULTS) or a dict of its options: every horizontal box's
+        # edges snapped to its line's ink on the full-resolution grey frame after the decode
+        self.refine = None if refine in (None, False) else ({} if refine is True else dict(refine))
         self.sess = _session(path, threads, providers, session_options)
         meta = {k: json.loads(v) for k, v in self.sess.get_modelmeta().custom_metadata_map.items()
                 if k.startswith("vocr.")}
@@ -316,6 +319,9 @@ class Detector:
             x1, y1 = min(float(W), (b.x + b.w) / fx), min(float(H), (b.y + b.h) / fy)
             if x1 > x0 and y1 > y0:
                 out.append(Box(x0, y0, x1 - x0, y1 - y0, b.vertical, b.logit, b.tag, b.tconf, b.cells))
+        if self.refine is not None:
+            import tsdesk_refine
+            out = tsdesk_refine.refine_det(g, out, self.refine)
         return out
 
     def boxes(self, rgb):

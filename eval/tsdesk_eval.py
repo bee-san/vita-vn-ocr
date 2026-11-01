@@ -60,10 +60,16 @@ class CTsdDet:
 
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
+    refine = spec.endswith("+refine")           # tsd:MODEL.onnx[@SIZE[@MODE]]+refine: tools/tsdesk_refine on the boxes
+    if refine:
+        spec = spec[:-len("+refine")]
     if spec.startswith("tsd:"):
         path, _, rest = spec[4:].partition("@")
         size, _, mode = rest.partition("@")
-        return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact")
+        return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
+                          refine=True if refine else None)
+    if refine:
+        raise ValueError(f"{spec}+refine: the refinement suffix is for tsd: specs")
     if spec.startswith("ctsd:"):
         path, _, size = spec[5:].partition("@")
         return CTsdDet(path, size or None, threads)

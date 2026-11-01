@@ -358,3 +358,52 @@ def test_refine_det_on_box_objects():
 def test_unknown_option_is_refused():
     with pytest.raises(KeyError):
         TR.options({"no_such_option": 1})
+
+
+def test_detector_refine_hook(tmp_path, monkeypatch):
+    """tools/tsdesk.Detector(refine=...) applies the refinement to its frame-px boxes; the tsd: spec's +refine."""
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("onnxruntime")
+    pytest.importorskip("onnx")
+    for p in (ROOT / "train", ROOT / "eval", ROOT / "synth", ROOT / "teacher", ROOT):
+        if str(p) not in sys.path:
+            sys.path.insert(0, str(p))
+    import tsdesk as T
+
+    import tsdesk_net as N
+    torch.manual_seed(3)
+    m = N.TsdNet(N.SHAPES["p8s"]).eval()
+    N.export_onnx(m, tmp_path / "m.onnx", N.onnx_meta(N.SHAPES["p8s"], "t", "fit:960", T.DEFAULTS))
+    rng = np.random.default_rng(8)
+    img, box = make_line(rng, "flat", "plain", H=128, W=320, h=20)
+
+    def fake_maps(self, x):
+        """maps of one horizontal line whose box is the ink box off by a few px (input px = frame px here)."""
+        hp, wp = x.shape[2] // 8, x.shape[3] // 8
+        mp = np.full((10, hp, wp), -8.0, np.float32)
+        mp[1] = -4.0
+        r = int((box[1] + box[3]) / 2) // 8
+        c0, c1 = box[0] // 8, (box[2] - 1) // 8
+        mp[0, r, c0:c1 + 1] = 4.0
+        cy = 8 * r + 3.5
+        mp[2, r, c0:c1 + 1] = cy - (box[1] + 2)          # the top 2 px low
+        mp[3, r, c0:c1 + 1] = (box[3] - 1) - cy          # the bottom 1 px high
+        mp[4, r, c0] = (8 * c0 + 3.5) - (box[0] + 3)     # the start 3 px late
+        mp[5, r, c1] = (box[2] - 2) - (8 * c1 + 3.5)     # the end 2 px early
+        return mp
+
+    monkeypatch.setattr(T.Detector, "maps", fake_maps)
+    plain = T.Detector(tmp_path / "m.onnx")
+    hooked = T.Detector(tmp_path / "m.onnx", refine=True)
+    p0 = plain.detect(img)
+    assert len(p0) == 1 and abs(p0[0].y - (box[1] + 2)) < 1e-6
+    a = TR.refine_det(img, p0)
+    b = hooked.detect(img)
+    assert [(x.x, x.y, x.w, x.h) for x in a] == [(x.x, x.y, x.w, x.h) for x in b]
+    got = (b[0].x, b[0].y, b[0].x + b[0].w, b[0].y + b[0].h)
+    assert max(abs(u - v) for u, v in zip(got, box)) <= 1          # the ink box (within its antialiasing)
+    assert T.Detector(tmp_path / "m.onnx", refine={"gap_pct": 50}).refine == {"gap_pct": 50}
+    import tsdesk_eval as TE
+    d = TE.detector_from_spec(f"tsd:{tmp_path / 'm.onnx'}@fit:960+refine")
+    assert d.refine == {} and d.size == "fit:960"
+    assert TE.detector_from_spec(f"tsd:{tmp_path / 'm.onnx'}@long:960").refine is None

@@ -725,5 +725,13 @@
   }
  },
  "not_read": "vita-test, psp-test, CLANNAD (never); the test titles until the attempt above",
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-11-01T04:13:58Z",
+   "before": "any candidate is timed or scored (the screening runs S1_d48 / S2_d64 are at step 1600 of 40,000; no candidate box has been read)",
+   "what": "the speed clause's thread budget: 'at 4 threads' is a budget of 4. Each pipeline's detector runs at the intra-op thread count in {1, 2, 4} that gives it the lowest p50 on that view's timing pages in the same run (R's MeikiOCR detector included); its lines run par on 4 Python threads sharing one recognizer session at 1 intra-op thread, as before (eval/desktop_time.py run --threads 4 with the pipelines' '#d1', '#d2', '#d4' variants)",
+   "why": "the baseline profile (eval/desktop_time.py profile, ORT kernel ms per run, ORT_ENABLE_ALL, 1 -> 4 intra-op threads, this shared host) shows the thread pool slowing the small graphs: textspot8 exact 8.09 -> 11.74 ms, VOCR6.2-L fast 2.35 -> 2.38 ms, while MeikiOCR's detector gains 1.73x (102.0 -> 59.1 ms). Forcing 4 intra-op threads on a graph that runs slower with them would measure the thread pool, not the model; R's detector is fastest at 4 threads, so R keeps its measured time"
+  }
+ ]
 }

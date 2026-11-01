@@ -7,19 +7,23 @@ Runtime's per-op profiles and the models' MACs. Development frames only (eval/de
       (the screenshots' own sizes), pixels included (private: the shared box only)
   desktop_time.py run --pages PAGES.pkl --pipelines P,... --threads N --out T.json [--modes seq,par] [--passes 3]
                       [--warmup 1]
-      every pipeline on every page, interleaved: each pass runs the pipelines in a shuffled order (seeded), each over
-      every page; a page's time is the median of its recorded passes; reported p50 / p95 / mean over the pages of
-      each view. A page = the detector on the frame (its preprocessing, network and decode) + every horizontal box
-      cut, its dark flag (vocr_line_dark) and its recognizer read (preprocessing, network, greedy CTC): the frame is
-      already in memory. Modes: seq = one thread of control, every session at N intra-op threads; par = the detector
-      at N intra-op threads, then the lines on a pool of N Python threads sharing one recognizer session at 1
-      intra-op thread (ONNX Runtime releases the GIL while it runs). Pipelines:
+      every pipeline on every page, interleaved per page: each pass visits the pages in a shuffled order (seeded) and
+      runs every pipeline on the page in a shuffled order, so a load spike on the shared host meets every pipeline
+      alike; a page's time is the median of its recorded passes; reported p50 / p95 / mean over the pages of each
+      view, and with --ref the median over pages of each pipeline's time / the reference pipeline's. A page = the
+      detector on the frame (its preprocessing, network and decode) + every horizontal box cut, its dark flag
+      (vocr_line_dark) and its recognizer read (preprocessing, network, greedy CTC): the frame is already in memory.
+      Modes: seq = one thread of control, every session at N intra-op threads; par = the detector at N intra-op
+      threads, then the lines on a pool of N Python threads sharing one recognizer session at 1 intra-op thread
+      (ONNX Runtime releases the GIL while it runs). Pipelines:
         meikiocr        MeikiOCR 0.3.5's run_ocr (its detector and its batched recognizer; seq only)
         meikiocr-nospin the same with intra-op spinning off, as MeikiOCR's own constructor sets it
         meiki+T         MeikiOCR's detector, boxes grown by eval/desktop.py's auto pad, read by VOCR6.2-T (T = S, N, L;
                         ":exact" for the exact file, else the fast one)
         ts8+T           textspot8_exact.onnx on the frame (fit to 960 x 544 first when larger), read by VOCR6.2-T
         desk:M@SIZE+T   tools/vocr_desktop.py's detector M at input policy SIZE, read by VOCR6.2-T
+      a "#dK" suffix runs the pipeline's detector at K intra-op threads (K <= N; the protocol's amendment 1: a budget
+      of N threads, the detector at its fastest K in {1, 2, 4}); without it the detector runs at N
   desktop_time.py nets --pages PAGES.pkl --threads 1,2,4,8 --opts disable,basic,extended,all --out N.json
                        [--models meiki,ts8,L,desk:M@SIZE] [--cbin DIR]
       each network alone (session.run on inputs already preprocessed) at every graph optimisation level and intra-op
@@ -102,6 +106,10 @@ class Pipeline:
         import vocr_onnx as V
         self.spec, self.threads, self.mode, self.V = spec, threads, mode, V
         self.meiki = None
+        spec, _, dt = spec.partition("#d")
+        det_threads = int(dt) if dt else threads
+        if det_threads > threads:
+            raise ValueError(f"{self.spec}: the detector's threads are within the run's budget ({threads})")
         if spec.startswith("meikiocr"):
             if mode != "seq":
                 raise ValueError("meikiocr runs its own batching: seq only")
@@ -111,7 +119,7 @@ class Pipeline:
         tier, _, form = rec.partition(":")
         form = form or "fast"
         self.pad = "auto" if det == "meiki" else None
-        self.det = D.detector(det, threads)
+        self.det = D.detector(det, det_threads)
         path = Path(onnx_dir) / f"VOCR6.2_{tier}_{form}.onnx"
         if mode == "seq":
             self.rec = V.Recognizer(path, session_options=D.session_options(threads))
@@ -168,22 +176,24 @@ def cmd_run(a):
     times = {n: defaultdict(list) for n in names}
     lines = {n: {} for n in names}
     t0 = time.time()
+    order = list(range(len(pages)))
     for p in range(a.warmup + a.passes):
-        rng.shuffle(names)
-        for n in names:
-            fn = pipes[n]
-            for i, pg in enumerate(pages):
+        rng.shuffle(order)
+        for i in order:                         # interleaved per page: a load spike meets every pipeline alike
+            rng.shuffle(names)
+            for n in names:
                 ts = time.perf_counter()
-                out = fn(pg["rgb"])
+                out = pipes[n](pages[i]["rgb"])
                 ms = (time.perf_counter() - ts) * 1e3
                 if p >= a.warmup:
                     times[n][i].append(ms)
                     lines[n][i] = len(out)
         print(f"pass {p + 1}/{a.warmup + a.passes} {time.time() - t0:.0f} s", flush=True)
-    res = {"kind": "vocr-desktop-timing/1", "host": host(), "threads": threads, "passes": a.passes,
+    res = {"kind": "vocr-desktop-timing/1", "host": host(), "threads": threads, "passes": a.passes, "ref": a.ref,
            "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
            "pages": {v: sum(p["view"] == v for p in pages) for v in ("vita", "psp", "pc")},
            "repo_head": D.git_head(), "results": {}}
+    ref = {i: float(np.median(v)) for i, v in times[a.ref].items()} if a.ref in times else None
     for n in pipes:
         per_page = {i: float(np.median(v)) for i, v in times[n].items()}
         r = {}
@@ -192,6 +202,8 @@ def cmd_run(a):
             if idx:
                 r[view] = pstats([per_page[i] for i in idx])
                 r[view]["lines_mean"] = round(float(np.mean([lines[n][i] for i in idx])), 2)
+                if ref is not None:
+                    r[view]["ratio_to_ref_median"] = round(float(np.median([per_page[i] / ref[i] for i in idx])), 4)
         res["results"][n] = r
         print(n, json.dumps({k: (v["p50"], v["p95"]) for k, v in r.items()}), flush=True)
     res["load_1min_at_end"] = round(os.getloadavg()[0], 1)
@@ -508,6 +520,7 @@ def main(argv=None):
     p.add_argument("--passes", type=int, default=3)
     p.add_argument("--warmup", type=int, default=1)
     p.add_argument("--seed", type=int, default=20261101)
+    p.add_argument("--ref", default="meiki+L|par", help="the pipeline|mode the ratios are taken to")
     p.add_argument("--onnx-dir", default=str(D.ONNX_DIR))
     p.add_argument("--out", required=True)
     p = sub.add_parser("nets")

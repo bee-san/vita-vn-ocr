@@ -1,0 +1,226 @@
+{
+ "kind": "desktop-pc-test-errata",
+ "schema": 1,
+ "issue": 169,
+ "applies_to": {
+  "manifest": "eval/manifests/desktop-pc-test-v1.jsonl",
+  "manifest_sha256": "20576c400b5e5fbb54cbacd019b735c3244d5f62d5fbfba15376fca5be2d46f1"
+ },
+ "found": "2026-11-01T09:53Z: desktop-data-review-12 (pass 2), after the 09:23Z freeze, called four v21170 lines 'cut' (the frame misses the glyph tops); desktop-data confirmed it on the image and found every line whose ink box is under 0.6 of MeikiOCR's detector box height (names left out): 7 lines of v21170",
+ "defect": "the ink refinement (teacher/geometry.refine) took only the lower half of a two-tone glyph fill, so `box` and `text_box` hold the lower half of the line's glyphs; the label (`text`) is the whole line and right, and each unit's region (text_box plus 17 px at 1024 x 768) still holds the whole line",
+ "impact": "dialogue CER through eval/desktop.py is unchanged (the region and the text are right); line recall's ink points lie in the lower half, so a detector box that cuts the glyph tops of these 7 lines still counts as whole",
+ "fix": "box_fixed: x from the ink box, y from the union of the ink box's and MeikiOCR's detector box's rows; apply when scoring line recall",
+ "reviewer_kind": "assistant",
+ "lines": [
+  {
+   "id": "v21170_255194_1",
+   "vn": "v21170",
+   "shot": "v21170_255194",
+   "unit": "pctest:v21170_255194:0",
+   "box_v1": [
+    125,
+    633,
+    770,
+    13
+   ],
+   "box_fixed": [
+    125,
+    619,
+    770,
+    27
+   ],
+   "det": [
+    118,
+    619,
+    896,
+    646
+   ],
+   "ink_v1": [
+    125,
+    633,
+    895,
+    646
+   ]
+  },
+  {
+   "id": "v21170_255194_3",
+   "vn": "v21170",
+   "shot": "v21170_255194",
+   "unit": "pctest:v21170_255194:1",
+   "box_v1": [
+    121,
+    671,
+    64,
+    13
+   ],
+   "box_fixed": [
+    121,
+    659,
+    64,
+    25
+   ],
+   "det": [
+    115,
+    659,
+    186,
+    683
+   ],
+   "ink_v1": [
+    121,
+    671,
+    185,
+    684
+   ]
+  },
+  {
+   "id": "v21170_255195_2",
+   "vn": "v21170",
+   "shot": "v21170_255195",
+   "unit": "pctest:v21170_255195:0",
+   "box_v1": [
+    133,
+    633,
+    640,
+    13
+   ],
+   "box_fixed": [
+    133,
+    619,
+    640,
+    27
+   ],
+   "det": [
+    131,
+    619,
+    771,
+    646
+   ],
+   "ink_v1": [
+    133,
+    633,
+    773,
+    646
+   ]
+  },
+  {
+   "id": "v21170_255199_2",
+   "vn": "v21170",
+   "shot": "v21170_255199",
+   "unit": "pctest:v21170_255199:0",
+   "box_v1": [
+    133,
+    633,
+    765,
+    13
+   ],
+   "box_fixed": [
+    133,
+    620,
+    765,
+    26
+   ],
+   "det": [
+    131,
+    620,
+    898,
+    646
+   ],
+   "ink_v1": [
+    133,
+    633,
+    898,
+    646
+   ]
+  },
+  {
+   "id": "v21170_255199_3",
+   "vn": "v21170",
+   "shot": "v21170_255199",
+   "unit": "pctest:v21170_255199:1",
+   "box_v1": [
+    148,
+    671,
+    765,
+    13
+   ],
+   "box_fixed": [
+    148,
+    658,
+    765,
+    26
+   ],
+   "det": [
+    145,
+    658,
+    912,
+    684
+   ],
+   "ink_v1": [
+    148,
+    671,
+    913,
+    684
+   ]
+  },
+  {
+   "id": "v21170_255201_2",
+   "vn": "v21170",
+   "shot": "v21170_255201",
+   "unit": "pctest:v21170_255201:0",
+   "box_v1": [
+    133,
+    633,
+    388,
+    13
+   ],
+   "box_fixed": [
+    133,
+    620,
+    388,
+    27
+   ],
+   "det": [
+    132,
+    620,
+    519,
+    647
+   ],
+   "ink_v1": [
+    133,
+    633,
+    521,
+    646
+   ]
+  },
+  {
+   "id": "v21170_255202_2",
+   "vn": "v21170",
+   "shot": "v21170_255202",
+   "unit": "pctest:v21170_255202:0",
+   "box_v1": [
+    133,
+    632,
+    276,
+    14
+   ],
+   "box_fixed": [
+    133,
+    620,
+    276,
+    26
+   ],
+   "det": [
+    132,
+    620,
+    409,
+    645
+   ],
+   "ink_v1": [
+    133,
+    632,
+    409,
+    646
+   ]
+  }
+ ]
+}

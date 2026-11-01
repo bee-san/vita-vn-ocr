@@ -225,6 +225,15 @@
     },
     "rule": "amendment 3's single rule, over every screening arm"
    }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-01T23:45:14Z",
+   "before": "the screening decision (Si, Sk unread) and any read of dev-v2, dense_dev or the PC test set by a candidate",
+   "what": {
+    "no_qualifier_path": "if no candidate qualifies, the research candidate is the representative seed's train + guard + hval retrain at the representative's policy with the lower dev-v2 CER (fit:960 on a tie), with the refinement if screening rule 3 adopts it; it is read once on the PC test set after the decision record is committed, with the rows rule.pctest_guard lists, for the report; no recommendation is made from it, and the files may be released as a research pre-release",
+    "refinement_in_decision_reads": "when screening rule 3 adopts the refinement, every decision read of the chosen arm (dev-v2, dense_dev, hval, the PC test set) uses it (tsd:MODEL@SIZE+refine), and R5 and R6 time and compare the C path with it"
+   }
   }
  ]
 }

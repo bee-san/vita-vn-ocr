@@ -31,7 +31,8 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
         onet:MODEL[@SIZE]          ONNX Runtime's session.run alone on the same input
       Items counted: boxes (detectors), horizontal lines read (pages), maps (networks).
       --random N adds N seeded random frames (smoothed noise) per size 960 x 544 and 1920 x 1080 (views rand544,
-      rand1080)
+      rand1080). A C pipeline spec may end in ^NAME to run on the library --libs NAME=LIB.so[,...] names (e.g. a plain-C
+      build beside the AVX2 one); else --lib
   tsdesk_time.py mem --pages PAGES.json --pipelines P,... --threads N --out M.json [--limit 60] [--view vita]
       peak resident memory (VmHWM): each pipeline in a fresh process that loads the frames of a view one at a time
       from disk and runs the pipeline on each: after the imports and one frame, after the models load, at the end
@@ -199,10 +200,13 @@ def crop_hv(b, ph, pv, W, H):
 
 
 class Pipeline:
-    def __init__(self, spec, threads, pad="auto", lib=None, onnx_dir=D.ONNX_DIR, spinning=None):
+    def __init__(self, spec, threads, pad="auto", lib=None, onnx_dir=D.ONNX_DIR, spinning=None, libs=None):
         import tsdesk_c as TC
         self.spec, self.threads, self.TC = spec, int(threads), TC
-        self.kind, path, self.size, rec = split_spec(spec)
+        base, _, libname = spec.partition("^")
+        if libname:
+            lib = (libs or {})[libname]
+        self.kind, path, self.size, rec = split_spec(base)
         self.pad = pad
         self.inputs = {}
         if self.kind in ("cdet", "cnet"):
@@ -314,8 +318,12 @@ def cmd_run(a):
            "frames_load_s": round(t_load, 1)}
     if a.lib and (Path(a.lib).parent / "build.json").exists():
         res["build"] = json.loads((Path(a.lib).parent / "build.json").read_text())
+    libs = dict(kv.split("=", 1) for kv in a.libs.split(",")) if a.libs else {}
+    res["libs"] = libs
+    res["builds"] = {k: json.loads((Path(v).parent / "build.json").read_text()) for k, v in libs.items()
+                     if (Path(v).parent / "build.json").exists()}
     for threads in [int(t) for t in a.threads.split(",")]:
-        pipes = {f"{s}|t{threads}": Pipeline(s, threads, a.pad, a.lib, a.onnx_dir) for s in specs}
+        pipes = {f"{s}|t{threads}": Pipeline(s, threads, a.pad, a.lib, a.onnx_dir, libs=libs) for s in specs}
         for pp in pipes.values():
             for i, rgb in enumerate(rgbs):
                 pp.prepare(i, rgb)
@@ -496,6 +504,7 @@ def main(argv=None):
     p.add_argument("--seed", type=int, default=20261101)
     p.add_argument("--pad", default="auto")
     p.add_argument("--lib")
+    p.add_argument("--libs", help="NAME=LIB.so[,...]: libraries for pipeline specs ending in ^NAME")
     p.add_argument("--random", type=int, default=0)
     p.add_argument("--onnx-dir", default=str(D.ONNX_DIR))
     p.add_argument("--out", required=True)

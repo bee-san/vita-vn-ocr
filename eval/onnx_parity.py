@@ -3,7 +3,7 @@
 rules R1-R4 (docs/onnx.md, "Parity").
 
   onnx_parity.py --onnx DIR --blobs DIR --out RESULT.json [--sets fixed,regions,frames,tsdev,stress]
-                 [--workers 5] [--limit N] [--cbin DIR]
+                 [--workers 5] [--limit N] [--cbin DIR] [--variants ortconv,...]
 
 DIR (--onnx) holds tools/export_onnx.py release's files; --blobs the v0.5.0 blobs they came from and the LMs. Sets
 (development data only; no protected set is read):
@@ -30,6 +30,10 @@ every box, block, pick, truncated, presence) vs the exact and the int8 ONNX spot
 R4 (pipeline): tools/vocr_onnx.read_region with the exact files and the 1 MB LM vs the C path on the same region
 (the C spotter's horizontal boxes, each crop read by the C runtime with the blob's sections and decoded by the C LM):
 the boxes, dark flags, greedy and LM texts and every character's frames and cell.
+
+--variants: other recognizer files in DIR (VOCR6.2_<tier>_<v>.onnx), checked like the fast files and reported, never
+gated: e.g. ortconv, astra's native-int8 form (tools/export_onnx.py recognizer --convs ort: the exact matrices, ONNX
+Runtime's float32 convolutions).
 
 RESULT.json holds counts and line ids only (no image, text or reading).
 """
@@ -79,7 +83,7 @@ def bits_eq(a, b):
 _W = {}
 
 
-def _init(onnx_dir, blobs_dir, threads):
+def _init(onnx_dir, blobs_dir, threads, variants=()):
     import pyvocr
     import vocr_onnx as V
 
@@ -99,7 +103,9 @@ def _init(onnx_dir, blobs_dir, threads):
                             beta=cl.beta, gate=cl.gate, flags=cl.flags, bracket=cl.bracket)
         _W["tiers"][t] = dict(plain=plain, w8f=w8f, sec=sec, clm=clm, lm=cl,
                               exact=V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{t}_exact.onnx", threads),
-                              fast=V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{t}_fast.onnx", threads))
+                              fast=V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{t}_fast.onnx", threads),
+                              variants={v: V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{t}_{v}.onnx", threads)
+                                        for v in variants})
     _W["spot"] = {m: V.Spotter(Path(onnx_dir) / f"textspot8_{m}.onnx", threads) for m in ("exact", "int8")}
 
 
@@ -165,6 +171,13 @@ def read_crop(img, invert, rubi, tiers=None):
         r["fast_frames_w8i"] = int((fa["best"] != c["best"]).sum())
         r["fast_maxdiff_w8f"] = float(np.abs(fa["logits"] - f_logits).max()) if len(f_logits) else 0.0
         r["fast_maxdiff_w8i"] = float(np.abs(fa["logits"] - c_logits).max()) if len(c_logits) else 0.0
+        for v, rv in T["variants"].items():            # --variants: reported against W8I, never gated
+            ov = _onnx(rv, x, False)
+            r[f"{v}_logits"] = bits_eq(ov["logits"], c_logits)
+            r[f"{v}_best_w8i"] = bool(np.array_equal(ov["best"], c["best"]))
+            r[f"{v}_runs_w8i"] = _runs(ov["best"]) == _runs(c["best"])
+            r[f"{v}_text_w8i"] = "".join(rv.vocab[k] for k, _, _ in V.spans(ov["best"])) == c["text"]
+            r[f"{v}_frames_w8i"] = int((ov["best"] != c["best"]).sum())
         if T["sec"] is not None:
             s = T["sec"].run_topk(img, 8, invert=invert, gate_score=T["plain"].has_gate, esc=True)
             es = _onnx(T["exact"], x, True)
@@ -185,6 +198,11 @@ def read_crop(img, invert, rubi, tiers=None):
             fs = _onnx(T["fast"], x, True)
             r["fast_sec_text"] = "".join(T["fast"].vocab[k] for k, _, _ in V.spans(fs["best"])) == s["text"]
             r["fast_sec_best"] = bool(np.array_equal(fs["best"], s["best"]))
+            for v, rv in T["variants"].items():
+                vs = _onnx(rv, x, True)
+                r[f"{v}_sec_text"] = "".join(rv.vocab[k] for k, _, _ in V.spans(vs["best"])) == s["text"]
+                r[f"{v}_sec_best"] = bool(np.array_equal(vs["best"], s["best"]))
+                r[f"{v}_sec_frames"] = int((vs["best"] != s["best"]).sum())
             lm_c_in, lm_e, lm_f = s, es, fs
         else:
             lm_c_in, lm_e, lm_f = c, e, fa
@@ -379,7 +397,8 @@ def tally(records):
                             c["ids"].append(str(key))
                 elif k.startswith("fast_maxdiff"):
                     extra[t][k] = max(extra[t][k], v)
-                elif k in ("frames", "fast_frames_w8i", "gated", "escaped"):
+                elif k in ("frames", "fast_frames_w8i", "gated", "escaped") or k.endswith(("_frames_w8i",
+                                                                                          "_sec_frames")):
                     extra[t][k] += v
     res = {}
     for t in out:
@@ -401,6 +420,8 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=5)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--cbin", default=str(ART / "vocr-onnx" / "cbuild6"))
+    ap.add_argument("--variants", default="", help="other recognizer files in --onnx, VOCR6.2_<tier>_<v>.onnx, checked "
+                    "and reported against W8I (not gated), e.g. ortconv: tools/export_onnx.py recognizer --convs ort")
     a = _ARGS = ap.parse_args(argv)
     import onnxruntime
     import pyvocr
@@ -413,7 +434,9 @@ def main(argv=None):
     exe = build_driver(a.cbin)
     spot_blob = Path(a.blobs) / SPOT_BLOB
     ctx = mp.get_context("fork")
-    with ctx.Pool(a.workers, initializer=_init, initargs=(a.onnx, a.blobs, 1)) as pool:
+    variants = tuple(v for v in a.variants.split(",") if v)
+    res["variants"] = list(variants)
+    with ctx.Pool(a.workers, initializer=_init, initargs=(a.onnx, a.blobs, 1, variants)) as pool:
         for s in a.sets.split(","):
             t1 = time.time()
             if s == "fixed":

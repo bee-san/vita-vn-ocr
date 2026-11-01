@@ -54,6 +54,12 @@ bytes from the same blobs on any machine: the files hold no date or commit.
   files gave the C runtime's text on every read.
 - **textspot8**: `exact` and `int8` give the same codes (both bit-identical to the C spotter). Take `exact`, the faster
   of the two on this host ("Speed").
+- **Not shipped: astra's "native INT8" form** (the exact matrices with ONNX Runtime's own float convolutions; issue
+  #164 suggested shipping it as the exact-arithmetic file). It is not bit-exact, and on the same development reads it
+  was no closer to the C runtime than the fast files: it differed from W8I on 9 / 3 / 4 frames (S / N / L) and in
+  2 / 2 / 0 line texts, the fast files on 12 / 2 / 3 frames and 1 / 1 / 0 texts, at twice the fast files' time. So the
+  release has the bit-exact form and the fast one. `tools/export_onnx.py recognizer --mode exact --convs ort` still
+  writes it.
 
 The tiers are Rubi's: Small (`S`, 4,987 classes), Normal (`N`, 5,631, the default) and Large (`L`, 5,631). On a PC the
 Large model is cheap ("Speed"), and it makes the fewest errors: 128 against Normal's 209 and Small's 254 on the fixed
@@ -191,6 +197,7 @@ frames (1×1 to 1921×1081). Record: `eval/onnx_parity_20261031.json` (ONNX Runt
 | R4 the pipeline (`read_region`, exact files, the 1 MB LM) vs the C path on the same region: boxes, dark flags, greedy and LM texts, every character's frames and cell | 1,710 × 3 tiers | 0 differences |
 | R3 fast vs W8F (reported): best and text | 7,745 per tier | 0 differences |
 | R3 fast vs W8I (reported): frames whose class differs / line texts that differ | 264,218 frames per tier | S 12 / 1, N 2 / 1, L 3 / 0; largest logit difference 0.032 (W8F: 0.00024) |
+| reported, not shipped: astra's native-int8 form (`--variants ortconv`) vs W8I: logits not bit-equal / frames / texts | 7,745 per tier | S 7,744 / 9 / 2, N 7,744 / 3 / 2, L 7,744 / 4 / 0 |
 
 ## Speed on this host (measured)
 
@@ -224,10 +231,10 @@ boxes on every timed input. Nothing here is a console time.
   (`head_sections` false: 6.5 / 2.0 and 10.8 / 3.5 ms).
 - **Threads.** With 5 intra-op threads one line is not faster (exact 5.7 / 8.0 / 11.5 ms, fast 1.4 / 2.1 / 2.5 ms):
   a line is too small to split. Running several lines at once was not measured.
-- **astra's form** (the exact matrices with ONNX Runtime's own float convolutions, `tools/export_onnx.py
-  recognizer(convs="ort")`) is faster than the exact files but not bit-exact: on these 200 lines its logits differed
-  from the C runtime's on every line (in the last bits), its class on one frame of one Normal line (which changed that
-  line's text) and on one frame of one Large line.
+- **astra's form** (the exact matrices with ONNX Runtime's own float convolutions, `--convs ort`) is faster than the
+  exact files but not bit-exact: its logits differed from the C runtime's on 7,744 of 7,745 reads per tier (in the last
+  bits), and its class on a few frames ("Which one"). Issue #164 measured clang `-O3 -march=native` faster still than
+  gcc's build, on its own line sample.
 
 **The spotter** (ms; a region read as Rubi reads it, halved at the frame's scale; a whole frame):
 
@@ -259,7 +266,9 @@ The int8 form gives the same codes and is slower, as astra found (25.53 against 
 # the files, from v0.5.0's blobs (checked against its SHA256SUMS)
 python3 tools/export_onnx.py release --models DIR_OF_V0.5.0 --out onnx/
 # parity (development data, the fleet's shared box), then the timings
-python3 eval/onnx_parity.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out parity.json
+python3 tools/export_onnx.py recognizer --blob DIR_OF_V0.5.0/VOCR6.2_N_w8g2.vocr --mode exact --convs ort \
+    --out onnx/VOCR6.2_N_ortconv.onnx              # and S, L: the reported variant
+python3 eval/onnx_parity.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out parity.json --variants ortconv
 python3 eval/onnx_timing.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out timing.json --lines 200 --regions 120 --frames 60
 python3 eval/onnx_timing.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out timing_lm.json --parts lm --threads 1 \
     --passes 5 --warmup 1 --lines 200 --regions 1 --frames 1

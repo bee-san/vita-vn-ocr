@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ONNX exports of the VOCR recognizers and the textspot8 line spotter, for desktop apps (docs/onnx.md, issue #163).
 
-  export_onnx.py recognizer --blob VOCR6.2_N_w8g2.vocr --mode exact|fast --out VOCR6.2_N_exact.onnx
+  export_onnx.py recognizer --blob VOCR6.2_N_w8g2.vocr --mode exact|fast [--convs c|ort] --out VOCR6.2_N_exact.onnx
   export_onnx.py spotter --blob textspot8_t64n8c16_w8.vtsp --mode exact|int8 --out textspot8_exact.onnx
   export_onnx.py release --models DIR --out DIR [--tag TAG]    every file of the ONNX release, its manifest and
                                                                SHA256SUMS (the blobs are read from DIR, sha256-checked)
@@ -725,6 +725,9 @@ def main(argv=None):
     r.add_argument("--blob", required=True)
     r.add_argument("--mode", default="exact", choices=("exact", "fast"))
     r.add_argument("--topk", type=int, default=TOPK)
+    r.add_argument("--convs", default="c", choices=("c", "ort"),
+                   help="exact mode: c (the C runtime's order, bit-exact; the default) or ort (ONNX Runtime's float "
+                        "convolutions: astra's native-int8 form, for comparison)")
     r.add_argument("--out", required=True)
     s = sub.add_parser("spotter")
     s.add_argument("--blob", required=True)
@@ -736,7 +739,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.cmd == "recognizer":
         data = Path(a.blob).read_bytes()
-        m = recognizer(data, a.mode, a.topk, name=Path(a.blob).stem)
+        m = recognizer(data, a.mode, a.topk, name=Path(a.blob).stem, convs=a.convs)
         Path(a.out).write_bytes(m.SerializeToString())
         print(f"{a.out}: {Path(a.out).stat().st_size} B, {len(m.graph.node)} nodes")
     elif a.cmd == "spotter":

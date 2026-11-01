@@ -263,6 +263,25 @@ def test_exports_are_deterministic_and_described(blobs):
     assert meta["vocr.kind"] == "recognizer" and meta["vocr.mode"] == "fast" and meta["vocr.vocab"][1:] == VOCAB
     assert meta["vocr.head_gate"] and meta["vocr.two_level"] and meta["vocr.level1_classes"] == 32
     assert [i.name for i in sess.get_inputs()] == ["grey", "head_sections"]
+    assert "vocr.convs" not in meta and "vocr.convs" not in V._meta(session(X.recognizer(blobs[1], "exact")))
+
+
+def test_ort_convs_form_is_marked_and_close(blobs):
+    """recognizer(convs="ort"), astra's native-int8 form kept for comparison (eval/onnx_timing.py): marked in its
+    metadata, within float rounding of W8I, and never written by release()."""
+    from pyvocr import Vocr
+    data = blobs[1]
+    sess = session(X.recognizer(data, "exact", convs="ort"))
+    assert V._meta(sess)["vocr.convs"] == "ort"
+    c = Vocr(data, mode="w8i")
+    for g in crops(6):
+        x, _ = V.preprocess(g)
+        _, lg = c.run(g, logits=True)
+        assert np.abs(outputs(sess, x, False)["logits"] - lg).max() < 1e-2
+    with pytest.raises(ValueError):
+        X.recognizer(data, "exact", convs="numpy")
+    import inspect
+    assert "convs" not in inspect.signature(X.release).parameters
 
 
 # ----------------------------------------------------------------------------- the spotter

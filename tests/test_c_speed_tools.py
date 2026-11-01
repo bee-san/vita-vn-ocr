@@ -5,6 +5,7 @@ files and docs/c-speed.md. None of it needs VitaSDK, qemu, Vita3K or screenshots
 import argparse
 import hashlib
 import json
+import math
 import struct
 import sys
 from pathlib import Path
@@ -183,9 +184,9 @@ def test_the_record_holds_and_the_doc_quotes_it():
         for pld in ("nopld", "pld"):
             for mhz in ("333", "444"):
                 x, y = b[pld][mhz], a[pld][mhz]
-                for z in (x, y):   # the record rounds ms per frame to 4 places, the box from the unrounded value
+                for z in (x, y):   # the record keeps ms per frame to 9 places and the box to 0.1 ms
                     box = rec["box"]["frames"] * z["ms_per_frame"] + rec["box"]["finder_ms"]
-                    assert abs(z["box_ms"] - box) <= 0.05 + rec["box"]["frames"] * 0.00005
+                    assert abs(z["box_ms"] - box) <= 0.05 + 1e-6
                 assert y["ms_per_frame"] < x["ms_per_frame"]
         n0, n1 = b["nopld"]["333"]["ms_per_frame"], a["nopld"]["333"]["ms_per_frame"]
         assert f"{n0:.3f} → **{n1:.3f}**" in doc, t
@@ -213,6 +214,14 @@ def test_the_record_holds_and_the_doc_quotes_it():
     for size in ("900x150", "960x544"):
         d = rec["spotter"][size]["dark"]
         assert f"{d['before']['ms_333']:.1f} → **{d['after']['ms_333']:.1f}**" in doc, size
+    # the host table: main's figures, and how far this change's builds (the same x86 code) differ from them
+    hr, hs = rec["host_ms"]["recognizer_ms_per_line"], rec["host_ms"]["spotter_ms_per_region"]
+    row = " | ".join(" / ".join(f"{hr[f'{t}_base_{fl}']:.1f}" for t in "SNL") for fl in ("O2", "O3n"))
+    assert f"S / N / L | {row} |" in doc, row
+    assert f"| {hs['base_O2']:.2f} | {hs['base_O3n']:.2f} |" in doc
+    noise = max([abs(hr[k.replace("_base_", "_new_")] / hr[k] - 1) for k in hr if "_base_" in k] +
+                [abs(hs["new" + k[4:]] / hs[k] - 1) for k in hs if k.startswith("base")])
+    assert f"agree with `main`'s to {math.ceil(noise * 1000) / 10:.1f}%" in doc, noise
     for size, v in rec["spotter"].items():
         if size != "sources":
             for mode in ("dark", "no_dark"):

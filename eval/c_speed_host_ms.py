@@ -15,6 +15,7 @@ output holds times and counts, no text.
 """
 import argparse
 import json
+import shutil
 import statistics
 import struct
 import subprocess
@@ -56,7 +57,16 @@ def main():
     ap.add_argument("--cpu", default="63")
     ap.add_argument("--regions-n", type=int, default=60)
     a = ap.parse_args()
-    work = Path(tempfile.mkdtemp(prefix="c-speed-host-"))
+    work = Path(tempfile.mkdtemp(prefix="c-speed-host-"))   # the drivers and a copy of the regions: removed below
+    try:
+        res = measure(a, work)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    a.out.write_text(json.dumps(res, indent=1) + "\n")
+    print("wrote", a.out)
+
+
+def measure(a, work):
     recs = regions(a.regions, a.regions_n)
     TS.write_records(work / "regions.bin", recs)
     res = {"what": __doc__.strip().split("\n\n")[0], "runs": a.runs, "regions": len(recs),
@@ -90,8 +100,7 @@ def main():
                 us.append(float(p.stderr.split("us total")[0].split()[-1]))
             res["spotter_ms_per_region"][f"{ver}_{fl}"] = round(statistics.median(us) / 1000 / len(recs), 3)
             print("spotter", ver, fl, res["spotter_ms_per_region"][f"{ver}_{fl}"], "ms/region", flush=True)
-    a.out.write_text(json.dumps(res, indent=1) + "\n")
-    print("wrote", a.out)
+    return res
 
 
 if __name__ == "__main__":

@@ -184,15 +184,16 @@ From astra's report and vocr-research's (§4-5 of `reports/vocr-research.md`):
 
 ## Host speed (x86, unchanged)
 
-The changes are NEON-only, so host builds run `main`'s code. One pinned core of the EPYC host (load 12-20), gcc 11.5,
-median of 5 runs (`eval/c_speed_host_ms.py`; the record's `host_ms`):
+The changes are NEON-only, so host builds run `main`'s code (their objects are byte-identical, above). One pinned
+core of the EPYC host, a shared box with other jobs running, gcc 11.5, median of 5 runs (`eval/c_speed_host_ms.py`;
+the record's `host_ms`; `main`'s figures):
 
 | | `-O2` (the Makefile's) | `-O3 -march=native` |
 |---|---:|---:|
-| recognizer, ms per line (24 lines of 60-100 frames, top-8, Rubi's options) S / N / L | 25.9 / 31.5 / 78.3 | 6.2 / 7.2 / 15.4 |
-| textspot8, ms per region (60 development regions, Rubi's crop decode) | 7.13 | 2.96 |
+| recognizer, ms per line (24 lines of 60-100 frames, top-8, Rubi's options) S / N / L | 25.9 / 31.6 / 78.4 | 6.2 / 7.3 / 15.4 |
+| textspot8, ms per region (60 development regions, Rubi's crop decode) | 7.14 | 2.96 |
 
-Before and after agree to 0.5%. These lines average 67 CTC frames, about twice the 32.5 of the research's timing set,
+This change's builds agree with `main`'s to 1.3%, the run-to-run noise of identical code. These lines average 67 CTC frames, about twice the 32.5 of the research's timing set,
 so the per-line times are about twice its.
 
 This checks astra's main desktop finding against our best gcc build rather than redoing the ONNX side, which

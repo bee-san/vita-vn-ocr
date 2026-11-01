@@ -25,6 +25,12 @@ and the line spotter as ONNX files, with a reference pipeline in Python (spotter
 The exact files give the C runtime's output bit for bit; the fast ones read about 3 times faster. The method follows
 an outside researcher's report (astra): [`docs/onnx.md`](docs/onnx.md).
 
+A desktop line detector to go with them is research pre-release
+[v0.5.2-desktop.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.2-desktop.1), not adopted
+([`docs/desktop.md`](docs/desktop.md), #169). With VOCR6 Large it reads a page in about a quarter of the time of
+MeikiOCR's detector with VOCR6 Large, and it reads the hooked test games better. But it reads unseen VNDB screenshots
+and PC screenshots worse, so it missed its pre-registered rule.
+
 ## VOCR6 against other OCRs
 
 Every reader read the same lines, cut from the same boxes. Every number is dialogue CER: the character error rate on

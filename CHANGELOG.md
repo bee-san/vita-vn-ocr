@@ -21,6 +21,19 @@ spotter has run on a console.
 
 ### Added
 
+- **A desktop line detector, research pre-release v0.5.2-desktop.1, not adopted** (#169,
+  [`docs/desktop.md`](docs/desktop.md); thanks to MeikiOCR's author, who suggested it). A float32 detector with 210 k
+  parameters, trained at many text sizes. It runs on ONNX Runtime, or in C with AVX2 kernels (`desktop/`), and reads
+  its lines with VOCR6.2-L. The comparison is MeikiOCR's detector with VOCR6.2-L (R):
+  - on the hooked test titles it reads 1.19% against R's 3.50%;
+  - a page takes about a quarter of R's time: 21 / 18 ms against 74 / 71 ms on Vita / PSP pages at a 4-thread
+    budget;
+  - peak memory is 160 MiB against R's 245 MiB, and 83 MiB in C.
+
+  It does not meet its pre-registered rule, which asks for at most 1.2 times R's CER. On unseen VNDB console
+  screenshots (dev-v2) it reads 1.26% against R's 0.77%; on real PC screenshots, 2.75% against 0.70%. MeikiOCR itself
+  reads those sets at 2.54% and 1.97%.
+
 - **ONNX files for desktop apps** (pre-release v0.5.1-onnx.2, #163, [`docs/onnx.md`](docs/onnx.md)): VOCR6.2 Small,
   Normal and Large and the textspot8 spotter converted from v0.5.0's int8 blobs by `tools/export_onnx.py`, unchanged
   weights, the blobs' non-commercial terms.

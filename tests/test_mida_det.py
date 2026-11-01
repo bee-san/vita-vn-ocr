@@ -356,3 +356,117 @@ def test_an_allowed_type_carrying_another_field_is_refused(tmp_path, no_sessions
     with pytest.raises(ValueError, match="sparse tensor or a type"):
         M.MidaDet(p, sha256=None)
     assert no_sessions == []
+
+
+@pytest.mark.parametrize("field, why", [("graphs", "subgraph"), ("sparse_tensors", "sparse tensor or a type"),
+                                        ("type_protos", "sparse tensor or a type")])
+def test_an_allowed_type_carrying_a_repeated_field_is_refused(tmp_path, no_sessions, field, why):
+    n = typed_constant(False)
+    a = n.attribute[0]
+    if field == "graphs":
+        a.graphs.add().CopyFrom(helper.make_graph([], "g", [], []))
+    elif field == "sparse_tensors":
+        idx = numpy_helper.from_array(np.arange(4, dtype=np.int64), "i")
+        a.sparse_tensors.add().CopyFrom(helper.make_sparse_tensor(numpy_helper.from_array(C4.reshape(-1), "v"), idx,
+                                                                  [1, 4, 1, 1]))
+    else:
+        a.type_protos.add().CopyFrom(helper.make_tensor_type_proto(TensorProto.FLOAT, [1]))
+    assert AttributeProto.AttributeType.Name(a.type) == "TENSOR"
+    p = save(tiny_model(extra_nodes=[n]), tmp_path, "bad.onnx")
+    with pytest.raises(ValueError, match=why):
+        M.MidaDet(p, sha256=None)
+    assert no_sessions == []
+
+
+def sparse_initializer_model(external):
+    """A model whose constant c is a sparse initializer; external: 'values' or 'indices' live in a file next to it
+    (a relative location: the case ONNX Runtime 1.30 reads)."""
+    vals = ext_tensor("c_v", C4.reshape(-1), "weights.bin") if external == "values" else \
+        numpy_helper.from_array(C4.reshape(-1), "c_v")
+    idx = ext_tensor("c_i", np.arange(4, dtype=np.int64), "weights.bin") if external == "indices" else \
+        numpy_helper.from_array(np.arange(4, dtype=np.int64), "c_i")
+    m = tiny_model(extra_nodes=[helper.make_node("Identity", ["cs"], ["c"])])
+    st = m.graph.sparse_initializer.add()
+    st.CopyFrom(helper.make_sparse_tensor(vals, idx, [1, 4, 1, 1]))
+    st.values.name = "cs"
+    return m
+
+
+@pytest.mark.parametrize("external", ["values", "indices"])
+def test_a_sparse_initializer_with_external_data_is_refused(tmp_path, no_sessions, external):
+    p = save(sparse_initializer_model(external), tmp_path, "bad.onnx")
+    (tmp_path / "weights.bin").write_bytes(np.zeros(64, np.uint8).tobytes())
+    with pytest.raises(ValueError, match="sparse initializer has external data"):
+        M.MidaDet(p, sha256=None)
+    with pytest.raises(ValueError, match="sparse initializer has external data"):
+        M.macs(p, 16, 16, sha256=None)
+    assert no_sessions == []
+
+
+def test_a_sparse_initializer_with_embedded_data_is_allowed(tmp_path):
+    facts, _ = M.check_model(save(sparse_initializer_model(None), tmp_path), sha256=None)
+    assert facts["ops"]["Identity"] == 1
+
+
+def test_a_tensors_attribute_with_one_external_member_is_refused(tmp_path, no_sessions):
+    n = helper.make_node("Identity", ["m0"], ["unused"])
+    n.attribute.append(helper.make_attribute("extra", [numpy_helper.from_array(C4, "ok"), ext_tensor("bad", C4)]))
+    assert AttributeProto.AttributeType.Name(n.attribute[0].type) == "TENSORS"
+    m = tiny_model(extra_nodes=[typed_constant(False), n])
+    with pytest.raises(ValueError, match="extra has external data"):
+        M.MidaDet(save(m, tmp_path, "bad.onnx"), sha256=None)
+    assert no_sessions == []
+
+
+def test_the_external_flag_alone_is_refused(tmp_path, no_sessions):
+    m = tiny_model()
+    t = m.graph.initializer[0]
+    t.ClearField("raw_data")
+    t.data_location = TensorProto.EXTERNAL                    # no external_data entries at all
+    assert len(t.external_data) == 0
+    with pytest.raises(ValueError, match="external data"):
+        M.MidaDet(save(m, tmp_path, "bad.onnx"), sha256=None)
+    assert no_sessions == []
+
+
+def test_an_opset_import_alone_is_refused(tmp_path, no_sessions):
+    m = tiny_model()
+    m.opset_import.append(helper.make_opsetid("com.example", 1))   # no node of that domain
+    with pytest.raises(ValueError, match="opset imports"):
+        M.MidaDet(save(m, tmp_path, "bad.onnx"), sha256=None)
+    assert no_sessions == []
+
+
+def test_macs_gives_onnxruntime_bytes(tmp_path, no_sessions):
+    p = save(tiny_model(), tmp_path)
+    M.macs(p, 16, 16, sha256=None)
+    assert len(no_sessions) == 1 and isinstance(no_sessions[0], bytes)
+
+
+def test_frame_pad_rounds_as_desktop_does():
+    """eval/desktop.py's auto pad, max(2, round(4 H / 544)): 8 px at H = 1080 (7.94), where int() would give 7."""
+    maps = line_maps(20, 40, [5], 3, 12, 1.5, 1.25)
+    cy = 8 * 5 + 3.5
+    (b,) = M.decode(maps, 1.0, 1.0, 1920, 1080, dict(M.DEFAULTS, pad="frame"))
+    assert b[:4] == [16.0, cy - 20.0, 112.0, cy + 18.0]
+    (b,) = M.decode(maps, 1.0, 1.0, 1366, 768, dict(M.DEFAULTS, pad="frame"))    # 5.65 -> 6, int() 5
+    assert b[:4] == [18.0, cy - 18.0, 110.0, cy + 16.0]
+
+
+def test_decode_drops_inverted_and_empty_boxes():
+    inverted = line_maps(20, 40, [5], 3, 12, -2.0, -2.0)                    # far <= near
+    assert M.decode(inverted, 1.0, 1.0, 320, 160, dict(M.DEFAULTS, pad="none")) == []
+    slight = line_maps(20, 40, [5], 3, 12, -0.1875, -0.1875)                # far - near = -3 px: an 8 px frame pad
+    assert M.decode(slight, 1.0, 1.0, 960, 1088, dict(M.DEFAULTS, pad="frame")) == []   # would leave it 13 px tall
+    outside = line_maps(20, 40, [5], 30, 35, 1.0, 1.0)                      # x 240-288, clipped by a 200 px frame
+    assert M.decode(outside, 1.0, 1.0, 200, 160, dict(M.DEFAULTS, pad="none")) == []
+
+
+def test_area_interpolation_only_shrinks():
+    rgb = np.random.default_rng(2).integers(0, 256, (40, 60, 3), dtype=np.uint8)
+    up_area, _, _ = M.preprocess(rgb, dict(M.DEFAULTS, policy="long:120", interp="area"))
+    up_lin, _, _ = M.preprocess(rgb, dict(M.DEFAULTS, policy="long:120", interp="linear"))
+    assert np.array_equal(up_area, up_lin)                    # upscaling stays bilinear
+    dn_area, _, _ = M.preprocess(rgb, dict(M.DEFAULTS, policy="long:23", interp="area"))   # not an exact halving:
+    dn_lin, _, _ = M.preprocess(rgb, dict(M.DEFAULTS, policy="long:23", interp="linear"))  # there the two agree
+    assert dn_area.shape == dn_lin.shape and not np.array_equal(dn_area, dn_lin)

@@ -34,6 +34,14 @@ void VOCR_PROF(unsigned id);
 enum { VOCR_PROF_RUN = 100, VOCR_PROF_SRC = 101, VOCR_PROF_GATE = 102, VOCR_PROF_ATTN = 103 };
 
 enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4, T_ATTN = 5 };
+/* -DVOCR_NO_ATTN: the build without the attention op (VOCR6 stage 3, not adopted: docs/vocr6-attn.md). vocr_load
+ * refuses a blob with one (VOCR_E_FORMAT) and the op's code is left out (about 2.6 KB on the Vita); every other blob
+ * reads bit for bit as in the full build, which never reaches that code for it. */
+#ifdef VOCR_NO_ATTN
+#define VOCR_HAS_ATTN 0
+#else
+#define VOCR_HAS_ATTN 1
+#endif
 /* VOCR_PREFETCH(p): a cache hint for the line at p (PLD on ARM), which never changes a result:
  * the int8 weights stream through the L1 once per tile (a layer's matrix is larger than the
  * L1, or evicted by the layers between), so the matrix kernel asks for them two passes ahead. */
@@ -259,6 +267,7 @@ static int parse_op(vocr_model *m, unsigned i, const unsigned char *r, unsigned 
             w_bytes != 4u * op->k * op->cout)
             return VOCR_E_FORMAT;
     } else if (op->type == T_ATTN) {
+        if (!VOCR_HAS_ATTN) return VOCR_E_FORMAT; /* -DVOCR_NO_ATTN */
         /* train/export.py "ATTN": right before the head, one row, cin = cout = d (x8), its record's matrix QKV
          * ([3 dim / 8][d][8], bias always), dim / heads a multiple of 8, O [d / 8][dim][8] at 40-55 */
         const unsigned heads = rd16(r + 36), dim = rd16(r + 38), wsz = op->flags & F_INT8 ? 1u : 4u;
@@ -522,7 +531,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
     if (o->head_gate && !m->gate.hidden) return VOCR_E_MODE;
     if (o->two_level && (mode == VOCR_MODE_F32 || !m->two.l1_blocks)) return VOCR_E_MODE;
     c->two_level = o->two_level ? 1u : 0u;
-    c->attn = m->attn.dim ? m->n_ops - 2u : 0u;
+    c->attn = VOCR_HAS_ATTN && m->attn.dim ? m->n_ops - 2u : 0u;
     c->model = m;
     c->mode = mode;
     c->gate = o->head_gate;
@@ -644,7 +653,7 @@ static int plan(vocr_ctx *c, const vocr_model *m, const vocr_opts *o)
      * Q, scores and outputs, the projections' scratch) overlays the rings, the head's accumulator and state and the
      * transients, all idle between the tiles and the head; the line of z, every frame's bottleneck output, which
      * lives through all three, comes after both. train/export.py plan_arena mirrors it. */
-    if (c->attn) {
+    if (VOCR_HAS_ATTN && c->attn) {
         const size_t d = m->op[c->attn].cin, da = m->attn.dim, P = hb, kmax = d > da ? d : da;
         const size_t tp = ((size_t)t_max + 7u) & ~(size_t)7u;
         const size_t line = al16((size_t)t_max * d * sizeof(float));
@@ -2450,6 +2459,9 @@ static void run_head2(const vocr_ctx *c, unsigned nf, out_t *o)
  * is computed in a fixed order whatever P, the tile or the build (scalar, NEON, VFPU), so the logits are the same
  * for every tile and batch size; runtime/tests/vocr_ref.py attn_exact is the bit-exact twin. */
 
+#if VOCR_HAS_ATTN
+static int cancelled(vocr_extra *ex) { return ex && ex->cancel && ex->cancel(ex->user); }
+
 /* softmax over a row's first T values, in place: the first maximum, e = exp_neg(s - max) (in [e^-30, 1]),
  * sum = 0 + e_0 + e_1 + ..., then e * (1 / sum). */
 static void softmax_row(float *s, unsigned T)
@@ -2483,8 +2495,6 @@ static void mat_block(const vocr_ctx *c, const float *w, const int8_t *q, const 
         mm_i16(q + wo, scale + nb * 8u, bias + nb * 8u, qx, sx, K, P, y, ys, res, rs, 0);
     }
 }
-
-static int cancelled(vocr_extra *ex) { return ex && ex->cancel && ex->cancel(ex->user); }
 
 static int attn_line(const vocr_ctx *c, unsigned T, vocr_extra *ex)
 {
@@ -2547,6 +2557,8 @@ static int attn_line(const vocr_ctx *c, unsigned T, vocr_extra *ex)
     }
     return VOCR_OK;
 }
+
+#endif /* VOCR_HAS_ATTN */
 
 /* Keep the last `halo` columns of a ring as its first ones. The ranges can overlap
  * (fewer new columns than halo), so copy forwards: the destination is below the source. */
@@ -2680,11 +2692,11 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
                         i == f ? u : 0u, &acc_fill);
             }
         }
-        for (i = f + 1; i + 1 + (c->attn ? 1u : 0u) < L; i++) {
+        for (i = f + 1; i + 1 + (VOCR_HAS_ATTN && c->attn ? 1u : 0u) < L; i++) {
             VOCR_MARK(i);
             step_op(c, i, k * (long)c->op[i].n_tile - c->op[i].lag, c->op[i].n_tile, wout[i], 0u, &acc_fill);
         }
-        if (c->attn) { /* the frames went to the line of z (acc_fill counts them); the attention and the head
+        if (VOCR_HAS_ATTN && c->attn) { /* the frames went to the line of z (acc_fill counts them); the attention and the head
                         * run once the line is complete */
             VOCR_MARK(VOCR_PROF_RUN);
             continue;
@@ -2702,6 +2714,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
         VOCR_MARK(VOCR_PROF_RUN);
     }
+#if VOCR_HAS_ATTN
     if (c->attn) { /* the attention over the line (z -> z' in place), then the head over z' as the tiles feed it */
         const unsigned K = m->op[L - 1].k;
         const float *zl = at(c, c->line_off);
@@ -2741,6 +2754,7 @@ int vocr_run(vocr_ctx *c, const vocr_image *img, char *text, size_t text_cap, vo
         }
         VOCR_MARK(VOCR_PROF_RUN);
     }
+#endif
     if (acc_fill) {
         VOCR_MARK(L - 1);
         if (two) run_head2(c, acc_fill, &o);

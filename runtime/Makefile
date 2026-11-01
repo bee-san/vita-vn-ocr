@@ -25,13 +25,15 @@
 #                         synth/lines_widen.py), the per-character positions' (check-charbox,
 #                         vocr_charbox.mk: strict compile, its C self-test and its parity with
 #                         eval/charbox.py), then the
-#                         recognizer's: C unit tests and the PyTorch parity test through a
+#                         recognizer's: C unit tests (also built with -DVOCR_NO_ATTN, the build without the
+#                         attention op that Rubi links) and the PyTorch parity test through a
 #                         vocr_cli built with $(CC) $(CFLAGS) $(LDFLAGS) (default: ASan + UBSan),
 #                         plus the same parity on stride-16 and stride-12 fixture models and on one
 #                         with the attention op (docs/vocr6-attn.md)
 #   make check-all        check with gcc and clang, plus strict release builds of both
 #   make arm              static Cortex-A9 CLIs for qemu-arm: NEON and scalar
-#   make check-arm        the C unit tests as Cortex-A9 NEON and scalar builds, under qemu-arm
+#   make check-arm        the C unit tests as Cortex-A9 NEON and scalar builds (and NEON with -DVOCR_NO_ATTN),
+#                         under qemu-arm
 #   make size             ARM code size of vocr.o (NEON and scalar)
 #
 # `check` follows CI's contract (ci/runtime.sh): CFLAGS / LDFLAGS given on the command
@@ -95,6 +97,9 @@ $(shell mkdir -p $(OUT)/arm; echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)' | cmp
 $(OUT)/test_vocr_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
 
+$(OUT)/test_vocr_noattn_check: $(SRC) tests/test_vocr.c $(FLAGS_STAMP) | $(OUT)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -DVOCR_NO_ATTN -o $@ vocr.c tests/test_vocr.c $(LDFLAGS) $(LDLIBS)
+
 $(OUT)/test_vocr_lm_check: $(SRC) tests/test_vocr_lm.c $(FLAGS_STAMP) | $(OUT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARN) -o $@ $(LIBSRC) tests/test_vocr_lm.c $(LDFLAGS) $(LDLIBS)
 
@@ -119,8 +124,9 @@ include vocr_post.mk
 include vocr_lines_widen.mk
 include vocr_charbox.mk
 
-check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
+check-vocr: $(OUT)/test_vocr_check $(OUT)/test_vocr_noattn_check $(OUT)/test_vocr_lm_check $(OUT)/vocr_cli_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_check
+	$(SAN_ENV) ./$(OUT)/test_vocr_noattn_check
 	$(SAN_ENV) ./$(OUT)/test_vocr_lm_check
 	$(PYTHON) tests/parity.py $(if $(VOCR_CKPT),--ckpt "$(VOCR_CKPT)",--fixture) \
 	    $(if $(VOCR_SHARD),--shard "$(VOCR_SHARD)") $(PARITY_ARGS) \
@@ -157,9 +163,13 @@ $(OUT)/arm/test_vocr_neon: $(SRC) tests/test_vocr.c | $(OUT)
 $(OUT)/arm/test_vocr_scalar: $(SRC) tests/test_vocr.c | $(OUT)
 	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_NEON -static -o $@ vocr.c tests/test_vocr.c $(LDLIBS)
 
-check-arm: $(OUT)/arm/test_vocr_neon $(OUT)/arm/test_vocr_scalar
+$(OUT)/arm/test_vocr_neon_noattn: $(SRC) tests/test_vocr.c | $(OUT)
+	$(ARM_CC) $(WARN) $(ARM_FLAGS) -DVOCR_NO_ATTN -static -o $@ vocr.c tests/test_vocr.c $(LDLIBS)
+
+check-arm: $(OUT)/arm/test_vocr_neon $(OUT)/arm/test_vocr_scalar $(OUT)/arm/test_vocr_neon_noattn
 	$(QEMU) -cpu cortex-a9 ./$(OUT)/arm/test_vocr_neon
 	$(QEMU) -cpu cortex-a9 ./$(OUT)/arm/test_vocr_scalar
+	$(QEMU) -cpu cortex-a9 ./$(OUT)/arm/test_vocr_neon_noattn
 
 parity-arm: arm
 	for v in neon scalar; do \

@@ -1906,6 +1906,7 @@ static size_t insert_attn(size_t n, unsigned heads, unsigned dim, float o_gain, 
     return blob_pos;
 }
 
+#ifndef VOCR_NO_ATTN /* the attention op's own tests (the full build) */
 static void test_attn_load(void)
 {
     vocr_model m;
@@ -2208,8 +2209,21 @@ static void test_attn_plan_limit(void)
     /* the attention adds its line (8,192 frames x 16 floats) and K, V beyond the small rings of the default tile */
     CHECK(attn_default >= base_default + 8192u * 16u * 4u);
 }
+#endif
 
 static size_t build_blob_wide(int int8) { return build_blob_c1(int8, 272); }
+#ifdef VOCR_NO_ATTN
+/* -DVOCR_NO_ATTN: a blob with an attention op is refused, every form of it; one without loads (the other tests run
+ * every other blob, with the same known answers as the full build) */
+static void test_attn(void)
+{
+    vocr_model m;
+    CHECK(vocr_load(&m, blob_buf, insert_attn(build_blob(1), 2, 16, 1.0f, 5u)) == VOCR_E_FORMAT);
+    CHECK(vocr_load(&m, blob_buf, insert_attn(build_blob(0), 2, 16, 1.0f, 5u)) == VOCR_E_FORMAT);
+    CHECK(vocr_load(&m, blob_buf, insert_attn(build_blob_wide(1), 2, 16, 1.0f, 5u)) == VOCR_E_FORMAT);
+    CHECK(vocr_load(&m, blob_buf, build_blob(1)) == VOCR_OK && m.attn.dim == 0);
+}
+#else
 static size_t build_attn_gate_blob(int int8) { return insert_attn(build_blob(int8), 2, 16, 1.0f, 31u); }
 static size_t build_attn_2l_blob(void) { return insert_attn(build_blob_2l(), 2, 16, 1.0f, 37u); }
 static size_t build_stem_head_attn_2l_blob(void) { return insert_attn(build_stem_head_blob_2l(), 1, 16, 1.0f, 41u); }
@@ -2229,6 +2243,7 @@ static void test_attn(void)
     test_two_run_on(build_attn_2l_blob, 260, 21);
     test_two_run_on(build_stem_head_attn_2l_blob, 257, 10);
 }
+#endif
 
 int main(void)
 {
@@ -2264,6 +2279,7 @@ int main(void)
     g_mode = VOCR_MODE_W8I;
     test_two_stem_head();
     test_attn();
+#ifndef VOCR_NO_ATTN
     /* #126 x the attention op: the gate (W8F, F32) and the two-level head (W8F) reading z', in the sanitized suite too */
     g_mode = VOCR_MODE_W8F;
     test_gate_run_on(build_attn_gate_blob, 0);
@@ -2272,6 +2288,7 @@ int main(void)
     g_mode = VOCR_MODE_F32;
     test_gate_run_on(build_attn_gate_blob, 0);
     g_mode = VOCR_MODE_W8I;
+#endif
     if (failures) {
         fprintf(stderr, "%d check(s) failed\n", failures);
         return 1;

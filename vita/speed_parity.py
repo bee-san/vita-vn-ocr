@@ -3,6 +3,7 @@
 
   speed_parity.py --base DIR --new DIR --pack PACK --blob A.vocr [--blob B.vocr ...]
                   [--modes w8i,w8f] [--builds host-gcc,host-clang,arm-neon,arm-scalar,vita-neon]
+                  (also vita-neon-noattn: the Vita objects with -DVOCR_NO_ATTN, Rubi's build)
                   [--cli-opts '--tile 8'] [--json OUT]
 
 For each of the two runtime directories (each holding vocr.c and vocr.h, and vocr_lm.c and vocr_lm.h, else this
@@ -62,13 +63,15 @@ def build(rt, out, which, arm_cc, vitasdk):
     elif which in ("arm-neon", "arm-scalar"):
         cmd = [arm_cc, *A9.WARN, *ARM, "-O2", "-static", *inc, *(["-DVOCR_NO_NEON"] if which == "arm-scalar" else []),
                "-o", str(cli), *lib, cli_c, "-lm"]
-    elif which == "vita-neon":
+    elif which in ("vita-neon", "vita-neon-noattn"):
         # the runtime, its decoder and the counter post-processing each with the Vita compiler and flags, as
-        # vita/a9_layers.py builds them
+        # vita/a9_layers.py builds them; vita-neon-noattn: the runtime with -DVOCR_NO_ATTN, as Rubi builds it (a
+        # version from before the switch ignores it)
         objs = [out / "vocr_vita.o", out / "vocr_lm_vita.o", out / "vocr_post_vita.o"]
         for obj, src in zip(objs, lib):
-            subprocess.run([str(Path(vitasdk) / "bin/arm-vita-eabi-gcc"), *A9.WARN, *ARM, "-O2", *inc, "-c", "-o",
-                            str(obj), src], check=True)
+            noattn = ["-DVOCR_NO_ATTN"] if which == "vita-neon-noattn" and src == lib[0] else []
+            subprocess.run([str(Path(vitasdk) / "bin/arm-vita-eabi-gcc"), *A9.WARN, *ARM, "-O2", *noattn, *inc, "-c",
+                            "-o", str(obj), src], check=True)
         cmd = [arm_cc, *A9.WARN, *ARM, "-O2", "-static", "-Wl,--no-enum-size-warning", *inc, "-o", str(cli),
                *map(str, objs), cli_c, "-lm"]
     else:

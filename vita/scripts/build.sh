@@ -4,8 +4,9 @@
 #   VITASDK=... vita/scripts/build.sh [BUILD_DIR]     default BUILD_DIR: build/vita
 #
 # Writes BUILD_DIR/vocr_test.vpk (install it with VitaShell), BUILD_DIR/eboot.bin and
-# BUILD_DIR/libvocr.a, then BUILD_DIR/size.txt: code size of vocr.o (NEON and scalar) and its
-# largest stack frames, from runtime/Makefile's `size` target with the Vita compiler.
+# BUILD_DIR/libvocr.a, BUILD_DIR/vocr_par.vpk (the parity app of vita/vita3k_parity.py), then
+# BUILD_DIR/size.txt: code size of vocr.o (NEON and scalar) and its largest stack frames, from
+# runtime/Makefile's `size` target with the Vita compiler.
 set -euo pipefail
 vita=$(cd "$(dirname "$0")/.." && pwd)
 root=$(dirname "$vita")
@@ -19,5 +20,5 @@ cmake -S "$vita" -B "$build" -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolcha
 cmake --build "$build" -j "${OMP_NUM_THREADS:-4}"
 make -s -C "$root/runtime" size ARM_CC="$VITASDK/bin/arm-vita-eabi-gcc" OUT="$build/runtime-size" > "$build/size.txt"
 cat "$build/size.txt"
-ls -l "$build/vocr_test.vpk" "$build/eboot.bin" "$build/libvocr.a"
-sha256sum "$build/vocr_test.vpk"
+ls -l "$build/vocr_test.vpk" "$build/eboot.bin" "$build/libvocr.a" "$build/vocr_par.vpk"
+sha256sum "$build/vocr_test.vpk" "$build/vocr_par.vpk"

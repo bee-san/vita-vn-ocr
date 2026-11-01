@@ -38,7 +38,8 @@ ARM = ["-mcpu=cortex-a9", "-mfpu=neon", "-mfloat-abi=hard"]
 
 
 def lm_file(rt, name):
-    """The version's vocr_lm.c / vocr_lm.h, or this checkout's (a runtime directory from before the decoder)."""
+    """The version's vocr_lm.c / vocr_lm.h / vocr_post.c / vocr_post.h, or this checkout's (a runtime directory from
+    before the decoder or the post-processing)."""
     return rt / name if (rt / name).exists() else ROOT / "runtime" / name
 
 
@@ -48,10 +49,10 @@ def build(rt, out, which, arm_cc, vitasdk):
     stage = out / "src"
     (stage / "tools").mkdir(parents=True, exist_ok=True)
     shutil.copy2(rt / "vocr.h", stage / "vocr.h")
-    shutil.copy2(lm_file(rt, "vocr_lm.h"), stage / "vocr_lm.h")
-    shutil.copy2(lm_file(rt, "vocr_lm.c"), stage / "vocr_lm.c")
+    for name in ("vocr_lm.h", "vocr_lm.c", "vocr_post.h", "vocr_post.c"):   # vocr_cli.c links both since #109
+        shutil.copy2(lm_file(rt, name), stage / name)
     shutil.copy2(ROOT / "runtime/tools/vocr_cli.c", stage / "tools/vocr_cli.c")
-    lib = [str(rt / "vocr.c"), str(stage / "vocr_lm.c")]
+    lib = [str(rt / "vocr.c"), str(stage / "vocr_lm.c"), str(stage / "vocr_post.c")]
     cli_c = str(stage / "tools/vocr_cli.c")
     inc = ["-I", str(stage)]
     if which == "host-gcc":
@@ -62,8 +63,9 @@ def build(rt, out, which, arm_cc, vitasdk):
         cmd = [arm_cc, *A9.WARN, *ARM, "-O2", "-static", *inc, *(["-DVOCR_NO_NEON"] if which == "arm-scalar" else []),
                "-o", str(cli), *lib, cli_c, "-lm"]
     elif which == "vita-neon":
-        # the runtime and its decoder each with the Vita compiler and flags, as vita/a9_cycles.py builds them
-        objs = [out / "vocr_vita.o", out / "vocr_lm_vita.o"]
+        # the runtime, its decoder and the counter post-processing each with the Vita compiler and flags, as
+        # vita/a9_layers.py builds them
+        objs = [out / "vocr_vita.o", out / "vocr_lm_vita.o", out / "vocr_post_vita.o"]
         for obj, src in zip(objs, lib):
             subprocess.run([str(Path(vitasdk) / "bin/arm-vita-eabi-gcc"), *A9.WARN, *ARM, "-O2", *inc, "-c", "-o",
                             str(obj), src], check=True)
@@ -75,9 +77,11 @@ def build(rt, out, which, arm_cc, vitasdk):
     return cli
 
 
-def run(cli, which, qemu, blob, mode, pack, opts):
+def run(cli, which, qemu, blob, mode, pack, opts, logits=True):
     """(sha256 of all logits, sha256 of the texts, logit bytes, the CLI's last stderr line, sha256 of the top-K
-    output or None) for one run."""
+    output or None) for one run. logits=False asks for no logits (sha256 of nothing, 0 bytes): a run that asks for
+    them reads every frame through the full head (vocr.h: the head gate skips nothing and the two-level head is off),
+    so only a run without them checks those paths, through its texts and top-K."""
     tmp = Path(tempfile.mkdtemp(prefix="vocr-par-"))
     fifo = tmp / "logits"
     os.mkfifo(fifo)
@@ -99,7 +103,10 @@ def run(cli, which, qemu, blob, mode, pack, opts):
     pre = [str(qemu), "-cpu", "cortex-a9"] if which.startswith(("arm", "vita")) else []
     topk_sha = None
     try:
-        p = subprocess.run([*pre, str(cli), str(blob), "--mode", mode, "--pack", str(pack), "--logits", str(fifo),
+        lg = ["--logits", str(fifo)] if logits else []
+        if not logits:
+            open(fifo, "wb").close()             # the reader sees an empty stream
+        p = subprocess.run([*pre, str(cli), str(blob), "--mode", mode, "--pack", str(pack), *lg,
                             *topk, *shlex.split(opts)], capture_output=True, text=True, stdin=subprocess.DEVNULL,
                            timeout=7200)
         if topk and not p.returncode:
@@ -122,6 +129,9 @@ def main():
     ap.add_argument("--modes", default="w8i,w8f")
     ap.add_argument("--builds", default="host-gcc,host-clang,arm-neon,arm-scalar,vita-neon")
     ap.add_argument("--cli-opts", default="")
+    ap.add_argument("--no-logits", action="store_true",
+                    help="ask for no logits: texts and top-K only, so that the head gate and the two-level head run as "
+                         "they do for Rubi (with --logits every frame reads through the full head)")
     ap.add_argument("--json", type=Path)
     ap.add_argument("--qemu", default=os.environ.get("QEMU_ARM", ""))
     args = ap.parse_args()
@@ -143,7 +153,8 @@ def main():
                 for b in args.builds.split(","):
                     row = {"blob": blob.name, "mode": mode, "build": b}
                     for ver in ("base", "new"):
-                        lg, tx, nbytes, tail, tk = run(clis[ver, b], b, qemu, blob, mode, args.pack, args.cli_opts)
+                        lg, tx, nbytes, tail, tk = run(clis[ver, b], b, qemu, blob, mode, args.pack, args.cli_opts,
+                                                       logits=not args.no_logits)
                         row[ver] = {"logits_sha256": lg, "texts_sha256": tx, "logit_bytes": nbytes, "cli": tail,
                                     "topk_sha256": tk}
                     keys = ("logits_sha256", "texts_sha256", "topk_sha256")
@@ -162,7 +173,8 @@ def main():
         shutil.rmtree(work, ignore_errors=True)
     if args.json:
         args.json.write_text(json.dumps({"ok": ok, "pack_sha256": hashlib.sha256(args.pack.read_bytes()).hexdigest(),
-                                         "cli_opts": args.cli_opts, "results": results}, indent=1))
+                                         "cli_opts": args.cli_opts, "logits": not args.no_logits, "results": results},
+                                        indent=1))
     print("PARITY OK" if ok else "PARITY FAILED")
     sys.exit(0 if ok else 1)
 

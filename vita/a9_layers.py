@@ -57,12 +57,12 @@ def plugin_dir(qemu_root):
     raise SystemExit("no libinsn_mix.so: run vita/scripts/build_qemu_plugins.sh (or set VOCR_A9_PLUGINS)")
 
 
-def build(out, vitasdk, arm_cc, runtime, prof):
+def build(out, vitasdk, arm_cc, runtime, prof, vocr_cflags=("-O2",)):
     vcc = Path(vitasdk) / "bin/arm-vita-eabi-gcc"
     tag = "prof" if prof else "plain"
     obj, cli = out / f"vocr_vita_{tag}.o", out / f"vocr_cli_{tag}"
     lm_obj = out / f"vocr_lm_vita_{tag}.o"
-    flags = [*A9.WARN, *A9.ARCH, "-O2"] + (["-DVOCR_PROF=vocr_prof_mark"] if prof else [])
+    flags = [*A9.WARN, *A9.ARCH, *vocr_cflags] + (["-DVOCR_PROF=vocr_prof_mark"] if prof else [])
     subprocess.run([str(vcc), *flags, "-c", "-o", str(obj), str(runtime / "vocr.c")], check=True)
     # vocr_cli.c links the CTC beam/LM decoder: the version's vocr_lm.c, else this checkout's (Vita compiler
     # too); only vocr.c's functions are profiled, and the decoder runs only with --lm
@@ -160,10 +160,10 @@ def measure(args):
                 "pack_sha256": hashlib.sha256(pack.read_bytes()).hexdigest(), "lines": n_lines,
                 "frames_expected": n_frames, "mode": args.mode, "cli_opts": args.cli_opts,
                 "runtime": str(runtime), "vocr_c_sha256": hashlib.sha256((runtime / "vocr.c").read_bytes()).hexdigest(),
-                "pld_model": not args.no_pld, "runs": {}}
+                "pld_model": not args.no_pld, "vocr_cflags": args.vocr_cflags, "runs": {}}
         for prof in ([True, False] if args.plain else [True]):
             tag = "prof" if prof else "plain"
-            cli, marker = build(out, vitasdk, arm_cc, runtime, prof)
+            cli, marker = build(out, vitasdk, arm_cc, runtime, prof, shlex.split(args.vocr_cflags))
             shutil.copy2(cli, stage / cli.name)
             opts = [f"out={out}/counts_{tag}.txt", f"classes={out}/classes_{tag}.txt"]
             if prof:
@@ -375,6 +375,8 @@ def main():
     m.add_argument("--limit", type=int, default=0)
     m.add_argument("--cli-opts", default="")
     m.add_argument("--runtime", help="directory with the vocr.c to measure (default: this checkout's runtime/)")
+    m.add_argument("--vocr-cflags", default="-O2",
+                   help="the Vita compiler's optimisation flags for vocr.c (default -O2, as Rubi builds it; e.g. -O3)")
     m.add_argument("--plain", action="store_true", help="also run the build without markers")
     m.add_argument("--no-pld", action="store_true",
                    help="no PLD model: the cache model sees only demand accesses, the bound if the A9's PLD does "

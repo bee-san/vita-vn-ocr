@@ -338,6 +338,16 @@ int main(int argc, char **argv)
     memset(&o, 0, sizeof o);
     memset(&lo, 0, sizeof lo);
     lo.beam = 8;
+    /* the file-scope options too, so that main can run more than once in a process (vita/par runs its jobs so) */
+    invert_flag = 0;
+    topk_n = 0;
+    conf_flag = 0;
+    topk_out = NULL;
+    lm_dec = NULL;
+    post_flag = 0;
+    memset(&redecode_o, 0, sizeof redecode_o);
+    redecode_on = 0;
+    gated_total = 0;
     for (i = 2; i < argc; i++) { /* options first; image paths are read in a second pass */
         const char *a = argv[i];
         int has = i + 1 < argc;

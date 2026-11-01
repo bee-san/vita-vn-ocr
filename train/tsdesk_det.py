@@ -39,9 +39,9 @@ import torch
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parents[1]
-for _p in (ROOT / "train", ROOT / "synth", ROOT / "tools"):
+for _p in (ROOT / "train", ROOT / "synth", ROOT / "tools", ROOT):
     if str(_p) not in sys.path:
-        sys.path.insert(0, str(_p))
+        sys.path.append(str(_p)) if _p == ROOT else sys.path.insert(0, str(_p))
 
 import desktop_det as DD  # noqa: E402
 import tsdesk_net as N  # noqa: E402

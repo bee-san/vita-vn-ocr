@@ -38,6 +38,7 @@ for _p in (ROOT / "eval", ROOT / "tools", ROOT / "synth", ROOT / "train", ROOT /
 import desktop as D  # noqa: E402
 
 PROTOCOL = ROOT / "eval" / "textspot_desktop_protocol.json"
+READ_PAD = os.environ.get("TSDESK_PAD", "auto")      # the reading pad of the tsd: / ctsd: timing pipelines
 SCHEMA = "textspot-desktop/1"
 
 
@@ -84,6 +85,24 @@ def install(Dm=D):
 
     Dm.detector, Dm._tsdesk_installed = detector, True
     tsdesk_dense.install_ignore(Dm)
+    base_pad, base_crop = Dm.pad_of, Dm.crop_box
+
+    def pad_of(spec, H):
+        """eval/desktop.py's pad specs plus the protocol's rules: 'kN' = max(2, round(N H / 544)) px on every side,
+        'kAvB' = A horizontally and B vertically (a tuple)."""
+        s = str(spec)
+        if s.startswith("k"):
+            kh, _, kv = s[1:].partition("v")
+            ph, pv = pad_px(float(kh), H), pad_px(float(kv or kh), H)
+            return ph if ph == pv else (ph, pv)
+        return base_pad(spec, H)
+
+    def crop_box(b, pad, W, H):
+        if isinstance(pad, tuple):
+            return crop_hv(b, pad, W, H)
+        return base_crop(b, pad, W, H)
+
+    Dm.pad_of, Dm.crop_box = pad_of, crop_box
     try:
         import desktop_time as DT
     except ImportError:
@@ -93,7 +112,7 @@ def install(Dm=D):
     def pipeline_init(self, spec, threads, mode, *a, **k):
         init(self, spec, threads, mode, *a, **k)
         if spec.startswith(("tsd:", "ctsd:")):
-            self.pad = "auto"
+            self.pad = READ_PAD
     DT.Pipeline.__init__ = pipeline_init
 
 
@@ -151,6 +170,8 @@ def crop_hv(b, p, W, H):
     ph, pv = p
     x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
     x1, y1 = min(W, int(math.ceil(b[2] + ph))), min(H, int(math.ceil(b[3] + pv)))
+    if x1 <= x0 or y1 <= y0:
+        return None
     return (x0, y0, x1 - x0, y1 - y0)
 
 

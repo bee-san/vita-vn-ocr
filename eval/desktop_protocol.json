@@ -808,6 +808,16 @@
     "role": "none in the decision rule (C against R); reported beside R, MeikiOCR itself and textspot8 + VOCR6.2-L",
     "source": "mida-ocr-eval's recommendation (pane message and status 2026-11-01T20:52Z); owner 15:49Z: 'Use their model if its useful'"
    }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-01T21:15:16Z",
+   "before": "the PC test set, confirm-v2 and the test titles are read; after the dev-v2 record (eval/desktop_dev_20261101.json, a19bede)",
+   "finding": "no policy of the representative (F3, seed 3) meets the dev-v2 accuracy clause: the lowest is long:960 at 0.983% against the limit 0.924% (1.2 x R's 0.770%); fit:640, fit:480 and long:640 meet the speed clause (Vita / PSP ratios 0.247 / 0.175, 0.187 / 0.174, 0.247 / 0.222). The rule's verdict will be no qualifier unless the PC test set changes nothing (it cannot make a candidate qualify: every clause must hold)",
+   "what": {
+    "research_release": "as textspot6's rule did for a negative verdict: a research pre-release, labelled not adopted, of the representative's train + guard + hval retrain (final_d64_seed3, trained alongside the seeds; ONNX ad730729..., VDSK 7fde78d2...) at the policy with the lowest dev-v2 CER among those that meet the speed clause: long:640 (F3 1.102%); its own dev-v2 score at every policy is reported",
+    "reads": "the PC test set, confirm-v2 (and their like-for-like frames) and the test titles are read once, together, for R, MeikiOCR itself, textspot8 + VOCR6.2-L, mida (report only) and the representative F3 at the 7 policies (the rule's reads), plus the research model at long:640 and, on the like-for-like frames, at fit:960 (report only)"
+   }
   }
  ]
 }

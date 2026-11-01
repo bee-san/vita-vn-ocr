@@ -140,6 +140,15 @@
     "restart": "the five screening arms (Sa_p8a, Sb_p8s, Sc_p4a, Sd_p8g, Se_p8a_junk) run from scratch with these targets, seed 1, 40,000 steps; the screening score and rule are unchanged"
    },
    "read_before_this_amendment": "hval only (the screening set): the geometry and the detector-free reads above, and three contact sheets of hval lines; nothing of dev-v2, dense_screen, dense_dev or the PC test set by any detector"
+  },
+  {
+   "n": 2,
+   "time": "2026-11-01T20:54:30Z",
+   "before": "any candidate is read on any set or timed (the five screening arms are training; no checkpoint exists)",
+   "what": {
+    "resize": "every read of a tsd: detector resizes the frame with the C path's integer resize (tools/tsdesk.resize, the numpy twin of desktop/vocr_desk.c's vocr_desk_resize, equal bit for bit on every size tested), so the ONNX and C paths see the same network input (R6); ONNX Runtime timings use cv2 (INTER_AREA down, INTER_LINEAR up, the tsd: spec's @cv2 suffix), as an app would",
+    "pick_cost": "the pick's cost is the C 1-thread p50 summed over the Vita, PSP and pc1080 timing pages (the PSP pages added: fit:960 and long:960 cost the same on the Vita and pc1080 pages and differ on small frames)"
+   }
   }
  ]
 }

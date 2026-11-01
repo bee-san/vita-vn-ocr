@@ -10,11 +10,12 @@ scripts write them):
   dense_dev_{ARM}_s{N}_{POL}_L_fast.json                        R2 (CER <= 2.00%)
   edges_hval_{ARM}_s{N}_{POL}.json                              R3 (per edge median |e| <= 1, p90 <= 2; the cost)
   hval_{ARM}_s{N}_{POL}_L_fast.json                             R4 (PCSG00854's junk boxes <= 5)
-  T.json: {"POL": {"vita": {"p50": ms}, "pc1080": {"p50": ms}}}, the C AVX2 build at 1 thread   R5
+  T.json: {"POL": {"vita": {"p50": ms}, "psp": {...}, "pc1080": {...}}}, the C AVX2 build at 1 thread   R5
   P.json: {"POL": {"crops_equal_share": x, "cer_onnx": a, "cer_c": b}} on dev-v2                R6
 The representative seed is the median of the seeds by dev-v2 CER at fit:960 (ties: the lower seed). Each policy of
 the representative is a candidate; the pick is the cheapest qualifier (C 1-thread p50, Vita + pc1080); a costlier
-one replaces it only when it is resolved better on dev-v2 (the paired interval entirely below 0).
+one replaces it only when it is resolved better on dev-v2 (the paired interval entirely below 0); amendment 2 adds the
+PSP timing pages to the cost.
 """
 import argparse
 import json
@@ -96,7 +97,7 @@ def candidate(res, arm, seed, pol, t8, timing, parity):
     else:
         out["R6"] = {"pass": False, "why": "no C parity record for this policy"}
     out["qualifies"] = all(out[k]["pass"] for k in ("R1", "R2", "R3", "R4", "R5", "R6"))
-    out["cost_ms"] = (tm["vita"]["p50"] + tm["pc1080"]["p50"]) if tm else None
+    out["cost_ms"] = (tm["vita"]["p50"] + tm["psp"]["p50"] + tm["pc1080"]["p50"]) if tm else None   # amendment 2
     out["_dev"] = dev
     return out
 

@@ -61,8 +61,9 @@ class CTsdDet:
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
     if spec.startswith("tsd:"):
-        path, _, size = spec[4:].partition("@")
-        return T.Detector(path, session_options=so, size=size or None)
+        path, _, rest = spec[4:].partition("@")
+        size, _, mode = rest.partition("@")
+        return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact")
     if spec.startswith("ctsd:"):
         path, _, size = spec[5:].partition("@")
         return CTsdDet(path, size or None, threads)

@@ -61,7 +61,7 @@ DEFAULTS = {
     "start_pct": 180, "end_pct": 400, "along_min": 3,
     "core_pct": 25, "along_core_pct": 50,
     "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50, "beyond_pct": 15,
-    "gap_pct": 70, "gap_min": 2,
+    "gap_pct": 70, "gap_min": 2, "gap_start_pct": 35,
     "bar_pct": 15,
     "shrink_a_pct": 10, "shrink_l_pct": 25,
     "floor": 28, "k_pct": 40,
@@ -112,10 +112,11 @@ def _c3(g, x0, y0, x1, y1):
     return vmax - vmin
 
 
-def _walk(cnt, start, step, n, gap, stop=None):
+def _walk(cnt, start, step, n, gap, stop=None, gap2=None, edge=None):
     """From index `start` (an ink entry) move by `step` (-1 or +1) through entries with cnt > 0, crossing runs of at
-    most `gap` empty entries, within [0, n); an entry with stop[i] set ends the walk. (the last ink index, True when
-    the walk ran out of [0, n) within `gap` + 1 of its last ink: the ink may go on beyond)."""
+    most `gap` empty entries (`gap2` once the walk is past index `edge` in its direction), within [0, n); an entry
+    with stop[i] set ends the walk. (the last ink index, True when the walk ran out of [0, n) within the gap + 1 of
+    its last ink: the ink may go on beyond)."""
     last = start
     i = start + step
     run = 0
@@ -127,7 +128,8 @@ def _walk(cnt, start, step, n, gap, stop=None):
             run = 0
         else:
             run += 1
-            if run > gap:
+            g_ = gap2 if gap2 is not None and (i - edge) * step > 0 else gap
+            if run > g_:
                 return last, False
         i += step
     return last, True
@@ -286,7 +288,8 @@ def refine_box(g, b, o=None, dbg=None, lim=None):
     S_l = r100(hh, o["shrink_l_pct"])
     if cstop is not None:
         barrier = cstop if barrier is None else (barrier | cstop)
-    left, more = _walk(cc, k0 + int(ink[0]), -1, mw, G, barrier)
+    Gs = max(o["gap_min"], r100(hh, o["gap_start_pct"])) if o["gap_start_pct"] > 0 else None
+    left, more = _walk(cc, k0 + int(ink[0]), -1, mw, G, barrier, Gs, bx0)
     if more and lim_l:
         left, status = None, status | ST_LIMIT
     elif left - bx0 > S_l:

@@ -29,7 +29,7 @@ void vocr_tsdr_defaults(vocr_tsdr_opts *o)
     o->start_pct = 180; o->end_pct = 400; o->along_min = 3;
     o->core_pct = 25; o->along_core_pct = 50;
     o->row_gap = 0; o->valley_pct = 8; o->low_run_pct = 20; o->rise_pct = 50; o->beyond_pct = 15;
-    o->gap_pct = 70; o->gap_min = 2;
+    o->gap_pct = 70; o->gap_min = 2; o->gap_start_pct = 35;
     o->bar_pct = 15;
     o->shrink_a_pct = 10; o->shrink_l_pct = 25;
     o->floor_ = 28; o->k_pct = 40;
@@ -279,14 +279,18 @@ static void col_counts(const unsigned char *m, int mw, int y0, int y1, int *cc)
 
 /* ---- the walks (tools/tsdesk_refine._walk / _walk_rows) ---- */
 
+/* gap2 >= 0: the gap allowed once the walk is past index `edge` in its direction */
 static int walk(const int *cnt, int start, int step, int n, int gap, const unsigned char *stop, int s_lo, int s_hi,
-                int *more)
+                int gap2, int edge, int *more)
 {
     int last = start, i = start + step, run = 0;
     while (i >= 0 && i < n) {
         if ((stop && stop[i]) || i < s_lo || i >= s_hi) { *more = 0; return last; }
         if (cnt[i] > 0) { last = i; run = 0; }
-        else if (++run > gap) { *more = 0; return last; }
+        else {
+            int g = (gap2 >= 0 && (i - edge) * step > 0) ? gap2 : gap;
+            if (++run > g) { *more = 0; return last; }
+        }
         i += step;
     }
     *more = 1;
@@ -373,7 +377,7 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
 {
     double x0 = bx[0], y0 = bx[1], x1 = bx[2], y1 = bx[3], f;
     int ix0, iy0, ix1, iy1, h, w, A, Ls, Le, wx0, wx1, wy0, wy1, mw, mh, bx0, by0, x, y, bg, mg, nq = 0, qv[2], noise, t,
-        tc, top, bot, left, right, rt, rb, hh, bar, have_bar = 0, c, k0, k1, first = -1, last = -1, G, S_l, more, cl,
+        tc, top, bot, left, right, rt, rb, hh, bar, have_bar = 0, c, k0, k1, first = -1, last = -1, G, Gs, S_l, more, cl,
         cr, bt, bb;
     unsigned st = 0, st2 = 0, hist[256], hist2[256];
     unsigned long n_ring;
@@ -491,10 +495,11 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
     if (first < 0) return st | VOCR_TSDR_NOINK;
     G = imax(o->gap_min, r100(hh, o->gap_pct));
     S_l = r100(hh, o->shrink_l_pct);
-    left = walk(s->cc, first, -1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, &more);
+    Gs = o->gap_start_pct > 0 ? imax(o->gap_min, r100(hh, o->gap_start_pct)) : -1;
+    left = walk(s->cc, first, -1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, Gs, bx0, &more);
     if (more && wx0 > 0) { left = -1; st |= VOCR_TSDR_LIMIT; }
     else if (left - bx0 > S_l) { left = -1; st |= VOCR_TSDR_SHRINK; }
-    right = walk(s->cc, last, +1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, &more);
+    right = walk(s->cc, last, +1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, -1, 0, &more);
     if (more && wx1 < (int)W) { right = -1; st |= VOCR_TSDR_LIMIT; }
     else if ((bx0 + w - 1) - right > S_l) { right = -1; st |= VOCR_TSDR_SHRINK; }
     cl = left >= 0 ? left : bx0;

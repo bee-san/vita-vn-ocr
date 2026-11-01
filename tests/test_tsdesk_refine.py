@@ -350,7 +350,9 @@ def test_start_band_is_shorter_than_the_end_band():
         cv2.rectangle(img, (box[2] + 10 * k - 3, yc - 1), (box[2] + 10 * k, yc + 1), 250, -1)
     out, st = _refine1(img, [box[0], box[1], box[2], box[3]])
     assert out[2] == box[2] + 10 * 5 + 1            # the rule after the end is the line's (a …… or a ――)
-    assert out[0] == box[0] and st & TR.ST_LIMIT     # before the start it runs past the start band: kept
+    assert out[0] == box[0]                          # before the start: its 9-px gaps exceed the start gap
+    out2, st2 = _refine1(img, [box[0], box[1], box[2], box[3]], gap_start_pct=0)
+    assert out2[0] == box[0] and st2 & TR.ST_LIMIT   # with the end's gap it runs past the start band: kept
 
 
 def test_an_edge_never_grows_into_another_box():
@@ -370,6 +372,26 @@ def test_an_edge_never_grows_into_another_box():
     lim = TR.neighbour_limits([left, right, above], img.shape[1], img.shape[0])
     assert lim[0][2] == int(np.floor(right[0])) and lim[1][0] == int(np.ceil(left[2]))
     assert lim[0][1] == int(np.ceil(above[3]))      # the box above limits the top edge
+
+
+def test_start_gap_is_shorter_than_the_end_gap():
+    # a blob 0.5 line heights before the line's start (a box frame's ornament) is left out; the same blob 0.2 line
+    # heights before it (a 「 at the right of its cell) is taken in; after the end, 0.5 line heights is crossed
+    for dist, taken in ((0.5, False), (0.2, True)):
+        rng = np.random.default_rng(15)
+        img, box = make_line(rng, "flat", "plain", h=20, W=600)
+        h = box[3] - box[1]
+        bx = int(round(box[0] - dist * h)) - 4
+        cv2.rectangle(img, (bx, box[1] + 2), (bx + 3, box[3] - 3), 250, -1)
+        out, _ = _refine1(img, [box[0] + 2.0, box[1], box[2], box[3]])
+        assert (out[0] == bx) == taken, (dist, out, box, bx)
+    rng = np.random.default_rng(15)
+    img, box = make_line(rng, "flat", "plain", h=20, W=600)
+    h = box[3] - box[1]
+    ex = int(round(box[2] + 0.5 * h))
+    cv2.rectangle(img, (ex, box[1] + 2), (ex + 3, box[3] - 3), 250, -1)
+    out, _ = _refine1(img, [box[0], box[1], box[2] - 2.0, box[3]])
+    assert out[2] == ex + 4
 
 
 def test_shrink_bound_keeps_the_edge():

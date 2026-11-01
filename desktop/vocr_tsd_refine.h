@@ -23,7 +23,7 @@ typedef struct {
     int start_pct, end_pct, along_min;
     int core_pct, along_core_pct;
     int row_gap, valley_pct, low_run_pct, rise_pct, beyond_pct;
-    int gap_pct, gap_min;
+    int gap_pct, gap_min, gap_start_pct;
     int bar_pct;
     int shrink_a_pct, shrink_l_pct;
     int floor_, k_pct;
@@ -32,7 +32,7 @@ typedef struct {
     int neighbours;           /* 1: an edge never grows into another box (neighbour limits) */
 } vocr_tsdr_opts;
 
-#define VOCR_TSDR_NOPTS 28
+#define VOCR_TSDR_NOPTS 29
 
 /* status bits, one word per box (tools/tsdesk_refine.ST_*) */
 enum {

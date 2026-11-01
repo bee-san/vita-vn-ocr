@@ -126,5 +126,20 @@
  },
  "ship": "C AVX2 + scalar fallback (desktop/), the ONNX FP32 file, the reference Python pipeline with VOCR's recognizer, parity tests in tests/, docs/textspot-desktop.md (speed / tightness / accuracy against textspot8, mida, vocr-desktop's d64 and MeikiOCR), a vita-vn-ocr pre-release with SHA256SUMS and the same attribution and licence notes as the other weights",
  "vita": "the docs say whether the approach helps on the Vita (MACs and an A9 estimate of an int8 variant); a smaller Vita variant for Rubi is a follow-up, not this work",
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-11-01T20:36:48Z",
+   "before": "any candidate is trained to completion, scored or timed; dev-v2, dense_dev, the PC test set and the detector-free reads of dense_screen have not been read; the three screening runs started 20:15Z (Sa_p8a, Se_p8a_junk, Sb_p8s, old targets) were stopped at steps 10,800-12,600 and are never scored",
+   "found": "the registered exact reference and the hooked pages' training targets (synth/textspot6_pages.refined_line: teacher/geometry.refine, the smallest of three masks' boxes) cut thin or faint end glyphs. On 400 seeded hval pages (700 lines; geometry only) refined_line's box lacks an end of at least 0.3 line heights that the ink inside the glyph cells reaches on 6.2% of Vita lines and 12.4% of PSP lines, in a few titles (PCSG00845, NPJH50621, NPJH50591, PCSG00667, ...); two contact sheets show dropped ――, 「, 」, 。, …… and one coloured word, and the plain contrast extent running into dithered and patterned boxes. Read detector-free by VOCR6.2-L fast with pad auto, 662 of those hval lines: renderer box 0.361% CER, refined_line 1.073%, the cells' ink box (below) 0.484%, the cells' union 0.389%",
+   "what": {
+    "exact_reference": "metrics.edge_error and metrics.tightness_cost: the exact box of a hooked line is train/tsdesk_targets.ink_box on the union of the line's glyph cells (the frames' cells: the renderer's cell_boxes, or even cells of the box): the window's ring median as the background, the threshold max(28, 0.4 x p99 inside, p90 on the ring + 12), the ink where the pixel differs from the background by more than it and lies at a 3x3 local-contrast edge (above max(28, 0.4 x p99 of that contrast)), blobs under 3 px dropped, the first and last ink rows and columns; refined_line is no longer the reference. A line whose cells hold no ink is left out and counted (as before)",
+    "training_targets": "every arm: the verified positives of the hooked sources (hook: the page shards, train split; desk_hook: #171's 1a, its exact capture rebuilt from its seed) get the ink box of the cache train/tsdesk_targets.py build (targets_v1, all train / guard / hval pages of pools v2.1), a sample changed only when its stored boxes equal the cache's refined_line boxes (checked per line; vertical lines keep theirs); every other label unchanged",
+    "e_loss_sources": "the along-end (E1 / E2) loss is applied on the sources with exact ink boxes only: hook, desk_hook, synth, desk_synth (tsdesk_det.py --e-exact); the real half and 1b keep their K, O, A and tag terms (their boxes come from teacher/geometry.refine)",
+    "reading_pad": "chosen detector-free before any candidate read: every reference line's exact box (hval: the ink box above; dense_screen: its 1b box) read by VOCR6.2_L_fast.onnx (greedy) at each pad rule of eval/tsdesk.py PAD_RULES (k3, k4, k5, k6, k8, k4v6, k6v4: max(2, round(k H / 544)) frame px horizontally / vertically; k4 = eval/desktop.py's auto); the rule with the lowest mean of the two sets' CER is the reading pad of every candidate and of the exact reference (rules.reading and R3's tightness cost); R and T8 keep their registered reading (R: auto; T8: none, its boxes carry textspot8's pad)",
+    "restart": "the five screening arms (Sa_p8a, Sb_p8s, Sc_p4a, Sd_p8g, Se_p8a_junk) run from scratch with these targets, seed 1, 40,000 steps; the screening score and rule are unchanged"
+   },
+   "read_before_this_amendment": "hval only (the screening set): the geometry and the detector-free reads above, and three contact sheets of hval lines; nothing of dev-v2, dense_screen, dense_dev or the PC test set by any detector"
+  }
+ ]
 }

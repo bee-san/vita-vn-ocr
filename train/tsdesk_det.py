@@ -213,6 +213,9 @@ def add_extra_sources(sources, mix, extra, skip_vns):
         if name not in mix:
             raise SystemExit(f"--extra {name}: no weight for it in --mix")
         pool = SkipPool(man, root, splits, skip_vns)
+        if not hasattr(sources, "extra_pools"):
+            sources.extra_pools = {}
+        sources.extra_pools[name] = pool
         sources.names.append(name)
         sources.p = np.append(np.asarray(sources.p, np.float64) * 1.0, float(mix[name]))
         sources.draw[name] = pool.draw
@@ -230,7 +233,43 @@ def make_sources(c):
     sources = B.Sources(base_mix, hook, frames, c["title_temp"])
     sources.p = np.asarray(sources.p) * sum(base_mix.values())
     extra = add_extra_sources(sources, c["mix"], c.get("extra", {}), frozenset(c.get("skip_vns", ())))
+    if c.get("targets"):
+        extra["targets"] = patch_pools(sources, hook, c["targets"])
     return sources, hook, frames, extra
+
+
+EXACT_SOURCES = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
+
+
+def patch_pools(sources, hook, targets_dir):
+    """Amendment 1: the hooked sources' verified positives get the target cache's ink boxes (train/tsdesk_targets.py;
+    a sample whose stored boxes do not match the cache's refined_line boxes keeps its own)."""
+    import tsdesk_targets as TT
+    cache, doc = TT.load_cache(targets_dir)
+    rec = {"targets": str(targets_dir), "targets_sha256": TT._sha(Path(targets_dir) / "targets.json")}
+    if hook is not None:
+        n_ok = n_bad = 0
+        for t, lst in hook.by_title.items():
+            for i, (d, smp) in enumerate(lst):
+                ps = TT.patch_sample(smp, cache, "hook")
+                if ps is None:
+                    n_bad += 1
+                else:
+                    lst[i] = (d, ps)
+                    n_ok += 1
+        rec["hook"] = {"patched": n_ok, "kept": n_bad}
+    pool = getattr(sources, "extra_pools", {}).get("desk_hook")
+    if pool is not None:
+        n_ok = n_bad = 0
+        for i, (d, smp) in enumerate(pool.items):
+            ps = TT.patch_sample(smp, cache, "desk_hook")
+            if ps is None:
+                n_bad += 1
+            else:
+                pool.items[i] = (d, ps)
+                n_ok += 1
+        rec["desk_hook"] = {"patched": n_ok, "kept": n_bad}
+    return rec
 
 
 def make_batch(sources, rng, cfg):
@@ -243,6 +282,7 @@ def make_batch(sources, rng, cfg):
     tg = [np.zeros((bsz, ho, wo), np.float32) for _ in range(7)]
     bm = [np.zeros((bsz, ho, wo), bool) for _ in range(4)]
     mk = np.zeros((bsz, ho, wo), np.int64)
+    e_src = cfg.get("e_sources")
     for b in range(bsz):
         src, canvas, smp = sources.pick(rng)
         if cfg.get("recipe") == "junk":
@@ -251,6 +291,9 @@ def make_batch(sources, rng, cfg):
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
+        if e_src is not None and src not in e_src:
+            m1[:] = False
+            m2[:] = False
         for t, a in zip(tg, (K, O, A1, A2, E1, E2, Wt)):
             t[b] = a
         for t, a in zip(bm, (v, k, m1, m2)):
@@ -352,6 +395,10 @@ def parse(argv=None):
     ap.add_argument("--extra", nargs="*", default=[], help="NAME=MANIFEST:ROOT[:SPLITS]: more sources for --mix")
     ap.add_argument("--recipe", default="base", choices=("base", "junk"))
     ap.add_argument("--skip-vns", help="a file of VNs (one per line) left out of the real half and the extra pools")
+    ap.add_argument("--targets", help="amendment 1: the ink-box target cache (train/tsdesk_targets.py build) for the "
+                                      "hooked sources' verified positives")
+    ap.add_argument("--e-exact", action="store_true", help="amendment 1: the along-end (E) loss only on the sources "
+                                                            "with exact ink boxes (EXACT_SOURCES)")
     ap.add_argument("--steps", type=int, default=40000)
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--warmup", type=int, default=500)
@@ -398,7 +445,8 @@ def main(argv=None):
            "hook_splits": tuple(a.hook_splits.split(",")), "manifests": list(a.manifest), "shards": list(a.shards),
            "skip": (skip_shots, frozenset(base_skip_vns) | skip_vns), "skip_vns": sorted(skip_vns),
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
-           "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"])}
+           "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
+           "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -407,7 +455,8 @@ def main(argv=None):
                 "frames": frames.summary() if frames else None, "text_free_synthetic": len(sources.empty),
                 "skip_vns": {"file": a.skip_vns, "sha256": sha256_file(a.skip_vns) if a.skip_vns else None,
                              "vns": len(skip_vns)},
-                "real_half_dropped": frames.dropped if frames is not None else None}
+                "real_half_dropped": frames.dropped if frames is not None else None,
+                "targets": extra_rec.get("targets")}
     skip_rec = ST.skip_record(lists, frames.dropped) if lists and frames is not None else None
     del hook, frames, sources
     torch.set_num_threads(a.threads)
@@ -423,7 +472,8 @@ def main(argv=None):
            "args": {k: v for k, v in vars(a).items() if k not in ("mix_d", "scale_t")}, "mix": a.mix_d,
            "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch, "recipe": a.recipe,
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
-                       "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT},
+                       "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
+                       "ink_cache": a.targets, "e_sources": cfg["e_sources"]},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
            "manifests_sha256": {m: sha256_file(m) for m in [*a.manifest, *([a.hook_manifest] if a.hook_manifest
@@ -471,7 +521,8 @@ def main(argv=None):
         wait = np.array([t for t, _ in times[2:]]) * 1e3
         probe = {"name": a.name, "params": N.n_params(model), "ms_per_step": round(float(ms.mean()), 1),
                  "ms_waiting_for_data": round(float(wait.mean()), 1), "threads": a.threads, "workers": a.workers,
-                 "startup_s": round(t0 - t_proc, 1), "pool": pool_rec["extra"], "sources": pool_rec["sources"]}
+                 "startup_s": round(t0 - t_proc, 1), "pool": pool_rec["extra"], "sources": pool_rec["sources"],
+                 "targets": pool_rec["targets"]}
         (out / "probe.json").write_text(json.dumps(probe, indent=1) + "\n")
         print("tsdesk_det probe:", json.dumps(probe), flush=True)
         return probe

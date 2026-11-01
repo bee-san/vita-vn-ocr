@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+"""textspot-desktop's exact line boxes (issue #173, eval/textspot_desktop_protocol.json amendment 1): the ink extent
+of a hooked line inside its glyph cells.
+
+Every verified line of the hooked pages carries the renderer's geometry: its box (the extent of its glyph quads) and
+its cells (cell_boxes: one per character of the label, the glyph quads grouped by character; on image-row titles the
+title's pitch grid from the first to the last ink column). Neither is tight to the ink: a cell is a glyph's whole
+em box, so 「 sits in the right part of its cell and 。 in the lower left, and the box can also hold an indent space
+or a cursor quad that is no character of the label. The repository's ink refinement (teacher/geometry.refine, which
+synth/textspot6_pages.refined_line applies to the box) takes the smallest of three masks' boxes; on titles whose
+punctuation or a coloured word is fainter than the other glyphs it drops a leading 「 or ――, or a trailing 。, 」 or
+……, and on dithered or patterned boxes the plain contrast extent runs into the background. This function:
+
+  1. c = the union of the line's cells (its box when it has none), clipped to the frame;
+  2. a window of c grown by `grow` px; the background: the per-channel median of the window's one-pixel border ring;
+  3. d = each pixel's largest per-channel absolute difference from the background;
+  4. the threshold t = max(floor, k x the 99th percentile of d inside c, the 90th percentile of d on the ring +
+     `noise_margin`): above the background's own texture (a dither or a pattern on the ring);
+  5. the ink: pixels with d > t inside c grown by `spill` px, without the 4-connected components of fewer than
+     `min_blob` pixels (dither and noise specks);
+  6. the box: the first and last columns and rows holding ink, as an integer half-open [x0, y0, x1, y1] in frame px.
+A line with no ink keeps c ("cells"). The along-line ends are each within a cell of c's (the first and last
+characters' cells), the across extent within c's rows grown by `spill`.
+"""
+import numpy as np
+
+GROW = 2
+SPILL = 1
+K = 0.4
+FLOOR = 28.0
+NOISE_MARGIN = 12.0
+MIN_BLOB = 3
+
+
+def cells_union(line):
+    """[x0, y0, x1, y1] (floats) of a pool line's cells, or of its box (box_main for a line with furigana)."""
+    cb = line.get("cell_boxes") or []
+    if cb:
+        a = np.asarray([b[:4] for b in cb], np.float64)
+        return [float(a[:, 0].min()), float(a[:, 1].min()), float(a[:, 2].max()), float(a[:, 3].max())]
+    x, y, w, h = line.get("box_main") if line.get("furigana") and line.get("box_main") else line["box"]
+    return [float(x), float(y), float(x + w), float(y + h)]
+
+
+def _drop_small(m, min_blob):
+    if min_blob <= 1 or not m.any():
+        return m
+    import cv2
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), connectivity=4)
+    keep = np.zeros(n, bool)
+    keep[1:] = stats[1:, cv2.CC_STAT_AREA] >= min_blob
+    return keep[lab]
+
+
+def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE_MARGIN, min_blob=MIN_BLOB):
+    """(box, how): the ink box of a line inside c = [x0, y0, x1, y1] (its cells' union, module docstring); how is
+    "ink" or "cells"."""
+    import math
+    H, W = rgb.shape[:2]
+    x0, y0 = max(0, int(math.floor(c[0]))), max(0, int(math.floor(c[1])))
+    x1, y1 = min(W, int(math.ceil(c[2]))), min(H, int(math.ceil(c[3])))
+    if x1 - x0 < 2 or y1 - y0 < 2:
+        return [x0, y0, x1, y1], "cells"
+    wx0, wy0, wx1, wy1 = max(0, x0 - grow), max(0, y0 - grow), min(W, x1 + grow), min(H, y1 + grow)
+    win = np.asarray(rgb[wy0:wy1, wx0:wx1]).astype(np.int16)
+    if win.ndim == 2:
+        win = win[:, :, None]
+    ring = np.concatenate([win[0], win[-1], win[1:-1, 0], win[1:-1, -1]], 0)
+    bg = np.median(ring, axis=0)
+    d = np.abs(win - bg[None, None, :]).max(axis=2).astype(np.float32)
+    dr = np.concatenate([d[0], d[-1], d[1:-1, 0], d[1:-1, -1]])
+    inner = d[y0 - wy0:y1 - wy0, x0 - wx0:x1 - wx0]
+    t = max(float(floor), float(k) * float(np.percentile(inner, 99)), float(np.percentile(dr, 90)) + noise_margin)
+    # local contrast (the 3x3 max - min of the luma): a smooth gradient behind the text differs from the ring's
+    # median without being ink; a stroke edge has both
+    g = win.mean(axis=2).astype(np.float32)
+    gp = np.pad(g, 1, mode="edge")
+    sh = [gp[i:i + g.shape[0], j:j + g.shape[1]] for i in range(3) for j in range(3)]
+    c3 = np.max(sh, 0) - np.min(sh, 0)
+    c3i = c3[y0 - wy0:y1 - wy0, x0 - wx0:x1 - wx0]
+    tc = max(float(floor), float(k) * float(np.percentile(c3i, 99)))
+    sx0, sy0 = max(wx0, x0 - spill), max(wy0, y0 - spill)
+    sx1, sy1 = min(wx1, x1 + spill), min(wy1, y1 + spill)
+    sl = (slice(sy0 - wy0, sy1 - wy0), slice(sx0 - wx0, sx1 - wx0))
+    # a pixel is ink when it differs from the background; it counts toward the extent when it also lies within one
+    # pixel of a stroke edge (local contrast above tc), so a gradient alone never makes ink
+    near_edge = c3[sl] > tc
+    m = _drop_small((d[sl] > t) & near_edge, min_blob)
+    cols = np.flatnonzero(m.any(0))
+    rows = np.flatnonzero(m.any(1))
+    if not len(cols) or not len(rows):
+        return [x0, y0, x1, y1], "cells"
+    return [int(sx0 + cols[0]), int(sy0 + rows[0]), int(sx0 + cols[-1] + 1), int(sy0 + rows[-1] + 1)], "ink"
+
+
+def line_ink(rgb, line):
+    """(box, how) of a pool line: ink_box on its cells' union."""
+    return ink_box(rgb, cells_union(line))
+
+
+# ----------------------------------------------------------------------------- the training targets (amendment 1)
+
+def positive_lines(rec):
+    """The pool record's lines that synth/textspot6_pages.build_labels makes positives, in its order."""
+    import textspot6_pages as TP
+    R = TP.RULES
+    out = []
+    for ln in rec["lines"]:
+        if ln["kind"] == "ruby" or ln.get("drop") in R["ignore_drops"]:
+            continue
+        if ln.get("drop") not in R["positive_drops"] or ln["kind"] not in R["classes"]:
+            continue
+        out.append(ln)
+    return out
+
+
+def _page_targets(job):
+    import cv2
+
+    import textspot6_pages as TP
+    tid, rec, path = job
+    bgr = cv2.imread(path, cv2.IMREAD_COLOR)
+    if bgr is None:
+        return tid, rec["page"], None
+    rgb = np.ascontiguousarray(bgr[:, :, ::-1])
+    H, W = rgb.shape[:2]
+    old, new = [], []
+    for ln in positive_lines(rec):
+        b = TP.xyxy(ln["box_main"] if ln.get("furigana") and ln.get("box_main") else ln["box"])
+        ob, _ = TP.refined_line(rgb, b, bool(ln["vertical"]))
+        ob = [max(0, ob[0]), max(0, ob[1]), min(W, ob[2]), min(H, ob[3])]
+        if ln["vertical"]:
+            nb = ob                                  # vertical lines keep their targets (horizontal reading only)
+        else:
+            nb, _ = line_ink(rgb, ln)
+        old.append([int(v) for v in ob])
+        new.append([int(v) for v in nb])
+    return tid, rec["page"], {"old": old, "new": new}
+
+
+def cmd_build(a):
+    """The target cache: per title, {page: {"old": refined_line boxes, "new": ink boxes}} of the positives of every
+    page of the given splits, in build_labels order (the trainer checks "old" against the page shards' boxes)."""
+    import json
+    import multiprocessing as mp
+    import time
+    from pathlib import Path
+    pool = Path(a.pool)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    splits = set(a.splits.split(","))
+    if "test" in splits:
+        raise SystemExit("the test titles' pages are never read here")
+    jobs = []
+    for f in sorted(pool.glob("*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            if r["split"] in splits:
+                jobs.append((f.stem, r, str(Path(a.pages) / r["image"])))
+    t0 = time.time()
+    res = {}
+    with mp.get_context("fork").Pool(a.workers) as p:
+        for tid, page, v in p.imap(_page_targets, jobs, chunksize=16):
+            if v is not None:
+                res.setdefault(tid, {})[page] = v
+    n_lines = n_changed = 0
+    for tid, pages in sorted(res.items()):
+        for v in pages.values():
+            n_lines += len(v["new"])
+            n_changed += sum(1 for o, nw in zip(v["old"], v["new"]) if o != nw)
+        (out / f"{tid}.json").write_text(json.dumps(pages, separators=(",", ":")) + "\n", encoding="utf-8")
+    rec = {"kind": "textspot-desktop-targets", "pool_manifest_sha256": _sha(pool / "manifest.json"),
+           "splits": sorted(splits), "titles": len(res), "pages": sum(len(v) for v in res.values()),
+           "lines": n_lines, "changed": n_changed, "rule": {"grow": GROW, "spill": SPILL, "k": K, "floor": FLOOR,
+                                                            "noise_margin": NOISE_MARGIN, "min_blob": MIN_BLOB},
+           "code_sha256": _sha(Path(__file__)), "seconds": round(time.time() - t0, 1),
+           "files": {f"{t}.json": _sha(out / f"{t}.json") for t in sorted(res)}}
+    (out / "targets.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({k: rec[k] for k in ("titles", "pages", "lines", "changed", "seconds")}), flush=True)
+
+
+def _sha(p):
+    import hashlib
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 22), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def load_cache(d):
+    import json
+    from pathlib import Path
+    d = Path(d)
+    doc = json.loads((d / "targets.json").read_text(encoding="utf-8"))
+    out = {}
+    for name in doc["files"]:
+        out[name[:-5]] = json.loads((d / name).read_text(encoding="utf-8"))
+    return out, doc
+
+
+DESK_HOOK_SEED = 20261101           # #171's 1a plan seed (desktopdata/hooked.py build: one capture per page)
+
+
+def capture_of(smp, seed=DESK_HOOK_SEED):
+    """The exact desktopdata/capture.Capture a 1a page was made with (its seeded draw, as hooked.py build draws it),
+    or None when it does not reproduce the sample's recorded capture."""
+    import numpy as np_
+
+    from desktopdata import capture as C
+    from desktopdata.hooked import seed_of
+    meta = smp.get("meta") or {}
+    w, h = meta.get("src_dims") or (None, None)
+    if not w:
+        return None
+    cap = C.sample(np_.random.default_rng(seed_of(seed, smp["title"], smp["page"])), int(w), int(h),
+                   meta.get("src_kind"))
+    if cap.record() != meta.get("capture"):
+        return None
+    return cap
+
+
+def patch_sample(smp, cache, src):
+    """A hooked sample (src "hook": a page shard's; "desk_hook": #171's 1a capture of one) with its positives' boxes
+    replaced by the cache's ink boxes, or None when the sample's boxes do not match the cache's refined_line boxes
+    (then it is left as it is). Only the first len(cache) lines are touched (the verified positives; MeikiOCR's other
+    text follows them)."""
+    pages = cache.get(smp.get("title"))
+    v = pages.get(smp.get("page")) if pages else None
+    if v is None:
+        return None
+    old, new = v["old"], v["new"]
+    n = len(old)
+    lines = smp["lines"]
+    if len(lines) < n:
+        return None
+    if src == "hook":
+        if any([int(x) for x in lines[i][:4]] != old[i] for i in range(n)):
+            return None
+        mapped = new
+    else:
+        meta = smp.get("meta") or {}
+        if meta.get("lines_outside"):
+            return None
+        cap = capture_of(smp)
+        if cap is None or any(cap.box(old[i]) != [int(x) for x in lines[i][:4]] for i in range(n)):
+            return None
+        mapped = [cap.box(b) for b in new]
+        if any(m is None for m in mapped):
+            return None
+    out = [list(m) + list(lines[i][4:]) for i, m in enumerate(mapped)] + [list(x) for x in lines[n:]]
+    return dict(smp, lines=out)
+
+
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("build")
+    p.add_argument("--pool", required=True)
+    p.add_argument("--pages", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--splits", default="train,guard,hval")
+    p.add_argument("--workers", type=int, default=5)
+    a = ap.parse_args(argv)
+    {"build": cmd_build}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    _root = Path(__file__).resolve().parents[1]
+    for _p in (_root / "synth", _root / "teacher", _root / "train", _root):
+        sys.path.insert(0, str(_p))
+    main()

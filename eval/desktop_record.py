@@ -34,15 +34,23 @@ def main(argv=None):
     ap.add_argument("--names", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--note", default="")
+    ap.add_argument("--cluster", default="unit", choices=("unit", "page"),
+                    help="page: intervals over pages (title:page), for the two hooked test titles")
     a = ap.parse_args(argv)
     res = Path(a.res)
 
     def load(n):
-        return json.loads((res / f"{a.set}_{n}.json").read_text(encoding="utf-8"))
+        d = json.loads((res / f"{a.set}_{n}.json").read_text(encoding="utf-8"))
+        if a.cluster == "page":
+            for u in d["units"]:
+                u["cluster"] = ":".join(u["uid"].split(":")[:2])
+        return d
     ref = load(a.ref)
     rec = {"kind": "vocr-desktop-record", "set": a.set, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "protocol_sha256": D.sha256_file(ROOT / "eval" / "desktop_protocol.json"), "repo_head": D.git_head(),
-           "frames_sha256": ref["frames_sha256"], "reference": a.ref, "note": a.note, "rows": {}}
+           "frames_sha256": ref["frames_sha256"], "reference": a.ref, "note": a.note,
+           "clusters": "pages (title:page)" if a.cluster == "page" else "the units' (VNs; titles on hooked sets)",
+           "rows": {}}
     for n in [a.ref] + [x for x in a.names.split(",") if x and x != a.ref]:
         d = load(n)
         if d["frames_sha256"] != ref["frames_sha256"]:
@@ -59,8 +67,9 @@ def main(argv=None):
                                         for k, v in cmp.items()}
         rec["rows"][n] = row
     Path(a.out).write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    key = f"{ref['units'][0]['set']}:all"
     for n, row in rec["rows"].items():
-        ag = row.get("against_reference", {}).get(f"{a.set}:all", {})
+        ag = row.get("against_reference", {}).get(key, {})
         print(f"{n:28s} {row['all']['cer']:.3f}%  {ag.get('delta', '')} {ag.get('ci95', '')}", flush=True)
 
 

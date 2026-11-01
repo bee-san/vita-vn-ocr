@@ -1,0 +1,440 @@
+"""textspot-desktop's C path (issue #173, desktop/vocr_tsd.[ch], tools/tsdesk_c.py, train/tsdesk_blob.py): the VTSD
+blob, the C network against ONNX Runtime for every shape of train/tsdesk_net.SHAPES and a stride-4 head, the AVX2
+kernels against the plain-C ones, the same bits at any thread count, the C decode bit for bit against
+tools/tsdesk.decode, the C detector against the ONNX path and against its own pieces (the luma, vocr-desktop's
+integer resize, the padding), and the page pipeline against the Python pipeline with the C recognizer. No private
+data: random networks, synthetic maps and generated frames only; the C library is built in a temporary directory (the
+tests skip without a C compiler)."""
+import os
+import shutil
+import struct
+import subprocess
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+for _p in (ROOT / "runtime", ROOT / "train", ROOT / "tools"):   # tools first: tools/tsdesk.py, not eval/tsdesk.py
+    if str(_p) in sys.path:
+        sys.path.remove(str(_p))
+    sys.path.insert(0, str(_p))
+
+import tsdesk_c as TC  # noqa: E402
+
+T = TC.T                                    # tools/tsdesk.py (Box, Line, decode, Detector)
+
+
+# ----------------------------------------------------------------------------- builds and models
+
+def _cpu_has(*flags):
+    try:
+        info = Path("/proc/cpuinfo").read_text()
+    except OSError:
+        return False
+    line = next((ln for ln in info.splitlines() if ln.startswith("flags")), "")
+    return all(f in line.split() for f in flags)
+
+
+def _build(out, arch, extra=""):
+    cc = os.environ.get("CC") or shutil.which("gcc") or shutil.which("cc")
+    if not cc or not shutil.which("make"):
+        pytest.skip("no C compiler")
+    lib = Path(out) / "libvocrdesk.so"
+    subprocess.run(["make", "-s", "-C", str(ROOT / "desktop"), f"OUT={out}", f"ARCH={arch}", f"CC={cc}",
+                    f"EXTRA={extra}", str(lib)], check=True)
+    return lib
+
+
+@pytest.fixture(scope="module")
+def libs(tmp_path_factory):
+    d = tmp_path_factory.mktemp("tsdc")
+    out = {"plain": _build(d / "plain", "")}
+    if _cpu_has("avx2", "fma"):
+        out["avx2"] = _build(d / "avx2", "-march=x86-64-v3")
+    return out
+
+
+EXTRA_SHAPES = {   # code paths SHAPES may not reach: a stride-4 head with smoothing, stage-4 blocks and gc
+    "x4": {"patch": 4, "c": [8, 16, 24, 40], "n": [1, 1, 2, 1], "F": 16, "hs": 4, "smooth": 2, "gc": 1},
+    "x8": {"patch": 4, "c": [16, 24, 48, 64], "n": [0, 3, 1, 2], "F": 24, "hs": 8, "smooth": 3, "gc": 1},
+}
+
+
+def _shapes():
+    import tsdesk_net as N
+    return {**N.SHAPES, **EXTRA_SHAPES}
+
+
+def _random_net(shape, seed=0, k_quantile=None):
+    """A TsdNet with BatchNorm statistics that are not the identity; k_quantile: the K map's head bias set so that
+    about that share of a random frame's cells are kernel cells (many components)."""
+    torch = pytest.importorskip("torch")
+    import tsdesk_net as N
+    torch.manual_seed(seed)
+    m = N.TsdNet(_shapes()[shape])
+    for mod in m.modules():
+        if isinstance(mod, torch.nn.BatchNorm2d):
+            mod.running_mean.uniform_(-0.2, 0.2)
+            mod.running_var.uniform_(0.5, 1.5)
+            mod.weight.data.uniform_(0.5, 1.5)
+            mod.bias.data.uniform_(-0.1, 0.1)
+    if m.gc is not None:
+        with torch.no_grad():
+            m.gc.fc.weight.normal_(0, 0.1)
+            m.gc.fc.bias.uniform_(-0.1, 0.1)
+    m.eval()
+    if k_quantile is not None:
+        g = torch.from_numpy(np.random.default_rng(seed).integers(0, 256, (1, 1, 256, 384), dtype=np.uint8))
+        with torch.no_grad():
+            y = m(g)[0]
+            m.head.bias[0] -= float(torch.quantile(y[0].flatten(), 1.0 - k_quantile))
+            m.head.bias[1] -= float(torch.quantile(y[1].flatten(), 0.8))     # mostly horizontal components
+    return m
+
+
+@pytest.fixture(scope="module")
+def nets(tmp_path_factory):
+    """{shape: (onnx path, vtsd bytes)} of random networks (K calibrated to ~45% kernel cells)."""
+    pytest.importorskip("onnx")
+    pytest.importorskip("onnxruntime")
+    import tsdesk_blob as TB
+    import tsdesk_net as N
+    d = tmp_path_factory.mktemp("tsdnets")
+    out = {}
+    for i, shape in enumerate(_shapes()):
+        m = _random_net(shape, seed=i, k_quantile=0.45)
+        p = d / f"{shape}.onnx"
+        N.export_onnx(m, p, N.onnx_meta(m.shape, shape, "fit:960", T.DEFAULTS), check=False)
+        out[shape] = (p, TB.blob_bytes(m, "fit:960", T.DEFAULTS), m)
+    return out
+
+
+# ----------------------------------------------------------------------------- the blob
+
+def test_blob_header_and_checks(nets, libs):
+    import tsdesk_blob as TB
+    _, blob, m = nets["p8a"]
+    h = TB.read_header(blob)
+    assert h["c"] == [16, 32, 64, 96] and h["n"] == [0, 2, 2, 1] and h["hs"] == 8 and h["F"] == 32
+    assert h["out"] == 10 and h["outp"] == 16 and h["size"] == "fit:960" and h["dil"][1] == [1, 2]
+    assert h["decode"] == {**T.DEFAULTS, "conf_min_logit": 0.0}
+    lib = next(iter(libs.values()))
+    TC.CModel(blob, lib=lib)
+    bad = bytearray(blob)
+    bad[HEADER_BODY] ^= 1
+    with pytest.raises(ValueError, match="-3"):          # the CRC
+        TC.CModel(bytes(bad), lib=lib)
+    with pytest.raises(ValueError, match="-2"):          # truncated
+        TC.CModel(blob[:-8], lib=lib)
+    bad = bytearray(blob)
+    bad[:4] = b"VDSK"
+    with pytest.raises(ValueError, match="-2"):
+        TC.CModel(bytes(bad), lib=lib)
+    assert TB.policy("long:1280") == (2, 1280) and TB.policy(None) == (0, 0) and TB.policy("640") == (1, 640)
+    # the head's A / E maps carry hs: the blob's head equals the network's (hs * y) exactly
+    import tsdesk_net as N
+    f = N.fold_bn(m)
+    w = np.frombuffer(blob, "<f4", 32 * 16 + 16, len(blob) - 4 - 4 * (32 * 16 + 16))
+    wh, bh = w[:32 * 16].reshape(32, 16), w[32 * 16:]
+    ref = f.head.weight.detach().numpy()[:, :, 0, 0].T
+    assert np.array_equal(wh[:, :2], ref[:, :2]) and np.array_equal(wh[:, 2:6], ref[:, 2:6] * 8)
+    assert not wh[:, 10:].any() and bh[2] == f.head.bias.detach().numpy()[2] * 8
+
+
+HEADER_BODY = 400                           # a byte inside the weights
+
+
+# ----------------------------------------------------------------------------- the network
+
+@pytest.mark.parametrize("shape", sorted(_shapes()))
+def test_c_maps_match_onnx(shape, nets, libs):
+    import onnxruntime as ort
+    p, blob, _ = nets[shape]
+    so = ort.SessionOptions()
+    so.intra_op_num_threads = 1
+    sess = ort.InferenceSession(str(p), so, providers=["CPUExecutionProvider"])
+    rng = np.random.default_rng(3)
+    for name, lib in libs.items():
+        cm = TC.CModel(blob, lib=lib)
+        for h, w in ((96, 160), (288, 480), (544, 960)):
+            x = rng.integers(0, 256, (h, w), dtype=np.uint8)
+            ref = sess.run(None, {"grey": x[None, None]})[0][0]
+            got = cm.maps(x)
+            assert got.shape == ref.shape
+            assert float(np.abs(ref - got).max()) <= 1e-4 * max(1.0, float(np.abs(ref).max())), (shape, name, h, w)
+
+
+def test_avx2_equals_plain_and_threads_same_bits(nets, libs):
+    if "avx2" not in libs:
+        pytest.skip("no AVX2 + FMA on this CPU")
+    rng = np.random.default_rng(5)
+    for shape in ("p8a", "p8s", "x4", "x8"):
+        _, blob, _ = nets[shape]
+        x = rng.integers(0, 256, (288, 512), dtype=np.uint8)
+        a, b = TC.CModel(blob, lib=libs["avx2"]).maps(x), TC.CModel(blob, lib=libs["plain"]).maps(x)
+        assert float(np.abs(a - b).max()) <= 1e-5 * max(1.0, float(np.abs(a).max())), shape
+        frame = rng.integers(0, 256, (300, 541, 3), dtype=np.uint8)
+        for lib in libs.values():
+            one = TC.CModel(blob, lib=lib)
+            m1, b1 = one.maps(x), one.detect(frame, "native")
+            for threads in (2, 3, 5):
+                mt = TC.CModel(blob, threads=threads, lib=lib)
+                assert np.array_equal(mt.maps(x), m1) and mt.detect(frame, "native") == b1, (shape, threads)
+
+
+# ----------------------------------------------------------------------------- the decode
+
+def _line_maps(h, w, s, cells, a1=6.0, a2=6.0, e1=5.0, e2=5.0, vertical=False, tag=None, tags=4):
+    m = np.zeros((6 + tags, h, w), np.float32)
+    m[0] = -8.0
+    m[1] = 4.0 if vertical else -4.0
+    for r, c in cells:
+        m[0, r, c] = 4.0
+        m[2:6, r, c] = (a1, a2, e1, e2)
+        if tag is not None:
+            m[6 + tag - 1, r, c] = 3.0
+    return m
+
+
+def _decode_cases(rng):
+    """(maps, iw, ih, stride, opts) cases: lines, edge cases and random fields."""
+    out = []
+    for s in (8, 4):
+        out.append((_line_maps(20, 40, s, [(5, c) for c in range(4, 20)]), 40 * s, 20 * s, s, {}))
+        out.append((_line_maps(20, 40, s, [(r, 7) for r in range(2, 12)], vertical=True, tag=2), 40 * s - 3,
+                    20 * s - 5, s, {}))
+        out.append((_line_maps(20, 40, s, []), 40 * s, 20 * s, s, {}))                      # empty
+        out.append((_line_maps(20, 40, s, [(3, 3)]), 40 * s, 20 * s, s, {}))                # one cell: dropped
+        out.append((_line_maps(20, 40, s, [(3, 3)]), 40 * s, 20 * s, s, {"min_cells": 1}))  # ... kept
+        out.append((_line_maps(20, 40, s, [(0, c) for c in range(0, 40)], a1=40.0, a2=3.0, e1=60.0, e2=90.0),
+                    40 * s - 7, 20 * s - 2, s, {}))                                          # clipped at the borders
+        out.append((_line_maps(20, 40, s, [(5, c) for c in range(4, 9)], e1=-50.0, e2=-50.0), 40 * s, 20 * s, s,
+                    {}))                                                                     # ends clamped
+        out.append((_line_maps(20, 40, s, [(5, 4), (5, 5)], a1=1.0, a2=1.0), 40 * s, 20 * s, s, {}))  # too thin
+        many = np.full((10, 64, 64), -8.0, np.float32)                    # 32 x 16 = 512 components of 2 cells
+        many[1] = -4.0
+        many[2:6] = 3.0
+        for i in range(0, 64, 2):
+            for j in range(0, 64, 4):
+                many[0, i, j:j + 2] = 1.0 + 0.001 * ((i * 64 + j) % 97)  # ties in the logit
+        out.append((many, 64 * s, 64 * s, s, {}))
+        out.append((many, 64 * s, 64 * s, s, {"max_boxes": 100}))
+        tied = many.copy()
+        tied[0][tied[0] > 0] = 2.0                                        # every logit equal: y, x and order decide
+        out.append((tied, 64 * s, 64 * s, s, {}))
+        notag = many[:6].copy()                                           # no tag maps
+        out.append((notag, 64 * s, 64 * s, s, {}))
+        for k in range(8):                                                # random fields: components of every shape
+            mh, mw = int(rng.integers(1, 60)), int(rng.integers(1, 100))
+            mp = rng.normal(0, 1.5, (10, mh, mw)).astype(np.float32)
+            mp[2:6] = np.abs(mp[2:6]) * rng.uniform(1, 12)
+            if k % 2:
+                mp[1] = np.abs(mp[1]) + 0.05
+            ih, iw = max(1, mh * s - int(rng.integers(0, s))), max(1, mw * s - int(rng.integers(0, s)))
+            out.append((mp, iw, ih, s, {} if k % 3 else {"conf_min_logit": 0.4, "along_reach": 0.7}))
+    return out
+
+
+def test_c_decode_equals_python(nets, libs):
+    rng = np.random.default_rng(4)
+    cases = _decode_cases(rng)
+    for lib in libs.values():
+        models = {8: TC.CModel(nets["p8a"][1], lib=lib), 4: TC.CModel(nets["p4a"][1], lib=lib)}
+        for mp, iw, ih, s, opts in cases:
+            d = dict(T.DEFAULTS, **opts)
+            ref = T.decode(mp, iw, ih, s, d["min_cells"], d["conf_min_logit"], d["min_across"], d["along_reach"],
+                           mp.shape[0] - 6, d["max_boxes"])
+            got = models[s].decode(mp, iw, ih, **opts)
+            assert got == ref, (s, iw, ih, opts, len(got), len(ref))
+    big = cases[8]                                                        # the 512 components: capped at 256
+    got = TC.CModel(nets["p8a"][1], lib=lib).decode(big[0], big[1], big[2])
+    assert len(got) == 256 and all(got[i].logit >= got[i + 1].logit for i in range(255))
+
+
+def test_c_decode_of_network_maps(nets, libs):
+    """The decode on the network's own maps (C maps): the same boxes as tools/tsdesk.decode on them."""
+    rng = np.random.default_rng(6)
+    for shape in ("p8a", "p4a", "x8"):
+        _, blob, _ = nets[shape]
+        for lib in libs.values():
+            cm = TC.CModel(blob, lib=lib)
+            x = rng.integers(0, 256, (544, 960), dtype=np.uint8)
+            mp = cm.maps(x)
+            ref = T.decode(mp, 950, 540, cm.hs)
+            assert len(ref) > 20 and cm.decode(mp, 950, 540) == ref
+
+
+# ----------------------------------------------------------------------------- the detector
+
+def test_c_detect_matches_onnx(nets, libs):
+    """No resize (native frames and fit:960 on frames up to 960 px): the same network input as the ONNX path, so
+    the same crops (the maps differ by float rounding only)."""
+    rng = np.random.default_rng(7)
+    n_boxes = 0
+    for shape in ("p8a", "p8g", "p4a", "x4"):
+        p, blob, _ = nets[shape]
+        det = T.Detector(p)
+        for lib in libs.values():
+            cm = TC.CModel(blob, lib=lib)
+            for h, w in ((272, 480), (544, 960), (301, 517)):
+                rgb = rng.integers(0, 256, (h, w, 3), dtype=np.uint8)
+                a = sorted(T.crop_of((b.x, b.y, b.w, b.h), 4, w, h) for b in det.detect(rgb))
+                b = sorted(T.crop_of((x.x, x.y, x.w, x.h), 4, w, h) for x in cm.detect(rgb))
+                assert a == b, (shape, h, w)
+                n_boxes += len(a)
+    assert n_boxes > 100
+
+
+def test_c_detect_is_its_pieces(nets, libs):
+    """detect(frame) == the decode of maps(the padded input) mapped to frame px, the input built from the integer
+    luma, vocr-desktop's integer resize (vocr_desk_resize) and edge padding: every policy and frame kind."""
+    rng = np.random.default_rng(8)
+    _, blob, _ = nets["p8a"]
+    cases = [((544, 960), None), ((720, 1280), None), ((1080, 1920), None), ((272, 480), "long:960"),
+             ((300, 517), "native"), ((413, 999), "fit:640"), ((50, 70), "long:96")]
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        for (h, w), size in cases:
+            rgb = rng.integers(0, 256, (h, w, 3), dtype=np.uint8)
+            rgb[: h // 2] //= 3                                           # some structure for the resize
+            x, (fx, fy, iw, ih) = cm.preprocess(rgb, size)
+            ref = []
+            for b in cm.decode(cm.maps(x[0, 0]), iw, ih):
+                x0, y0 = max(0.0, b.x / fx), max(0.0, b.y / fy)
+                x1, y1 = min(float(w), (b.x + b.w) / fx), min(float(h), (b.y + b.h) / fy)
+                if x1 > x0 and y1 > y0:
+                    ref.append(T.Box(x0, y0, x1 - x0, y1 - y0, b.vertical, b.logit, b.tag, b.tconf, b.cells))
+            got = cm.detect(rgb, size)
+            assert got == ref, ((h, w), size)
+            assert cm.detect(T.grey_of(rgb), size) == got                 # grey in, the same bits
+            rgba = np.concatenate([rgb, np.full((h, w, 1), 255, np.uint8)], 2)
+            assert cm.detect(rgba, size) == got
+            wide = np.zeros((h, w + 13, 3), np.uint8)                     # a strided view
+            wide[:, :w] = rgb
+            assert cm.detect(wide[:, :w], size) == got
+
+
+def test_c_resize_is_vocr_desktops(nets, libs):
+    """The detector's resize is vocr-desktop's (vocr_desk_resize in the same library: tools/vocr_desktop.CModel)."""
+    import vocr_desktop as VD
+    rng = np.random.default_rng(9)
+    lib = next(iter(libs.values()))
+    cm = TC.CModel(nets["p8a"][1], lib=lib)
+    probe = VD.CModel.__new__(VD.CModel)
+    probe.L = VD.c_library(lib)
+    for (h, w), (dh, dw) in (((1080, 1920), (540, 960)), ((720, 1280), (540, 960)), ((272, 480), (544, 960)),
+                             ((333, 777), (123, 287))):
+        g = rng.integers(0, 256, (h, w), dtype=np.uint8)
+        assert np.array_equal(cm.resize(g, dw, dh), VD.CModel.resize(probe, g, dw, dh))
+
+
+def test_ctsd_spec_in_eval(nets, libs, tmp_path):
+    """eval/tsdesk.py's ctsd: detector spec reads a VTSD blob through tools/tsdesk_c.CModel."""
+    pytest.importorskip("cv2")
+    sys.path.insert(1, str(ROOT / "eval"))
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("tsdesk_eval", ROOT / "eval" / "tsdesk.py")
+        E = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(E)
+    except ImportError as e:
+        pytest.skip(f"eval/tsdesk.py: {e}")
+    finally:
+        sys.path.remove(str(ROOT / "eval"))
+    p = tmp_path / "p8a.vtsd"
+    p.write_bytes(nets["p8a"][1])
+    os.environ["VOCR_DESK_LIB"] = str(next(iter(libs.values())))
+    try:
+        d = E.CTsdDet(str(p), None, 1)
+        rgb = np.random.default_rng(10).integers(0, 256, (272, 480, 3), dtype=np.uint8)
+        boxes = d.boxes(rgb)
+        assert boxes and all(len(b) == 7 and 0 <= b[0] < b[2] <= 480 for b in boxes)
+    finally:
+        del os.environ["VOCR_DESK_LIB"]
+
+
+# ----------------------------------------------------------------------------- the page
+
+def _random_recognizer(tmp_path):
+    torch = pytest.importorskip("torch")
+    from torch import nn
+
+    import export
+    from model import TinyVNOCR
+    torch.manual_seed(7)
+    rec = TinyVNOCR(60, width=0.25).eval()
+    with torch.no_grad():
+        for mod in rec.modules():
+            if isinstance(mod, nn.BatchNorm2d):
+                mod.running_var.uniform_(0.5, 2.0)
+        rec.head.bias[0] -= 4.0                                          # fewer blanks: lines read as text
+    vocab = [chr(0x3042 + i) for i in range(59)]
+    blob, _ = export.build_blob(export.model_ops(rec, 32), vocab, 32, True, 1024, b"")
+    rp = tmp_path / "rec.vocr"
+    rp.write_bytes(blob)
+    return blob, rp
+
+
+def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
+    """The C page's lines: the detector's tight boxes in tools/tsdesk.reading_order, each grown by the pad rule,
+    its dark flag (vocr_line_dark) and its text read by runtime/vocr.c (W8I): the same as the Python pipeline
+    (tools/tsdesk.read_frame's steps) with pyvocr reading each crop; any thread count gives the same lines."""
+    pytest.importorskip("torch")
+    import vocr_onnx as V
+    from pyvocr import Vocr
+    rblob, rp = _random_recognizer(tmp_path)
+    r = Vocr(rblob, mode="w8i")
+    _, blob, _ = nets["p8a"]
+    rng = np.random.default_rng(11)
+    frame = rng.integers(0, 256, (272, 480, 3), dtype=np.uint8)
+    frame[100:140, 50:400] = 240
+    g = T.grey_of(frame)
+    H, W = g.shape
+    for lib in libs.values():
+        for pad, (ph, pv) in (("auto", (2, 2)), ("k4v6", (2, 3)), (5, (5, 5))):
+            page = TC.CPage(blob, rp, threads=2, pad=pad, lib=lib)
+            lines = page.page(frame)
+            assert page.pad() == (ph, pv)
+            boxes = TC.CModel(blob, lib=lib).detect(frame)
+            order = T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
+            ref = []
+            for i in order:
+                b = boxes[i]
+                cb = TC_crop(b, ph, pv, W, H)
+                if cb is None:
+                    continue
+                x, y, w, h = cb
+                if b.vertical:
+                    ref.append(T.Line("", (b.x, b.y, b.w, b.h), cb, b.tag, b.logit, 0, 1))
+                    continue
+                dark = V.line_dark(g, cb)
+                text = r.run(np.ascontiguousarray(g[y:y + h, x:x + w]), invert=bool(dark))
+                ref.append(T.Line(text, (b.x, b.y, b.w, b.h), cb, b.tag, b.logit, int(dark), 0))
+            assert len(ref) > 5 and lines == ref, pad
+            assert sum(1 for ln in lines if ln.text) > 3 and any(ln.vertical for ln in lines)
+            for threads in (1, 3):
+                assert TC.CPage(blob, rp, threads=threads, pad=pad, lib=lib).page(frame) == lines
+            assert TC.CPage(blob, rp, threads=1, pad=pad, lib=lib).page(g) == lines   # grey in
+            assert page.detect(frame) == boxes
+        tagged = TC.CPage(blob, rp, threads=1, tags=(0,), lib=lib).page(frame)
+        assert all(ln.tag == 0 for ln in tagged)
+
+
+def TC_crop(b, ph, pv, W, H):
+    """tools/tsdesk.crop_of with a horizontal and a vertical pad (eval/tsdesk.crop_hv's rounding), or None."""
+    import math
+    x0, y0 = max(0, int(math.floor(b.x - ph))), max(0, int(math.floor(b.y - pv)))
+    x1, y1 = min(W, int(math.ceil(b.x + b.w + ph))), min(H, int(math.ceil(b.y + b.h + pv)))
+    return (x0, y0, x1 - x0, y1 - y0) if x1 > x0 and y1 > y0 else None
+
+
+def test_pad_rule_and_policy():
+    assert TC.pad_rule("auto") == (4, 4, 0) and TC.pad_rule("k4v6") == (4, 6, 0) and TC.pad_rule(3) == (3, 3, 1)
+    assert TC.pad_rule((5, 2)) == (5, 2, 0) and TC.pad_rule("k6") == (6, 6, 0)
+    with pytest.raises(ValueError):
+        TC.pad_rule("wide")
+    assert TC.policy_of(None, (1, 960)) == (1, 960) and TC.policy_of("native") == (0, 0)
+    assert TC.policy_of("long:1280") == (2, 1280) and TC.policy_of("640") == (1, 640)
+    assert struct.calcsize("<I") == 4

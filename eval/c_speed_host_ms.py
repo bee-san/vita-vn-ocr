@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """c-speed's host times (#165, docs/c-speed.md "Host speed"): the recognizer's ms per line and the spotter's ms per
-region, for two runtime versions, each built by gcc at -O2 (the runtime's flags) and at -O3 -march=native.
+region, for two runtime versions, each built by gcc at -O2 (the runtime's flags) and at -O3 -march=native; on x86 also
+at -O2 -mavx2 (the AVX2 kernels) and at -O3 -march=native -DVOCR_NO_AVX2 (the plain C at its best).
 
   c_speed_host_ms.py --base DIR --new DIR --models DIR --sub SUB.bin --regions REGIONS.bin --out OUT.json
                      [--runs 5] [--cpu 63] [--regions-n 60]
@@ -15,6 +16,7 @@ output holds times and counts, no text.
 """
 import argparse
 import json
+import platform
 import shutil
 import statistics
 import struct
@@ -28,6 +30,8 @@ sys.path[:0] = [str(ROOT / "vita")]
 import ts_speed_parity as TS  # noqa: E402
 
 FLAGS = {"O2": ["-O2"], "O3n": ["-O3", "-march=native"]}
+if platform.machine() in ("x86_64", "AMD64"):   # the AVX2 kernels (docs/desktop-avx2.md); -O3n's plain C without them
+    FLAGS.update({"O2avx2": ["-O2", "-mavx2"], "O3n_noavx2": ["-O3", "-march=native", "-DVOCR_NO_AVX2"]})
 WARN = ["-std=c99", "-ffp-contract=off", "-Wall", "-Wextra", "-Werror"]
 MODELS = {"S": ("VOCR6.2_S_w8.vocr", []), "N": ("VOCR6.2_N_w8g2.vocr", ["--head-gate", "on", "--two-level"]),
           "L": ("VOCR6.2_L_w8_2l.vocr", ["--two-level"])}

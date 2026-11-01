@@ -1,0 +1,766 @@
+{
+ "kind": "vocr-onnx-timing/1",
+ "host": {
+  "cpu": "64-core AMD EPYC 9R14 host",
+  "machine": "x86_64",
+  "python": "3.11.15",
+  "onnxruntime": "1.30.0",
+  "gcc": "11.5.0"
+ },
+ "inputs": {
+  "lines": 200,
+  "regions": 120,
+  "frames": 60,
+  "mean_line_width_px": 393.6,
+  "mean_line_height_px": 38.8
+ },
+ "passes": 9,
+ "warmup": 2,
+ "results": {
+  "line S": {
+   "C O2": {
+    "median": 16.125,
+    "min": 16.121,
+    "max": 16.165
+   },
+   "C O2 plain": {
+    "median": 16.127,
+    "min": 16.121,
+    "max": 16.133
+   },
+   "C O3n": {
+    "median": 3.945,
+    "min": 3.941,
+    "max": 3.969
+   },
+   "C O3n plain": {
+    "median": 3.944,
+    "min": 3.941,
+    "max": 3.947
+   },
+   "ONNX exact 1t": {
+    "median": 4.205,
+    "min": 4.128,
+    "max": 4.245
+   },
+   "ONNX exact 1t plain": {
+    "median": 4.226,
+    "min": 4.141,
+    "max": 4.342
+   },
+   "ONNX fast 1t": {
+    "median": 1.415,
+    "min": 1.403,
+    "max": 1.421
+   },
+   "ONNX fast 1t plain": {
+    "median": 1.41,
+    "min": 1.405,
+    "max": 1.484
+   },
+   "ONNX exact 5t": {
+    "median": 5.699,
+    "min": 5.419,
+    "max": 5.736
+   },
+   "ONNX exact 5t plain": {
+    "median": 5.652,
+    "min": 4.763,
+    "max": 5.729
+   },
+   "ONNX fast 5t": {
+    "median": 1.401,
+    "min": 1.288,
+    "max": 1.442
+   },
+   "ONNX fast 5t plain": {
+    "median": 1.424,
+    "min": 1.356,
+    "max": 1.487
+   },
+   "ONNX exact-ortconv 1t": {
+    "median": 2.82,
+    "min": 2.784,
+    "max": 2.838
+   },
+   "ONNX exact-ortconv 5t": {
+    "median": 3.89,
+    "min": 3.43,
+    "max": 4.043
+   },
+   "ONNX exact 1t network": {
+    "median": 3.704,
+    "min": 3.665,
+    "max": 3.755
+   },
+   "ONNX fast 1t network": {
+    "median": 0.979,
+    "min": 0.976,
+    "max": 0.982
+   },
+   "ONNX exact 5t network": {
+    "median": 5.178,
+    "min": 5.122,
+    "max": 5.278
+   },
+   "ONNX fast 5t network": {
+    "median": 1.007,
+    "min": 1.005,
+    "max": 1.009
+   },
+   "ONNX exact-ortconv 1t network": {
+    "median": 2.35,
+    "min": 2.331,
+    "max": 2.364
+   },
+   "ONNX exact-ortconv 5t network": {
+    "median": 3.568,
+    "min": 3.564,
+    "max": 3.638
+   }
+  },
+  "page region S": {
+   "C O2": {
+    "median": 27.298,
+    "min": 27.292,
+    "max": 27.314
+   },
+   "C O3n": {
+    "median": 7.152,
+    "min": 7.148,
+    "max": 7.176
+   },
+   "ONNX exact 1t": {
+    "median": 7.388,
+    "min": 7.264,
+    "max": 7.704
+   },
+   "ONNX fast 1t": {
+    "median": 3.056,
+    "min": 3.04,
+    "max": 3.1
+   },
+   "ONNX exact 5t": {
+    "median": 10.039,
+    "min": 9.747,
+    "max": 10.226
+   },
+   "ONNX fast 5t": {
+    "median": 3.61,
+    "min": 3.511,
+    "max": 3.717
+   }
+  },
+  "page frame S": {
+   "C O2": {
+    "median": 82.952,
+    "min": 82.921,
+    "max": 83.039
+   },
+   "C O3n": {
+    "median": 27.371,
+    "min": 27.352,
+    "max": 27.399
+   },
+   "ONNX exact 1t": {
+    "median": 20.615,
+    "min": 20.048,
+    "max": 20.982
+   },
+   "ONNX fast 1t": {
+    "median": 12.655,
+    "min": 12.189,
+    "max": 12.9
+   },
+   "ONNX exact 5t": {
+    "median": 28.741,
+    "min": 25.075,
+    "max": 29.164
+   },
+   "ONNX fast 5t": {
+    "median": 19.314,
+    "min": 17.955,
+    "max": 20.152
+   }
+  },
+  "line N": {
+   "C O2": {
+    "median": 18.11,
+    "min": 18.107,
+    "max": 18.12
+   },
+   "C O2 plain": {
+    "median": 26.093,
+    "min": 26.09,
+    "max": 26.879
+   },
+   "C O3n": {
+    "median": 4.239,
+    "min": 4.237,
+    "max": 4.24
+   },
+   "C O3n plain": {
+    "median": 6.027,
+    "min": 6.025,
+    "max": 6.03
+   },
+   "ONNX exact 1t": {
+    "median": 5.966,
+    "min": 5.916,
+    "max": 6.168
+   },
+   "ONNX exact 1t plain": {
+    "median": 6.535,
+    "min": 6.406,
+    "max": 6.695
+   },
+   "ONNX fast 1t": {
+    "median": 1.755,
+    "min": 1.736,
+    "max": 1.81
+   },
+   "ONNX fast 1t plain": {
+    "median": 2.021,
+    "min": 2.008,
+    "max": 2.041
+   },
+   "ONNX exact 5t": {
+    "median": 7.978,
+    "min": 6.716,
+    "max": 8.48
+   },
+   "ONNX exact 5t plain": {
+    "median": 8.265,
+    "min": 6.967,
+    "max": 8.771
+   },
+   "ONNX fast 5t": {
+    "median": 2.12,
+    "min": 1.74,
+    "max": 2.167
+   },
+   "ONNX fast 5t plain": {
+    "median": 1.821,
+    "min": 1.784,
+    "max": 1.871
+   },
+   "ONNX exact-ortconv 1t": {
+    "median": 3.543,
+    "min": 3.514,
+    "max": 3.677
+   },
+   "ONNX exact-ortconv 5t": {
+    "median": 4.825,
+    "min": 4.123,
+    "max": 5.142
+   },
+   "ONNX exact 1t network": {
+    "median": 5.306,
+    "min": 5.285,
+    "max": 5.314
+   },
+   "ONNX fast 1t network": {
+    "median": 1.244,
+    "min": 1.24,
+    "max": 1.245
+   },
+   "ONNX exact 5t network": {
+    "median": 7.772,
+    "min": 7.74,
+    "max": 7.781
+   },
+   "ONNX fast 5t network": {
+    "median": 1.492,
+    "min": 1.475,
+    "max": 1.666
+   },
+   "ONNX exact-ortconv 1t network": {
+    "median": 3.035,
+    "min": 3.011,
+    "max": 3.189
+   },
+   "ONNX exact-ortconv 5t network": {
+    "median": 4.411,
+    "min": 4.345,
+    "max": 4.448
+   }
+  },
+  "page region N": {
+   "C O2": {
+    "median": 30.283,
+    "min": 30.271,
+    "max": 31.316
+   },
+   "C O3n": {
+    "median": 7.597,
+    "min": 7.595,
+    "max": 7.613
+   },
+   "ONNX exact 1t": {
+    "median": 10.186,
+    "min": 9.925,
+    "max": 10.356
+   },
+   "ONNX fast 1t": {
+    "median": 3.653,
+    "min": 3.574,
+    "max": 3.866
+   },
+   "ONNX exact 5t": {
+    "median": 13.004,
+    "min": 11.877,
+    "max": 14.4
+   },
+   "ONNX fast 5t": {
+    "median": 4.591,
+    "min": 4.387,
+    "max": 4.825
+   }
+  },
+  "page frame N": {
+   "C O2": {
+    "median": 90.337,
+    "min": 90.326,
+    "max": 90.509
+   },
+   "C O3n": {
+    "median": 28.593,
+    "min": 28.577,
+    "max": 28.653
+   },
+   "ONNX exact 1t": {
+    "median": 24.999,
+    "min": 24.616,
+    "max": 25.698
+   },
+   "ONNX fast 1t": {
+    "median": 14.067,
+    "min": 13.809,
+    "max": 14.592
+   },
+   "ONNX exact 5t": {
+    "median": 37.489,
+    "min": 32.938,
+    "max": 38.107
+   },
+   "ONNX fast 5t": {
+    "median": 22.137,
+    "min": 19.681,
+    "max": 22.468
+   }
+  },
+  "line L": {
+   "C O2": {
+    "median": 47.072,
+    "min": 47.062,
+    "max": 47.076
+   },
+   "C O2 plain": {
+    "median": 54.622,
+    "min": 54.612,
+    "max": 54.656
+   },
+   "C O3n": {
+    "median": 9.251,
+    "min": 9.249,
+    "max": 9.265
+   },
+   "C O3n plain": {
+    "median": 10.958,
+    "min": 10.953,
+    "max": 10.963
+   },
+   "ONNX exact 1t": {
+    "median": 10.214,
+    "min": 10.033,
+    "max": 10.395
+   },
+   "ONNX exact 1t plain": {
+    "median": 10.833,
+    "min": 10.637,
+    "max": 10.897
+   },
+   "ONNX fast 1t": {
+    "median": 3.186,
+    "min": 3.149,
+    "max": 3.231
+   },
+   "ONNX fast 1t plain": {
+    "median": 3.469,
+    "min": 3.406,
+    "max": 3.561
+   },
+   "ONNX exact 5t": {
+    "median": 11.507,
+    "min": 9.798,
+    "max": 11.721
+   },
+   "ONNX exact 5t plain": {
+    "median": 11.213,
+    "min": 10.168,
+    "max": 12.141
+   },
+   "ONNX fast 5t": {
+    "median": 2.495,
+    "min": 2.32,
+    "max": 2.523
+   },
+   "ONNX fast 5t plain": {
+    "median": 2.377,
+    "min": 2.199,
+    "max": 2.393
+   },
+   "ONNX exact-ortconv 1t": {
+    "median": 6.53,
+    "min": 6.455,
+    "max": 6.689
+   },
+   "ONNX exact-ortconv 5t": {
+    "median": 7.165,
+    "min": 6.821,
+    "max": 7.388
+   },
+   "ONNX exact 1t network": {
+    "median": 9.499,
+    "min": 9.477,
+    "max": 9.706
+   },
+   "ONNX fast 1t network": {
+    "median": 2.663,
+    "min": 2.64,
+    "max": 2.699
+   },
+   "ONNX exact 5t network": {
+    "median": 11.079,
+    "min": 11.044,
+    "max": 11.122
+   },
+   "ONNX fast 5t network": {
+    "median": 2.014,
+    "min": 2.009,
+    "max": 2.032
+   },
+   "ONNX exact-ortconv 1t network": {
+    "median": 6.091,
+    "min": 5.928,
+    "max": 6.245
+   },
+   "ONNX exact-ortconv 5t network": {
+    "median": 6.776,
+    "min": 6.753,
+    "max": 6.85
+   }
+  },
+  "page region L": {
+   "C O2": {
+    "median": 74.077,
+    "min": 74.062,
+    "max": 74.592
+   },
+   "C O3n": {
+    "median": 15.183,
+    "min": 15.176,
+    "max": 15.201
+   },
+   "ONNX exact 1t": {
+    "median": 16.7,
+    "min": 16.505,
+    "max": 17.047
+   },
+   "ONNX fast 1t": {
+    "median": 5.941,
+    "min": 5.856,
+    "max": 6.195
+   },
+   "ONNX exact 5t": {
+    "median": 19.037,
+    "min": 16.509,
+    "max": 19.553
+   },
+   "ONNX fast 5t": {
+    "median": 4.972,
+    "min": 4.894,
+    "max": 5.52
+   }
+  },
+  "page frame L": {
+   "C O2": {
+    "median": 161.546,
+    "min": 161.488,
+    "max": 161.673
+   },
+   "C O3n": {
+    "median": 40.954,
+    "min": 40.924,
+    "max": 40.983
+   },
+   "ONNX exact 1t": {
+    "median": 36.26,
+    "min": 35.711,
+    "max": 37.523
+   },
+   "ONNX fast 1t": {
+    "median": 17.931,
+    "min": 17.111,
+    "max": 18.218
+   },
+   "ONNX exact 5t": {
+    "median": 43.992,
+    "min": 42.744,
+    "max": 46.274
+   },
+   "ONNX fast 5t": {
+    "median": 21.329,
+    "min": 20.062,
+    "max": 23.128
+   }
+  },
+  "spot region": {
+   "C O2": {
+    "median": 2.895,
+    "min": 2.894,
+    "max": 2.901
+   },
+   "C O3n": {
+    "median": 1.17,
+    "min": 1.169,
+    "max": 1.178
+   },
+   "ONNX exact 1t": {
+    "median": 0.859,
+    "min": 0.853,
+    "max": 0.867
+   },
+   "ONNX exact 1t network": {
+    "median": 0.631,
+    "min": 0.625,
+    "max": 0.635
+   },
+   "ONNX int8 1t": {
+    "median": 1.006,
+    "min": 0.998,
+    "max": 1.023
+   },
+   "ONNX int8 1t network": {
+    "median": 0.78,
+    "min": 0.778,
+    "max": 0.782
+   },
+   "ONNX exact 5t": {
+    "median": 1.459,
+    "min": 1.121,
+    "max": 1.493
+   },
+   "ONNX exact 5t network": {
+    "median": 1.229,
+    "min": 0.892,
+    "max": 1.258
+   },
+   "ONNX int8 5t": {
+    "median": 1.146,
+    "min": 1.082,
+    "max": 1.273
+   },
+   "ONNX int8 5t network": {
+    "median": 0.921,
+    "min": 0.856,
+    "max": 1.023
+   }
+  },
+  "spot frame": {
+   "C O2": {
+    "median": 43.321,
+    "min": 43.309,
+    "max": 43.33
+   },
+   "C O3n": {
+    "median": 17.619,
+    "min": 17.616,
+    "max": 17.647
+   },
+   "ONNX exact 1t": {
+    "median": 8.411,
+    "min": 8.233,
+    "max": 8.532
+   },
+   "ONNX exact 1t network": {
+    "median": 7.48,
+    "min": 7.408,
+    "max": 7.654
+   },
+   "ONNX int8 1t": {
+    "median": 9.287,
+    "min": 9.17,
+    "max": 9.595
+   },
+   "ONNX int8 1t network": {
+    "median": 8.404,
+    "min": 8.338,
+    "max": 8.517
+   },
+   "ONNX exact 5t": {
+    "median": 14.399,
+    "min": 13.18,
+    "max": 16.197
+   },
+   "ONNX exact 5t network": {
+    "median": 13.413,
+    "min": 12.444,
+    "max": 15.01
+   },
+   "ONNX int8 5t": {
+    "median": 19.366,
+    "min": 16.712,
+    "max": 19.722
+   },
+   "ONNX int8 5t network": {
+    "median": 18.47,
+    "min": 17.37,
+    "max": 18.672
+   }
+  },
+  "lm S": {
+   "C vocr_lm O3n": {
+    "median": 0.02,
+    "min": 0.017,
+    "max": 0.02
+   },
+   "Python CharLM": {
+    "median": 0.888,
+    "min": 0.884,
+    "max": 0.891
+   },
+   "lines": 199,
+   "same_text": 199
+  },
+  "lm N": {
+   "C vocr_lm O3n": {
+    "median": 0.016,
+    "min": 0.013,
+    "max": 0.017
+   },
+   "Python CharLM": {
+    "median": 0.678,
+    "min": 0.676,
+    "max": 0.68
+   },
+   "lines": 199,
+   "same_text": 199
+  },
+  "lm L": {
+   "C vocr_lm O3n": {
+    "median": 0.016,
+    "min": 0.013,
+    "max": 0.017
+   },
+   "Python CharLM": {
+    "median": 0.62,
+    "min": 0.618,
+    "max": 0.626
+   },
+   "lines": 199,
+   "same_text": 199
+  }
+ },
+ "o3n_equals_o2": {
+  "S": true,
+  "N": true,
+  "L": true,
+  "spotter": true
+ },
+ "agreement": {
+  "S": {
+   "exact": {
+    "lines": 200,
+    "logits_bit_equal": 200,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   },
+   "exact-ortconv": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   },
+   "fast": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   }
+  },
+  "N": {
+   "exact": {
+    "lines": 200,
+    "logits_bit_equal": 200,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   },
+   "exact-ortconv": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 199,
+    "text_equal": 199,
+    "frames": 8325,
+    "frames_differ": 1
+   },
+   "fast": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   }
+  },
+  "L": {
+   "exact": {
+    "lines": 200,
+    "logits_bit_equal": 200,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   },
+   "exact-ortconv": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 199,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 1
+   },
+   "fast": {
+    "lines": 200,
+    "logits_bit_equal": 0,
+    "best_equal": 200,
+    "text_equal": 200,
+    "frames": 8325,
+    "frames_differ": 0
+   }
+  }
+ },
+ "runs": [
+  {
+   "what": "line, page and spot results, agreement, o3n_equals_o2",
+   "passes": 9,
+   "warmup": 2,
+   "command": "eval/onnx_timing.py --onnx ONNX --blobs V0.5.0 --out timing.json --passes 9 --warmup 2 --threads 1,5 --lines 200 --regions 120 --frames 60"
+  },
+  {
+   "what": "the 'lm S/N/L' results (merged from a second run on the same 200 lines)",
+   "passes": 5,
+   "warmup": 1,
+   "command": "eval/onnx_timing.py --onnx ONNX --blobs V0.5.0 --out timing_lm.json --parts lm --threads 1 --passes 5 --warmup 1 --lines 200 --regions 1 --frames 1"
+  }
+ ],
+ "date": "2026-10-31"
+}

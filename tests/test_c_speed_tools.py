@@ -154,6 +154,9 @@ def test_the_record_holds_and_the_doc_quotes_it():
                 assert y["ms_per_frame"] < x["ms_per_frame"]
         n0, n1 = b["nopld"]["333"]["ms_per_frame"], a["nopld"]["333"]["ms_per_frame"]
         assert f"{n0:.3f} → **{n1:.3f}**" in doc, t
+        na = row["after_no_attn"]   # Rubi's build: the same code but the attention op's, the same texts
+        assert na["texts_sha256"] == b["texts_sha256"] and na["vocr_cflags"] == "-O2 -DVOCR_NO_ATTN"
+        assert na["vocr_c_sha256"] == after["vocr.c"] and na["nopld"]["333"]["ms_per_frame"] < n0
         b_s, a_s = (round(x["nopld"]["333"]["box_ms"]) / 1000 for x in (b, a))   # whole ms, then seconds
         assert f"{b_s:.3f} → **{a_s:.3f} s**" in doc, t
     for size in ("900x150", "960x544"):
@@ -167,6 +170,9 @@ def test_the_record_holds_and_the_doc_quotes_it():
     for run in p["recognizer"] + p["recognizer_vs_rubi_pin"]:
         assert run["ok"] and all(r["new_equals_base"] for r in run["rows"])
     assert {(r["tier"], r["run"]) for r in p["recognizer"]} == {(t, k) for t in "SNL" for k in ("logits", "rubi")}
+    for run in p["recognizer"] + p["recognizer_vs_rubi_pin"]:   # Rubi's options: also the Vita objects as Rubi builds
+        if run.get("run", "rubi") == "rubi":
+            assert "vita-neon-noattn" in {r["build"] for r in run["rows"]}, run["tier"]
     assert all(r["equals_other_builds"] for run in p["recognizer"] for r in run["rows"])
     assert p["spotter"]["ok"] and len(p["spotter"]["rows"]) == 10
     assert all(r["new_equals_base"] and r["equals_other_builds"] for r in p["spotter"]["rows"])
@@ -178,4 +184,14 @@ def test_the_record_holds_and_the_doc_quotes_it():
     assert p["spotter_twin_neon"]["ok"] and p["check_arm"] and p["parity_arm"]
     for k, v in rec["memory"]["arena"].items():
         assert v["before"] == v["after"] > 0, k
+    code = rec["memory"]["vita_code"]
+    rubi = "rubi -O2 -ffunction-sections -fdata-sections: "
+    r0 = code[rubi + "vocr.c"]["before"], code[rubi + "vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS"]["before"]
+    r1 = code[rubi + "vocr.c -DVOCR_NO_ATTN"]["after"], code[rubi + "vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS"]["after"]
+    d = sum(r1) - sum(r0)
+    assert d < 0 and f"{r0[0]:,} + {r0[1]:,} →\n  {r1[0]:,} + {r1[1]:,} B (−{-d:,} B)" in doc
+    v = code["vita -O2: vocr.c"]
+    assert f"`vocr.o` {v['before']:,} → {v['after']:,} B" in doc
+    st = rec["memory"]["vocr_stack"]["vita -O2: vocr.c"]
+    assert f"2,536 → {st['after']['vocr_run']['bytes']:,} B" in doc and st["before"]["vocr_run"]["bytes"] == 2536
     assert rec["machine_code_without_neon"] and all(v["identical"] for v in rec["machine_code_without_neon"].values())

@@ -12,10 +12,12 @@ spotter has run on a console.
 - **A faster runtime on the Vita, bit for bit** (#165, `docs/c-speed.md`; thanks to astra, whose ONNX report started
   it). NEON kernels only: the recognizer's matrix pass in `asm` with aligned loads, its 3×3 stem and its top-K filter;
   textspot8's 1×1 layers 4 output channels at a time, its depthwise layers and stem, and a cheaper exact
-  requantisation. Est. per 3-line box at 333 MHz, one core, no prefetch credit: VOCR6.2 S / N / L 0.627 → 0.585,
-  0.774 → 0.748, 1.880 → 1.822 s; textspot8 81.9 → 61.0 ms per 900×150 region, 264.3 → 192.2 ms per frame (estimates;
+  requantisation. Est. per 3-line box at 333 MHz, one core, no prefetch credit: VOCR6.2 S / N / L 0.627 → 0.580,
+  0.774 → 0.744, 1.880 → 1.815 s; textspot8 81.9 → 61.0 ms per 900×150 region, 264.3 → 192.2 ms per frame (estimates;
   nothing has run on a console). The same logits, texts, top-K, maps and boxes in every build and in Vita3K; arenas
   unchanged; builds without NEON compile to the same machine code.
+- `-DVOCR_NO_ATTN` (#165): a recognizer build without the attention op (not adopted; no released blob has one), 2.6 KB
+  less Vita code, for Rubi's worker; the default build is unchanged.
 
 ### Added
 

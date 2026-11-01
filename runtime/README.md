@@ -6,6 +6,8 @@
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
 - The line is processed in tiles of a few CTC frames (8 input columns each; 12 or 16 for the coarser-frame models of `train2.py --stride`, which `docs/stride16.md` trains). Every layer keeps its left context between tiles, so the arena stays the same size for any line width, and the output doesn't depend on the tile size (checked bit for bit).
 - NEON kernels sit behind `__ARM_NEON` (Vita). The scalar fallback gives the same bits; it's the PSP path, and `-DVOCR_NO_NEON` forces it.
+- `-DVOCR_NO_ATTN` leaves out the attention op (below; no released blob has one): `vocr_load` refuses a blob with it,
+  and every other blob runs as in the default build. Rubi builds it so (`docs/c-speed.md`: −2,640 B of Vita code).
 
 ## Numbers (v1 checkpoint)
 
@@ -335,7 +337,8 @@ over the line's frames. Nothing changes for the caller: `vocr_load` parses it (`
 - K, V and a head batch's queries overlay the rings and the head's buffers, idle at that point. The output is the
   same for every tile and head batch size, scalar and NEON. The cancel callback is also polled per chunk of the
   attention and per tile of the head after it.
-- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`).
+- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`), and
+  so does one built with `-DVOCR_NO_ATTN` (#165), which leaves the op's code out.
 - Cost (estimates, VitaSDK gcc `-O2`, NEON, docs/vocr6-attn.md): about 0.066 ms a frame for the projections plus
   0.0010 ms × T for the scores on a line of T frames at 333 MHz (+35 ms per nominal 3-line box for VOCR5-N's shape);
   `vocr.o` grows from 23,267 to 25,979 B (scalar 18,295 to 21,079 B; psp-gcc 28,091 to 32,603 B); no malloc.

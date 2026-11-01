@@ -18,9 +18,9 @@ head; nothing here has run on a console):
 
 | | before → after, ms per CTC frame @333 MHz | 3-line box (240 frames + 0.1 s) @333 | @444 | with prefetch credit, box @333 |
 |---|---:|---:|---:|---:|
-| Small `VOCR6.2_S_w8` | 2.195 → **2.020** (−8.0%) | 0.627 → **0.585 s** | 0.495 → 0.464 s | 0.564 → 0.522 s |
-| Normal `VOCR6.2_N_w8g2` (default) | 2.807 → **2.701** (−3.8%) | 0.774 → **0.748 s** | 0.605 → 0.586 s | 0.672 → 0.646 s |
-| Large `VOCR6.2_L_w8_2l` | 7.415 → **7.175** (−3.2%) | 1.880 → **1.822 s** | 1.470 → 1.427 s | 1.335 → 1.278 s |
+| Small `VOCR6.2_S_w8` | 2.195 → **2.000** (−8.9%) | 0.627 → **0.580 s** | 0.495 → 0.460 s | 0.564 → 0.517 s |
+| Normal `VOCR6.2_N_w8g2` (default) | 2.807 → **2.683** (−4.4%) | 0.774 → **0.744 s** | 0.605 → 0.583 s | 0.672 → 0.642 s |
+| Large `VOCR6.2_L_w8_2l` | 7.415 → **7.146** (−3.6%) | 1.880 → **1.815 s** | 1.470 → 1.421 s | 1.335 → 1.271 s |
 
 | textspot8 (`t64n8c16`, 4 tags), est. ms @333 / @444 | with the dark pass (the published figures) | without it (Rubi's `VOCR_TEXTSPOT_NO_DARK`) |
 |---|---:|---:|
@@ -30,8 +30,9 @@ head; nothing here has run on a console):
 | a whole 960×544 frame (the rule's bound) | 264.3 → **192.2** / 144.1 (−27.3%) | 258.4 → 186.3 / 139.7 |
 
 The box column is the recognizer's nominal box as the earlier docs give it (`docs/vocr6.md`): its 0.1 s stands for
-the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 region is about 0.774 + 0.076 → 0.748 +
-0.055 s (estimates, Rubi's flags).
+the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 region is about 0.774 + 0.076 → 0.744 +
+0.055 s (estimates, Rubi's flags). Rubi builds the recognizer with `-DVOCR_NO_ATTN` (below): 0.579 / 0.743 / 1.813 s,
+the same code in every kernel.
 
 ## What changed
 
@@ -39,7 +40,7 @@ the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 r
 
 | kernel | before | after | why the bits are the same |
 |---|---|---|---|
-| `mm_i16`'s 4 positions × 8 outputs pass (every pointwise layer, the head, the gate and the escape) | intrinsics: gcc kept the 8 sums, 4 inputs, 32 weight bytes and a widened row in the 16 Q registers only by rotating a sum through the weight registers (4 `VORR` a pass) and copied the weight pointer for the `PLD`s: 88 instructions per 256 multiply-adds | the same pass as an `asm` loop (`VOCR_ASM`; `-DVOCR_NO_ASM` keeps the intrinsics) with the registers fixed and `:128` alignment hints on the 6 loads: 82 instructions, and the loads issue in 6 cycles instead of 14. It runs when the rows are 16-byte aligned and K is a multiple of 8 (every VOCR matrix: the arena's scratch and the blob's sections are aligned), else the intrinsics | the same `VMLAL.S16` in the same order; integer sums are exact in any order anyway. The `PLD`s go to the same addresses |
+| `mm_i16`'s 4 positions × 8 outputs pass (every pointwise layer, the head, the gate and the escape) | intrinsics: gcc kept the 8 sums, 4 inputs, 32 weight bytes and a widened row in the 16 Q registers only by rotating a sum through the weight registers (4 `VORR` a pass) and copied the weight pointer for the `PLD`s: 88 instructions per 256 multiply-adds | the same pass as an `asm` loop (`VOCR_ASM`; `-DVOCR_NO_ASM` keeps the intrinsics) with the registers fixed and `:128` alignment hints on the 6 loads: 82 instructions, and the loads issue in 6 cycles instead of 14. It runs when the rows are 16-byte aligned and K is a multiple of 8 (every VOCR matrix: the arena's scratch and the blob's sections are aligned); any other call takes the one-position loop, so there is one copy of the pass | the same `VMLAL.S16` in the same order; integer sums are exact in any order anyway. The `PLD`s go to the same addresses |
 | the 3×3 stem (`k_conv1`, C a multiple of 16) | 16 channels per output position: per tap, two 32-byte weight loads, the input as a lane, 4 `VMLA` | `k_conv1_3x3`: 4 channels at a time with their 9 tap weights in 9 Q registers over every output of the call, and each column's 3 rows in one load | each output is still bias, then + w · x over the taps in order (dy, then dx) by `VMLA` by lane, the vertical taps outside the input skipped (the border rows take the taps one by one, as before); only the order of independent outputs changes. With C % 16 the old loop ran every channel on NEON too, so the flush of denormals is the same |
 | the top-K filter in `run_head` (Small; any head with the top-K and without the two-level head) | per block of 8 classes and frame: `fkey` (6 operations) of the 8 logits and of the frame's K-th largest, then one NEON→ARM move, which the A9 pays as a NEON/VFP switch | a cheaper order key (`okey`: 3 operations, the magnitude bits flipped for negatives), the frames' thresholds kept as keys (updated after an insertion), 4 frames per test and the pass bits of the whole batch gathered in one register, so one move per block | the filter only decides which blocks go through the per-class insertion, which compares exactly as before; `okey` orders every two non-NaN floats as `>` does (only -0 < +0 more), the threshold is never NaN, so every block with a logit above the threshold still passes (a superset); the insertion itself is unchanged |
 | `block_above` (the two-level head's block test) | `fkey` of both | `okey`, the same superset argument | as above |
@@ -47,6 +48,12 @@ the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 r
 Kept as they were after trying (measured on the same lines): a 4-channel form of the depthwise layers (slower: their
 2-8 rows are mostly border rows, and the 16-channel loop already loads each input once per output), `-O3` (+23-42% per
 frame: gcc 15.2 spills NEON registers; the research measured the same) and `-fno-tree-vectorize` (−0.1%).
+
+**`-DVOCR_NO_ATTN`** (a new build option; the default build is unchanged, to the machine code): it leaves out the
+attention op (#130, VOCR6's stage-3 candidate, not adopted; no released blob has one), and `vocr_load` then refuses a
+blob with one (`VOCR_E_FORMAT`). Rubi loads only the blobs it pins, none of which has the op, so its build can drop
+the code: `vocr.o` 26,723 → 24,083 B, which more than pays for this change's code in Rubi's worker (Memory, below).
+`make check` and `make check-arm` run the unit tests in that build too (the attention tests become refusal checks).
 
 ### `runtime/vocr_textspot6.c` (NEON builds only)
 
@@ -71,19 +78,20 @@ int8-pair form of the 1×1 layers (`VMULL.S8` + `VMLAL.S8` + `VPADAL`, as the mu
 
 | phases | Small before | after | Normal before | after | Large before | after |
 |---|---:|---:|---:|---:|---:|---:|
-| the head (S: 96 → 4,987, full; N: 96 → 5,631 with the gate and two-level head; L: two-level) | 0.867 | **0.731** | 0.369 | 0.341 | 0.632 | 0.597 |
+| the head (S: 96 → 4,987, full; N: 96 → 5,631 with the gate and two-level head; L: two-level) | 0.867 | **0.720** | 0.369 | 0.337 | 0.632 | 0.593 |
 | the 3×3 stem | 0.094 | 0.083 | 0.136 | 0.123 | 0.185 | 0.171 |
-| the 10 pointwise layers (collapse included) | 0.973 | 0.945 | 1.888 | 1.823 | 5.931 | 5.739 |
-| the 8 depthwise layers | 0.200 | 0.201 | 0.343 | 0.343 | 0.596 | 0.596 |
+| the 10 pointwise layers (collapse included) | 0.973 | 0.935 | 1.888 | 1.809 | 5.931 | 5.715 |
+| the 8 depthwise layers | 0.200 | 0.200 | 0.343 | 0.342 | 0.596 | 0.595 |
 | the input columns, the gate's step, the rest of `vocr_run` | 0.061 | 0.061 | 0.071 | 0.071 | 0.071 | 0.071 |
-| **all** | **2.195** | **2.020** | **2.807** | **2.701** | **7.415** | **7.175** |
+| **all** | **2.195** | **2.000** | **2.807** | **2.683** | **7.415** | **7.146** |
 
 The per-phase tables are in the PR (`vita/a9_layers.py compare`).
 
 The high bound the calibration uses is instruction-bound in most phases (instructions ≥ NEON issue cycles), plus the
 data cache misses: 25-44% of it, unchanged here because the tiles and their buffers are (a larger tile would halve the
 late layers' weight stream but grow the arena by 87-183 KB per context: the research's rank 3, opt-in only).
-Instructions per frame: S 529,642 → 482,550, N 626,586 → 595,489, L 1,349,842 → 1,285,762.
+Instructions per frame: S 529,642 → 476,117, N 626,586 → 590,017, L 1,349,842 → 1,277,225 (with `-DVOCR_NO_ATTN`:
+475,001, 588,588 and 1,275,031).
 
 textspot8 on a 900×150 region: 23.89 M → 16.82 M instructions; the 1×1 layers 14.40 M → 9.44 M, the depthwise layers
 and the rest of the stream 6.93 M → 3.97 M + 0.59 M (the stem's own function), the dark pass 1.75 M (unchanged).
@@ -139,13 +147,16 @@ Every check compares `main` (205f47e) with this change on development data only 
 - **Arenas: unchanged** (neither plan changed). `vocr_arena_bytes` at 1,024 px with Rubi's options: 124,832 (S),
   184,448 (N), 262,480 B (L). `vocr_textspot6_arena_bytes`: 235,119 B for a 900×150 region at scale 2, 244,607 B
   for 960×544.
-- **Code** (VitaSDK gcc 15.2 `-O2`, Thumb-2, NEON objects): `vocr.o` 26,435 → 28,171 B (+1,736: the `asm` pass in
-  its two call sites, the stem kernel, the filter); `vocr_textspot6.o` with `-DVOCR_TEXTSPOT6_NO_MS` (Rubi's) 13,516
-  → 15,228 B (+1,712), its `--gc-sections` text 13,020 → 14,664 B. The scalar and PSP objects do not change.
-- **Stack** (`-fstack-usage`, `-fcallgraph-info=su`): the recognizer's deepest chain (`vocr_run` → `run_head` →
-  `mm_i16`) 2,536 → 2,432 B (`mm_i16` 616 → 512). The spotter's peak stays the dark pass's (find 2,720 → 2,728 B); its
-  call without the dark pass (Rubi's) 1,136 → 1,384 B with `-DVOCR_TEXTSPOT6_NO_MS` (the 1×1 kernel's 128-byte sum
-  block and the new kernels' frames).
+- **Code** (VitaSDK gcc 15.2 `-O2`, Thumb-2, NEON objects): `vocr.o` 26,435 → 26,723 B (+288: the stem kernel, the
+  filter, the `asm` pass in place of the intrinsics one), 24,083 B with `-DVOCR_NO_ATTN`; `vocr_textspot6.o` with
+  `-DVOCR_TEXTSPOT6_NO_MS` (Rubi's) 13,516 → 15,228 B (+1,712), its `--gc-sections` text 13,020 → 14,664 B. As Rubi
+  builds the two (`-DVOCR_NO_ATTN`, `-DVOCR_TEXTSPOT6_NO_MS`, `-ffunction-sections`) they shrink: 26,423 + 13,532 →
+  24,083 + 15,240 B (−632 B). The scalar and PSP objects do not change.
+- **Stack** (`-fcallgraph-info=su`, the heaviest path): the recognizer's deepest chain 2,536 → 2,320 B. Before it was
+  `vocr_run` → `run_head` → `mm_i16` (616 B); `mm_i16`'s frame is 336 B now, so the deepest path goes through
+  `mm_f32` (W8F and F32 only), and W8I's (Rubi's mode) is 2,256 B. The spotter's peak stays the dark pass's (find
+  2,720 → 2,728 B); its call without the dark pass (Rubi's) 1,136 → 1,384 B with `-DVOCR_TEXTSPOT6_NO_MS` (the 1×1
+  kernel's 128-byte sum block and the new kernels' frames).
 
 ## What does not transfer from the ONNX findings
 
@@ -196,10 +207,12 @@ export VITASDK=... ARM_CC=.../arm-none-linux-gnueabihf-gcc VOCR_A9_PLUGINS=<plug
 python vita/a9_layers.py measure --blob VOCR6.2_N_w8g2.vocr --pack sub24.bin --out a9/new --no-pld \
     --cli-opts '--topk 8 --head-gate on --two-level'          # --runtime <main's runtime/> for before
 python vita/a9_layers.py compare a9/main a9/new --scale 1.000676 --console-mhz 333
+    # measure --vocr-cflags '-O2 -DVOCR_NO_ATTN': Rubi's build
 python eval/textspot6_a9.py measure --out ts/new --rows t64n8c16_t4 --sizes 900x150,960x544 \
     --define VOCR_TEXTSPOT6_NO_MS [--nodark]                 # from a checkout of main for before
 python vita/speed_parity.py --base <main's runtime/> --new runtime --pack dev.bin --blob ... --modes w8i,w8f \
-    --cli-opts '--topk 8' [--no-logits --cli-opts '--topk 8 --head-gate on --two-level']
+    --cli-opts '--topk 8' [--no-logits --cli-opts '--topk 8 --head-gate on --two-level' \
+    --builds host-gcc,host-clang,arm-neon,arm-scalar,vita-neon,vita-neon-noattn]
 python vita/ts_speed_parity.py --base <main's runtime/> --new runtime --blob textspot8_t64n8c16_w8.vtsp \
     --regions dev_regions.bin --frames 27
 make -C runtime check-arm parity-arm ARM_CC=... QEMU=...
@@ -214,4 +227,5 @@ The packs hold crops of copyrighted screenshots (development data only, `vita/de
 
 - Nothing here has run on a console; every console time is the cost model calibrated on one console figure (VOCR3-H15).
   The no-prefetch and prefetch columns bound what the A9's `PLD` gives.
-- The instruction cache: the cost model does not charge it, and the code grew by 3.4 KB in the two hot objects.
+- The instruction cache: the cost model does not charge it, and the code grew by 2.0 KB in the two hot objects (as
+  Rubi builds them, it shrank by 0.6 KB).

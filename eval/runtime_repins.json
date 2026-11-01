@@ -4,11 +4,11 @@
   {
    "file": "runtime/vocr.c",
    "from": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
-   "to": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+   "to": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
    "issue": 165,
    "doc": "docs/c-speed.md",
    "record": "eval/c_speed_20261101.json",
-   "what": "c-speed's NEON kernels (mm_i16's 4 x 8 pass in asm, the 3x3 stem, run_head's top-K filter): every logit, top-K and text of VOCR6.2 S / N / L the same in five builds and in Vita3K; builds without NEON compile to the same machine code; the arena unchanged. Cortex-A9 estimates of the earlier code are superseded."
+   "what": "c-speed's NEON kernels (mm_i16's 4 x 8 pass in asm, the 3x3 stem, run_head's top-K filter) and the -DVOCR_NO_ATTN build option (off by default: the default build's machine code is unchanged by it): every logit, top-K and text of VOCR6.2 S / N / L the same in five builds (and the Vita objects with -DVOCR_NO_ATTN) and in Vita3K; builds without NEON compile to the same machine code; the arena unchanged. Cortex-A9 estimates of the earlier code are superseded."
   },
   {
    "file": "runtime/vocr_textspot6.c",

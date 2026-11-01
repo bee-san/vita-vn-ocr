@@ -4,14 +4,16 @@
   c_speed_record.py --art DIR --out eval/c_speed_20261101.json
 
 DIR is the work directory ($HERD/shared/artifacts/vocr-c-speed) with:
-  a9/{base,new4}/{nopld,pld}_{S,N,L}/report.json, report444.json   vita/a9_layers.py on sub24 (Rubi's options)
+  a9/{base,final2}/{nopld,pld}_{S,N,L}/report.json, report444.json  vita/a9_layers.py on sub24 (Rubi's options)
+  a9/final2_noattn/nopld_{S,N,L}/                                    the same, -DVOCR_NO_ATTN (Rubi's build)
   ts/{base,final}_{dark4,nodark}/                                    eval/textspot6_a9.py measure (t64n8c16_t4)
-  parity/sp_{S,N,L}_{logits,rubi}.json, sp_rubipin_{S,N,L}.json      vita/speed_parity.py
+  parity/sp2_{S,N,L}_{logits,rubi}.json, sp2_rubipin_{S,N,L}.json   vita/speed_parity.py
   parity/ts_full_final2.json, parity/vita3k_*.json                   vita/ts_speed_parity.py, vita/vita3k_parity.py
-  logs/twin_arm_final2.log, logs/check_arm_new.log, logs/parity_arm_new.log
+  logs/twin_arm_final2.log, logs/check_arm_new2.log, logs/parity_arm_new2.log
   results_host_ms.json, size/{codesize,stack}_{base,final}.json      host timing, eval/textspot6_a9.py codesize / stack
   base_runtime/ (main's runtime/ and COMMIT), models/ (the v0.5.0 blobs)
-and builds both versions' host drivers (arenas) and every build without NEON (their .text: before == after).
+and builds both versions' host drivers (arenas), every build without NEON (their .text: before == after) and the
+Vita objects (their code sizes; vocr.c's stack chains).
 Every time in it is a host estimate of the console (the Cortex-A9 cost model, x1.000676 for the recognizer and x1.0007
 for the spotter: VOCR3-H15's console calibration) or a host measurement; nothing ran on a console. It holds hashes and
 counts only (no text, no reading, no pixel).
@@ -32,6 +34,8 @@ TIERS = {"S": ("VOCR6.2_S_w8.vocr", "--topk 8"),
 BOX_FRAMES, BOX_FINDER_MS = 240, 100.0      # the nominal 3-line box of docs/vocr6.md (240 CTC frames + 0.1 s)
 SPOT_TAG = "t64n8c16_t4_h480_{}_grey"
 SPOT_SIZES = ("900x150", "900x200", "900x300", "960x544")
+AFTER = "final2"            # the A9 runs of the final runtime (a9/final2, a9/final2_noattn)
+SP = "sp2_"                 # its speed_parity runs
 
 
 def sha(p):
@@ -42,8 +46,8 @@ def recognizer(art):
     out = {}
     for t in TIERS:
         row = {}
-        for ver, d in (("before", "base"), ("after", "new4")):
-            for b in ("nopld", "pld"):
+        for ver, d in (("before", "base"), ("after", AFTER), ("after_no_attn", AFTER + "_noattn")):
+            for b in ("nopld", "pld") if ver != "after_no_attn" else ("nopld",):
                 for mhz, rep in ((333, "report.json"), (444, "report444.json")):
                     r = json.loads((art / "a9" / d / f"{b}_{t}" / rep).read_text())
                     F, s = r["frames"], r["scale"]
@@ -54,6 +58,7 @@ def recognizer(art):
                 row[ver]["texts_sha256"] = r["meta"]["runs"]["prof"]["texts_sha256"]
                 row[ver]["vocr_c_sha256"] = r["meta"]["vocr_c_sha256"]
                 row[ver]["frames"] = F
+                row[ver]["vocr_cflags"] = r["meta"].get("vocr_cflags", "-O2")   # runs before the option: -O2
         row["blob"], row["cli_opts"] = TIERS[t]
         row["pack_sha256"] = json.loads((art / "a9" / "base" / f"nopld_{t}" / "meta.json").read_text())["pack_sha256"]
         out[t] = row
@@ -90,14 +95,14 @@ def parity(art):
     res = {"recognizer": [], "recognizer_vs_rubi_pin": [], "spotter": None, "vita3k": None}
     for t in TIERS:
         for kind, key in (("logits", "recognizer"), ("rubi", "recognizer")):
-            d = json.loads((p / f"sp_{t}_{kind}.json").read_text())
+            d = json.loads((p / f"{SP}{t}_{kind}.json").read_text())
             res[key].append({"tier": t, "run": kind, "cli_opts": d["cli_opts"], "logits": d.get("logits", True),
                              "pack_sha256": d["pack_sha256"], "ok": d["ok"],
                              "rows": [{k: r[k] for k in ("mode", "build", "new_equals_base", "equals_other_builds")}
                                       | {"logits_sha256": r["new"]["logits_sha256"], "logit_bytes":
                                          r["new"]["logit_bytes"], "texts_sha256": r["new"]["texts_sha256"],
                                          "topk_sha256": r["new"]["topk_sha256"]} for r in d["results"]]})
-        d = json.loads((p / f"sp_rubipin_{t}.json").read_text())
+        d = json.loads((p / f"{SP}rubipin_{t}.json").read_text())
         res["recognizer_vs_rubi_pin"].append({"tier": t, "cli_opts": d["cli_opts"], "ok": d["ok"],
                                               "rows": [{"mode": r["mode"], "build": r["build"],
                                                         "new_equals_base": r["new_equals_base"],
@@ -122,9 +127,9 @@ def parity(art):
     m = re.search(r"TEXTSPOT6_PARITY_OK (\d+) runs \((\d+) frames, (\d+) blobs \((\d+) of version 4", twin)
     res["spotter_twin_neon"] = {"ok": bool(m), "runs": int(m.group(1)), "frames": int(m.group(2)),
                                 "blobs": int(m.group(3)), "v4_blobs": int(m.group(4))} if m else {"ok": False}
-    arm = (art / "logs" / "check_arm_new.log").read_text()
-    par = (art / "logs" / "parity_arm_new.log").read_text()
-    res["check_arm"] = arm.count("test_vocr: all checks passed") == 2
+    arm = (art / "logs" / "check_arm_new2.log").read_text()
+    par = (art / "logs" / "parity_arm_new2.log").read_text()
+    res["check_arm"] = arm.count("test_vocr: all checks passed") == 3   # NEON, scalar, NEON -DVOCR_NO_ATTN
     res["parity_arm"] = "PARITY_OK" in par
     return res
 
@@ -190,6 +195,41 @@ def machine_code(art, work, vitasdk, arm_cc, pspdev):
     return out
 
 
+VITA = ["-mcpu=cortex-a9", "-mfpu=neon", "-mfloat-abi=hard"]
+RUBI = ["-ffunction-sections", "-fdata-sections"]   # Rubi's cmake/VocrOCR.cmake adds these to vjo_vocr_rt's -O2
+
+
+def vita_objects(art, work, vitasdk):
+    """The Vita objects' code (arm-vita-eabi-size's text) and vocr.c's deepest stack chains (-fcallgraph-info=su),
+    before and after, the recognizer also with -DVOCR_NO_ATTN: at vita/CMakeLists.txt's -O2 and with Rubi's flags."""
+    import subprocess
+
+    import textspot3_a9r as A9R
+    cc, size = f"{vitasdk}/bin/arm-vita-eabi-gcc", f"{vitasdk}/bin/arm-vita-eabi-size"
+    code, stack = {}, {}
+    for label, extra in (("vita -O2", []), ("rubi -O2 -ffunction-sections -fdata-sections", RUBI)):
+        for f, defs in (("vocr.c", []), ("vocr.c", ["-DVOCR_NO_ATTN"]),
+                        ("vocr_textspot6.c", ["-DVOCR_TEXTSPOT6_NO_MS"])):
+            key = f"{label}: {f}{''.join(' ' + d for d in defs)}"
+            for ver, rt in (("before", art / "base_runtime"), ("after", ROOT / "runtime")):
+                d = work / f"vo_{len(code)}_{ver}"
+                d.mkdir(parents=True, exist_ok=True)
+                o = d / (Path(f).stem + ".o")
+                subprocess.run([cc, *WARN, *VITA, "-O2", *extra, *defs, "-fcallgraph-info=su", "-I", str(rt), "-c",
+                                "-o", str(o), str(rt / f)], check=True, capture_output=True, cwd=d)
+                text = subprocess.run([size, str(o)], check=True, capture_output=True, text=True).stdout
+                code.setdefault(key, {})[ver] = int(text.splitlines()[-1].split()[0])
+                if f == "vocr.c":
+                    ci = (d / "vocr.ci").read_text(encoding="utf-8")
+                    pk, _ = A9R.peaks([ci], ["vocr_run"])
+                    w8i, _ = A9R.peaks([ci], ["vocr_run"], exclude=("mm_f32",))   # W8I (Rubi's mode) has no f32 matmul
+                    stack.setdefault(key, {})[ver] = {
+                        "vocr_run": {"bytes": pk["vocr_run"]["bytes"], "chain": pk["vocr_run"]["chain"]},
+                        "vocr_run without mm_f32": {"bytes": w8i["vocr_run"]["bytes"],
+                                                    "chain": w8i["vocr_run"]["chain"]}}
+    return code, stack
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--art", required=True, type=Path)
@@ -216,6 +256,7 @@ def main():
                       ("codesize_base", "codesize_final")}}
     rec["memory"]["arena"] = arenas(art, work)
     rec["machine_code_without_neon"] = machine_code(art, work, a.vitasdk, a.arm_cc, a.pspdev)
+    rec["memory"]["vita_code"], rec["memory"]["vocr_stack"] = vita_objects(art, work, a.vitasdk)
     rec["memory"]["stack"] = {}
     for v in ("base", "final"):
         s = json.loads((art / "size" / f"stack_{v}.json").read_text())

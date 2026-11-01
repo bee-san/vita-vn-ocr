@@ -175,6 +175,30 @@
     },
     "rule": "screening.rule's steps 1 and 2 are replaced by one: among every screening arm whose network takes <= 2.5 ms at 960x544 in ONNX Runtime at 1 thread, the lowest score wins; an eligible arm within 0.10 points of it that costs less (MACs at 960x544, then training steps) replaces it (the cheapest such). Step 3 (the refinement) is unchanged. The chosen arm's seeds 2 and 3 and its train + guard + hval retrains train with its recipe and steps"
    }
+  },
+  {
+   "n": 4,
+   "time": "2026-11-01T22:06:14Z",
+   "before": "Sf_p8a_junk_endig is read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sd_p8g (score 3.122, the lowest) and Sc_p4a (11.455) were read on hval and dense_screen: disclosed",
+   "what": {
+    "stopped": "Sg_p8a_junk_endig_80k (step ~3,000), never scored: amendment 3's twice-the-steps question moves to the shape with global context, which screened best",
+    "arms": {
+     "Sh_p8g_junk_endig": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000
+     },
+     "Si_p8g_junk_endig_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm (Sa-Sf, Sh, Si)"
+   }
   }
  ]
 }

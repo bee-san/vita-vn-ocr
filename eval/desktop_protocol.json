@@ -1,0 +1,729 @@
+{
+ "kind": "vocr-desktop-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/169",
+ "created": "2026-11-01T04:04:46Z",
+ "registered_in": "/local/home/skerraut/herd-synth3/vocr6/experiments.jsonl (label vocr-desktop, kind protocol, 2026-11-01T03:40Z) and #169's body, before any baseline or candidate was scored",
+ "rule": {
+  "reference_R": "MeikiOCR 0.3.5's detector (meiki.text.detect.v0.1, sha256 40b6a016..., threshold 0.5, its own fit to 960x544, BGR) on the whole frame; each box grown by eval/desktop.py's auto pad (4 px on a 960x544-class frame, 2 px on a native PSP frame) and read by VOCR6.2_L_fast.onnx (v0.5.1-onnx.2), greedy CTC, no LM, no line filter",
+  "candidate_C": "the desktop detector (train/desktop_det.py, tools/vocr_desktop.py) at an input-size policy, read the same way by VOCR6.2_L_fast.onnx",
+  "metric": "dialogue CER of eval/desktop.py read: every box whose centre lies in a unit's region, in reading order, against the unit's references (eval/pagepath.py score_unit); VN clusters on dev / confirm, title clusters on hval; eval/pagepath.py cluster_bootstrap (10,000, seed 0)",
+  "accuracy": "dev-v2: CER(C) <= 1.20 x CER(R) for the representative seed (the median of 3 seeds by dev-v2 CER at fit:960); the paired 95% interval of CER(C) - CER(R) not entirely above 0; the Vita view and the PSP view each CER(C) <= 1.5 x CER(R) of that view",
+  "thresholds_from_the_baseline": {
+   "all": 0.9244,
+   "vita": 0.5232,
+   "psp": 1.6871
+  },
+  "guards": "hval (title clusters) and confirm-v2 (VN clusters, read once for the candidate set after the dev decision is recorded): CER(C) - CER(R) not resolved above 0",
+  "speed": "eval/desktop_time.py run at 4 intra-op threads, mode par (the detector at 4 threads, the lines on 4 Python threads sharing one recognizer session at 1 thread), interleaved with R in the same run, on the timing pages: p50 ms per page of C <= 1/4 of R's, on the Vita and on the PSP timing pages separately",
+  "pick": "each input-size policy of the chosen arm (fit:960, fit:800, fit:640, fit:480) is a candidate; among those that pass accuracy, guards and speed, the cheapest (p50 at 4 threads, Vita + PSP) is the pick; a costlier one replaces it only when it is resolved better on dev-v2",
+  "seeds": "3 seeds of the chosen arm for the adoption claim; screening on hval with 1 seed",
+  "then": "the pick ships: the chosen arm retrained with the representative seed on train + guard + hval (the final model); its own dev-v2 score is reported; the test titles are read once with it. No qualifier: the measurements are published with the gap and what would close it"
+ },
+ "screening": {
+  "arms": {
+   "S1_d48": {
+    "shape": "d48",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S2_d64": {
+    "shape": "d64",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S3_d32": {
+    "shape": "d32",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S4_d48_single": {
+    "shape": "d48",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.8,
+     1.25
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1,
+    "role": "report only: the single-scale control (trained near one text size, then read at other input sizes, as the dynamic-size MeikiOCR variant was): the per-size accuracy against S1 shows what the multi-scale training buys"
+   }
+  },
+  "rule": "on hval at fit:960 (R's pipeline otherwise): the multi-scale arm (S1-S3) with the lowest CER; an arm within 0.10 points of the lowest that is cheaper (MACs at 960x544) replaces it",
+  "data": "data/manifests/desktop_pages_v21.json (train split; textspot6_pages.py on pagepool v2.1 with MeikiOCR's boxes for the text the hook does not cover), data/manifests/textspot_shards_v1.json (synthetic frames), data/manifests/textspot2_shards_v1.json (MeikiOCR-labelled VNDB / owner screenshots outside the dev sample) with its skip lists"
+ },
+ "sets": {
+  "hval": {
+   "frames_file_sha256": "c79dbbb95c8ba736768abb9be8b5b0db2b8b700995a29fe590e7bc8dd286f937",
+   "frames": 2809,
+   "units": 2836,
+   "clusters": 71,
+   "views": {
+    "psp": 876,
+    "vita": 1933
+   },
+   "groups": {
+    "psp": 879,
+    "vita": 1957
+   },
+   "excluded_vns": null,
+   "note": "the hval pages of hooked pools v2.1 (b2-ingest2 #166, pagepool v2.1 bbadfcbf), base dialogue regions; screening only"
+  },
+  "dev": {
+   "frames_file_sha256": "8613d2441f529c55608f7f8dfecba19d8d711b244783e7ed6af9788f4c65c40f",
+   "frames": 313,
+   "units": 339,
+   "clusters": 84,
+   "views": {
+    "psp": 178,
+    "vita": 135
+   },
+   "groups": {
+    "psp": 144,
+    "psp-hires": 46,
+    "vita-pc": 119,
+    "vita": 30
+   },
+   "excluded_vns": [
+    "v12188",
+    "v13833",
+    "v14267",
+    "v15708",
+    "v16770",
+    "v18163",
+    "v18432",
+    "v2835",
+    "v6656"
+   ],
+   "note": "\"dev-v2\": #119 units (base variant) without the 9 VNs pools v2.1 trains on; the decision set"
+  },
+  "confirm": {
+   "frames_file_sha256": "96ab5e4bd40e5a07932b057c77c2805514386ef59626814c2e489d8aec5d419a",
+   "frames": 153,
+   "units": 155,
+   "clusters": 37,
+   "views": {
+    "psp": 135,
+    "vita": 18
+   },
+   "groups": {
+    "psp": 137,
+    "vita": 18
+   },
+   "excluded_vns": [
+    "v12150",
+    "v12928",
+    "v2021",
+    "v4542"
+   ],
+   "note": "\"confirm-v2\": textspot7 confirmation units (base) without the 4 VNs pools v2.1 trains on; read once, at the end, for the candidate set"
+  },
+  "pc": {
+   "frames_file_sha256": "7412157b21c1c7aa9d7223b0cfc49c63104e94789065d0c257424dcac8a2e157",
+   "frames": 101,
+   "units": 115,
+   "clusters": 51,
+   "views": {
+    "pc": 101
+   },
+   "groups": {
+    "pc": 115
+   },
+   "excluded_vns": [
+    "v12188",
+    "v13833",
+    "v14267",
+    "v15708",
+    "v16770",
+    "v18163",
+    "v18432",
+    "v2835",
+    "v6656"
+   ],
+   "note": "the dev units cut from PC screenshots, at the screenshots own size; report only"
+  }
+ },
+ "test": {
+  "titles": [
+   "PCSG00807",
+   "NPJH50882"
+  ],
+  "what": "the hooked test titles index.json marks test (pagepool v2.1 split test), base dialogue regions, native frames",
+  "when": "once, after the final model exists and the dev-v2 decision record is committed; R, C (the pick), MeikiOCR itself and textspot8 + VOCR6.2-L",
+  "attempt_record": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr-desktop/test/ATTEMPT.json"
+ },
+ "timing": {
+  "pages_file_sha256": "7fb31b6150bcfa4c79c95fccf5099d9d4b192b620d66e748d100a078d044acd8",
+  "pages": "eval/desktop_time.py pages --seed 20261101: 60 Vita-view and 60 PSP-view frames of dev-v2, 30 PC-sample frames",
+  "method": "eval/desktop_time.py run: passes 3 after 1 warm-up, the pipelines in a shuffled order each pass, a page's time the median of its passes; threads 1, 2, 4 in one heavy slot each, 8 in two"
+ },
+ "baselines_measured": {
+  "dev": {
+   "meiki4_L_fast": {
+    "cer": 0.7703,
+    "errors": 58,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.1247,
+      "errors": 46,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.3488,
+      "errors": 12,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 0.7703,
+    "errors": 58,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.1247,
+      "errors": 46,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.3488,
+      "errors": 12,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 3.5458,
+    "errors": 267,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 4.7922,
+      "errors": 196,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 2.064,
+      "errors": 71,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 1.2616,
+    "errors": 95,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.9071,
+      "errors": 78,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.4942,
+      "errors": 17,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 1.0491,
+    "errors": 79,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.4425,
+      "errors": 59,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.5814,
+      "errors": 20,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.1116,
+    "errors": 159,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 2.5672,
+      "errors": 105,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.5698,
+      "errors": 54,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 1.6202,
+    "errors": 122,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.8826,
+      "errors": 77,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.3081,
+      "errors": 45,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 1.3546,
+    "errors": 102,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.5159,
+      "errors": 62,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.1628,
+      "errors": 40,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 1.3546,
+    "errors": 102,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.5159,
+      "errors": 62,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.1628,
+      "errors": 40,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 2.5365,
+    "errors": 191,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 4.1565,
+      "errors": 170,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.6105,
+      "errors": 21,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   }
+  },
+  "hval": {
+   "meiki4_L_fast": {
+    "cer": 2.3462,
+    "errors": 1770,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 0.9769,
+      "errors": 203,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8669,
+      "errors": 1567,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 2.3462,
+    "errors": 1770,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 0.9769,
+      "errors": 203,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8669,
+      "errors": 1567,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 4.2285,
+    "errors": 3190,
+    "chars": 75440,
+    "line_recall": 0.9042,
+    "by_view": {
+     "psp": {
+      "cer": 4.61,
+      "errors": 958,
+      "chars": 20781,
+      "line_recall": 0.8387
+     },
+     "vita": {
+      "cer": 4.0835,
+      "errors": 2232,
+      "chars": 54659,
+      "line_recall": 0.9307
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 2.6352,
+    "errors": 1988,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 1.7083,
+      "errors": 355,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.9876,
+      "errors": 1633,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 2.4284,
+    "errors": 1832,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 1.3137,
+      "errors": 273,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8522,
+      "errors": 1559,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.6843,
+    "errors": 2025,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 2.4878,
+      "errors": 517,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.7589,
+      "errors": 1508,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 2.9706,
+    "errors": 2241,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 2.0884,
+      "errors": 434,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 3.306,
+      "errors": 1807,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 2.606,
+    "errors": 1966,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 1.8815,
+      "errors": 391,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.8815,
+      "errors": 1575,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 2.606,
+    "errors": 1966,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 1.8815,
+      "errors": 391,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.8815,
+      "errors": 1575,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 4.6514,
+    "errors": 3509,
+    "chars": 75440,
+    "line_recall": 0.9042,
+    "by_view": {
+     "psp": {
+      "cer": 4.124,
+      "errors": 857,
+      "chars": 20781,
+      "line_recall": 0.8387
+     },
+     "vita": {
+      "cer": 4.8519,
+      "errors": 2652,
+      "chars": 54659,
+      "line_recall": 0.9307
+     }
+    }
+   }
+  },
+  "pc": {
+   "meiki4_L_fast": {
+    "cer": 0.2357,
+    "errors": 6,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.2357,
+      "errors": 6,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 0.2357,
+    "errors": 6,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.2357,
+      "errors": 6,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 0.7463,
+    "errors": 19,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.7463,
+      "errors": 19,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 0.5499,
+    "errors": 14,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.5499,
+      "errors": 14,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 1.414,
+    "errors": 36,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 1.414,
+      "errors": 36,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 1.414,
+    "errors": 36,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 1.414,
+      "errors": 36,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 0.0393,
+    "errors": 1,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.0393,
+      "errors": 1,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   }
+  }
+ },
+ "not_read": "vita-test, psp-test, CLANNAD (never); the test titles until the attempt above",
+ "amendments": []
+}

@@ -28,7 +28,7 @@ void vocr_tsdr_defaults(vocr_tsdr_opts *o)
     o->band_pct = 25; o->band_min = 2;
     o->start_pct = 180; o->end_pct = 400; o->along_min = 3;
     o->core_pct = 25; o->along_core_pct = 50;
-    o->row_gap = 0; o->valley_pct = 8; o->low_run_pct = 20; o->rise_pct = 50;
+    o->row_gap = 0; o->valley_pct = 8; o->low_run_pct = 20; o->rise_pct = 50; o->beyond_pct = 15;
     o->gap_pct = 70; o->gap_min = 2;
     o->bar_pct = 15;
     o->shrink_a_pct = 10; o->shrink_l_pct = 25;
@@ -287,19 +287,20 @@ static int walk(const int *cnt, int start, int step, int n, int gap, const unsig
 }
 
 static int walk_rows(const int *cnt, int start, int step, int n, int gap, int low, int rise, int low_max,
-                     int *more)
+                     int beyond_max, int *more)
 {
-    int last = start, i = start + step, run = 0, lows = 0, first_low = -1;
+    int last = start, i = start + step, run = 0, lows = 0, valley = -1;
     while (i >= 0 && i < n) {
         int c = cnt[i];
         if (c > 0) {
             if (c <= low) {
-                if (lows == 0) first_low = i;
-                if (++lows > low_max) { *more = 0; return first_low; }
+                if (lows == 0) valley = i;
+                if (++lows > low_max) { *more = 0; return valley; }
             } else {
-                if (lows && c >= rise) { *more = 0; return first_low; }
                 lows = 0;
+                if (valley >= 0 && c >= rise) { *more = 0; return valley; }
             }
+            if (valley >= 0 && (i - valley) * step > beyond_max) { *more = 0; return valley; }
             last = i;
             run = 0;
         } else if (++run > gap) {
@@ -325,7 +326,8 @@ typedef struct {
 static int across(const tsdr_box *B, int cx0, int cx1, int *top, int *bot, unsigned *st)
 {
     const vocr_tsdr_opts *o = B->o;
-    int h = B->h, by0 = B->by0, q, k0, k1, k, first = -1, last = -1, n = 0, med, low, rise, low_max, more, t, b;
+    int h = B->h, by0 = B->by0, q, k0, k1, k, first = -1, last = -1, n = 0, med, low, rise, low_max, beyond, more, t,
+        b;
     row_counts(B->m, B->mw, B->mh, cx0, cx1, B->rc);
     q = imin(r100(h, o->core_pct), (h - 1) / 2);
     k0 = by0 + q;
@@ -343,11 +345,12 @@ static int across(const tsdr_box *B, int cx0, int cx1, int *top, int *bot, unsig
     low = o->valley_pct > 0 ? r100(med, o->valley_pct) : 0;
     rise = r100(med, o->rise_pct);
     low_max = imax(2, r100(h, o->low_run_pct));
+    beyond = imax(2, r100(h, o->beyond_pct));
     *st = 0;
-    t = walk_rows(B->rc, first, -1, B->mh, o->row_gap, low, rise, low_max, &more);
+    t = walk_rows(B->rc, first, -1, B->mh, o->row_gap, low, rise, low_max, beyond, &more);
     if (more && B->lim_t) { t = -1; *st |= VOCR_TSDR_LIMIT; }
     else if (t - by0 > B->S_a) { t = -1; *st |= VOCR_TSDR_SHRINK; }
-    b = walk_rows(B->rc, last, +1, B->mh, o->row_gap, low, rise, low_max, &more);
+    b = walk_rows(B->rc, last, +1, B->mh, o->row_gap, low, rise, low_max, beyond, &more);
     if (more && B->lim_b) { b = -1; *st |= VOCR_TSDR_LIMIT; }
     else if ((by0 + h - 1) - b > B->S_a) { b = -1; *st |= VOCR_TSDR_SHRINK; }
     *top = t;

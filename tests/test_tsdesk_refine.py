@@ -260,6 +260,34 @@ def test_ruby_band_above_the_line_is_left_out():
         assert not (st & TR.ST_LIMIT) or out[1] >= box[1]
 
 
+def _dense_line(y0, h, n, x0=60, H=96, W=520, ruby=0, valley_specks=2):
+    """A line of n dense glyph blocks (vertical strokes every 3 px) h px tall at row y0, light on dark; ruby: blocks
+    `ruby` px tall over every other glyph, one row above the line, that row holding `valley_specks` specks."""
+    img = np.full((H, W), 40, np.uint8)
+    for k in range(n):
+        gx = x0 + k * (h + 2)
+        img[y0:y0 + h, gx:gx + h:3] = 230
+        img[y0, gx:gx + h] = 230
+        img[y0 + h - 1, gx:gx + h] = 230
+        if ruby and k % 2 == 0:
+            img[y0 - 1 - ruby:y0 - 1, gx + 2:gx + h - 2:2] = 230
+    for s_ in range(valley_specks):
+        img[y0 - 1, x0 + 5 + 37 * s_] = 230
+    return img, [x0, y0, x0 + n * (h + 2) - 2, y0 + h]
+
+
+def test_dense_ruby_through_a_valley_is_left_out():
+    # ruby over every other glyph, joined to the line by a valley row with two specks (no empty row between), well
+    # inside the across band: the walk up stops at the valley (the rise rule), not at the ruby's top
+    for h, ruby in ((22, 5), (26, 6), (30, 8)):
+        img, box = _dense_line(40, h, 12, ruby=ruby)
+        b = [box[0], box[1] + 2.0, box[2], box[3] - 1.0]
+        out, st = _refine1(img, b, band_pct=60)                  # a band that reaches past the ruby
+        assert box[1] - 1 <= out[1] <= box[1], (h, out, box, st)
+        out0, _ = _refine1(img, b, band_pct=60, beyond_pct=1000, rise_pct=1000, low_run_pct=1000)
+        assert out0[1] <= box[1] - ruby                           # without the valley rules the ruby is taken in
+
+
 def test_touching_lines_are_not_merged():
     rng = np.random.default_rng(9)
     for _ in range(10):

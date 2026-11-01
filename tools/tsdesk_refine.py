@@ -60,7 +60,7 @@ DEFAULTS = {
     "band_pct": 25, "band_min": 2,
     "start_pct": 180, "end_pct": 400, "along_min": 3,
     "core_pct": 25, "along_core_pct": 50,
-    "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50,
+    "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50, "beyond_pct": 15,
     "gap_pct": 70, "gap_min": 2,
     "bar_pct": 15,
     "shrink_a_pct": 10, "shrink_l_pct": 25,
@@ -132,28 +132,31 @@ def _walk(cnt, start, step, n, gap, stop=None):
     return last, True
 
 
-def _walk_rows(cnt, start, step, n, gap, low, rise, low_max):
-    """The across walk (_walk with `gap` empty rows) that also ends at a band of sparse rows: a row with
-    0 < cnt <= low is a low row; a run of more than low_max low rows (ruby, a sparse texture) or a row with
-    cnt >= rise after low rows (a touching line beyond a valley) ends the walk at the run's first low row."""
+def _walk_rows(cnt, start, step, n, gap, low, rise, low_max, beyond_max):
+    """The across walk (_walk with `gap` empty rows) that also ends at a valley: a row with 0 < cnt <= low is a low
+    row, and a valley the first low row of a run of them. The walk ends at the latest valley (that row included) when
+    the run grows longer than low_max rows (a sparse band: ruby, a texture), when a row with cnt >= rise follows it (a
+    touching band: ruby, an adjacent line) or when the walk goes on more than beyond_max rows past it."""
     last = start
     i = start + step
     run = 0
     lows = 0
-    first_low = -1
+    valley = -1
     while 0 <= i < n:
         c = int(cnt[i])
         if c > 0:
             if c <= low:
                 if lows == 0:
-                    first_low = i
+                    valley = i
                 lows += 1
                 if lows > low_max:
-                    return first_low, False
+                    return valley, False
             else:
-                if lows and c >= rise:
-                    return first_low, False
                 lows = 0
+                if valley >= 0 and c >= rise:
+                    return valley, False
+            if valley >= 0 and (i - valley) * step > beyond_max:
+                return valley, False
             last = i
             run = 0
         else:
@@ -232,13 +235,14 @@ def refine_box(g, b, o=None, dbg=None):
         if o["valley_pct"] <= 0:
             low = 0
         low_max = max(2, r100(h, o["low_run_pct"]))
+        beyond = max(2, r100(h, o["beyond_pct"]))
         st = 0
-        top, more = _walk_rows(rc, k0 + int(ink[0]), -1, mh, o["row_gap"], low, rise, low_max)
+        top, more = _walk_rows(rc, k0 + int(ink[0]), -1, mh, o["row_gap"], low, rise, low_max, beyond)
         if more and lim_t:
             top, st = None, st | ST_LIMIT
         elif top - by0 > S_a:
             top, st = None, st | ST_SHRINK
-        bot, more = _walk_rows(rc, k0 + int(ink[-1]), +1, mh, o["row_gap"], low, rise, low_max)
+        bot, more = _walk_rows(rc, k0 + int(ink[-1]), +1, mh, o["row_gap"], low, rise, low_max, beyond)
         if more and lim_b:
             bot, st = None, st | ST_LIMIT
         elif (by0 + h - 1) - bot > S_a:

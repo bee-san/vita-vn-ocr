@@ -448,8 +448,17 @@ static void resize_row_v(const int *const *rows, const int *wy, unsigned ky, uns
     }
 }
 
-void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
-                      unsigned dw, unsigned dh, int *scratch)
+/* source row j of the resize: the grey row itself, or (channels 3 / 4) its integer luma (vocr_desk_grey) in rowbuf */
+static const unsigned char *src_row(const unsigned char *src, unsigned w, unsigned stride, unsigned channels, unsigned j,
+                                    unsigned char *rowbuf)
+{
+    if (channels == 1) return src + (size_t)j * stride;
+    vocr_desk_grey(src + (size_t)j * stride, w, 1, stride, channels, rowbuf);
+    return rowbuf;
+}
+
+static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                        unsigned char *dst, unsigned dw, unsigned dh, int *scratch, unsigned char *rowbuf)
 {
     unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k, R;
     int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
@@ -470,7 +479,8 @@ void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned
     }
     if (ky > 64 || y < dh) {                        /* a shrink by more than 62: the whole-frame intermediate */
         int *tmp = ring;
-        for (y = 0; y < h; y++) resize_row_h(src + (size_t)y * stride, w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode);
+        for (y = 0; y < h; y++)
+            resize_row_h(src_row(src, w, stride, channels, y, rowbuf), w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode);
         for (y = 0; y < dh; y++) {
             const int *ii = iyy + (size_t)y * ky, *ww = wy + (size_t)y * ky;
             unsigned char *o = dst + (size_t)y * dw;
@@ -494,13 +504,32 @@ void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned
             const int j = ii[k];
             const unsigned s = (unsigned)j % R;
             if (slot_row[s] != j) {
-                resize_row_h(src + (size_t)j * stride, w, dw, kx, ixx, wx, ring + (size_t)s * dw, mode);
+                resize_row_h(src_row(src, w, stride, channels, (unsigned)j, rowbuf), w, dw, kx, ixx, wx,
+                             ring + (size_t)s * dw, mode);
                 slot_row[s] = j;
             }
             rows[k] = ring + (size_t)s * dw;
         }
         resize_row_v(rows, wy + (size_t)y * ky, ky, dw, dst + (size_t)y * dw);
     }
+}
+
+void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
+                      unsigned dw, unsigned dh, int *scratch)
+{
+    resize_core(src, w, h, stride, 1, dst, dw, dh, scratch, NULL);
+}
+
+size_t vocr_desk_resize_rgb_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    return vocr_desk_resize_scratch(w, h, dw, dh) + ((size_t)w + 64) / 64 * 64;
+}
+
+void vocr_desk_resize_rgb(const unsigned char *rgb, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                          unsigned char *dst, unsigned dw, unsigned dh, int *scratch)
+{
+    unsigned char *rowbuf = (unsigned char *)(void *)((char *)(void *)scratch + vocr_desk_resize_scratch(w, h, dw, dh));
+    resize_core(rgb, w, h, stride, channels, dst, dw, dh, scratch, rowbuf);
 }
 
 /* ----------------------------------------------------------------------------- kernels */

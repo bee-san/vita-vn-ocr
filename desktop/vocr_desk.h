@@ -127,6 +127,11 @@ int vocr_desk_detect_mt(const vocr_desk_model *m, const unsigned char *grey, uns
 void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
                       unsigned dw, unsigned dh, int *scratch);
 size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh);
+/* The same resize of an RGB (channels 3) or RGBA (4) frame's integer luma (vocr_desk_grey's), row by row: the bits of
+ * vocr_desk_grey then vocr_desk_resize, without the whole grey frame (scratch: vocr_desk_resize_rgb_scratch bytes). */
+void vocr_desk_resize_rgb(const unsigned char *rgb, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                          unsigned char *dst, unsigned dw, unsigned dh, int *scratch);
+size_t vocr_desk_resize_rgb_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh);
 
 /* sizeof(vocr_desk_model) and sizeof(vocr_desk_set), for callers that allocate them (ctypes). */
 size_t vocr_desk_model_bytes(void);

@@ -1356,12 +1356,12 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->resize = D->iw != w || D->ih != h;
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
-    D->grey = off;
-    off += D->resize && channels != 1 ? ALIGN_UP((size_t)w * h, 64) : 0;
+    D->grey = off;   /* unused: an RGB(A) frame's luma is taken row by row inside the resize */
     D->resized = off;
     off += D->resize ? ALIGN_UP((size_t)D->iw * D->ih, 64) : 0;
     D->rscratch = off;
-    off += D->resize ? ALIGN_UP(vocr_desk_resize_scratch(w, h, D->iw, D->ih), 64) : 0;
+    off += D->resize ? ALIGN_UP(channels == 1 ? vocr_desk_resize_scratch(w, h, D->iw, D->ih)
+                                              : vocr_desk_resize_rgb_scratch(w, h, D->iw, D->ih), 64) : 0;
     D->decode = off;
     off += ALIGN_UP(vocr_tsd_decode_bytes(D->pw / m->hs, D->ph / m->hs, m->tags), 64);
     D->end = off + 64;
@@ -1409,15 +1409,13 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
     N.src.stride = stride;
     N.src.ch = channels;
     if (D.resize) {
-        const unsigned char *g = img;
-        unsigned gs = stride;
-        if (channels != 1) {
-            vocr_desk_grey(img, w, h, stride, channels, base + D.grey);
-            g = base + D.grey;
-            gs = w;
-        }
-        PROF_MARK(0u, "luma");
-        vocr_desk_resize(g, w, h, gs, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
+        /* the policy's resize of the frame's luma (vocr_desk_resize; an RGB(A) frame's luma row by row inside it:
+         * vocr_desk_resize_rgb, the same bits as vocr_desk_grey then vocr_desk_resize) */
+        if (channels == 1)
+            vocr_desk_resize(img, w, h, stride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
+        else
+            vocr_desk_resize_rgb(img, w, h, stride, channels, base + D.resized, D.iw, D.ih,
+                                 (int *)(void *)(base + D.rscratch));
         PROF_MARK(1u, "resize");
         N.src.px = base + D.resized;
         N.src.w = D.iw;

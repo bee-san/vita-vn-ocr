@@ -24,19 +24,26 @@ For one horizontal box (frame px, floats), with r(v, p) = (v p + 50) div 100 (a 
   5. the thresholds: t = max(floor, r(q99(d), k_pct), noise) and tc = max(floor, r(q99(c3), k_pct)), q99 over the
      pixel box (qP of n values: the element ceil(P n / 100) - 1 of the sorted values); noise = the lower of the
      margin_pct quantiles of d on the along margins (the box's rows, the window's columns more than
-     max(2, r(h, margin_gap_pct)) px beyond either end of the box; a margin under margin_min columns is not used)
-     plus noise_add, or 0 when neither margin is used: a textured background (a dithered or patterned box, a scene)
-     raises it above its own texture;
+     max(2, r(h, margin_gap_pct)) px beyond either end of the box; a margin under margin_min columns is not used;
+     texture_pct > 0: only its pixels with c3 > tc, and 0 when they are fewer than texture_pct %) plus noise_add, or
+     0 when neither margin is used: a textured background (a dithered or patterned box, a scene) raises it above
+     its own texture;
   6. the ink: d > t and c3 > tc, without the pixels that have no 4-neighbour in it (specks, dither);
   7. across: the rows' ink counts over the box's columns; the body is the core's ink rows (the pixel box less
      min(r(h, core_pct), (h - 1) div 2) rows each side); the top edge walks up from the body's first row through ink
-     rows (gaps of at most row_gap empty rows) to its last ink row, the bottom edge down the same way;
+     rows (gaps of at most row_gap empty rows) to its last ink row, the bottom edge down the same way. A row with
+     0 < count <= r(median body count, valley_pct) is low, a valley the first of a run of low rows; the walk ends at
+     the latest valley (included) when the run grows longer than max(2, r(h, low_run_pct)) rows (a sparse band:
+     ruby, a texture), when a row of at least r(median, rise_pct) follows it (a dense band: ruby over many glyphs,
+     a touching line) or when it goes on more than max(2, r(h, beyond_pct)) rows past it;
   8. along: the columns' ink counts over the new rows [rt, rb), H' = rb - rt, a barrier column (its ink, a column
      either side included, unbroken from max(1, r(H', bar_pct)) rows above the new rows to as many below them: a box
      frame, a border) counted empty; the body is the along core's ink columns (the pixel box less
-     min(r(H', along_core_pct), (w - 1) div 2) columns at each end); the left edge walks left from the body's first
-     column, crossing gaps of at most G = max(gap_min, r(H', gap_pct)) empty columns and stopping at a barrier, to
-     its last ink column; the right edge the same way right;
+     min(r(H', along_core_pct), (w - 1) div 2) columns at each end); the right edge walks right from the body's last
+     column, crossing gaps of at most G = max(gap_min, r(H', gap_pct)) empty columns (！？ sit in the middle of
+     their cells) and stopping at a barrier, to its last ink column; the left edge the same way left, crossing at
+     most max(gap_min, r(H', gap_start_pct)) empty columns once it is before the box (a 「 sits next to the glyph
+     after it; a box frame's ornament does not);
   9. across again (step 7) over the new columns.
 
 Guards (the edge that fails keeps the detector's value; `status` says why):
@@ -44,7 +51,12 @@ Guards (the edge that fails keeps the detector's value; `status` says why):
   - LIMIT: an edge whose walk ran out of the window within its gap of ink (the window's side not being the frame's
     border): the line goes on beyond the search band (an adjacent line, ruby taller than the band, a busy
     background), so that edge is kept;
-  - SHRINK: an edge never moves inward by more than r(h, shrink_a_pct) rows or r(H', shrink_l_pct) columns;
+  - SHRINK: an edge never moves inward by more than r(h, shrink_a_pct) rows (0 by default: across, the reading pad
+    re-adds any slack, so trimming it never helps the recognizer, while it changes a junk box's aspect ratio) or
+    r(H', shrink_l_pct) columns (a quarter of the line height: it trims slack, it never drops a faint glyph that the
+    grey test misses);
+  - neighbours: an edge never grows into another box of the frame (neighbour_limits, from the input boxes: a
+    detector's fragments of a split line, the next line, a name plate beside the text);
   - BUSY: when more than busy_pct % of the window's pixels outside the new box are ink, the box is kept.
 Vertical boxes are left alone.
 """
@@ -61,9 +73,9 @@ DEFAULTS = {
     "start_pct": 180, "end_pct": 400, "along_min": 3,
     "core_pct": 25, "along_core_pct": 50,
     "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50, "beyond_pct": 15,
-    "gap_pct": 70, "gap_min": 2,
+    "gap_pct": 70, "gap_min": 2, "gap_start_pct": 35,
     "bar_pct": 15,
-    "shrink_a_pct": 10, "shrink_l_pct": 25,
+    "shrink_a_pct": 0, "shrink_l_pct": 25,
     "floor": 28, "k_pct": 40,
     "margin_pct": 90, "margin_gap_pct": 50, "margin_min": 3, "noise_add": 12, "texture_pct": 0,
     "busy_pct": 25,
@@ -112,10 +124,11 @@ def _c3(g, x0, y0, x1, y1):
     return vmax - vmin
 
 
-def _walk(cnt, start, step, n, gap, stop=None):
+def _walk(cnt, start, step, n, gap, stop=None, gap2=None, edge=None):
     """From index `start` (an ink entry) move by `step` (-1 or +1) through entries with cnt > 0, crossing runs of at
-    most `gap` empty entries, within [0, n); an entry with stop[i] set ends the walk. (the last ink index, True when
-    the walk ran out of [0, n) within `gap` + 1 of its last ink: the ink may go on beyond)."""
+    most `gap` empty entries (`gap2` once the walk is past index `edge` in its direction), within [0, n); an entry
+    with stop[i] set ends the walk. (the last ink index, True when the walk ran out of [0, n) within the gap + 1 of
+    its last ink: the ink may go on beyond)."""
     last = start
     i = start + step
     run = 0
@@ -127,7 +140,8 @@ def _walk(cnt, start, step, n, gap, stop=None):
             run = 0
         else:
             run += 1
-            if run > gap:
+            g_ = gap2 if gap2 is not None and (i - edge) * step > 0 else gap
+            if run > g_:
                 return last, False
         i += step
     return last, True
@@ -286,7 +300,8 @@ def refine_box(g, b, o=None, dbg=None, lim=None):
     S_l = r100(hh, o["shrink_l_pct"])
     if cstop is not None:
         barrier = cstop if barrier is None else (barrier | cstop)
-    left, more = _walk(cc, k0 + int(ink[0]), -1, mw, G, barrier)
+    Gs = max(o["gap_min"], r100(hh, o["gap_start_pct"])) if o["gap_start_pct"] > 0 else None
+    left, more = _walk(cc, k0 + int(ink[0]), -1, mw, G, barrier, Gs, bx0)
     if more and lim_l:
         left, status = None, status | ST_LIMIT
     elif left - bx0 > S_l:

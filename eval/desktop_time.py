@@ -265,9 +265,12 @@ def cmd_run(a):
     modes = a.modes.split(",")
     pipes = {}
     for s in specs:
+        if s.startswith("meikiocr"):                    # MeikiOCR batches its own lines: seq only
+            pipes[f"{s}|seq"] = Pipeline(s, threads, "seq", a.onnx_dir)
+            continue
         for m in modes:
-            if (s.startswith("meikiocr") or s.startswith("c")) and m != modes[0]:
-                continue                                # one mode: their own threading
+            if s.startswith("c") and m != modes[0]:
+                continue                                # one mode: its own threading
             pipes[f"{s}|{m}"] = Pipeline(s, threads, m, a.onnx_dir)
     rng = random.Random(a.seed)
     names = list(pipes)

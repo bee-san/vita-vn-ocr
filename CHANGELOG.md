@@ -7,6 +7,18 @@ spotter has run on a console.
 
 ## [Unreleased]
 
+### Changed
+
+- **A faster runtime on the Vita, bit for bit** (#165, `docs/c-speed.md`; thanks to astra, whose ONNX report started
+  it). NEON kernels only: the recognizer's matrix pass in `asm` with aligned loads, its 3×3 stem and its top-K filter;
+  textspot8's 1×1 layers 4 output channels at a time, its depthwise layers and stem, and a cheaper exact
+  requantisation. Est. per 3-line box at 333 MHz, one core, no prefetch credit: VOCR6.2 S / N / L 0.627 → 0.580,
+  0.774 → 0.744, 1.880 → 1.815 s; textspot8 81.9 → 61.0 ms per 900×150 region, 264.3 → 192.2 ms per frame (estimates;
+  nothing has run on a console). The same logits, texts, top-K, maps and boxes in every build and in Vita3K; arenas
+  unchanged; builds without NEON compile to the same machine code.
+- `-DVOCR_NO_ATTN` (#165): a recognizer build without the attention op (not adopted; no released blob has one), 2.6 KB
+  less Vita code, for Rubi's worker; the default build is unchanged.
+
 ### Added
 
 - **ONNX files for desktop apps** (pre-release v0.5.1-onnx.2, #163, [`docs/onnx.md`](docs/onnx.md)): VOCR6.2 Small,
@@ -23,6 +35,10 @@ spotter has run on a console.
   - The method follows a report by an outside researcher, astra (int16 digits through two `MatMulInteger` calls,
     int32 reconstruction, float64 requantisation in the spotter); the C-order convolutions and the gated head are this
     export's. Host times against `runtime/` at `-O2` and `-O3 -march=native`: `docs/onnx.md`, "Speed".
+- `vita/par`, `vita/vita3k_parity.py`, `vita/scripts/run_vita3k_par.sh`: the runtime's host drivers as a Vita app, run
+  in Vita3K and compared with the host byte for byte (Rubi's head options and the spotter included).
+  `vita/ts_speed_parity.py`: the spotter's five-build check of two runtime versions. `vita/speed_parity.py
+  --no-logits` and `vita/a9_layers.py --vocr-cflags`.
 
 ## [0.5.0] - 2026-10-28
 

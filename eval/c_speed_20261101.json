@@ -1,0 +1,3055 @@
+{
+ "kind": "c-speed",
+ "issue": 165,
+ "doc": "docs/c-speed.md",
+ "note": "estimates: the Vita compiler's code under qemu-arm priced by vita/a9_cycles.py's Cortex-A9 model, x1.000676 (recognizer) / x1.0007 (spotter), VOCR3-H15's console calibration; nothing ran on a console. Development data only. Hashes and counts only.",
+ "base_commit": "205f47ec4e56ca87c00e7dba0a61c9aaec726707",
+ "sources": {
+  "before": {
+   "vocr.c": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+   "vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c"
+  },
+  "after": {
+   "vocr.c": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+   "vocr_textspot6.c": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33"
+  }
+ },
+ "box": {
+  "frames": 240,
+  "finder_ms": 100.0
+ },
+ "recognizer": {
+  "S": {
+   "before": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 2.194759837,
+      "box_ms": 626.7
+     },
+     "444": {
+      "ms_per_frame": 1.64686465,
+      "box_ms": 495.2
+     }
+    },
+    "insns_per_frame": 529642,
+    "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+    "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 1.934017855,
+      "box_ms": 564.2
+     },
+     "444": {
+      "ms_per_frame": 1.45092954,
+      "box_ms": 448.2
+     }
+    }
+   },
+   "after": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 1.999836984,
+      "box_ms": 580.0
+     },
+     "444": {
+      "ms_per_frame": 1.500672459,
+      "box_ms": 460.2
+     }
+    },
+    "insns_per_frame": 476117,
+    "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 1.739096642,
+      "box_ms": 517.4
+     },
+     "444": {
+      "ms_per_frame": 1.304738578,
+      "box_ms": 413.1
+     }
+    }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 1.994181773,
+      "box_ms": 578.6
+     },
+     "444": {
+      "ms_per_frame": 1.496431,
+      "box_ms": 459.1
+     }
+    },
+    "insns_per_frame": 475001,
+    "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
+   },
+   "blob": "VOCR6.2_S_w8.vocr",
+   "cli_opts": "--topk 8",
+   "pack_sha256": "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7"
+  },
+  "N": {
+   "before": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 2.806603223,
+      "box_ms": 773.6
+     },
+     "444": {
+      "ms_per_frame": 2.105975975,
+      "box_ms": 605.4
+     }
+    },
+    "insns_per_frame": 626586,
+    "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
+    "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 2.38141556,
+      "box_ms": 671.5
+     },
+     "444": {
+      "ms_per_frame": 1.786526373,
+      "box_ms": 528.8
+     }
+    }
+   },
+   "after": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 2.682808874,
+      "box_ms": 743.9
+     },
+     "444": {
+      "ms_per_frame": 2.013130128,
+      "box_ms": 583.2
+     }
+    },
+    "insns_per_frame": 590017,
+    "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 2.257621844,
+      "box_ms": 641.8
+     },
+     "444": {
+      "ms_per_frame": 1.693681001,
+      "box_ms": 506.5
+     }
+    }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 2.678337978,
+      "box_ms": 742.8
+     },
+     "444": {
+      "ms_per_frame": 2.009777008,
+      "box_ms": 582.3
+     }
+    },
+    "insns_per_frame": 588588,
+    "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
+   },
+   "blob": "VOCR6.2_N_w8g2.vocr",
+   "cli_opts": "--topk 8 --head-gate on --two-level",
+   "pack_sha256": "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7"
+  },
+  "L": {
+   "before": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 7.41474705,
+      "box_ms": 1879.5
+     },
+     "444": {
+      "ms_per_frame": 5.707280409,
+      "box_ms": 1469.7
+     }
+    },
+    "insns_per_frame": 1349842,
+    "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+    "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 5.146035278,
+      "box_ms": 1335.0
+     },
+     "444": {
+      "ms_per_frame": 3.87816566,
+      "box_ms": 1030.8
+     }
+    }
+   },
+   "after": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 7.145499547,
+      "box_ms": 1814.9
+     },
+     "444": {
+      "ms_per_frame": 5.505098449,
+      "box_ms": 1421.2
+     }
+    },
+    "insns_per_frame": 1277225,
+    "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2",
+    "pld": {
+     "333": {
+      "ms_per_frame": 4.878353664,
+      "box_ms": 1270.8
+     },
+     "444": {
+      "ms_per_frame": 3.677373219,
+      "box_ms": 982.6
+     }
+    }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 7.139252533,
+      "box_ms": 1813.4
+     },
+     "444": {
+      "ms_per_frame": 5.500477496,
+      "box_ms": 1420.1
+     }
+    },
+    "insns_per_frame": 1275031,
+    "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
+   },
+   "blob": "VOCR6.2_L_w8_2l.vocr",
+   "cli_opts": "--topk 8 --two-level",
+   "pack_sha256": "3162151aaf3013f434c5ad7996d04ca2308fe2d3896ce06de14909878906c8b7"
+  }
+ },
+ "spotter": {
+  "900x150": {
+   "dark": {
+    "before": {
+     "ms_333": 81.871,
+     "ms_444": 61.403,
+     "insns": 23892769
+    },
+    "after": {
+     "ms_333": 60.99,
+     "ms_444": 45.742,
+     "insns": 16818881
+    }
+   },
+   "no_dark": {
+    "before": {
+     "ms_333": 76.114,
+     "ms_444": 57.086,
+     "insns": 22099529
+    },
+    "after": {
+     "ms_333": 55.233,
+     "ms_444": 41.425,
+     "insns": 15025577
+    }
+   }
+  },
+  "900x200": {
+   "dark": {
+    "before": {
+     "ms_333": 104.721,
+     "ms_444": 78.541,
+     "insns": 30737085
+    },
+    "after": {
+     "ms_333": 77.45,
+     "ms_444": 58.088,
+     "insns": 21522453
+    }
+   },
+   "no_dark": {
+    "before": {
+     "ms_333": 98.378,
+     "ms_444": 73.783,
+     "insns": 28773223
+    },
+    "after": {
+     "ms_333": 71.108,
+     "ms_444": 53.331,
+     "insns": 19558527
+    }
+   }
+  },
+  "900x300": {
+   "dark": {
+    "before": {
+     "ms_333": 150.586,
+     "ms_444": 112.939,
+     "insns": 44324218
+    },
+    "after": {
+     "ms_333": 110.557,
+     "ms_444": 82.918,
+     "insns": 30802804
+    }
+   },
+   "no_dark": {
+    "before": {
+     "ms_333": 143.258,
+     "ms_444": 107.443,
+     "insns": 42071247
+    },
+    "after": {
+     "ms_333": 103.229,
+     "ms_444": 77.421,
+     "insns": 28549769
+    }
+   }
+  },
+  "960x544": {
+   "dark": {
+    "before": {
+     "ms_333": 264.252,
+     "ms_444": 198.189,
+     "insns": 77261443
+    },
+    "after": {
+     "ms_333": 192.169,
+     "ms_444": 144.127,
+     "insns": 52896258
+    }
+   },
+   "no_dark": {
+    "before": {
+     "ms_333": 258.389,
+     "ms_444": 193.792,
+     "insns": 75489014
+    },
+    "after": {
+     "ms_333": 186.307,
+     "ms_444": 139.73,
+     "insns": 51123765
+    }
+   }
+  },
+  "sources": {
+   "before_dark4": {
+    "runtime/vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512"
+   },
+   "before_nodark": {
+    "runtime/vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512"
+   },
+   "after_dark4": {
+    "runtime/vocr_textspot6.c": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512"
+   },
+   "after_nodark": {
+    "runtime/vocr_textspot6.c": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512"
+   }
+  }
+ },
+ "parity": {
+  "recognizer": [
+   {
+    "tier": "S",
+    "run": "logits",
+    "cli_opts": "--topk 8",
+    "logits": true,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 1,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "ae0971e550ed8e6b82e90cf39d9f995d6c1fc3c2c7cda4967e4359de05cc7326",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "ae0971e550ed8e6b82e90cf39d9f995d6c1fc3c2c7cda4967e4359de05cc7326",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "ae0971e550ed8e6b82e90cf39d9f995d6c1fc3c2c7cda4967e4359de05cc7326",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "ae0971e550ed8e6b82e90cf39d9f995d6c1fc3c2c7cda4967e4359de05cc7326",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "ae0971e550ed8e6b82e90cf39d9f995d6c1fc3c2c7cda4967e4359de05cc7326",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e7f016bc75ddf5d3bb7da108eee7efc96aa4c1e944914751bf0e0b47915f15e0",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "1a28f73fb8a09c38277cef4db52eb56644cf1292b9630e1de09b083b30c76f95"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e7f016bc75ddf5d3bb7da108eee7efc96aa4c1e944914751bf0e0b47915f15e0",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "1a28f73fb8a09c38277cef4db52eb56644cf1292b9630e1de09b083b30c76f95"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e7f016bc75ddf5d3bb7da108eee7efc96aa4c1e944914751bf0e0b47915f15e0",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "1a28f73fb8a09c38277cef4db52eb56644cf1292b9630e1de09b083b30c76f95"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e7f016bc75ddf5d3bb7da108eee7efc96aa4c1e944914751bf0e0b47915f15e0",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "1a28f73fb8a09c38277cef4db52eb56644cf1292b9630e1de09b083b30c76f95"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e7f016bc75ddf5d3bb7da108eee7efc96aa4c1e944914751bf0e0b47915f15e0",
+      "logit_bytes": 627950164,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "1a28f73fb8a09c38277cef4db52eb56644cf1292b9630e1de09b083b30c76f95"
+     }
+    ]
+   },
+   {
+    "tier": "S",
+    "run": "rubi",
+    "cli_opts": "--topk 8",
+    "logits": false,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 1,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     }
+    ]
+   },
+   {
+    "tier": "N",
+    "run": "logits",
+    "cli_opts": "--topk 8",
+    "logits": true,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 1,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "bc1ead04f53bbeeac50ada2edeb2bf944f7e6cd755a182243054bb2203388dbf",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "932d09b7df09155625067ff12c40eee1491b17455949f316579e7067c739eff0"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "bc1ead04f53bbeeac50ada2edeb2bf944f7e6cd755a182243054bb2203388dbf",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "932d09b7df09155625067ff12c40eee1491b17455949f316579e7067c739eff0"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "bc1ead04f53bbeeac50ada2edeb2bf944f7e6cd755a182243054bb2203388dbf",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "932d09b7df09155625067ff12c40eee1491b17455949f316579e7067c739eff0"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "bc1ead04f53bbeeac50ada2edeb2bf944f7e6cd755a182243054bb2203388dbf",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "932d09b7df09155625067ff12c40eee1491b17455949f316579e7067c739eff0"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "bc1ead04f53bbeeac50ada2edeb2bf944f7e6cd755a182243054bb2203388dbf",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "932d09b7df09155625067ff12c40eee1491b17455949f316579e7067c739eff0"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "0b85d95c31d252dbe769cf90cb46914d5e6f368a2839622a054263deb87d69de",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "00dfe556da1e911da07fb2c13b4abbd25e24be194a4cd8438ff72b0db70f5cd1"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "0b85d95c31d252dbe769cf90cb46914d5e6f368a2839622a054263deb87d69de",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "00dfe556da1e911da07fb2c13b4abbd25e24be194a4cd8438ff72b0db70f5cd1"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "0b85d95c31d252dbe769cf90cb46914d5e6f368a2839622a054263deb87d69de",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "00dfe556da1e911da07fb2c13b4abbd25e24be194a4cd8438ff72b0db70f5cd1"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "0b85d95c31d252dbe769cf90cb46914d5e6f368a2839622a054263deb87d69de",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "00dfe556da1e911da07fb2c13b4abbd25e24be194a4cd8438ff72b0db70f5cd1"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "0b85d95c31d252dbe769cf90cb46914d5e6f368a2839622a054263deb87d69de",
+      "logit_bytes": 709040068,
+      "texts_sha256": "62dec9eb75e695ee654484c7ba61133a58e71b00542e7e1961816ad43e32ceeb",
+      "topk_sha256": "00dfe556da1e911da07fb2c13b4abbd25e24be194a4cd8438ff72b0db70f5cd1"
+     }
+    ]
+   },
+   {
+    "tier": "N",
+    "run": "rubi",
+    "cli_opts": "--topk 8 --head-gate on --two-level",
+    "logits": false,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 1,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     }
+    ]
+   },
+   {
+    "tier": "L",
+    "run": "logits",
+    "cli_opts": "--topk 8",
+    "logits": true,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 10,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "12a3614888ddb002c93328ce47cf35a561c259785ca668f534b03ce7806db114",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "2d5b4c282b14970ff0ade4a7853023eda766491d8676c84414db064ea3c0dc20"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "12a3614888ddb002c93328ce47cf35a561c259785ca668f534b03ce7806db114",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "2d5b4c282b14970ff0ade4a7853023eda766491d8676c84414db064ea3c0dc20"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "12a3614888ddb002c93328ce47cf35a561c259785ca668f534b03ce7806db114",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "2d5b4c282b14970ff0ade4a7853023eda766491d8676c84414db064ea3c0dc20"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "12a3614888ddb002c93328ce47cf35a561c259785ca668f534b03ce7806db114",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "2d5b4c282b14970ff0ade4a7853023eda766491d8676c84414db064ea3c0dc20"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "12a3614888ddb002c93328ce47cf35a561c259785ca668f534b03ce7806db114",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "2d5b4c282b14970ff0ade4a7853023eda766491d8676c84414db064ea3c0dc20"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "8758c55d3387891cd99c47c92ae47c6b4652da99cf69401cf071cc4009f8802a",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "cd742a02633d126e77f1486fe23a882206cd80929cc70484ceb32dea5c5b48c0"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "8758c55d3387891cd99c47c92ae47c6b4652da99cf69401cf071cc4009f8802a",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "cd742a02633d126e77f1486fe23a882206cd80929cc70484ceb32dea5c5b48c0"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "8758c55d3387891cd99c47c92ae47c6b4652da99cf69401cf071cc4009f8802a",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "cd742a02633d126e77f1486fe23a882206cd80929cc70484ceb32dea5c5b48c0"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "8758c55d3387891cd99c47c92ae47c6b4652da99cf69401cf071cc4009f8802a",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "cd742a02633d126e77f1486fe23a882206cd80929cc70484ceb32dea5c5b48c0"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "8758c55d3387891cd99c47c92ae47c6b4652da99cf69401cf071cc4009f8802a",
+      "logit_bytes": 709040068,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "cd742a02633d126e77f1486fe23a882206cd80929cc70484ceb32dea5c5b48c0"
+     }
+    ]
+   },
+   {
+    "tier": "L",
+    "run": "rubi",
+    "cli_opts": "--topk 8 --two-level",
+    "logits": false,
+    "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
+    "ok": true,
+    "split_runs": 12,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "host-clang",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     }
+    ]
+   }
+  ],
+  "recognizer_vs_rubi_pin": [
+   {
+    "tier": "S",
+    "cli_opts": "--topk 8",
+    "ok": true,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     }
+    ]
+   },
+   {
+    "tier": "N",
+    "cli_opts": "--topk 8 --head-gate on --two-level",
+    "ok": true,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     }
+    ]
+   },
+   {
+    "tier": "L",
+    "cli_opts": "--topk 8 --two-level",
+    "ok": true,
+    "rows": [
+     {
+      "mode": "w8i",
+      "build": "host-gcc",
+      "new_equals_base": true,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon",
+      "new_equals_base": true,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "arm-scalar",
+      "new_equals_base": true,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     }
+    ]
+   }
+  ],
+  "spotter": {
+   "ok": true,
+   "records": 1194,
+   "records_sha256": "555f0a76dcede6b88ca11197ab88c3aca1d2f0602bfa171f94cd727dd88b06fc",
+   "frames": 27,
+   "rows": [
+    {
+     "build": "host-gcc",
+     "form": "noms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "host-gcc",
+     "form": "ms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "host-clang",
+     "form": "noms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "host-clang",
+     "form": "ms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "arm-neon",
+     "form": "noms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "arm-neon",
+     "form": "ms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "arm-scalar",
+     "form": "noms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "arm-scalar",
+     "form": "ms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "vita-neon",
+     "form": "noms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    },
+    {
+     "build": "vita-neon",
+     "form": "ms",
+     "new_equals_base": true,
+     "equals_other_builds": true,
+     "maps_sha256": "0ed9d7546e2d1e2b3865953fcbab3fd6f570d7d83d11896badf9cc5b6da53f52",
+     "maps_lines": 2388,
+     "boxes_sha256": "7150d71458e1c643f7b20f90ad0aa62ab4fb5f80e7987a22371f8fa1f7a51d1a"
+    }
+   ]
+  },
+  "vita3k": {
+   "record": "vita3k_head2.json",
+   "ok": true,
+   "jobs": [
+    "cli {D}S.vocr --mode w8i --pack {D}sub.bin --logits {D}logits_S_w8i.bin",
+    "cli {D}S.vocr --mode w8f --pack {D}sub.bin --logits {D}logits_S_w8f.bin",
+    "cli {D}S.vocr --mode w8i --pack {D}pack.bin --topk 8 --topk-out {D}topk_S.bin",
+    "cli {D}N.vocr --mode w8i --pack {D}sub.bin --logits {D}logits_N_w8i.bin",
+    "cli {D}N.vocr --mode w8f --pack {D}sub.bin --logits {D}logits_N_w8f.bin",
+    "cli {D}N.vocr --mode w8i --pack {D}pack.bin --topk 8 --topk-out {D}topk_N.bin --head-gate on --two-level",
+    "cli {D}L.vocr --mode w8i --pack {D}sub.bin --logits {D}logits_L_w8i.bin",
+    "cli {D}L.vocr --mode w8f --pack {D}sub.bin --logits {D}logits_L_w8f.bin",
+    "cli {D}L.vocr --mode w8i --pack {D}pack.bin --topk 8 --topk-out {D}topk_L.bin --two-level",
+    "ts6 --batch {D}spot.vtsp {D}regions.bin",
+    "ts6 --maps {D}spot.vtsp {D}regions.bin"
+   ],
+   "versions": {
+    "base": {
+     "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
+     "vocr_textspot6_c_sha256": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+     "vpk_sha256": "8aec558ab9768a65bc9212b7ea147a3eb6ab9b1d50fdce8359487dd574197fba"
+    },
+    "new": {
+     "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+     "vocr_textspot6_c_sha256": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33",
+     "vpk_sha256": "ce2e12898f6a81d61ef131d25029898a71e660980a9e4d5850ecdb888870d043"
+    }
+   },
+   "outputs": [
+    {
+     "job": 0,
+     "file": "out_0.txt",
+     "bytes": 1170,
+     "sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+     "all_equal": true
+    },
+    {
+     "job": 0,
+     "file": "logits_S_w8i.bin",
+     "bytes": 32096524,
+     "sha256": "8d534332306befe29a02e85ea57e41d57ab016964cfb6216058a56860fa62f8a",
+     "all_equal": true
+    },
+    {
+     "job": 1,
+     "file": "out_1.txt",
+     "bytes": 1170,
+     "sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+     "all_equal": true
+    },
+    {
+     "job": 1,
+     "file": "logits_S_w8f.bin",
+     "bytes": 32096524,
+     "sha256": "5cfb6d9a5b64d817892ea7bafd94ff2118802318eddad5836eecfa27302e33db",
+     "all_equal": true
+    },
+    {
+     "job": 2,
+     "file": "out_2.txt",
+     "bytes": 24537,
+     "sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+     "all_equal": true
+    },
+    {
+     "job": 2,
+     "file": "topk_S.bin",
+     "bytes": 1651052,
+     "sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f",
+     "all_equal": true
+    },
+    {
+     "job": 3,
+     "file": "out_3.txt",
+     "bytes": 1150,
+     "sha256": "c263b9c4852d961872361930509554e9fee73c17f8537395aad11a69923cce3d",
+     "all_equal": true
+    },
+    {
+     "job": 3,
+     "file": "logits_N_w8i.bin",
+     "bytes": 36241308,
+     "sha256": "af12ed3c0ff61bec3c92367eb8bcc58ebc346ce330c010a8907b2357a98ea681",
+     "all_equal": true
+    },
+    {
+     "job": 4,
+     "file": "out_4.txt",
+     "bytes": 1150,
+     "sha256": "c263b9c4852d961872361930509554e9fee73c17f8537395aad11a69923cce3d",
+     "all_equal": true
+    },
+    {
+     "job": 4,
+     "file": "logits_N_w8f.bin",
+     "bytes": 36241308,
+     "sha256": "9d78f67cc3fd2fb24495b69b990759c24b4dbb068520390a6c479d5e521b104e",
+     "all_equal": true
+    },
+    {
+     "job": 5,
+     "file": "out_5.txt",
+     "bytes": 24784,
+     "sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+     "all_equal": true
+    },
+    {
+     "job": 5,
+     "file": "topk_N.bin",
+     "bytes": 1651052,
+     "sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef",
+     "all_equal": true
+    },
+    {
+     "job": 6,
+     "file": "out_6.txt",
+     "bytes": 1149,
+     "sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+     "all_equal": true
+    },
+    {
+     "job": 6,
+     "file": "logits_L_w8i.bin",
+     "bytes": 36241308,
+     "sha256": "7100545cdeeacfd2cafc41c3134fc827deccaf4d1716b8e1dc2183bcaaf91a71",
+     "all_equal": true
+    },
+    {
+     "job": 7,
+     "file": "out_7.txt",
+     "bytes": 1149,
+     "sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+     "all_equal": true
+    },
+    {
+     "job": 7,
+     "file": "logits_L_w8f.bin",
+     "bytes": 36241308,
+     "sha256": "6bf6ee2cc62dad6a24d47f793b49116f52407fefe1205d953c34f3edddb699c4",
+     "all_equal": true
+    },
+    {
+     "job": 8,
+     "file": "out_8.txt",
+     "bytes": 24790,
+     "sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+     "all_equal": true
+    },
+    {
+     "job": 8,
+     "file": "topk_L.bin",
+     "bytes": 1651052,
+     "sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867",
+     "all_equal": true
+    },
+    {
+     "job": 9,
+     "file": "out_9.txt",
+     "bytes": 84457,
+     "sha256": "293cc4afdd1a6087498c9034e25be2d5f3859af57dad8fbedc2767f8998ec2b1",
+     "all_equal": true
+    },
+    {
+     "job": 10,
+     "file": "out_10.txt",
+     "bytes": 27237654,
+     "sha256": "91d209c625d6050f215ae3a01f1b14ccfc5f3a412966dd18d34766ef6d573b4e",
+     "all_equal": true
+    }
+   ]
+  },
+  "spotter_twin_neon": {
+   "ok": true,
+   "runs": 1214,
+   "frames": 341,
+   "blobs": 139,
+   "v4_blobs": 115
+  },
+  "check_arm": true,
+  "parity_arm": true
+ },
+ "host_ms": {
+  "what": "c-speed's host times (#165, docs/c-speed.md \"Host speed\"): the recognizer's ms per line and the spotter's ms per\nregion, for two runtime versions, each built by gcc at -O2 (the runtime's flags) and at -O3 -march=native.",
+  "runs": 5,
+  "regions": 60,
+  "cpu": "model name\t: AMD EPYC 9R14",
+  "gcc": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+  "recognizer_ms_per_line": {
+   "S_base_O2": 25.893,
+   "N_base_O2": 31.56,
+   "L_base_O2": 78.382,
+   "S_base_O3n": 6.169,
+   "N_base_O3n": 7.265,
+   "L_base_O3n": 15.387,
+   "S_new_O2": 25.975,
+   "N_new_O2": 31.714,
+   "L_new_O2": 78.558,
+   "S_new_O3n": 6.246,
+   "N_new_O3n": 7.255,
+   "L_new_O3n": 15.385
+  },
+  "spotter_ms_per_region": {
+   "base_O2": 7.137,
+   "base_O3n": 2.963,
+   "new_O2": 7.138,
+   "new_O3n": 2.964
+  }
+ },
+ "memory": {
+  "codesize_base": {
+   "kind": "textspot6-code-size",
+   "runtime": "v6",
+   "source": "runtime/vocr_textspot6.c",
+   "computed": "2026-11-01T00:07:43Z",
+   "how": "eval/textspot2_a9.py codesize's: the .text of the spotter's own sections kept by a --gc-sections link (-Wl,-Map) of a caller of load, both arena functions, find and find_rows; vita/textgate_size.py's flags and map parser; vocr_lines*.c and libgcc listed apart, not counted; each build without and with -DVOCR_TEXTSPOT6_NO_MS",
+   "sources_sha256": {
+    "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+    "eval/textspot3_a9m.py": "c96e25e1395bd904f2058466e5d83b69a668c61dd0ab96ba9a1317e94dfefc3f",
+    "eval/textspot3_a9r.py": "7dcb2a3a9602f2f8ebeae917d9a9657c3d98acedc6905ecf2e5579ae76499343",
+    "eval/textspot6_a9.py": "e044541c3cf76a65cdd7640343df110d28ca5812114674d00ddfc68d6171637b",
+    "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot.h": "a25ef000164af61610a6f5201fb9e345f8a67cf6525d2f16bae44afca712dd57",
+    "runtime/vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+    "synth/textspot6_twin.py": "9d47ee7393219eaee0c412b9d29ec094b6f29c3c0ba942f6d5cf4beef5176753",
+    "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+    "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+    "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+    "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+    "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+    "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+    "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+   },
+   "vita": {
+    "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+    "builds": {
+     "-O2": {
+      "text": 24964,
+      "rodata": 136,
+      "functions": {
+       "chain": 1540,
+       "decode_row": 1300,
+       "delivered": 276,
+       "dest_row": 84,
+       "dw_border": 156,
+       "dw_row.isra.0": 1436,
+       "feed": 2916,
+       "frame_need": 80,
+       "group": 1724,
+       "head_lay": 540,
+       "isort": 252,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 564,
+       "parse_net": 896,
+       "plan": 460,
+       "plan3": 168,
+       "pw_block_run": 484,
+       "pw_cells": 1272,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "run_dw": 556,
+       "run_head": 544,
+       "run_pw": 264,
+       "setup3": 604,
+       "spot": 1212,
+       "spot3": 652,
+       "stack_peak": 480,
+       "stream_lay": 320,
+       "sub_plane": 76,
+       "sub_plane3": 92,
+       "sweep": 932,
+       "to_f8": 512,
+       "vocr_textspot6_arena_bytes": 220,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 68,
+       "vocr_textspot6_load": 2744
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 25444,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2"
+      ]
+     },
+     "-Os": {
+      "text": 20296,
+      "rodata": 136,
+      "functions": {
+       "cap_less": 94,
+       "chain": 1430,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 262,
+       "dest_row": 44,
+       "dw_border": 150,
+       "dw_row": 980,
+       "feed": 2320,
+       "field": 58,
+       "find_root": 18,
+       "frame_need": 70,
+       "grey_px": 36,
+       "group": 1286,
+       "head_lay": 458,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 344,
+       "parse_net": 738,
+       "plan": 380,
+       "plan3": 152,
+       "pw_block": 96,
+       "pw_block_run": 404,
+       "pw_cells": 1028,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "rq4v": 168,
+       "run_dw": 364,
+       "run_head": 512,
+       "run_pw": 182,
+       "section_ok": 34,
+       "setup3": 464,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 904,
+       "spot3": 472,
+       "stack_peak": 352,
+       "stream_lay": 286,
+       "sub_plane": 44,
+       "sub_plane3": 54,
+       "sweep": 736,
+       "to_f8": 454,
+       "vocr_textspot6_arena_bytes": 186,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 40,
+       "vocr_textspot6_load": 2228
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 20636,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON": {
+      "text": 21332,
+      "rodata": 72,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 1300,
+       "delivered": 276,
+       "dest_row": 84,
+       "dw_row.isra.0": 540,
+       "feed": 2176,
+       "frame_need": 80,
+       "group": 1724,
+       "head_lay": 540,
+       "isort": 252,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 312,
+       "parse_net": 896,
+       "plan": 460,
+       "plan3": 168,
+       "pw_block_run.isra.0": 456,
+       "pw_cells.isra.0": 416,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "run_dw": 540,
+       "run_head": 516,
+       "run_pw": 244,
+       "setup3": 604,
+       "spot": 1212,
+       "spot3": 652,
+       "stack_peak": 480,
+       "store_acc": 292,
+       "stream_lay": 320,
+       "sub_plane": 76,
+       "sub_plane3": 92,
+       "sweep": 932,
+       "to_f8": 92,
+       "vocr_textspot6_arena_bytes": 220,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 68,
+       "vocr_textspot6_load": 2744
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 21748,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON": {
+      "text": 16894,
+      "rodata": 72,
+      "functions": {
+       "cap_less": 94,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 262,
+       "dest_row": 44,
+       "dw_row.isra.0": 466,
+       "feed": 1928,
+       "field": 58,
+       "find_root": 18,
+       "frame_need": 70,
+       "grey_px": 36,
+       "group": 1286,
+       "head_lay": 458,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 190,
+       "parse_net": 738,
+       "plan": 380,
+       "plan3": 152,
+       "pw_block": 96,
+       "pw_block_run.isra.0": 378,
+       "pw_cells.isra.0": 294,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "run_dw": 346,
+       "run_head": 496,
+       "run_pw": 166,
+       "section_ok": 34,
+       "setup3": 464,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 904,
+       "spot3": 472,
+       "stack_peak": 352,
+       "store_acc": 272,
+       "stream_lay": 286,
+       "sub_plane": 44,
+       "sub_plane3": 54,
+       "sweep": 736,
+       "to_f8": 74,
+       "vocr_textspot6_arena_bytes": 186,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 40,
+       "vocr_textspot6_load": 2228
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 17168,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-O2 -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 13020,
+      "rodata": 136,
+      "functions": {
+       "chain": 1540,
+       "decode_row": 1300,
+       "delivered": 248,
+       "dest_row": 84,
+       "feed": 2916,
+       "group": 1724,
+       "isort": 252,
+       "pair_sums": 564,
+       "parse_net": 896,
+       "plan": 460,
+       "spot": 1076,
+       "sub_plane": 76,
+       "sweep": 932,
+       "vocr_textspot6_arena_bytes": 244,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 88,
+       "vocr_textspot6_load": 396
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 13516,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-Os -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 10684,
+      "rodata": 136,
+      "functions": {
+       "cap_less": 94,
+       "chain": 1430,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 234,
+       "dest_row": 44,
+       "feed": 2320,
+       "field": 58,
+       "find_root": 18,
+       "grey_px": 36,
+       "group": 1286,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "pair_sums": 344,
+       "parse_net": 738,
+       "plan": 380,
+       "rd32": 4,
+       "ring_row": 58,
+       "section_ok": 34,
+       "side_ok": 26,
+       "spot": 872,
+       "sub_plane": 44,
+       "sweep": 736,
+       "vocr_textspot6_arena_bytes": 210,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 48,
+       "vocr_textspot6_load": 412
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 11052,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 11808,
+      "rodata": 72,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 1300,
+       "delivered": 248,
+       "dest_row": 84,
+       "feed": 2176,
+       "group": 1724,
+       "isort": 252,
+       "pair_sums": 312,
+       "parse_net": 896,
+       "plan": 460,
+       "spot": 1076,
+       "store_acc": 292,
+       "sub_plane": 76,
+       "sweep": 932,
+       "vocr_textspot6_arena_bytes": 244,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 88,
+       "vocr_textspot6_load": 396
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 12252,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 9304,
+      "rodata": 72,
+      "functions": {
+       "cap_less": 94,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 234,
+       "dest_row": 44,
+       "feed": 1928,
+       "field": 58,
+       "find_root": 18,
+       "grey_px": 36,
+       "group": 1286,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "pair_sums": 190,
+       "parse_net": 738,
+       "plan": 380,
+       "rd32": 4,
+       "ring_row": 58,
+       "section_ok": 34,
+       "side_ok": 26,
+       "spot": 872,
+       "store_acc": 272,
+       "sub_plane": 44,
+       "sweep": 736,
+       "vocr_textspot6_arena_bytes": 210,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 48,
+       "vocr_textspot6_load": 412
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 9604,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     }
+    }
+   },
+   "psp": {
+    "compiler": "psp-gcc (GCC) 15.2.0",
+    "object_text": {
+     "-O2 -G0": 33580,
+     "-Os -G0": 28524,
+     "-O2 -G0 -DVOCR_TEXTSPOT6_NO_MS": 18764,
+     "-Os -G0 -DVOCR_TEXTSPOT6_NO_MS": 15508
+    }
+   }
+  },
+  "codesize_final": {
+   "kind": "textspot6-code-size",
+   "runtime": "v6",
+   "source": "runtime/vocr_textspot6.c",
+   "computed": "2026-11-01T00:16:42Z",
+   "how": "eval/textspot2_a9.py codesize's: the .text of the spotter's own sections kept by a --gc-sections link (-Wl,-Map) of a caller of load, both arena functions, find and find_rows; vita/textgate_size.py's flags and map parser; vocr_lines*.c and libgcc listed apart, not counted; each build without and with -DVOCR_TEXTSPOT6_NO_MS",
+   "sources_sha256": {
+    "eval/textspot2_a9.py": "6d71cfa54a7080db57b05aaf30dced7148167da1e7463ce71491cb5233954bb0",
+    "eval/textspot3_a9m.py": "c96e25e1395bd904f2058466e5d83b69a668c61dd0ab96ba9a1317e94dfefc3f",
+    "eval/textspot3_a9r.py": "7dcb2a3a9602f2f8ebeae917d9a9657c3d98acedc6905ecf2e5579ae76499343",
+    "eval/textspot6_a9.py": "e044541c3cf76a65cdd7640343df110d28ca5812114674d00ddfc68d6171637b",
+    "eval/textspot_a9.py": "b04e6c6a53c55080354114b0abc6d49be09fe1b2bc1a927eeec17ebdac8a17d0",
+    "runtime/vocr_lines.c": "90c30a1c1e1707b818c2bd919243ee589700ff44ceac8b8d7a842b9d55d8d9ca",
+    "runtime/vocr_lines_rows.c": "3207edb85d1cd7c79899390bb2ee028839dd120ca5d2278a28edd5fa9ca2ee6e",
+    "runtime/vocr_textspot.h": "a25ef000164af61610a6f5201fb9e345f8a67cf6525d2f16bae44afca712dd57",
+    "runtime/vocr_textspot6.c": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33",
+    "runtime/vocr_textspot6.h": "526d6d19796c3aa314d3ec14655129c5ef2dbab75125d2b31225c7e78620b512",
+    "runtime/vocr_textspot6_test.c": "496f41475aec870d47dd500b825c7017649bbdc00640f90021afebe9236995ac",
+    "synth/textspot2_twin.py": "9a05b6c90140659c08e2bad7160dd79dbcc7b79840db214ac79dc5bfd1ca4f1a",
+    "synth/textspot3_twin.py": "c51f6fd84af60255fd4d887b2129b5a2f25a06d3d57ddd88f70226aa698532cd",
+    "synth/textspot6_twin.py": "9d47ee7393219eaee0c412b9d29ec094b6f29c3c0ba942f6d5cf4beef5176753",
+    "train/textdet_export.py": "4a26be344f47af5a12f270294c277e1f54f0512773835f519140872d4b4d7576",
+    "train/textdet_model.py": "8fc23ea35477467dc5cd3529ddca6d60f6cddd51183b2b23dd1f6e77152aff68",
+    "train/textspot2_export.py": "03f706c2059a132eeb94b77464c719f69210e2ceabad05a07f8e6d589054d5e7",
+    "train/textspot3_model.py": "d975995ad0fb5d5a5e3e09e6350bd793f9ed16482a8e497dc9c388bae1fa3ef6",
+    "train/textspot3_shapes.py": "066433911cd57b811cb98735ac9c723294968bf0e0d33d8820c87b1f612bc87b",
+    "train/textspot6_model.py": "68aecd2bb8ba58baf3c55c5c4fcf9712c11804d3616b7e943d4ee85be45fdc67",
+    "vita/a9_cycles.py": "de2b8b763dd56241fc066e5d7cc4c9b47de5c8b52a26168d2bafbeb2b6ab35fc"
+   },
+   "vita": {
+    "compiler": "arm-vita-eabi-gcc (GNU Tools for ARM Embedded Processors) 15.2.0",
+    "builds": {
+     "-O2": {
+      "text": 26636,
+      "rodata": 200,
+      "functions": {
+       "chain": 1568,
+       "decode_row": 1300,
+       "delivered": 276,
+       "dest_row": 84,
+       "dw_border": 156,
+       "dw_row.isra.0": 1436,
+       "feed": 3448,
+       "frame_need": 80,
+       "group": 1724,
+       "head_lay": 540,
+       "isort": 252,
+       "k3_c1_s2": 584,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 564,
+       "parse_net": 896,
+       "plan": 460,
+       "plan3": 168,
+       "pw_block_run": 484,
+       "pw_cells": 1272,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "rq_int64": 204,
+       "rq_rows.constprop.0": 216,
+       "run_dw": 556,
+       "run_head": 544,
+       "run_pw": 264,
+       "setup3": 656,
+       "spot": 1268,
+       "spot3": 652,
+       "stack_peak": 480,
+       "stream_lay": 320,
+       "sub_plane": 76,
+       "sub_plane3": 92,
+       "sweep": 932,
+       "to_f8": 512,
+       "vocr_textspot6_arena_bytes": 220,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 68,
+       "vocr_textspot6_load": 2744
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 27180,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2"
+      ]
+     },
+     "-Os": {
+      "text": 22196,
+      "rodata": 200,
+      "functions": {
+       "cap_less": 94,
+       "chain": 1558,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 262,
+       "dest_row": 44,
+       "dw_border": 150,
+       "dw_row": 980,
+       "feed": 3032,
+       "field": 58,
+       "find_root": 18,
+       "frame_need": 70,
+       "grey_px": 36,
+       "group": 1286,
+       "head_lay": 458,
+       "image_ok": 36,
+       "isort": 124,
+       "k3_c1_s2": 566,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 344,
+       "parse_net": 738,
+       "plan": 380,
+       "plan3": 152,
+       "pw_block": 96,
+       "pw_block_run": 404,
+       "pw_cells": 1028,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "rq4v": 168,
+       "rq_int64": 198,
+       "rq_rows.constprop.0": 184,
+       "run_dw": 364,
+       "run_head": 512,
+       "run_pw": 182,
+       "section_ok": 34,
+       "setup3": 518,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 962,
+       "spot3": 472,
+       "stack_peak": 352,
+       "stream_lay": 286,
+       "sub_plane": 44,
+       "sub_plane3": 54,
+       "sweep": 736,
+       "to_f8": 454,
+       "vocr_textspot6_arena_bytes": 186,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 40,
+       "vocr_textspot6_load": 2228
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 22604,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON": {
+      "text": 21332,
+      "rodata": 72,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 1300,
+       "delivered": 276,
+       "dest_row": 84,
+       "dw_row.isra.0": 540,
+       "feed": 2176,
+       "frame_need": 80,
+       "group": 1724,
+       "head_lay": 540,
+       "isort": 252,
+       "op_end": 336,
+       "op_lay": 596,
+       "op_params": 172,
+       "pair_sums": 312,
+       "parse_net": 896,
+       "plan": 460,
+       "plan3": 168,
+       "pw_block_run.isra.0": 456,
+       "pw_cells.isra.0": 416,
+       "pw_segs": 168,
+       "requant_ok": 44,
+       "run_dw": 540,
+       "run_head": 516,
+       "run_pw": 244,
+       "setup3": 604,
+       "spot": 1212,
+       "spot3": 652,
+       "stack_peak": 480,
+       "store_acc": 292,
+       "stream_lay": 320,
+       "sub_plane": 76,
+       "sub_plane3": 92,
+       "sweep": 932,
+       "to_f8": 92,
+       "vocr_textspot6_arena_bytes": 220,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 68,
+       "vocr_textspot6_load": 2744
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 21748,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON": {
+      "text": 16894,
+      "rodata": 72,
+      "functions": {
+       "cap_less": 94,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 262,
+       "dest_row": 44,
+       "dw_row.isra.0": 466,
+       "feed": 1928,
+       "field": 58,
+       "find_root": 18,
+       "frame_need": 70,
+       "grey_px": 36,
+       "group": 1286,
+       "head_lay": 458,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "map_ref": 86,
+       "op_end": 228,
+       "op_lay": 438,
+       "op_params": 154,
+       "pair_sums": 190,
+       "parse_net": 738,
+       "plan": 380,
+       "plan3": 152,
+       "pw_block": 96,
+       "pw_block_run.isra.0": 378,
+       "pw_cells.isra.0": 294,
+       "pw_segs": 110,
+       "rd32": 4,
+       "requant_ok": 44,
+       "ring_row": 58,
+       "run_dw": 346,
+       "run_head": 496,
+       "run_pw": 166,
+       "section_ok": 34,
+       "setup3": 464,
+       "side_ok": 26,
+       "slot_bytes": 62,
+       "spot": 904,
+       "spot3": 472,
+       "stack_peak": 352,
+       "store_acc": 272,
+       "stream_lay": 286,
+       "sub_plane": 44,
+       "sub_plane3": 54,
+       "sweep": 736,
+       "to_f8": 74,
+       "vocr_textspot6_arena_bytes": 186,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 40,
+       "vocr_textspot6_load": 2228
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 17168,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON"
+      ]
+     },
+     "-O2 -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 14664,
+      "rodata": 200,
+      "functions": {
+       "chain": 1568,
+       "decode_row": 1300,
+       "delivered": 248,
+       "dest_row": 84,
+       "feed": 3448,
+       "group": 1724,
+       "isort": 252,
+       "k3_c1_s2": 584,
+       "pair_sums": 564,
+       "parse_net": 896,
+       "plan": 460,
+       "rq_int64": 204,
+       "rq_rows.constprop.0": 216,
+       "spot": 1156,
+       "sub_plane": 76,
+       "sweep": 932,
+       "vocr_textspot6_arena_bytes": 244,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 88,
+       "vocr_textspot6_load": 396
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 15228,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-Os -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 12524,
+      "rodata": 200,
+      "functions": {
+       "cap_less": 94,
+       "chain": 1558,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 234,
+       "dest_row": 44,
+       "feed": 3032,
+       "field": 58,
+       "find_root": 18,
+       "grey_px": 36,
+       "group": 1286,
+       "image_ok": 36,
+       "isort": 124,
+       "k3_c1_s2": 566,
+       "loaded": 36,
+       "pair_sums": 344,
+       "parse_net": 738,
+       "plan": 380,
+       "rd32": 4,
+       "ring_row": 58,
+       "rq_int64": 198,
+       "rq_rows.constprop.0": 184,
+       "section_ok": 34,
+       "side_ok": 26,
+       "spot": 924,
+       "sub_plane": 44,
+       "sweep": 736,
+       "vocr_textspot6_arena_bytes": 210,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 48,
+       "vocr_textspot6_load": 412
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 12956,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-O2 -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 11808,
+      "rodata": 72,
+      "functions": {
+       "chain": 1028,
+       "decode_row": 1300,
+       "delivered": 248,
+       "dest_row": 84,
+       "feed": 2176,
+       "group": 1724,
+       "isort": 252,
+       "pair_sums": 312,
+       "parse_net": 896,
+       "plan": 460,
+       "spot": 1076,
+       "store_acc": 292,
+       "sub_plane": 76,
+       "sweep": 932,
+       "vocr_textspot6_arena_bytes": 244,
+       "vocr_textspot6_find": 124,
+       "vocr_textspot6_find_rows": 100,
+       "vocr_textspot6_frame_arena_bytes": 88,
+       "vocr_textspot6_load": 396
+      },
+      "other_objects": {
+       "vocr_lines.o": 1056,
+       "vocr_lines_rows.o": 1104
+      },
+      "libgcc": [
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 12252,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-O2",
+       "-DVOCR_NO_NEON",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     },
+     "-Os -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS": {
+      "text": 9304,
+      "rodata": 72,
+      "functions": {
+       "cap_less": 94,
+       "chain": 324,
+       "crc32_ieee": 48,
+       "decode_row": 840,
+       "delivered": 234,
+       "dest_row": 44,
+       "feed": 1928,
+       "field": 58,
+       "find_root": 18,
+       "grey_px": 36,
+       "group": 1286,
+       "image_ok": 36,
+       "isort": 124,
+       "loaded": 36,
+       "pair_sums": 190,
+       "parse_net": 738,
+       "plan": 380,
+       "rd32": 4,
+       "ring_row": 58,
+       "section_ok": 34,
+       "side_ok": 26,
+       "spot": 872,
+       "store_acc": 272,
+       "sub_plane": 44,
+       "sweep": 736,
+       "vocr_textspot6_arena_bytes": 210,
+       "vocr_textspot6_find": 92,
+       "vocr_textspot6_find_rows": 82,
+       "vocr_textspot6_frame_arena_bytes": 48,
+       "vocr_textspot6_load": 412
+      },
+      "other_objects": {
+       "vocr_lines.o": 600,
+       "vocr_lines_rows.o": 650
+      },
+      "libgcc": [
+       "_aeabi_uldivmod.o",
+       "_divsi3.o",
+       "_dvmd_tls.o",
+       "_udivmoddi4.o",
+       "_udivsi3.o"
+      ],
+      "object_text": 9604,
+      "flags": [
+       "-std=c99",
+       "-ffp-contract=off",
+       "-Wall",
+       "-Wextra",
+       "-ffunction-sections",
+       "-fdata-sections",
+       "-mcpu=cortex-a9",
+       "-mfpu=neon",
+       "-mfloat-abi=hard",
+       "-Os",
+       "-DVOCR_NO_NEON",
+       "-DVOCR_TEXTSPOT6_NO_MS"
+      ]
+     }
+    }
+   },
+   "psp": {
+    "compiler": "psp-gcc (GCC) 15.2.0",
+    "object_text": {
+     "-O2 -G0": 33580,
+     "-Os -G0": 28524,
+     "-O2 -G0 -DVOCR_TEXTSPOT6_NO_MS": 18764,
+     "-Os -G0 -DVOCR_TEXTSPOT6_NO_MS": 15508
+    }
+   }
+  },
+  "arena": {
+   "S": {
+    "before": 124832,
+    "after": 124832
+   },
+   "N": {
+    "before": 184448,
+    "after": 184448
+   },
+   "L": {
+    "before": 262480,
+    "after": 262480
+   },
+   "spot_900x150_flags4": {
+    "before": 235119,
+    "after": 235119
+   },
+   "spot_960x544_flags0": {
+    "before": 244607,
+    "after": 244607
+   },
+   "spot_480x272_flags0": {
+    "before": 243647,
+    "after": 243647
+   }
+  },
+  "vita_code": {
+   "vita -O2: vocr.c": {
+    "before": 26435,
+    "after": 26723
+   },
+   "vita -O2: vocr.c -DVOCR_NO_ATTN": {
+    "before": 26435,
+    "after": 24083
+   },
+   "vita -O2: vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS": {
+    "before": 13516,
+    "after": 15228
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c": {
+    "before": 26423,
+    "after": 26711
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c -DVOCR_NO_ATTN": {
+    "before": 26423,
+    "after": 24083
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS": {
+    "before": 13532,
+    "after": 15240
+   }
+  },
+  "vocr_stack": {
+   "vita -O2: vocr.c": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2320,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_f32 400"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2256,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "vita -O2: vocr.c -DVOCR_NO_ATTN": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2304,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_f32 384"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2256,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2328,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_f32 400"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2264,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c -DVOCR_NO_ATTN": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2312,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_f32 384"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2264,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   }
+  },
+  "stack": {
+   "base": {
+    "Vita -O2": {
+     "vocr_textspot6_find": 2720,
+     "vocr_textspot6_find_rows": 2712,
+     "vocr_textspot6_load": 256,
+     "vocr_textspot6_maps": 4416,
+     "vocr_textspot6_arena_bytes": 1020,
+     "vocr_textspot6_frame_arena_bytes": 988,
+     "find_no_dark": 2016
+    },
+    "Vita -Os": {
+     "vocr_textspot6_find": 2696,
+     "vocr_textspot6_find_rows": 2688,
+     "vocr_textspot6_load": 228,
+     "vocr_textspot6_maps": 4384,
+     "vocr_textspot6_arena_bytes": 1000,
+     "vocr_textspot6_frame_arena_bytes": 968,
+     "find_no_dark": 1944
+    },
+    "PSP -O2 -G0": {
+     "vocr_textspot6_find": 2624,
+     "vocr_textspot6_find_rows": 2624,
+     "vocr_textspot6_load": 112,
+     "vocr_textspot6_maps": 4312,
+     "vocr_textspot6_arena_bytes": 880,
+     "vocr_textspot6_frame_arena_bytes": 848,
+     "find_no_dark": 1816
+    },
+    "PSP -Os -G0": {
+     "vocr_textspot6_find": 2632,
+     "vocr_textspot6_find_rows": 2632,
+     "vocr_textspot6_load": 120,
+     "vocr_textspot6_maps": 4320,
+     "vocr_textspot6_arena_bytes": 864,
+     "vocr_textspot6_frame_arena_bytes": 832,
+     "find_no_dark": 1784
+    },
+    "Vita -O2 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2720,
+     "vocr_textspot6_find_rows": 2712,
+     "vocr_textspot6_load": 128,
+     "vocr_textspot6_maps": 4416,
+     "vocr_textspot6_arena_bytes": 272,
+     "vocr_textspot6_frame_arena_bytes": 152,
+     "find_no_dark": 1136
+    },
+    "Vita -Os -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2696,
+     "vocr_textspot6_find_rows": 2688,
+     "vocr_textspot6_load": 132,
+     "vocr_textspot6_maps": 4384,
+     "vocr_textspot6_arena_bytes": 264,
+     "vocr_textspot6_frame_arena_bytes": 144,
+     "find_no_dark": 1032
+    },
+    "PSP -O2 -G0 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2624,
+     "vocr_textspot6_find_rows": 2624,
+     "vocr_textspot6_load": 64,
+     "vocr_textspot6_maps": 4312,
+     "vocr_textspot6_arena_bytes": 200,
+     "vocr_textspot6_frame_arena_bytes": 88,
+     "find_no_dark": 1024
+    },
+    "PSP -Os -G0 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2632,
+     "vocr_textspot6_find_rows": 2632,
+     "vocr_textspot6_load": 64,
+     "vocr_textspot6_maps": 4320,
+     "vocr_textspot6_arena_bytes": 192,
+     "vocr_textspot6_frame_arena_bytes": 88,
+     "find_no_dark": 936
+    }
+   },
+   "final": {
+    "Vita -O2": {
+     "vocr_textspot6_find": 2728,
+     "vocr_textspot6_find_rows": 2720,
+     "vocr_textspot6_load": 256,
+     "vocr_textspot6_maps": 4424,
+     "vocr_textspot6_arena_bytes": 1020,
+     "vocr_textspot6_frame_arena_bytes": 988,
+     "find_no_dark": 2024
+    },
+    "Vita -Os": {
+     "vocr_textspot6_find": 2704,
+     "vocr_textspot6_find_rows": 2696,
+     "vocr_textspot6_load": 228,
+     "vocr_textspot6_maps": 4392,
+     "vocr_textspot6_arena_bytes": 1000,
+     "vocr_textspot6_frame_arena_bytes": 968,
+     "find_no_dark": 1960
+    },
+    "PSP -O2 -G0": {
+     "vocr_textspot6_find": 2624,
+     "vocr_textspot6_find_rows": 2624,
+     "vocr_textspot6_load": 112,
+     "vocr_textspot6_maps": 4312,
+     "vocr_textspot6_arena_bytes": 880,
+     "vocr_textspot6_frame_arena_bytes": 848,
+     "find_no_dark": 1816
+    },
+    "PSP -Os -G0": {
+     "vocr_textspot6_find": 2632,
+     "vocr_textspot6_find_rows": 2632,
+     "vocr_textspot6_load": 120,
+     "vocr_textspot6_maps": 4320,
+     "vocr_textspot6_arena_bytes": 864,
+     "vocr_textspot6_frame_arena_bytes": 832,
+     "find_no_dark": 1784
+    },
+    "Vita -O2 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2728,
+     "vocr_textspot6_find_rows": 2720,
+     "vocr_textspot6_load": 128,
+     "vocr_textspot6_maps": 4424,
+     "vocr_textspot6_arena_bytes": 272,
+     "vocr_textspot6_frame_arena_bytes": 152,
+     "find_no_dark": 1384
+    },
+    "Vita -Os -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2704,
+     "vocr_textspot6_find_rows": 2696,
+     "vocr_textspot6_load": 132,
+     "vocr_textspot6_maps": 4392,
+     "vocr_textspot6_arena_bytes": 264,
+     "vocr_textspot6_frame_arena_bytes": 144,
+     "find_no_dark": 1384
+    },
+    "PSP -O2 -G0 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2624,
+     "vocr_textspot6_find_rows": 2624,
+     "vocr_textspot6_load": 64,
+     "vocr_textspot6_maps": 4312,
+     "vocr_textspot6_arena_bytes": 200,
+     "vocr_textspot6_frame_arena_bytes": 88,
+     "find_no_dark": 1024
+    },
+    "PSP -Os -G0 -DVOCR_TEXTSPOT6_NO_MS": {
+     "vocr_textspot6_find": 2632,
+     "vocr_textspot6_find_rows": 2632,
+     "vocr_textspot6_load": 64,
+     "vocr_textspot6_maps": 4320,
+     "vocr_textspot6_arena_bytes": 192,
+     "vocr_textspot6_frame_arena_bytes": 88,
+     "find_no_dark": 936
+    }
+   }
+  }
+ },
+ "machine_code_without_neon": {
+  "host gcc -O2: vocr.c": {
+   "identical": true,
+   "text_bytes": 30697
+  },
+  "host gcc -O2: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 30447
+  },
+  "host gcc -O2 -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 17135
+  },
+  "host clang -O2: vocr.c": {
+   "identical": true,
+   "text_bytes": 47700
+  },
+  "host clang -O2: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 40953
+  },
+  "host clang -O2 -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 22233
+  },
+  "vita gcc -O2 -DVOCR_NO_NEON: vocr.c": {
+   "identical": true,
+   "text_bytes": 21192
+  },
+  "vita gcc -O2 -DVOCR_NO_NEON: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 21676
+  },
+  "vita gcc -O2 -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 12180
+  },
+  "arm gnu 14.2 -O2 -DVOCR_NO_NEON: vocr.c": {
+   "identical": true,
+   "text_bytes": 20436
+  },
+  "arm gnu 14.2 -O2 -DVOCR_NO_NEON: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 20508
+  },
+  "arm gnu 14.2 -O2 -DVOCR_NO_NEON -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 11280
+  },
+  "psp-gcc -O2 -G0: vocr.c": {
+   "identical": true,
+   "text_bytes": 32996
+  },
+  "psp-gcc -O2 -G0: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 33452
+  },
+  "psp-gcc -O2 -G0 -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 18636
+  },
+  "psp-gcc -O2 -G0 -DVOCR_PSP_VFPU: vocr.c": {
+   "identical": true,
+   "text_bytes": 33416
+  },
+  "psp-gcc -O2 -G0 -DVOCR_PSP_VFPU: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 33452
+  },
+  "psp-gcc -O2 -G0 -DVOCR_PSP_VFPU -DVOCR_TEXTSPOT6_NO_MS: vocr_textspot6.c": {
+   "identical": true,
+   "text_bytes": 18636
+  }
+ }
+}

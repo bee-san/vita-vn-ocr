@@ -21,6 +21,8 @@ What is known so far:
 | `scripts/build_qemu_plugins.sh`, `qemu/insn_mix.c`, `a9_cycles.py` | the Cortex-A9 estimate |
 | `mkicon.py`, `sce_sys/` | the LiveArea images (generated at build time) and template |
 | `tests/cases_dump.c` | lets `tests/test_vita.py` check the app's bundle parser on the host |
+| `par/main.c`, `scripts/run_vita3k_par.sh`, `vita3k_parity.py` | the runtime's own host drivers as a Vita app (`vocr_par.vpk`), run in Vita3K and compared with the host byte for byte ("Bit identity in Vita3K" below) |
+| `ts_speed_parity.py` | `speed_parity.py`'s check for the text spotter (`runtime/vocr_textspot6.c`): maps and boxes of two versions in five builds |
 
 Everything the scripts download goes to `vita/tools/` (gitignored) or a directory you name. SDK binaries, VPKs and bundles are never committed.
 
@@ -212,6 +214,37 @@ model per phase and can scale it to a console figure (`--console-ms`, `--console
 hand the recognizer (dev manifests only, every test-reserved VN refused), and `speed_parity.py` proves two
 `vocr.c` versions give the same logits, texts and (with `--topk`) top-K in five builds. Results and how to run
 them: `docs/ocr-speed.md`.
+
+## Bit identity in Vita3K (`vita/par`)
+
+`vita/scripts/build.sh` also builds `vocr_par.vpk` (title ID VVOC00002): the runtime's host drivers,
+`runtime/tools/vocr_cli.c` and `runtime/vocr_textspot6_test.c` with their `main` renamed, linked with the Vita build of
+the recognizer, its decoder and the text spotter as Rubi builds it (`-DVOCR_TEXTSPOT6_NO_MS`). It runs the jobs of
+`ux0:data/vocrpar/jobs.txt` one after another (`cli ARGS...` or `ts6 ARGS...`, absolute `ux0:` paths), writes each
+job's stdout and stderr beside them, and exits. `vita/scripts/run_vita3k_par.sh JOBDIR VPK OUT` runs it headless in a
+Vita3K sandbox, as `run_vita3k.sh` does the test app. A job's outputs (texts, `--logits`, `--topk-out`, the spotter's
+`--batch` and `--maps` lines) are then the same command's on the host, byte for byte, when the Vita's machine code
+computes the same results.
+
+```sh
+python vita/vita3k_parity.py --base <main's runtime/> --new runtime --sub sub24.bin --pack dev.bin \
+    --regions dev_regions.bin --spot textspot8_t64n8c16_w8.vtsp --blob S=VOCR6.2_S_w8.vocr \
+    --blob 'N=VOCR6.2_N_w8g2.vocr:--head-gate on --two-level' --blob 'L=VOCR6.2_L_w8_2l.vocr:--two-level' \
+    --work build/v3k [--json OUT] [--cmake CMAKE] [--vita3k DIR]
+```
+
+For each runtime directory it builds the VPK (`-DVOCR_RUNTIME_DIR`; the drivers are always this checkout's) and the
+host drivers, runs the jobs on the host and in Vita3K, and requires all four outputs of every job to be equal: every
+logit of the lines of `--sub` in W8I and W8F (the full head), the texts and every frame's top 8 of the lines of
+`--pack` with each blob's options (the head gate and two-level head as Rubi runs them), and the spotter's boxes and
+maps of every region of `--regions` as Rubi's crop decode reads it and by the default call. The inputs are development
+data (`vita/dev_pack.py`); the work directory holds crops of copyrighted screenshots: keep it local. `docs/c-speed.md`
+(#165) has the run.
+
+`vita/speed_parity.py --no-logits` hashes texts and top-K without asking for the logits: a run that asks for them reads
+every frame through the full head, so only such a run checks the head gate and the two-level head.
+`--builds ...,vita-neon-noattn` adds the Vita objects built with `-DVOCR_NO_ATTN` (the recognizer without the
+attention op, as Rubi's pin builds it).
 
 ## Not done here
 

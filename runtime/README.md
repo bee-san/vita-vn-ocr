@@ -6,6 +6,9 @@
 - The blob is read in place. All working memory comes from one arena that the caller provides, sized exactly by `vocr_arena_bytes()`.
 - The line is processed in tiles of a few CTC frames (8 input columns each; 12 or 16 for the coarser-frame models of `train2.py --stride`, which `docs/stride16.md` trains). Every layer keeps its left context between tiles, so the arena stays the same size for any line width, and the output doesn't depend on the tile size (checked bit for bit).
 - NEON kernels sit behind `__ARM_NEON` (Vita). The scalar fallback gives the same bits; it's the PSP path, and `-DVOCR_NO_NEON` forces it.
+- `-DVOCR_NO_ATTN` leaves out the attention op (below; no released blob has one): `vocr_load` refuses a blob with it,
+  and every other blob runs as in the default build. Rubi's pin of #165 builds it so (`docs/c-speed.md`: −2,640 B of
+  Vita code).
 
 ## Numbers (v1 checkpoint)
 
@@ -132,6 +135,12 @@ depthwise taps), bit for bit: the estimate is 2.90 ms per frame for H15 with the
 if the prefetch does not help). Builds without NEON compile to the same machine code as before. Per layer,
 calibration and parity: `docs/ocr-speed.md`. `make check-arm` runs the C unit tests, with known-answer logits for
 every NEON kernel, as Cortex-A9 NEON and scalar builds under qemu-arm.
+
+c-speed (#165, `docs/c-speed.md`) then cut the NEON kernels' instructions again, bit for bit: `mm_i16`'s 4 × 8 pass
+as an `asm` loop with aligned loads (82 instructions per 256 multiply-adds, 88 before), the 3×3 stem with its tap
+weights in registers, and the head's top-K filter with a cheaper key, 4 frames per test and one NEON-to-ARM move per
+block. VOCR6.2 S / N / L as Rubi runs them: est. 2.195 → 2.000, 2.807 → 2.683 and 7.415 → 7.145 ms per frame at 333 MHz
+without prefetch credit; arenas unchanged; builds without NEON compile to the same machine code.
 
 ## API
 
@@ -329,7 +338,8 @@ over the line's frames. Nothing changes for the caller: `vocr_load` parses it (`
 - K, V and a head batch's queries overlay the rings and the head's buffers, idle at that point. The output is the
   same for every tile and head batch size, scalar and NEON. The cancel callback is also polled per chunk of the
   attention and per tile of the head after it.
-- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`).
+- A blob without the op runs exactly as before; a runtime from before refuses a blob with it (`VOCR_E_FORMAT`), and
+  so does one built with `-DVOCR_NO_ATTN` (#165), which leaves the op's code out.
 - Cost (estimates, VitaSDK gcc `-O2`, NEON, docs/vocr6-attn.md): about 0.066 ms a frame for the projections plus
   0.0010 ms × T for the scores on a line of T frames at 333 MHz (+35 ms per nominal 3-line box for VOCR5-N's shape);
   `vocr.o` grows from 23,267 to 25,979 B (scalar 18,295 to 21,079 B; psp-gcc 28,091 to 32,603 B); no malloc.
@@ -891,33 +901,39 @@ if (set.pick >= 0) { /* set.blocks[set.pick] is the dialogue block */ }
 
   | build | find | find_rows | find without the dark pass | load | `_maps` (test hook) |
   |---|---:|---:|---:|---:|---:|
-  | Vita -O2 | 2,720 | 2,712 | 2,016 | 256 | 4,416 |
-  | Vita -O2, NO_MS | 2,720 | 2,712 | 1,136 | 128 | 4,416 |
-  | Vita -Os | 2,696 | 2,688 | 1,944 | 228 | 4,384 |
-  | Vita -Os, NO_MS | 2,696 | 2,688 | 1,032 | 132 | 4,384 |
+  | Vita -O2 | 2,728 | 2,720 | 2,024 | 256 | 4,424 |
+  | Vita -O2, NO_MS | 2,728 | 2,720 | 1,384 | 128 | 4,424 |
+  | Vita -Os | 2,704 | 2,696 | 1,960 | 228 | 4,392 |
+  | Vita -Os, NO_MS | 2,704 | 2,696 | 1,384 | 132 | 4,392 |
   | PSP -O2 -G0 | 2,624 | 2,624 | 1,816 | 112 | 4,312 |
   | PSP -O2 -G0, NO_MS | 2,624 | 2,624 | 1,024 | 64 | 4,312 |
   | PSP -Os -G0 | 2,632 | 2,632 | 1,784 | 120 | 4,320 |
   | PSP -Os -G0, NO_MS | 2,632 | 2,632 | 936 | 64 | 4,320 |
 
-  The peak runs through `vocr_line_dark`'s histograms, as in textspot3 (2,712 B at Vita `-O2`).
+  The peak runs through `vocr_line_dark`'s histograms, as in textspot3 (2,712 B at Vita `-O2`). The Vita rows are
+  c-speed's (#165; the NEON 1x1 kernel's 128-byte sum block and the new kernels' frames: before, 2,720 / 2,712 /
+  2,016 / 256 / 4,416 B at `-O2` and 1,136 B without the dark pass with NO_MS); the PSP rows did not change.
 - Code (`.text` of the spotter's own sections kept by a `--gc-sections` link of a caller of load, both arenas, find
   and find_rows; `eval/textspot6_a9.py codesize`, VitaSDK gcc 15.2 / psp-gcc 15.2):
 
   | build | `vocr_textspot6.c` | with `-DVOCR_TEXTSPOT6_NO_MS` |
   |---|---:|---:|
-  | VitaSDK Thumb-2 `-O2` (NEON) | 24,964 B | 13,020 B |
+  | VitaSDK Thumb-2 `-O2` (NEON) | 26,636 B | 14,664 B |
   | VitaSDK Thumb-2 `-O2 -DVOCR_NO_NEON` | 21,332 B | 11,808 B |
-  | VitaSDK Thumb-2 `-Os` (NEON) | 20,296 B | 10,684 B |
+  | VitaSDK Thumb-2 `-Os` (NEON) | 22,196 B | 12,524 B |
   | VitaSDK Thumb-2 `-Os -DVOCR_NO_NEON` | 16,894 B | 9,304 B |
   | psp-gcc `-O2 -G0` (object) | 33,580 B | 18,764 B |
   | psp-gcc `-Os -G0` (object) | 28,524 B | 15,508 B |
 
   `vocr_textspot3.c` is 23,880 / 19,452 B (Vita `-O2` / `-Os` NEON); version 4 adds the tag decode and the
   scale flags, and `-DVOCR_TEXTSPOT6_NO_MS` drops the map ops, their kernels and their plan (`vocr_textspot2.c` is
-  11,844 / 9,746 B).
+  11,844 / 9,746 B). The NEON rows are c-speed's (#165: the 4-channel 1x1 kernel, the depthwise and stem kernels and
+  the VQDMULH requantisation; before, 24,964 / 13,020 B at `-O2` and 20,296 / 10,684 B at `-Os`); the scalar and PSP
+  objects did not change.
 
-Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`):
+Cortex-A9 estimates (`eval/textspot6_a9_20261026.json`, measured before c-speed's kernels, #165: on that code the
+`t64n8c16` row, textspot8's shape, is now est. 192.2 ms per 960x544 frame and 61.0 ms per 900x150 region at 333 MHz
+with the dark pass, 186.3 and 55.2 ms without it, the same bits; `docs/c-speed.md`):
 - the method is textspot's, on this file's Vita code: random version-4 blobs with 4 tags and the pinned frames;
 - ms @333 = high bound x 1.0007; ms @444 = that x 333/444; the default call (dark pass included);
 - these are **estimates**: nothing of it has run on a console.

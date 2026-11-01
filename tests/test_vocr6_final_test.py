@@ -15,6 +15,8 @@ for _p in (ROOT / "eval", ROOT / "train", ROOT / "runtime", ROOT / "synth"):
         sys.path.insert(0, str(_p))
 import vocr6_final_test as F  # noqa: E402
 
+import repins  # noqa: E402
+
 PROTO = json.loads((ROOT / "eval" / "vocr6_final_test_protocol.json").read_text(encoding="utf-8"))
 SHA = re.compile(r"^[0-9a-f]{64}$")
 
@@ -531,8 +533,8 @@ def test_finalist_sets_and_runtime_differences_are_registered():
     F.assert_public(rec)
     assert rec["all_equal"] is True and rec["rubi_head"] == f["rubi_head"]
     assert {k: [v["rubi_pin"], v["checkout"]] for k, v in rd["files"].items()} == rec["files"]
-    for k, v in rd["files"].items():
-        assert F.sha256(ROOT / "runtime" / k) == v["checkout"]
+    for k, v in rd["files"].items():   # this checkout's file, or a registered re-pin of it (#165: the same reads)
+        assert F.sha256(ROOT / "runtime" / k) in repins.reachable(f"runtime/{k}", v["checkout"])
     for t in "SNL":
         e = rec["blobs"][f"staged_{t}"]
         assert e["sha256"] == f["models"][t] and e["raw_equal"] == e["line_equal"] == e["crops"] >= 4000

@@ -1,33 +1,42 @@
 #!/usr/bin/env python3
-"""1b: realplus's PC screenshots at their own size, with realplus's line boxes and ignore areas for every region its
+"""1b: realplus's PC screenshots at their own size, with realplus's line boxes and ignore areas for the text its
 labels do not cover (docs/desktop-data.md).
 
   realplus.py plan     --out PLAN.json                          the screenshots, their labelled lines (no text)
-  realplus.py meiki    --plan PLAN.json --out CACHE [--part i/n] [--workers 5]   MeikiOCR's detector at 0.2, native
-  realplus.py build    --plan PLAN.json --meiki CACHE --out SHARDS [--part i/n] [--workers 5]
-  realplus.py manifest --plan PLAN.json --shards SHARDS --out data/manifests/desktop_data/realplus_native_v1.json
+  realplus.py meiki    --plan PLAN.json --out MEIKI [--part i/n] [--workers 5]   MeikiOCR's detector at 0.2, native
+  realplus.py ppdet    --plan PLAN.json --out PPDET [--part i/n] [--workers 5]   PP-OCRv6 det small, native (v2, v3)
+  realplus.py build    --rules v3 --plan PLAN.json --meiki MEIKI --ppdet PPDET --out SHARDS [--part i/n] [--force]
+  realplus.py manifest --rules v3 --plan PLAN.json --shards SHARDS --out $M/realplus_native_v3.json
+                                         ($M = data/manifests/desktop_data)
 
 realplus v3 (docs/realplus.md) labelled its lines on each screenshot scaled to fit 960 x 544 (cv2.INTER_AREA); the
 originals are on disk at their own size (VNDB's JPEGs: $ART/realplus/shots/hires for v1-v2's 43,198 screenshots,
 $ART/reserve-policy/realplus/shots/hires for the reclaim tier's 20,572). This keeps every v3 screenshot that holds a
 kept line (49,285 of them) at its own size, its sha256 checked against realplus/manifests/shots_*.jsonl.
 
-A frame's labels (s = the 960 x 544 fit scale of the screenshot; boxes in native px are the fit-scale boxes / s):
-  positives  every kept v3 line: its reads line's ink box (the main text, without furigana) widened left and right to
-             v3's final ink crop (realplus's crops.vita_ink less its 4 px pad: the crop was widened to the labelled
-             characters), refined to ink at native size (textspot2_labels.refine_h, kept only inside the box grown by
-             max(3, 3 / s) px and at least 45% of its height, as synth/textspot6_pages.refined_line), class "name"
-             for a speaker name, else "text" (no tag target: realplus does not tell dialogue from choices)
-  ignore     the kept lines' furigana; every other line the reads found (not kept: skipped as ui / cut / bad, unsure,
-             a label outside the vocab, the repeat caps, ...) as its ink + furigana box; every MeikiOCR detector box,
-             of the reads (threshold 0.5) and of a fresh native pass at threshold 0.2 (`meiki`), that meets no
-             positive (IoU < 0.2 and under 30% of its area inside a positive grown by max(3, 3 / s) px); each grown
-             by max(2, 2 / s) px. So text the labels do not cover is never taught as background.
+Three label rules (s = the 960 x 544 fit scale of the screenshot; native px = fit-scale px / s); --rules picks one and
+each rebuilds its manifest's shards byte for byte:
+  v1 (labels_of, realplus_native_v1, SHARDS/desk_realplus_v1): each kept line's reads ink box widened to v3's final
+     ink crop and refined to ink at native size; ignore areas for the kept lines' furigana, the reads' other lines
+     (ink box) and MeikiOCR's boxes at 0.5 and 0.2 that meet no positive (IoU < 0.2, under 30% inside it). Its
+     "meets" test took an unkept neighbour row inside an over-tall positive for the positive's own text and left it as
+     background (audit-desktop-data F1).
+  v2 (labels_of_v2, realplus_native_v2, desk_realplus_v2): positives clipped at the boundaries to the other rows
+     (clip_rows) and refined inside them, with fallbacks for refinements that took part of the glyphs; same_row for a
+     positive's own text; PP-OCRv6 det small as a third ignore source; a detector box added only when under half of
+     its inner part is labelled. That skip left the ends of unkept lines as background (audit-desktop-data-b F1),
+     and its reads-box fallback was not checked against the line's rows (F4).
+  v3 (labels_of_v3, realplus_native_v3, desk_realplus_v3; the default): v2's positives with one fallback chain (the
+     refined box, the reads box, the reads box's columns on the detector rows: the first that covers 0.7 of the
+     line's detector-box rows); an unkept line ignored as the union of its ink and detector boxes; and from every
+     detector box, the parts the labels so far leave unlabelled (uncovered_spans: a run of about half a glyph), so
+     only a box over two labelled lines adds nothing over the gap between them.
   skipped    screenshots of VNs in vocr-desktop's development, PC-sample and confirmation sets (#119's units,
              textspot7's confirmation set), the reservation's test and dev_sample, the PC test set, and textspot2's
              skip lists (eval screenshots, eval/linefind VNs), so this pool never holds a frame vocr-desktop decides on.
-Shards are #97's frames (train/textspot_train.FramePool reads them unchanged): SHARDS/desk_realplus_v1/
-rp_PP_NNN.{npy,json}, src "realplus", kind "pc", at most 400 frames each.
+Positives are class "name" for a speaker name, else "text" (realplus does not tell dialogue from choices). Shards are
+#97's frames (train/textspot_train.FramePool reads them unchanged): SHARDS/<dir>/rp_PP_NNN.{npy,json}, src
+"realplus", kind "pc", at most 400 frames each.
 """
 import argparse
 import collections
@@ -578,6 +587,214 @@ def labels_of_v2(rgb, row, rd, meiki, ppdet):
     return lines, ignore, c
 
 
+RULES_V3 = dict(RULES_V2, version=3, other_line_box="ink | det", col_labelled=0.75, col_run=0.4,
+                row_run={"meiki": 0.2, "ppdet": 0.3}, whole=0.9,
+                multirow_height=0.6, multirow_inside=0.6, multirow_cols=0.5, multirow_span=0.5, multirow_vov=1 / 3,
+                multirow_row_run=0.8)
+
+
+def _runs(v):
+    """[start, end) runs of True in a 1-D bool array."""
+    d = np.diff(np.concatenate([[0], np.asarray(v, np.int8), [0]]))
+    return list(zip(np.flatnonzero(d == 1).tolist(), np.flatnonzero(d == -1).tolist()))
+
+
+def rows_inside(b, boxes):
+    """v3: the labelled boxes that are rows of box b: inside its columns (>= 0.5 of their width) and its rows
+    (>= 0.6 of their height), and at most 0.6 of its height."""
+    hb = b[3] - b[1]
+    out = []
+    for o in boxes:
+        ho, wo = o[3] - o[1], o[2] - o[0]
+        if ho > 0 and wo > 0 and hov(o, b) >= RULES_V3["multirow_cols"] * wo and \
+                ho <= RULES_V3["multirow_height"] * hb and \
+                min(o[3], b[3]) - max(o[1], b[1]) >= RULES_V3["multirow_inside"] * ho:
+            out.append(o)
+    return out
+
+
+def stacked(rows):
+    """v3: two of the rows on different lines (vertical overlap under a third of the smaller height)."""
+    return any(vov(rows[i], rows[j]) < RULES_V3["multirow_vov"]
+               for i in range(len(rows)) for j in range(i + 1, len(rows)))
+
+
+def uncovered_spans(b, lab, labelled, row_run):
+    """v3: the parts of a detector's text box b that the labels so far leave unlabelled, as boxes (lab: the frame's
+    labelled mask, the positives' boxes and the ignore areas so far; labelled: the same as boxes).
+      - A box over two or more labelled rows (stacked, spanning at least half its width): the rows between and
+        beside them, within their columns, that are unlabelled and at least 0.8 of their median height tall (a line no
+        label covers), and its columns beyond all of them as below. Its gaps and the ends of its shorter lines are left
+        to the single-line boxes, so the gap between two labelled lines stays background.
+      - Any other box: runs of unlabelled columns (a column of its middle half of rows under 0.75 labelled) at
+        least 0.4 x its height long (about half a glyph), each over the box's rows; and runs of unlabelled rows (under
+        half of its columns labelled) at least row_run x its height tall (MeikiOCR's tight boxes 0.2, PP-OCRv6's 0.3:
+        its boxes reach about 0.2 of their height past the glyphs), each over its columns. The whole box when a run
+        spans 0.9 of it. A box taller than 2.5 x its width (vertical text) is read the other way round."""
+    x0, y0, x1, y1 = b
+    if x1 - x0 < 2 or y1 - y0 < 2:
+        return []
+    vertical = (y1 - y0) > 2.5 * (x1 - x0)
+    sub = lab[y0:y1, x0:x1].T if vertical else lab[y0:y1, x0:x1]
+    across, along = sub.shape
+    a0 = int(round(across / 4))
+    band = sub[a0:max(int(round(across * 3 / 4)), a0 + 1)]
+    col_unl = band.mean(axis=0) < RULES_V3["col_labelled"]
+    if not vertical:
+        rows = rows_inside(b, labelled)
+        if stacked(rows):
+            c0, c1 = max(x0, min(o[0] for o in rows)), min(x1, max(o[2] for o in rows))
+            if c1 - c0 >= RULES_V3["multirow_span"] * (x1 - x0):
+                r = float(np.median([o[3] - o[1] for o in rows]))
+                out = [[c0, y0 + a, c1, y0 + e] for a, e in _runs(lab[y0:y1, c0:c1].mean(axis=1) < 0.5)
+                       if e - a >= RULES_V3["multirow_row_run"] * r]
+                for a, e in _runs(col_unl):
+                    for u, v in ((x0 + a, min(x0 + e, c0)), (max(x0 + a, c1), x0 + e)):
+                        if v - u >= RULES_V3["col_run"] * across:
+                            out.append([u, y0, v, y1])
+                return out
+
+    def span_along(a, e):
+        return [x0, y0 + a, x1, y0 + e] if vertical else [x0 + a, y0, x0 + e, y1]
+
+    def span_across(a, e):
+        return [x0 + a, y0, x0 + e, y1] if vertical else [x0, y0 + a, x1, y0 + e]
+    cols = [(a, e) for a, e in _runs(col_unl) if e - a >= RULES_V3["col_run"] * across]
+    rws = [(a, e) for a, e in _runs(sub.mean(axis=1) < 0.5) if e - a >= row_run * across]
+    if any(e - a >= RULES_V3["whole"] * along for a, e in cols) or \
+            any(e - a >= RULES_V3["whole"] * across for a, e in rws):
+        return [list(b)]
+    return [span_along(a, e) for a, e in cols] + [span_across(a, e) for a, e in rws]
+
+
+def labels_of_v3(rgb, row, rd, meiki, ppdet):
+    """(lines, ignore, counts) of one frame, v3 (realplus_native_v3; audit-desktop-data-b F1 and F4):
+      positives  as v2 (each kept line's v1 box clipped at the other rows, refined to ink inside that band, clipped
+                 again), with one fallback chain: the refined box, else the clipped reads box, else the reads box's
+                 columns on the line's detector-box rows; the first that is at least 0.6 of the detector box's height
+                 and covers at least 0.7 of its rows (the detector rows: height only). None: an ignore area. A
+                 positive that overlaps another positive becomes an ignore area
+      ignore     the kept lines' furigana; each reads line realplus did not keep, as the union of its ink box and its
+                 detector box (the ink box can miss a line's end), whole, or, when it is a positive's own text
+                 (same_row), the parts of it no label covers (uncovered_spans); then every box of the reads'
+                 detector (MeikiOCR, 0.5), MeikiOCR's native pass (0.2) and PP-OCRv6 det small: the parts of it no
+                 label so far covers (uncovered_spans, so a box over two labelled lines adds nothing over the gap);
+                 each area grown by max(2, 2 / s) px; an area at least 90% inside an earlier one is not added again"""
+    H, W = rgb.shape[:2]
+    s = fit_scale(W, H)
+    rlines = {ln["k"]: ln for ln in rd.get("lines", [])}
+    kept = {x["k"]: x for x in row["lines"]}
+    g_ign = max(RULES["ignore_grow"], int(round(RULES["ignore_grow"] / s)))
+    g_meet = max(RULES["meet_grow"], int(round(RULES["meet_grow"] / s)))
+    g_furi = max(RULES["furigana_grow"], int(round(RULES["furigana_grow"] / s)))
+    c = collections.Counter()
+    rows_all = {k: clip(scale_box(ln["det"], s), W, H) for k, ln in rlines.items()}
+    meiki_rows = [clip(b[:4], W, H) for b in meiki or [] if b[4] >= 0.5]
+    cand = []
+    ignore = []
+    for k, kx in kept.items():
+        ln = rlines.get(k)
+        if ln is None:
+            c["kept_without_read"] += 1
+            continue
+        q = positive_box(ln, kx, s, W, H)
+        anchor = rows_all.get(k)
+        if q is None or anchor is None:
+            continue
+        furi = [b for b in (clip(scale_box(fb, s), W, H) for fb in ln.get("furi") or []) if b]
+        others = [b for j, b in rows_all.items() if j != k and b] + [b for b in meiki_rows if b] + furi
+        q2 = clip(clip_rows(q, anchor, others), W, H)
+        ah = anchor[3] - anchor[1]
+        min_h = RULES_V2["min_height"] * ah
+
+        def fits(x):
+            return x is not None and (x[3] - x[1]) >= min_h and \
+                max(0, min(x[3], anchor[3]) - max(x[1], anchor[1])) / max(1, ah) >= RULES_V2["anchor_cover"]
+        b, how, r0, r = None, None, None, None
+        if q2 is not None:
+            r0, _ = refined(rgb, q2, s)
+            r = clip(clip_rows(r0, anchor, others), W, H)
+            if fits(r):
+                b, how = r, "ink"
+            elif fits(q2):
+                b, how = list(q2), "box_refine_off"
+            else:
+                a2 = clip(clip_rows([q2[0], anchor[1], q2[2], anchor[3]], anchor, others), W, H)
+                if a2 is not None and (a2[3] - a2[1]) >= min_h:
+                    b, how = a2, "box_anchor"
+        if b is None:
+            ignore.append(grow(q, g_ign, W, H) or q)
+            c["positive_to_ignore_height"] += 1
+            continue
+        c["positive_clipped"] += int(q2 != q or (how == "ink" and r != r0))
+        cand.append((b, "name" if kx["name"] else "text", how))
+        for fb in furi:
+            g = grow(fb, g_furi, W, H)
+            if g:
+                ignore.append(g)
+                c["furigana_ignore"] += 1
+    bad = set()
+    for i in range(len(cand)):
+        for j in range(i + 1, len(cand)):
+            a, b2 = cand[i][0], cand[j][0]
+            if hov(a, b2) > 0 and vov(a, b2) > RULES_V2["overlap_vov"]:
+                bad |= {i, j}
+    lines = []
+    for i, (b, cls, how) in enumerate(cand):
+        if i in bad:
+            ignore.append(grow(b, g_ign, W, H) or b)
+            c["positive_to_ignore_overlap"] += 1
+            continue
+        lines.append([*b, 0, cls, 1.0])
+        c[f"positive_{how}"] += 1
+    pos = [ln[:4] for ln in lines]
+    lab = np.zeros((H, W), bool)                    # what is labelled: the positives' boxes and the ignore areas
+    for b in pos + ignore:
+        lab[b[1]:b[3], b[0]:b[2]] = True
+
+    def own(b):
+        return any(same_row(b, p, g_meet) for p in pos)
+
+    def put(b, key):
+        g = grow(b, g_ign, W, H)
+        if g is None:
+            return
+        if any(inter(g, o) >= 0.9 * area(g) for o in ignore):
+            c[f"{key}_dup"] += 1
+            return
+        ignore.append(g)
+        lab[g[1]:g[3], g[0]:g[2]] = True
+        c[key] += 1
+
+    def add(b, key, whole, src="meiki"):
+        b = clip(b, W, H)
+        if b is None:
+            return
+        if whole and not own(b):
+            put(b, key)
+            return
+        sp = uncovered_spans(b, lab, pos + ignore, RULES_V3["row_run"][src])
+        if not sp:
+            c[f"{key}_covered"] += 1
+        for x in sp:
+            if x != list(b):
+                c[f"{key}_part"] += 1
+            put(x, key)
+    for k, ln in rlines.items():
+        if k not in kept:
+            ink = scale_box(ln.get("crop_ink") or ln["ink"], s)
+            det = scale_box(ln["det"], s)
+            add([min(ink[0], det[0]), min(ink[1], det[1]), max(ink[2], det[2]), max(ink[3], det[3])],
+                "other_line_ignore", True)
+    for d in rd.get("dets", []):
+        add(scale_box(d["det"], s), "det05_ignore", False)
+    for b in meiki or []:
+        add(b[:4], "det02_ignore", False)
+    for b in ppdet or []:
+        add(b[:4], "ppdet_ignore", False, "ppdet")
+    return lines, ignore, c
+
+
 def _build_one(job):
     import hashlib
 
@@ -591,18 +808,20 @@ def _build_one(job):
     H, W = rgb.shape[:2]
     if rules == "v1":
         lines, ignore, c = labels_of(rgb, row, rd, meiki)
-    else:
+    elif rules == "v2":
         lines, ignore, c = labels_of_v2(rgb, row, rd, meiki, ppdet)
+    else:
+        lines, ignore, c = labels_of_v3(rgb, row, rd, meiki, ppdet)
     meta = {"url": row["url"], "sha256": row["sha256"], "release": row.get("release"), "dims": [W, H],
             "fit": round(fit_scale(W, H), 6), "kept_lines": len(row["lines"]), "counts": dict(c)}
     if rules != "v1":
-        meta["rules"] = 2
+        meta["rules"] = int(rules[1:])
     smp = {"src": "realplus", "kind": "pc", "vn": row["vn"], "shot": row["shot"], "lines": lines, "ignore": ignore,
            "meta": meta}
     return smp, SH.to_gray(rgb), dict(c)
 
 
-DIRS = {"v1": "desk_realplus_v1", "v2": "desk_realplus_v2"}
+DIRS = {"v1": "desk_realplus_v1", "v2": "desk_realplus_v2", "v3": "desk_realplus_v3"}
 
 
 def cmd_build(args):
@@ -610,7 +829,7 @@ def cmd_build(args):
     rows = part_of(plan["rows"], args.part)
     meiki = load_meiki(args.meiki)
     if args.rules != "v1" and not args.ppdet:
-        raise SystemExit("rules v2 needs --ppdet (realplus.py ppdet's cache)")
+        raise SystemExit(f"rules {args.rules} needs --ppdet (realplus.py ppdet's cache)")
     ppdet = load_ppdet(args.ppdet) if args.rules != "v1" else {}
     if args.rules != "v1":
         missing = [r["shot"] for r in rows if r["shot"] not in ppdet]
@@ -646,8 +865,8 @@ def cmd_manifest(args):
     doc = {"kind": "desktop-frames", "schema": 1, "issue": 169, "generator": "desktopdata/realplus.py",
            "created": SH.utc(), "format": "#97's frames (synth/textdet_data.py); train/textspot_train.FramePool "
                                           "reads them as source realplus",
-           "rules": RULES if args.rules == "v1" else RULES_V2,
-           "label_rule": "labels_of" if args.rules == "v1" else "labels_of_v2",
+           "rules": {"v1": RULES, "v2": RULES_V2, "v3": RULES_V3}[args.rules],
+           "label_rule": {"v1": "labels_of", "v2": "labels_of_v2", "v3": "labels_of_v3"}[args.rules],
            "plan": {k: plan[k] for k in ("frames", "vns", "lines", "dropped", "lines_v3_sha256", "excluded_vns")},
            "plan_sha256": SH.sha256_file(args.plan), "code_sha256": SH.code_sha256(ROOT, CODE),
            "shards": shards, "totals": SH.totals(shards),
@@ -679,14 +898,15 @@ def main(argv=None):
     p.add_argument("--meiki", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--ppdet", help="realplus.py ppdet's cache (rules v2)")
-    p.add_argument("--rules", choices=("v1", "v2"), default="v2", help="v1: realplus_native_v1's labels_of")
+    p.add_argument("--rules", choices=("v1", "v2", "v3"), default="v3",
+                   help="v1, v2: realplus_native_v1's labels_of, realplus_native_v2's labels_of_v2")
     p.add_argument("--part")
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--force", action="store_true")
     p = sub.add_parser("manifest")
     p.add_argument("--plan", required=True)
     p.add_argument("--shards", required=True)
-    p.add_argument("--rules", choices=("v1", "v2"), default="v2")
+    p.add_argument("--rules", choices=("v1", "v2", "v3"), default="v3")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     os.environ.setdefault("OMP_NUM_THREADS", "1")

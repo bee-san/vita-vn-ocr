@@ -35,28 +35,41 @@ pool had used, so nothing is taken from training. The manifest is the set's rese
 - `realplus/shots.desktop_pc_test_vns()` reads its VNs; `realplus/shots.reserved_vns()` refuses them (reason
   `desktop-pc-test`, not with `committed=False`), and `shots.dev_sample()` never draws them.
 - `shots.py reserve` writes them into the reservation it carves (part `desktop_pc_test`).
-- This file's `reserved.json` and `synth/common.py` are pinned by sha256 in frozen protocols (textspot, textspot2,
-  textspot3, textspot6 and their data pins), so neither lists the set yet. The next carve writes the part, and
-  `synth/common.is_reserved_vn` must then read it (`r.get("desktop_pc_test")`); both changes need re-pinning
-  amendments in those protocols.
+- This file's `reserved.json` and `synth/common.py` do not list the set yet: frozen records pin both files' sha256.
+  - `eval/manifests/reserved.json`: the textdet, textgate, textspot2, textspot3 and translucent_box protocols,
+    `eval/headgate_fit_20261023.json`, the textdet, textspot and textspot2 shard manifests and the vocr6_hooked
+    overlap manifests (`overlap_v1.json`, `overlap_v2.json`). The head2level, headgate, textspot, stride16,
+    vertical, vocr5, vocr6_gate and vocr6_psp protocols name it too.
+  - `synth/common.py`: the textdet, textgate, textspot, textspot2, textspot3 and translucent_box protocols, their
+    shard manifests (and synth4's and synth6's), and the textspot, textspot2, textspot3, stride16 and vocr5 reports.
+  - The next carve writes the part, `synth/common.is_reserved_vn` must then read it (`r.get("desktop_pc_test")`), and
+    every record above that pins the old hash needs a re-pinning amendment.
 
-Until then these builders and checks do not know the set. They check only `synth/common.is_reserved_vn` or read
-`reserved.json`'s `test` / `dev_sample` parts, so a new pool built with one of them must also refuse
-`desktop_pc_test_vns()`:
+Only these call `realplus/shots.reserved_vns()` and so refuse the set: realplus's `pool.py`, `reclaim.py`,
+`native.py` and `owner_frames.py`, `eval/vocr4_pools.py`, `synth/owner_drop.py` and `desktopdata/pctest.py`.
+`desktopdata/owner.py` imports the owner's desktop captures, which train by owner policy; its manifest names any PC
+test VN among them (`desktop.desktop_pc_test_vns_seen`), so a PC test read can report it as seen.
+
+Every other builder and check does not know the set: it uses its own `reserved_vns()`, `synth/common.is_reserved_vn`
+or `reserved.json`'s parts. A new pool built with one of them must also refuse `desktop_pc_test_vns()` until the next
+carve:
 
 | builder | what it selects |
 |---|---|
 | `realdata/vndb.py`, `realdata/build.py` | realdata's VNDB listing, screenshots and pools |
 | `teacher/build.py` | the teacher pools |
+| `devnative/select.py` (its own `reserved_vns()`) | devnative's development cohort |
 | `data/fresh_backgrounds.py`, `synth/fetch_synth2.py`, `synth/fresh_dataset.py`, `synth/provenance_producer.py` | synthetic backgrounds fetched from VNDB |
 | `synth/synth3.py`, `synth/render.py`, `synth/bg_exclude.py`, `synth/calibrate.py`, `synth/synth3_real_labels.py` | synth2 / synth3 scene pools, exclusion lists, calibration |
+| `synth/synth3_mine.py`, `synth/synth3_text.py`, `synth/synth3_stats.py` (and `synth/native_calib.py` through it), `synth/synth4_gap.py` (and synth4 and `train/vocab_expand.py` through it), `train/vocab.py` | synth3's mining, text and stats, synth4, the vocabularies (each its own `reserved_vns()`) |
 | `synth/textdet_data.py`, `synth/textspot_data.py`, `synth/textspot_real_half.py`, `synth/textspot2_labels.py` | the detectors' scene pools and real halves |
+| `eval/textspot7_confirm.py` | textspot7's confirmation sets (it leaves out #119's units and `reserved.json`'s parts) |
 | `eval/textspot.py`, `eval/translucent_box.py`, `eval/head2level_extract.py`, `train/head2level.py`, `eval/vertical_data.py`, `eval/charbox_sets.py`, `eval/textdet.py`, `eval/textgate_data.py`, `eval/vocr5_pools.py`, `train/headgate.py`, `train/modelb_head.py`, `vita/dev_pack.py` | development and evaluation sets, calibration sets |
-| `eval/tools/leakcheck.py`, `eval/tools/reserve_check.py`, `realplus/hygiene.py` | checks (they would not flag the set's VNs) |
+| `eval/tools/leakcheck.py`, `eval/tools/reserve_check.py`, `realplus/hygiene.py`, `data/hooked_audit.py` (its "seen" flags check only `reserved.json`'s test part) | checks (they would not flag the set's VNs) |
 
-The builders on `realplus/shots.reserved_vns()` already refuse them: realplus (`pool.py`, `reclaim.py`,
-`native.py`, `owner_frames.py`), devnative's selection, synth3's mining, text and stats, synth4, `train/vocab*`,
-`eval/vocr4_pools.py`. No pool holds any of the 143 VNs today (audit-desktop-data's scan of the shared box).
+No pool holds any of the 143 VNs today (audit-desktop-data's scan of the shared box). `eval/textspot7_confirm.py`'s
+listings hold 18 Vita rows of these VNs, all 1280 x 720 or 1024 x 576, which its native-size filter leaves out
+(audit-desktop-data-b).
 
 Everything else trains:
 

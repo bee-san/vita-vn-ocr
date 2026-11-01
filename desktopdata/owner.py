@@ -101,14 +101,21 @@ def cmd_manifest(args):
     import textspot6_pages as TP
     work = Path(args.work)
     TP.main(["manifest", "--shards", str(args.shards), "--pool", str(work / "pagepool"), "--out", str(args.out)])
+    from realplus import shots as RS
     doc = json.loads(Path(args.out).read_text(encoding="utf-8"))
-    kinds = {}
+    kinds, vns = {}, set()
     for s in doc["shards"]:
         js = Path(args.shards) / s["dir"] / f"{s['name']}.json"
         for smp in json.loads(js.read_text(encoding="utf-8"))["samples"]:
             kinds[smp["kind"]] = kinds.get(smp["kind"], 0) + 1
+            vns.add(smp.get("vn"))
+    # owner captures train by owner policy; one of the desktop PC test set's VNs among them makes that VN seen, so
+    # the manifest names it and a PC test read must report it (docs/reservations.md)
+    seen = sorted(vns & RS.desktop_pc_test_vns(), key=lambda v: int(v[1:]))
     doc["desktop"] = {"what": "the owner's desktop captures at their own size (docs/desktop-data.md)",
-                      "kinds": kinds, "generator": "desktopdata/owner.py"}
+                      "kinds": kinds, "generator": "desktopdata/owner.py", "desktop_pc_test_vns_seen": seen}
+    if seen:
+        print(f"note: {len(seen)} VNs of the desktop PC test set are in these captures: {seen}", flush=True)
     Path(args.out).write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{args.out}: {len(doc['shards'])} shards, kinds {kinds}", flush=True)
 

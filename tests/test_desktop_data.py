@@ -158,9 +158,9 @@ def tight_page():
     return rgb, row, rd, meiki, rows
 
 
-def covered(box, areas):
+def covered(box, areas, shape=(480, 640)):
     """Share of box covered by the union of areas."""
-    m = np.zeros((480, 640), bool)
+    m = np.zeros(shape, bool)
     for b in areas:
         m[b[1]:b[3], b[0]:b[2]] = True
     x0, y0, x1, y1 = box
@@ -201,6 +201,89 @@ def test_realplus_v2_keeps_a_lone_line_and_its_own_boxes():
     assert all(abs(u - v) <= 2 for u, v in zip(lines[0][:4], [200, 600, 900, 640]))
     assert len(ignore) == 1 and ignore[0][0] <= 1500 and ignore[0][2] >= 1700     # only the far UI box
     assert c["positive_clipped"] == 0
+
+
+def hd_page(lines, dets=(), kept=()):
+    """A 1920 x 1080 page (fit scale 0.5, so fit-scale boxes are exact halves): glyph-like blocks over each box of
+    `lines` [(ink box, det box)], reads lines k = 0, 1, ... with those boxes, realplus keeping the lines in `kept`."""
+    W, H = 1920, 1080
+    s = RP.fit_scale(W, H)
+    rgb = np.full((H, W, 3), 25, np.uint8)
+    for _, d in lines:
+        for x in range(d[0] + 4, d[2] - 30, 34):
+            rgb[d[1] + 4:d[3] - 4, x:x + 28] = 235
+    fit = lambda b: [int(v * s) for v in b]  # noqa: E731
+    rd = {"lines": [{"k": k, "ink": fit(i), "crop_ink": fit(i), "det": fit(d)} for k, (i, d) in enumerate(lines)],
+          "dets": [{"det": fit(d)} for d in dets]}
+    row = {"lines": [{"k": k, "name": False, "vita_ink": None} for k in kept]}
+    return rgb, row, rd
+
+
+def test_realplus_v3_ignores_an_unkept_lines_end_and_a_half_covered_row():
+    """audit-desktop-data-b F1 (v21534_178246, v18052_96463): an unkept line whose reads ink box stops 150 px short
+    of its detector box, and a box of MeikiOCR's 0.2 pass half under the row above's ignore area. v2 skips both
+    detector boxes as more than half covered and leaves the rest as background; v3 ignores it."""
+    hd = (1080, 1920)
+    unkept = ([448, 882, 1452, 928], [402, 882, 1600, 924])
+    kept = ([430, 944, 570, 984], [430, 944, 570, 984])
+    above = ([100, 200, 400, 240], [100, 200, 400, 240])
+    rgb, row, rd = hd_page([unkept, kept, above], dets=[unkept[1], kept[1]], kept=[1])
+    meiki = [[402, 882, 1600, 925, 0.93], [430, 945, 570, 984, 0.95], [110, 222, 390, 262, 0.3]]
+    tail, lower = [1470, 890, 1590, 916], [120, 246, 380, 258]
+    l2, i2, c2 = RP.labels_of_v2(rgb, row, rd, meiki, [])
+    assert covered(tail, i2, hd) < 0.5 and covered(lower, i2, hd) < 0.5
+    assert c2["det05_ignore_covered"] == 1 and c2["det02_ignore_covered"] >= 2
+    l3, i3, c3 = RP.labels_of_v3(rgb, row, rd, meiki, [])
+    assert covered(tail, i3, hd) == 1.0 and covered(lower, i3, hd) == 1.0
+    assert [ln[:4] for ln in l3] == [ln[:4] for ln in l2] and len(l3) == 1
+    assert not any(RP.inter(b, [440, 950, 560, 978]) for b in i3)   # the kept line stays a positive, not ignored
+
+
+def test_realplus_v3_keeps_the_gap_between_two_labelled_lines_and_ignores_a_line_between_them():
+    rgb, row, rd, meiki, rows = tight_page()
+    mid = [46, rows[1][0] + 4, 598, rows[1][1] - 4]
+    lines, ignore, c = RP.labels_of_v3(rgb, row, rd, meiki, [[30, 380, 620, 476, 0.7]])
+    assert len(lines) == 2 and covered(mid, ignore) == 1.0
+    assert c["ppdet_ignore_covered"] == 1 and c["ppdet_ignore"] == 0    # the box over three labelled rows adds nothing
+    lines3, ignore3, c3 = RP.labels_of_v3(rgb, row, {"lines": rd["lines"][:1] + rd["lines"][2:], "dets": []}, [],
+                                          [[40, 410, 610, 445, 0.7]])
+    assert c3["ppdet_ignore"] >= 1 and covered(mid, ignore3) == 1.0    # found by PP-OCRv6 alone: still ignored
+    # two kept lines 16 px apart (0.67 of a line) under one PP-OCRv6 box: no ignore area over the gap between them
+    a, b = ([200, 400, 900, 424], [200, 400, 900, 424]), ([200, 440, 900, 464], [200, 440, 900, 464])
+    rgb, row, rd = hd_page([a, b], dets=[a[1], b[1]], kept=[0, 1])
+    lines, ignore, c = RP.labels_of_v3(rgb, row, rd, [], [[180, 388, 920, 476, 0.8]])
+    assert len(lines) == 2 and not any(RP.inter(g, [300, 426, 800, 438]) for g in ignore)
+    assert c["ppdet_ignore_covered"] == 1
+
+
+def test_realplus_fallbacks_reads_box_then_detector_rows(monkeypatch):
+    """audit-desktop-data-b F4: the refinement takes the lower third of the glyphs (stubbed). A reads box that covers
+    0.91 of the detector box's rows replaces it (box_refine_off) in v2 and v3; one that covers 0.64 does in v2 (the
+    glyph tops cut) and gives way to the detector rows in v3 (box_anchor)."""
+    monkeypatch.setattr(RP, "refined", lambda rgb, q, s: ([q[0], 626, q[2], 640], "ink"))
+    det = [198, 598, 902, 642]
+    for ink, v2_box, v3_box, v3_how in (([200, 600, 900, 640], [200, 600, 900, 640], [200, 600, 900, 640],
+                                         "box_refine_off"),
+                                        ([200, 612, 900, 640], [200, 612, 900, 640], [200, 598, 900, 642],
+                                         "box_anchor")):
+        rgb, row, rd = hd_page([(ink, det)], dets=[det], kept=[0])
+        l2, _, c2 = RP.labels_of_v2(rgb, row, rd, [], [])
+        l3, _, c3 = RP.labels_of_v3(rgb, row, rd, [], [])
+        assert l2[0][:4] == v2_box and c2["positive_box_refine_off"] == 1
+        assert l3[0][:4] == v3_box and c3[f"positive_{v3_how}"] == 1
+    monkeypatch.setattr(RP, "refined", lambda rgb, q, s: ([q[0], 602, q[2], 640], "ink"))
+    rgb, row, rd = hd_page([([200, 600, 900, 640], det)], dets=[det], kept=[0])
+    l3, _, c3 = RP.labels_of_v3(rgb, row, rd, [], [])
+    assert l3[0][:4] == [200, 602, 900, 640] and c3["positive_ink"] == 1     # a refinement that fits is kept
+
+
+def test_realplus_overlapping_positives_become_ignore_areas():
+    a, b = ([200, 600, 900, 640], [200, 600, 900, 640]), ([300, 610, 1000, 650], [300, 610, 1000, 650])
+    rgb, row, rd = hd_page([a, b], dets=[a[1], b[1]], kept=[0, 1])
+    for fn in (RP.labels_of_v2, RP.labels_of_v3):
+        lines, ignore, c = fn(rgb, row, rd, [], [])
+        assert lines == [] and c["positive_to_ignore_overlap"] == 2
+        assert covered([210, 605, 980, 645], ignore, (1080, 1920)) == 1.0
 
 
 # ----------------------------------------------------------------------------- the PC test set
@@ -344,7 +427,7 @@ def test_synth_line_box_is_its_coverage():
 
 # ----------------------------------------------------------------------------- the owner's desktop captures
 
-def test_owner_desktop_capture_import_end_to_end(tmp_path):
+def test_owner_desktop_capture_import_end_to_end(tmp_path, monkeypatch):
     import hashlib
     import io
     import shutil
@@ -404,6 +487,12 @@ def test_owner_desktop_capture_import_end_to_end(tmp_path):
     assert samples[0]["vn"] == "v999997" and len(samples[0]["lines"]) == 2
     for ln, (_, (x, y, w, h)) in zip(samples[0]["lines"], spec[1]):
         assert ln[5] == "dialogue" and abs(ln[0] - x) <= 4 and abs(ln[1] - y) <= 4 and abs(ln[2] - (x + w)) <= 4
+    from realplus import shots as RS
+    for held, seen in ((set(), []), ({"v999997"}, ["v999997"])):
+        monkeypatch.setattr(RS, "desktop_pc_test_vns", lambda repo=None, held=held: set(held))   # VN in the set
+        OW.main(["manifest", "--work", str(work), "--shards", str(out), "--out", str(tmp_path / "m.json")])
+        doc = json.loads((tmp_path / "m.json").read_text(encoding="utf-8"))
+        assert doc["desktop"]["desktop_pc_test_vns_seen"] == seen and doc["desktop"]["kinds"] == {"pc": 2}
 
 
 # ----------------------------------------------------------------------------- the committed manifests
@@ -414,18 +503,20 @@ def test_committed_training_manifests_are_consistent():
     assert {s["split"] for s in hk["shards"]} == {"train"} and all(s["dir"] == "train" for s in hk["shards"])
     assert sum(s["samples"] for s in hk["shards"]) == hk["desktop"]["plan"]["pages"] == hk["totals"]["train"]["samples"]
     assert hk["desktop"]["capture_mix"] == json.loads(json.dumps(C.MIX))
-    for v in ("v1", "v2"):
+    for v in ("v1", "v2", "v3"):
         rp = json.loads((MAN / f"realplus_native_{v}.json").read_text(encoding="utf-8"))
         assert rp["kind"] == "desktop-frames" and {s["dir"] for s in rp["shards"]} == {RP.DIRS[v]}
         assert sum(s["samples"] for s in rp["shards"]) == rp["plan"]["frames"] == rp["totals"]["all"]["samples"]
         assert set(rp["totals"]["all"]["by_class"]) <= {"text", "name"}
-        assert rp.get("label_rule", "labels_of") == {"v1": "labels_of", "v2": "labels_of_v2"}[v]   # v1 predates it
-    assert rp["rules"]["version"] == 2 and rp["rules"]["ppdet"]["sha256"] == RP.PPDET["sha256"]
+        assert rp.get("label_rule", "labels_of") == {"v1": "labels_of", "v2": "labels_of_v2", "v3": "labels_of_v3"}[v]
+        if v != "v1":                                                   # v1 predates label_rule and the PP-OCRv6 pass
+            assert rp["rules"]["version"] == int(v[1]) and rp["rules"]["ppdet"]["sha256"] == RP.PPDET["sha256"]
+    assert rp["rules"] == json.loads(json.dumps(RP.RULES_V3))           # v3's rules as the code has them
     sy = json.loads((MAN / "synth_desktop_v1.json").read_text(encoding="utf-8"))
     assert sy["kind"] == "desktop-frames" and sum(s["samples"] for s in sy["shards"]) == sy["totals"]["all"]["samples"]
     assert set(sy["totals"]["all"]["by_class"]) <= {"dialogue", "name", "choice", "ui"}
-    st = json.loads((MAN / "stats_v2.json").read_text(encoding="utf-8"))
-    for name in ("1a hooked desktop", "1b realplus native (v2)", "1c synthetic desktop", "hooked Vita (native)",
+    st = json.loads((MAN / "stats_v3.json").read_text(encoding="utf-8"))
+    for name in ("1a hooked desktop", "1b realplus native (v3)", "1c synthetic desktop", "hooked Vita (native)",
                  "hooked PSP (native)", "real half (fit 960; every MeikiOCR text box)"):
         assert st["sets"][name]["frames"] > 0 and not st["sets"][name]["shards_not_found"]
     assert st["sets"]["1a hooked desktop"]["frames"] == hk["desktop"]["plan"]["pages"]
@@ -488,6 +579,6 @@ def test_pc_test_errata_name_lines_of_the_frozen_manifest():
 
 def test_docs_tables_match_the_stats():
     doc = ROOT / "docs" / "desktop-data.md"
-    st = json.loads((MAN / "stats_v2.json").read_text(encoding="utf-8"))
+    st = json.loads((MAN / "stats_v3.json").read_text(encoding="utf-8"))
     text = doc.read_text(encoding="utf-8")
     assert ST.render_doc(text, st) == text

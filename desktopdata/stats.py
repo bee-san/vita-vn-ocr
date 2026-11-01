@@ -123,7 +123,8 @@ def set_stats(manifest, root, split=None, kind=None):
                     mix[f"category:{parts[4]}"] += 1
             for t in meta.get("tags") or []:
                 mix[f"tag:{t.rstrip('0123456789')}"] += 1
-            for k in ("other_line_ignore", "det05_ignore", "det02_ignore", "furigana_ignore"):
+            for k in ("other_line_ignore", "det05_ignore", "det02_ignore", "ppdet_ignore", "furigana_ignore",
+                      "positive_to_ignore_overlap", "positive_to_ignore_height"):
                 mix[f"ignore:{k}"] += (meta.get("counts") or {}).get(k, 0)
             if meta.get("guard_ignore"):
                 mix["ignore:guard"] += meta["guard_ignore"]

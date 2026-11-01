@@ -1,6 +1,7 @@
 """The 2026-10-14 reservation (docs/reservations.md; owner 13:25Z): the committed eval/manifests/reserved.json, the
 helpers in synth/common.py, the development sample, the leak check (eval/tools/reserve_check.py) and the pool split
 (realplus/reclaim.py --split). Fast, no network, no screenshots."""
+import argparse
 import collections
 import json
 import sys
@@ -109,6 +110,33 @@ def test_dev_sample_tiers_and_candidate_rules(tmp_path):
     assert why["two-vn-release-with-a-training-pool-vn"] == 1 and why["not-drawn"] == 2
     again, _ = S.dev_sample(d, {g: "test-set"}, counts=counts, size=5, owner={own}, pools={pool: {"realplus"}})
     assert again == rows                                                 # seeded: the same draw every time
+
+
+def test_dev_sample_passes_over_a_frozen_test_sets_vns(tmp_path):
+    vns = [f"v{900100 + i}" for i in range(4)]
+    write_dump(tmp_path, vns, {})
+    d = S.load_dump(tmp_path)
+    counts = {v: collections.Counter({"devnative:psp": 3}) for v in vns}
+    rows, why = S.dev_sample(d, {}, counts=counts, size=4, owner=set(), pools={}, held={vns[0]})
+    assert vns[0] not in {r["vn"] for r in rows} and why["desktop-pc-test"] == 1 and len(rows) == 3
+    rows, why = S.dev_sample(d, {}, counts=counts, size=4, owner=set(), pools={}, held=set())
+    assert len(rows) == 4 and not why["desktop-pc-test"]
+    assert S.desktop_pc_test_vns() and S.desktop_pc_test_vns() & set(S.reserved_vns(d)) == S.desktop_pc_test_vns()
+
+
+def test_reserve_writes_the_desktop_pc_test_part(tmp_path, monkeypatch):
+    vns = [f"v{900200 + i}" for i in range(3)]
+    write_dump(tmp_path / "db", vns, {})
+    for name, fn in (("test_reservation", lambda d: {}), ("owner_vns", lambda: set()),
+                     ("dev_sample", lambda d, test, owner=None: ([], collections.Counter())),
+                     ("test_games", lambda: {"sessions": [], "all": [], "family": {}}),
+                     ("set_games", lambda tg: set()), ("desktop_pc_test_vns", lambda repo=None: {"v12", "v3"})):
+        monkeypatch.setattr(S, name, fn)
+    out = tmp_path / "reserved.json"
+    S.cmd_reserve(argparse.Namespace(dump=str(tmp_path / "db"), out=str(out), test_games=False))
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert doc["desktop_pc_test"] == {"v3": "desktop-pc-test", "v12": "desktop-pc-test"}
+    assert list(doc["desktop_pc_test"]) == ["v3", "v12"]
 
 
 def test_row_facts_reads_every_pool_layout():

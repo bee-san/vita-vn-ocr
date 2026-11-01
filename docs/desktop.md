@@ -515,7 +515,9 @@ Build with `make -C desktop` (AVX2 + FMA, x86-64-v3), `make -C desktop ARCH=` (p
 
 ## Reproduce
 
-The scripts as they ran are in `eval/reproducibility/desktop-20261101/`. Run them through `heavy.sh` (one slot, 5
+The scripts as they ran are in `eval/reproducibility/desktop-20261101/`. The records' `repo_head` commits (a19bede
+for the dev-v2 record, a614fd8 for the final reads) are the branch before its last rebase, kept by the tag
+`desktop-reads-20261101`; the protocol as registered is the tag `desktop-registered-20261101`. Run them through `heavy.sh` (one slot, 5
 threads, unless noted). They read the frames from the shared box and write counts only.
 
 ```sh

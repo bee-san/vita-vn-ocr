@@ -368,14 +368,18 @@ PC screenshots.
 1. **Line ends.** The decode grows a box only by the frame pad. mida's decode extends each end along the line by the
    box's size across, and it cuts fewer lines on the PC test set (14, against the release model's 37). An along-the-line
    extension, chosen on hval, is the cheapest next step.
-2. **Old 4:3 PC games** (frames up to 800 px wide) read at 3.2-5.1% on the representative's policies, against R's
-   0.9%. Reading them larger helps: 3.15% at long:960, against 4.91% at long:640. A policy keyed to the frame's text
-   size, rather than its pixel size, would read each frame at the scale the network was trained for.
+2. **Old 4:3 PC games.** Frames up to 800 px wide (130 frames of 37 VNs, mostly 640×480 and 800×600) read at
+   2.7-5.1% on the representative's policies, against R's 0.9%. Their own size is the worst scale: 5.10% at fit:960,
+   which leaves them as they are. Reading them larger (long:960: 1.2-1.5 times) gives 3.15%, and smaller (fit:480:
+   0.6-0.75 times) 2.69%.
+   So the scale matters in both directions. A policy keyed to the text's size, or two scales with the more confident
+   boxes kept, is worth trying, chosen on hval and dev-v2 first.
 3. **Large frames read small.** Frames 1920 px wide or more lose small text at long:640: 2.60%, against 1.52% at
    long:960.
 4. **Cleaner PC labels.** The final runs trained on desktop-data's first freeze, whose realplus pages are v1. v1 has
    two-row positives in 223 frames and unlabelled text in 564; desktop-data fixed both in v3 (`docs/desktop-data.md`,
-   1b). Two-row positives teach the detector to merge lines, one of its PC errors.
+   1b). Two-row positives can teach a detector to merge lines: the release model merges 7 line pairs on the PC
+   test set, R none. Whether the v3 labels help is untested.
 5. **More training and capacity.** These are 40,000 steps of a 210 k parameter network. MeikiOCR's detector is 17
    times larger.
 
@@ -442,7 +446,8 @@ for ln in lines:                                     # reading order: rows top t
 
 - **Policies.**
   - long:640, the file's default, has the lowest dev-v2 CER of the policies that meet the speed clause.
-  - long:960 reads PC screenshots and old 4:3 games best, at about 1.5 times the page time.
+  - long:960 reads PC screenshots best overall (the representative: 1.67% on the PC test set), at about 1.5 times
+    the page time.
   - fit:N never scales a frame up, so it reads PSP's 480×272 frames at their own size; long:N scales them up, which
     reads them better.
 - **Regions.** `read_frame(..., region=(x, y, w, h))` reads only a region, such as the dialogue box a user draws.

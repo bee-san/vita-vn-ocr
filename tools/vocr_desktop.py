@@ -166,49 +166,50 @@ def _sigmoid(x):
 
 
 def decode(maps, w, h, min_cells=2, conf_min=0.5, pad_pct=0.18, pad_min=2.0, min_across=4.0, tags=4):
-    """[Box] in network-input px (the image's w x h part) from float maps [4 + T, h / 4, w / 4] (module docstring)."""
+    """[Box] in network-input px (the image's w x h part) from float maps [4 + T, h / 4, w / 4] (module docstring).
+    Every component at once: per-label sums by np.bincount, the along extent from cv2's component boxes."""
     import cv2
-    k, o, a1, a2 = maps[0], maps[1], maps[2], maps[3]
     hm, wm = -(-h // STRIDE), -(-w // STRIDE)
-    k, o, a1, a2 = (m[:hm, :wm] for m in (k, o, a1, a2))
-    t = maps[4:4 + tags, :hm, :wm]
+    k = np.ascontiguousarray(maps[0, :hm, :wm], np.float64)
     mask = (k > 0).astype(np.uint8)
     n, lab, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=4)
-    out = []
     if n <= 1:
-        return out
+        return []
     flat = lab.ravel()
-    order = np.argsort(flat, kind="stable")
-    starts = np.searchsorted(flat[order], np.arange(n + 1))
-    kp = _sigmoid(k.astype(np.float64)).ravel()
+    on = np.flatnonzero(flat)
+    L = flat[on]
+    rows, cols = np.divmod(on, wm)
+    cnt = np.bincount(L, minlength=n).astype(np.float64)
+    cnt[0] = 1.0
+    conf = np.bincount(L, 1.0 / (1.0 + np.exp(-k.ravel()[on])), minlength=n) / cnt
+    vert = np.bincount(L, maps[1, :hm, :wm].ravel()[on].astype(np.float64), minlength=n) / cnt > 0
+    vl = vert[L]
+    across = np.where(vl, cols, rows)
+    cc = STRIDE * across + (STRIDE - 1) / 2.0
+    near = np.bincount(L, cc - maps[2, :hm, :wm].ravel()[on], minlength=n) / cnt
+    far = np.bincount(L, cc + maps[3, :hm, :wm].ravel()[on], minlength=n) / cnt
+    tsum = np.stack([np.zeros(n)] + [np.bincount(L, maps[4 + i, :hm, :wm].ravel()[on].astype(np.float64), minlength=n)
+                                     for i in range(tags)], 1)
+    out = []
     for c in range(1, n):
-        cnt = int(stats[c, cv2.CC_STAT_AREA])
-        if cnt < min_cells:
+        if stats[c, cv2.CC_STAT_AREA] < min_cells or conf[c] < conf_min:
             continue
-        idx = order[starts[c]:starts[c + 1]]
-        conf = float(kp[idx].mean())
-        if conf < conf_min:
-            continue
-        rows, cols = np.divmod(idx, wm)
-        vertical = int(o.ravel()[idx].mean() > 0)
-        across, along = (cols, rows) if vertical else (rows, cols)
-        cc = STRIDE * across + (STRIDE - 1) / 2.0
-        near = float((cc - a1.ravel()[idx]).mean())
-        far = float((cc + a2.ravel()[idx]).mean())
-        lo, hi = STRIDE * int(along.min()), STRIDE * (int(along.max()) + 1)
-        size = far - near
+        size = far[c] - near[c]
         if size < min_across:
             continue
+        t0, n0 = (cv2.CC_STAT_TOP, cv2.CC_STAT_HEIGHT) if vert[c] else (cv2.CC_STAT_LEFT, cv2.CC_STAT_WIDTH)
+        lo, hi = STRIDE * int(stats[c, t0]), STRIDE * int(stats[c, t0] + stats[c, n0])
         pad = max(pad_min, size * pad_pct)
-        a0, a1_, b0, b1 = near - pad, far + pad, lo - pad, hi + pad
-        x0, x1, y0, y1 = (a0, a1_, b0, b1) if vertical else (b0, b1, a0, a1_)
+        a0, a1_, b0, b1 = near[c] - pad, far[c] + pad, lo - pad, hi + pad
+        x0, x1, y0, y1 = (a0, a1_, b0, b1) if vert[c] else (b0, b1, a0, a1_)
         x0, y0, x1, y1 = max(0.0, x0), max(0.0, y0), min(float(w), x1), min(float(h), y1)
         if x1 <= x0 or y1 <= y0:
             continue
-        scores = [0.0] + [float(t[i].ravel()[idx].sum()) for i in range(tags)]
-        tag = int(np.argmax(scores))
-        second = max(s for i, s in enumerate(scores) if i != tag)
-        out.append(Box(x0, y0, x1 - x0, y1 - y0, vertical, conf, tag, (scores[tag] - second) / cnt))
+        sc = tsum[c]
+        tag = int(np.argmax(sc))
+        second = float(np.max(np.delete(sc, tag))) if tags else 0.0
+        out.append(Box(float(x0), float(y0), float(x1 - x0), float(y1 - y0), int(vert[c]), float(conf[c]), tag,
+                       (float(sc[tag]) - second) / float(cnt[c])))
     out.sort(key=lambda b: (-b.conf, b.y, b.x))
     return out
 

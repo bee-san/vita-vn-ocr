@@ -70,33 +70,33 @@ def judge(c, r, timing, res, pc_res):
     views = {}
     for v in ("vita", "psp"):
         cv, rv = cer_of(dev_c, v), cer_of(dev_r, v)
-        views[v] = {"cer": round(cv, 4), "ref": round(rv, 4), "limit": round(1.5 * rv, 4), "ok": cv <= 1.5 * rv}
+        views[v] = {"cer": round(cv, 4), "ref": round(rv, 4), "limit": round(1.5 * rv, 4), "ok": bool(cv <= 1.5 * rv)}
     ci = cmp_all["ci95"]
-    out["dev"] = {"cer": round(a, 4), "ref": round(b, 4), "limit": round(1.2 * b, 4), "delta": cmp_all["delta"],
+    out["dev"] = {"cer": round(a, 4), "ref": round(b, 4), "limit": round(1.2 * b, 4), "delta": float(cmp_all["delta"]),
                   "ci95": ci, "views": views,
-                  "ok": a <= 1.2 * b and not (ci and ci[0] > 0) and all(x["ok"] for x in views.values())}
+                  "ok": bool(a <= 1.2 * b and not (ci and ci[0] > 0) and all(x["ok"] for x in views.values()))}
     for name, docs, grp in (("hval", (load(res, c.get("hval")), load(res, r.get("hval"))), "hval:all"),
                             ("confirm", (load(res, c.get("confirm")), load(res, r.get("confirm"))), "confirm:all")):
         if docs[0] is None or docs[1] is None:
             out[name] = {"ok": None, "note": "not read"}
             continue
         cm = paired(docs[0], docs[1], grp)
-        out[name] = {"cer": cm["arm_cer"], "ref": cm["base_cer"], "delta": cm["delta"], "ci95": cm["ci95"],
-                     "ok": not (cm["ci95"] and cm["ci95"][0] > 0)}
+        out[name] = {"cer": float(cm["arm_cer"]), "ref": float(cm["base_cer"]), "delta": float(cm["delta"]),
+                     "ci95": cm["ci95"], "ok": bool(not (cm["ci95"] and cm["ci95"][0] > 0))}
     pc_c, pc_r = load(pc_res or res, c.get("pc")), load(pc_res or res, r.get("pc"))
     if pc_c is None or pc_r is None:
         out["pc"] = {"ok": None, "note": "not read"}
     else:
         grp = f"{pc_c['units'][0]['set']}:all"
         cm = paired(pc_c, pc_r, grp)
-        out["pc"] = {"cer": cm["arm_cer"], "ref": cm["base_cer"], "limit": round(1.2 * cm["base_cer"], 4),
-                     "delta": cm["delta"], "ci95": cm["ci95"],
-                     "ok": cm["arm_cer"] <= 1.2 * cm["base_cer"] and not (cm["ci95"] and cm["ci95"][0] > 0)}
+        out["pc"] = {"cer": float(cm["arm_cer"]), "ref": float(cm["base_cer"]),
+                     "limit": round(1.2 * float(cm["base_cer"]), 4), "delta": float(cm["delta"]), "ci95": cm["ci95"],
+                     "ok": bool(cm["arm_cer"] <= 1.2 * cm["base_cer"] and not (cm["ci95"] and cm["ci95"][0] > 0))}
     sp = {}
     for v in ("vita", "psp"):
         tc, tr = speed_of(timing, c.get("timing", []), v), speed_of(timing, r.get("timing", []), v)
         sp[v] = {"p50": tc, "ref_p50": tr, "limit": round(tr / 4, 3) if tr else None,
-                 "ok": None if tc is None or tr is None else tc <= tr / 4}
+                 "ok": None if tc is None or tr is None else bool(tc <= tr / 4)}
     out["speed"] = {"views": sp, "cost": (sp["vita"]["p50"] or 0) + (sp["psp"]["p50"] or 0),
                     "ok": None if any(x["ok"] is None for x in sp.values()) else all(x["ok"] for x in sp.values())}
     oks = [out[k]["ok"] for k in ("dev", "hval", "confirm", "pc", "speed")]

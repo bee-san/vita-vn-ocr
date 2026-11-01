@@ -99,6 +99,14 @@ size_t vocr_desk_arena_bytes(const vocr_desk_model *m, unsigned kind, unsigned n
 int vocr_desk_maps(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
                    size_t bytes, const float **maps);
 
+/* A parallel runner: run fn(arg, task, ntasks) for task = 0 .. ntasks - 1 (in any order, on any threads) and return
+ * when every task is done. The network's steps are split into ntasks disjoint row (or pixel) ranges, so the maps are
+ * the same bits for every ntasks. */
+typedef void (*vocr_desk_task_fn)(void *arg, unsigned task, unsigned ntasks);
+typedef void (*vocr_desk_runner)(void *ctx, vocr_desk_task_fn fn, void *arg, unsigned ntasks);
+int vocr_desk_maps_mt(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
+                      size_t bytes, const float **maps, vocr_desk_runner run, void *ctx, unsigned ntasks);
+
 /* The decode on maps (as vocr_desk_maps gives them, mw x mh cells of 4 + tags channels): the boxes of the iw x ih
  * image part, in input px (tools/vocr_desktop.decode's rule). scratch: (mw * mh + 2) ints and the per-component
  * sums, vocr_desk_decode_bytes(mw, mh, tags). */
@@ -110,6 +118,9 @@ int vocr_desk_decode(const vocr_desk_model *m, const float *maps, unsigned mw, u
  * bilinear up), edge padding to multiples of 32, the network and the decode; boxes in frame px. */
 int vocr_desk_detect(const vocr_desk_model *m, const unsigned char *grey, unsigned w, unsigned h, unsigned stride,
                      unsigned kind, unsigned n, void *arena, size_t bytes, vocr_desk_set *out);
+int vocr_desk_detect_mt(const vocr_desk_model *m, const unsigned char *grey, unsigned w, unsigned h, unsigned stride,
+                        unsigned kind, unsigned n, void *arena, size_t bytes, vocr_desk_set *out, vocr_desk_runner run,
+                        void *ctx, unsigned ntasks);
 
 /* The resize the detector uses (exposed for tests): Q14 area weights when a side shrinks, bilinear (pixel centres)
  * when it grows, separable, integer arithmetic. */

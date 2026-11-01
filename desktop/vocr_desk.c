@@ -428,17 +428,18 @@ static void dw_pixel_checked(const float *in, unsigned H, unsigned W, unsigned C
 /* 3x3 depthwise on an H x W x C map, stride s, dilation d, zero padding d, ReLU: out Ho x Wo x C. The pixels whose
  * three columns are inside the map take the unchecked path (32 channels in registers at a time with AVX2). */
 static void dw_layer(const float *in, unsigned H, unsigned W, const vocr_desk_layer *L, float *out, unsigned Ho,
-                     unsigned Wo)
+                     unsigned Wo, unsigned oy0, unsigned oy1)
 {
     const unsigned C = L->cin, s = L->stride, d = L->dil;
     const float *w = L->w, *b = L->b;
     unsigned oy, ox, ky, lo, hi;
+    (void)Ho;
     /* interior columns: ox s - d >= 0 and ox s + d <= W - 1 */
     lo = (d + s - 1) / s;
     hi = W > d ? (W - 1 - d) / s + 1 : 0;
     if (hi > Wo) hi = Wo;
     if (lo > hi) lo = hi;
-    for (oy = 0; oy < Ho; oy++) {
+    for (oy = oy0; oy < oy1; oy++) {
         int iy[3];
         const float *rows[3];
         unsigned nk = 0, kys[3];
@@ -504,21 +505,32 @@ static void dw_layer(const float *in, unsigned H, unsigned W, const vocr_desk_la
 
 /* the stem: 3x3 stride 2 padding 1 on the normalised grey (g - 128) / 128, 1 -> C, ReLU. xp: the normalised input
  * with a zero border, (H + 2) x (W + 2) floats */
-static void stem_layer(const unsigned char *g, unsigned H, unsigned W, const vocr_desk_layer *L, float *out,
-                       unsigned Ho, unsigned Wo, float *xp)
+static void stem_prep(const unsigned char *g, unsigned H, unsigned W, float *xp, unsigned y0, unsigned y1)
+{
+    /* rows y0 .. y1 - 1 of the (H + 2) x (W + 2) padded input */
+    const unsigned XW = W + 2;
+    unsigned x, y;
+    for (y = y0; y < y1; y++) {
+        float *r = xp + (size_t)y * XW;
+        if (y == 0 || y == H + 1) {
+            for (x = 0; x < XW; x++) r[x] = 0.0f;
+            continue;
+        }
+        {
+            const unsigned char *gr = g + (size_t)(y - 1) * W;
+            r[0] = r[W + 1] = 0.0f;
+            for (x = 0; x < W; x++) r[x + 1] = ((float)gr[x] - 128.0f) * 0.0078125f;
+        }
+    }
+}
+
+static void stem_layer(unsigned W, const vocr_desk_layer *L, float *out, unsigned Wo, const float *xp, unsigned oy0,
+                       unsigned oy1)
 {
     const unsigned C = L->cout, XW = W + 2;
     const float *w = L->w, *b = L->b;
-    unsigned oy, ox, x, y, c;
-    for (x = 0; x < XW; x++) xp[x] = 0.0f;
-    for (y = 0; y < H; y++) {
-        float *r = xp + (size_t)(y + 1) * XW;
-        const unsigned char *gr = g + (size_t)y * W;
-        r[0] = r[W + 1] = 0.0f;
-        for (x = 0; x < W; x++) r[x + 1] = ((float)gr[x] - 128.0f) * 0.0078125f;
-    }
-    for (x = 0; x < XW; x++) xp[(size_t)(H + 1) * XW + x] = 0.0f;
-    for (oy = 0; oy < Ho; oy++) {
+    unsigned oy, ox, c;
+    for (oy = oy0; oy < oy1; oy++) {
         const float *r0 = xp + (size_t)(2 * oy) * XW, *r1 = r0 + XW, *r2 = r1 + XW;
         for (ox = 0; ox < Wo; ox++) {
             const float *p0 = r0 + 2 * ox, *p1 = r1 + 2 * ox, *p2 = r2 + 2 * ox;
@@ -563,10 +575,10 @@ static void stem_layer(const unsigned char *g, unsigned H, unsigned W, const voc
 }
 
 /* fine[y][x][c] += coarse[y / 2][x / 2][c] (nearest 2x up-sampling and addition) */
-static void up_add(float *fine, unsigned H, unsigned W, const float *coarse, unsigned C)
+static void up_add(float *fine, unsigned W, const float *coarse, unsigned C, unsigned y0, unsigned y1)
 {
     unsigned y, x, c, W2 = W / 2;
-    for (y = 0; y < H; y++) {
+    for (y = y0; y < y1; y++) {
         const float *cr = coarse + (size_t)(y / 2) * W2 * C;
         float *fr = fine + (size_t)y * W * C;
         for (x = 0; x < W; x++) {
@@ -656,67 +668,162 @@ static float *aligned_floats(void *arena)
     return (float *)(void *)a;
 }
 
-int vocr_desk_maps(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
-                   size_t bytes, const float **maps)
+/* one step of the network over a range of its rows (or pixels): the steps run one after the other, each split into
+ * tasks that write disjoint outputs, so any number of tasks gives the same bits */
+enum { ST_PREP, ST_STEM, ST_DW, ST_PW, ST_UP };
+
+typedef struct {
+    int kind, relu;
+    const vocr_desk_layer *L;
+    const unsigned char *g;
+    const float *in, *res;
+    float *out, *xp;
+    unsigned H, W, Ho, Wo, C;
+    size_t P;
+} desk_step;
+
+#define MAX_STEPS (8 + 4 * 2 * (1 + VOCR_DESK_MAX_BLOCKS) + 16)
+
+typedef struct {
+    desk_step st[MAX_STEPS];
+    unsigned n, cur;
+} desk_steps;
+
+static void range_of(size_t n, unsigned task, unsigned ntasks, size_t *a, size_t *b)
+{
+    *a = n * task / ntasks;
+    *b = n * (task + 1) / ntasks;
+}
+
+static void step_task(void *arg, unsigned task, unsigned ntasks)
+{
+    const desk_steps *S = (const desk_steps *)arg;
+    const desk_step *t = &S->st[S->cur];
+    size_t a, b;
+    switch (t->kind) {
+    case ST_PREP:
+        range_of(t->H + 2, task, ntasks, &a, &b);
+        stem_prep(t->g, t->H, t->W, t->xp, (unsigned)a, (unsigned)b);
+        break;
+    case ST_STEM:
+        range_of(t->Ho, task, ntasks, &a, &b);
+        stem_layer(t->W, t->L, t->out, t->Wo, t->xp, (unsigned)a, (unsigned)b);
+        break;
+    case ST_DW:
+        range_of(t->Ho, task, ntasks, &a, &b);
+        dw_layer(t->in, t->H, t->W, t->L, t->out, t->Ho, t->Wo, (unsigned)a, (unsigned)b);
+        break;
+    case ST_PW:
+        range_of(t->P, task, ntasks, &a, &b);
+        if (b > a)
+            pw_layer(t->in + a * t->L->cin, b - a, t->L, t->res ? t->res + a * t->L->cout : NULL, t->relu,
+                     t->out + a * t->L->cout);
+        break;
+    default:
+        range_of(t->Ho, task, ntasks, &a, &b);
+        up_add(t->out, t->Wo, t->in, t->C, (unsigned)a, (unsigned)b);
+        break;
+    }
+}
+
+static desk_step *add_step(desk_steps *S, int kind)
+{
+    desk_step *t = &S->st[S->n++];
+    memset(t, 0, sizeof *t);
+    t->kind = kind;
+    return t;
+}
+
+static void add_pw(desk_steps *S, const float *in, size_t P, const vocr_desk_layer *L, const float *res, int relu,
+                   float *out)
+{
+    desk_step *t = add_step(S, ST_PW);
+    t->in = in, t->P = P, t->L = L, t->res = res, t->relu = relu, t->out = out;
+}
+
+static void add_dw(desk_steps *S, const float *in, unsigned H, unsigned W, const vocr_desk_layer *L, float *out,
+                   unsigned Ho, unsigned Wo)
+{
+    desk_step *t = add_step(S, ST_DW);
+    t->in = in, t->H = H, t->W = W, t->L = L, t->out = out, t->Ho = Ho, t->Wo = Wo;
+}
+
+static void add_up(desk_steps *S, float *fine, unsigned H, unsigned W, const float *coarse, unsigned C)
+{
+    desk_step *t = add_step(S, ST_UP);
+    t->out = fine, t->Ho = H, t->Wo = W, t->in = coarse, t->C = C;
+}
+
+int vocr_desk_maps_mt(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
+                      size_t bytes, const float **maps, vocr_desk_runner run, void *ctx, unsigned ntasks)
 {
     desk_plan P;
-    float *A, *S, *T, *f[4], *p[3], *P4, *out;
+    desk_steps S;
+    float *A, *Sb, *T, *f[4], *p[3], *P4, *out;
     unsigned s, i, Hs, Ws, Hin, Win;
     const float *x;
+    desk_step *t;
     if (!m || !in || !arena || !maps || !pw || !ph || pw % VOCR_DESK_ALIGN || ph % VOCR_DESK_ALIGN)
         return VOCR_DESK_E_ARG;
     if (bytes < maps_bytes(m, pw, ph)) return VOCR_DESK_E_ARENA;
+    if (!run || ntasks < 1) ntasks = 1;
     plan(m, pw, ph, &P);
     A = aligned_floats(arena);
-    S = A + P.S;
+    Sb = A + P.S;
     T = A + P.T;
     for (s = 0; s < 4; s++) f[s] = A + P.f[s];
     for (s = 0; s < 3; s++) p[s] = A + P.p[s];
     out = A + P.maps;
+    S.n = 0;
     /* stem: H / 2 x W / 2 x c0 */
-    PROF_START();
-    stem_layer(in, ph, pw, &m->stem, S, ph / 2, pw / 2, A + P.xp);
-    PROF_MARK();
-    x = S;
+    t = add_step(&S, ST_PREP);
+    t->g = in, t->H = ph, t->W = pw, t->xp = A + P.xp;
+    t = add_step(&S, ST_STEM);
+    t->W = pw, t->L = &m->stem, t->out = Sb, t->Ho = ph / 2, t->Wo = pw / 2, t->xp = A + P.xp;
+    x = Sb;
     Hin = ph / 2;
     Win = pw / 2;
     for (s = 0; s < 4; s++) {
         Hs = ph >> (2 + s);
         Ws = pw >> (2 + s);
-        dw_layer(x, Hin, Win, &m->dw[s][0], T, Hs, Ws);
-        PROF_MARK();
-        pw_layer(T, (size_t)Hs * Ws, &m->pw[s][0], NULL, 1, f[s]);
-        PROF_MARK();
+        add_dw(&S, x, Hin, Win, &m->dw[s][0], T, Hs, Ws);
+        add_pw(&S, T, (size_t)Hs * Ws, &m->pw[s][0], NULL, 1, f[s]);
         for (i = 0; i < m->n[s]; i++) {
-            dw_layer(f[s], Hs, Ws, &m->dw[s][1 + i], T, Hs, Ws);
-            PROF_MARK();
-            pw_layer(T, (size_t)Hs * Ws, &m->pw[s][1 + i], f[s], 1, f[s]);
-            PROF_MARK();
+            add_dw(&S, f[s], Hs, Ws, &m->dw[s][1 + i], T, Hs, Ws);
+            add_pw(&S, T, (size_t)Hs * Ws, &m->pw[s][1 + i], f[s], 1, f[s]);
         }
         x = f[s];
         Hin = Hs;
         Win = Ws;
     }
     /* the pyramid: p32 = lat3(f32); p16 = lat2(f16) + up(p32); p8 = lat1(f8) + up(p16); P4 = lat0(f4) + up(p8) */
-    pw_layer(f[3], (size_t)(ph >> 5) * (pw >> 5), &m->lat[3], NULL, 1, p[2]);
-    pw_layer(f[2], (size_t)(ph >> 4) * (pw >> 4), &m->lat[2], NULL, 1, p[1]);
-    up_add(p[1], ph >> 4, pw >> 4, p[2], m->F);
-    pw_layer(f[1], (size_t)(ph >> 3) * (pw >> 3), &m->lat[1], NULL, 1, p[0]);
-    up_add(p[0], ph >> 3, pw >> 3, p[1], m->F);
-    PROF_MARK();
-    P4 = S;   /* the stem's output is no longer needed */
-    pw_layer(f[0], (size_t)(ph >> 2) * (pw >> 2), &m->lat[0], NULL, 1, P4);
-    PROF_MARK();
-    up_add(P4, ph >> 2, pw >> 2, p[0], m->F);
-    PROF_MARK();
-    dw_layer(P4, ph >> 2, pw >> 2, &m->sdw, T, ph >> 2, pw >> 2);
-    PROF_MARK();
-    pw_layer(T, (size_t)(ph >> 2) * (pw >> 2), &m->spw, P4, 1, P4);
-    PROF_MARK();
-    pw_layer(P4, (size_t)(ph >> 2) * (pw >> 2), &m->head, NULL, 0, out);
-    PROF_MARK();
+    add_pw(&S, f[3], (size_t)(ph >> 5) * (pw >> 5), &m->lat[3], NULL, 1, p[2]);
+    add_pw(&S, f[2], (size_t)(ph >> 4) * (pw >> 4), &m->lat[2], NULL, 1, p[1]);
+    add_up(&S, p[1], ph >> 4, pw >> 4, p[2], m->F);
+    add_pw(&S, f[1], (size_t)(ph >> 3) * (pw >> 3), &m->lat[1], NULL, 1, p[0]);
+    add_up(&S, p[0], ph >> 3, pw >> 3, p[1], m->F);
+    P4 = Sb;   /* the stem's output is no longer needed */
+    add_pw(&S, f[0], (size_t)(ph >> 2) * (pw >> 2), &m->lat[0], NULL, 1, P4);
+    add_up(&S, P4, ph >> 2, pw >> 2, p[0], m->F);
+    add_dw(&S, P4, ph >> 2, pw >> 2, &m->sdw, T, ph >> 2, pw >> 2);
+    add_pw(&S, T, (size_t)(ph >> 2) * (pw >> 2), &m->spw, P4, 1, P4);
+    add_pw(&S, P4, (size_t)(ph >> 2) * (pw >> 2), &m->head, NULL, 0, out);
+    PROF_START();
+    for (S.cur = 0; S.cur < S.n; S.cur++) {
+        if (ntasks > 1)
+            run(ctx, step_task, &S, ntasks);
+        else
+            step_task(&S, 0, 1);
+        PROF_MARK();
+    }
     *maps = out;
     return VOCR_DESK_OK;
+}
+
+int vocr_desk_maps(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
+                   size_t bytes, const float **maps)
+{
+    return vocr_desk_maps_mt(m, in, pw, ph, arena, bytes, maps, NULL, NULL, 1);
 }
 
 /* ----------------------------------------------------------------------------- the decode */
@@ -956,6 +1063,13 @@ size_t vocr_desk_arena_bytes(const vocr_desk_model *m, unsigned kind, unsigned n
 int vocr_desk_detect(const vocr_desk_model *m, const unsigned char *grey, unsigned w, unsigned h, unsigned stride,
                      unsigned kind, unsigned n, void *arena, size_t bytes, vocr_desk_set *out)
 {
+    return vocr_desk_detect_mt(m, grey, w, h, stride, kind, n, arena, bytes, out, NULL, NULL, 1);
+}
+
+int vocr_desk_detect_mt(const vocr_desk_model *m, const unsigned char *grey, unsigned w, unsigned h, unsigned stride,
+                        unsigned kind, unsigned n, void *arena, size_t bytes, vocr_desk_set *out, vocr_desk_runner run,
+                        void *ctx, unsigned ntasks)
+{
     detect_plan D;
     unsigned iw, ih, pw, ph, y, x, k, keep = 0;
     unsigned char *base, *in, *src;
@@ -983,7 +1097,7 @@ int vocr_desk_detect(const vocr_desk_model *m, const unsigned char *grey, unsign
         for (x = iw; x < pw; x++) o[x] = r[iw - 1];
     }
     for (y = ih; y < ph; y++) memcpy(in + (size_t)y * pw, in + (size_t)(ih - 1) * pw, pw);
-    rc = vocr_desk_maps(m, in, pw, ph, base + D.net, D.input - D.net, &maps);
+    rc = vocr_desk_maps_mt(m, in, pw, ph, base + D.net, D.input - D.net, &maps, run, ctx, ntasks);
     if (rc) return rc;
     rc = vocr_desk_decode(m, maps, pw / VOCR_DESK_STRIDE, ph / VOCR_DESK_STRIDE, iw, ih, base + D.decode,
                           D.end - 64 - D.decode, out);

@@ -51,7 +51,8 @@ enum { VOCR_TSDR_OK = 0, VOCR_TSDR_E_ARG = -1, VOCR_TSDR_E_SCRATCH = -2 };
 void vocr_tsdr_defaults(vocr_tsdr_opts *o);
 int vocr_tsdr_nopts(void);
 
-/* Scratch bytes for vocr_tsdr_refine of n boxes on a w x h frame (enough for any box on it). */
+/* Scratch bytes for vocr_tsdr_refine of n boxes on a w x h frame (enough for any box on it); the scratch must be
+ * aligned for int (malloc's alignment). */
 size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h, unsigned n);
 
 /* Refine n boxes in place on a grey frame (w x h, row stride `stride` bytes): xyxy holds n x 4 doubles [x0, y0, x1,

@@ -54,10 +54,10 @@ typedef struct {
     unsigned char *barrier;           /* W */
 } tsdr_scr;
 
-static size_t frame_bytes(unsigned w, unsigned h)
+static size_t frame_bytes(unsigned w, unsigned h)        /* a multiple of 16: the box limits (ints) follow */
 {
     size_t W = w, H = h;
-    return 2 * W * H + 2 * (W + 2) + (H + W + H) * sizeof(int) + W + 64;
+    return (2 * W * H + 2 * (W + 2) + (H + W + H) * sizeof(int) + W + 64 + 15) & ~(size_t)15;
 }
 
 size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h, unsigned n)

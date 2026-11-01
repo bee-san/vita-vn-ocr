@@ -10,7 +10,7 @@ text detector and a frozen real PC test set.
   desktopdata/shards.py    the shard formats the trainers read (textspot6-pages, #97's frames) and the manifests
   desktopdata/stats.py     per-resolution counts and text-height distributions against the Vita / PSP pools
   desktopdata/pctest.py    2: the real PC test set (VNDB PC screenshots of VNs in no pool, engine readings,
-                           Claude adjudication, the frozen manifest, eval/desktop.py's frames, the reservation)
+                           Claude adjudication, the frozen manifest, eval/desktop.py's frames)
   desktopdata/owner.py     the owner's desktop captures in the hooked bucket's format: import and native pages
   desktopdata/qa.py        QA sheets of the shards (local, never committed)
 

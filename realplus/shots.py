@@ -421,8 +421,8 @@ def reserved_vns(d, sets=None, dev=None, committed=None):
                               of the training pools of any round that selects on it
       dev-sample-shared-release  on a two-VN release with a dev-sample VN (release_partners close=True: one game
                               filed twice, a game and its fan disc; OWNER_ALLOWED and owner-game VNs never)
-      desktop-pc-test         a VN of the frozen desktop PC test set (the committed file's "desktop_pc_test";
-                              docs/desktop-data.md)
+      desktop-pc-test         a VN of the frozen desktop PC test set (desktop_pc_test_vns(): the VNs of
+                              eval/manifests/desktop-pc-test-v*.jsonl; docs/desktop-data.md), unless committed is False
 
     dev: the development sample's VNs (default: the committed file's). committed: the committed reservation
     (default: eval/manifests/reserved.json), unioned in so that a later dump never shrinks the reservation; pass
@@ -437,10 +437,23 @@ def reserved_vns(d, sets=None, dev=None, committed=None):
     for u in sorted(release_partners(d, dev, close=True)):
         if u not in keep:
             why.setdefault(u, "dev-sample-shared-release")
-    for part in ("test", "dev_sample", "desktop_pc_test"):
+    for part in ("test", "dev_sample"):
         for v, r in sorted((com or {}).get(part, {}).items()):
             why.setdefault(v, r)
+    if committed is not False:
+        for v in sorted(desktop_pc_test_vns(), key=lambda v: int(v[1:])):
+            why.setdefault(v, "desktop-pc-test")
     return why
+
+
+def desktop_pc_test_vns(repo=ROOT):
+    """The VNs of the frozen desktop PC test set (every eval/manifests/desktop-pc-test-v*.jsonl; docs/desktop-data.md):
+    never training, tuning or scene data. eval/manifests/reserved.json and synth/common.py are pinned by frozen
+    protocols, so the set's reservation is this list, read from its committed manifests."""
+    out = set()
+    for p in sorted((Path(repo) / "eval" / "manifests").glob("desktop-pc-test-v*.jsonl")):
+        out |= set(re.findall(r'"vn": ?"(v\d+)"', p.read_text(encoding="utf-8")))
+    return out
 
 
 # ---------------------------------------------------------------- the development sample
@@ -617,12 +630,6 @@ def cmd_reserve(args):
         # the owner-games folders). Tests check the sample against this list, never against the live folders.
         "owner_vns": sorted(owner, key=lambda v: int(v[1:])),
     }
-    # the frozen desktop PC test set (desktopdata/pctest.py reserve, docs/desktop-data.md) is not derived from the
-    # dump: a rebuild carries it over unchanged
-    prev = committed_reservation(args.out) if Path(args.out).exists() else None
-    for k in ("desktop_pc_test", "desktop_pc_test_record"):
-        if prev and k in prev:
-            out[k] = prev[k]
     path = Path(args.out)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     if args.test_games:

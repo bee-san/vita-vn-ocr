@@ -29,11 +29,11 @@ too: no screenshot of those releases is used, and neither is any vita-test or ps
 file sha256 or decoded pixels.
 
 **The desktop PC test set** (2026-11-01, `docs/desktop-data.md`): vocr-desktop's (#169) real PC test, 942 dialogue
-lines of 143 VNs that were in no pool, frozen as `eval/manifests/desktop-pc-test-v1.jsonl`. Its VNs are the
-reservation's `desktop_pc_test` part (`desktop-pc-test`, with the manifest's sha256 in `desktop_pc_test_record`):
-`synth/common.is_reserved_vn` and `realplus/shots.reserved_vns` hold them out of every pool from now on, and
-`shots.py reserve` carries the part over unchanged. They held no data any pool had used, so nothing is taken from
-training.
+lines of 143 VNs that were in no pool, frozen as `eval/manifests/desktop-pc-test-v1.jsonl`. The manifest is its
+reservation: `realplus/shots.desktop_pc_test_vns()` reads its VNs and `realplus/shots.reserved_vns()` refuses them
+(reason `desktop-pc-test`; not with `committed=False`). This file's `reserved.json` and `synth/common.py` are pinned by
+frozen protocols, so they do not list them yet: the next carve adds them with re-pinning amendments. They held no
+data any pool had used, so nothing is taken from training.
 
 Everything else trains:
 

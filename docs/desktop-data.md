@@ -28,8 +28,8 @@ nothing here trains or scores a model.
 - **The PC test set:** 942 dialogue lines (plus 217 speaker names) from 142 VNs that are in no pool, on 504 VNDB PC
   screenshots at their own size (640 x 390 to 2560 x 1440, 21 named engines), labelled by MeikiOCR and PP-OCRv6
   small's readings and two Claude passes, 214 of them checked line by line by me (213 right; the wrong one
-  corrected). Frozen with its manifest (sha256 `20576c40…`) at 09:23Z, before vocr-desktop's decision, and reserved
-  from every pool. The target was 1,000 lines: VNDB holds no more such screenshots (section 2).
+  corrected). Frozen with its manifest (sha256 `20576c40…`) at 09:23Z, before vocr-desktop's decision; its VNs are
+  refused by `realplus/shots.reserved_vns`. The target was 1,000 lines: VNDB holds no more such screenshots (section 2).
 - **The owner's desktop captures:** `desktopdata/owner.py` imports them when they come (the hooked bucket's format,
   platform `pc`), into the same pools and into native-size detector pages.
 
@@ -128,10 +128,14 @@ Each frame is a whole PC VN screen drawn at the screen's own resolution:
   cover-cropped, their known text inpainted), synth2's synthetic background 8% of the time.
 - **Dialogue:** an ADV box at the bottom 52% (at the top 3%), a full-screen NVL page 13%, a band 8%, text with no box
   18%, none 6%; boxes translucent (alpha 0.15-0.8, 65%) or opaque (0.8-0.97), rounded or square, some with a border;
-  a name plate, a name line, an inline name or none; synth3's dialogue, narration and name sources.
+  a name plate, a name line, an inline name or none.
 - **Fonts:** synth3's pool without its pixel families (gothic 0.42, mincho 0.28, rounded 0.14, display 0.08,
-  pen 0.08); every face used is licence class `open` (`data/manifests/synth3_fonts.json`). A thin weight (100-300)
-  where the family has one, 22% of the draws (7.7% of the dialogue elements got one).
+  pen 0.08): 244 files of 97 families as synth3 loads them, every one licence class `open`
+  (`data/manifests/synth3_fonts.json`; the two non-commercial families are pixel faces and never drawn here). A thin
+  weight (100-300) where the family has one, 22% of the draws (7.7% of the dialogue elements got one).
+- **Texts:** synth3's dialogue, narration, choice and name sources in its `personal` profile, as textspot's synthetic
+  frames use them (`data/manifests/synth3_text_sources.json`, some of them non-commercial: README "What the released
+  weights were trained on").
 - **Sizes:** the main text's em is 2.8-5.0% of the screen height clipped to 24-64 px, or (15%) uniform in 24-64 px.
 - **Effects:** outlines (a quarter of the boxed lines, 85% of the box-less ones), hard and soft shadows, coloured
   names, furigana (ignore areas), page cursors (background).
@@ -303,15 +307,27 @@ vertical-gap rule), the union plus eval's margin scaled to the frame (12 px at 9
 clean when no other text the reads found (a line not kept, a name, a raw detector box) has its centre in the region:
 518 of 552 units, holding 886 dialogue lines. Only clean units go into the frames file.
 
-**Keeping it out of training.** The set's 143 VNs are in `eval/manifests/reserved.json` `desktop_pc_test` (with the
-manifest's sha256): `synth/common.is_reserved_vn` and `realplus/shots.reserved_vns` (and through them every pool
-builder that reserves) refuse them from now on, and `shots.py reserve` carries the part over when it rebuilds the
-file. They are a 0.4% share of the real lines (942 of about 219,000 with realplus v3's 101,350 and the hooked
-pools' 116,987), inside AGENTS.md's 10% budget; none of them was in any pool before.
+**Keeping it out of training.** The frozen manifest is the set's reservation: `realplus/shots.desktop_pc_test_vns()`
+reads its 143 VNs, and `realplus/shots.reserved_vns()` (the reservation every VNDB pool builder applies: realplus,
+its reclaim tier, the native pool) refuses them with the reason `desktop-pc-test`. `eval/manifests/reserved.json` and
+`synth/common.py` are pinned by sha256 in frozen protocols (textspot, textspot2, textspot3, textspot6 among them), so
+they do not list these VNs; `synth/common.is_reserved_vn` does not know them, and a builder that uses it alone (synth
+scene pools) must also check `desktop_pc_test_vns()` until the next reservation carve adds them with re-pinning
+amendments. The set's VNs are a 0.4% share of the real lines (942 of about 219,000 with realplus v3's 101,350 and
+the hooked pools' 116,987), inside AGENTS.md's 10% budget; none of them was in any pool before.
 
 **Not met: the 1,000-line target.** 942 dialogue lines, 58 short. VNDB's eligible space is exhausted: every Japanese
 PC screenshot of a VN in no pool was downloaded and read, and the selection took every Japanese screen. The owner's
 desktop captures (below) or later VNDB uploads can extend it as a v2.
+
+**Erratum** (`eval/desktop_pc_test_v1_errata.json`). At 09:53Z, after the freeze, a pass-2 reviewer called four
+v21170 lines cut: their frame misses the glyph tops. On the image, the ink refinement took only the lower half of
+that game's two-tone glyph fill. All lines whose ink box is under 0.6 of MeikiOCR's detector box height (names left
+out) are these 7 lines of v21170. Their labels are right and their units' regions hold the whole line, so dialogue
+CER is unchanged; their reference boxes hold the lower half of the glyphs, so for line recall a detector box that
+cuts their tops still counts as whole. The erratum gives corrected boxes (their rows from the detector box and the ink box). The reviewer's
+four post-freeze decisions are kept apart (`review/pass2/b03/decisions_postfreeze.jsonl`), so `final` still
+rebuilds v1 byte for byte.
 
 **How to read it.** As vocr-desktop reads its other sets (`eval/desktop.py detect` / `read` on the frames file), once,
 after its decision is recorded, under a committed protocol: never for screening, tuning or a threshold. Report `pc`
@@ -372,7 +388,27 @@ $PY desktopdata/stats.py run --set "hooked Vita (native)=$D/inputs/desktop_pages
 $PY desktopdata/stats.py tables --stats $M/stats_v1.json --doc docs/desktop-data.md
 # QA sheets (local, never committed)
 $PY desktopdata/qa.py sheet --shard $D/pages/hooked_v1/train/PCSG00845_000 --out $D/qa/hooked.png
+# 2: the PC test set (pctest.py; its working files under $D/pctest)
+curl -sSfL -A "<UA>" -o $D/vndb/vndb-db-2026-10-31.tar.zst https://dl.vndb.org/dump/vndb-db-2026-10-31.tar.zst
+tar -I zstd -xf $D/vndb/vndb-db-2026-10-31.tar.zst -C $D/vndb/dump          # sha256 2048bc35…
+$PY desktopdata/pctest.py pools && $PY desktopdata/pctest.py candidates && $PY desktopdata/pctest.py fetch
+$PY desktopdata/pctest.py dedupe --against $PV/vocr6-spotter3/confirm/shots
+HEAVY_SLOTS=12 $HERD/heavy.sh timeout 10800 unshare -rn $TPY desktopdata/pctest.py read --procs 5
+$PY desktopdata/pctest.py select
+$PY desktopdata/pctest.py sheets --mode pass1 --out $D/pctest/review/pass1 --chunk 100   # Claude helpers decide
+$PY desktopdata/pctest.py queue2 --pass1 $D/pctest/review/pass1 --out $D/pctest/review/pass2_queue.json
+$PY desktopdata/pctest.py sheets --mode pass2 --lines $D/pctest/review/pass2_queue.json --out $D/pctest/review/pass2 --chunk 70
+$PY desktopdata/pctest.py checksample --pass1 $D/pctest/review/pass1 --pass2 $D/pctest/review/pass2 --n 200 \
+    --out $D/pctest/review/check_ids_1.json
+$PY desktopdata/pctest.py sheets --mode check --lines $D/pctest/review/check_ids_1.json --out $D/pctest/review/check --chunk 50
+$PY desktopdata/pctest.py final --pass1 $D/pctest/review/pass1 --pass2 $D/pctest/review/pass2 \
+    --resolve $D/pctest/review/resolutions.jsonl --check $D/pctest/review/check     # the manifest, summary, frames
 ```
+
+The pass-2 queue was built in three parts as pass 1 finished (`pass2_queue_{a,b,c}.json`, 138 + 60 + 19 lines; one
+line of part b was later turned to unsure by its pass-1 reviewer, so 216 of the 217 count) and the hand check in two
+(200 lines drawn when 1,082 lines were kept, then 14 of the 77 kept after, at the same rate); `final` reads every
+batch, so the parts give the same labels as one queue.
 
 ## Limits
 
@@ -384,3 +420,8 @@ $PY desktopdata/qa.py sheet --shard $D/pages/hooked_v1/train/PCSG00845_000 --out
   and realplus did not label is background.
 - **1c's scenes are VNDB screenshots of training-side games** (textspot's pool), some upscaled to 4K, so their
   backgrounds are softer than a native 4K render.
+- **Names.** synth3's VNDB name pool (93,169 names, the source of 1c's and every VOCR5/6 render's speaker names) was
+  built before the PC test set existed: 1,103 of its entries (1.2%) equal the full name of one of the test VNs' 922
+  characters, many of them common names other VNs share. The set's dialogue metric leaves speaker names out, but a
+  dialogue line can name a character. Every recognizer trained on synth3 renders carries this, as it carries the
+  CLANNAD names the README discloses.

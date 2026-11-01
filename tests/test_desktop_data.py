@@ -371,7 +371,6 @@ def test_pc_test_set_is_frozen_reserved_and_in_no_pool():
 
     import shots as RS
 
-    import common
     man = ROOT / "eval" / "manifests" / "desktop-pc-test-v1.jsonl"
     rows = [json.loads(x) for x in man.read_text(encoding="utf-8").splitlines() if x.strip()]
     summ = json.loads((ROOT / "eval" / "desktop_pc_test_v1.json").read_text(encoding="utf-8"))
@@ -392,16 +391,31 @@ def test_pc_test_set_is_frozen_reserved_and_in_no_pool():
     assert sum(1 for r in rows if r["hand_checked"]) == summ["hand_checked"] >= 200
     res = json.loads((ROOT / "eval" / "manifests" / "reserved.json").read_text(encoding="utf-8"))
     vns = {r["vn"] for r in rows}
-    assert set(res["desktop_pc_test"]) == vns and set(res["desktop_pc_test"].values()) == {"desktop-pc-test"}
-    assert res["desktop_pc_test_record"]["manifest_sha256"] == summ["manifest_sha256"]
+    assert RS.desktop_pc_test_vns() == vns                       # the frozen manifest is the reservation
     assert not vns & (set(res["test"]) | set(res["dev_sample"]))
     assert not vns & set(RS.training_pool_vns())                 # teacher, realdata, realplus, native, owner
     hooked = json.loads((ROOT / "data" / "manifests" / "vocr6_hooked_v2" / "vndb_map.json").read_text())
     assert not vns & set(re.findall(r'"(v\d+)"', json.dumps(hooked)))
+    flagged = {u for r in rows for u in r["family_of"] + r["release_partner_of"]}
+    assert flagged and not flagged & vns and not flagged & RS.desktop_pc_test_vns()   # related pool VNs stay free
     v = sorted(vns)[0]
-    assert common.is_reserved_vn(v) and common.is_reserved_vn(v, dev=False)
     d = {"olang": {}, "title": {}, "relations": {}, "any_relations": {}, "rel_vns": {}}
     assert RS.reserved_vns(d, sets=set(), dev=set())[v] == "desktop-pc-test"
+    assert v not in RS.reserved_vns(d, sets=set(), dev=set(), committed=False)
+
+
+def test_pc_test_errata_name_lines_of_the_frozen_manifest():
+    import hashlib
+    man = ROOT / "eval" / "manifests" / "desktop-pc-test-v1.jsonl"
+    rows = {json.loads(x)["id"]: json.loads(x) for x in man.read_text(encoding="utf-8").splitlines() if x.strip()}
+    err = json.loads((ROOT / "eval" / "desktop_pc_test_v1_errata.json").read_text(encoding="utf-8"))
+    assert err["applies_to"]["manifest_sha256"] == hashlib.sha256(man.read_bytes()).hexdigest()
+    assert err["lines"]
+    for e in err["lines"]:
+        r = rows[e["id"]]
+        assert e["box_v1"] == r["box"] and not r["name"]
+        x, y, w, h = e["box_fixed"]
+        assert x == r["box"][0] and w == r["box"][2] and y <= r["box"][1] and y + h >= r["box"][1] + r["box"][3]
 
 
 def test_docs_tables_match_the_stats():

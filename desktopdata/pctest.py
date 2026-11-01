@@ -13,6 +13,10 @@ Claude on contact sheets. Frozen with a manifest (ids, URLs, sha256, boxes, labe
   pctest.py final                         devnative's development rule -> labels, units, the frozen manifest,
                                           eval/desktop.py's frames file
 
+The frozen manifest is the set's reservation: realplus/shots.desktop_pc_test_vns() reads its VNs and
+realplus/shots.reserved_vns() refuses them (eval/manifests/reserved.json and synth/common.py are pinned by frozen
+protocols and do not list them).
+
 Everything bulky (screenshots, reads, sheets, decisions) is under $HERD/shared/artifacts/desktop-data/pctest; the
 repository holds this code and eval/manifests/desktop-pc-test-v1.jsonl (public VNDB ids, URLs, sha256, boxes, text).
 
@@ -1142,26 +1146,6 @@ def SH_utc():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
-def cmd_reserve(args):
-    """Reserve the frozen set's VNs in eval/manifests/reserved.json ("desktop_pc_test"): synth/common.is_reserved_vn
-    and realplus/shots.reserved_vns keep them out of every later pool (training, scenes, names, calibration)."""
-    rows = read_jsonl(args.manifest)
-    vns = sorted({r["vn"] for r in rows}, key=lambda v: int(v[1:]))
-    path = Path(args.out)
-    doc = json.loads(path.read_text(encoding="utf-8"))
-    clash = sorted(set(vns) & (set(doc["test"]) | set(doc["dev_sample"])))
-    if clash:
-        raise SystemExit(f"test or dev_sample VNs in the PC test set: {clash}")
-    doc["desktop_pc_test"] = {v: "desktop-pc-test" for v in vns}
-    doc["desktop_pc_test_record"] = {
-        "rule": "the frozen desktop PC test set (vocr-desktop #169, docs/desktop-data.md): never train, tune, "
-                "calibrate, select or label-tune on these VNs, and never render synthetic scenes or names from them",
-        "manifest": str(Path(args.manifest).resolve().relative_to(ROOT)), "manifest_sha256": sha256_file(args.manifest),
-        "vns": len(vns), "code": "desktopdata/pctest.py reserve"}
-    path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"{path}: {len(vns)} desktop PC test VNs reserved", flush=True)
-
-
 def cmd_zoom(args):
     """An enlarged view of one entry (its context at about `ink` px of ink, at most 1280 px wide) -> PNG."""
     from PIL import Image
@@ -1235,11 +1219,8 @@ def main(argv=None):
             p.add_argument("--manifest", default=str(ROOT / "eval" / "manifests" / "desktop-pc-test-v1.jsonl"))
             p.add_argument("--summary", default=str(ROOT / "eval" / "desktop_pc_test_v1.json"))
             p.add_argument("--frames", default=str(OUT / "frames_pctest_v1.pkl"))
-    p = sub.add_parser("reserve")
-    p.add_argument("--manifest", default=str(ROOT / "eval" / "manifests" / "desktop-pc-test-v1.jsonl"))
-    p.add_argument("--out", default=str(ROOT / "eval" / "manifests" / "reserved.json"))
     args = ap.parse_args(argv)
-    cmds = {"reserve": cmd_reserve, "pools": cmd_pools, "candidates": cmd_candidates, "fetch": cmd_fetch,
+    cmds = {"pools": cmd_pools, "candidates": cmd_candidates, "fetch": cmd_fetch,
             "dedupe": cmd_dedupe, "read": cmd_read, "select": cmd_select, "sheets": cmd_sheets, "check": cmd_check,
             "zoom": cmd_zoom, "queue2": cmd_queue2, "checksample": cmd_checksample, "final": cmd_final}
     cmds[args.cmd](args)

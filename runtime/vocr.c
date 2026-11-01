@@ -1504,7 +1504,7 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         }                                                                                    \
     } while (0)
 #if VOCR_ASM
-    /* The same sums when K0 and K1 are multiples of 8 and every row starts 16-byte aligned (al below), as one asm
+    /* The same sums when K0 and K1 are multiples of 8 and every row starts 16-byte aligned (P4 below), as one asm
      * loop: VOCR_ISUMS4's pass with its registers fixed. gcc keeps the intrinsics' 8 sums, 4 inputs, 32 weight bytes
      * and a widened row in the 16 Q registers only by rotating a sum through them (4 VORR a pass) and copies the
      * weight pointer for the PLD (2 more), 88 instructions a pass; this is 82, with the alignment hints the A9 issues
@@ -1585,18 +1585,21 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         vst1q_f32(y + (P) * ys, lo_);                                                        \
         vst1q_f32(y + (P) * ys + 4, hi_);                                                    \
     } while (0)
-    /* the inputs' rows and the weight rows start 16-byte aligned when K is a multiple of 8 and both bases are (the
-     * arena's scratch and the blob's sections always are): every VOCR model's matrices. Then every chunk [K0, K1)
-     * holds a multiple of 8 terms too (chunks start at multiples of 512). */
-    const int al = !(K & 7u) && !(((uintptr_t)qx | (uintptr_t)qw) & 15u);
-    for (; p + 4 <= P; p += 4) {
+#if VOCR_ASM
+    /* the asm pass needs the inputs' rows and the weight rows 16-byte aligned and K a multiple of 8 (then every chunk
+     * [K0, K1) holds a multiple of 8 terms too: chunks start at multiples of 512). Every VOCR model's matrices are so
+     * (the arena's scratch and the blob's sections are aligned, every K a multiple of 8); otherwise every position
+     * takes the one-position loop below, whose sums and float steps give the same bits (one copy of the 4-position
+     * pass keeps the worker's code smaller). */
+    const unsigned P4 = !(K & 7u) && !(((uintptr_t)qx | (uintptr_t)qw) & 15u) ? P & ~3u : 0u;
+#else
+    const unsigned P4 = P & ~3u;
+#endif
+    for (; p < P4; p += 4) {
         const int16_t *x0 = qx + (size_t)p * K, *x1 = x0 + K, *x2 = x1 + K, *x3 = x2 + K;
         int32x4_t a0, a1, a2, a3, a4, a5, a6, a7;
         if (K <= W8I_CHUNK) {
-            if (al)
-                VOCR_ISUMS4_ASM(0u, K);
-            else
-                VOCR_ISUMS4(0u, K);
+            VOCR_ISUMS4_ASM(0u, K);
             {
                 const float32x4_t sxv = vld1q_f32(sx + p);
                 VOCR_IOUT(p, vcvtq_f32_s32(a0), vcvtq_f32_s32(a1), vget_low_f32(sxv), 0);
@@ -1609,10 +1612,7 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
             for (q = 0; q < 8; q++) fs[q] = vdupq_n_f32(0.0f);
             for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
                 const unsigned k1 = umin(K, k0 + W8I_CHUNK);
-                if (al)
-                    VOCR_ISUMS4_ASM(k0, k1);
-                else
-                    VOCR_ISUMS4(k0, k1);
+                VOCR_ISUMS4_ASM(k0, k1);
                 fs[0] = vaddq_f32(fs[0], vcvtq_f32_s32(a0));
                 fs[1] = vaddq_f32(fs[1], vcvtq_f32_s32(a1));
                 fs[2] = vaddq_f32(fs[2], vcvtq_f32_s32(a2));
@@ -1631,8 +1631,8 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
             }
         }
     }
-    /* The last 1-3 positions (head batches and line ends): one position x 8 outputs, four
-     * accumulators (two per k parity), added at the end of each chunk (exact). */
+    /* The last 1-3 positions (head batches and line ends), and every position of a call the asm pass cannot take:
+     * one position x 8 outputs, four accumulators (two per k parity), added at the end of each chunk (exact). */
     for (; p < P; p++) {
         const int16_t *xp = qx + (size_t)p * K;
         float32x4_t f0 = vdupq_n_f32(0.0f), f1 = f0;

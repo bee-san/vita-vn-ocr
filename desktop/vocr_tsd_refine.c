@@ -26,12 +26,12 @@ void vocr_tsdr_defaults(vocr_tsdr_opts *o)
 {
     o->min_h = 4; o->min_w = 4;
     o->band_pct = 25; o->band_min = 2;
-    o->along_pct = 180; o->along_min = 3;
+    o->start_pct = 180; o->end_pct = 400; o->along_min = 3;
     o->core_pct = 25; o->along_core_pct = 50;
     o->row_gap = 0; o->valley_pct = 8; o->low_run_pct = 20; o->rise_pct = 50;
     o->gap_pct = 70; o->gap_min = 2;
     o->bar_pct = 15;
-    o->shrink_a_pct = 35; o->shrink_l_pct = 50;
+    o->shrink_a_pct = 10; o->shrink_l_pct = 25;
     o->floor_ = 28; o->k_pct = 40;
     o->margin_pct = 90; o->margin_gap_pct = 50; o->margin_min = 3; o->noise_add = 12; o->texture_pct = 0;
     o->busy_pct = 25;
@@ -359,7 +359,7 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
                            const vocr_tsdr_opts *o, tsdr_scr *s)
 {
     double x0 = bx[0], y0 = bx[1], x1 = bx[2], y1 = bx[3], f;
-    int ix0, iy0, ix1, iy1, h, w, A, L, wx0, wx1, wy0, wy1, mw, mh, bx0, by0, x, y, bg, mg, nq = 0, qv[2], noise, t,
+    int ix0, iy0, ix1, iy1, h, w, A, Ls, Le, wx0, wx1, wy0, wy1, mw, mh, bx0, by0, x, y, bg, mg, nq = 0, qv[2], noise, t,
         tc, top, bot, left, right, rt, rb, hh, bar, have_bar = 0, c, k0, k1, first = -1, last = -1, G, S_l, more, cl,
         cr, bt, bb;
     unsigned st = 0, st2 = 0, hist[256], hist2[256];
@@ -376,8 +376,9 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
     w = ix1 - ix0;
     if (h < o->min_h || w < o->min_w) return VOCR_TSDR_SMALL;
     A = imax(o->band_min, r100(h, o->band_pct));
-    L = imax(o->along_min, r100(h, o->along_pct));
-    wx0 = imax(0, ix0 - L); wx1 = imin((int)W, ix1 + L);
+    Ls = imax(o->along_min, r100(h, o->start_pct));
+    Le = imax(o->along_min, r100(h, o->end_pct));
+    wx0 = imax(0, ix0 - Ls); wx1 = imin((int)W, ix1 + Le);
     wy0 = imax(0, iy0 - A); wy1 = imin((int)H, iy1 + A);
     mw = wx1 - wx0; mh = wy1 - wy0;
     bx0 = ix0 - wx0; by0 = iy0 - wy0;

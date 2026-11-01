@@ -20,7 +20,7 @@ extern "C" {
 typedef struct {
     int min_h, min_w;
     int band_pct, band_min;
-    int along_pct, along_min;
+    int start_pct, end_pct, along_min;
     int core_pct, along_core_pct;
     int row_gap, valley_pct, low_run_pct, rise_pct;
     int gap_pct, gap_min;
@@ -31,7 +31,7 @@ typedef struct {
     int busy_pct;
 } vocr_tsdr_opts;
 
-#define VOCR_TSDR_NOPTS 25
+#define VOCR_TSDR_NOPTS 26
 
 /* status bits, one word per box (tools/tsdesk_refine.ST_*) */
 enum {

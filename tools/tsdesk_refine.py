@@ -14,8 +14,9 @@ For one horizontal box (frame px, floats), with r(v, p) = (v p + 50) div 100 (a 
 
   1. the pixel box: ix0 = floor(x0), iy0 = floor(y0), ix1 = ceil(x1), iy1 = ceil(y1), clipped to the frame; h, w its
      height and width (a box under min_h x min_w px is kept: SMALL);
-  2. the window: the pixel box grown by A = max(band_min, r(h, band_pct)) rows across and by
-     L = max(along_min, r(h, along_pct)) columns along, clipped to the frame;
+  2. the window: the pixel box grown by A = max(band_min, r(h, band_pct)) rows across, by
+     max(along_min, r(h, start_pct)) columns before its start and max(along_min, r(h, end_pct)) after its end (a
+     line's end may lack a long ―― or …… that its start never has), clipped to the frame;
   3. the background bg: the lower median (the element (n - 1) div 2 of the sorted values) of the window's one-pixel
      border ring; d = |g - bg| on the window;
   4. the local contrast c3: the 3 x 3 max - min of the grey on the window (the frame's edge pixels repeated beyond
@@ -57,12 +58,12 @@ import numpy as np
 DEFAULTS = {
     "min_h": 4, "min_w": 4,
     "band_pct": 25, "band_min": 2,
-    "along_pct": 180, "along_min": 3,
+    "start_pct": 180, "end_pct": 400, "along_min": 3,
     "core_pct": 25, "along_core_pct": 50,
     "row_gap": 0, "valley_pct": 8, "low_run_pct": 20, "rise_pct": 50,
     "gap_pct": 70, "gap_min": 2,
     "bar_pct": 15,
-    "shrink_a_pct": 35, "shrink_l_pct": 50,
+    "shrink_a_pct": 10, "shrink_l_pct": 25,
     "floor": 28, "k_pct": 40,
     "margin_pct": 90, "margin_gap_pct": 50, "margin_min": 3, "noise_add": 12, "texture_pct": 0,
     "busy_pct": 25,
@@ -180,8 +181,9 @@ def refine_box(g, b, o=None, dbg=None):
     if h < o["min_h"] or w < o["min_w"]:
         return x0, y0, x1, y1, ST_SMALL
     A = max(o["band_min"], r100(h, o["band_pct"]))
-    L = max(o["along_min"], r100(h, o["along_pct"]))
-    wx0, wx1 = max(0, ix0 - L), min(W, ix1 + L)
+    Ls = max(o["along_min"], r100(h, o["start_pct"]))
+    Le = max(o["along_min"], r100(h, o["end_pct"]))
+    wx0, wx1 = max(0, ix0 - Ls), min(W, ix1 + Le)
     wy0, wy1 = max(0, iy0 - A), min(H, iy1 + A)
     mh, mw = wy1 - wy0, wx1 - wx0
     bx0, by0 = ix0 - wx0, iy0 - wy0                     # the pixel box in window coordinates
@@ -212,7 +214,7 @@ def refine_box(g, b, o=None, dbg=None):
     nb[:, :-1] |= m0[:, 1:]
     m = m0 & nb
     if dbg is not None:
-        dbg.update(win=(wx0, wy0, wx1, wy1), bg=bg, t=t, tc=tc, noise=noise, mask=m, A=A, L=L)
+        dbg.update(win=(wx0, wy0, wx1, wy1), bg=bg, t=t, tc=tc, noise=noise, mask=m, A=A, Ls=Ls, Le=Le)
     lim_t, lim_b, lim_l, lim_r = wy0 > 0, wy1 < H, wx0 > 0, wx1 < W     # window sides that are band limits
     S_a = r100(h, o["shrink_a_pct"])
 

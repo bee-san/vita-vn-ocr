@@ -214,9 +214,9 @@ def test_grows_over_thin_end_punctuation(end):
     for _ in range(8):
         img, box = make_line(rng, "flat", "plain", end=end)
         h = box[3] - box[1]
-        # the detector stopped short of the line's end by 0.6 line heights (the punctuation, or part of the dash);
-        # the walk reaches about along_pct - gap_pct (1.1 line heights) beyond the box
-        cut = [box[0], box[1], box[2] - 0.6 * h, box[3]]
+        # the detector stopped at the last glyph (the dash: 1.5 line heights short); the end band (end_pct, 4 line
+        # heights) less the gap reaches about 3.3 line heights beyond the box
+        cut = [box[0], box[1], box[2] - (1.5 if end == "dash" else 0.6) * h, box[3]]
         out, st = _refine1(img, cut)
         assert st & TR.ST_SNAP_R
         assert abs(out[2] - box[2]) <= 1, (end, out, box)
@@ -307,6 +307,45 @@ def test_busy_band_keeps_the_box():
     assert st & TR.ST_BUSY and out == b
     out2, st2 = _refine1(img, b, busy_pct=100)
     assert not (st2 & TR.ST_BUSY) and out2 == [float(v) for v in box]
+
+
+def test_start_band_is_shorter_than_the_end_band():
+    # a dotted rule (ink every 0.5 line heights) 4 line heights long before the line's start and 2.5 after its end:
+    # the end walk follows it (end_pct 400), the start walk runs out of the start band (start_pct 180) and keeps the
+    # detector's edge
+    rng = np.random.default_rng(12)
+    img, box = make_line(rng, "flat", "plain", h=20, W=640)
+    yc = (box[1] + box[3]) // 2
+    for k in range(1, 9):                            # 80 px before the start (the start band: 36 px)
+        cv2.rectangle(img, (box[0] - 10 * k - 3, yc - 1), (box[0] - 10 * k, yc + 1), 250, -1)
+    for k in range(1, 6):                            # 50 px after the end (the end band: 72 px)
+        cv2.rectangle(img, (box[2] + 10 * k - 3, yc - 1), (box[2] + 10 * k, yc + 1), 250, -1)
+    out, st = _refine1(img, [box[0], box[1], box[2], box[3]])
+    assert out[2] == box[2] + 10 * 5 + 1            # the rule after the end is the line's (a …… or a ――)
+    assert out[0] == box[0] and st & TR.ST_LIMIT     # before the start it runs past the start band: kept
+
+
+def test_shrink_bound_keeps_the_edge():
+    rng = np.random.default_rng(2)
+    img, box = make_line(rng, "flat", "plain", h=20, W=520)
+    h = box[3] - box[1]
+    wide = [box[0] - 0.6 * h, box[1], box[2], box[3]]       # 0.6 line heights of background before the ink
+    out, st = _refine1(img, wide)
+    assert st & TR.ST_SHRINK and out[0] == wide[0]           # past the along shrink bound (25 %): kept
+    out2, st2 = _refine1(img, wide, shrink_l_pct=200)
+    assert out2[0] == box[0] and not (st2 & TR.ST_SHRINK)
+    tall = [box[0], box[1] - 0.3 * h, box[2], box[3]]        # 0.3 line heights of background above the ink
+    out3, st3 = _refine1(img, tall)
+    assert st3 & TR.ST_SHRINK and out3[1] == tall[1]         # past the across shrink bound (10 %): kept
+    small = [box[0], box[1] - 1.0, box[2], box[3]]
+    out4, _ = _refine1(img, small)
+    assert out4[1] == box[1]                                  # 1 px of slack is trimmed
+
+
+def test_no_ink_keeps_the_box():
+    img = np.full((80, 200), 50, np.uint8)
+    out, st = _refine1(img, [20.5, 30.25, 150.0, 50.0])
+    assert st == TR.ST_NOINK and out == [20.5, 30.25, 150.0, 50.0]
 
 
 def test_small_vertical_and_non_finite_boxes_are_left_alone():

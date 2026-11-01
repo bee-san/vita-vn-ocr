@@ -1145,30 +1145,48 @@ static int8_t requant(int32_t acc, const Chan *c, int32_t lo)
 /* ---- NEON (the Vita): a block's 8 int32 sums in two registers; the arithmetic of requant() */
 
 /* (bias + sum) * m + 2^(sh - 1), floor-divided by 2^sh, per lane, saturated to int8, then at least lo; n lanes
- * stored at out. Where bias + sum fits int32 (fast: every channel of a trained blob) that is VRSHL by -sh of the
- * exact int64 product: (x + 2^(sh-1)) >> sh, round half up, the twin's rule. Otherwise the int64 constant
+ * stored at out. Chan.fast picks the form (chan_fast): 2 or 3 (bias + sum fits int32 and sh >= 32: every channel of a
+ * trained blob) is rq4v's mode 0, VQDMULH.S32 by m, floor(v m / 2^31), then VRSHL.S32 by 31 - sh, which is the
+ * twin's value by the module comment's proof (m > 0: the loader's rule); 1 (it fits, sh < 32) is VRSHL by -sh of
+ * the exact int64 product: (x + 2^(sh-1)) >> sh, round half up, the twin's rule; 0: the int64 constant
  * bias * m + 2^(sh - 1) is added by VMLAL and VSHL shifts (floor). VSHL / VRSHL read the shift from each 64-bit
- * lane's lowest byte, so a dup of the int32 -sh serves. */
+ * lane's lowest byte, so a dup of the int32 -sh serves. Every form's value is then saturated to int16 and int8. */
+/* RQ_STORE's forms 1 and 0 (the int64 ones), out of line: no trained blob's channel takes them, and inlined into every
+ * kernel they doubled the code of each requantisation. Its value saturated to int16, 8 lanes. */
+NOINLINE static int16x8_t rq_int64(int32x4_t lo4, int32x4_t hi4, const Chan *c)
+{
+    int64x2_t s = vreinterpretq_s64_s32(vdupq_n_s32(-c->sh)), p0, p1, p2, p3;
+    int32x2_t m = vdup_n_s32(c->m);
+    if (c->fast) {
+        int32x4_t b = vdupq_n_s32(c->b), l = vaddq_s32(lo4, b), h = vaddq_s32(hi4, b);
+        p0 = vrshlq_s64(vmull_s32(vget_low_s32(l), m), s);
+        p1 = vrshlq_s64(vmull_s32(vget_high_s32(l), m), s);
+        p2 = vrshlq_s64(vmull_s32(vget_low_s32(h), m), s);
+        p3 = vrshlq_s64(vmull_s32(vget_high_s32(h), m), s);
+    } else {
+        int64x2_t b = vdupq_n_s64(bq_of(c));
+        p0 = vshlq_s64(vmlal_s32(b, vget_low_s32(lo4), m), s);
+        p1 = vshlq_s64(vmlal_s32(b, vget_high_s32(lo4), m), s);
+        p2 = vshlq_s64(vmlal_s32(b, vget_low_s32(hi4), m), s);
+        p3 = vshlq_s64(vmlal_s32(b, vget_high_s32(hi4), m), s);
+    }
+    return vcombine_s16(vqmovn_s32(vcombine_s32(vqmovn_s64(p0), vqmovn_s64(p1))),
+                        vqmovn_s32(vcombine_s32(vqmovn_s64(p2), vqmovn_s64(p3))));
+}
+
 #define RQ_STORE(LO, HI, C, LOW, OUT, N) do { \
         const Chan *c_ = (C); \
-        int64x2_t s_ = vreinterpretq_s64_s32(vdupq_n_s32(-c_->sh)), p0_, p1_, p2_, p3_; \
-        int32x2_t m_ = vdup_n_s32(c_->m); \
-        if (c_->fast) { \
-            int32x4_t b_ = vdupq_n_s32(c_->b), l_ = vaddq_s32((LO), b_), h_ = vaddq_s32((HI), b_); \
-            p0_ = vrshlq_s64(vmull_s32(vget_low_s32(l_), m_), s_); \
-            p1_ = vrshlq_s64(vmull_s32(vget_high_s32(l_), m_), s_); \
-            p2_ = vrshlq_s64(vmull_s32(vget_low_s32(h_), m_), s_); \
-            p3_ = vrshlq_s64(vmull_s32(vget_high_s32(h_), m_), s_); \
+        int16x4_t h0_, h1_; \
+        if (c_->fast >= 2) { \
+            const int32x4_t b_ = vdupq_n_s32(c_->b), s_ = vdupq_n_s32(31 - c_->sh); \
+            h0_ = vqmovn_s32(vrshlq_s32(vqdmulhq_n_s32(vaddq_s32((LO), b_), c_->m), s_)); \
+            h1_ = vqmovn_s32(vrshlq_s32(vqdmulhq_n_s32(vaddq_s32((HI), b_), c_->m), s_)); \
         } else { \
-            int64x2_t b_ = vdupq_n_s64(bq_of(c_)); \
-            p0_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(LO), m_), s_); \
-            p1_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(LO), m_), s_); \
-            p2_ = vshlq_s64(vmlal_s32(b_, vget_low_s32(HI), m_), s_); \
-            p3_ = vshlq_s64(vmlal_s32(b_, vget_high_s32(HI), m_), s_); \
+            const int16x8_t h_ = rq_int64((LO), (HI), c_); \
+            h0_ = vget_low_s16(h_); \
+            h1_ = vget_high_s16(h_); \
         } \
         { \
-            int16x4_t h0_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p0_), vqmovn_s64(p1_))); \
-            int16x4_t h1_ = vqmovn_s32(vcombine_s32(vqmovn_s64(p2_), vqmovn_s64(p3_))); \
             int8x8_t v_ = vqmovn_s16(vcombine_s16(h0_, h1_)); \
             if (!(LOW)) v_ = vmax_s8(v_, vmov_n_s8(0));   /* ReLU; -128 is the saturation's own floor */ \
             if ((N) == BLK) { \
@@ -1196,10 +1214,10 @@ static int8_t requant(int32_t acc, const Chan *c, int32_t lo)
         (HI) = vmlal_n_s16((HI), vget_high_s16(x_), (int16_t)(K)); \
     } while (0)
 
-/* A block of BLK output pixels from pixel j0 of a 3x3 layer with input stride S, output channel by output channel
- * into out[c * ostride + p] (p < n). rows[ky] is the padded input row of kernel row ky (the centre row where
- * valid[ky] is 0, its weights then masked to 0), plane bytes from one input channel to the next. Depthwise:
- * output channel c reads input channel c; otherwise every input channel (cin of them). */
+/* A block of BLK output pixels from pixel j0 of a dense 3x3 layer with input stride S, output channel by output
+ * channel into out[c * ostride + p] (p < n): every input channel (cin of them). rows[ky] is the padded input row of
+ * kernel row ky (the centre row where valid[ky] is 0, its weights then masked to 0), plane bytes from one input
+ * channel to the next. The depthwise layers take K3_DW below (produce), so the NEON form has no depthwise case. */
 #define K3_BLOCK(name, S) \
 static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, int depthwise, \
                  const int8_t *const *rows, const int *valid, size_t plane, unsigned d, unsigned j0, int8_t *out, \
@@ -1208,20 +1226,16 @@ static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsi
     static const int16_t top_[8] = {0, 0, 0, -1, -1, -1, -1, -1}, mid_[8] = {-1, -1, -1, -1, -1, -1, 0, 0}; \
     int16x8_t keep = vdupq_n_s16(-1); \
     int last = valid[2]; \
-    unsigned c, q, nq = depthwise ? 1u : cin; \
+    unsigned c, q; \
     const int8_t *r0 = rows[0] + (size_t)j0 * (S), *r1 = rows[1] + (size_t)j0 * (S); \
     const int8_t *r2 = rows[2] + (size_t)j0 * (S), *wq = w; \
+    (void)depthwise; \
     if (!valid[0]) keep = vandq_s16(keep, vld1q_s16(top_)); \
     if (!valid[2]) keep = vandq_s16(keep, vld1q_s16(mid_)); \
     for (c = 0; c < cout; c++) { \
         int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4; \
         const int8_t *x0 = r0, *x1 = r1, *x2 = r2; \
-        if (depthwise) { \
-            x0 += c * plane; \
-            x1 += c * plane; \
-            x2 += c * plane; \
-        } \
-        for (q = 0; q < nq; q++, wq += 9, x0 += plane, x1 += plane, x2 += plane) { \
+        for (q = 0; q < cin; q++, wq += 9, x0 += plane, x1 += plane, x2 += plane) { \
             int16x8_t wv = vandq_s16(vmovl_s8(vld1_s8(wq)), keep); \
             int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv); \
             const int8_t *x = x0; \
@@ -1248,41 +1262,184 @@ static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsi
 K3_BLOCK(k3_block_s1, 1u)
 K3_BLOCK(k3_block_s2, 2u)
 
-/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). Two output channels per pass (four
- * sums, two weight vectors and the inputs stay in the 16 Q registers), weights 8 input channels at a time (never
- * read past a weight row), then one at a time. */
-#define K1_STEP(U, H, L) do { \
-        int16x8_t x_ = vmovl_s8(vld1_s8(in + (q + (U)) * BLK)); \
-        int16x4_t xl_ = vget_low_s16(x_), xh_ = vget_high_s16(x_); \
+/* The same block of a depthwise 3x3 layer (output channel c reads input channel c, its 9 weights at w + 9 c): the
+ * same products, each tap's input loaded once, and every int32 sum is exact in any order (9 products of two int8
+ * codes), so the sums and outputs are K3_BLOCK's. Its own loop keeps the three row pointers, the weights and the
+ * output in registers (K3_BLOCK's dense loop, inlined into feed, spilled them to the stack once per channel). */
+#define K3_DW_TAP(LO, HI, X, W, L) do { \
+        const int16x8_t x_ = LOAD8(X, S_); \
+        (LO) = vmlal_lane_s16((LO), vget_low_s16(x_), (W), L); \
+        (HI) = vmlal_lane_s16((HI), vget_high_s16(x_), (W), L); \
+    } while (0)
+#define K3_DW(name, S) \
+static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cout, const int8_t *const *rows, \
+                 const int *valid, size_t plane, unsigned d, unsigned j0, int8_t *out, size_t ostride, unsigned n) \
+{ \
+    enum { S_ = (S) }; \
+    static const int16_t top_[8] = {0, 0, 0, -1, -1, -1, -1, -1}, mid_[8] = {-1, -1, -1, -1, -1, -1, 0, 0}; \
+    int16x8_t keep = vdupq_n_s16(-1); \
+    const int last = valid[2]; \
+    unsigned c; \
+    const int8_t *x0 = rows[0] + (size_t)j0 * (S), *x1 = rows[1] + (size_t)j0 * (S); \
+    const int8_t *x2 = rows[2] + (size_t)j0 * (S); \
+    if (!valid[0]) keep = vandq_s16(keep, vld1q_s16(top_)); \
+    if (!valid[2]) keep = vandq_s16(keep, vld1q_s16(mid_)); \
+    for (c = 0; c < cout; c++, w += 9, x0 += plane, x1 += plane, x2 += plane, out += ostride) { \
+        const int16x8_t wv = vandq_s16(vmovl_s8(vld1_s8(w)), keep); \
+        const int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv); \
+        const int16x8_t x00_ = LOAD8(x0, S_); \
+        int32x4_t lo4 = vmull_lane_s16(vget_low_s16(x00_), wa, 0), hi4 = vmull_lane_s16(vget_high_s16(x00_), wa, 0); \
+        K3_DW_TAP(lo4, hi4, x0 + d, wa, 1); \
+        K3_DW_TAP(lo4, hi4, x0 + 2u * d, wa, 2); \
+        K3_DW_TAP(lo4, hi4, x1, wa, 3); \
+        K3_DW_TAP(lo4, hi4, x1 + d, wb, 0); \
+        K3_DW_TAP(lo4, hi4, x1 + 2u * d, wb, 1); \
+        K3_DW_TAP(lo4, hi4, x2, wb, 2); \
+        K3_DW_TAP(lo4, hi4, x2 + d, wb, 3); \
+        if (last) { \
+            const int16x4_t w8_ = vget_low_s16(vmovl_s8(vld1_dup_s8(w + 8))); \
+            K3_DW_TAP(lo4, hi4, x2 + 2u * d, w8_, 0); \
+        } \
+        RQ_STORE(lo4, hi4, &ch[c], lo, out, n); \
+    } \
+}
+K3_DW(k3_dw_s1, 1u)
+K3_DW(k3_dw_s2, 2u)
+
+/* The same block of a dense 3x3 layer of one input channel (the trunk's stem): every output channel reads the same 9
+ * input vectors, loaded and widened once per block instead of once per channel. A kernel row outside the input reads
+ * zeros here instead of the centre row with its weights masked to 0: either way each of its products is 0, and the
+ * int32 sums are exact, so they are K3_BLOCK's (and its ninth tap is skipped as there). Out of line, so that feed's own
+ * registers do not crowd it. */
+#define K3_C1(name, S) \
+NOINLINE static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cout, const int8_t *const *rows, \
+                          const int *valid, unsigned d, unsigned j0, int8_t *out, size_t ostride, unsigned n) \
+{ \
+    const int last = valid[2]; \
+    unsigned c; \
+    const int8_t *x0 = rows[0] + (size_t)j0 * (S), *x1 = rows[1] + (size_t)j0 * (S); \
+    const int8_t *x2 = rows[2] + (size_t)j0 * (S); \
+    const int16x8_t zero = vdupq_n_s16(0); \
+    int16x8_t t0 = zero, t1 = zero, t2 = zero, t6 = zero, t7 = zero, t8 = zero; \
+    const int16x8_t t3 = LOAD8(x1, S), t4 = LOAD8(x1 + d, S), t5 = LOAD8(x1 + 2u * d, S); \
+    if (valid[0]) { \
+        t0 = LOAD8(x0, S); \
+        t1 = LOAD8(x0 + d, S); \
+        t2 = LOAD8(x0 + 2u * d, S); \
+    } \
+    if (last) { \
+        t6 = LOAD8(x2, S); \
+        t7 = LOAD8(x2 + d, S); \
+        t8 = LOAD8(x2 + 2u * d, S); \
+    } \
+    for (c = 0; c < cout; c++, w += 9, out += ostride) { \
+        const int16x8_t wv = vmovl_s8(vld1_s8(w)); \
+        const int16x4_t wa = vget_low_s16(wv), wb = vget_high_s16(wv); \
+        int32x4_t lo4 = vmull_lane_s16(vget_low_s16(t0), wa, 0), hi4 = vmull_lane_s16(vget_high_s16(t0), wa, 0); \
+        MACL(lo4, hi4, t1, wa, 1); \
+        MACL(lo4, hi4, t2, wa, 2); \
+        MACL(lo4, hi4, t3, wa, 3); \
+        MACL(lo4, hi4, t4, wb, 0); \
+        MACL(lo4, hi4, t5, wb, 1); \
+        MACL(lo4, hi4, t6, wb, 2); \
+        MACL(lo4, hi4, t7, wb, 3); \
+        if (last) MACN(lo4, hi4, t8, w[8]); \
+        RQ_STORE(lo4, hi4, &ch[c], lo, out, n); \
+    } \
+}
+K3_C1(k3_c1_s2, 2u)                      /* trunk stems are stride 2; a stride-1 one takes K3_BLOCK */
+#undef K3_DW_TAP
+
+/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). Four output channels per pass (eight
+ * sums; the four weight rows of 8 input channels widened; the block's codes of 4 input channels in one 32-byte load,
+ * widened one channel at a time: 15 of the 16 Q registers), so each input channel is loaded and widened once per 4
+ * output channels (two at a time before: each input twice per 4); then one output channel at a time (a cout that is no
+ * multiple of 4), and input channels one at a time past a multiple of 8. Every sum is exact (at most 64 products of two
+ * int8 codes), so the order does not change it. */
+#define K1_STEP4(X8, H, L) do { \
+        const int16x8_t x_ = vmovl_s8(X8); \
+        const int16x4_t xl_ = vget_low_s16(x_), xh_ = vget_high_s16(x_); \
         a0 = vmlal_lane_s16(a0, xl_, H(k0), L); b0 = vmlal_lane_s16(b0, xh_, H(k0), L); \
         a1 = vmlal_lane_s16(a1, xl_, H(k1), L); b1 = vmlal_lane_s16(b1, xh_, H(k1), L); \
+        a2 = vmlal_lane_s16(a2, xl_, H(k2), L); b2 = vmlal_lane_s16(b2, xh_, H(k2), L); \
+        a3 = vmlal_lane_s16(a3, xl_, H(k3), L); b3 = vmlal_lane_s16(b3, xh_, H(k3), L); \
+    } while (0)
+/* RQ_STORE of nc channels' sums (BLK int32 per channel, consecutive) into out[c * ostride + p], p < n */
+NOINLINE static void rq_rows(const int32_t *sums, const Chan *ch, int32_t lo, unsigned nc, int8_t *out, size_t ostride,
+                             unsigned n)
+{
+    unsigned c;
+    for (c = 0; c < nc; c++, sums += BLK, out += ostride)
+        RQ_STORE(vld1q_s32(sums), vld1q_s32(sums + 4), &ch[c], lo, out, n);
+}
+
+/* RQ_STORE's first form for the channel of lane L of the H half of cv's 4 channels (sums LO / HI), BLK pixels
+ * stored at OUT: the same operations as RQ_STORE (b, m and 31 - sh by lane instead of from a dup), so the same bits */
+#define K1_RQF(LO, HI, H, L, OUT) do { \
+        const int32x4_t b_ = vdupq_lane_s32(H(cv.val[0]), L), s_ = vdupq_lane_s32(H(sv), L); \
+        const int16x4_t h0_ = vqmovn_s32(vrshlq_s32(vqdmulhq_lane_s32(vaddq_s32((LO), b_), H(cv.val[1]), L), s_)); \
+        const int16x4_t h1_ = vqmovn_s32(vrshlq_s32(vqdmulhq_lane_s32(vaddq_s32((HI), b_), H(cv.val[1]), L), s_)); \
+        int8x8_t v_ = vqmovn_s16(vcombine_s16(h0_, h1_)); \
+        if (!lo) v_ = vmax_s8(v_, vmov_n_s8(0)); \
+        vst1_s8((OUT), v_); \
     } while (0)
 
 static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
                      int8_t *out, size_t ostride, unsigned n)
 {
     unsigned c = 0, q;
-    for (; c + 2u <= cout; c += 2u) {
-        int32x4_t a0 = vdupq_n_s32(0), b0 = a0, a1 = a0, b1 = a0;
-        const int8_t *w0 = w + (size_t)c * cin, *w1 = w0 + cin;
-        for (q = 0; q + 8u <= cin; q += 8u) {
-            int16x8_t k0 = vmovl_s8(vld1_s8(w0 + q)), k1 = vmovl_s8(vld1_s8(w1 + q));
-            K1_STEP(0, vget_low_s16, 0);
-            K1_STEP(1, vget_low_s16, 1);
-            K1_STEP(2, vget_low_s16, 2);
-            K1_STEP(3, vget_low_s16, 3);
-            K1_STEP(4, vget_high_s16, 0);
-            K1_STEP(5, vget_high_s16, 1);
-            K1_STEP(6, vget_high_s16, 2);
-            K1_STEP(7, vget_high_s16, 3);
+    int32_t sums[4 * BLK];
+    const int all_fast = ch[0].fast == 3;      /* chan_fast: every channel of the layer in the first form */
+    for (; c + 4u <= cout; c += 4u) {
+        int32x4_t a0 = vdupq_n_s32(0), b0 = a0, a1 = a0, b1 = a0, a2 = a0, b2 = a0, a3 = a0, b3 = a0;
+        const int8_t *w0 = w + (size_t)c * cin, *w1 = w0 + cin, *w2 = w1 + cin, *w3 = w2 + cin, *x = in;
+        unsigned nq;
+        /* running pointers and a count, so the loads post-increment (no address arithmetic per pass) */
+        for (nq = cin / 8u; nq; nq--, w0 += 8, w1 += 8, w2 += 8, w3 += 8, x += 8u * BLK) {
+            const int16x8_t k0 = vmovl_s8(vld1_s8(w0)), k1 = vmovl_s8(vld1_s8(w1));
+            const int16x8_t k2 = vmovl_s8(vld1_s8(w2)), k3 = vmovl_s8(vld1_s8(w3));
+            int8x16x2_t v = vld1q_s8_x2(x);     /* input channels q .. q + 3, 8 pixels each */
+            K1_STEP4(vget_low_s8(v.val[0]), vget_low_s16, 0);
+            K1_STEP4(vget_high_s8(v.val[0]), vget_low_s16, 1);
+            K1_STEP4(vget_low_s8(v.val[1]), vget_low_s16, 2);
+            K1_STEP4(vget_high_s8(v.val[1]), vget_low_s16, 3);
+            v = vld1q_s8_x2(x + 4u * BLK);      /* q + 4 .. q + 7 */
+            K1_STEP4(vget_low_s8(v.val[0]), vget_high_s16, 0);
+            K1_STEP4(vget_high_s8(v.val[0]), vget_high_s16, 1);
+            K1_STEP4(vget_low_s8(v.val[1]), vget_high_s16, 2);
+            K1_STEP4(vget_high_s8(v.val[1]), vget_high_s16, 3);
         }
-        for (; q < cin; q++) {
-            int16x8_t x = vmovl_s8(vld1_s8(in + q * BLK));
-            MACN(a0, b0, x, w0[q]);
-            MACN(a1, b1, x, w1[q]);
+        for (q = cin & ~7u; q < cin; q++, w0++, w1++, w2++, w3++) {
+            int16x8_t xq = vmovl_s8(vld1_s8(in + q * BLK));
+            MACN(a0, b0, xq, *w0);
+            MACN(a1, b1, xq, *w1);
+            MACN(a2, b2, xq, *w2);
+            MACN(a3, b3, xq, *w3);
         }
-        RQ_STORE(a0, b0, &ch[c], lo, out + c * ostride, n);
-        RQ_STORE(a1, b1, &ch[c + 1u], lo, out + (c + 1u) * ostride, n);
+        if (all_fast && n == BLK) {
+            /* every channel in RQ_STORE's first form: the 4 channels' constants in one VLD4 (b, m, sh, fast lanes),
+             * each channel's by lane, the sums where they are */
+            const int32x4x4_t cv = vld4q_s32((const int32_t *)(const void *)(ch + c));
+            const int32x4_t sv = vsubq_s32(vdupq_n_s32(31), cv.val[2]);
+            int8_t *o = out + c * ostride;
+            K1_RQF(a0, b0, vget_low_s32, 0, o);
+            K1_RQF(a1, b1, vget_low_s32, 1, o + ostride);
+            K1_RQF(a2, b2, vget_high_s32, 0, o + 2u * ostride);
+            K1_RQF(a3, b3, vget_high_s32, 1, o + 3u * ostride);
+        } else {
+            /* a row's last, partial block (n < BLK) and the other forms through memory (NEON stores and loads) and
+             * their own function: inlined here, with the 8 sums live, gcc spilled registers around RQ_STORE with
+             * VSTR / VLDR, a NEON-VFP switch each (and the partial block in the lane form above made it spill there) */
+            vst1q_s32(sums, a0);
+            vst1q_s32(sums + 4, b0);
+            vst1q_s32(sums + 8, a1);
+            vst1q_s32(sums + 12, b1);
+            vst1q_s32(sums + 16, a2);
+            vst1q_s32(sums + 20, b2);
+            vst1q_s32(sums + 24, a3);
+            vst1q_s32(sums + 28, b3);
+            rq_rows(sums, &ch[c], lo, 4u, out + c * ostride, ostride, n);
+        }
     }
     for (; c < cout; c++) {
         int32x4_t lo4 = vdupq_n_s32(0), hi4 = lo4;
@@ -1768,6 +1925,19 @@ static void produce(Net *t, unsigned l)
     for (j0 = 0; j0 < r->w_out; j0 += BLK) {
         unsigned n = min_u(BLK, r->w_out - j0);
         int8_t *o = nx == l + 1u ? dst + j0 : blk;
+#if TS_NEON
+        if (L->kind == 1u) {                  /* depthwise: its own kernel, the same outputs */
+            if (s == 1u)
+                k3_dw_s1(weights(L), ch, lo, L->cout, rows, valid, r->plane, d, j0, o, nx == l + 1u ? ds : BLK,
+                         nx == l + 1u ? n : BLK);
+            else
+                k3_dw_s2(weights(L), ch, lo, L->cout, rows, valid, r->plane, d, j0, o, nx == l + 1u ? ds : BLK,
+                         nx == l + 1u ? n : BLK);
+        } else if (L->cin == 1u && s == 2u) { /* one input channel (the stem): its inputs once per block */
+            k3_c1_s2(weights(L), ch, lo, L->cout, rows, valid, d, j0, o, nx == l + 1u ? ds : BLK,
+                     nx == l + 1u ? n : BLK);
+        } else
+#endif
         if (s == 1u)
             k3_block_s1(weights(L), ch, lo, L->cin, L->cout, L->kind == 1u, rows, valid, r->plane, d, j0, o,
                         nx == l + 1u ? ds : BLK, nx == l + 1u ? n : BLK);
@@ -1917,6 +2087,28 @@ NOINLINE static int feed(Net *t, const Src *s, unsigned y, unsigned bpp)
     return VOCR_LINES_OK;
 }
 
+#if TS_NEON
+/* Chan.fast for a channel's bias and shift: |sum| < 2^24 (576 products of 2^14), so bias + sum fits int32 when
+ * |bias| <= 2^31 - 1 - 2^24 (1, NEON's 32-bit form), and with a shift >= 32 also VQDMULH's (2; RQ_STORE; layer_fast
+ * makes a layer's first channel 3 when all of its channels are 2); else 0. The scalar code reads none of it (its
+ * setup keeps the 0 / 1 it had, so the scalar builds compile as before). */
+static int32_t chan_fast(int32_t b, int32_t sh)
+{
+    if (b < -(INT32_MAX - (1 << 24)) || b > INT32_MAX - (1 << 24)) return 0;
+    return sh >= 32 ? 2 : 1;
+}
+
+/* A layer whose every channel has the form 2 marks its first channel 3, which the NEON 1x1 kernel reads once per block
+ * (RQ_STORE reads 2 and 3 alike). */
+static void layer_fast(Chan *ch, unsigned n)
+{
+    unsigned c;
+    for (c = 0; c < n; c++)
+        if (ch[c].fast != 2) return;
+    ch[0].fast = 3;
+}
+#endif
+
 /* The per-layer state and the requantisation constants of one call. */
 static void setup(Net *t, const Plan *p)
 {
@@ -1956,8 +2148,15 @@ static void setup(Net *t, const Plan *p)
             q->m = rds32(L->m + 4u * c);
             q->sh = L->sh[c];
             /* |sum| < 2^24 (576 products of 2^14), so bias + sum fits int32 when |bias| <= 2^31 - 1 - 2^24 */
+#if TS_NEON
+            q->fast = chan_fast(q->b, q->sh);
+#else
             q->fast = q->b >= -(INT32_MAX - (1 << 24)) && q->b <= INT32_MAX - (1 << 24);
+#endif
         }
+#if TS_NEON
+        layer_fast(t->chan + r->chan, L->cout);
+#endif
         r->ring = r->plane = 0;
         if (L->cout > t->maxch) t->maxch = L->cout;
         if (L->k == 3u) {
@@ -2868,8 +3067,15 @@ NOINLINE static void setup3(Net *t, unsigned char *sc, const StreamLay *L)
             q->b = rds32(Ly->b + 4u * c);
             q->m = rds32(Ly->m + 4u * c);
             q->sh = Ly->sh[c];
+#if TS_NEON
+            q->fast = chan_fast(q->b, q->sh);
+#else
             q->fast = q->b >= -(INT32_MAX - (1 << 24)) && q->b <= INT32_MAX - (1 << 24);
+#endif
         }
+#if TS_NEON
+        layer_fast(t->chan + r->chan, Ly->cout);
+#endif
         r->ring = r->plane = 0;
         if (Ly->cout > t->maxch) t->maxch = Ly->cout;
         if (Ly->k == 3u) {

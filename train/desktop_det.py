@@ -7,6 +7,9 @@ when it was never trained at them).
   desktop_det.py --shape d48 --seed N --out RUN --hook-manifest M --hook-shards DIR [--hook-splits train]
                  --manifest M ... --shards DIR ... [--steps 40000] [--lr 3e-3] [--mix hook=0.45,synth=0.2,real=0.35]
                  [--scale 0.42,1.9] [--threads 4] [--workers 1] [--probe N]
+  desktop_det.py export --run RUN --out DIR [--name NAME] [--size fit:960] [--pad pct|frame]
+      a run's final.pt as NAME.onnx (the ONNX file tools/vocr_desktop.Detector reads) and NAME.vdsk (the same
+      weights for the C path, desktop/vocr_desk.c)
 
 The network (SHAPES): a 3x3 stem at stride 2, then four stages at strides 4, 8, 16 and 32, each a separable
 down-sampling block (3x3 depthwise at stride 2, BatchNorm, ReLU, 1x1, BatchNorm, ReLU) and n separable blocks
@@ -59,7 +62,13 @@ SHAPES = {
     "d64": {"name": "d64", "c": [16, 32, 80, 128, 160], "n": [1, 4, 3, 2], "F": 64},
 }
 DILATIONS = {4: [1], 8: [1, 2, 4, 1], 16: [1, 2, 1], 32: [1, 2]}
-DECODE = {"min_cells": 2, "conf_min": 0.5, "pad_pct": 0.18, "pad_min": 2.0, "min_across": 4.0}
+DECODE = {"min_cells": 2, "conf_min_logit": 0.0, "pad_pct": 0.18, "pad_min": 2.0, "min_across": 4.0, "pad_frame": 0,
+          "pad_frame_min": 2}
+# the pad rules (tools/vocr_desktop.py): pct = textspot8's (18% of the size across, at least 2 network px);
+# frame = MeikiOCR's reference pipeline's (the ink box grown by max(2, round(4 H / 544)) frame px)
+PAD_RULES = {"pct": {"pad_pct": 0.18, "pad_min": 2.0, "pad_frame": 0},
+             "frame": {"pad_pct": 0.0, "pad_min": 0.0, "pad_frame": 4}}
+VDSK_HEADER = 144
 DEFAULT_SIZE = "fit:960"
 ATTRIBUTION = ("VOCR desktop line detector, bee-san/vita-vn-ocr (GPL-3.0-or-later). Trained on textspot's synthetic "
                "frames, MeikiOCR's detector boxes on VNDB and owner screenshots, and the owner's private hooked PS "
@@ -197,6 +206,104 @@ def export_onnx(model, path, meta, check=True):
     return None
 
 
+def policy(size):
+    """(kind, n) of a size policy for the VDSK header: native 0, fit:N 1, long:N 2."""
+    if size in (None, "", "native"):
+        return 0, 0
+    kind, _, n = str(size).partition(":")
+    if not n:
+        kind, n = "fit", kind
+    return {"fit": 1, "long": 2}[kind], int(n)
+
+
+def vdsk_bytes(model, size=DEFAULT_SIZE, decode=None):
+    """The VDSK version-1 blob of a DeskNet for desktop/vocr_desk.c (vocr_desk.h): a 144-byte header (shape, tags,
+    the decode's constants as float64, the default size policy, the stages' dilation patterns), the BatchNorm-folded
+    float32 weights in the C kernels' layouts (stem [3][3][c0]; depthwise [3][3][C]; pointwise [Cin][Cout]; the head
+    [F][4 + T] with A1 and A2 times 4 folded in) in the network's order, then the CRC-32 of everything before it."""
+    import struct
+    import zlib
+    m = fold_bn(model)
+    sh = model.shape
+    d = dict(DECODE, **(decode or {}))
+    parts = []
+
+    def add(t):
+        parts.append(np.ascontiguousarray(t.detach().cpu().numpy(), np.float32).ravel())
+
+    def dw(conv):
+        add(conv.weight[:, 0].permute(1, 2, 0))
+        add(conv.bias)
+
+    def pw(conv):
+        add(conv.weight[:, :, 0, 0].t())
+        add(conv.bias)
+    dw(m.stem[0])
+    for stage in (m.s4, m.s8, m.s16, m.s32):
+        for blk in stage:
+            dw(blk.dw)
+            pw(blk.pw)
+    for lat in m.lat:
+        pw(lat.conv)
+    dw(m.smooth.dw)
+    pw(m.smooth.pw)
+    w = m.head.weight[:, :, 0, 0].t().clone()
+    b = m.head.bias.clone()
+    w[:, 2:4] *= 4.0
+    b[2:4] *= 4.0
+    add(w)
+    add(b)
+    body = np.concatenate(parts).astype("<f4").tobytes()
+    kind, n = policy(size)
+    dl = [DILATIONS[s] for s in (4, 8, 16, 32)]
+    hdr = b"VDSK" + struct.pack("<III", 1, VDSK_HEADER, VDSK_HEADER + len(body) + 4)
+    hdr += struct.pack("<5I", *sh["c"]) + struct.pack("<4I", *sh["n"])
+    hdr += struct.pack("<5I", sh["F"], TAGS, int(d["min_cells"]), kind, n)
+    hdr += struct.pack("<4I", *[len(x) for x in dl]) + bytes(v for x in dl for v in (x + [0, 0, 0, 0])[:4])
+    hdr += struct.pack("<4d", float(d["conf_min_logit"]), float(d["pad_pct"]), float(d["pad_min"]),
+                       float(d["min_across"]))
+    hdr += struct.pack("<2I", int(d["pad_frame"]), int(d["pad_frame_min"]))
+    hdr += bytes(VDSK_HEADER - len(hdr))
+    if len(hdr) != VDSK_HEADER:
+        raise AssertionError(len(hdr))
+    blob = hdr + body
+    return blob + struct.pack("<I", zlib.crc32(blob) & 0xFFFFFFFF)
+
+
+def load_run(run_dir):
+    """(DeskNet in eval mode, checkpoint) of a run's final.pt."""
+    ck = torch.load(Path(run_dir) / "final.pt", map_location="cpu", weights_only=False)
+    if ck.get("kind") != KIND:
+        raise SystemExit(f"{run_dir}/final.pt: not a desktop detector checkpoint")
+    m = DeskNet(ck["shape"], int(ck.get("tags", TAGS)))
+    m.load_state_dict(ck["state_dict"])
+    return m.eval(), ck
+
+
+def cmd_export(argv):
+    """desktop_det.py export --run RUN --out DIR [--name NAME] [--size fit:960]: NAME.onnx and NAME.vdsk."""
+    ap = argparse.ArgumentParser(prog="desktop_det.py export")
+    ap.add_argument("--run", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--name", default="vocr_desktop_det")
+    ap.add_argument("--size", default=DEFAULT_SIZE)
+    ap.add_argument("--pad", default="pct", choices=sorted(PAD_RULES))
+    a = ap.parse_args(argv)
+    m, ck = load_run(a.run)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    worst = export_onnx(m, out / f"{a.name}.onnx", onnx_meta(ck["shape"], a.name, a.size, PAD_RULES[a.pad]))
+    blob = vdsk_bytes(m, a.size, PAD_RULES[a.pad])
+    (out / f"{a.name}.vdsk").write_bytes(blob)
+    rec = {"run": str(a.run), "pt_sha256": sha256_file(Path(a.run) / "final.pt"), "size": a.size,
+           "onnx": f"{a.name}.onnx", "onnx_sha256": sha256_file(out / f"{a.name}.onnx"),
+           "onnx_bytes": (out / f"{a.name}.onnx").stat().st_size, "vdsk": f"{a.name}.vdsk",
+           "vdsk_sha256": sha256_file(out / f"{a.name}.vdsk"), "vdsk_bytes": len(blob),
+           "onnx_vs_torch_max_abs": worst, "params": n_params(m), "pad": a.pad}
+    print(json.dumps(rec), flush=True)
+    return rec
+
+
 def onnx_meta(shape, run_name, size=DEFAULT_SIZE, decode=None):
     d = dict(DECODE, **(decode or {}))
     return {"vocr.kind": KIND, "vocr.name": run_name, "vocr.shape": shape, "vocr.stride": 4, "vocr.align": 32,
@@ -218,12 +325,44 @@ def _setup():
     return B, T2, T8M, ST
 
 
-def make_window_ms(canvas, smp, src, rng, sources, scale, aug=True):
+RUBY = {"max_rel": 0.6, "gap": 0.5, "overlap": 0.25, "inside": 0.8}
+
+
+def ruby_like(lines, rules=RUBY):
+    """Indices of the horizontal lines that look like ruby (furigana) over another line: at most max_rel of its
+    height, its bottom within `overlap` of that line's height below the line's top and at most `gap` of it above,
+    and at least `inside` of its width over the line (MeikiOCR's boxes, the real half's labels, box ruby as lines)."""
+    out = []
+    hz = [(i, ln) for i, ln in enumerate(lines) if not int(ln[4])]
+    for i, a in hz:
+        ha, wa = a[3] - a[1], a[2] - a[0]
+        if ha <= 0 or wa <= 0:
+            continue
+        for j, b in hz:
+            if j == i:
+                continue
+            hb = b[3] - b[1]
+            if hb <= 0 or ha > rules["max_rel"] * hb:
+                continue
+            if not (a[3] <= b[1] + rules["overlap"] * hb and b[1] - a[3] <= rules["gap"] * hb):
+                continue
+            if min(a[2], b[2]) - max(a[0], b[0]) >= rules["inside"] * wa:
+                out.append(i)
+                break
+    return out
+
+
+def make_window_ms(canvas, smp, src, rng, sources, scale, aug=True, ruby_filter=False):
     """One 256 x 512 (at most) window: (img uint8, positives [[x0, y0, x1, y1, vertical, weight, mask]], ignore)
     in window px, the canvas resized by a log-uniform factor in `scale` (module docstring)."""
     import cv2
     B, T2, T8M, _ = _setup()
     lines, ignore = smp["lines"], smp["ignore"]
+    if ruby_filter and src != "hook":
+        rb = set(ruby_like(lines))
+        if rb:
+            ignore = list(ignore) + [ln[:4] for i, ln in enumerate(lines) if i in rb]
+            lines = [ln for i, ln in enumerate(lines) if i not in rb]
     up = 1
     if aug and src == "hook" and smp["kind"] == "psp" and rng.random() < B.AUG["adrenaline_p"]:
         canvas = cv2.resize(np.ascontiguousarray(canvas), (2 * canvas.shape[1], 2 * canvas.shape[0]),
@@ -277,7 +416,7 @@ def make_window_ms(canvas, smp, src, rng, sources, scale, aug=True):
     return img, pos, ign
 
 
-def make_batch_ms(sources, rng, scale, batch, aug=True):
+def make_batch_ms(sources, rng, scale, batch, aug=True, ruby_filter=False):
     B, _, T8M, _ = _setup()
     WH, WW = B.WIN_H, B.WIN_W
     x = np.zeros((batch, 1, WH, WW), np.uint8)
@@ -288,7 +427,7 @@ def make_batch_ms(sources, rng, scale, batch, aug=True):
     mk = np.zeros((batch, ho, wo), np.int64)
     for b in range(batch):
         src, canvas, smp = sources.pick(rng)
-        img, pos, ign = make_window_ms(canvas, smp, src, rng, sources, scale, aug)
+        img, pos, ign = make_window_ms(canvas, smp, src, rng, sources, scale, aug, ruby_filter)
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         K, O, A1, A2, v, k, Wt, M = T8M.targets(pos, ign, w, h)  # noqa: E741
@@ -314,7 +453,8 @@ class Batches(torch.utils.data.IterableDataset):
         sources = B.Sources(c["mix"], hook, frames, c["title_temp"])
         rng = np.random.default_rng([self.seed, wid])
         while True:
-            yield make_batch_ms(sources, rng, c["scale"], c["batch"], c.get("aug", True))
+            yield make_batch_ms(sources, rng, c["scale"], c["batch"], c.get("aug", True),
+                                c.get("ruby_filter", False))
 
 
 # ----------------------------------------------------------------------------- the run
@@ -340,6 +480,8 @@ def parse(argv=None):
     ap.add_argument("--log-every", type=int, default=200)
     ap.add_argument("--probe", type=int, default=0)
     ap.add_argument("--no-aug", action="store_true")
+    ap.add_argument("--ruby-filter", action="store_true",
+                    help="ruby-like boxes of the non-hooked sources: ignore areas")
     ap.add_argument("--bn-batches", type=int, default=32)
     ap.add_argument("--ema-start", type=int, default=1000)
     a = ap.parse_args(argv)
@@ -395,7 +537,7 @@ def main(argv=None):
     cfg = {"mix": a.mix_d, "hook_manifest": a.hook_manifest, "hook_shards": a.hook_shards,
            "hook_splits": tuple(a.hook_splits.split(",")), "manifests": list(a.manifest), "shards": list(a.shards),
            "skip": (skip_shots, skip_vns), "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch,
-           "aug": not a.no_aug}
+           "aug": not a.no_aug, "ruby_filter": a.ruby_filter}
     hook = B.HookPool(a.hook_manifest, a.hook_shards, cfg["hook_splits"]) if a.mix_d.get("hook") else None
     frames = ST.FramePool(a.manifest, a.shards, skip=(skip_shots, skip_vns)) if a.manifest else None
     sources = B.Sources(a.mix_d, hook, frames, B.TITLE_TEMP)
@@ -415,6 +557,7 @@ def main(argv=None):
     run = {"kind": "desktop-detector-run", "name": a.name, "started": ST.utc(), "shape": shape,
            "params": n_params(model), "args": {k: v for k, v in vars(a).items() if k not in ("mix_d", "scale_t")},
            "mix": a.mix_d, "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch,
+           "ruby_filter": RUBY if a.ruby_filter else None,
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("edge_cells", "edge_weight", "icon_p",
                                                                             "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
@@ -486,4 +629,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "export":
+        cmd_export(sys.argv[2:])
+    else:
+        main()

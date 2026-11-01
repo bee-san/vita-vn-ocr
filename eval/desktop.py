@@ -412,6 +412,20 @@ class Ts8Det:
         return out
 
 
+class CDeskDet:
+    """The C path's detector (desktop/libvocrdesk.so through tools/vocr_desktop.CModel) on a VDSK blob."""
+
+    name = "cdesk"
+
+    def __init__(self, vdsk, size=None):
+        import vocr_desktop as D
+        self.m, self.size = D.CModel(vdsk), size
+
+    def boxes(self, rgb):
+        return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in
+                self.m.detect(rgb, self.size)]
+
+
 def detector(spec, threads=1, opt="all", spinning=None):
     if spec == "meiki":
         return MeikiDet(threads, opt=opt, spinning=spinning)
@@ -419,8 +433,14 @@ def detector(spec, threads=1, opt="all", spinning=None):
         return Ts8Det(threads, opt, spinning)
     if spec.startswith("desk:"):
         import vocr_desktop as D
-        path, _, size = spec[5:].partition("@")
-        return D.Detector(path, session_options=session_options(threads, opt, spinning), size=size or None)
+        path, _, rest = spec[5:].partition("@")
+        size, _, pad = rest.partition("@")
+        return D.Detector(path, session_options=session_options(threads, opt, spinning), size=size or None,
+                          pad=pad or None)
+    if spec.startswith("cdesk:"):
+        import vocr_desktop as D
+        path, _, size = spec[6:].partition("@")
+        return CDeskDet(path, size or None)
     raise SystemExit(f"unknown detector {spec!r}")
 
 

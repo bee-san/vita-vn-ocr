@@ -5,6 +5,7 @@ does not cover.
 
   textspot6_pages.py meiki --pool P --pages D --out CACHE [--titles T,...] [--splits train,hval,guard] [--workers 5]
   textspot6_pages.py build --pool P --pages D --meiki CACHE --out SHARDS [--titles T,...] [--workers 5]
+                     [--ruby ignore|background]
   textspot6_pages.py manifest --shards SHARDS --pool P --out data/manifests/textspot6_pages_v1.json
   textspot6_pages.py sheet --shards SHARDS --dir DIR --name NAME --out PNG [--n 6] [--seed 0]   QA (<= 1280 px)
 
@@ -25,7 +26,9 @@ The labels of a page (RULES holds every setting; build_labels is pure, boxes in,
              when the line has furigana, else box ([x, y, w, h] in native px: the renderer's glyph quads), refined to
              ink: refine_h for a horizontal line, refine_t for a vertical one, kept only when the refined box lies
              inside the quad box grown by 3 px and its size across is at least 45% of the quad's (else the quad box)
-  ignore     ruby lines (their box grown by 1 px), lines whose drop is "geometry" or "conflict" (box grown by 2 px),
+  ignore     ruby lines (their box grown by 1 px; --ruby background leaves them background instead, for a detector
+             whose recognizer reads the main text only), lines whose drop is "geometry" or "conflict" (box grown by
+             2 px),
              every uncovered page box (a renderer box no verified line holds: its quad grown by 2 px)
   other text a meiki box that meets no page box (IoU < 0.2 with every page box and less than 30% of its area inside
              any one page box grown by 3 px): with score >= 0.5 a positive of class "notdlg" (some text that is not
@@ -71,6 +74,7 @@ RULES = {
     "classes": {"line": "dialogue", "name": "name"},
     "other_class": "notdlg",
     "shard_pages": 500,
+    "ruby_as": "ignore",
 }
 SPLITS = ("train", "hval", "guard")
 
@@ -158,8 +162,11 @@ def build_labels(rec, refined, meiki, W, H, rules=RULES):
     for ln in rec["lines"]:
         b = xyxy(ln["box_main"] if ln.get("furigana") and ln.get("box_main") else ln["box"])
         if ln["kind"] == "ruby":
-            ignore.append(grow(xyxy(ln["box"]), rules["ruby_grow"], W, H))
-            c["ruby_ignore"] += 1
+            if rules.get("ruby_as", "ignore") == "ignore":
+                ignore.append(grow(xyxy(ln["box"]), rules["ruby_grow"], W, H))
+                c["ruby_ignore"] += 1
+            else:                   # "background" (vocr-desktop, #169): ruby is not a line a recognizer should read
+                c["ruby_background"] = c.get("ruby_background", 0) + 1
             continue
         if ln.get("drop") in rules["ignore_drops"]:
             ignore.append(grow(b, rules["dropped_grow"], W, H))
@@ -316,6 +323,14 @@ def title_vns(pool_dir):
 
 
 def cmd_build(args):
+    if args.ruby != RULES["ruby_as"]:
+        RULES["ruby_as"] = args.ruby        # before the workers fork: they read RULES
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    rules_file = out / "RULES.json"
+    if rules_file.exists() and json.loads(rules_file.read_text(encoding="utf-8")) != RULES:
+        raise SystemExit(f"{rules_file}: these shards were built with other rules")
+    rules_file.write_text(json.dumps(RULES, indent=1) + "\n", encoding="utf-8")
     titles = set(args.titles.split(",")) if args.titles else None
     rows = read_pool(args.pool, titles, SPLITS)
     meiki = load_meiki(args.meiki) if args.meiki else {}
@@ -372,6 +387,7 @@ def cmd_build(args):
 
 def cmd_manifest(args):
     root = Path(args.shards)
+    rules = json.loads((root / "RULES.json").read_text(encoding="utf-8")) if (root / "RULES.json").exists() else RULES
     shards, totals = [], {}
     for split in SPLITS:
         for js in sorted((root / split).glob("*.json")):
@@ -401,7 +417,7 @@ def cmd_manifest(args):
                                                 "teacher/geometry.py", "teacher/engines.py")}
     pool_files = {f.name: sha256_file(f) for f in sorted(Path(args.pool).glob("*.jsonl"))}
     doc = {"kind": "textspot6-pages", "schema": 1, "issue": 128, "generator": "synth/textspot6_pages.py",
-           "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "rules": RULES, "code_sha256": code,
+           "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "rules": rules, "code_sha256": code,
            "pool": {"dir": str(args.pool), "files_sha256": pool_files}, "shards": shards, "totals": totals,
            "note": "shards hold copyrighted game frames and stay local; this manifest holds names, counts, sha256"}
     Path(args.out).write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -460,6 +476,8 @@ def main(argv=None):
     b.add_argument("--workers", type=int, default=int(os.environ.get("OMP_NUM_THREADS", "5")))
     b.add_argument("--force", action="store_true")
     b.add_argument("--allow-missing-meiki", action="store_true")
+    b.add_argument("--ruby", default="ignore", choices=("ignore", "background"),
+                   help="ruby lines: ignore areas (textspot6's rule) or background (vocr-desktop's S5 arm)")
     c = sub.add_parser("manifest")
     c.add_argument("--shards", required=True)
     c.add_argument("--pool", required=True)

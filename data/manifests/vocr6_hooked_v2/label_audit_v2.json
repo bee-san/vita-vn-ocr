@@ -1,0 +1,140 @@
+{
+ "kind": "vocr6-hooked-label-audit-v2",
+ "reviewer_kind": "assistant",
+ "lines": 360,
+ "strata": {
+  "all": {
+   "ok": 358,
+   "wrong": 2
+  },
+  "furigana": {
+   "ok": 40
+  },
+  "glyph_cells": {
+   "ok": 118,
+   "wrong": 2
+  },
+  "image_rows": {
+   "ok": 70
+  },
+  "name": {
+   "ok": 50
+  },
+  "platform:psp": {
+   "ok": 19
+  },
+  "platform:vita": {
+   "ok": 339,
+   "wrong": 2
+  },
+  "ruby": {
+   "ok": 40
+  },
+  "vertical": {
+   "ok": 40
+  }
+ },
+ "wrong_rate_ci95": {
+  "all": [
+   0.00152,
+   0.02003
+  ],
+  "furigana": [
+   0.0,
+   0.08762
+  ],
+  "glyph_cells": [
+   0.00458,
+   0.05874
+  ],
+  "image_rows": [
+   0.0,
+   0.05202
+  ],
+  "name": [
+   0.0,
+   0.07135
+  ],
+  "platform:psp": [
+   0.0,
+   0.16818
+  ],
+  "platform:vita": [
+   0.00161,
+   0.02113
+  ],
+  "ruby": [
+   0.0,
+   0.08762
+  ],
+  "vertical": [
+   0.0,
+   0.08762
+  ]
+ },
+ "not_ok": [
+  {
+   "line": "S16:5",
+   "id": "PCSG00926:000029:line1",
+   "stratum": "glyph_cells",
+   "verdict": "wrong",
+   "class": "doubled_cells",
+   "note": "the crop is a nameplate drawn twice (its cells coincide in pairs); the label is the dialogue line below it"
+  },
+  {
+   "line": "S18:20",
+   "id": "PCSG00476:000017:line2",
+   "stratum": "glyph_cells",
+   "verdict": "wrong",
+   "class": "remapped",
+   "note": "the hook's iteration mark ゞ is drawn as a !? ligature (the title's 3 records with ゞ)"
+  }
+ ],
+ "drawn_from": "pools v2 (manifest 22dbd259): kept rows of records not in pools v1, 360 lines (seed 20261101), 106 title/run groups; quotas image_rows 70, furigana 40, name 50, ruby 40, vertical 40 (shown re-flowed upright), glyph_cells 120 round robin",
+ "post_fix_check": {
+  "of": 358,
+  "wrong_after_fixes": 0,
+  "wrong_rate_ci95_wilson": [
+   0.0,
+   0.01062
+  ]
+ },
+ "pools": "pools v2.1",
+ "targeted": {
+  "kind": "targeted checks (not random): the rare-character scan, the classes the sample found, and the rows the new rules keep",
+  "sheets": {
+   "odd_characters (audit/sheets_odd)": {
+    "lines": 20,
+    "wrong": 9,
+    "note": "every non-kanji character that occurs in one title only: 9 wrong (an undrawn code ^ in PCSG00122, remapped glyphs: NPJH50882 Ⅵ/Ⅷ/⑮-⑲, NPJH50001 ㊤㊥㊦, NPJH50002 ㊨, PCSG00476 ゞ), 11 drawn as labelled"
+   },
+   "PCSG00122 ^ records (audit/sheets_caret)": {
+    "lines": 20,
+    "wrong_as_stored": 20,
+    "right_after_stripping_the_code": 9,
+    "shifted": 11,
+    "note": "the ^ code is never drawn: 9 records whose code takes a blank cell read right without it; 11 are shifted (a drawn glyph under a code). The new rule keeps the first kind (stripped) and drops the second, telling them apart by ink in the code's cells: it agrees with all 20 verdicts"
+   },
+   "symbols and classes (audit/sheets_check2, sheets_check3)": {
+    "lines": 36,
+    "wrong": 5,
+    "note": "├┤ drawn as ― (NPJH50382 x2, NPJH50621), ≪≫ drawn as ― (NPJH50382), PCSG00367's ！ drawn as ／ in one image_rows row; ok: NPJH50279's ≪≫ (drawn), ゛, Latin, ↑, →, ★, Ⅳ, ', ], ◆, ＃＆＄％, ♪, ☆, ＝, NPJH50001's doubled-key pairs, PCSG00853's 『』 (drawn), 10 PCSG00122 rows without ^ on ^ pages"
+   },
+   "PCSG00122 rows after a ^ row on the same page (audit/sheets_check4)": {
+    "lines": 20,
+    "wrong": 0
+   },
+   "post-fix: stripped PCSG00122 rows in pools v2.1 (audit/sheets_postfix)": {
+    "lines": 20,
+    "wrong": 0
+   }
+  },
+  "rules_added": {
+   "undrawn_stripped": "label without the code, kept: 150 records",
+   "undrawn_shifted": "label_doubt: 355",
+   "remapped": "label_doubt: 113",
+   "doubled_cells": "label_doubt: 1",
+   "audited_wrong": "label_doubt: 1"
+  }
+ }
+}

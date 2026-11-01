@@ -50,7 +50,9 @@ reviewer approved every page.
   time of the sync: 8 PSP titles were uploaded 05:27-08:24Z, and 5 of them say `in_progress`. One of those,
   NPJH50127, has 58 pages and no verified line yet.
 - **Versions.** v1 is a snapshot of the sync. Later uploads and fixes go into a new version (`pools/v2`); v1 is
-  frozen and read-only.
+  frozen and read-only. That version is pools v2.1, the bucket at 138 titles (2026-10-31, #166):
+  `docs/vocr6-data-v2.md`. Its label audit found 4 wrong labels in pools v1's training pool (that document's "Label
+  audit").
 
 How a line is verified (the bucket's README):
 

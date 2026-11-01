@@ -3,13 +3,13 @@
 
   export_onnx.py recognizer --blob VOCR6.2_N_w8g2.vocr --mode exact|fast [--convs c|ort] --out VOCR6.2_N_exact.onnx
   export_onnx.py spotter --blob textspot8_t64n8c16_w8.vtsp --mode exact|int8 --out textspot8_exact.onnx
-  export_onnx.py release --models DIR --out DIR [--tag TAG]    every file of the ONNX release, its manifest and
-                                                               SHA256SUMS (the blobs are read from DIR, sha256-checked)
+  export_onnx.py release --models DIR --out DIR   every ONNX file of the release and onnx-manifest.json (the blobs
+                                                  are read from DIR and checked against its SHA256SUMS)
 
 The published int8 blobs are read as they are (train/export.py read_blob, train/headgate.py, train/head2level.py,
 synth/textspot6_twin.py); nothing is retrained or re-quantised. The graphs use standard ONNX operators only (opset 17,
-IR version 8), so any ONNX Runtime from 1.13 on loads them. Every file is deterministic: the same blob gives the same
-bytes.
+IR version 8); opset 17 needs ONNX Runtime 1.13 or newer, and only 1.30.0 was checked (docs/onnx.md). Every file is
+deterministic: the same blob gives the same bytes.
 
 RECOGNIZER. Input "grey": uint8 [1, 1, H, W], the line as runtime/vocr.c preprocesses it (H = 32, W the resized width
 padded to a multiple of the stride by repeating the last column; tools/vocr_onnx.py preprocess). Outputs per CTC frame
@@ -32,7 +32,8 @@ blob's model has a second input, "head_sections" (bool scalar):
   - every pointwise layer, the row collapse and the head: int8 weights stored as int8 (as uint8 with zero point 128);
     each position's activations quantised to int16 as quant16 does (q = sign(t) floor(|t| + 0.5), t = x (32767 / m),
     m = max |x|; s = m / 32767), q split into two base-256 digits, and per 512-term chunk the two digit products
-    through two MatMulInteger (U8U8: exact on every MLAS kernel; U8S8 can saturate on AVX2), combined in int32
+    through two MatMulInteger (U8U8, exact as checked on ONNX Runtime 1.30's x86-64 kernels; U8S8 can saturate its
+    intermediate sums on some x86 kernels), combined in int32
     (256 hi + lo, the chunk's exact sum), each chunk's sum converted to float32 and added in order, then
     S (scale s) + bias, ReLU and the residual, as mm_i16;
   - the head gate and the escape of the two-level head: their layer 1 through the same integer path on the head's
@@ -163,9 +164,14 @@ def conv_exact(g, x, op):
     acc = acc + w x tap by tap (dy, then dx), each product and sum rounded on its own. One grouped convolution gives,
     per channel c, taps + 1 planes: the bias (a zero kernel with the conv's bias b_c: 0 + b_c = b_c) and each tap's
     product (a kernel holding that tap's weight alone: w x + zeros = w x, exact in any summation order, with or
-    without fused multiply-adds); CumSum then adds them in that order. Returns [1, C, H_out, W_out]. Only the sign of
-    a zero can come out otherwise than in C (-0 + +0 is +0), and an equal value: every stem and depthwise op of the
-    VOCR blobs has a ReLU, which maps both zeros to +0."""
+    without fused multiply-adds); CumSum then adds them in that order (ONNX Runtime's CPU CumSum is a sequential scan;
+    the ONNX spec does not fix a prefix sum's order). Returns [1, C, H_out, W_out].
+
+    C skips the taps in the top and bottom padding; here they add zero products. That can change only the sign of a
+    zero, where a running sum is zero (-0 + +0 is +0), and ONNX Runtime's Relu keeps -0. No zero's sign reaches an
+    output: a conv output goes on only through quant16 (both zeros quantise to 0 and leave max |x| alone) or through
+    the residual add to a pointwise output, which is never -0 (S is the float of an int, the scales are positive and
+    the blobs' biases hold no -0; audit-vocr-onnx n1)."""
     kh, kw, sh, sw, ph, pw, cout = op["kh"], op["kw"], op["sh"], op["sw"], op["ph"], op["pw"], op["cout"]
     taps = kh * kw
     w = np.asarray(op["w"], F32)                          # [cout][taps]

@@ -157,7 +157,8 @@ def blobs():
     l1, b0 = H2.level1_inputs(lg1, 8 * l1b)
     esc["t"] = F32(np.quantile(H2.escape_score(qx, sx, l1, b0, esc), 0.7))
     both = H2.attach(HG.append_gate(plain, gp, gt), H2.write_trailer(plain, l1b, esc))
-    return plain, both
+    gate_only = HG.append_gate(plain, gp, gt)                   # a head gate without a two-level head (VOCR5's _w8g)
+    return plain, both, gate_only
 
 
 def crops(n=14, seed=0):
@@ -180,13 +181,17 @@ def outputs(sess, x, sections=None):
     return dict(zip(names, sess.run(names, feeds)))
 
 
-@pytest.mark.parametrize("which", ["plain", "both"])
+@pytest.mark.parametrize("which", ["plain", "both", "gate"])
 def test_exact_recognizer_is_c_w8i(blobs, which):
     from pyvocr import Vocr
-    data = blobs[0] if which == "plain" else blobs[1]
+    data = {"plain": blobs[0], "both": blobs[1], "gate": blobs[2]}[which]
     sess = session(X.recognizer(data, "exact"))
     plain_c = Vocr(data, mode="w8i")
-    sec_c = Vocr(data, mode="w8i", head_gate="on", two_level=1) if which == "both" else None
+    sec_c = None
+    if which == "both":
+        sec_c = Vocr(data, mode="w8i", head_gate="on", two_level=1)
+    elif which == "gate":
+        sec_c = Vocr(data, mode="w8i", head_gate="on")
     seen_gated = seen_escaped = 0
     for g in crops():
         for inv in (False, True):
@@ -194,7 +199,7 @@ def test_exact_recognizer_is_c_w8i(blobs, which):
             assert np.array_equal(x, plain_c.preprocess(g, inv)[0])
             text, lg = plain_c.run(g, logits=True, invert=inv)
             c = plain_c.run_topk(g, 8, invert=inv)
-            o = outputs(sess, x, False if which == "both" else None)
+            o = outputs(sess, x, None if which == "plain" else False)
             assert np.array_equal(bits(o["logits"]), bits(lg))
             assert np.array_equal(o["best"], c["best"])
             assert np.array_equal(bits(o["topk_logits"]), bits(c["topv"]))
@@ -208,13 +213,18 @@ def test_exact_recognizer_is_c_w8i(blobs, which):
                 assert np.array_equal(o[k_onnx], s[k_c]), k_onnx
             for k_onnx, k_c in (("topk_logits", "topv"), ("blank_logit", "blank"), ("gate_score", "gate_score")):
                 assert np.array_equal(bits(o[k_onnx]), bits(s[k_c])), k_onnx
-            assert np.array_equal(np.isnan(o["escape_score"]), np.isnan(s["esc"]))
-            ok = ~np.isnan(s["esc"])
-            assert np.array_equal(bits(o["escape_score"][ok]), bits(s["esc"][ok]))
+            if which == "both":
+                assert np.array_equal(np.isnan(o["escape_score"]), np.isnan(s["esc"]))
+                ok = ~np.isnan(s["esc"])
+                assert np.array_equal(bits(o["escape_score"][ok]), bits(s["esc"][ok]))
+            else:
+                assert "escape_score" not in o
             seen_gated += s["gated"]
             seen_escaped += s["escaped"]
     if which == "both":
         assert seen_gated and seen_escaped                        # the fixture exercises both sections
+    if which == "gate":
+        assert seen_gated
 
 
 def test_reader_text_conf_and_cells_are_c(blobs, tmp_path):
@@ -411,12 +421,16 @@ def test_charlm_is_the_c_decoder(blobs):
             assert py.decode(r, o["topv"], o["topc"], o["blank"]) == cl.decode(o["topv"], o["topc"], o["blank"])
 
 
-def test_rubi_lm_settings_match_the_release_settings_file():
-    """RUBI_LM against Rubi's own table, as recorded by v0.3.7-lm6.2's settings (docs/vocr6-lm.md)."""
+def test_rubi_lm_table():
+    """RUBI_LM and RUBI_LM_RETUNED against Rubi's own tables (bee-san/Rubi_for_vita core/vocr_ocr.c lms[]: beta,
+    tier, alpha, flags per LM; lm_retuned[]: VOCR6-N's row for the 2000k LM), copied here as (alpha, beta, flags); the
+    four tiers' values are also v0.3.7-lm6.2's LM-settings.json (alpha, beta, flags 2 = EOS, 1 = BOS)."""
     want = {"vocr_lm_o3_500k.vlm": (500, 3000, 2), "vocr_lm6_o3_1000k.vlm": (600, 2500, 1),
             "vocr_lm_o3_2000k.vlm": (500, 3000, 2), "vocr_lm6_o3_4000k.vlm": (600, 2500, 1)}
     assert {k: (v["alpha"], v["beta"], v["flags"]) for k, v in V.RUBI_LM.items()} == want
-    assert struct.calcsize("<7I") == 28
+    assert {k: (v["alpha"], v["beta"], v["flags"]) for k, v in V.RUBI_LM_RETUNED.items()} == {
+        ("N", "vocr_lm_o3_2000k.vlm"): (400, 1500, V.FLAG_BOS | V.FLAG_EOS)}
+    assert struct.calcsize("<7I") == 28                       # the VOLM header fields CharLM unpacks after the magic
 
 
 def test_align_map_is_charbox_align_map():
@@ -482,3 +496,46 @@ def test_command_line_reads_an_image(blobs, tmp_path):
     assert rec["image"].endswith("f.png")
     for ln in rec["lines"]:
         assert len(ln["chars"]) == len(ln["text"]) and len(ln["box"]) == 4
+
+
+def test_parity_tally_counts_numpy_bools_and_the_verdict_needs_every_check():
+    """eval/onnx_parity.py: a check given as numpy.bool_ is counted (audit-vocr-onnx F1), and the verdict fails when a
+    check of R1 that every tier must have never reached the tally."""
+    import onnx_parity as P
+    rec = {"S": {"exact_conf": np.float32(1) == np.float32(1), "exact_text": True, "frames": 3}}
+    t = P.tally([("k", rec)])
+    assert t["S"]["exact_conf"] == {"n": 1, "fail": 0, "ids": []} and t["S"]["counts"]["frames"] == 3
+    full = {k: {"n": 1, "fail": 0} for k in P.R1_ALWAYS}
+    res = {"sets": {"x": {"checks": {"S": dict(full), "N": dict(full, sec_best={"n": 1, "fail": 0})}}}}
+    v = P.verdict(res)
+    assert not v["R1_exact_recognizer"] and v["R1_missing_checks"] == {"N": [k for k in P.R1_SECTIONS
+                                                                              if k != "sec_best"]}
+    res["sets"]["x"]["checks"]["N"].update({k: {"n": 1, "fail": 0} for k in P.R1_SECTIONS})
+    assert P.verdict(res)["R1_exact_recognizer"]
+    del res["sets"]["x"]["checks"]["S"]["exact_conf"]
+    assert P.verdict(res)["R1_missing_checks"] == {"S": ["exact_conf"]}
+
+
+def test_spotter_refuses_sides_over_2048_and_read_region_clips(blobs, tmp_path):
+    """Spotter.spot takes 1 to 2048 px a side, as runtime/vocr_textspot6.c (audit-vocr-onnx n10); read_region reads a
+    region that starts outside the frame as its part inside the frame (n13)."""
+    import textspot6_model as M6
+    blob, _ = M6.random_blob(TINY_T, 1, 4, n_cal=2)
+    p = tmp_path / "spot.onnx"
+    p.write_bytes(X.spotter(blob, "exact").SerializeToString())
+    sp = V.Spotter(p)
+    with pytest.raises(ValueError, match="2048"):
+        sp.spot(np.zeros((10, 2049), np.uint8))
+    with pytest.raises(ValueError):
+        sp.spot(np.zeros((0, 10), np.uint8))
+    sp.spot(np.zeros((2048, 10), np.uint8))
+    r = tmp_path / "rec.onnx"
+    r.write_bytes(X.recognizer(blobs[0], "exact").SerializeToString())
+    rec = V.Recognizer(r)
+    rng = np.random.default_rng(2)
+    g = rng.integers(0, 60, (272, 480), dtype=np.uint8)
+    g[10:30, 5:80] = 240
+    a = V.read_region(g, sp, rec, region=(-10, -10, 100, 50))
+    b = V.read_region(g, sp, rec, region=(0, 0, 90, 40))
+    assert [(ln.box, ln.text) for ln in a] == [(ln.box, ln.text) for ln in b]
+    assert V.read_region(g, sp, rec, region=(500, 0, 10, 10)) == []

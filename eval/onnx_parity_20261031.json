@@ -39,6 +39,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 3448,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 3448,
       "fail": 0,
@@ -168,6 +173,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 3448,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 3448,
       "fail": 0,
@@ -285,6 +295,11 @@
       "ids": []
      },
      "sec_blank": {
+      "n": 3448,
+      "fail": 0,
+      "ids": []
+     },
+     "sec_conf": {
       "n": 3448,
       "fail": 0,
       "ids": []
@@ -336,6 +351,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 3448,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 3448,
       "fail": 0,
@@ -455,6 +475,11 @@
       "ids": []
      },
      "sec_blank": {
+      "n": 3448,
+      "fail": 0,
+      "ids": []
+     },
+     "sec_conf": {
       "n": 3448,
       "fail": 0,
       "ids": []
@@ -516,7 +541,7 @@
      "names_onnx_fast": 31
     }
    },
-   "seconds": 280.4
+   "seconds": 279.8
   },
   "regions": {
    "units": 1161,
@@ -550,6 +575,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 1784,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 1784,
       "fail": 0,
       "ids": []
@@ -659,6 +689,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 1784,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 1784,
       "fail": 0,
       "ids": []
@@ -784,6 +819,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 1784,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 1784,
       "fail": 0,
@@ -827,6 +867,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 1784,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 1784,
       "fail": 0,
       "ids": []
@@ -957,6 +1002,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 1784,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 1784,
       "fail": 0,
@@ -988,7 +1038,7 @@
      }
     }
    },
-   "seconds": 225.3
+   "seconds": 224.7
   },
   "frames": {
    "units": 354,
@@ -1022,6 +1072,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 1776,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 1776,
       "fail": 0,
       "ids": []
@@ -1151,6 +1206,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 1776,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 1776,
       "fail": 0,
@@ -1268,6 +1328,11 @@
       "ids": []
      },
      "sec_blank": {
+      "n": 1776,
+      "fail": 0,
+      "ids": []
+     },
+     "sec_conf": {
       "n": 1776,
       "fail": 0,
       "ids": []
@@ -1319,6 +1384,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 1776,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 1776,
       "fail": 0,
@@ -1442,6 +1512,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 1776,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 1776,
       "fail": 0,
@@ -1473,7 +1548,7 @@
      }
     }
    },
-   "seconds": 192.8
+   "seconds": 192.1
   },
   "tsdev": {
    "units": 188,
@@ -1507,6 +1582,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 708,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 708,
       "fail": 0,
       "ids": []
@@ -1628,6 +1708,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 708,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 708,
       "fail": 0,
@@ -1747,6 +1832,11 @@
       "ids": []
      },
      "sec_blank": {
+      "n": 708,
+      "fail": 0,
+      "ids": []
+     },
+     "sec_conf": {
       "n": 708,
       "fail": 0,
       "ids": []
@@ -1798,6 +1888,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 708,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 708,
       "fail": 0,
@@ -1909,6 +2004,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 708,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 708,
       "fail": 0,
@@ -1940,7 +2040,7 @@
      }
     }
    },
-   "seconds": 80.7
+   "seconds": 80.5
   },
   "stress": {
    "units": 7,
@@ -1974,6 +2074,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 11,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 11,
       "fail": 0,
       "ids": []
@@ -2083,6 +2188,11 @@
       "fail": 0,
       "ids": []
      },
+     "exact_conf": {
+      "n": 11,
+      "fail": 0,
+      "ids": []
+     },
      "exact_logits": {
       "n": 11,
       "fail": 0,
@@ -2194,6 +2304,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 11,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 11,
       "fail": 0,
@@ -2237,6 +2352,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 11,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 11,
       "fail": 0,
       "ids": []
@@ -2342,6 +2462,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 11,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 11,
       "fail": 0,
@@ -2385,6 +2510,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 18,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 18,
       "fail": 0,
       "ids": []
@@ -2490,6 +2620,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 18,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 18,
       "fail": 0,
       "ids": []
@@ -2605,6 +2740,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 18,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 18,
       "fail": 0,
@@ -2648,6 +2788,11 @@
       "ids": []
      },
      "exact_blank": {
+      "n": 18,
+      "fail": 0,
+      "ids": []
+     },
+     "exact_conf": {
       "n": 18,
       "fail": 0,
       "ids": []
@@ -2763,6 +2908,11 @@
       "fail": 0,
       "ids": []
      },
+     "sec_conf": {
+      "n": 18,
+      "fail": 0,
+      "ids": []
+     },
      "sec_escape": {
       "n": 18,
       "fail": 0,
@@ -2799,10 +2949,11 @@
  "variants": [
   "ortconv"
  ],
- "seconds": 785.1,
+ "seconds": 783.0,
  "verdict": {
   "R1_exact_recognizer": true,
   "R2_spotter": true,
-  "R4_pipeline": true
+  "R4_pipeline": true,
+  "R1_missing_checks": {}
  }
 }

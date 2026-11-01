@@ -20,10 +20,10 @@ VOCR6 recognizers Rubi runs, its dialogue-line spotter, the character LMs, every
 ones Rubi uses) and licence, and what stays on the older releases.
 
 **For desktop apps** (GameSentenceMiner and others): pre-release
-[v0.5.1-onnx.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.1-onnx.1) has VOCR6 Small, Normal and Large
+[v0.5.1-onnx.2](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.1-onnx.2) has VOCR6 Small, Normal and Large
 and the line spotter as ONNX files, with a reference pipeline in Python (spotter, recognizer, LM, character positions).
-The exact files give the C runtime's output bit for bit; the fast ones read 3 to 4 times faster. The method follows an
-outside researcher's report (astra): [`docs/onnx.md`](docs/onnx.md).
+The exact files give the C runtime's output bit for bit; the fast ones read about 3 times faster. The method follows
+an outside researcher's report (astra): [`docs/onnx.md`](docs/onnx.md).
 
 ## VOCR6 against other OCRs
 

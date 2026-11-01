@@ -9,12 +9,13 @@ spotter has run on a console.
 
 ### Added
 
-- **ONNX files for desktop apps** (pre-release v0.5.1-onnx.1, #163, [`docs/onnx.md`](docs/onnx.md)): VOCR6.2 Small,
+- **ONNX files for desktop apps** (pre-release v0.5.1-onnx.2, #163, [`docs/onnx.md`](docs/onnx.md)): VOCR6.2 Small,
   Normal and Large and the textspot8 spotter converted from v0.5.0's int8 blobs by `tools/export_onnx.py`, unchanged
   weights, the blobs' non-commercial terms.
   - **exact**: the C runtime's W8I arithmetic in every float32 step and order, with the blobs' head gate and two-level
     head; on 7,745 development line reads per tier and 1,710 development frames and regions every logit, text,
-    character cell and spotter box equals the C runtime's (`eval/onnx_parity_20261031.json`).
+    confidence, character cell and spotter box equals the C runtime's (`eval/onnx_parity_20261031.json`), also at 1,
+    5 and 8 threads and every graph optimisation level (`eval/onnx_checks_20261101.json`).
   - **fast**: ONNX Runtime's own float32 kernels (W8F's classes on every development frame; 17 of 792,654 frames and
     2 line texts differ from W8I).
   - `tools/vocr_onnx.py`: the reference pipeline, NumPy and ONNX Runtime only (spotter, recognizer, the beam + LM

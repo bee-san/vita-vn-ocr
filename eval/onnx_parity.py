@@ -160,7 +160,7 @@ def read_crop(img, invert, rubi, tiers=None):
         r["exact_topk"] = bits_eq(e["topk_logits"], c["topv"]) and bool(np.array_equal(e["topk_classes"], c["topc"]))
         r["exact_blank"] = bits_eq(e["blank_logit"], c["blank"])
         r["exact_text"] = e_text == c["text"] == c_text
-        r["exact_conf"] = F32(ecm[0]) == F32(c["conf_min"]) and F32(ecm[1]) == F32(c["conf_mean"])
+        r["exact_conf"] = bool(F32(ecm[0]) == F32(c["conf_min"]) and F32(ecm[1]) == F32(c["conf_mean"]))
         fa = _onnx(T["fast"], x, False)
         f_text = "".join(T["fast"].vocab[k] for k, _, _ in V.spans(fa["best"]))
         r["fast_text_w8f"] = f_text == f["text"]
@@ -187,7 +187,7 @@ def read_crop(img, invert, rubi, tiers=None):
                                                                                           s["topc"]))
             r["sec_blank"] = bits_eq(es["blank_logit"], s["blank"])
             r["sec_text"] = "".join(T["exact"].vocab[k] for k, _, _ in V.spans(es["best"])) == s["text"]
-            r["sec_conf"] = F32(esm[0]) == F32(s["conf_min"]) and F32(esm[1]) == F32(s["conf_mean"])
+            r["sec_conf"] = bool(F32(esm[0]) == F32(s["conf_min"]) and F32(esm[1]) == F32(s["conf_mean"]))
             if "gate_score" in s:
                 r["sec_gate"] = bits_eq(es["gate_score"], s["gate_score"])
                 r["gated"] = int(s["gated"])
@@ -388,7 +388,7 @@ def tally(records):
     for key, rec in records:
         for t, r in rec.items():
             for k, v in r.items():
-                if isinstance(v, bool):
+                if isinstance(v, (bool, np.bool_)):        # a check (numpy comparisons give np.bool_)
                     c = out[t][k]
                     c["n"] += 1
                     if not v:
@@ -512,6 +512,10 @@ def main(argv=None):
 
 R1 = ("exact_logits", "exact_best", "exact_topk", "exact_blank", "exact_text", "exact_conf", "x_eq",
       "sec_best", "sec_topk", "sec_blank", "sec_text", "sec_conf", "sec_gate", "sec_escape", "lm_exact")
+# R1's checks every tier must have counted somewhere, and those a tier with head sections must have counted (sec_gate
+# and sec_escape depend on which section a blob has): a check that never reaches the tally fails the verdict
+R1_ALWAYS = ("exact_logits", "exact_best", "exact_topk", "exact_blank", "exact_text", "exact_conf", "x_eq", "lm_exact")
+R1_SECTIONS = ("sec_best", "sec_topk", "sec_blank", "sec_text", "sec_conf")
 
 
 def summary(entry):
@@ -527,8 +531,24 @@ def summary(entry):
     return out
 
 
+def missing_checks(res):
+    """{tier: [R1 checks that no set counted]} (R1_ALWAYS for every tier, R1_SECTIONS for a tier with a sec_ check)."""
+    seen = {}
+    for e in res["sets"].values():
+        for t, r in e.get("checks", {}).items():
+            seen.setdefault(t, set()).update(k for k, v in r.items() if isinstance(v, dict) and v.get("n"))
+    out = {}
+    for t, keys in seen.items():
+        need = list(R1_ALWAYS) + (list(R1_SECTIONS) if any(k.startswith("sec_") for k in keys) else [])
+        miss = [k for k in need if k not in keys]
+        if miss:
+            out[t] = miss
+    return out
+
+
 def verdict(res):
-    """R1, R2 and R4 pass when no gated check failed anywhere."""
+    """R1, R2 and R4 pass when no gated check failed anywhere, and (R1) every check of R1_ALWAYS and, for a tier with
+    head sections, R1_SECTIONS was counted."""
     r1 = r2 = r4 = True
     for s, e in res["sets"].items():
         for t, r in e.get("checks", {}).items():
@@ -541,7 +561,8 @@ def verdict(res):
         for t, v in e.get("pipeline", {}).items():
             if v.get("fail"):
                 r4 = False
-    return {"R1_exact_recognizer": r1, "R2_spotter": r2, "R4_pipeline": r4}
+    miss = missing_checks(res)
+    return {"R1_exact_recognizer": r1 and not miss, "R2_spotter": r2, "R4_pipeline": r4, "R1_missing_checks": miss}
 
 
 if __name__ == "__main__":

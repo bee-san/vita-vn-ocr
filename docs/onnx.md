@@ -1,8 +1,9 @@
 # ONNX files of VOCR6 and textspot8 for desktop apps (issue #163)
 
-Pre-release [v0.5.1-onnx.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.1-onnx.1) holds the VOCR6.2
+Pre-release [v0.5.1-onnx.2](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.1-onnx.2) holds the VOCR6.2
 recognizers (Small, Normal and Large) and the textspot8 line spotter as ONNX files, for apps that run OCR on a PC
-rather than on the console: GameSentenceMiner (GSM) and others. They are conversions of v0.5.0's int8 blobs, the files
+rather than on the console: GameSentenceMiner (GSM) and others. (v0.5.1-onnx.1 has the same ONNX files with an earlier
+`vocr_onnx.py` and notes; .2 replaces it.) They are conversions of v0.5.0's int8 blobs, the files
 Rubi runs, with the same weights and the same non-commercial terms. `tools/vocr_onnx.py` is the reference pipeline:
 one file that needs only NumPy and ONNX Runtime.
 
@@ -35,19 +36,24 @@ the commit it was exported from) and `SHA256SUMS`. The SHA-256 of every file is 
 `onnx-manifest.json`; the source blobs are the ones astra pinned (`VOCR6.2_S_w8.vocr` `864bbd19…`,
 `VOCR6.2_N_w8g2.vocr` `107cf084…`, `VOCR6.2_L_w8_2l.vocr` `65310013…`, `textspot8_t64n8c16_w8.vtsp` `e129d41a…`).
 
-All weights are stored as int8, as in the blobs; ONNX Runtime turns the fast files' weights and the exact files'
-convolution kernels into float32 constants when it loads them. Loaded and run once, a model added 18 to 40 MiB to a
-Python process's peak resident memory here (S / N / L exact 23 / 29 / 35 MiB, fast 18 / 31 / 40 MiB, the spotter
-16 MiB). The graphs use standard operators only (opset 17, IR version 8). `tools/export_onnx.py release` makes the same
-bytes from the same blobs on any machine: the files hold no date or commit.
+The matrices' weights are stored as int8, as in the blobs (the stem and depthwise weights are float32 there too);
+ONNX Runtime turns the fast files' weights and the exact files' convolution kernels into float32 constants when it
+loads them. Loaded and run once in a fresh Python process (a recognizer on a 1,024 px line, the spotter on a 960×544
+frame), a file added 17 to 65 MiB to the process's peak resident memory here: S / N / L exact 38 / 50 / 65 MiB, fast
+23 / 36 / 47 MiB, the spotter 19 MiB (exact) and 17 MiB (int8); one measurement each (`eval/onnx_checks.py memory`,
+`eval/onnx_checks_20261101.json`). The graphs use standard operators only (opset 17, IR version 8).
+`tools/export_onnx.py release` makes the same bytes from the same blobs on any machine: the files hold no date or
+commit.
 
 ## Which one
 
 - **exact**: the C runtime's W8I arithmetic (`runtime/vocr.c`, what Rubi runs on the console) in every float32 step and
-  order. On every development read below, every logit of every frame equals the C runtime's bit for bit, so the text,
-  the confidence and every character's frames and cell are the same as Rubi's for the same crop.
+  order. On every development read below, every logit of every frame equals the C runtime's bit for bit, so the text
+  and the confidence are the same as Rubi's for the same crop, and every character's frames and cell the same as
+  `runtime/vocr_charbox.c`'s (its calibrated centres, without INK; Rubi itself computes no character cells).
 - **fast**: the same layers in plain float32, with ONNX Runtime's own fused kernels: the C runtime's W8F mode (int8
-  weights dequantised, float activations). It reads 3 to 4 times faster than exact. On the development reads it gave
+  weights dequantised, float activations). Per line it reads about 3 times faster than exact (3.0 / 3.4 / 3.2 times
+  for S / N / L; the network alone 3.6 to 4.3 times). On the development reads it gave
   W8F's class on every frame, and differed from W8I (the exact files and Rubi) on 17 of 792,654 frames (12 / 2 / 3 for
   S / N / L) and in the text of 2 of 23,235 line reads. On the fixed development lines' dialogue (17,748 reference
   characters) both read with the same number of errors: 254 / 209 / 128 for S / N / L. With the 1 MB LM the fast
@@ -69,7 +75,7 @@ OCRs").
 ## Using them in an app
 
 ```sh
-pip install onnxruntime numpy pillow        # ONNX Runtime 1.30.0 is what the exactness was checked with
+pip install onnxruntime==1.30.0 numpy pillow     # the version the exactness was checked with
 ```
 
 ```python
@@ -102,11 +108,13 @@ JSON line per image.
   vertical text needs VOCR6-V and the column finder (`docs/vocr6v.md`), which are not exported here.
 - **Characters.** `ln.chars` are the greedy characters, each with its run of CTC frames (`f0`, `f1`) and its cell
   `[x0, x1)` along the line (`runtime/vocr_charbox.c`'s cells: calibrated frame centres, cut halfway between
-  neighbours; `docs/char-boxes.md`); `y0`, `y1` are the line's rows. The cells tile the line, so a mouse position picks
-  one: that is what a hover lookup needs. `ln.text_chars` are the same for `ln.text`, which the LM may change: each
-  character is aligned to the greedy ones (`vocr_charbox_align`'s rule), and a character the LM inserted shares its
-  neighbour's cell. The calibration in the files is VOCR5's, fit per tier on VOCR5-S/N/L (`eval/charboxes_cal.json`);
-  VOCR6 fine-tunes the same shapes and was not refit.
+  neighbours; `docs/char-boxes.md`); `y0`, `y1` are the line's rows. These are docs/char-boxes.md's cells without INK,
+  the ones it picked for hit-testing a tap: no ink boxes or ink centres are computed here. The cells tile the line, so
+  a mouse position picks one: that is what a hover lookup needs. `ln.text_chars` are the same for `ln.text`, which the
+  LM may change: each character is aligned to the greedy ones (`vocr_charbox_align`'s rule), and a character the LM
+  inserted shares its neighbour's cell. The calibration in the files is VOCR5's, fit per tier on VOCR5-S/N/L
+  (`eval/charboxes_cal.json`); VOCR6 fine-tunes the same shapes and was not refit, and no position accuracy was
+  measured for VOCR6 with it.
 - **The LM.** `CharLM` is `runtime/vocr_lm.c`'s CTC prefix beam search with the character n-gram LM, in Python, with
   Rubi's settings for that file (beam 8, top-8, gate 8 nats, bracket 8 nats; `vocr_lm6_o3_1000k.vlm`: weight 0.6,
   bonus 2.5 nats, the start-of-line context). It reads the top-8 logits the recognizer returns, and takes 0.6 to
@@ -134,14 +142,17 @@ Normal `gate_score`) and take a second input, `head_sections` (bool scalar):
   frequent classes (the blank included) and the rest only where its escape score is above the escape threshold.
   `logits` is −inf where a class was not computed. This is what the console runs, and the graph computes only that:
   the gate skipped 46.5% of Normal's frames in the development reads below.
-- `false`: the plain blobs' reading (`VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr`): the full head on every frame.
+- `false`: the plain blobs' reading (`VOCR6.2_N_w8.vocr`, `VOCR6.2_L_w8.vocr`): the full head on every frame. The
+  text and the logits are the plain blobs', but the class indices are this file's: Normal's and Large's classes are
+  in the two-level head's frequency order. Read a class's text from the file's `vocr.vocab`.
 
 The sections are speed-only: each moved VOCR6.2's development score by 0.000 to +0.008 points (`docs/vocr6.md`, the
 follow-up's gate fits). Pass `sections=` to `Recognizer.read` / `read_region` (default `True`).
 
 **Spotter.** Input `grey`: uint8 `[1, 1, h, w]`, the frame or region at the network's scale (halved by the 2×2 rounded
-mean when the frame is wider than 480 px). Output `head`: int8 `[1, 32, ceil(h / 8), ceil(w / 8)]`, the network's codes;
-`Spotter.spot` decodes them into boxes as `runtime/vocr_textspot6.c` does (`synth/textspot6_twin.py`, `docs/textspot8.md`).
+mean when the frame is wider than 480 px). Output `head`: int8 `[1, 32, ceil(h / 8), ceil(w / 8)]`, the network's
+codes; `Spotter.spot` decodes them into boxes as `runtime/vocr_textspot6.c` does (`synth/textspot6_twin.py`,
+`docs/textspot8.md`). `Spotter.spot` takes 1 to 2,048 px a side, as the C spotter does.
 
 **Metadata** (`session.get_modelmeta().custom_metadata_map`, values JSON): `vocr.kind`, `vocr.mode`, `vocr.vocab` (the
 classes' text), `vocr.height`, `vocr.stride`, `vocr.max_width`, `vocr.topk`, the thresholds, `vocr.charbox_cal`, the
@@ -157,10 +168,12 @@ operators:
 
 - **Convolutions.** One grouped `Conv` whose kernels each hold one tap's weight (a product plus zeros: exact on any
   kernel, with or without fused multiply-adds) and one more channel for the bias, then `CumSum` adds bias, tap 0,
-  tap 1, … in the C code's order.
+  tap 1, … in the C code's order. That order rests on ONNX Runtime's CPU `CumSum` being a sequential scan (the gate's
+  and the escape's score sums too); the ONNX spec does not fix the order of a prefix sum, so another execution
+  provider could reorder it.
 - **Matrices.** The int16 values split into two base-256 digits (`q = 256 h + l`), two `MatMulInteger` calls with uint8
-  operands and zero points per 512-term chunk (U8U8: exact on every ONNX Runtime CPU kernel; U8S8 can saturate its
-  intermediate sums on some AVX2 kernels), and `256 · hi + lo` in int32 before the cast to float32: as float32 a
+  operands and zero points per 512-term chunk (U8U8, exact on the kernels checked here; U8S8 can saturate its
+  intermediate sums on some x86 kernels), and `256 · hi + lo` in int32 before the cast to float32: as float32 a
   multiply and add there is open to ONNX Runtime's fusions, which astra saw move a rounding boundary. With weights in
   [−127, 127] (all `train/export.py` writes; the exporter refuses −128) no int32 sum can overflow.
 - **The head gate and the escape.** Their first layer through the same integer path, their score sums in order
@@ -173,9 +186,14 @@ calibrated QDQ of 50; full and mixed FP16 kept the text but moved character posi
 "native int8 weights, 16-bit activations" form astra found exact, with the convolutions in C order on top.
 
 The exactness was checked with ONNX Runtime 1.30.0's CPU execution provider on x86-64 (AVX-512), with its default
-session options (denormals are not flushed to zero; keep `session.set_denormal_as_zero` off), 1, 5 and 16 intra-op
-threads and every graph optimisation level; other versions, other execution providers (GPU, DirectML, CoreML) and
-other CPUs (ARM64's integer kernels) were not checked.
+session options (denormals are not flushed to zero; keep `session.set_denormal_as_zero` off). The parity below ran at
+1 thread and the default optimisation level. `eval/onnx_checks.py levels` (`eval/onnx_checks_20261101.json`) then ran
+the exact recognizers and both spotter files at 1, 5 and 8 intra-op threads × all five graph optimisation levels
+(`ORT_DISABLE_ALL` to `ORT_ENABLE_ALL`, `ORT_ENABLE_LAYOUT` included) against the C runtime, on 154 line crops in both
+polarities (100 fixed development lines, the spotter's lines in 24 development regions, 13 generated crops from 1×1 to
+4000×64, uniform ones among them) and 55 frames and regions, with the head sections off and on: 0 failures in 169,620
+checks of logits, classes, top-8, blank, text, confidence, gate and escape scores, maps and boxes. Other versions,
+other execution providers (GPU, DirectML, CoreML) and other CPUs (ARM64's integer kernels) were not checked.
 `tests/test_onnx_export.py` checks the pieces against `runtime/tests/vocr_ref.py` (K = 16 to 1,792, zero, tiny and
 extreme rows) and whole random-init models against the C runtime in CI.
 
@@ -205,10 +223,11 @@ frames (1×1 to 1921×1081). Record: `eval/onnx_parity_20261031.json` (ONNX Runt
 average about 10 to 30), ONNX Runtime 1.30.0's CPU execution provider, gcc 11.5.0. Inputs, development data only: 200
 line crops the spotter cuts from development regions (mean 394 × 39 px), 120 development regions and 60 textspot-dev
 frames. Every backend reads the same inputs; 9 passes after 2 warm-ups, the backends in a shuffled order each pass;
-the median of the passes' mean ms per input (every range is in `eval/onnx_timing_20261031.json`; no 1-thread row's
-passes lie more than 6% from its median). The C runtime is called through ctypes, built two ways: `-O2` (`runtime/Makefile`'s
-release flags) and `-O3 -march=native`, both `-std=c99 -ffp-contract=off`; the two builds gave the same logits and
-boxes on every timed input. Nothing here is a console time.
+the median of the passes' mean ms per input (every range is in `eval/onnx_timing_20261031.json`; in this 9-pass run
+no 1-thread row's passes lie more than 6% from its median). The C runtime is called through ctypes, built two ways:
+`-O2` (`runtime/Makefile`'s release flags) and `-O3 -march=native`, both `-std=c99 -ffp-contract=off`; the two builds
+gave the same logits (head sections off) and the same spotter boxes on every timed input. Nothing here is a console
+time.
 
 **One line, one thread** (ms per line; N and L with Rubi's head sections on, in C and ONNX):
 
@@ -229,8 +248,9 @@ boxes on every timed input. Nothing here is a console time.
   faster. So most of the lead over the `-O2` build is the compiler build, not ONNX; why is issue #164's subject.
 - **The head sections** save 0.6 ms (exact) and 0.3 ms (fast) per Normal line and 0.6 / 0.3 ms per Large line in ONNX
   (`head_sections` false: 6.5 / 2.0 and 10.8 / 3.5 ms).
-- **Threads.** With 5 intra-op threads one line is not faster (exact 5.7 / 8.0 / 11.5 ms, fast 1.4 / 2.1 / 2.5 ms):
-  a line is too small to split. Running several lines at once was not measured.
+- **Threads.** With 5 intra-op threads the exact files are slower per line (5.7 / 8.0 / 11.5 ms), and so is fast
+  Normal (2.1 ms); fast Small is level (1.4 ms) and fast Large is 22% faster (2.5 against 3.2 ms; per region 5.0
+  against 5.9 ms). Running several lines at once was not measured.
 - **astra's form** (the exact matrices with ONNX Runtime's own float convolutions, `--convs ort`) is faster than the
   exact files but not bit-exact: its logits differed from the C runtime's on 7,744 of 7,745 reads per tier (in the last
   bits), and its class on a few frames ("Which one"). Issue #164 measured clang `-O3 -march=native` faster still than
@@ -258,7 +278,8 @@ The int8 form gives the same codes and is slower, as astra found (25.53 against 
 | ONNX fast | 3.1 / 3.7 / 5.9 | 12.7 / 14.1 / 17.9 |
 
 **The LM** (beam 8 + the 1 MB LM at Rubi's settings, per line on its top-8): `runtime/vocr_lm.c` 0.02 ms, the Python
-`CharLM` 0.6 to 0.9 ms, the same text on all 199 lines with text per tier (5 passes after 1 warm-up).
+`CharLM` 0.6 to 0.9 ms, the same text on all 199 lines with text per tier (a separate run of 5 passes after 1
+warm-up; the C decoder's passes spread by up to 19%, near the timer's resolution).
 
 ## Reproduce
 
@@ -269,12 +290,15 @@ python3 tools/export_onnx.py release --models DIR_OF_V0.5.0 --out onnx/
 python3 tools/export_onnx.py recognizer --blob DIR_OF_V0.5.0/VOCR6.2_N_w8g2.vocr --mode exact --convs ort \
     --out onnx/VOCR6.2_N_ortconv.onnx              # and S, L: the reported variant
 python3 eval/onnx_parity.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out parity.json --variants ortconv
+# threads x optimisation levels, and memory (at most 8 threads: a merge gate lane on the shared box)
+python3 eval/onnx_checks.py levels --onnx onnx/ --blobs DIR_OF_V0.5.0 --out levels.json --threads 1,5,8
+python3 eval/onnx_checks.py memory --onnx onnx/ --out memory.json
 python3 eval/onnx_timing.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out timing.json --lines 200 --regions 120 --frames 60
 python3 eval/onnx_timing.py --onnx onnx/ --blobs DIR_OF_V0.5.0 --out timing_lm.json --parts lm --threads 1 \
     --passes 5 --warmup 1 --lines 200 --regions 1 --frames 1
 ```
 
-Both evaluation scripts read development data from the shared box (`$HERD/shared/artifacts`) and write counts only.
+The evaluation scripts read development data from the shared box (`$HERD/shared/artifacts`) and write counts only.
 `tests/test_onnx_export.py` runs in CI on generated models.
 
 ## Licence and attribution
@@ -282,6 +306,7 @@ Both evaluation scripts read development data from the shared box (`$HERD/shared
 The files carry the int8 blobs' terms: GPL-3.0-or-later (bee-san/vita-vn-ocr), **for non-commercial use only**, because
 the training inputs carry non-commercial terms (`VOCR6-ATTRIBUTION.md` for the recognizers, `SPOTTER-ATTRIBUTION.md`
 for the spotter, both in the release; the LM's terms are in `LM-ATTRIBUTION.md`). The weights were trained in part on
-the owner's private captures of copyrighted games, used as training input only; nothing of them is in the files.
+the owner's private captures of copyrighted games, used as training input only: no frame, crop or running text of them
+is in any file. The LM holds character 3-gram statistics of the games' hooked text (`LM-ATTRIBUTION.md`).
 `ONNX-ATTRIBUTION.md` in the release says this for the ONNX files and credits astra. The code (`tools/export_onnx.py`,
 `tools/vocr_onnx.py`) is the repository's, GPL-3.0-or-later.

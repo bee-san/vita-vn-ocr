@@ -1,0 +1,390 @@
+{
+ "kind": "vocr-onnx-checks/1",
+ "date": "2026-11-01",
+ "levels": {
+  "kind": "vocr-onnx-checks/1",
+  "part": "levels",
+  "onnxruntime": "1.30.0",
+  "threads": [
+   1,
+   5,
+   8
+  ],
+  "levels": [
+   "ORT_DISABLE_ALL",
+   "ORT_ENABLE_BASIC",
+   "ORT_ENABLE_EXTENDED",
+   "ORT_ENABLE_LAYOUT",
+   "ORT_ENABLE_ALL"
+  ],
+  "line_inputs": 154,
+  "reads_per_config": 308,
+  "spot_inputs": 55,
+  "recognizers": {
+   "S": {
+    "configs": {
+     "1t ORT_DISABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_BASIC": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_EXTENDED": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_LAYOUT": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "5t ORT_DISABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_BASIC": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_EXTENDED": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_LAYOUT": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "8t ORT_DISABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_BASIC": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_EXTENDED": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_LAYOUT": {
+      "checks": 2156,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_ALL": {
+      "checks": 2156,
+      "fails": 0
+     }
+    },
+    "checks": 32340,
+    "fails": 0,
+    "c_gated_frames": 0,
+    "c_escaped_frames": 0,
+    "c_all_gated_reads": 0
+   },
+   "N": {
+    "configs": {
+     "1t ORT_DISABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_BASIC": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_EXTENDED": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_LAYOUT": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "5t ORT_DISABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_BASIC": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_EXTENDED": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_LAYOUT": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "8t ORT_DISABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_BASIC": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_EXTENDED": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_LAYOUT": {
+      "checks": 4620,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_ALL": {
+      "checks": 4620,
+      "fails": 0
+     }
+    },
+    "checks": 69300,
+    "fails": 0,
+    "c_gated_frames": 5637,
+    "c_escaped_frames": 1063,
+    "c_all_gated_reads": 4
+   },
+   "L": {
+    "configs": {
+     "1t ORT_DISABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_BASIC": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_EXTENDED": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_LAYOUT": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "5t ORT_DISABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_BASIC": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_EXTENDED": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_LAYOUT": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "8t ORT_DISABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_BASIC": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_EXTENDED": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_LAYOUT": {
+      "checks": 4312,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_ALL": {
+      "checks": 4312,
+      "fails": 0
+     }
+    },
+    "checks": 64680,
+    "fails": 0,
+    "c_gated_frames": 0,
+    "c_escaped_frames": 1036,
+    "c_all_gated_reads": 0
+   }
+  },
+  "spotter": {
+   "exact": {
+    "configs": {
+     "1t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     }
+    },
+    "checks": 1650,
+    "fails": 0
+   },
+   "int8": {
+    "configs": {
+     "1t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "1t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "5t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_DISABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_BASIC": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_EXTENDED": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_LAYOUT": {
+      "checks": 110,
+      "fails": 0
+     },
+     "8t ORT_ENABLE_ALL": {
+      "checks": 110,
+      "fails": 0
+     }
+    },
+    "checks": 1650,
+    "fails": 0
+   }
+  },
+  "seconds": 292.2,
+  "all_equal": true
+ },
+ "memory": {
+  "kind": "vocr-onnx-checks/1",
+  "part": "memory",
+  "onnxruntime": "1.30.0",
+  "what": "peak resident memory a fresh Python process gained loading the file and running it once (a recognizer: a 1,024 px line, head sections on; the spotter: a 960 x 544 frame halved to 480 x 272), MiB; one measurement per file",
+  "files": {
+   "VOCR6.2_L_exact.onnx": 64.9,
+   "VOCR6.2_L_fast.onnx": 47.2,
+   "VOCR6.2_N_exact.onnx": 50.2,
+   "VOCR6.2_N_fast.onnx": 36.0,
+   "VOCR6.2_S_exact.onnx": 38.4,
+   "VOCR6.2_S_fast.onnx": 22.9,
+   "textspot8_exact.onnx": 18.7,
+   "textspot8_int8.onnx": 17.2
+  }
+ },
+ "commands": [
+  "eval/onnx_checks.py levels --onnx ONNX --blobs V0.5.0 --out levels.json --threads 1,5,8 --lines 100 --frames 24",
+  "eval/onnx_checks.py memory --onnx ONNX --out memory.json"
+ ],
+ "where": "a merge gate lane (flock gate-N.lock), at most 8 threads"
+}

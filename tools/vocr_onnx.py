@@ -692,6 +692,7 @@ class Spots:
 
 
 BOX_MAX, PAD_PCT, PAD_MIN, MIN_ACROSS, TCONF_MAX = 64, 18, 2, 4, 127
+MAX_SIDE = 2048                 # runtime/vocr_textspot.h VOCR_TEXTSPOT_MAX_SIDE: the C spotter refuses a larger side
 
 
 def halve(g):
@@ -907,11 +908,14 @@ class Spotter:
         return out[:, :-(-h // 4), :-(-w // 4)]
 
     def spot(self, img, scale=None, frame_size=None):
-        """Boxes on a frame or region (grey or RGB(A) uint8). scale: 1 or 2, or None for the blob's rule on
-        frame_size (width, height; default the image's own): read a region cut from a frame at the frame's scale,
-        as Rubi does."""
+        """Boxes on a frame or region (grey or RGB(A) uint8, 1 to 2048 px a side, as the C spotter takes). scale: 1 or
+        2, or None for the blob's rule on frame_size (width, height; default the image's own): read a region cut from
+        a frame at the frame's scale, as Rubi does."""
         g = grey_of(img)
         H_, W_ = g.shape
+        if not H_ or not W_ or H_ > MAX_SIDE or W_ > MAX_SIDE:
+            raise ValueError(f"a {W_} x {H_} image: the spotter reads 1 to {MAX_SIDE} px a side, as the C runtime "
+                             "does (scale the frame to 960 x 544 first)")
         if scale is None:
             fw, fh = frame_size if frame_size is not None else (W_, H_)
             scale = self.scale_of(fw, fh)
@@ -985,9 +989,10 @@ def read_region(frame, spotter, rec, region=None, lm=None, sections=True, tags=N
     order, boxes and character cells in frame px."""
     g = grey_of(frame)
     H, W = g.shape
-    x0, y0, rw, rh = region if region is not None else (0, 0, W, H)
-    x0, y0 = max(0, int(x0)), max(0, int(y0))
-    sub = np.ascontiguousarray(g[y0:y0 + int(rh), x0:x0 + int(rw)])
+    rx, ry, rw, rh = (int(v) for v in (region if region is not None else (0, 0, W, H)))
+    x0, y0 = min(max(0, rx), W), min(max(0, ry), H)             # the region, clipped to the frame
+    x1, y1 = min(max(0, rx + rw), W), min(max(0, ry + rh), H)
+    sub = np.ascontiguousarray(g[y0:y1, x0:x1])
     if not sub.size:
         return []
     sp = spotter.spot(sub, scale=scale, frame_size=(W, H))

@@ -23,6 +23,9 @@
 #define CHUNK_MAX 48u
 #define MAX_STEPS 64u
 #define RESIZE_MAX_TASKS 64u
+#ifndef TSD_FUSED_LUMA
+#define TSD_FUSED_LUMA 0   /* 1: an RGB(A) frame's luma row by row inside the resize (vocr_desk_resize_rgb) */
+#endif
 #define STEM_PF_ROWS 2u   /* the stem prefetches its source this many output rows ahead */
 
 /* ----------------------------------------------------------------------------- profiling (-DVOCR_TSD_PROF) */
@@ -1467,7 +1470,8 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->resize = D->iw != w || D->ih != h;
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
-    D->grey = off;   /* unused: an RGB(A) frame's luma is taken row by row inside the resize */
+    D->grey = off;   /* an RGB(A) frame's luma before the resize (TSD_FUSED_LUMA: row by row inside it instead) */
+    off += D->resize && channels != 1 && !TSD_FUSED_LUMA ? ALIGN_UP((size_t)w * h, 64) : 0;
     D->resized = off;
     off += D->resize ? ALIGN_UP((size_t)D->iw * D->ih, 64) : 0;
     D->rscratch = off;
@@ -1492,6 +1496,20 @@ size_t vocr_tsd_arena_bytes(const vocr_tsd_model *m, unsigned kind, unsigned n, 
     if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE) return 0;
     dplan(m, kind, n, w, h, channels, ntasks, &D);
     return D.end;
+}
+
+typedef struct {               /* an RGB(A) frame's luma in row bands on the runner */
+    const unsigned char *src;
+    unsigned w, h, stride, channels;
+    unsigned char *dst;
+} grey_job;
+
+static void grey_task(void *arg, unsigned task, unsigned ntasks)
+{
+    const grey_job *j = (const grey_job *)arg;
+    const unsigned y0 = (unsigned)((size_t)j->h * task / ntasks), y1 = (unsigned)((size_t)j->h * (task + 1) / ntasks);
+    if (y1 > y0)
+        vocr_desk_grey(j->src + (size_t)y0 * j->stride, j->w, y1 - y0, j->stride, j->channels, j->dst + (size_t)y0 * j->w);
 }
 
 typedef struct {               /* the banded resize on the runner */
@@ -1542,23 +1560,44 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
     N.src.stride = stride;
     N.src.ch = channels;
     if (D.resize) {
-        /* the policy's resize of the frame's luma (vocr_desk_resize; an RGB(A) frame's luma row by row inside it:
-         * vocr_desk_resize_rgb, the same bits as vocr_desk_grey then vocr_desk_resize) */
+        /* the policy's resize of the frame's luma: the luma of an RGB(A) frame first (vocr_desk_grey, in row bands on
+         * the runner), then vocr_desk_resize (in bands of output rows on the runner); every split gives the same bits.
+         * TSD_FUSED_LUMA: the luma row by row inside the resize instead (vocr_desk_resize_rgb: the same bits, no grey
+         * frame, but slower on a frame read from DRAM) */
+        const unsigned char *gsrc = img;
+        unsigned gstride = stride, gch = channels;
+        if (channels != 1 && !TSD_FUSED_LUMA) {
+            grey_job g;
+            g.src = img;
+            g.w = w;
+            g.h = h;
+            g.stride = stride;
+            g.channels = channels;
+            g.dst = base + D.grey;
+            if (D.ntasks > 1 && run)
+                run(ctx, grey_task, &g, D.ntasks < h ? D.ntasks : h);
+            else
+                grey_task(&g, 0, 1);
+            gsrc = base + D.grey;
+            gstride = w;
+            gch = 1;
+            PROF_MARK(0u, "luma");
+        }
         if (D.ntasks > 1 && run && !vocr_desk_resize_plan(w, h, D.iw, D.ih, base + D.rplan)) {
             resize_job j;   /* bands of output rows on the runner (vocr_desk_resize_band): the same bits */
             j.plan = base + D.rplan;
-            j.src = img;
-            j.stride = stride;
-            j.channels = channels;
+            j.src = gsrc;
+            j.stride = gstride;
+            j.channels = gch;
             j.dh = D.ih;
             j.dst = base + D.resized;
             j.work = base + D.rwork;
             j.work_bytes = D.rwork_bytes;
             run(ctx, resize_task, &j, D.ntasks < D.ih ? D.ntasks : D.ih);
-        } else if (channels == 1) {
-            vocr_desk_resize(img, w, h, stride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
+        } else if (gch == 1) {
+            vocr_desk_resize(gsrc, w, h, gstride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
         } else {
-            vocr_desk_resize_rgb(img, w, h, stride, channels, base + D.resized, D.iw, D.ih,
+            vocr_desk_resize_rgb(gsrc, w, h, gstride, gch, base + D.resized, D.iw, D.ih,
                                  (int *)(void *)(base + D.rscratch));
         }
         PROF_MARK(1u, "resize");

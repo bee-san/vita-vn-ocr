@@ -4,8 +4,10 @@ eval/desktop.py on feat/vocr-desktop): measurement only.
 
 The model is not in this repository and must not be committed, redistributed or trained on (its outputs included)
 until its author states a licence that allows it. It was posted publicly on 2026-11-01 for detection benchmarks
-(1,751,881 B, sha256 9f72bce5...). `check_model` refuses a file that is not that file, that references external
-data, or that uses any operator domain other than the default ONNX one, before onnxruntime ever loads it.
+(1,751,881 B, sha256 9f72bce5...). `check_model` reads the file once and refuses it, before onnxruntime sees it, when
+it is not that file, references external data anywhere, uses an operator domain other than the default ONNX one, holds
+an attribute outside FLOAT / INT / STRING / TENSOR and their lists (subgraphs, sparse tensors), model-local functions
+or training_info. onnxruntime is then given the checked bytes, not the path.
 
 What the graph is (read from the file with `onnx`; the measurements are in issue #169):
   input  "images"  float32 (N, 3, h, w), any h and w: the image's 0-255 values / 255 (the graph subtracts 0.5)
@@ -46,29 +48,39 @@ DEFAULTS = {"policy": "native", "order": "bgr", "thr": 0.0, "min_cells": 1, "alo
             "ext_end": -1.0, "pad": "frame", "interp": "linear"}
 
 
-def sha256_file(p, bufsize=1 << 22):
-    h = hashlib.sha256()
-    with open(p, "rb") as f:
-        for chunk in iter(lambda: f.read(bufsize), b""):
-            h.update(chunk)
-    return h.hexdigest()
+ALLOWED_ATTRIBUTE_TYPES = ("FLOAT", "INT", "STRING", "TENSOR", "FLOATS", "INTS", "STRINGS", "TENSORS")
 
 
-def check_model(path, sha256=SHA256):
-    """Static checks of an untrusted ONNX file before any runtime loads it: the expected bytes (sha256, unless
-    sha256=None), no external-data reference (initializers, sparse initializers, tensor attributes, subgraphs), no
-    operator domain but the default ONNX one, no model-local functions, one float input and one float output.
-    Returns the facts; raises ValueError on any failure."""
+def check_bytes(data, sha256=SHA256, name="model"):
+    """Static checks of an untrusted ONNX file's bytes before any runtime sees them; returns (facts, the model).
+
+    - the expected bytes: sha256 (unless sha256=None);
+    - no external-data reference in any tensor: initializers, sparse initializers (values and indices), and every
+      tensor or sparse tensor in any attribute field, whatever the attribute's declared type;
+    - attributes of the allowlisted types only (FLOAT, INT, STRING, TENSOR and their lists), holding no field of
+      another type: no graph (subgraphs), sparse-tensor, type-proto or undefined attribute;
+    - no operator domain or opset import but the default ONNX one, no model-local functions, no training_info;
+    - exactly one float input (outside the initializers) and one float output.
+    Raises ValueError on any failure."""
     import onnx
     from onnx import AttributeProto, TensorProto
-    p = Path(path)
-    if sha256 is not None and sha256_file(p) != sha256:
-        raise ValueError(f"{p}: sha256 is not {sha256[:8]}...")
-    m = onnx.load(str(p), load_external_data=False)
+    if sha256 is not None and hashlib.sha256(data).hexdigest() != sha256:
+        raise ValueError(f"{name}: sha256 is not {sha256[:8]}...")
+    m = onnx.load_from_string(bytes(data))           # bytes only: nothing outside them is read
     problems, domains = [], set()
+    allowed = {getattr(AttributeProto, t) for t in ALLOWED_ATTRIBUTE_TYPES}
 
     def ext(t):
         return t.data_location == TensorProto.EXTERNAL or len(t.external_data) > 0
+
+    def tensors_of(a):
+        """Every TensorProto an attribute holds, in any field (the declared type is not trusted)."""
+        out = list(a.tensors)
+        if a.HasField("t"):
+            out.append(a.t)
+        for st in list(a.sparse_tensors) + ([a.sparse_tensor] if a.HasField("sparse_tensor") else []):
+            out += [st.values, st.indices]
+        return out
 
     def walk(g, where):
         for t in g.initializer:
@@ -80,12 +92,16 @@ def check_model(path, sha256=SHA256):
         for n in g.node:
             domains.add(n.domain)
             for a in n.attribute:
-                if a.type == AttributeProto.TENSOR and ext(a.t):
-                    problems.append(f"{where}: {n.name}.{a.name} has external data")
-                if a.type == AttributeProto.TENSORS and any(ext(t) for t in a.tensors):
-                    problems.append(f"{where}: {n.name}.{a.name} has external data")
-                if a.type in (AttributeProto.GRAPH, AttributeProto.GRAPHS):
+                kind = AttributeProto.AttributeType.Name(a.type)
+                if a.type not in allowed:
+                    problems.append(f"{where}: {n.name}.{a.name} is a {kind} attribute")
+                if a.HasField("g") or len(a.graphs):
                     problems.append(f"{where}: {n.name}.{a.name} holds a subgraph")
+                if a.HasField("sparse_tensor") or len(a.sparse_tensors) or a.HasField("tp") or \
+                        len(a.type_protos):
+                    problems.append(f"{where}: {n.name}.{a.name} holds a sparse tensor or a type")
+                if any(ext(t) for t in tensors_of(a)):
+                    problems.append(f"{where}: {n.name}.{a.name} has external data")
 
     walk(m.graph, "graph")
     bad = sorted(d for d in domains if d not in ("", "ai.onnx"))
@@ -96,6 +112,8 @@ def check_model(path, sha256=SHA256):
         problems.append(f"opset imports {bad}")
     if len(m.functions):
         problems.append(f"{len(m.functions)} model-local functions")
+    if len(m.training_info):
+        problems.append("training_info")
     ins = [i for i in m.graph.input if i.name not in {t.name for t in m.graph.initializer}]
     if len(ins) != 1 or len(m.graph.output) != 1:
         problems.append(f"{len(ins)} inputs and {len(m.graph.output)} outputs (expected 1 and 1)")
@@ -103,14 +121,24 @@ def check_model(path, sha256=SHA256):
             m.graph.output[0].type.tensor_type.elem_type != TensorProto.FLOAT:
         problems.append("the input or the output is not float32")
     if problems:
-        raise ValueError(f"{p}: " + "; ".join(problems))
+        raise ValueError(f"{name}: " + "; ".join(problems))
     from collections import Counter
-    return {"file": p.name, "bytes": p.stat().st_size, "sha256": sha256 or sha256_file(p),
-            "ir_version": m.ir_version, "producer": f"{m.producer_name} {m.producer_version}".strip(),
-            "opsets": {o.domain or "ai.onnx": o.version for o in m.opset_import},
-            "ops": dict(Counter(n.op_type for n in m.graph.node)),
-            "params": int(sum(int(np.prod(t.dims)) for t in m.graph.initializer)),
-            "input": ins[0].name, "output": m.graph.output[0].name}
+    facts = {"file": name, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+             "ir_version": m.ir_version, "producer": f"{m.producer_name} {m.producer_version}".strip(),
+             "opsets": {o.domain or "ai.onnx": o.version for o in m.opset_import},
+             "ops": dict(Counter(n.op_type for n in m.graph.node)),
+             "params": int(sum(int(np.prod(t.dims)) for t in m.graph.initializer)),
+             "input": ins[0].name, "output": m.graph.output[0].name}
+    return facts, m
+
+
+def check_model(path, sha256=SHA256):
+    """check_bytes on a file read once: returns (facts, the checked bytes). Callers give ONNX Runtime those bytes,
+    never the path, so the file checked is the file loaded."""
+    p = Path(path)
+    data = p.read_bytes()
+    facts, _ = check_bytes(data, sha256, p.name)
+    return facts, data
 
 
 def parse_spec(spec):
@@ -248,17 +276,16 @@ class MidaDet:
 
     name = "mida"
 
-    def __init__(self, path, threads=1, session_options=None, check=True, sha256=SHA256, **cfg):
+    def __init__(self, path, threads=1, session_options=None, sha256=SHA256, **cfg):
         import onnxruntime as ort
-        if check:
-            self.facts = check_model(path, sha256)
+        self.facts, data = check_model(path, sha256)       # always: there is no unchecked path
         self.cfg = dict(DEFAULTS, **cfg)
         if session_options is None:
             session_options = ort.SessionOptions()
             session_options.intra_op_num_threads = int(threads)
             session_options.inter_op_num_threads = 1
             session_options.log_severity_level = 3
-        self.sess = ort.InferenceSession(str(path), session_options, providers=["CPUExecutionProvider"])
+        self.sess = ort.InferenceSession(data, session_options, providers=["CPUExecutionProvider"])
 
     def maps(self, x):
         return self.sess.run([OUTPUT], {INPUT: x})[0][0]
@@ -282,8 +309,7 @@ def macs(path, w=960, h=544, sha256=SHA256):
     input / output shapes: the graph run once by onnxruntime with every node output exposed."""
     import onnx
     import onnxruntime as ort
-    check_model(path, sha256)
-    m = onnx.load(str(path), load_external_data=False)
+    _, m = check_bytes(Path(path).read_bytes(), sha256, Path(path).name)   # read once, checked, parsed
     have = {o.name for o in m.graph.output}
     for n in m.graph.node:
         for out in n.output:
@@ -425,7 +451,7 @@ def main(argv=None):
             p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     if a.cmd == "info":
-        facts = check_model(a.model)
+        facts, _ = check_model(a.model)
         facts["macs"] = [macs(a.model, *(int(v) for v in s.split("x"))) for s in a.macs]
         print(json.dumps(facts, indent=1))
         return

@@ -26,6 +26,10 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
         opage:MODEL[@SIZE]+T       that detector, then every horizontal box grown by --pad, its dark flag
                                    (vocr_onnx.line_dark) and VOCR6.2_T_fast.onnx (one session, 1 intra-op thread),
                                    the lines on a pool of N Python threads
+        cnet:BLOB[@SIZE]           the C network alone (vocr_tsd_maps_mt) on the frame's padded network input
+                                   (built outside the timing)
+        onet:MODEL[@SIZE]          ONNX Runtime's session.run alone on the same input
+      Items counted: boxes (detectors), horizontal lines read (pages), maps (networks).
       --random N adds N seeded random frames (smoothed noise) per size 960 x 544 and 1920 x 1080 (views rand544,
       rand1080)
   tsdesk_time.py mem --pages PAGES.json --pipelines P,... --threads N --out M.json [--limit 60] [--view vita]
@@ -181,7 +185,7 @@ def split_spec(spec):
                 raise ValueError(f"{spec}: cpage:BLOB[@SIZE]+c:T")
             rec = rec[2:]
     path, _, size = rest.partition("@")
-    if kind not in ("cdet", "cpage", "odet", "opage") or not path:
+    if kind not in ("cdet", "cpage", "odet", "opage", "cnet", "onet") or not path:
         raise ValueError(f"unknown pipeline {spec!r}")
     return kind, path, size or None, rec
 
@@ -200,7 +204,8 @@ class Pipeline:
         self.spec, self.threads, self.TC = spec, int(threads), TC
         self.kind, path, self.size, rec = split_spec(spec)
         self.pad = pad
-        if self.kind == "cdet":
+        self.inputs = {}
+        if self.kind in ("cdet", "cnet"):
             self.m = TC.CModel(path, threads=self.threads, lib=lib)
             self.policy = TC.policy_of(self.size, self.m.default_policy)
         elif self.kind == "cpage":
@@ -217,6 +222,25 @@ class Pipeline:
                                         session_options=D.session_options(1))
                 self.pool = ThreadPoolExecutor(max_workers=self.threads) if self.threads > 1 else None
                 self.kh, self.kv, self.kpx = TC.pad_rule(pad)
+
+    def prepare(self, i, rgb):
+        """The network input of frame i (cnet / onet), built once outside the timing."""
+        if self.kind == "cnet":
+            self.inputs[i] = np.ascontiguousarray(self.m.preprocess(rgb, self.size)[0][0, 0])
+        elif self.kind == "onet":
+            self.inputs[i] = self.det.preprocess(self.T.grey_of(rgb))[0]
+
+    def _cnet(self, x):
+        m, L, C = self.m, self.m.L, self.TC.C
+        ph, pw = x.shape
+        arena = m.arena(L.vocr_tsd_maps_bytes(m.m.ctypes.data, pw, ph, m.threads) + 64)
+        out = C.POINTER(C.c_float)()
+        run, pool, nt = m._run()
+        rc = L.vocr_tsd_maps_mt(m.m.ctypes.data, x.ctypes.data, pw, ph, arena.ctypes.data, arena.size, C.byref(out),
+                                run, pool, nt)
+        if rc:
+            raise ValueError(f"vocr_tsd_maps: {rc}")
+        return 1
 
     def _cdet(self, rgb):
         """One vocr_tsd_detect_mt call on the frame: the number of boxes."""
@@ -258,14 +282,20 @@ class Pipeline:
             return list(self.pool.map(self._line, jobs))
         return [self._line(j) for j in jobs]
 
-    def __call__(self, rgb):
-        """Run on one frame: the number of boxes (detectors) or lines (pages)."""
+    def __call__(self, rgb, i=None):
+        """Run on one frame (i: its index, for the networks' prepared inputs): the items it gives (module
+        docstring)."""
         if self.kind == "cdet":
             return self._cdet(rgb)
         if self.kind == "cpage":
-            return len(self.page.page(rgb))
+            return sum(1 for ln in self.page.page(rgb) if not ln.vertical)
         if self.kind == "odet":
             return len(self.det.detect(rgb))
+        if self.kind == "cnet":
+            return self._cnet(self.inputs[i])
+        if self.kind == "onet":
+            self.det.maps(self.inputs[i])
+            return 1
         return len(self._opage(rgb))
 
 
@@ -286,6 +316,9 @@ def cmd_run(a):
         res["build"] = json.loads((Path(a.lib).parent / "build.json").read_text())
     for threads in [int(t) for t in a.threads.split(",")]:
         pipes = {f"{s}|t{threads}": Pipeline(s, threads, a.pad, a.lib, a.onnx_dir) for s in specs}
+        for pp in pipes.values():
+            for i, rgb in enumerate(rgbs):
+                pp.prepare(i, rgb)
         rng = random.Random(a.seed + threads)
         names = list(pipes)
         times = {n: defaultdict(list) for n in names}
@@ -298,7 +331,7 @@ def cmd_run(a):
                 rng.shuffle(names)
                 for n in names:
                     ts = time.perf_counter()
-                    k = pipes[n](rgbs[i])
+                    k = pipes[n](rgbs[i], i)
                     ms = (time.perf_counter() - ts) * 1e3
                     if p >= a.warmup:
                         times[n][i].append(ms)
@@ -339,7 +372,9 @@ p = TT.Pipeline({spec!r}, {threads}, {pad!r}, {lib!r})
 loaded = hwm()
 n = 0
 for pg in pages:
-    n += p(TT.load_rgb(pg))
+    rgb = TT.load_rgb(pg)
+    p.prepare(0, rgb)
+    n += p(rgb, 0)
 print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(pages), "items": n}}))
 """
 

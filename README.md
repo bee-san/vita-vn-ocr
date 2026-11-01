@@ -254,6 +254,7 @@ data/label_real.py             first real-line pseudo-labeller (PP-OCRv5 server 
 realdata/                      real training lines from Vita, PSP and scaled PC screenshots (4-reader vote)
 devnative/                     native Vita/PSP development cohort from VNDB screenshots, and its labelling pipeline (docs/devnative.md)
 realplus/                      large real training pool: every training-side VNDB screenshot, devnative's labelling (docs/realplus.md)
+desktopdata/                   desktop VN data: hooked pages as desktop captures, realplus at native size, synthetic desktop frames, the real PC test set (docs/desktop-data.md)
 data/vocab.txt                 output character set
 teacher/                       real-screenshot labels: MeikiOCR first, local owocr engines vote (docs/teacher.md)
 synth/                         synthetic dialogue-box renderer and corpus builder

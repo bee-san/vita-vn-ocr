@@ -1,0 +1,306 @@
+{
+ "kind": "desktop-pc-test",
+ "version": 1,
+ "issue": 169,
+ "created": "2026-11-01T09:21:29Z",
+ "rules": {
+  "dump": "vndb-db-2026-10-31.tar.zst",
+  "olang": "ja",
+  "pc_platforms": [
+   "lin",
+   "mac",
+   "win"
+  ],
+  "language": "ja in the release's",
+  "sexual_max": 0.3,
+  "violence_max": 0.5,
+  "min_size": [
+   640,
+   360
+  ],
+  "aspect": [
+   1.25,
+   2.4
+  ],
+  "exclude": [
+   "pool VNs (pool_vns)",
+   "reserved VNs (realplus/shots.reserved_vns)",
+   "VNs on one VNDB release with a pool or reserved VN"
+  ],
+  "flag": [
+   "family_of: VNs with a family relation to a pool or reserved VN (amendment 1)",
+   "release_partner_of: VNs on one VNDB release with a pool or reserved VN, their screenshot's own release holding none (amendment 2)",
+   "group console-hd: HD console releases (amendment 2)"
+  ],
+  "amendments": [
+   {
+    "n": 1,
+    "time": "2026-11-01T07:21Z",
+    "before": "any review or label",
+    "what": "family-related VNs kept and flagged (they were left out); selection caps 5 -> 8 screenshots and 14 -> 24 lines per VN",
+    "why": "1,157 candidate lines of 136 VNs under the first rules: too few for 1,000 labelled dialogue lines after the review's drops"
+   },
+   {
+    "n": 2,
+    "time": "2026-11-01T07:48Z-07:51Z",
+    "before": "any label of a line it adds",
+    "what": "release-partner VNs with a clean own release, HD console screenshots (group console-hd), caps 12 screenshots / 40 lines per VN, lines of 12 px or more at the frame's own size kept when under 10 px at the fit scale",
+    "why": "pass 1's first batches: about a third of the lines skipped (UI), a tenth names: about 850 dialogue lines expected from 1,526"
+   }
+  ]
+ },
+ "select": {
+  "max_shots_per_vn": 12,
+  "max_lines_per_vn": 40,
+  "min_kana": 2,
+  "ink_fit": [
+   10,
+   72
+  ],
+  "ink_native_min": 12,
+  "order": "candidates.jsonl rank (a stable hash of the image id), then VN order"
+ },
+ "label_rule": "devnative/decide.decide_line mode dev (a consensus label after pass 1; a single or changed label only when the independent pass 2 reads the same key), then the blind hand check of a subset (a disagreement drops the label unless a third look keeps it)",
+ "reviewer_kind": "assistant",
+ "lines": 1159,
+ "dialogue_lines": 942,
+ "name_lines": 217,
+ "dialogue_chars": 16838,
+ "vns": 142,
+ "screenshots": 504,
+ "units": 552,
+ "clean_units": 518,
+ "frames": 480,
+ "clean_unit_lines": 886,
+ "hand_checked": 214,
+ "hand_check_agree": 209,
+ "family_flagged_vns": 21,
+ "family_flagged_lines": 152,
+ "partner_flagged_vns": 9,
+ "partner_flagged_lines": 55,
+ "by_group": {
+  "console-hd": {
+   "dialogue_lines": 31,
+   "vns": 4,
+   "clean_unit_lines": 31
+  },
+  "pc": {
+   "dialogue_lines": 911,
+   "vns": 138,
+   "clean_unit_lines": 855
+  }
+ },
+ "by_status": {
+  "dropped:skip-ui": 515,
+  "kept:consensus": 946,
+  "hand:agree": 209,
+  "dropped:skip-bad": 151,
+  "kept:single": 173,
+  "kept:changed": 40,
+  "dropped:skip-cut": 51,
+  "dropped:pass2-disagree": 1,
+  "dropped:pass2-unsure": 3,
+  "hand:disagree": 5,
+  "dropped:pass1-unsure": 5
+ },
+ "dims": [
+  [
+   "1920x1080",
+   308
+  ],
+  [
+   "1280x720",
+   204
+  ],
+  [
+   "640x480",
+   153
+  ],
+  [
+   "800x600",
+   92
+  ],
+  [
+   "2560x1440",
+   35
+  ],
+  [
+   "1264x679",
+   22
+  ],
+  [
+   "960x540",
+   14
+  ],
+  [
+   "960x720",
+   13
+  ],
+  [
+   "1024x768",
+   13
+  ],
+  [
+   "1280x689",
+   13
+  ],
+  [
+   "640x390",
+   12
+  ],
+  [
+   "1024x600",
+   10
+  ],
+  [
+   "1368x770",
+   9
+  ],
+  [
+   "1440x810",
+   8
+  ],
+  [
+   "816x624",
+   6
+  ],
+  [
+   "776x505",
+   5
+  ],
+  [
+   "1200x599",
+   4
+  ],
+  [
+   "640x370",
+   4
+  ],
+  [
+   "1920x979",
+   4
+  ],
+  [
+   "1588x849",
+   3
+  ],
+  [
+   "2220x1080",
+   3
+  ],
+  [
+   "1680x971",
+   2
+  ],
+  [
+   "1280x676",
+   2
+  ],
+  [
+   "1920x1200",
+   2
+  ],
+  [
+   "1024x576",
+   1
+  ]
+ ],
+ "engines": [
+  [
+   "None",
+   296
+  ],
+  [
+   "Unity",
+   195
+  ],
+  [
+   "KiriKiri",
+   163
+  ],
+  [
+   "NScripter",
+   75
+  ],
+  [
+   "TyranoScript",
+   48
+  ],
+  [
+   "Artemis Engine",
+   32
+  ],
+  [
+   "Adobe AIR",
+   22
+  ],
+  [
+   "LiveMaker",
+   20
+  ],
+  [
+   "Godot",
+   17
+  ],
+  [
+   "Flash Player",
+   12
+  ],
+  [
+   "Silky Engine",
+   11
+  ],
+  [
+   "DAC Engine",
+   9
+  ],
+  [
+   "MAGES. Engine",
+   8
+  ],
+  [
+   "SiglusEngine",
+   7
+  ],
+  [
+   "Ren'Py",
+   6
+  ],
+  [
+   "AVG32",
+   4
+  ],
+  [
+   "CatSystem2",
+   4
+  ],
+  [
+   "BGI/Ethornell",
+   4
+  ],
+  [
+   "Wolf RPG Editor",
+   4
+  ],
+  [
+   "SakanaGL",
+   2
+  ],
+  [
+   "Media.Vision Game Library",
+   2
+  ],
+  [
+   "AIMS",
+   1
+  ]
+ ],
+ "how": {
+  "consensus": 746,
+  "single": 162,
+  "changed": 34
+ },
+ "manifest": "eval/manifests/desktop-pc-test-v1.jsonl",
+ "manifest_sha256": "20576c400b5e5fbb54cbacd019b735c3244d5f62d5fbfba15376fca5be2d46f1",
+ "frames_file_sha256": "aa3785d282c302f0cfccbb4a7ba9da9a2192a2e9348d4e4a6158252448539e36"
+}

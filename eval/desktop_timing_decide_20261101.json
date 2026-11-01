@@ -1,0 +1,1036 @@
+{
+ "kind": "vocr-desktop-timing/1",
+ "host": {
+  "cpu": "64-core AMD EPYC 9R14 host",
+  "machine": "x86_64",
+  "python": "3.11.15",
+  "onnxruntime": "1.30.0",
+  "numpy": "2.4.6",
+  "cores": 64,
+  "load_1min_at_start": 37.9
+ },
+ "threads": 4,
+ "passes": 3,
+ "ref": "meiki+L#d4|par",
+ "warmup": 1,
+ "seed": 20261101,
+ "pages_file": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr-desktop/timing_pages.pkl",
+ "pages_sha256": "7fb31b6150bcfa4c79c95fccf5099d9d4b192b620d66e748d100a078d044acd8",
+ "pages": {
+  "pc": 30,
+  "psp": 60,
+  "vita": 60
+ },
+ "repo_head": "694819d2b22cd579b7a537a92ef42f5a8cf7b6d5",
+ "results": {
+  "meiki+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 139.399,
+    "p95": 156.716,
+    "mean": 140.712,
+    "min": 125.478,
+    "max": 158.684,
+    "lines_mean": 7.1,
+    "ratio_to_ref_median": 1.6291
+   },
+   "psp": {
+    "n": 60,
+    "p50": 126.926,
+    "p95": 138.987,
+    "mean": 128.065,
+    "min": 120.253,
+    "max": 156.667,
+    "lines_mean": 5.07,
+    "ratio_to_ref_median": 1.7088
+   },
+   "vita": {
+    "n": 60,
+    "p50": 131.317,
+    "p95": 144.821,
+    "mean": 133.411,
+    "min": 123.073,
+    "max": 154.848,
+    "lines_mean": 6.72,
+    "ratio_to_ref_median": 1.667
+   },
+   "all": {
+    "n": 150,
+    "p50": 130.632,
+    "p95": 153.401,
+    "mean": 132.733,
+    "min": 120.253,
+    "max": 158.684,
+    "lines_mean": 6.13,
+    "ratio_to_ref_median": 1.6774
+   }
+  },
+  "meiki+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 111.379,
+    "p95": 133.014,
+    "mean": 110.302,
+    "min": 78.974,
+    "max": 133.4,
+    "lines_mean": 7.1,
+    "ratio_to_ref_median": 1.3066
+   },
+   "psp": {
+    "n": 60,
+    "p50": 102.355,
+    "p95": 112.998,
+    "mean": 102.647,
+    "min": 73.703,
+    "max": 129.06,
+    "lines_mean": 5.07,
+    "ratio_to_ref_median": 1.3751
+   },
+   "vita": {
+    "n": 60,
+    "p50": 107.742,
+    "p95": 117.662,
+    "mean": 105.373,
+    "min": 75.265,
+    "max": 126.102,
+    "lines_mean": 6.72,
+    "ratio_to_ref_median": 1.3424
+   },
+   "all": {
+    "n": 150,
+    "p50": 105.437,
+    "p95": 126.313,
+    "mean": 105.268,
+    "min": 73.703,
+    "max": 133.4,
+    "lines_mean": 6.13,
+    "ratio_to_ref_median": 1.3556
+   }
+  },
+  "meiki+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 84.283,
+    "p95": 105.559,
+    "mean": 87.237,
+    "min": 73.449,
+    "max": 107.365,
+    "lines_mean": 7.1,
+    "ratio_to_ref_median": 1.0
+   },
+   "psp": {
+    "n": 60,
+    "p50": 74.294,
+    "p95": 85.551,
+    "mean": 75.519,
+    "min": 67.773,
+    "max": 103.695,
+    "lines_mean": 5.07,
+    "ratio_to_ref_median": 1.0
+   },
+   "vita": {
+    "n": 60,
+    "p50": 79.964,
+    "p95": 91.872,
+    "mean": 80.312,
+    "min": 72.541,
+    "max": 97.438,
+    "lines_mean": 6.72,
+    "ratio_to_ref_median": 1.0
+   },
+   "all": {
+    "n": 150,
+    "p50": 77.512,
+    "p95": 97.428,
+    "mean": 79.78,
+    "min": 67.773,
+    "max": 107.365,
+    "lines_mean": 6.13,
+    "ratio_to_ref_median": 1.0
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:960+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 34.601,
+    "p95": 62.814,
+    "mean": 38.337,
+    "min": 25.147,
+    "max": 67.432,
+    "lines_mean": 8.03,
+    "ratio_to_ref_median": 0.3919
+   },
+   "psp": {
+    "n": 60,
+    "p50": 12.971,
+    "p95": 17.541,
+    "mean": 13.434,
+    "min": 8.868,
+    "max": 27.332,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1738
+   },
+   "vita": {
+    "n": 60,
+    "p50": 29.262,
+    "p95": 40.581,
+    "mean": 30.066,
+    "min": 21.714,
+    "max": 49.158,
+    "lines_mean": 7.65,
+    "ratio_to_ref_median": 0.3711
+   },
+   "all": {
+    "n": 150,
+    "p50": 26.758,
+    "p95": 44.033,
+    "mean": 25.067,
+    "min": 8.868,
+    "max": 67.432,
+    "lines_mean": 6.82,
+    "ratio_to_ref_median": 0.3409
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:960+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 36.692,
+    "p95": 65.652,
+    "mean": 40.946,
+    "min": 23.334,
+    "max": 66.377,
+    "lines_mean": 8.03,
+    "ratio_to_ref_median": 0.4343
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.849,
+    "p95": 17.885,
+    "mean": 14.307,
+    "min": 7.049,
+    "max": 29.263,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1853
+   },
+   "vita": {
+    "n": 60,
+    "p50": 31.792,
+    "p95": 42.113,
+    "mean": 31.896,
+    "min": 16.899,
+    "max": 55.063,
+    "lines_mean": 7.65,
+    "ratio_to_ref_median": 0.4001
+   },
+   "all": {
+    "n": 150,
+    "p50": 27.924,
+    "p95": 48.144,
+    "mean": 26.67,
+    "min": 7.049,
+    "max": 66.377,
+    "lines_mean": 6.82,
+    "ratio_to_ref_median": 0.3529
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:960+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 29.4,
+    "p95": 60.491,
+    "mean": 34.65,
+    "min": 21.979,
+    "max": 63.434,
+    "lines_mean": 8.03,
+    "ratio_to_ref_median": 0.3587
+   },
+   "psp": {
+    "n": 60,
+    "p50": 12.793,
+    "p95": 17.14,
+    "mean": 13.346,
+    "min": 8.717,
+    "max": 25.737,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1719
+   },
+   "vita": {
+    "n": 60,
+    "p50": 26.501,
+    "p95": 37.828,
+    "mean": 27.501,
+    "min": 18.723,
+    "max": 46.819,
+    "lines_mean": 7.65,
+    "ratio_to_ref_median": 0.3356
+   },
+   "all": {
+    "n": 150,
+    "p50": 24.308,
+    "p95": 39.305,
+    "mean": 23.269,
+    "min": 8.717,
+    "max": 63.434,
+    "lines_mean": 6.82,
+    "ratio_to_ref_median": 0.3121
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:800+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 30.907,
+    "p95": 57.55,
+    "mean": 34.616,
+    "min": 25.223,
+    "max": 58.949,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.3712
+   },
+   "psp": {
+    "n": 60,
+    "p50": 12.868,
+    "p95": 21.642,
+    "mean": 13.56,
+    "min": 8.889,
+    "max": 27.348,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1732
+   },
+   "vita": {
+    "n": 60,
+    "p50": 25.456,
+    "p95": 34.91,
+    "mean": 26.522,
+    "min": 19.421,
+    "max": 47.258,
+    "lines_mean": 7.68,
+    "ratio_to_ref_median": 0.324
+   },
+   "all": {
+    "n": 150,
+    "p50": 24.234,
+    "p95": 41.786,
+    "mean": 22.956,
+    "min": 8.889,
+    "max": 58.949,
+    "lines_mean": 6.81,
+    "ratio_to_ref_median": 0.3021
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:800+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 33.168,
+    "p95": 59.875,
+    "mean": 35.746,
+    "min": 17.47,
+    "max": 61.244,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.4005
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.796,
+    "p95": 18.957,
+    "mean": 14.402,
+    "min": 10.272,
+    "max": 27.19,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1857
+   },
+   "vita": {
+    "n": 60,
+    "p50": 28.243,
+    "p95": 36.176,
+    "mean": 27.698,
+    "min": 14.352,
+    "max": 52.123,
+    "lines_mean": 7.68,
+    "ratio_to_ref_median": 0.3535
+   },
+   "all": {
+    "n": 150,
+    "p50": 25.21,
+    "p95": 41.309,
+    "mean": 23.989,
+    "min": 10.272,
+    "max": 61.244,
+    "lines_mean": 6.81,
+    "ratio_to_ref_median": 0.3121
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:800+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 27.877,
+    "p95": 55.554,
+    "mean": 32.153,
+    "min": 22.277,
+    "max": 56.056,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.3497
+   },
+   "psp": {
+    "n": 60,
+    "p50": 12.641,
+    "p95": 17.186,
+    "mean": 13.227,
+    "min": 9.029,
+    "max": 26.327,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1716
+   },
+   "vita": {
+    "n": 60,
+    "p50": 24.104,
+    "p95": 34.934,
+    "mean": 24.954,
+    "min": 18.372,
+    "max": 45.426,
+    "lines_mean": 7.68,
+    "ratio_to_ref_median": 0.3009
+   },
+   "all": {
+    "n": 150,
+    "p50": 22.108,
+    "p95": 37.097,
+    "mean": 21.703,
+    "min": 9.029,
+    "max": 56.056,
+    "lines_mean": 6.81,
+    "ratio_to_ref_median": 0.2796
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:640+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 23.071,
+    "p95": 52.057,
+    "mean": 27.029,
+    "min": 17.941,
+    "max": 53.215,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.2712
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.201,
+    "p95": 17.724,
+    "mean": 13.586,
+    "min": 8.8,
+    "max": 30.233,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1747
+   },
+   "vita": {
+    "n": 60,
+    "p50": 20.408,
+    "p95": 29.352,
+    "mean": 21.341,
+    "min": 14.483,
+    "max": 44.255,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2573
+   },
+   "all": {
+    "n": 150,
+    "p50": 18.865,
+    "p95": 33.194,
+    "mean": 19.376,
+    "min": 8.8,
+    "max": 53.215,
+    "lines_mean": 6.37,
+    "ratio_to_ref_median": 0.2396
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:640+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 24.734,
+    "p95": 52.433,
+    "mean": 28.865,
+    "min": 19.466,
+    "max": 55.279,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.2981
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.981,
+    "p95": 18.142,
+    "mean": 14.221,
+    "min": 9.617,
+    "max": 29.35,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1851
+   },
+   "vita": {
+    "n": 60,
+    "p50": 22.511,
+    "p95": 32.669,
+    "mean": 23.443,
+    "min": 14.405,
+    "max": 53.437,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2876
+   },
+   "all": {
+    "n": 150,
+    "p50": 20.61,
+    "p95": 35.918,
+    "mean": 20.839,
+    "min": 9.617,
+    "max": 55.279,
+    "lines_mean": 6.37,
+    "ratio_to_ref_median": 0.2539
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:640+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 22.302,
+    "p95": 52.909,
+    "mean": 26.531,
+    "min": 16.658,
+    "max": 53.868,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.2669
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.028,
+    "p95": 17.222,
+    "mean": 13.485,
+    "min": 8.952,
+    "max": 26.119,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1735
+   },
+   "vita": {
+    "n": 60,
+    "p50": 19.749,
+    "p95": 28.912,
+    "mean": 20.777,
+    "min": 14.136,
+    "max": 48.192,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2503
+   },
+   "all": {
+    "n": 150,
+    "p50": 17.956,
+    "p95": 34.304,
+    "mean": 19.011,
+    "min": 8.952,
+    "max": 53.868,
+    "lines_mean": 6.37,
+    "ratio_to_ref_median": 0.2285
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:480+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 18.533,
+    "p95": 47.231,
+    "mean": 22.691,
+    "min": 13.087,
+    "max": 47.776,
+    "lines_mean": 5.97,
+    "ratio_to_ref_median": 0.2221
+   },
+   "psp": {
+    "n": 60,
+    "p50": 12.932,
+    "p95": 18.672,
+    "mean": 13.504,
+    "min": 8.808,
+    "max": 28.097,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1713
+   },
+   "vita": {
+    "n": 60,
+    "p50": 15.541,
+    "p95": 23.508,
+    "mean": 16.397,
+    "min": 11.133,
+    "max": 33.664,
+    "lines_mean": 5.87,
+    "ratio_to_ref_median": 0.1984
+   },
+   "all": {
+    "n": 150,
+    "p50": 14.843,
+    "p95": 29.038,
+    "mean": 16.498,
+    "min": 8.808,
+    "max": 47.776,
+    "lines_mean": 5.69,
+    "ratio_to_ref_median": 0.1926
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:480+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 18.83,
+    "p95": 48.824,
+    "mean": 23.495,
+    "min": 14.36,
+    "max": 50.545,
+    "lines_mean": 5.97,
+    "ratio_to_ref_median": 0.2284
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.814,
+    "p95": 19.393,
+    "mean": 14.13,
+    "min": 8.15,
+    "max": 27.499,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1862
+   },
+   "vita": {
+    "n": 60,
+    "p50": 16.616,
+    "p95": 24.688,
+    "mean": 17.225,
+    "min": 11.058,
+    "max": 37.191,
+    "lines_mean": 5.87,
+    "ratio_to_ref_median": 0.2085
+   },
+   "all": {
+    "n": 150,
+    "p50": 15.89,
+    "p95": 29.034,
+    "mean": 17.241,
+    "min": 8.15,
+    "max": 50.545,
+    "lines_mean": 5.69,
+    "ratio_to_ref_median": 0.2028
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@fit:480+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 17.831,
+    "p95": 47.764,
+    "mean": 22.546,
+    "min": 13.44,
+    "max": 49.413,
+    "lines_mean": 5.97,
+    "ratio_to_ref_median": 0.2167
+   },
+   "psp": {
+    "n": 60,
+    "p50": 13.035,
+    "p95": 17.802,
+    "mean": 13.445,
+    "min": 8.832,
+    "max": 27.57,
+    "lines_mean": 5.38,
+    "ratio_to_ref_median": 0.1752
+   },
+   "vita": {
+    "n": 60,
+    "p50": 14.946,
+    "p95": 22.703,
+    "mean": 15.97,
+    "min": 11.184,
+    "max": 32.426,
+    "lines_mean": 5.87,
+    "ratio_to_ref_median": 0.1933
+   },
+   "all": {
+    "n": 150,
+    "p50": 14.544,
+    "p95": 27.191,
+    "mean": 16.275,
+    "min": 8.832,
+    "max": 49.413,
+    "lines_mean": 5.69,
+    "ratio_to_ref_median": 0.1878
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:960+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 38.555,
+    "p95": 62.412,
+    "mean": 41.353,
+    "min": 28.027,
+    "max": 66.17,
+    "lines_mean": 7.87,
+    "ratio_to_ref_median": 0.4685
+   },
+   "psp": {
+    "n": 60,
+    "p50": 28.676,
+    "p95": 37.201,
+    "mean": 29.787,
+    "min": 23.781,
+    "max": 51.629,
+    "lines_mean": 5.72,
+    "ratio_to_ref_median": 0.3859
+   },
+   "vita": {
+    "n": 60,
+    "p50": 34.529,
+    "p95": 44.757,
+    "mean": 35.069,
+    "min": 24.473,
+    "max": 66.855,
+    "lines_mean": 7.5,
+    "ratio_to_ref_median": 0.424
+   },
+   "all": {
+    "n": 150,
+    "p50": 31.77,
+    "p95": 46.468,
+    "mean": 34.213,
+    "min": 23.781,
+    "max": 66.855,
+    "lines_mean": 6.86,
+    "ratio_to_ref_median": 0.4006
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:960+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 41.921,
+    "p95": 67.143,
+    "mean": 44.048,
+    "min": 31.737,
+    "max": 69.181,
+    "lines_mean": 7.87,
+    "ratio_to_ref_median": 0.5017
+   },
+   "psp": {
+    "n": 60,
+    "p50": 30.748,
+    "p95": 41.951,
+    "mean": 31.711,
+    "min": 15.569,
+    "max": 54.046,
+    "lines_mean": 5.72,
+    "ratio_to_ref_median": 0.416
+   },
+   "vita": {
+    "n": 60,
+    "p50": 36.834,
+    "p95": 45.503,
+    "mean": 36.721,
+    "min": 19.667,
+    "max": 70.811,
+    "lines_mean": 7.5,
+    "ratio_to_ref_median": 0.437
+   },
+   "all": {
+    "n": 150,
+    "p50": 34.129,
+    "p95": 49.148,
+    "mean": 36.182,
+    "min": 15.569,
+    "max": 70.811,
+    "lines_mean": 6.86,
+    "ratio_to_ref_median": 0.4286
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:960+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 35.094,
+    "p95": 59.875,
+    "mean": 37.929,
+    "min": 27.48,
+    "max": 64.38,
+    "lines_mean": 7.87,
+    "ratio_to_ref_median": 0.4261
+   },
+   "psp": {
+    "n": 60,
+    "p50": 25.774,
+    "p95": 33.966,
+    "mean": 26.731,
+    "min": 20.889,
+    "max": 48.634,
+    "lines_mean": 5.72,
+    "ratio_to_ref_median": 0.3439
+   },
+   "vita": {
+    "n": 60,
+    "p50": 30.121,
+    "p95": 37.188,
+    "mean": 30.945,
+    "min": 22.762,
+    "max": 61.377,
+    "lines_mean": 7.5,
+    "ratio_to_ref_median": 0.3753
+   },
+   "all": {
+    "n": 150,
+    "p50": 28.744,
+    "p95": 44.448,
+    "mean": 30.656,
+    "min": 20.889,
+    "max": 64.38,
+    "lines_mean": 6.86,
+    "ratio_to_ref_median": 0.3615
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:800+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 30.438,
+    "p95": 56.929,
+    "mean": 34.568,
+    "min": 23.929,
+    "max": 59.402,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.3739
+   },
+   "psp": {
+    "n": 60,
+    "p50": 22.794,
+    "p95": 30.369,
+    "mean": 23.84,
+    "min": 18.332,
+    "max": 44.213,
+    "lines_mean": 5.57,
+    "ratio_to_ref_median": 0.3046
+   },
+   "vita": {
+    "n": 60,
+    "p50": 27.617,
+    "p95": 35.809,
+    "mean": 28.298,
+    "min": 19.666,
+    "max": 56.754,
+    "lines_mean": 7.7,
+    "ratio_to_ref_median": 0.3489
+   },
+   "all": {
+    "n": 150,
+    "p50": 26.164,
+    "p95": 42.382,
+    "mean": 27.769,
+    "min": 18.332,
+    "max": 59.402,
+    "lines_mean": 6.89,
+    "ratio_to_ref_median": 0.3307
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:800+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 32.104,
+    "p95": 60.877,
+    "mean": 35.02,
+    "min": 19.772,
+    "max": 62.682,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.3929
+   },
+   "psp": {
+    "n": 60,
+    "p50": 25.341,
+    "p95": 31.69,
+    "mean": 26.011,
+    "min": 17.234,
+    "max": 49.486,
+    "lines_mean": 5.57,
+    "ratio_to_ref_median": 0.3408
+   },
+   "vita": {
+    "n": 60,
+    "p50": 29.208,
+    "p95": 39.057,
+    "mean": 29.648,
+    "min": 15.105,
+    "max": 55.139,
+    "lines_mean": 7.7,
+    "ratio_to_ref_median": 0.3656
+   },
+   "all": {
+    "n": 150,
+    "p50": 27.66,
+    "p95": 42.596,
+    "mean": 29.268,
+    "min": 15.105,
+    "max": 62.682,
+    "lines_mean": 6.89,
+    "ratio_to_ref_median": 0.3544
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:800+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 27.719,
+    "p95": 56.912,
+    "mean": 32.176,
+    "min": 21.096,
+    "max": 60.792,
+    "lines_mean": 7.93,
+    "ratio_to_ref_median": 0.3406
+   },
+   "psp": {
+    "n": 60,
+    "p50": 21.075,
+    "p95": 28.59,
+    "mean": 22.13,
+    "min": 17.534,
+    "max": 46.07,
+    "lines_mean": 5.57,
+    "ratio_to_ref_median": 0.2862
+   },
+   "vita": {
+    "n": 60,
+    "p50": 24.933,
+    "p95": 35.293,
+    "mean": 26.377,
+    "min": 18.605,
+    "max": 54.849,
+    "lines_mean": 7.7,
+    "ratio_to_ref_median": 0.3199
+   },
+   "all": {
+    "n": 150,
+    "p50": 24.236,
+    "p95": 41.401,
+    "mean": 25.838,
+    "min": 17.534,
+    "max": 60.792,
+    "lines_mean": 6.89,
+    "ratio_to_ref_median": 0.3066
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:640+L#d1|par": {
+   "pc": {
+    "n": 30,
+    "p50": 23.642,
+    "p95": 51.281,
+    "mean": 27.179,
+    "min": 16.631,
+    "max": 52.969,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.2805
+   },
+   "psp": {
+    "n": 60,
+    "p50": 17.094,
+    "p95": 21.818,
+    "mean": 17.776,
+    "min": 12.956,
+    "max": 33.98,
+    "lines_mean": 5.15,
+    "ratio_to_ref_median": 0.2303
+   },
+   "vita": {
+    "n": 60,
+    "p50": 20.295,
+    "p95": 31.698,
+    "mean": 21.496,
+    "min": 14.205,
+    "max": 46.709,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2604
+   },
+   "all": {
+    "n": 150,
+    "p50": 19.228,
+    "p95": 33.825,
+    "mean": 21.144,
+    "min": 12.956,
+    "max": 52.969,
+    "lines_mean": 6.28,
+    "ratio_to_ref_median": 0.2489
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:640+L#d2|par": {
+   "pc": {
+    "n": 30,
+    "p50": 25.318,
+    "p95": 53.903,
+    "mean": 29.47,
+    "min": 19.403,
+    "max": 54.916,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.3049
+   },
+   "psp": {
+    "n": 60,
+    "p50": 19.107,
+    "p95": 23.943,
+    "mean": 19.367,
+    "min": 12.372,
+    "max": 30.331,
+    "lines_mean": 5.15,
+    "ratio_to_ref_median": 0.2553
+   },
+   "vita": {
+    "n": 60,
+    "p50": 22.515,
+    "p95": 31.624,
+    "mean": 23.489,
+    "min": 15.474,
+    "max": 50.699,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2858
+   },
+   "all": {
+    "n": 150,
+    "p50": 21.622,
+    "p95": 37.147,
+    "mean": 23.037,
+    "min": 12.372,
+    "max": 54.916,
+    "lines_mean": 6.28,
+    "ratio_to_ref_median": 0.2752
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/F3/det.onnx@long:640+L#d4|par": {
+   "pc": {
+    "n": 30,
+    "p50": 22.407,
+    "p95": 52.263,
+    "mean": 26.563,
+    "min": 17.721,
+    "max": 53.091,
+    "lines_mean": 6.97,
+    "ratio_to_ref_median": 0.2664
+   },
+   "psp": {
+    "n": 60,
+    "p50": 16.5,
+    "p95": 22.633,
+    "mean": 17.311,
+    "min": 13.052,
+    "max": 34.512,
+    "lines_mean": 5.15,
+    "ratio_to_ref_median": 0.2212
+   },
+   "vita": {
+    "n": 60,
+    "p50": 19.771,
+    "p95": 29.93,
+    "mean": 20.93,
+    "min": 13.677,
+    "max": 49.706,
+    "lines_mean": 7.07,
+    "ratio_to_ref_median": 0.2491
+   },
+   "all": {
+    "n": 150,
+    "p50": 18.935,
+    "p95": 34.381,
+    "mean": 20.609,
+    "min": 13.052,
+    "max": 53.091,
+    "lines_mean": 6.28,
+    "ratio_to_ref_median": 0.2448
+   }
+  }
+ },
+ "load_1min_at_end": 37.9
+}

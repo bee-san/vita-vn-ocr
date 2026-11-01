@@ -23,6 +23,7 @@
 #define CHUNK_MAX 48u
 #define MAX_STEPS 64u
 #define RESIZE_MAX_TASKS 64u
+#define STEM_PF_ROWS 2u   /* the stem prefetches its source this many output rows ahead */
 
 /* ----------------------------------------------------------------------------- profiling (-DVOCR_TSD_PROF) */
 
@@ -636,6 +637,31 @@ static void src_floats(const tsd_src *S, unsigned x, unsigned y, unsigned n, flo
     }
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#define PREFETCH(p) __builtin_prefetch(p)
+#else
+#define PREFETCH(p) ((void)(p))
+#endif
+
+/* prefetch the source bytes of output row oy's columns [x0, x1) (its four source rows): a frame fresh from a capture
+ * is in DRAM, and the stem reads it once */
+static void stem_prefetch(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1)
+{
+    unsigned ky, sx = 4 * x0, ex = 4 * x1;
+    if (sx >= S->w) return;
+    if (ex > S->w) ex = S->w;
+    for (ky = 0; ky < 4; ky++) {
+        const unsigned sy = 4 * oy + ky;
+        const unsigned char *r;
+        size_t b, n;
+        if (sy >= S->h) return;
+        r = S->px + (size_t)sy * S->stride + (size_t)sx * S->ch;
+        n = (size_t)(ex - sx) * S->ch;
+        for (b = 0; b < n; b += 64) PREFETCH(r + b);
+        PREFETCH(r + n - 1);
+    }
+}
+
 /* the stem's four source rows of output row oy, columns [x0, x1): R[ky][0 .. 4 (x1 - x0)) floats (the edge padding:
  * columns past the source repeat its last column, rows past it its last row) */
 static void stem_rows(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1, float (*R)[4 * CHUNK_MAX])
@@ -852,6 +878,7 @@ typedef struct {
     const vocr_tsd_model *m;
     tsd_src src;
     float *maps;
+    unsigned lazy;             /* the head's maps past K only on kernel cells (K > 0): what the decode reads */
     tsd_step st[MAX_STEPS];
     unsigned n, cur;
 } tsd_net;
@@ -863,11 +890,92 @@ static unsigned chunk_of(unsigned cmax)
 }
 
 /* the head on a chunk ([P][F]) into the maps (stride out per cell) */
-static void head_chunk(const vocr_tsd_model *m, const float *in, unsigned P, float *maps)
+/* acc + x w as the head's kernels compute it: one fused multiply-add (AVX2 + FMA builds) or a product and a sum */
+static inline float madd(float acc, float x, float w)
+{
+#if TSD_AVX2
+    return _mm_cvtss_f32(_mm_fmadd_ss(_mm_set_ss(x), _mm_set_ss(w), _mm_set_ss(acc)));
+#else
+    return acc + x * w;
+#endif
+}
+
+/* the head's map co of one cell: b[co], then + x[ci] w[ci][co] for ci in order (pw_chunk's chain for that output) */
+static inline float head_one(const vocr_tsd_layer *L, const float *x, unsigned co)
+{
+    const unsigned F = L->cin, ld = L->cout;
+    float acc = L->b[co];
+    unsigned ci;
+    for (ci = 0; ci < F; ci++) acc = madd(acc, x[ci], L->w[(size_t)ci * ld + co]);
+    return acc;
+}
+
+/* the K map of P cells (in: [P][F]) into maps[p * out]: eight cells a step, the cells in the lanes (an 8 x 8 transpose
+ * of the input per 8 channels), each lane the same chain as pw_chunk's for K: the same bits */
+static void head_k(const vocr_tsd_layer *L, const float *in, unsigned P, unsigned out, float *maps)
+{
+    const unsigned F = L->cin;
+    unsigned p = 0;
+#if TSD_AVX2
+    const unsigned ld = L->cout;
+    for (; p + 8 <= P; p += 8) {
+        const float *x = in + (size_t)p * F;
+        __m256 acc = _mm256_set1_ps(L->b[0]);
+        float o[8];
+        unsigned cb, j;
+        for (cb = 0; cb < F; cb += 8) {
+            __m256 r0 = _mm256_loadu_ps(x + cb), r1 = _mm256_loadu_ps(x + F + cb);
+            __m256 r2 = _mm256_loadu_ps(x + 2 * F + cb), r3 = _mm256_loadu_ps(x + 3 * F + cb);
+            __m256 r4 = _mm256_loadu_ps(x + 4 * F + cb), r5 = _mm256_loadu_ps(x + 5 * F + cb);
+            __m256 r6 = _mm256_loadu_ps(x + 6 * F + cb), r7 = _mm256_loadu_ps(x + 7 * F + cb);
+            __m256 t0 = _mm256_unpacklo_ps(r0, r1), t1 = _mm256_unpackhi_ps(r0, r1);
+            __m256 t2 = _mm256_unpacklo_ps(r2, r3), t3 = _mm256_unpackhi_ps(r2, r3);
+            __m256 t4 = _mm256_unpacklo_ps(r4, r5), t5 = _mm256_unpackhi_ps(r4, r5);
+            __m256 t6 = _mm256_unpacklo_ps(r6, r7), t7 = _mm256_unpackhi_ps(r6, r7);
+            __m256 u0 = _mm256_shuffle_ps(t0, t2, 0x44), u1 = _mm256_shuffle_ps(t0, t2, 0xEE);
+            __m256 u2 = _mm256_shuffle_ps(t1, t3, 0x44), u3 = _mm256_shuffle_ps(t1, t3, 0xEE);
+            __m256 u4 = _mm256_shuffle_ps(t4, t6, 0x44), u5 = _mm256_shuffle_ps(t4, t6, 0xEE);
+            __m256 u6 = _mm256_shuffle_ps(t5, t7, 0x44), u7 = _mm256_shuffle_ps(t5, t7, 0xEE);
+            __m256 c[8];
+            c[0] = _mm256_permute2f128_ps(u0, u4, 0x20);   /* channel cb + 0 of the 8 cells */
+            c[1] = _mm256_permute2f128_ps(u1, u5, 0x20);
+            c[2] = _mm256_permute2f128_ps(u2, u6, 0x20);
+            c[3] = _mm256_permute2f128_ps(u3, u7, 0x20);
+            c[4] = _mm256_permute2f128_ps(u0, u4, 0x31);
+            c[5] = _mm256_permute2f128_ps(u1, u5, 0x31);
+            c[6] = _mm256_permute2f128_ps(u2, u6, 0x31);
+            c[7] = _mm256_permute2f128_ps(u3, u7, 0x31);
+            for (j = 0; j < 8; j++) acc = _mm256_fmadd_ps(c[j], _mm256_set1_ps(L->w[(size_t)(cb + j) * ld]), acc);
+        }
+        _mm256_storeu_ps(o, acc);
+        for (j = 0; j < 8; j++) maps[(size_t)(p + j) * out] = o[j];
+    }
+#endif
+    for (; p < P; p++) maps[(size_t)p * out] = head_one(L, in + (size_t)p * F, 0);
+}
+
+static void head_chunk(const vocr_tsd_model *m, const float *in, unsigned P, float *maps, unsigned lazy)
 {
     float tmp[CHUNK_MAX * (6 + VOCR_TSD_MAX_TAGS + 2)];
     epi_t e;
-    unsigned p;
+    unsigned p, co;
+    if (lazy) {   /* K everywhere; the other maps where K > 0 (the decode reads them nowhere else) */
+        float xk[CHUNK_FLOATS];   /* P x F <= CHUNK_FLOATS (chunk_of) */
+        unsigned idx[CHUNK_MAX], nk = 0, F = m->F, k;
+        head_k(&m->head, in, P, m->out, maps);
+        for (p = 0; p < P; p++)
+            if (maps[(size_t)p * m->out] > 0.0f) idx[nk++] = p;
+        if (!nk) return;
+        /* the kernel cells' inputs side by side, then the whole head on them (pw_chunk: the same chains) */
+        for (k = 0; k < nk; k++) memcpy(xk + (size_t)k * F, in + (size_t)idx[k] * F, F * sizeof(float));
+        e.kind = EPI_NONE;
+        e.res = e.up = NULL;
+        e.x0 = 0;
+        pw_chunk(xk, nk, &m->head, &e, tmp);
+        for (k = 0; k < nk; k++)
+            for (co = 1; co < m->out; co++) maps[(size_t)idx[k] * m->out + co] = tmp[(size_t)k * m->outp + co];
+        return;
+    }
     e.kind = EPI_NONE;
     e.res = e.up = NULL;
     e.x0 = 0;
@@ -888,6 +996,7 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
         for (y = y0; y < y1; y++)
             for (x0 = 0; x0 < t->Wo; x0 += ch) {
                 const unsigned x1 = x0 + ch < t->Wo ? x0 + ch : t->Wo;
+                stem_prefetch(&N->src, y + STEM_PF_ROWS, x0, x1);
                 stem_rows(&N->src, y, x0, x1, R);
                 stem_chunk((const float (*)[4 * CHUNK_MAX])R, x1 - x0, &m->stem, t->out + ((size_t)y * t->Wo + x0) * C);
             }
@@ -903,7 +1012,7 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
                 e.kind = t->res ? EPI_RES : EPI_RELU;
                 e.res = t->res ? t->in + ((size_t)y * t->W + x0) * Ci : NULL;
                 pw_chunk(T, x1 - x0, t->b, &e, o);
-                if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * t->Wo + x0) * m->out);
+                if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * t->Wo + x0) * m->out, N->lazy);
             }
         return;
     }
@@ -917,7 +1026,7 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
                 e.up = t->up ? t->up + (size_t)(y >> 1) * (t->Wo >> 1) * F : NULL;
                 e.x0 = x0;
                 pw_chunk(t->in + ((size_t)y * t->W + x0) * Ci, x1 - x0, t->a, &e, o);
-                if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * t->Wo + x0) * m->out);
+                if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * t->Wo + x0) * m->out, N->lazy);
             }
         return;
     }
@@ -1085,6 +1194,7 @@ int vocr_tsd_maps_mt(const vocr_tsd_model *m, const unsigned char *in, unsigned 
     N.src.h = ph;
     N.src.stride = pw;
     N.src.ch = 1;
+    N.lazy = 0;   /* every map of every cell */
     build(&N, m, A, &P);
     net_run(&N, run, ctx, ntasks);
     *maps = N.maps;
@@ -1460,6 +1570,7 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
     }
     plan(m, D.pw, D.ph, &P);
     A = aligned_floats(base + D.net);
+    N.lazy = 1;   /* the maps the decode reads: K, and the rest on kernel cells */
     build(&N, m, A, &P);
     net_run(&N, run, ctx, ntasks);
     PROF_START();

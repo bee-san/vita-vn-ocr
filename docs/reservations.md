@@ -29,11 +29,34 @@ too: no screenshot of those releases is used, and neither is any vita-test or ps
 file sha256 or decoded pixels.
 
 **The desktop PC test set** (2026-11-01, `docs/desktop-data.md`): vocr-desktop's (#169) real PC test, 942 dialogue
-lines of 143 VNs that were in no pool, frozen as `eval/manifests/desktop-pc-test-v1.jsonl`. The manifest is its
-reservation: `realplus/shots.desktop_pc_test_vns()` reads its VNs and `realplus/shots.reserved_vns()` refuses them
-(reason `desktop-pc-test`; not with `committed=False`). This file's `reserved.json` and `synth/common.py` are pinned by
-frozen protocols, so they do not list them yet: the next carve adds them with re-pinning amendments. They held no
-data any pool had used, so nothing is taken from training.
+lines of 143 VNs that were in no pool, frozen as `eval/manifests/desktop-pc-test-v1.jsonl`. They held no data any
+pool had used, so nothing is taken from training. The manifest is the set's reservation:
+
+- `realplus/shots.desktop_pc_test_vns()` reads its VNs; `realplus/shots.reserved_vns()` refuses them (reason
+  `desktop-pc-test`, not with `committed=False`), and `shots.dev_sample()` never draws them.
+- `shots.py reserve` writes them into the reservation it carves (part `desktop_pc_test`).
+- This file's `reserved.json` and `synth/common.py` are pinned by sha256 in frozen protocols (textspot, textspot2,
+  textspot3, textspot6 and their data pins), so neither lists the set yet. The next carve writes the part, and
+  `synth/common.is_reserved_vn` must then read it (`r.get("desktop_pc_test")`); both changes need re-pinning
+  amendments in those protocols.
+
+Until then these builders and checks do not know the set. They check only `synth/common.is_reserved_vn` or read
+`reserved.json`'s `test` / `dev_sample` parts, so a new pool built with one of them must also refuse
+`desktop_pc_test_vns()`:
+
+| builder | what it selects |
+|---|---|
+| `realdata/vndb.py`, `realdata/build.py` | realdata's VNDB listing, screenshots and pools |
+| `teacher/build.py` | the teacher pools |
+| `data/fresh_backgrounds.py`, `synth/fetch_synth2.py`, `synth/fresh_dataset.py`, `synth/provenance_producer.py` | synthetic backgrounds fetched from VNDB |
+| `synth/synth3.py`, `synth/render.py`, `synth/bg_exclude.py`, `synth/calibrate.py`, `synth/synth3_real_labels.py` | synth2 / synth3 scene pools, exclusion lists, calibration |
+| `synth/textdet_data.py`, `synth/textspot_data.py`, `synth/textspot_real_half.py`, `synth/textspot2_labels.py` | the detectors' scene pools and real halves |
+| `eval/textspot.py`, `eval/translucent_box.py`, `eval/head2level_extract.py`, `train/head2level.py`, `eval/vertical_data.py`, `eval/charbox_sets.py`, `eval/textdet.py`, `eval/textgate_data.py`, `eval/vocr5_pools.py`, `train/headgate.py`, `train/modelb_head.py`, `vita/dev_pack.py` | development and evaluation sets, calibration sets |
+| `eval/tools/leakcheck.py`, `eval/tools/reserve_check.py`, `realplus/hygiene.py` | checks (they would not flag the set's VNs) |
+
+The builders on `realplus/shots.reserved_vns()` already refuse them: realplus (`pool.py`, `reclaim.py`,
+`native.py`, `owner_frames.py`), devnative's selection, synth3's mining, text and stats, synth4, `train/vocab*`,
+`eval/vocr4_pools.py`. No pool holds any of the 143 VNs today (audit-desktop-data's scan of the shared box).
 
 Everything else trains:
 

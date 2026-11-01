@@ -138,6 +138,71 @@ def test_realplus_labels_scale_refine_and_ignore_the_rest():
     assert not any(RP.iou(b, lines[0][:4]) > 0.2 for b in ignore)
 
 
+def tight_page():
+    """A 640 x 480 page with three dialogue rows 24 px apart whose ink almost touches (audit F1's v12508_69081):
+    realplus kept rows 0 and 2; its fit-960 reads give row 0 an ink box reaching 4 px into row 1."""
+    W, H = 640, 480
+    s = RP.fit_scale(W, H)
+    rgb = np.full((H, W, 3), 20, np.uint8)
+    rows = [(392, 416), (415, 440), (440, 464)]
+    for y0, y1 in rows:
+        for x in range(46, 600, 26):                     # glyph-like blocks with a 4 px gap between them
+            rgb[y0 + 1:y1 - 1, x:x + 22] = 235
+    fit = lambda b: [int(round(v * s)) for v in b]  # noqa: E731
+    ink = [[45, 392, 531, 420], [45, 412, 604, 440], [45, 437, 389, 464]]
+    det = [[42, 391, 528, 417], [42, 414, 604, 441], [43, 440, 388, 464]]
+    rd = {"lines": [{"k": k, "ink": fit(ink[k]), "crop_ink": fit(ink[k]), "det": fit(det[k])} for k in range(3)],
+          "dets": [{"det": fit(d)} for d in det]}
+    row = {"lines": [{"k": 0, "name": False, "vita_ink": None}, {"k": 2, "name": False, "vita_ink": None}]}
+    meiki = [[42, 392, 528, 416, 0.93], [42, 415, 603, 440, 0.94], [43, 440, 388, 463, 0.94]]
+    return rgb, row, rd, meiki, rows
+
+
+def covered(box, areas):
+    """Share of box covered by the union of areas."""
+    m = np.zeros((480, 640), bool)
+    for b in areas:
+        m[b[1]:b[3], b[0]:b[2]] = True
+    x0, y0, x1, y1 = box
+    return float(m[y0:y1, x0:x1].mean())
+
+
+def test_realplus_v2_ignores_an_unkept_neighbour_row_and_clips_positives():
+    rgb, row, rd, meiki, rows = tight_page()
+    mid = [46, rows[1][0] + 4, 598, rows[1][1] - 4]       # the unkept middle row's ink core
+    lines1, ignore1, _ = RP.labels_of(rgb, row, rd, meiki)
+    assert covered(mid, ignore1) < 0.5                     # v1: the middle row is background (the audit's F1)
+    lines, ignore, c = RP.labels_of_v2(rgb, row, rd, meiki, [[30, 380, 620, 476, 0.7]])
+    assert len(lines) == 2 and c["positive_clipped"] == 2
+    assert covered(mid, ignore) == 1.0                      # v2: the middle row is an ignore area
+    a, b = sorted(ln[:4] for ln in lines)
+    assert a[3] <= 417 and b[1] >= 440                      # each positive stops at its row's boundary
+    assert RP.vov(a, b) == 0 and a[1] <= 393 and b[3] >= 463
+    # the PP-OCRv6 box over all three rows is no positive's own text, but the labels already cover its inner part:
+    # it adds no ignore area over the rows' boundaries
+    assert c["ppdet_ignore_covered"] == 1 and c["ppdet_ignore"] == 0
+    lines3, ignore3, c3 = RP.labels_of_v2(rgb, row, {"lines": rd["lines"][:1] + rd["lines"][2:], "dets": []}, [],
+                                          [[40, 410, 610, 445, 0.7]])
+    assert c3["ppdet_ignore"] == 1 and covered(mid, ignore3) == 1.0   # found by PP-OCRv6 alone: still ignored
+
+
+def test_realplus_v2_keeps_a_lone_line_and_its_own_boxes():
+    W, H = 1920, 1080
+    s = RP.fit_scale(W, H)
+    rgb = np.full((H, W, 3), 30, np.uint8)
+    rgb[600:640, 200:900] = 240
+    fit = lambda b: [int(v * s) for v in b]  # noqa: E731
+    rd = {"lines": [{"k": 0, "ink": fit([200, 600, 900, 640]), "crop_ink": fit([200, 600, 900, 640]),
+                     "det": fit([198, 598, 902, 642])}], "dets": [{"det": fit([198, 598, 902, 642])}]}
+    row = {"lines": [{"k": 0, "name": True, "vita_ink": None}]}
+    lines, ignore, c = RP.labels_of_v2(rgb, row, rd, [[199, 599, 901, 641, 0.9], [205, 602, 500, 638, 0.6]],
+                                       [[180, 585, 920, 655, 0.8], [1500, 40, 1700, 80, 0.7]])
+    assert len(lines) == 1 and lines[0][4:] == [0, "name", 1.0]
+    assert all(abs(u - v) <= 2 for u, v in zip(lines[0][:4], [200, 600, 900, 640]))
+    assert len(ignore) == 1 and ignore[0][0] <= 1500 and ignore[0][2] >= 1700     # only the far UI box
+    assert c["positive_clipped"] == 0
+
+
 # ----------------------------------------------------------------------------- the PC test set
 
 def fake_dump():
@@ -349,19 +414,22 @@ def test_committed_training_manifests_are_consistent():
     assert {s["split"] for s in hk["shards"]} == {"train"} and all(s["dir"] == "train" for s in hk["shards"])
     assert sum(s["samples"] for s in hk["shards"]) == hk["desktop"]["plan"]["pages"] == hk["totals"]["train"]["samples"]
     assert hk["desktop"]["capture_mix"] == json.loads(json.dumps(C.MIX))
-    rp = json.loads((MAN / "realplus_native_v1.json").read_text(encoding="utf-8"))
-    assert rp["kind"] == "desktop-frames" and {s["dir"] for s in rp["shards"]} == {RP.DIR}
-    assert sum(s["samples"] for s in rp["shards"]) == rp["plan"]["frames"] == rp["totals"]["all"]["samples"]
-    assert set(rp["totals"]["all"]["by_class"]) <= {"text", "name"}
+    for v in ("v1", "v2"):
+        rp = json.loads((MAN / f"realplus_native_{v}.json").read_text(encoding="utf-8"))
+        assert rp["kind"] == "desktop-frames" and {s["dir"] for s in rp["shards"]} == {RP.DIRS[v]}
+        assert sum(s["samples"] for s in rp["shards"]) == rp["plan"]["frames"] == rp["totals"]["all"]["samples"]
+        assert set(rp["totals"]["all"]["by_class"]) <= {"text", "name"}
+        assert rp.get("label_rule", "labels_of") == {"v1": "labels_of", "v2": "labels_of_v2"}[v]   # v1 predates it
+    assert rp["rules"]["version"] == 2 and rp["rules"]["ppdet"]["sha256"] == RP.PPDET["sha256"]
     sy = json.loads((MAN / "synth_desktop_v1.json").read_text(encoding="utf-8"))
     assert sy["kind"] == "desktop-frames" and sum(s["samples"] for s in sy["shards"]) == sy["totals"]["all"]["samples"]
     assert set(sy["totals"]["all"]["by_class"]) <= {"dialogue", "name", "choice", "ui"}
-    st = json.loads((MAN / "stats_v1.json").read_text(encoding="utf-8"))
-    for name in ("1a hooked desktop", "1b realplus native", "1c synthetic desktop", "hooked Vita (native)",
-                 "hooked PSP (native)"):
-        assert st["sets"][name]["frames"] > 0
+    st = json.loads((MAN / "stats_v2.json").read_text(encoding="utf-8"))
+    for name in ("1a hooked desktop", "1b realplus native (v2)", "1c synthetic desktop", "hooked Vita (native)",
+                 "hooked PSP (native)", "real half (fit 960; every MeikiOCR text box)"):
+        assert st["sets"][name]["frames"] > 0 and not st["sets"][name]["shards_not_found"]
     assert st["sets"]["1a hooked desktop"]["frames"] == hk["desktop"]["plan"]["pages"]
-    names = [s["name"] for s in hk["shards"] + rp["shards"] + sy["shards"]]
+    names = [s["dir"] + "/" + s["name"] for s in hk["shards"] + rp["shards"] + sy["shards"]]
     assert len(names) == len(set(names))
 
 
@@ -420,6 +488,6 @@ def test_pc_test_errata_name_lines_of_the_frozen_manifest():
 
 def test_docs_tables_match_the_stats():
     doc = ROOT / "docs" / "desktop-data.md"
-    st = json.loads((MAN / "stats_v1.json").read_text(encoding="utf-8"))
+    st = json.loads((MAN / "stats_v2.json").read_text(encoding="utf-8"))
     text = doc.read_text(encoding="utf-8")
     assert ST.render_doc(text, st) == text

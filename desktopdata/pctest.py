@@ -323,7 +323,9 @@ def cmd_candidates(args):
     d = load_dump_extra(base)
     pool_doc = json.loads((OUT / "pool_vns.json").read_text(encoding="utf-8"))
     pool = pool_doc["pool"]
-    reserved = RS.reserved_vns(d)
+    # the set's own VNs are its candidates: reserved_vns refuses them (desktop-pc-test) for every other pool, and a
+    # rebuild of v1 (or a v2 that extends it) must keep them
+    reserved = {v: r for v, r in RS.reserved_vns(d).items() if r != "desktop-pc-test"}
     rows, why = candidates(d, pool, reserved)
     old = {r["shot"]: r for r in read_jsonl(OUT / "candidates.jsonl")}
     for r in rows:

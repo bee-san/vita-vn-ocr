@@ -531,7 +531,8 @@ def training_pool_vns(repo=ROOT):
     return out
 
 
-def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED, owner=None, pools=None):
+def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED, owner=None, pools=None,
+               held=None):
     """The development sample: `size` VNs that already have labelled development lines, chosen by tier and, inside a
     tier, by a seeded hash of the VN id (stable_rank), so the choice of one VN never depends on another:
 
@@ -544,13 +545,15 @@ def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED,
     VNDB release with an owner game (their screenshots all train, owner 2026-10-14 13:25Z), is in no training pool
     built so far (training_pool_vns) and shares no two-VN release (one game filed twice, a game and its fan disc)
     with a VN of one, so no labelled training pool holds the sample's games (pinned synth2 backgrounds may:
-    docs/reservations.md). Returns (rows, why):
+    docs/reservations.md), and is not a VN of another frozen test set (held: default desktop_pc_test_vns(), the
+    desktop PC test set). Returns (rows, why):
     one row per chosen VN (tier, lines by source and kind) and the count of every reason a candidate was passed over."""
     counts = dev_line_counts() if counts is None else counts
     owner = owner_vns() if owner is None else set(owner)
     near_owner = set(release_partners(d, owner))
     pools = training_pool_vns() if pools is None else pools
     near_pool = set(release_partners(d, set(pools), close=True))
+    held = desktop_pc_test_vns() if held is None else set(held)
     why = collections.Counter()
 
     def tier(c):
@@ -564,6 +567,8 @@ def dev_sample(d, test, counts=None, size=DEV_SAMPLE_SIZE, seed=DEV_SAMPLE_SEED,
     for v, c in counts.items():
         if v in test:
             why["test"] += 1
+        elif v in held:
+            why["desktop-pc-test"] += 1
         elif v in owner:
             why["owner-game"] += 1
         elif v in near_owner:
@@ -629,6 +634,10 @@ def cmd_reserve(args):
         # the owner games the carve left out (owner_vns() when it ran: the named lists, the committed drop tables and
         # the owner-games folders). Tests check the sample against this list, never against the live folders.
         "owner_vns": sorted(owner, key=lambda v: int(v[1:])),
+        # the frozen desktop PC test set (docs/desktop-data.md): read from its manifests, not from the dump, so a
+        # carve carries it whatever the dump says. A carve that writes this part changes reserved.json, which frozen
+        # protocols pin: it needs their re-pinning amendments (docs/reservations.md)
+        "desktop_pc_test": {v: "desktop-pc-test" for v in sorted(desktop_pc_test_vns(), key=lambda v: int(v[1:]))},
     }
     path = Path(args.out)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

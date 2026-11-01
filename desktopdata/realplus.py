@@ -206,6 +206,70 @@ def load_meiki(cache):
     return out
 
 
+# ----------------------------------------------------------------------------- PP-OCRv6 det small (v2's third source)
+
+PPDET = {"engine": "rapidocr 3.10.0, PP-OCRv6 det small (its defaults: limit_side_len 736 min, thresh 0.3, "
+                   "box_thresh 0.5, unclip_ratio 1.6)", "file": "PP-OCRv6_det_small.onnx",
+         "sha256": "090f04abcd9d9a7498bc4ebf677e4cb9bdce1fe4197ddb7e529f1ef44e1ff94f"}
+
+
+def _init_ppdet():
+    import importlib.util
+
+    from rapidocr import RapidOCR
+    spec = importlib.util.find_spec("rapidocr")
+    model = Path(spec.origin).parent / "models" / PPDET["file"]
+    if SH.sha256_file(model) != PPDET["sha256"]:
+        raise SystemExit(f"{model}: sha256 differs from the pin")
+    _W["ppdet"] = RapidOCR(params={"Global.log_level": "error", "EngineConfig.onnxruntime.intra_op_num_threads": 1})
+
+
+def _ppdet_one(row):
+    import cv2
+    bgr = cv2.imread(row["path"], cv2.IMREAD_COLOR)
+    if bgr is None:
+        return {"shot": row["shot"], "error": "unreadable"}
+    r = _W["ppdet"](bgr, use_det=True, use_cls=False, use_rec=False)
+    quads = [] if r.boxes is None else [np.asarray(q, np.float32) for q in r.boxes]
+    scores = list(r.scores) if r.scores is not None else [None] * len(quads)
+    out = []
+    for q, sc in zip(quads, scores):
+        x0, y0 = int(np.floor(q[:, 0].min())), int(np.floor(q[:, 1].min()))
+        x1, y1 = int(np.ceil(q[:, 0].max())), int(np.ceil(q[:, 1].max()))
+        out.append([x0, y0, x1, y1, None if sc is None else round(float(sc), 4)])
+    return {"shot": row["shot"], "boxes": out}
+
+
+def cmd_ppdet(args):
+    plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    rows = part_of(plan["rows"], args.part)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    tag = args.part.replace("/", "of") if args.part else "all"
+    path = out / f"ppdet_{tag}.jsonl"
+    done = {r["shot"] for r in read_jsonl(path)} if path.exists() else set()
+    todo = [r for r in rows if r["shot"] not in done]
+    print(f"ppdet: {len(rows)} frames, {len(done)} cached, {len(todo)} to run", flush=True)
+    t0 = time.time()
+    with open(path, "a", encoding="utf-8") as fo, mp.get_context("spawn").Pool(args.workers,
+                                                                               initializer=_init_ppdet) as pool:
+        for i, r in enumerate(pool.imap(_ppdet_one, todo, chunksize=8)):
+            fo.write(json.dumps(r) + "\n")
+            if (i + 1) % 2000 == 0:
+                fo.flush()
+                print(f"  {i + 1}/{len(todo)} {time.time() - t0:.0f} s", flush=True)
+    print(f"ppdet: {len(todo)} frames in {time.time() - t0:.0f} s", flush=True)
+
+
+def load_ppdet(cache):
+    out = {}
+    for p in sorted(Path(cache).glob("ppdet_*.jsonl")):
+        for r in read_jsonl(p):
+            if "boxes" in r:
+                out[r["shot"]] = r["boxes"]
+    return out
+
+
 def load_reads(shots):
     """{shot: reads row} of the realplus reads (v1-v2 and the reclaim tier) for the given shots."""
     out = {}
@@ -275,7 +339,9 @@ def refined(rgb, q, s):
 
 
 def labels_of(rgb, row, rd, meiki):
-    """(lines, ignore, counts) of one frame (module docstring)."""
+    """v1's labels (realplus_native_v1, kept to reproduce it): (lines, ignore, counts) of one frame. Superseded by
+    labels_of_v2: its meets() test let an unkept neighbour line hide inside an over-tall positive (audit-desktop-data
+    F1)."""
     H, W = rgb.shape[:2]
     s = fit_scale(W, H)
     rlines = {ln["k"]: ln for ln in rd.get("lines", [])}
@@ -338,29 +404,220 @@ def labels_of(rgb, row, rd, meiki):
     return lines, ignore, c
 
 
+RULES_V2 = dict(RULES, version=2, same_row_iou=0.5, same_row_vov=0.6, same_row_inside=0.6, same_row_height=1.7,
+                row_vov=0.5, min_height=0.6, anchor_cover=0.7, overlap_vov=1 / 3, covered=0.5, ppdet=PPDET)
+
+
+def inner_box(b):
+    """A box's inner part: shrunk by a quarter of its height at the top and bottom and by min(w, h) / 4 at the ends
+    (audit-desktop-data's coverage measure)."""
+    x0, y0, x1, y1 = b[:4]
+    h, w = y1 - y0, x1 - x0
+    dy, dx = h / 4, min(w / 4, h / 4)
+    return [int(round(x0 + dx)), int(round(y0 + dy)), int(round(x1 - dx)), int(round(y1 - dy))]
+
+
+def vov(a, b):
+    """Vertical overlap of two boxes as a share of the smaller height."""
+    o = min(a[3], b[3]) - max(a[1], b[1])
+    return max(0, o) / max(1, min(a[3] - a[1], b[3] - b[1]))
+
+
+def hov(a, b):
+    """Horizontal overlap of two boxes in px."""
+    return max(0, min(a[2], b[2]) - max(a[0], b[0]))
+
+
+def same_row(b, p, g):
+    """v2: box b is positive p's own text (its detector box, a piece of the line): IoU >= 0.5, or b no taller than
+    1.7 x p (+ 2 g), overlapping p vertically by >= 0.6 of the smaller height, with >= 0.6 of its width inside p's
+    columns grown by g. A neighbouring row, a box over two rows, or text beside the line on its row is not."""
+    if iou(b, p) >= RULES_V2["same_row_iou"]:
+        return True
+    if (b[3] - b[1]) > RULES_V2["same_row_height"] * (p[3] - p[1]) + 2 * g:
+        return False
+    inside = max(0, min(b[2], p[2] + g) - max(b[0], p[0] - g)) / max(1, b[2] - b[0])
+    return vov(b, p) >= RULES_V2["same_row_vov"] and inside >= RULES_V2["same_row_inside"]
+
+
+def clip_rows(p, anchor, others):
+    """v2: p clipped at the boundary to every other text row that overlaps it horizontally and reaches into it. A
+    row is another row when it overlaps the anchor (the line's own detector box) vertically by under half the smaller
+    height; the boundary is the midpoint between the anchor's edge and the row's facing edge (rounded away from the
+    anchor), so two tight rows' positives meet there and overlap by at most 1 px."""
+    x0, y0, x1, y1 = p
+    ac = (anchor[1] + anchor[3]) / 2
+    for o in others:
+        if hov(o, p) <= 0 or vov(o, anchor) >= RULES_V2["row_vov"]:
+            continue
+        oc = (o[1] + o[3]) / 2
+        if oc > ac and o[1] < y1:
+            y1 = min(y1, int(math.ceil((anchor[3] + o[1]) / 2)))
+        elif oc < ac and o[3] > y0:
+            y0 = max(y0, int(math.floor((o[3] + anchor[1]) / 2)))
+    return [x0, y0, x1, y1]
+
+
+def labels_of_v2(rgb, row, rd, meiki, ppdet):
+    """(lines, ignore, counts) of one frame, v2 (realplus_native_v2):
+      positives  each kept line's v1 box (its reads ink box widened to v3's crop, at native size), clipped at the
+                 boundaries to the other rows (clip_rows: every other reads line's detector box, every MeikiOCR box
+                 of score >= 0.5 of the native pass, the line's own furigana), refined to ink inside that band and
+                 clipped again. A refined box under 0.6 of the line's own detector box's height, or covering under
+                 0.7 of that box's rows (the refinement took part of the glyphs, or their lower half and a drop
+                 shadow: two-tone, outlined and shadowed fills), gives way to the clipped reads box, and a reads box
+                 that short to the detector box's rows (with the reads box's columns). A positive still under
+                 0.6 of its detector box's height, or one that overlaps another positive (horizontally, and
+                 vertically by over a third of the smaller height), becomes an ignore area instead
+      ignore     the kept lines' furigana; every box that is no positive's own text (same_row) from four sources:
+                 the reads lines realplus did not keep (ink + furigana), the reads' detector boxes (MeikiOCR, 0.5),
+                 MeikiOCR's native pass (0.2) and PP-OCRv6 det small (an independent detector); a detector box
+                 only when under half of its inner part (inner_box) is labelled already (by an ignore area or a
+                 positive's inner band), so a box over two labelled rows does not erase the gap between them;
+                 each grown by max(2, 2 / s) px; an area at least 90% inside an earlier one is not added again"""
+    H, W = rgb.shape[:2]
+    s = fit_scale(W, H)
+    rlines = {ln["k"]: ln for ln in rd.get("lines", [])}
+    kept = {x["k"]: x for x in row["lines"]}
+    g_ign = max(RULES["ignore_grow"], int(round(RULES["ignore_grow"] / s)))
+    g_meet = max(RULES["meet_grow"], int(round(RULES["meet_grow"] / s)))
+    g_furi = max(RULES["furigana_grow"], int(round(RULES["furigana_grow"] / s)))
+    c = collections.Counter()
+    rows_all = {k: clip(scale_box(ln["det"], s), W, H) for k, ln in rlines.items()}
+    meiki_rows = [clip(b[:4], W, H) for b in meiki or [] if b[4] >= 0.5]
+    cand = []                                   # (positive box, kind, anchor)
+    ignore = []
+    for k, kx in kept.items():
+        ln = rlines.get(k)
+        if ln is None:
+            c["kept_without_read"] += 1
+            continue
+        q = positive_box(ln, kx, s, W, H)
+        anchor = rows_all.get(k)
+        if q is None or anchor is None:
+            continue
+        furi = [b for b in (clip(scale_box(fb, s), W, H) for fb in ln.get("furi") or []) if b]
+        others = [b for j, b in rows_all.items() if j != k and b] + [b for b in meiki_rows if b] + furi
+        q2 = clip(clip_rows(q, anchor, others), W, H)
+        if q2 is None:
+            ignore.append(grow(q, g_ign, W, H) or q)
+            c["positive_to_ignore_height"] += 1
+            continue
+        ah = anchor[3] - anchor[1]
+        min_h = RULES_V2["min_height"] * ah
+        r, how = refined(rgb, q2, s)
+        rows_cov = max(0, min(r[3], anchor[3]) - max(r[1], anchor[1])) / max(1, ah)
+        if ((r[3] - r[1]) < min_h or rows_cov < RULES_V2["anchor_cover"]) and (q2[3] - q2[1]) >= min_h:
+            r, how = list(q2), "box_refine_off"             # the refinement took part of the glyphs: the reads box
+        b = clip(clip_rows(r, anchor, others), W, H) or q2
+        c["positive_clipped"] += int(q2 != q or b != r)       # a row boundary cut the box before or after refining
+        if (b[3] - b[1]) < min_h:                             # the reads box is short too: the detector box's rows
+            a2 = clip(clip_rows([q2[0], anchor[1], q2[2], anchor[3]], anchor, others), W, H)
+            if a2 is not None and (a2[3] - a2[1]) >= min_h:
+                b, how = a2, "box_anchor"
+        if (b[3] - b[1]) < min_h:
+            ignore.append(grow(q, g_ign, W, H) or q)
+            c["positive_to_ignore_height"] += 1
+            continue
+        cand.append((b, "name" if kx["name"] else "text", how))
+        for fb in furi:
+            g = grow(fb, g_furi, W, H)
+            if g:
+                ignore.append(g)
+                c["furigana_ignore"] += 1
+    bad = set()
+    for i in range(len(cand)):
+        for j in range(i + 1, len(cand)):
+            a, b2 = cand[i][0], cand[j][0]
+            if hov(a, b2) > 0 and vov(a, b2) > RULES_V2["overlap_vov"]:
+                bad |= {i, j}
+    lines = []
+    for i, (b, cls, how) in enumerate(cand):
+        if i in bad:
+            ignore.append(grow(b, g_ign, W, H) or b)
+            c["positive_to_ignore_overlap"] += 1
+            continue
+        lines.append([*b, 0, cls, 1.0])
+        c[f"positive_{how}"] += 1
+    pos = [ln[:4] for ln in lines]
+    cov = np.zeros((H, W), bool)                    # what is labelled: ignore areas and the positives' centre bands
+    for b in [inner_box(p) for p in pos] + ignore:
+        if b[2] > b[0] and b[3] > b[1]:
+            cov[b[1]:b[3], b[0]:b[2]] = True
+
+    def own(b):
+        return any(same_row(b, p, g_meet) for p in pos)
+
+    def add_ignore(b, key, detector=False):
+        b = clip(b, W, H)
+        if b is None or own(b):
+            return
+        if detector:                                # a detector box: only text the labels so far leave uncovered
+            ib = inner_box(b)
+            if ib[2] > ib[0] and ib[3] > ib[1] and cov[ib[1]:ib[3], ib[0]:ib[2]].mean() >= RULES_V2["covered"]:
+                c[f"{key}_covered"] += 1
+                return
+        g = grow(b, g_ign, W, H)
+        if g is None:
+            return
+        if any(inter(g, o) >= 0.9 * area(g) for o in ignore):
+            c[f"{key}_dup"] += 1
+            return
+        ignore.append(g)
+        cov[g[1]:g[3], g[0]:g[2]] = True
+        c[key] += 1
+    for k, ln in rlines.items():
+        if k not in kept:
+            add_ignore(scale_box(ln.get("crop_ink") or ln["ink"], s), "other_line_ignore")
+    for d in rd.get("dets", []):
+        add_ignore(scale_box(d["det"], s), "det05_ignore", True)
+    for b in meiki or []:
+        add_ignore(b[:4], "det02_ignore", True)
+    for b in ppdet or []:
+        add_ignore(b[:4], "ppdet_ignore", True)
+    return lines, ignore, c
+
+
 def _build_one(job):
-    import cv2
-    row, rd, meiki = job
-    raw = Path(row["path"]).read_bytes()
     import hashlib
+
+    import cv2
+    row, rd, meiki, ppdet, rules = job
+    raw = Path(row["path"]).read_bytes()
     if hashlib.sha256(raw).hexdigest() != row["sha256"]:
         return None, None, {"sha256_mismatch": 1}
     bgr = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
     rgb = np.ascontiguousarray(bgr[:, :, ::-1])
     H, W = rgb.shape[:2]
-    lines, ignore, c = labels_of(rgb, row, rd, meiki)
+    if rules == "v1":
+        lines, ignore, c = labels_of(rgb, row, rd, meiki)
+    else:
+        lines, ignore, c = labels_of_v2(rgb, row, rd, meiki, ppdet)
+    meta = {"url": row["url"], "sha256": row["sha256"], "release": row.get("release"), "dims": [W, H],
+            "fit": round(fit_scale(W, H), 6), "kept_lines": len(row["lines"]), "counts": dict(c)}
+    if rules != "v1":
+        meta["rules"] = 2
     smp = {"src": "realplus", "kind": "pc", "vn": row["vn"], "shot": row["shot"], "lines": lines, "ignore": ignore,
-           "meta": {"url": row["url"], "sha256": row["sha256"], "release": row.get("release"), "dims": [W, H],
-                    "fit": round(fit_scale(W, H), 6), "kept_lines": len(row["lines"]), "counts": dict(c)}}
+           "meta": meta}
     return smp, SH.to_gray(rgb), dict(c)
+
+
+DIRS = {"v1": "desk_realplus_v1", "v2": "desk_realplus_v2"}
 
 
 def cmd_build(args):
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
     rows = part_of(plan["rows"], args.part)
     meiki = load_meiki(args.meiki)
+    if args.rules != "v1" and not args.ppdet:
+        raise SystemExit("rules v2 needs --ppdet (realplus.py ppdet's cache)")
+    ppdet = load_ppdet(args.ppdet) if args.rules != "v1" else {}
+    if args.rules != "v1":
+        missing = [r["shot"] for r in rows if r["shot"] not in ppdet]
+        if missing:
+            raise SystemExit(f"{len(missing)} frames have no PP-OCRv6 det boxes in {args.ppdet} (run ppdet first)")
     reads = load_reads({r["shot"] for r in rows})
-    out = Path(args.out) / DIR
+    out = Path(args.out) / DIRS[args.rules]
     pi = int(args.part.split("/")[0]) if args.part else 0
     tot = collections.Counter()
     t0 = time.time()
@@ -369,26 +626,29 @@ def cmd_build(args):
             name = f"rp_{pi:02d}_{k // SHARD_FRAMES:03d}"
             if (out / f"{name}.json").exists() and not args.force:
                 continue
-            jobs = [(r, reads.get(r["shot"], {}), meiki.get(r["shot"])) for r in rows[k:k + SHARD_FRAMES]]
+            jobs = [(r, reads.get(r["shot"], {}), meiki.get(r["shot"]), ppdet.get(r["shot"]), args.rules)
+                    for r in rows[k:k + SHARD_FRAMES]]
             res = [x for x in pool.imap(_build_one, jobs, chunksize=4)]
             ok = [(s, g) for s, g, _ in res if s is not None]
             for _, _, c in res:
                 tot.update(c)
             SH.write_shard(out / name, [s for s, _ in ok], [g for _, g in ok])
-            print(f"  {DIR}/{name}: {len(ok)} frames ({time.time() - t0:.0f} s)", flush=True)
+            print(f"  {DIRS[args.rules]}/{name}: {len(ok)} frames ({time.time() - t0:.0f} s)", flush=True)
     print(f"realplus build: {dict(tot)} in {time.time() - t0:.0f} s", flush=True)
 
 
 def cmd_manifest(args):
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
-    root = Path(args.shards) / DIR
-    shards = [SH.shard_record(js.with_suffix(""), DIR) for js in sorted(root.glob("*.json"))]
+    d = DIRS[args.rules]
+    root = Path(args.shards) / d
+    shards = [SH.shard_record(js.with_suffix(""), d) for js in sorted(root.glob("*.json"))]
     n = sum(r["samples"] for r in shards)
     doc = {"kind": "desktop-frames", "schema": 1, "issue": 169, "generator": "desktopdata/realplus.py",
            "created": SH.utc(), "format": "#97's frames (synth/textdet_data.py); train/textspot_train.FramePool "
                                           "reads them as source realplus",
-           "rules": RULES, "plan": {k: plan[k] for k in ("frames", "vns", "lines", "dropped", "lines_v3_sha256",
-                                                         "excluded_vns")},
+           "rules": RULES if args.rules == "v1" else RULES_V2,
+           "label_rule": "labels_of" if args.rules == "v1" else "labels_of_v2",
+           "plan": {k: plan[k] for k in ("frames", "vns", "lines", "dropped", "lines_v3_sha256", "excluded_vns")},
            "plan_sha256": SH.sha256_file(args.plan), "code_sha256": SH.code_sha256(ROOT, CODE),
            "shards": shards, "totals": SH.totals(shards),
            "note": "shards hold copyrighted VNDB screenshots and stay local; this manifest holds names, counts, sha256"}
@@ -409,22 +669,31 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--part")
     p.add_argument("--workers", type=int, default=5)
+    p = sub.add_parser("ppdet")
+    p.add_argument("--plan", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--part")
+    p.add_argument("--workers", type=int, default=5)
     p = sub.add_parser("build")
     p.add_argument("--plan", required=True)
     p.add_argument("--meiki", required=True)
     p.add_argument("--out", required=True)
+    p.add_argument("--ppdet", help="realplus.py ppdet's cache (rules v2)")
+    p.add_argument("--rules", choices=("v1", "v2"), default="v2", help="v1: realplus_native_v1's labels_of")
     p.add_argument("--part")
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--force", action="store_true")
     p = sub.add_parser("manifest")
     p.add_argument("--plan", required=True)
     p.add_argument("--shards", required=True)
+    p.add_argument("--rules", choices=("v1", "v2"), default="v2")
     p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     os.environ.setdefault("OMP_NUM_THREADS", "1")
     import cv2
     cv2.setNumThreads(1)
-    {"plan": cmd_plan, "meiki": cmd_meiki, "build": cmd_build, "manifest": cmd_manifest}[args.cmd](args)
+    {"plan": cmd_plan, "meiki": cmd_meiki, "ppdet": cmd_ppdet, "build": cmd_build,
+     "manifest": cmd_manifest}[args.cmd](args)
 
 
 if __name__ == "__main__":

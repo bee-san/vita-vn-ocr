@@ -18,9 +18,12 @@ nothing here trains or scores a model.
   letterboxed, pillarboxed, stretched or windowed, six resamplers, DPI stretches, downscaled and JPEG captures. Their labels are vocr-desktop's own (its
   page shards' lines and ignore areas), mapped exactly. Only split train is read: hval, guard and the test titles
   stay out exactly as in pools v2.1.
-- **1b, realplus at its own size:** 49,267 of realplus v3's PC screenshots (14,457 VNs) at the size VNDB has them
-  (640 x 400 to 3840 x 2160), with realplus's 101,317 labelled line boxes and 482,260 ignore areas for every region
-  its labels do not cover (lines realplus did not keep, MeikiOCR's boxes at thresholds 0.5 and 0.2).
+- **1b, realplus at its own size** (v2, `realplus_native_v2.json`): 49,267 of realplus v3's PC screenshots (14,457
+  VNs) at the size VNDB has them (640 x 400 to 3840 x 2160), with 101,313 of realplus's labelled line boxes, each
+  clipped to its own text row, and ignore areas for the text its labels do not cover (lines realplus did not keep,
+  MeikiOCR's boxes at thresholds 0.5 and 0.2, PP-OCRv6 det small's boxes). v1 (`realplus_native_v1.json`) left 610 of
+  MeikiOCR's 336,726 confident boxes (1.1% of the frames) as background and held two-row positives in 223 frames
+  (audit-desktop-data F1); v2 leaves 3 and none.
 - **1c, synthetic desktop frames:** 10,000 frames drawn at 13 desktop resolutions (1280 x 720 to 3840 x 2160, and
   800 x 600 to 1280 x 960 for 4:3), text rasterised at its own size with synth3's non-pixel fonts (all
   open-licensed), main-text em 24-64 px, thin weights, outlines, shadows, translucent and opaque boxes, box-less
@@ -33,6 +36,8 @@ nothing here trains or scores a model.
 - **The owner's desktop captures:** `desktopdata/owner.py` imports them when they come (the hooked bucket's format,
   platform `pc`), into the same pools and into native-size detector pages.
 
+The frozen manifests and their sha256 are in `$HERD/shared/artifacts/desktop-data/frozen_v1/` (the first freeze,
+09:23Z) and `frozen_v2/` (1b v2 replacing v1, the counts as `stats_v2.json`; 1a, 1c and the PC test set unchanged).
 Everything bulky stays local: the training pages under `$HERD/shared/artifacts/desktop-data/pages/`, the test set's
 screenshots and review files under `$HERD/shared/artifacts/desktop-data/pctest/`. The repository holds the code
 (`desktopdata/`), the manifests (`data/manifests/desktop_data/`, `eval/manifests/desktop-pc-test-v1.jsonl`), the
@@ -103,22 +108,48 @@ The realized mix:
 
 **What exists on disk.** realplus labelled its lines on each screenshot scaled to fit 960 x 544; the originals are
 kept at VNDB's size: `$ART/realplus/shots/hires` (43,198 screenshots of v1-v2's selection) and
-`$ART/reserve-policy/realplus/shots/hires` (20,572 of v3's reclaim tier, plus 295 PSP-size shots under `psp/`).
-`$ART/realplus-v3/shots` is empty (v3 reused them). Every one of v3's 49,285 screenshots with a kept line is on disk.
+`$ART/reserve-policy/realplus/shots/hires` (20,572 of v3's reclaim tier; 295 PSP-size shots sit beside it in
+`reserve-policy/realplus/shots/psp`). `$ART/realplus-v3/shots` is a symlink to `../realplus/shots`. Every one of v3's
+49,285 screenshots with a kept line is on disk.
 
 - **Frames.** 49,267 of them at their own size: 18 left out (13 of VNs in textspot7's confirmation set, which
   vocr-desktop reads once at the end, and 5 of textspot2's eval-screenshot skip list). Also left out, finding none:
   the reservation's test and dev_sample VNs, #119's development units, the PC test set's VNs, eval/linefind's VNs.
-- **Positives.** Each kept v3 line: its reads line's ink box (main text, no furigana) widened left and right to v3's
-  final ink crop, scaled to native size and refined to ink there (kept only when it stays inside the box grown by
-  max(3, 3 / s) px; all 101,317 refined). Class `name` for a speaker name, else `text` (no tag target: realplus does
-  not tell dialogue from choices).
-- **Ignore areas.** Every other line realplus's reads found (210,298 areas), every MeikiOCR box of the reads at
-  threshold 0.5 (103,679) and of a fresh native pass at threshold 0.2 (167,972) that meets no positive, and the kept
-  lines' furigana (311); an area already 90% inside another is not added twice. realplus kept about a third of the
-  lines its reads found, so most text on these frames is an ignore area, never background.
-- **Format.** #97's frames (FramePool reads them as source `realplus`): `pages/realplus_v1/desk_realplus_v1/
-  rp_PP_NNN`, kind `pc`, at most 400 frames a shard. 124 shards, 27 GB.
+- **Positives** (`labels_of_v2`). Each kept v3 line: its reads line's ink box (main text, no furigana) widened left
+  and right to v3's final ink crop and scaled to native size, then:
+  - clipped at the boundary to every other text row (`clip_rows`): the other reads lines' detector boxes, MeikiOCR's
+    native boxes of score >= 0.5 and the line's own furigana. The boundary is the midpoint between the line's own
+    detector box and the other row's facing edge, so two tight rows' positives meet there (3,974 boxes clipped,
+    3.9%);
+  - refined to ink inside that band (`textspot2_labels.refine_h`) and clipped again. A refined box under 0.6 of the
+    line's detector box height, or covering under 0.7 of its rows, gives way to the reads box (903 boxes: two-tone,
+    outlined and drop-shadowed fills, where the refinement took the lower half of the glyphs and their shadow), and
+    a reads box that short to the detector box's rows (71);
+  - a positive that still overlaps another positive becomes an ignore area (4 of 101,317).
+  Class `name` for a speaker name, else `text` (no tag target: realplus does not tell dialogue from choices).
+- **Ignore areas.** For the text realplus did not label: every other line its reads found (210,995 areas), and every
+  detector box that is no positive's own text (`same_row`: IoU >= 0.5, or a box on the positive's row and columns)
+  and is under half labelled already (its inner part; so a box over two labelled rows does not erase the gap between
+  them): MeikiOCR's boxes of the reads at threshold 0.5 (4,217) and of a fresh native pass at 0.2 (145,635), and
+  PP-OCRv6 det small's (rapidocr 3.10.0 at its defaults, sha256 `090f04ab…`; 20,954); the kept lines' furigana (311): 382,116 areas in all.
+  Each grown by max(2, 2 / s) px; an area already 90% inside another is not added twice. realplus kept about a third
+  of the lines its reads found, so most text on these frames is an ignore area.
+- **Coverage, measured** (the audit's measure: under half of a box's inner part labelled). Of MeikiOCR's 336,726
+  native boxes of score >= 0.5, 3 are left as background (v1: 610 in 564 frames); no two positives overlap (v1: 237
+  pairs in 223 frames). The 3 are each partly inside a positive of the same text (44-50% covered).
+- **Format.** #97's frames (FramePool reads them as source `realplus`): `pages/realplus_v2/desk_realplus_v2/
+  rp_PP_NNN`, kind `pc`, at most 400 frames a shard. 124 shards, 27 GB. v1's shards
+  (`pages/realplus_v1/desk_realplus_v1`, `realplus_native_v1.json`, `labels_of`) stay on disk unchanged: vocr-desktop's
+  final runs F1-F3 started on them (amendment 3), and `realplus.py build --rules v1` still rebuilds them byte for
+  byte.
+
+**v1's defect** (audit-desktop-data F1). realplus read its lines at the 960 x 544 fit; on tight pages the fit-scale
+ink boxes reach a few pixels into the next row, and the native refinement could merge the two rows. v1's test of
+whether a box was "the positive's own text" (IoU >= 0.2, or 30% of the box inside the positive grown by 3 px) then
+took an unkept neighbour row for part of the over-tall positive and added no ignore area for it. The audit found 610
+confident MeikiOCR boxes left as background in 564 frames (1.1%), 4 of them unlabelled dialogue lines in its 419-frame
+sample, and two-row positives in 223 frames; v2 fixes all three (above). `tests/test_desktop_data.py` builds such a
+page and checks that v1 leaves the middle row as background and v2 ignores it.
 
 ### 1c: synthetic desktop frames (`desktopdata/synth.py`)
 
@@ -151,26 +182,32 @@ them as source synth): `pages/synth_v1/desk_synth_v1/desk_synth_NNNN`, src `synt
 shard. 40 shards, 21 GB. Rendering the 10,000 took about 5 minutes in two heavy slots.
 
 **Reproduction.** One shard of each set rebuilt from the committed code matched its manifest's sha256 byte for byte
-(1a NPJG00016_000, 1b rp_00_000 and rp_00_030, 1c desk_synth_0007).
+(1a NPJG00016_000, 1b v1 rp_00_000 and rp_00_030, 1c desk_synth_0007; after v2, `realplus.py build --rules v1` still
+rebuilds v1's rp_00_000 byte for byte). Each manifest's `code_sha256` is the code as it ran: `desktopdata/realplus.py`
+has changed since v1 was built (v2's rules beside v1's) and `desktopdata/synth.py` since 1c was rendered (a docstring
+correction only).
 
-### Counts and text heights (`desktopdata/stats.py`, `data/manifests/desktop_data/stats_v1.json`)
+### Counts and text heights (`desktopdata/stats.py`, `data/manifests/desktop_data/stats_v2.json`)
 
 The Vita / PSP pools are vocr-desktop's hooked page shards' train pages; "real half" is textspot2's MeikiOCR-labelled
-real canvases (realplus and teacher screenshots fitted to 960 x 544), which vocr-desktop trains on today. Frames
+real canvases (realplus, teacher, devnative and owner screenshots fitted to 960 x 544; all 107 shards, the 9 private
+owner shards included), which vocr-desktop trains on today. Its only line class is every MeikiOCR text box (UI
+labels, names and scene text with the dialogue), so its height rows are not dialogue alone; the other rows are
+dialogue lines (1b: realplus's kept lines, class `text`). Frames
 per resolution class (by width):
 
 <!-- generated:resolution -->
-| resolution class (width) | hooked Vita (native) | hooked PSP (native) | real half (fit 960) | 1a hooked desktop | 1b realplus native | 1c synthetic desktop | pc-test |
+| resolution class (width) | hooked Vita (native) | hooked PSP (native) | real half (fit 960; every MeikiOCR text box) | 1a hooked desktop | 1b realplus native (v2) | 1c synthetic desktop | pc-test |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| <=640 | 0 | 21,142 | 2,690 | 60 | 13,672 | 18 | 92 |
-| 641-1023 | 52,949 | 0 | 46,024 | 935 | 22,003 | 351 | 62 |
+| <=640 | 0 | 21,142 | 5,277 | 60 | 13,672 | 18 | 92 |
+| 641-1023 | 52,949 | 0 | 47,508 | 935 | 22,003 | 351 | 62 |
 | 1024-1279 | 0 | 0 | 0 | 1,320 | 4,348 | 518 | 22 |
 | 1280-1599 | 0 | 0 | 0 | 4,090 | 7,828 | 2,572 | 157 |
 | 1600-1919 | 0 | 0 | 0 | 1,742 | 264 | 619 | 2 |
 | 1920-2559 | 0 | 0 | 0 | 6,343 | 1,122 | 3,724 | 157 |
 | 2560-3839 | 0 | 0 | 0 | 4,264 | 21 | 1,703 | 12 |
 | >=3840 | 0 | 0 | 0 | 1,246 | 9 | 495 | 0 |
-| frames | 52,949 | 21,142 | 48,714 | 20,000 | 49,267 | 10,000 | 504 |
+| frames | 52,949 | 21,142 | 52,785 | 20,000 | 49,267 | 10,000 | 504 |
 | distinct sizes | 1 | 1 | 136 | 2764 | 451 | 470 | 25 |
 <!-- /generated:resolution -->
 
@@ -182,24 +219,24 @@ and at vocr-desktop's default input policy fit:960 (the longer side down to 960 
 |---|---:|---|---|
 | hooked Vita (native) | 84,359 | 20 / 22 / 24 / 26 / 32 | 20 / 22 / 24 / 26 / 32 |
 | hooked PSP (native) | 32,463 | 13 / 14 / 15 / 17 / 21 | 13 / 14 / 15 / 17 / 21 |
-| real half (fit 960) | 284,180 | 8 / 12 / 16 / 21 / 29 | 8 / 12 / 16 / 21 / 29 |
+| real half (fit 960; every MeikiOCR text box) | 295,458 | 8 / 12 / 16 / 21 / 29 | 8 / 12 / 16 / 21 / 29 |
 | 1a hooked desktop | 31,340 | 26 / 38 / 50 / 64 / 96 | 18.7 / 22.5 / 25.5 / 29.2 / 36 |
-| 1b realplus native | 93,976 | 15 / 18 / 22 / 25 / 35 | 14 / 17.5 / 20.2 / 23 / 30 |
+| 1b realplus native (v2) | 93,973 | 15 / 18 / 22 / 25 / 34 | 14 / 17.2 / 20.2 / 23 / 29 |
 | 1c synthetic desktop | 15,826 | 23 / 31 / 40 / 51 / 70 | 15 / 18.8 / 22 / 25.3 / 34.7 |
 | pc-test | 942 | 16 / 22 / 25 / 32 / 46 | 11.5 / 15 / 18.8 / 22.5 / 27.3 |
 <!-- /generated:heights -->
 
 <!-- generated:hist -->
-| dialogue line height at native size (px) | hooked Vita (native) | hooked PSP (native) | real half (fit 960) | 1a hooked desktop | 1b realplus native | 1c synthetic desktop | pc-test |
+| dialogue line height at native size (px) | hooked Vita (native) | hooked PSP (native) | real half (fit 960; every MeikiOCR text box) | 1a hooked desktop | 1b realplus native (v2) | 1c synthetic desktop | pc-test |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 0-8 | 0.2% | 0.1% | 3.4% | 0.1% | 0.0% | 0.0% | 0.0% |
-| 8-12 | 0.1% | 0.5% | 19.5% | 0.1% | 0.8% | 0.1% | 0.0% |
-| 12-16 | 0.2% | 54.0% | 21.9% | 0.3% | 8.1% | 0.3% | 4.4% |
-| 16-20 | 3.8% | 36.2% | 22.5% | 0.8% | 21.9% | 0.8% | 8.6% |
-| 20-24 | 35.8% | 7.2% | 18.1% | 2.1% | 36.2% | 4.8% | 24.9% |
-| 24-32 | 54.3% | 2.0% | 11.0% | 8.8% | 25.6% | 19.5% | 35.2% |
-| 32-40 | 5.1% | 0.0% | 2.1% | 15.2% | 5.0% | 22.7% | 16.8% |
-| 40-48 | 0.5% | 0.0% | 0.7% | 17.3% | 1.8% | 19.9% | 5.7% |
+| 0-8 | 0.2% | 0.1% | 3.3% | 0.1% | 0.0% | 0.0% | 0.0% |
+| 8-12 | 0.1% | 0.5% | 18.9% | 0.1% | 0.6% | 0.1% | 0.0% |
+| 12-16 | 0.2% | 54.0% | 22.1% | 0.3% | 8.1% | 0.3% | 4.4% |
+| 16-20 | 3.8% | 36.2% | 22.9% | 0.8% | 22.4% | 0.8% | 8.6% |
+| 20-24 | 35.8% | 7.2% | 18.0% | 2.1% | 36.6% | 4.8% | 24.9% |
+| 24-32 | 54.3% | 2.0% | 11.1% | 8.8% | 25.2% | 19.5% | 35.2% |
+| 32-40 | 5.1% | 0.0% | 2.1% | 15.2% | 4.7% | 22.7% | 16.8% |
+| 40-48 | 0.5% | 0.0% | 0.7% | 17.3% | 1.7% | 19.9% | 5.7% |
 | 48-64 | 0.0% | 0.0% | 0.5% | 28.8% | 0.5% | 23.9% | 3.9% |
 | 64-96 | 0.0% | 0.0% | 0.3% | 20.9% | 0.1% | 6.7% | 0.3% |
 | 96-128 | 0.0% | 0.0% | 0.0% | 4.6% | 0.0% | 1.1% | 0.1% |
@@ -219,16 +256,19 @@ and at vocr-desktop's default input policy fit:960 (the longer side down to 960 
 
 - 1a: `HookPool(hooked_desktop_v1.json, $A/desktop-data/pages/hooked_v1, ("train",))` reads it unchanged (manifest
   kind textspot6-pages); a second hook source in `Sources` (or a share of the `hook` source) mixes it with the native
-  pages.
+  pages. Its labels are the `shards_v21` page shards' (ruby an ignore area, the recipe vocr-desktop kept); for the
+  ruby-as-background recipe (S5, `desktop_pages_v21_rubybg.json`) rebuild it from those shards with the same plan
+  (`hooked.py build --labels-shards`).
 - 1b and 1c: pass their manifests to `--manifest` and their directories to `--shards`
-  (`.../realplus_v1/desk_realplus_v1`, `.../synth_v1/desk_synth_v1`); FramePool files 1b under its `realplus`
+  (`.../realplus_v2/desk_realplus_v2`, `.../synth_v1/desk_synth_v1`); FramePool files 1b under its `realplus`
   source and 1c under `synth`. Neither manifest is a textspot data pin, so the real half's skip lists are not
   required for them (1b applied them itself).
 - The windows of `make_window_ms` cut a region and scale it by a log-uniform factor in `--scale`; for 4K frames a
   wider low end (or a first downscale of the canvas) keeps the windows from always seeing a small part of the screen.
-- Checked: feat/vocr-desktop's `train/desktop_det.py` (1b4e074, read-only worktree) loads the three frozen manifests
-  as above (HookPool: 136 titles, 20,000 pages; FramePool: synth 10,000, realplus 49,267) and draws batches from
-  them with `make_batch_ms` (mix hook 0.5 / synth 0.25 / real 0.25, scale 0.42-1.9: 0.08 s per batch of 16).
+- Checked: feat/vocr-desktop's `train/desktop_det.py` (1b4e074, read-only worktree) loads the frozen manifests as
+  above (HookPool: 136 titles, 20,000 pages; FramePool: synth 10,000, realplus 49,267; v1's realplus manifest, which
+  v2's matches in format and frames) and draws batches from them with `make_batch_ms` (mix hook 0.5 / synth 0.25 /
+  real 0.25, scale 0.42-1.9: 0.08 s per batch of 16).
 
 ## 2. The real PC test set (`desktopdata/pctest.py`, `eval/manifests/desktop-pc-test-v1.jsonl`)
 
@@ -295,7 +335,8 @@ there or 12 px at its own size, and Japanese in some reading. 1,885 lines of 626
   passes agreeing; one of them the corrected label below).
 - **The hand check** (me, line by line): 214 kept lines (one or two per VN, then at random; 200 drawn when 1,082
   lines were kept, 14 more from the 77 kept after), shown with no candidate, typed from the image (zoomed where a
-  character was small; dot runs and repeats counted by column projection). 208 matched the label. Of the other six:
+  character was small; dot runs and repeats counted by column projection). 208 matched the label as it stood (the
+  summary's `hand_check_agree` counts 209: the corrected 黛 label below matches my reading). Of the other six:
   four were my misreadings (two closing 」 that are not on screen, a page cursor read as く, two single-dot cells
   read as one …: the zoom confirmed the label each time), one stayed unsure (a 一 too faint to see; the label holds
   what is visible) and **one label was wrong** (薫 under the ruby まゆずみ is 黛; both engines and both passes read
@@ -308,16 +349,18 @@ clean when no other text the reads found (a line not kept, a name, a raw detecto
 518 of 552 units, holding 886 dialogue lines. Only clean units go into the frames file.
 
 **Keeping it out of training.** The frozen manifest is the set's reservation: `realplus/shots.desktop_pc_test_vns()`
-reads its 143 VNs, and `realplus/shots.reserved_vns()` (the reservation every VNDB pool builder applies: realplus,
-its reclaim tier, the native pool) refuses them with the reason `desktop-pc-test`. `eval/manifests/reserved.json` and
-`synth/common.py` are pinned by sha256 in frozen protocols (textspot, textspot2, textspot3, textspot6 among them), so
-they do not list these VNs; `synth/common.is_reserved_vn` does not know them, and a builder that uses it alone (synth
-scene pools) must also check `desktop_pc_test_vns()` until the next reservation carve adds them with re-pinning
-amendments. The set's VNs are a 0.4% share of the real lines (942 of about 219,000 with realplus v3's 101,350 and
+reads its 143 VNs, `realplus/shots.reserved_vns()` refuses them (reason `desktop-pc-test`), the development-sample
+draw passes over them, and `shots.py reserve` writes them into the reservation it carves. `eval/manifests/reserved.json`
+and `synth/common.py` are pinned by sha256 in frozen protocols (textspot, textspot2, textspot3, textspot6), so they do
+not list these VNs yet, and `synth/common.is_reserved_vn` does not know them. `docs/reservations.md` lists the
+builders that check only that function or that file: a new pool built with one of them must also refuse
+`desktop_pc_test_vns()` until the next carve, with its re-pinning amendments, adds the VNs there. No pool holds any
+of them today. The set's VNs are a 0.4% share of the real lines (942 of about 219,000 with realplus v3's 101,350 and
 the hooked pools' 116,987), inside AGENTS.md's 10% budget; none of them was in any pool before.
 
 **Not met: the 1,000-line target.** 942 dialogue lines, 58 short. VNDB's eligible space is exhausted: every Japanese
-PC screenshot of a VN in no pool was downloaded and read, and the selection took every Japanese screen. The owner's
+PC screenshot of a VN in no pool was downloaded and read, and the selection took every Japanese screen but 7 of 4
+VNs that the per-VN caps left out (at about 50% yield, some 10 lines). The owner's
 desktop captures (below) or later VNDB uploads can extend it as a v2.
 
 **Erratum** (`eval/desktop_pc_test_v1_errata.json`). At 09:53Z, after the freeze, a pass-2 reviewer called four
@@ -328,6 +371,18 @@ CER is unchanged; their reference boxes hold the lower half of the glyphs, so fo
 cuts their tops still counts as whole. The erratum gives corrected boxes (their rows from the detector box and the ink box). The reviewer's
 four post-freeze decisions are kept apart (`review/pass2/b03/decisions_postfreeze.jsonl`), so `final` still
 rebuilds v1 byte for byte.
+
+**Known limits of the set** (audit-desktop-data N9-N12):
+
+- **Its lines are MeikiOCR's proposals**, the detector of vocr-desktop's reference R. PP-OCRv6 det small, run on the
+  504 screenshots, found 205 line-like boxes MeikiOCR did not propose: all UI bars, signs or Latin text, no dialogue
+  line (the audit's check). So the set misses no dialogue R's detector misses; the bias toward R is small.
+- On tight 640 x 480 pages (v11277, v20781) 9 pairs of dialogue boxes overlap by 5-9 px; this matters only for a
+  box-overlap line recall.
+- 12 of the 518 clean units hold a PP-OCRv6 box no unit line covers: page cursors, furigana (inside the line's box
+  by eval's convention) and one scene-text fragment (v26902_147115); no unlabelled dialogue.
+- Jiten's frequency lists of 25 of the 143 VNs feed `train/vocab*` and the 1 MB LM's word list. vocr-desktop reads
+  with no LM; a read through Rubi's LM path must disclose it.
 
 **How to read it.** As vocr-desktop reads its other sets (`eval/desktop.py detect` / `read` on the frames file), once,
 after its decision is recorded, under a committed protocol: never for screening, tuning or a threshold. Report `pc`
@@ -367,13 +422,18 @@ HEAVY_SLOTS=12 $HERD/heavy.sh timeout 10800 $PY desktopdata/hooked.py build --pl
     --pool $A/b2-ingest2/pagepool/v2.1 --pages $A/b2-ingest2/pages --labels-shards $PV/vocr-desktop/shards_v21 \
     --out $D/pages/hooked_v1 --workers 5
 $PY desktopdata/hooked.py manifest --plan $D/hooked/plan_v1.json --shards $D/pages/hooked_v1 --out $M/hooked_desktop_v1.json
-# 1b: the plan, MeikiOCR at 0.2 (two slots, 11 minutes), the build (two slots, 70 s), the manifest
+# 1b: the plan, MeikiOCR at 0.2 (two slots, 11 minutes), PP-OCRv6 det small (two slots, 34 minutes), the v2 build
+# (two slots, 70 s), the manifest; --rules v1 (no --ppdet) rebuilds v1 into pages/realplus_v1
 $PY desktopdata/realplus.py plan --out $D/realplus/plan_v1.json
 for i in 0 1; do HEAVY_SLOTS=12 $HERD/heavy.sh timeout 10800 unshare -rn $TPY desktopdata/realplus.py meiki \
     --plan $D/realplus/plan_v1.json --out $D/realplus/meiki02 --part $i/2 & done; wait
-for i in 0 1; do HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 $PY desktopdata/realplus.py build \
-    --plan $D/realplus/plan_v1.json --meiki $D/realplus/meiki02 --out $D/pages/realplus_v1 --part $i/2 & done; wait
-$PY desktopdata/realplus.py manifest --plan $D/realplus/plan_v1.json --shards $D/pages/realplus_v1 --out $M/realplus_native_v1.json
+for i in 0 1; do HEAVY_SLOTS=12 $HERD/heavy.sh timeout 10800 unshare -rn $TPY desktopdata/realplus.py ppdet \
+    --plan $D/realplus/plan_v1.json --out $D/realplus/ppdet --part $i/2 & done; wait
+for i in 0 1; do HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 $PY desktopdata/realplus.py build --rules v2 \
+    --plan $D/realplus/plan_v1.json --meiki $D/realplus/meiki02 --ppdet $D/realplus/ppdet --out $D/pages/realplus_v2 \
+    --part $i/2 & done; wait
+$PY desktopdata/realplus.py manifest --rules v2 --plan $D/realplus/plan_v1.json --shards $D/pages/realplus_v2 \
+    --out $M/realplus_native_v2.json
 # 1c: 40 shards of 250 frames (two slots, 5 minutes each), the manifest
 for p in 0 1; do HEAVY_SLOTS=12 $HERD/heavy.sh timeout 14400 $TPY desktopdata/synth.py render \
     --out $D/pages/synth_v1/desk_synth_v1 --shards 20 --first $((p * 20)) --per-shard 250 --workers 5 & done; wait
@@ -381,11 +441,12 @@ $PY desktopdata/synth.py manifest --dir $D/pages/synth_v1/desk_synth_v1 --out $M
 # the counts and this document's tables (--check: what CI runs)
 $PY desktopdata/stats.py run --set "hooked Vita (native)=$D/inputs/desktop_pages_v21.json:$PV/vocr-desktop/shards_v21:train:vita" \
     --set "hooked PSP (native)=$D/inputs/desktop_pages_v21.json:$PV/vocr-desktop/shards_v21:train:psp" \
-    --set "real half (fit 960)=data/manifests/textspot2_shards_v1.json:<textspot2's lab_* and more_* shard dirs>" \
+    --set "real half (fit 960; every MeikiOCR text box)=data/manifests/textspot2_shards_v1.json:<textspot2's 7 lab_* and more_* dirs>" \
     --set "1a hooked desktop=$M/hooked_desktop_v1.json:$D/pages/hooked_v1:train" \
-    --set "1b realplus native=$M/realplus_native_v1.json:$D/pages/realplus_v1" \
-    --set "1c synthetic desktop=$M/synth_desktop_v1.json:$D/pages/synth_v1" --out $M/stats_v1.json
-$PY desktopdata/stats.py tables --stats $M/stats_v1.json --doc docs/desktop-data.md
+    --set "1b realplus native (v2)=$M/realplus_native_v2.json:$D/pages/realplus_v2" \
+    --set "1c synthetic desktop=$M/synth_desktop_v1.json:$D/pages/synth_v1" \
+    --pctest eval/manifests/desktop-pc-test-v1.jsonl --out $M/stats_v2.json
+$PY desktopdata/stats.py tables --stats $M/stats_v2.json --doc docs/desktop-data.md
 # QA sheets (local, never committed)
 $PY desktopdata/qa.py sheet --shard $D/pages/hooked_v1/train/PCSG00845_000 --out $D/qa/hooked.png
 # 2: the PC test set (pctest.py; its working files under $D/pctest)
@@ -416,8 +477,10 @@ batch, so the parts give the same labels as one queue.
   draw at 2-10x internally, sharper than any resample of the native frame) is approximated by the resamplers; window
   chrome (menu bars, title bars) is not drawn.
 - **1b's positives are realplus's kept lines only.** Most text on its frames is an ignore area, so it teaches the
-  detector what real PC text looks like where it is labelled and nothing where it is not; text MeikiOCR misses at 0.2
-  and realplus did not label is background.
+  detector what real PC text looks like where it is labelled and nothing where it is not. v2's ignore areas come from
+  three detectors (MeikiOCR at 0.5 and 0.2, PP-OCRv6 det small); text all three miss (game-board glyphs, map labels,
+  stylised logos) stays background. The audit found 136 such boxes in 419 frames with PP-OCRv6 det small, before v2
+  made that detector an ignore source.
 - **1c's scenes are VNDB screenshots of training-side games** (textspot's pool), some upscaled to 4K, so their
   backgrounds are softer than a native 4K render.
 - **Names.** synth3's VNDB name pool (93,169 names, the source of 1c's and every VOCR5/6 render's speaker names) was

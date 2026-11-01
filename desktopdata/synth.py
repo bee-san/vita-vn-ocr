@@ -9,7 +9,7 @@ Each frame is a whole PC VN screen, drawn at the screen's own resolution (1280 x
   scene      synth/textspot_data.load_scene: a training-side VNDB screenshot from textspot's clean scene pool,
              cover-cropped to the frame, its known text inpainted away (or synth2's synthetic background)
   dialogue   an ADV box at the bottom (or the top), a full-screen NVL page, a band, or text with no box at all, over
-             the scene; boxes translucent (alpha 0.15-0.95) or opaque, rounded or square, some with a border; 1-4
+             the scene; boxes translucent (alpha 0.15-0.8) or opaque (0.8-0.97), rounded or square, some bordered; 1-4
              lines (NVL 3-10), a name plate, a name line, an inline 【name】 or no name; synth3's dialogue,
              narration and name sources (synth/synth3.py, its `personal` profile's text pools)
   fonts      synth3's font pool without its pixel (bitmap) families: gothic, mincho, rounded, display and pen faces,

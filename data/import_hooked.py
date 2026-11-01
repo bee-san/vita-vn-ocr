@@ -159,10 +159,12 @@ def cell_inked(con, t, box, shrink=0.25):
 
 
 def undrawn_check(rec, grey, codes):
-    """For a record with an undrawn code: (record without the code cells, its label) when every code cell is blank
-    and every other cell inked (the code took a blank cell of its own, so the rest is aligned), else None (the
-    assignment is shifted: a drawn glyph sits under a code). The ink threshold is GRAD's: max(40, 2/5 of the 99th
-    percentile of the line box's 3x3 contrast)."""
+    """For a record with an undrawn code: (record without the code cells, its label) when the codes lead the line,
+    every code cell is blank and every other cell inked (the code took the line's blank indent cell, so the rest is
+    aligned), else None: a code later in the line, or on a drawn glyph, or a drawn character on a blank cell (the
+    cells are off by one or the line is mis-segmented; a few such records would read right without the code, so
+    dropping them is conservative). The ink threshold is GRAD's: max(40, 2/5 of the 99th percentile of the line
+    box's 3x3 contrast)."""
     from common import contrast3
     cells, chars = rec.get("cell_boxes") or [], rec.get("cell_chars") or []
     if len(cells) != len(chars) or not cells:
@@ -171,6 +173,9 @@ def undrawn_check(rec, grey, codes):
     con = contrast3(grey)
     sub = con[max(0, y):y + h, max(0, x):x + w]
     t = max(40, 2 * int(np.percentile(sub, 99)) // 5) if sub.size else 255
+    lead = len(chars) - len("".join(chars).lstrip(codes))
+    if any(c in codes for c in chars[lead:]):         # a code after the line's start: not an indent cell
+        return None
     keep = []
     for c, b in zip(chars, cells):
         ink = cell_inked(con, t, b)
@@ -299,7 +304,8 @@ def moved_page(pid, run):
 
 def move_record(rec, run, tid):
     """A page or line record of run `run` >= 1 with its page id moved (moved_page): image, page and the line id
-    TITLE:PAGE:kindN follow; src_image / src_page / src_id keep the run's own."""
+    TITLE:PAGE:kindN follow, and so does a ruby record's host_line on the same page; src_image / src_page / src_id
+    keep the run's own."""
     old = page_id(rec)
     new = moved_page(old, run)
     out = dict(rec, image=f"pages/{new}.png", src_image=rec["image"], src_page=old, run_index=run)
@@ -312,6 +318,9 @@ def move_record(rec, run, tid):
         if p != old:
             raise ValueError(f"{rec['id']}: its page part is not its image's page {old}")
         out["id"], out["src_id"] = f"{t}:{new}:{kind}", rec["id"]
+    host = rec.get("host_line")                     # a ruby record's line on the same page (audit-b2-ingest2 F5)
+    if host and host.count(":") == 2 and host.split(":")[:2] == [tid, old]:
+        out["host_line"] = f"{tid}:{new}:{host.split(':')[2]}"
     return out
 
 

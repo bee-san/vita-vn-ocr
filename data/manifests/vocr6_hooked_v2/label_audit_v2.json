@@ -136,5 +136,39 @@
    "doubled_cells": "label_doubt: 1",
    "audited_wrong": "label_doubt: 1"
   }
+ },
+ "post_fix_check_weighted": {
+  "rule": "0 wrong in every stratum after the fixes; strata weighted by their share of the kept rows of records new in v2 (Kish effective n); Wilson upper bound at that n (audit-b2-ingest2 F1)",
+  "population": {
+   "glyph_cells": 32968,
+   "image_rows": 1342,
+   "furigana": 662,
+   "name": 193,
+   "ruby": 695,
+   "vertical": 3585
+  },
+  "sample_after_fixes": {
+   "furigana": 40,
+   "glyph_cells": 118,
+   "image_rows": 70,
+   "name": 50,
+   "ruby": 40,
+   "vertical": 40
+  },
+  "n_eff": 162.4,
+  "wrong_rate_ci95_upper": 0.0231,
+  "with_audit_b2_ingest2": {
+   "its_lines": 148,
+   "its_wrong": 0,
+   "its_sizes": {
+    "glyph_cells": 70,
+    "image_rows": 27,
+    "name": 16,
+    "ruby": 15,
+    "vertical": 20
+   },
+   "n_eff": 257.8,
+   "wrong_rate_ci95_upper": 0.0147
+  }
  }
 }

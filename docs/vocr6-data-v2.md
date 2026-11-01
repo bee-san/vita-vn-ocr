@@ -17,8 +17,9 @@ this document says otherwise. Every number was measured on the host. Nothing ran
 - **Label audit.** 360 lines drawn from the records new in v2: 2 wrong. A scan of every title's rare characters then
   found wrong-label classes the random sample could not reach: an engine code that PCSG00122 never draws (505
   records), glyphs that six titles draw as other characters (113 records) and a nameplate drawn twice (1 record).
-  The importer now fixes or drops them. After the fixes, 0 of the 358 audited records that remain are wrong (95%
-  upper bound 1.1%).
+  The importer now fixes or drops them. After the fixes, 0 of the 358 audited records that remain are wrong. The
+  sample oversampled the rarer kinds, so weighted by each kind's share of the new records the 95% upper bound is
+  2.3%; with audit-b2-ingest2's own 148 lines (0 wrong) it is 1.5%.
 - **Splits.** train 74,355 pages, guard 3,780, hval 3,010 (3.66%), test 1,040 (1.27%: Dance with Devils PCSG00807 and
   a new test title, うたわれるもの PORTABLE NPJH50882). A cross-run guard keeps a later run's copies of held-out pages
   out of training while hval is screened.
@@ -26,10 +27,9 @@ this document says otherwise. Every number was measured on the host. Nothing ran
   titles with dialogue (598,622 reference characters, never trained on), Rubi's default path reads 1.19% dialogue CER
   [0.98, 1.53]: Vita 1.16%, PSP 1.76%. Its 7,151 errors split three ways:
   - 2,860 come from Rubi's non-Japanese line filter, which drops rows of only punctuation (……, ――, ！？) that the
-    spotter finds and the recognizer reads right;
+    spotter finds and the recognizer mostly reads right;
   - 2,275 come from the spotter's boxes;
-  - 2,016 (0.34%; Large 0.27%) come from the recognizer and its LM. On its own training titles' hval VOCR6.2 reads
-    0.26%, so the new titles cost the recognizer about 0.08 points.
+  - 2,016 (0.34%; Large 0.27%) come from the recognizer and its LM.
 
 Everything downloaded is the owner's private, copyrighted game data. Pages, crops and texts stay under
 `$HERD/shared/private/hooked-b2` and `$HERD/shared/artifacts/b2-ingest2`. The repository holds code, ids, hashes,
@@ -75,8 +75,8 @@ v1's filters, crops, pools and duplicate rules are unchanged. What is new:
   (`src_id`, `src_page`) and name their run (`run`).
 - **Splits per run, then a cross-run guard** (`split_runs`, `cross_run_guard`). Each run is split as a title of its
   own; run 0 keeps v1's seed, so every v1 title's first run has v1's split. Then a page of one run that repeats a
-  held-out page of another run (the same page text of at least 6 characters, or for an hval page a shared verified
-  line label of at least 6 characters) becomes guard, with a 15-page band around it when the page it repeats is hval.
+  held-out page of another run (the same page text of 6 or more characters, or for an hval page a shared verified
+  line label of 6 or more characters) becomes guard, with a 15-page band around it when the page it repeats is hval.
   This moved 452 pages of 11 titles. No train page repeats the page text of another run's hval page (checked on the
   page pool).
 - **VNDB ids** (`--vndb-map`, `data/manifests/vocr6_hooked_v2/vndb_map.json`). 23 titles carry no VNDB id in their
@@ -87,10 +87,15 @@ v1's filters, crops, pools and duplicate rules are unchanged. What is new:
 - **v1, rebuilt.** `split` on `v1-20261026/`, then `lines --pool-tag hooked-v1 --label-rules v1` and `pages`, gives
   v1's files exactly: 370 of 370 pool files, 49 of 49 decision files, 49 of 49 page-pool files and all 49 titles'
   splits have v1's sha256 (`$HERD/shared/artifacts/b2-ingest2/v1check/report.json`).
+- **The recorded importer hash.** pools v2.1's manifests record `importer_sha256` `ed671363…`, the importer as it
+  ran. Its later edits changed comments, the committed index's page-pool counts and `host_line` (below), not one
+  pool row: audit-b2-ingest2 rebuilt every title with the committed importer of #168's first head, and all 626 pool
+  files, 138 decision files and 138 page-pool files were byte-identical to v2.1.
 - **pools v2 is superseded.** The first v2 import (pools manifest `22dbd259…`) predates the label rules. It is kept
   read only, marked `SUPERSEDED.txt`; use pools v2.1.
 
-What the filters left:
+What the filters left (the vertical pool also holds the 130 ruby readings of vertical text: "vertical column" counts
+its 5,658 column records, and its usable rows include the vertical ruby; "ruby reading" counts horizontal ruby):
 
 <!-- generated:v2_filters -->
 | kind | records | label in doubt | outside the vocab | under 8 px | CTC-infeasible | duplicates (exact / near) | pixel conflicts | hval copies of a guard line | usable (all splits) |
@@ -138,7 +143,15 @@ the 89 new titles are Vita.
 | platform:psp | 19 | 19 | 0 | 0.0-16.8% |
 | all | 360 | 358 | 2 | 0.2-2.0% |
 | after the fixes (pools v2.1) | 358 | 358 | 0 | 0.0-1.1% |
+| after the fixes, weighted by stratum (effective n 162) | 358 | 358 | 0 | 0.0-2.3% |
+| the same, with audit-b2-ingest2's 148 lines (effective n 258) | 506 | 506 | 0 | 0.0-1.5% |
 <!-- /generated:v2_audit -->
+
+The table's intervals treat each stratum as a simple random sample. The sample is not one: glyph_cells lines are
+84% of the sampled records but a third of the sample. Weighted by each stratum's share of the 39,445 kept rows of
+records new in v2 (Kish effective n 162), 0 wrong after the fixes gives a 95% upper bound of 2.3%; glyph_cells alone
+(0 of 118) up to 3.2%. audit-b2-ingest2 read 148 more lines of its own (0 wrong); pooled, the bound is 1.5%
+(`label_audit_v2.json` `post_fix_check_weighted`).
 
 The 2 wrong lines:
 
@@ -152,12 +165,16 @@ That found the classes below. Each is now a rule in the importer:
 
 - **An undrawn code** (PCSG00122, Fate/stay night: 505 records). The hook text carries `^`, an engine code the game
   never draws, and the cell matcher gave it a cell of its own.
-  - Where its cell is blank (150 records), the label without the code is right: the code is removed and the record
-    kept (`undrawn_stripped`).
-  - Where a drawn glyph sits under it (355 records), the whole assignment is shifted: the record is dropped
-    (`undrawn_shifted`).
-  - The rule tells the two apart by ink in the code's cells and in every other cell (GRAD's contrast threshold). It
-    agreed with all 20 verdicts of the caret sheet. A post-fix sheet of 20 kept rows found 0 wrong.
+  - Where the code leads the line and takes its blank indent cell (150 records), the label without the code is
+    right: the code is removed and the record kept (`undrawn_stripped`).
+  - Every other record with the code is dropped (355, `undrawn_shifted`): a code on a drawn glyph or later in the
+    line, or a drawn character on a blank cell. Most of them are off by a cell or mis-segmented. audit-b2-ingest2
+    found that some would read right once the code is stripped (a trailing code whose line's own indent is
+    unlabelled); dropping them is the conservative side.
+  - The rule tells the two apart by where the codes stand and by ink in the code's cells and in every other cell
+    (GRAD's contrast threshold). It agreed with all 20 verdicts of the caret sheet. A post-fix sheet of 20 kept rows
+    found 0 wrong. In pools v2.1 every kept code was a line-initial indent cell, and the importer now strips leading
+    codes only (the same 150 records).
 - **Remapped glyphs** (113 records): characters a title's font draws as something else.
   - NPJH50001 ㊤㊥㊦ and NPJH50382 ├┤≪≫ and NPJH50621 ├┤: drawn as ―.
   - NPJH50002 ㊨: drawn as 鬼.
@@ -225,6 +242,9 @@ The rule is v1's, per run, plus the cross-run guard. Test titles are exactly the
 | usable: ruby readings | 254 | 933 | 48 | 64 | 302 | 997 | +695 |
 | usable: PSP lines at 2x | 0 | 0 | 28,453 | 31,858 | 28,453 | 31,858 | +3,405 |
 <!-- /generated:v2_compare -->
+
+Records count every ruby reading (1,690, 130 of them vertical); usable rows put the vertical ones in the vertical
+pool.
 
 **Kanji coverage.** <!-- generated:v2_coverage -->
 Of the 5,142 kanji of `data/vocab_vn_5631.txt`, 2,868 occur on the training side (train + guard + hval): 934 at least 80 times, 1,012 10-79 times and 922 1-9 times. 2,274 never occur. The kept rows hold 3,160 distinct characters (2,872 kanji). 15 characters outside the vocab removed 21 records; 10 kept characters are outside Small's 4,987-class vocab, which trains them as `<unk>`.
@@ -400,11 +420,22 @@ report of a model trained on v2.1 has to carry them.
 - **The test title's fandisc.** PCSG01152 (Dance with Devils My Carol, v22114) is a VNDB fandisc of the test title's
   VN (v18432) and shares a release with it. It trains (another VN). Test-title scores of models trained on it are
   not same-series-unseen; the two titles share 1 distinct verified line label.
+- **Two VNDB relations to protected VNs** (not the policy's seen flag, which is the same VN or a shared release):
+  PCSG01180 (v21784) has the same setting as psp-test's v7634, and PCSG01245 (v24291) shares characters with
+  vita-test's v13072 and v18030.
 - **VOCR5's exposure.** 97 of the 138 titles' VNs had rows in VOCR5's fine-tune pools (59 of the 89 new ones).
 
 ## Baseline: VOCR6.2 as Rubi 0.10.5 runs it
 
-**What was read** (`eval/pagepath.py run --heads`, pre-registered in `vocr6/experiments.jsonl` before the read):
+**What was read** (`eval/pagepath.py run --heads`). The protocol line in `vocr6/experiments.jsonl` (label
+b2-ingest2, 01:21Z) registered the three finders below with Rubi's line filter, on the two sets, before their v2.1
+reads (01:21:31Z on). The filter arms (clean crops with the filter off; the spotter's path with `lines+punct` or no
+filter) were added after the first v2.1 results, as report-only diagnostics: the decomposition and the filter
+findings below rest on them. A first read on pools v2's units (superseded for the label rules) ran 00:30-01:29Z;
+its crop readings are cached and reused, and its numbers are not reported. (The protocol line's note says 00:30-01:20Z;
+a correction line in the log and the record's `protocol_corrections` give 01:29Z.) The stored results' `repo_head`
+is main's `205f47e`: the reads ran from the working tree before its commit; `pagepath_sha256` (`5506b490…`)
+identifies the committed `eval/pagepath.py`.
 
 - the shipped blobs `VOCR6.2_S_w8.vocr`, `VOCR6.2_N_w8g2.vocr` and `VOCR6.2_L_w8_2l.vocr`, W8I through the C runtime,
   each with its own head sections (the head gate and the two-level head where it has them) and Rubi's ungated re-read;
@@ -576,11 +607,17 @@ Per new title (Normal, cascade Large), sorted by the page path's errors:
   (28,436 → 31,841), its Vita lines 59% (53,541 → 85,146).
 - **New against v1 titles on hval.** VOCR6.2 trained on the v1 titles' hval pages (they were folded in) and on none
   of the new titles. Rubi's path reads the new titles at 1.39% and the v1 titles at 1.36% (1.07% without PCSG00854,
-  whose border costs 504 errors on 120 units). On clean crops 0.90% against 0.72%; with the filter off 0.38% against
-  0.26%.
-- **The hardest new titles for the recognizer** (clean crops, filter off): PCSG01202 at 7.5% (1,843 reference
-  characters), PCSG00776 0.65%, PCSG00853 0.63% (it draws 『』, which VOCR6.2 reads as 「」). PCSG00206 holds the
-  most errors (497) at 0.50%.
+  whose border costs 504 errors on 120 units). On clean crops 0.90% against 0.72%; with the filter off 0.38% [0.16,
+  0.75] against 0.26% [0.09, 0.53]: 0.12 points, not resolved (the intervals overlap).
+- **The hardest new titles for the recognizer** (clean crops, filter off), by CER: PCSG00020 8.8% (556 reference
+  characters), PCSG01202 7.5% (1,843), PCSG00883 4.8% (312), PCSG00567 3.1% (1,660) and PCSG00777 2.5% (319).
+  audit-b2-ingest2's sheets show PCSG00020, PCSG00883 and PCSG00777 losing most of theirs on rows of dots only and on
+  lone 「。」 rows that the recognizer reads as empty, and PCSG00567 on 》 deletions; all are drawn as labelled. Among
+  titles with at least 10,000 reference characters the highest are NPJH50591 0.68%, PCSG00776 0.65% and PCSG00853
+  0.63% (it draws 『』, which VOCR6.2 reads as 「」). PCSG00206 holds the most errors (497) at 0.50%.
+- **Punctuation-only rows.** On clean crops with the filter off, VOCR6.2 reads the new titles' 611 reference lines
+  of only punctuation (3,209 characters) 67% exactly, with 368 errors: 89% of their characters right
+  (audit-b2-ingest2).
 
 ## What the new data is worth for Rubi's models
 
@@ -588,9 +625,10 @@ These are measurements to decide on, not decisions (the conductor and the owner 
 
 - **A VOCR6 S/N/L retrain on pools v2.1** adds 35,010 usable dialogue lines (+43%), 3,584 vertical columns, 89 titles
   and 281 more kanji on the training side. On the new titles the recognizer and its LM make 0.34 points of
-  Normal's 1.19% (Large 0.27 of 1.16%). That share is the most a retrain can remove there; VOCR6.2's 0.26% on its
-  own training titles' hval suggests what training on a title buys at the recognizer, about 0.08 points. Any such
-  run has to leave out of its dev comparisons the 7 dev-unit VNs and the 4 confirmation-set VNs that v2.1 now trains
+  Normal's 1.19% (Large 0.27 of 1.16%). That share is the most a retrain can remove there. On hval the recognizer
+  reads the new titles 0.12 points worse than its own training titles (0.38% against 0.26%, not resolved): a hint of
+  what training on a title buys at the recognizer, no more. Any such run has to leave out of its dev comparisons the
+  7 dev-unit VNs and the 4 confirmation-set VNs that v2.1 now trains
   on.
 - **A spotter retrain** (textspot8's recipe on v2.1's pages: 69,183 train pages with regions against v1's 48,384) aims
   at the finder's 0.38 points, a third of them on one title.
@@ -640,7 +678,9 @@ $PY data/hooked_audit.py tables2 --index data/manifests/vocr6_hooked_v2/index.js
     --doc docs/vocr6-data-v2.md                                     # --check: what CI runs
 ```
 
-MODELS holds the three VOCR6.2 blobs under pagepath's tier names (`VOCR5_{S,N,L}_w8.vocr`). The full commands are in
+MODELS holds the three VOCR6.2 blobs under pagepath's tier names (`VOCR5_{S,N,L}_w8.vocr`). DEV_VNS lists the 101
+VNs of #119's development units (`$HERD/shared/artifacts/vocr5-analysis/work/units.pkl`: the 93 VNs of its `units`
+and 8 more of its `fixed` lines); CONFIRM_VNS the 41 VNs of `eval/textspot7_confirm_units_v1.json` `units_public`. The full commands are in
 `$HERD/shared/artifacts/b2-ingest2/tools/`. The pinned v2.1 files:
 
 - `pools/v2.1/manifest.json`: `8577e62a94f65756…`
@@ -649,9 +689,14 @@ MODELS holds the three VOCR6.2 blobs under pagepath's tier names (`VOCR5_{S,N,L}
 
 ## Limits
 
-- **Machine-verified labels.** The audit bounds the label error of what it sampled (0 of 358 after the fixes, under
-  1.1% at 95%). The rare-character scan covers characters unique to one title. A remapping of a common character,
-  or one shared by two titles, would not show in it.
+- **Machine-verified labels.** The audit bounds the label error of what it sampled: 0 of 358 after the fixes, under
+  2.3% at 95% weighted by stratum (1.5% with the auditor's 148 lines). The rare-character scan covers characters
+  unique to one title. A remapping of a common character, or one shared by two titles, would not show in it;
+  audit-b2-ingest2's per-title confusion check of VOCR6.2's clean-crop reads on all 82 new titles found none.
+- **Stale `host_line` ids.** In pagepool v2.1, 7 ruby rows of PCSG00794's later run (pages 100003 to 100007) name a
+  `host_line` on the run's own page id (`PCSG00794:000003:line3` for `PCSG00794:100003:ruby1`): `move_record` did
+  not move it then. Nothing in the repo reads `host_line`, and no pool row or number depends on it; the importer now
+  moves it, so a rebuild differs from pagepool v2.1 in PCSG00794's page-pool file only.
 - **PSP is thin among the new titles.** 3 of the 89 new titles are PSP (one of them the test title), so the new
   titles' PSP numbers rest on 2 titles.
 - **The second runs repeat the first.** Their pages add little new text; the cross-run guard keeps them out of

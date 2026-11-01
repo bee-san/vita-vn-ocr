@@ -99,6 +99,8 @@ def cmd_score(a):
     new_titles = {t for t, v in ov["titles"].items() if not v["in_pools_v1"]}
     out = {"kind": "b2-ingest2-baseline", "schema": 1, "overlap_sha256": sha256_file(a.overlap),
            "protocol": json.loads(Path(a.protocol).read_text(encoding="utf-8")) if a.protocol else None,
+           "protocol_corrections": [json.loads(x) for x in Path(a.correction).read_text(encoding="utf-8").splitlines()
+                                    if x.strip()] if a.correction else [],
            "groups_rule": "new: titles pools v1 did not hold (VOCR6.2 never trained on them); v1: pools v1's titles",
            "ci": f"95% bootstrap, {REPS} resamples, seed {SEED}, over titles (pages when a group has < {MIN_TITLES})",
            "sets": {}}
@@ -135,6 +137,7 @@ def main(argv=None):
     p.add_argument("--res", required=True)
     p.add_argument("--overlap", required=True)
     p.add_argument("--protocol", default="", help="the experiment log's protocol line (JSON) to record")
+    p.add_argument("--correction", default="", help="the experiment log's correction lines to it (JSONL)")
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     {"score": cmd_score}[a.cmd](a)

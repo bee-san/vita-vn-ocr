@@ -769,12 +769,26 @@ def baseline2_tables(base):
     return sec
 
 
+def weighted_rows(audit):
+    """The post-fix bound weighted by stratum (label_audit_v2.json post_fix_check_weighted), as audit table rows."""
+    w = audit.get("post_fix_check_weighted")
+    if not w:
+        return ""
+    o, n = w["with_audit_b2_ingest2"], sum(w["sample_after_fixes"].values())
+    m = n + o["its_lines"]
+    return (f"\n| after the fixes, weighted by stratum (effective n {w['n_eff']:.0f}) | {n} | {n} | 0 | "
+            f"0.0-{100 * w['wrong_rate_ci95_upper']:.1f}% |"
+            f"\n| the same, with audit-b2-ingest2's {o['its_lines']} lines (effective n {o['n_eff']:.0f}) | {m} | "
+            f"{m - o['its_wrong']} | {o['its_wrong']} | 0.0-{100 * o['wrong_rate_ci95_upper']:.1f}% |")
+
+
 def v2_sections(index1, stats1, index2, stats2, overlap2, audit2, baseline=None):
     """{section: markdown} of docs/vocr6-data-v2.md's generated blocks."""
     base = corpus_tables(index2, stats2, overlap2, audit2)
     sec = {"v2_compare": compare_table(index1, stats1, index2, stats2), "v2_splits": base["splits"],
            "v2_filters": base["filters"], "v2_rules": rules_table(index2), "v2_coverage": base["coverage"],
-           "v2_audit": base["audit"].replace("after the fixes (pools v1)", "after the fixes (pools v2.1)"),
+           "v2_audit": base["audit"].replace("after the fixes (pools v1)", "after the fixes (pools v2.1)") +
+           weighted_rows(audit2),
            "v2_titles": titles2_table(index1, index2, stats2, overlap2)}
     if baseline is not None:
         sec.update(baseline2_tables(baseline))

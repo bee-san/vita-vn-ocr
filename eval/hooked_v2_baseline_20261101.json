@@ -42,6 +42,19 @@
   "not_read": "the test titles (PCSG00807, NPJH50882), vita-test, psp-test, CLANNAD, the dev sets",
   "note": "a first read on pools v2's units (superseded by v2.1 for label errors in 9 titles) ran 00:30-01:20Z; its crop readings are cached and reused; the v2 numbers are not reported"
  },
+ "protocol_corrections": [
+  {
+   "label": "b2-ingest2",
+   "kind": "protocol-correction",
+   "time": "2026-11-01T04:06Z",
+   "corrects": "the b2-ingest2 protocol line of 2026-11-01T01:21Z",
+   "by": "audit-b2-ingest2 F4",
+   "corrections": [
+    "its note: the first read on pools v2 units ran 00:30-01:29Z (its last result, new_all_base_v2_oracle_S, 01:28:59Z), not 00:30-01:20Z",
+    "registered arms: finders spot, fix1, oracle with filter lines; the filter arms (oracle with --filter none, spot with --filter lines+punct and none) were added after the first v2.1 results (01:33Z and 01:50Z) as report-only diagnostics"
+   ]
+  }
+ ],
  "groups_rule": "new: titles pools v1 did not hold (VOCR6.2 never trained on them); v1: pools v1's titles",
  "ci": "95% bootstrap, 10000 resamples, seed 0, over titles (pages when a group has < 5)",
  "sets": {

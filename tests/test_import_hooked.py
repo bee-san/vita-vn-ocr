@@ -412,6 +412,8 @@ def test_moved_page_and_record():
     page = {"id": "000007", "image": "pages/000007.png"}
     assert IH.move_record(page, 2, "T1")["id"] == "200007" and IH.move_record(page, 2, "T1")["src_id"] == "000007"
     assert line["id"] == "T1:000007:line2"                  # the input is not changed
+    ruby = {"id": "T1:000007:ruby1", "page": "000007", "image": "pages/000007.png", "host_line": "T1:000007:line2"}
+    assert IH.move_record(ruby, 1, "T1")["host_line"] == "T1:100007:line2"      # the host line moves with the page
 
 
 def test_split_runs_one_run_is_split_title():
@@ -573,14 +575,16 @@ def test_undrawn_check_strips_a_blank_code_and_refuses_a_shifted_one():
     for i in (1, 2, 3):                                     # glyphs in cells 1-3; cells 0 and 4 blank
         x0 = 10 + 30 * i
         grey[16:34, x0 + 8:x0 + 22] = 230
-    rec = {"text": "^あい う^", "cell_chars": ["^", "あ", "い", "う", "^"], "cell_boxes": cells,
+    rec = {"text": "^あいう", "cell_chars": ["^", "あ", "い", "う"], "cell_boxes": cells[:4],
            "box": [10, 10, 150, 30], "source": "glyph_cells"}
     out, label = IH.undrawn_check(rec, grey, "^")
-    assert label == "あいう" and out["cell_chars"] == ["あ", "い", "う"] and out["undrawn_removed"] == 2
+    assert label == "あいう" and out["cell_chars"] == ["あ", "い", "う"] and out["undrawn_removed"] == 1
     assert out["cell_boxes"] == cells[1:4] and rec["cell_chars"][0] == "^"     # the input is not changed
-    shifted = dict(rec, text="あい^う", cell_chars=["あ", "い", "^", "う", "え"])   # a code on a drawn glyph
-    assert IH.undrawn_check(shifted, grey, "^") is None
-    blank = dict(rec, text="^あいうえ", cell_chars=["^", "あ", "い", "う", "え"])   # a drawn character on a blank
+    trailing = dict(rec, text="^あいう^", cell_chars=["^", "あ", "い", "う", "^"], cell_boxes=cells)
+    assert IH.undrawn_check(trailing, grey, "^") is None    # a code after the line's start: dropped, even on a blank
+    on_ink = dict(rec, text="^いう", cell_chars=["^", "い", "う"], cell_boxes=cells[1:4])   # a code on a drawn glyph
+    assert IH.undrawn_check(on_ink, grey, "^") is None
+    blank = dict(rec, text="^あいうえ", cell_chars=["^", "あ", "い", "う", "え"], cell_boxes=cells)  # え on a blank
     assert IH.undrawn_check(blank, grey, "^") is None
 
 

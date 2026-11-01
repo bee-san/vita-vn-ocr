@@ -23,6 +23,7 @@
 #define CHUNK_MAX 48u
 #define MAX_STEPS 64u
 #define RESIZE_MAX_TASKS 64u
+#define STEM_PF_ROWS 2u   /* the stem prefetches its source this many output rows ahead */
 
 /* ----------------------------------------------------------------------------- profiling (-DVOCR_TSD_PROF) */
 
@@ -636,6 +637,31 @@ static void src_floats(const tsd_src *S, unsigned x, unsigned y, unsigned n, flo
     }
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#define PREFETCH(p) __builtin_prefetch(p)
+#else
+#define PREFETCH(p) ((void)(p))
+#endif
+
+/* prefetch the source bytes of output row oy's columns [x0, x1) (its four source rows): a frame fresh from a capture
+ * is in DRAM, and the stem reads it once */
+static void stem_prefetch(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1)
+{
+    unsigned ky, sx = 4 * x0, ex = 4 * x1;
+    if (sx >= S->w) return;
+    if (ex > S->w) ex = S->w;
+    for (ky = 0; ky < 4; ky++) {
+        const unsigned sy = 4 * oy + ky;
+        const unsigned char *r;
+        size_t b, n;
+        if (sy >= S->h) return;
+        r = S->px + (size_t)sy * S->stride + (size_t)sx * S->ch;
+        n = (size_t)(ex - sx) * S->ch;
+        for (b = 0; b < n; b += 64) PREFETCH(r + b);
+        PREFETCH(r + n - 1);
+    }
+}
+
 /* the stem's four source rows of output row oy, columns [x0, x1): R[ky][0 .. 4 (x1 - x0)) floats (the edge padding:
  * columns past the source repeat its last column, rows past it its last row) */
 static void stem_rows(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1, float (*R)[4 * CHUNK_MAX])
@@ -970,6 +996,7 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
         for (y = y0; y < y1; y++)
             for (x0 = 0; x0 < t->Wo; x0 += ch) {
                 const unsigned x1 = x0 + ch < t->Wo ? x0 + ch : t->Wo;
+                stem_prefetch(&N->src, y + STEM_PF_ROWS, x0, x1);
                 stem_rows(&N->src, y, x0, x1, R);
                 stem_chunk((const float (*)[4 * CHUNK_MAX])R, x1 - x0, &m->stem, t->out + ((size_t)y * t->Wo + x0) * C);
             }

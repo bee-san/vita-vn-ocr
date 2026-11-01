@@ -240,3 +240,15 @@ def test_resize_identity_and_constant():
     g = np.full((30, 40), 77, np.uint8)
     assert (T.resize(g, 40, 30) == g).all()
     assert (T.resize(g, 17, 11) == 77).all() and (T.resize(g, 83, 61) == 77).all()
+
+
+def test_end_bands_leave_the_kernel_and_ignore_past_the_ends():
+    import tsdesk_det as TD
+    pos = [[100, 60, 300, 84, 0, 1.0, 1]]
+    ign = TD.end_bands(pos, 1.0)
+    assert ign == [[76, 60, 100, 84], [300, 60, 324, 84]]
+    K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = TD.targets(pos, ign, 512, 256, 8)  # noqa: E741
+    r = int(np.nonzero(k)[0][0])
+    assert k[r, 100 // 8:(300 - 1) // 8 + 1].all()            # the line's kernel cells stay
+    assert not v[r, 300 // 8 + 1] and not v[r, 76 // 8]        # the cells past its ends are ignored
+    assert v[r, 340 // 8]                                      # further on, background again

@@ -241,6 +241,21 @@ def make_sources(c):
 EXACT_SOURCES = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
 
 
+def end_bands(pos, f):
+    """Ignore areas just beyond both ends of every positive (window px): f x the line's size across past each end,
+    the line's own extent across (a source whose ends come from teacher/geometry.refine may stop before a thin end
+    glyph: there, the cells past its end are neither kernel nor background). Kernel cells keep their targets."""
+    out = []
+    for x0, y0, x1, y1, vertical, *_ in pos:
+        if vertical:
+            d = f * (x1 - x0)
+            out += [[x0, int(y0 - d), x1, y0], [x0, y1, x1, int(y1 + d + 0.999)]]
+        else:
+            d = f * (y1 - y0)
+            out += [[int(x0 - d), y0, x0, y1], [x1, y0, int(x1 + d + 0.999), y1]]
+    return out
+
+
 def patch_pools(sources, hook, targets_dir):
     """Amendment 1: the hooked sources' verified positives get the target cache's ink boxes (train/tsdesk_targets.py;
     a sample whose stored boxes do not match the cache's refined_line boxes keeps its own)."""
@@ -283,6 +298,7 @@ def make_batch(sources, rng, cfg):
     bm = [np.zeros((bsz, ho, wo), bool) for _ in range(4)]
     mk = np.zeros((bsz, ho, wo), np.int64)
     e_src = cfg.get("e_sources")
+    end_ig = float(cfg.get("end_ignore") or 0.0)
     for b in range(bsz):
         src, canvas, smp = sources.pick(rng)
         if cfg.get("recipe") == "junk":
@@ -290,6 +306,8 @@ def make_batch(sources, rng, cfg):
         img, pos, ign = DD.make_window_ms(canvas, smp, src, rng, sources, cfg["scale"], cfg.get("aug", True))
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
+        if end_ig > 0 and src not in EXACT_SOURCES:
+            ign = list(ign) + end_bands(pos, end_ig)
         K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
         if e_src is not None and src not in e_src:
             m1[:] = False
@@ -399,6 +417,9 @@ def parse(argv=None):
                                       "hooked sources' verified positives")
     ap.add_argument("--e-exact", action="store_true", help="amendment 1: the along-end (E) loss only on the sources "
                                                             "with exact ink boxes (EXACT_SOURCES)")
+    ap.add_argument("--end-ignore", type=float, default=0.0,
+                    help="the cells within F x a line's size across past each end of a positive of a source not in "
+                         "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--warmup", type=int, default=500)
@@ -446,7 +467,8 @@ def main(argv=None):
            "skip": (skip_shots, frozenset(base_skip_vns) | skip_vns), "skip_vns": sorted(skip_vns),
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
-           "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None}
+           "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
+           "end_ignore": a.end_ignore}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -473,7 +495,7 @@ def main(argv=None):
            "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch, "recipe": a.recipe,
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
                        "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
-                       "ink_cache": a.targets, "e_sources": cfg["e_sources"]},
+                       "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
            "manifests_sha256": {m: sha256_file(m) for m in [*a.manifest, *([a.hook_manifest] if a.hook_manifest

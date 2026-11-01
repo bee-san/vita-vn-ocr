@@ -149,6 +149,32 @@
     "resize": "every read of a tsd: detector resizes the frame with the C path's integer resize (tools/tsdesk.resize, the numpy twin of desktop/vocr_desk.c's vocr_desk_resize, equal bit for bit on every size tested), so the ONNX and C paths see the same network input (R6); ONNX Runtime timings use cv2 (INTER_AREA down, INTER_LINEAR up, the tsd: spec's @cv2 suffix), as an app would",
     "pick_cost": "the pick's cost is the C 1-thread p50 summed over the Vita, PSP and pc1080 timing pages (the PSP pages added: fit:960 and long:960 cost the same on the Vita and pc1080 pages and differ on small frames)"
    }
+  },
+  {
+   "n": 3,
+   "time": "2026-11-01T21:53:04Z",
+   "before": "Sc_p4a and Sd_p8g are read on any set; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sa_p8a, Se_p8a_junk and Sb_p8s were read on hval and dense_screen (scores 4.455, 3.755, 4.916): disclosed",
+   "found": "on hval the arms cut thin end glyphs (a trailing ―― or ……, a 。 after them) and split lines at full-width spaces; the hooked targets hold those glyphs (amendment 1), but the real half and 1b, whose boxes come from teacher/geometry.refine, teach the kernel to stop before them; the training loss still falls at 40,000 steps",
+   "what": {
+    "arms": {
+     "Sf_p8a_junk_endig": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000,
+      "question": "the cells within one line height past each end of a positive of a source whose boxes are not exact (the real half, 1b) are ignore areas (tsdesk_det.py --end-ignore 1.0): no source teaches the kernel to stop before a thin end glyph"
+     },
+     "Sg_p8a_junk_endig_80k": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000,
+      "question": "the same with twice the steps"
+     }
+    },
+    "rule": "screening.rule's steps 1 and 2 are replaced by one: among every screening arm whose network takes <= 2.5 ms at 960x544 in ONNX Runtime at 1 thread, the lowest score wins; an eligible arm within 0.10 points of it that costs less (MACs at 960x544, then training steps) replaces it (the cheapest such). Step 3 (the refinement) is unchanged. The chosen arm's seeds 2 and 3 and its train + guard + hval retrains train with its recipe and steps"
+   }
   }
  ]
 }

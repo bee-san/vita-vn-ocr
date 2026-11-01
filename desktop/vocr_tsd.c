@@ -895,8 +895,8 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
     }
     if (t->kind == ST_SEP) {
         const unsigned Ci = t->a->cin, Co = t->b->cout, ch = chunk_of(Ci > Co ? Ci : Co);
-        for (y = y0; y < y1; y++)
-            for (x0 = 0; x0 < t->Wo; x0 += ch) {
+        for (x0 = 0; x0 < t->Wo; x0 += ch)
+            for (y = y0; y < y1; y++) {
                 const unsigned x1 = x0 + ch < t->Wo ? x0 + ch : t->Wo;
                 float *o = t->head ? U : t->out + ((size_t)y * t->Wo + x0) * Co;
                 dw_chunk(t->in, t->H, t->W, t->a, y, x0, x1, T);

@@ -252,3 +252,23 @@ def test_end_bands_leave_the_kernel_and_ignore_past_the_ends():
     assert k[r, 100 // 8:(300 - 1) // 8 + 1].all()            # the line's kernel cells stay
     assert not v[r, 300 // 8 + 1] and not v[r, 76 // 8]        # the cells past its ends are ignored
     assert v[r, 340 // 8]                                      # further on, background again
+
+
+def test_ornament_rows_stay_off_the_labels():
+    import tsdesk_det as TD
+    rng = np.random.default_rng(0)
+    drawn = 0
+    for _ in range(50):
+        img = np.full((256, 512), 40, np.uint8)
+        pos = [[100, 120, 400, 144, 0, 1.0, 1]]
+        ign = [[10, 10, 60, 40]]
+        before = img.copy()
+        box = TD.add_ornaments(img, pos, ign, rng)
+        if box is None:
+            assert (img == before).all()
+            continue
+        drawn += 1
+        assert not (box[0] < 400 and 100 < box[2] and box[1] < 144 and 120 < box[3])     # off the line
+        assert (img[120:144, 100:400] == 40).all()                                       # the line untouched
+        assert (img != before).any()
+    assert drawn >= 10

@@ -199,6 +199,32 @@
     },
     "rule": "amendment 3's single rule, over every screening arm (Sa-Sf, Sh, Si)"
    }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-01T22:15:35Z",
+   "before": "Sf, Sh and Si are read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "found": "every screened arm boxes PCSG00854's ornament strip as lines (39-114 junk boxes in its 40 hval units; R4 allows 5); the junk recipe (its weak MeikiOCR boxes as background) did not remove them",
+   "what": {
+    "arms": {
+     "Sj_p8g_junk_endig_orn": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 40000,
+      "question": "a quarter of the windows get one row of repeated small ornaments (stars, diamonds, rings, flowers, crosses, dot rings, hourglasses, cursors; one motif or two alternating) drawn as background above or below a line or on free background (tsdesk_det.py --ornaments 0.25)"
+     },
+     "Sk_p8g_junk_endig_orn_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm"
+   }
   }
  ]
 }

@@ -23,8 +23,9 @@ Data: textspot6's sources (train/textspot6_train.py: the hooked page shards, tex
 MeikiOCR-labelled real screenshots, the real half's skip lists), drawn by --mix; textspot6's targets with textspot8's
 edge-kernel weights (train/textspot8_train.targets: the end cells of a line x 4), its tag loss and textspot2's loss.
 The windows are textspot6's 256 x 512 with one change, the scale: every window's canvas (a PSP hooked page first
-2x bilinear with p 0.5, as Adrenaline shows it) is resized by a factor drawn log-uniform from --scale before the
-window is cut (INTER_AREA down, INTER_LINEAR up), so the network sees text from about 6 to 60 px tall; then
+2x bilinear with p 0.5, as Adrenaline shows it; a desktop-size page of an --extra source named desk_* first to a
+960 px long side, the scale the input policies read at) is resized by a factor drawn log-uniform from --scale before
+the window is cut (INTER_AREA down, INTER_LINEAR up), so the network sees text from about 6 to 60 px tall; then
 textspot6's photometric augmentation (with textspot8's blends), textspot8's icons (p 0.35) and tight cuts (p 0.15).
 A window smaller than 256 x 512 is padded by edge replication, outside the loss.
 
@@ -326,6 +327,7 @@ def _setup():
 
 
 RUBY = {"max_rel": 0.6, "gap": 0.5, "overlap": 0.25, "inside": 0.8}
+DESK_LONG = 960.0       # a "desk_*" source's canvas is scaled to this long side before the window's scale factor
 
 
 def ruby_like(lines, rules=RUBY):
@@ -370,6 +372,8 @@ def make_window_ms(canvas, smp, src, rng, sources, scale, aug=True, ruby_filter=
         up = 2
     H, W = canvas.shape
     s = float(math.exp(rng.uniform(math.log(scale[0]), math.log(scale[1]))))
+    if src.startswith("desk_"):         # a desktop-size page: first to the 960 px long side the policies read at
+        s *= DESK_LONG / max(H, W)
     rh, rw = min(H, max(1, int(round(B.WIN_H / s)))), min(W, max(1, int(round(B.WIN_W / s))))
     ox, oy = int(rng.integers(0, W - rw + 1)), int(rng.integers(0, H - rh + 1))
     img = np.asarray(canvas[oy:oy + rh, ox:ox + rw])

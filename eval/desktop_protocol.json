@@ -753,6 +753,30 @@
     "S5": "an extra screening arm: d48 multi-scale with the hooked pages' ruby lines as background (shards rebuilt by synth/textspot6_pages.py --ruby background, data/manifests/desktop_pages_v21_rubybg.json) and the non-hooked sources' ruby-like boxes as ignore areas (desktop_det.py --ruby-filter). Why: on hval at fit:960, 47% of S3_d32's junk boxes are under 0.7 line heights (ruby-like), in ruby-heavy titles. S5 replaces S1's recipe for the chosen shape when its mean hval CER over the 7 policies (pct pad) is lower",
     "order": "shape by the registered rule (hval at fit:960, S1-S3); recipe (S5 vs S1, d48) by the mean over the 7 policies; pad rule by the chosen recipe's mean over the 7 policies; every screening comparison is also reported without PCSG00854, where VOCR6.2-L's reading changes by hundreds of errors with a 1 px change of a crop's height (docs/textspot8.md); the rule uses every title"
    }
+  },
+  {
+   "n": 3,
+   "time": "2026-11-01T11:17:03Z",
+   "before": "any final (3-seed) run starts and any candidate is read on dev-v2, confirm-v2, the PC test set or the test titles",
+   "what": {
+    "final_data": "the final runs (3 seeds of the chosen arm, then the representative's retrain on train + guard + hval) add desktop-data's frozen training pages (PCDATA_READY 2026-11-01T10:19Z; frozen_v1/FROZEN.sha256) as three sources: desk_hook (hooked_desktop_v1.json e99df722: 20,000 hooked train pages re-rendered at desktop sizes; its splits are pools v2.1's train pages only), desk_realplus (realplus_native_v1.json e33c2b3d: 49,267 realplus PC screenshots at their own size with ignore areas) and desk_synth (synth_desktop_v1.json be043689: 10,000 synthetic desktop pages)",
+    "mix": {
+     "hook": 0.3375,
+     "synth": 0.15,
+     "real": 0.2625,
+     "desk_hook": 0.1,
+     "desk_realplus": 0.1,
+     "desk_synth": 0.05,
+     "why": "the screened mix (0.45 / 0.2 / 0.35) at 75%, the desktop sources 25% (chosen without data: no screening read them)"
+    },
+    "windows": "a desk_* canvas is first scaled to a 960 px long side (the policies' scale), then the arm's log-uniform factor in [0.42, 1.9] (train/desktop_det.py DESK_LONG)",
+    "steps": "40,000, as screened; seeds 1, 2, 3",
+    "screening_outcome_so_far": {
+     "recipe": "S5 (ruby background + filter) mean7 hval CER 2.634% (pct pad) against S1's 2.368%: not lower, so S1's recipe stays (without PCSG00854: S5 0.884 against S1 0.938, report only)",
+     "pad": "S1: frame 1.996% against pct 2.368% (mean over the 7 policies): the frame pad rule",
+     "shape": "pending S2_d64 (fit:960, pct): S3_d32 4.932%, S1_d48 2.664%"
+    }
+   }
   }
  ]
 }

@@ -87,6 +87,76 @@ def input_size(policy, w, h):
     return max(1, int(round(w * f))), max(1, int(round(h * f)))
 
 
+Q14 = 16384
+
+
+def _axis(n, m):
+    """(idx [m, K], weights [m, K]) of one axis of desktop/vocr_desk.c's vocr_desk_resize: Q14 area weights when the
+    axis shrinks (m < n), bilinear on pixel centres when it grows; the weights of an output sum to 16384."""
+    if m == n:
+        return np.arange(m, dtype=np.int64)[:, None], np.full((m, 1), Q14, np.int64)
+    K = n // m + 2 if m < n else 2
+    idx = np.zeros((m, K), np.int64)
+    wt = np.zeros((m, K), np.int64)
+    for i in range(m):
+        if m < n:
+            lo, hi = i * n, i * n + n
+            j, k, cum, prev = lo // m, 0, 0, 0
+            while j * m < hi and k < K:
+                a, b = max(lo, j * m), min(hi, (j + 1) * m)
+                cum += b - a
+                q = (cum * 2 * Q14 + n) // (2 * n)
+                idx[i, k], wt[i, k] = j, q - prev
+                prev = q
+                j += 1
+                k += 1
+            for kk in range(k, K):
+                idx[i, kk] = idx[i, kk - 1]
+        else:
+            num = (2 * i + 1) * n - m
+            if num <= 0:
+                idx[i, :2], wt[i, 0] = 0, Q14
+            else:
+                x0, r = num // (2 * m), num - (num // (2 * m)) * 2 * m
+                if x0 >= n - 1:
+                    idx[i, :2], wt[i, 0] = n - 1, Q14
+                else:
+                    w1 = (r * Q14 + m) // (2 * m)
+                    idx[i, 0], idx[i, 1], wt[i, 0], wt[i, 1] = x0, x0 + 1, Q14 - w1, w1
+    return idx, wt
+
+
+def resize(g, dw, dh):
+    """desktop/vocr_desk.c's vocr_desk_resize on a uint8 grey image, bit for bit: separable integer weights (the rows
+    first, then the columns), (acc + 2^27) >> 28, clamped. The detector's C path resizes this way, so the ONNX path
+    and the C path see the same network input."""
+    g = np.asarray(g, np.uint8)
+    h, w = g.shape
+    if (w, h) == (dw, dh):
+        return g.copy()
+    ix, wx = _axis_cached(w, dw)
+    iy, wy = _axis_cached(h, dh)
+    tmp = np.zeros((h, dw), np.int32)
+    for k in range(ix.shape[1]):
+        tmp += g[:, ix[:, k]].astype(np.int32) * wx[:, k].astype(np.int32)[None, :]
+    acc = np.zeros((dh, dw), np.int64)
+    for k in range(iy.shape[1]):
+        acc += tmp[iy[:, k]].astype(np.int64) * wy[:, k][:, None]
+    return np.clip((acc + (1 << 27)) >> 28, 0, 255).astype(np.uint8)
+
+
+_AXES = {}
+
+
+def _axis_cached(n, m):
+    key = (int(n), int(m))
+    if key not in _AXES:
+        if len(_AXES) > 64:
+            _AXES.clear()
+        _AXES[key] = _axis(n, m)
+    return _AXES[key]
+
+
 @dataclass
 class Box:
     x: float
@@ -192,7 +262,14 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
 class Detector:
     """textspot-desktop's detector (an ONNX file train/tsdesk_det.py exports)."""
 
-    def __init__(self, path, threads=1, providers=None, session_options=None, size=None, decode_opts=None):
+    def __init__(self, path, threads=1, providers=None, session_options=None, size=None, decode_opts=None,
+                 resize_mode="exact", refine=None):
+        if resize_mode not in ("exact", "cv2"):
+            raise ValueError(f"resize_mode {resize_mode!r}: exact (the C path's integer resize) or cv2")
+        self.resize_mode = resize_mode
+        # refine: None (off), True (tools/tsdesk_refine.DEFAULTS) or a dict of its options: every horizontal box's
+        # edges snapped to its line's ink on the full-resolution grey frame after the decode
+        self.refine = None if refine in (None, False) else ({} if refine is True else dict(refine))
         self.sess = _session(path, threads, providers, session_options)
         meta = {k: json.loads(v) for k, v in self.sess.get_modelmeta().custom_metadata_map.items()
                 if k.startswith("vocr.")}
@@ -209,13 +286,17 @@ class Detector:
         self.input_name = self.sess.get_inputs()[0].name
 
     def preprocess(self, g):
-        """(network input [1, 1, H', W'] uint8, (fx, fy, iw, ih)) of a grey frame: resized by the size policy
-        (cv2.INTER_AREA down, INTER_LINEAR up), padded right and bottom to a multiple of 32 by edge replication."""
-        import cv2
+        """(network input [1, 1, H', W'] uint8, (fx, fy, iw, ih)) of a grey frame: resized by the size policy with
+        the C path's integer resize (resize(): area weights down, bilinear up), padded right and bottom to a multiple
+        of 32 by edge replication."""
         h, w = g.shape
         iw, ih = input_size(self.size, w, h)
         if (iw, ih) != (w, h):
-            g = cv2.resize(g, (iw, ih), interpolation=cv2.INTER_AREA if iw < w else cv2.INTER_LINEAR)
+            if self.resize_mode == "cv2":      # an app's resize: within a grey level of the integer one, faster here
+                import cv2
+                g = cv2.resize(g, (iw, ih), interpolation=cv2.INTER_AREA if iw < w else cv2.INTER_LINEAR)
+            else:
+                g = resize(g, iw, ih)
         ph, pw = -ih % ALIGN, -iw % ALIGN
         if ph or pw:
             g = np.pad(g, ((0, ph), (0, pw)), mode="edge")
@@ -238,6 +319,9 @@ class Detector:
             x1, y1 = min(float(W), (b.x + b.w) / fx), min(float(H), (b.y + b.h) / fy)
             if x1 > x0 and y1 > y0:
                 out.append(Box(x0, y0, x1 - x0, y1 - y0, b.vertical, b.logit, b.tag, b.tconf, b.cells))
+        if self.refine is not None:
+            import tsdesk_refine
+            out = tsdesk_refine.refine_det(g, out, self.refine)
         return out
 
     def boxes(self, rgb):

@@ -123,6 +123,8 @@ def load_rgb(p):
     import cv2
     if p.get("random"):
         return random_frame(p["W"], p["H"], p["random"])
+    if p.get("rgb") is not None:            # the protocol's timing pages (eval/tsdesk_eval.py pages): pixels inside
+        return p["rgb"]
     fr = {"key": p["key"], "W": p["W"], "H": p["H"], "src": p["src"]}
     if p.get("resample"):
         fr["W"], fr["H"] = p["resample"]["from"]
@@ -144,8 +146,16 @@ def random_frame(w, h, seed):
 
 
 def load_pages(path, random_n=0, seed=20261101):
-    doc = json.loads(Path(path).read_text(encoding="utf-8"))
-    pages = [dict(p) for p in doc["pages"]]
+    if str(path).endswith(".pkl"):          # eval/tsdesk_eval.py pages: the protocol's pages with their pixels
+        import pickle
+        with open(path, "rb") as f:
+            raw = pickle.load(f)
+        pages = [dict(p) for p in raw["pages"]]
+        doc = {"source": raw.get("source"), "seed": raw.get("seed"),
+               "pages": [{k: v for k, v in p.items() if k != "rgb"} for p in pages]}
+    else:
+        doc = json.loads(Path(path).read_text(encoding="utf-8"))
+        pages = [dict(p) for p in doc["pages"]]
     for i in range(random_n):
         for w, h, view in ((960, 544, "rand544"), (1920, 1080, "rand1080")):
             pages.append({"key": f"random:{view}:{i}", "view": view, "W": w, "H": h, "random": seed * 1000 + i})

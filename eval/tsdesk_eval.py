@@ -2,7 +2,7 @@
 """textspot-desktop's evaluation (issue #173, eval/textspot_desktop_protocol.json), on vocr-desktop's harness
 (eval/desktop.py, eval/desktop_time.py), which this file installs into at run time instead of editing it.
 
-  tsdesk.py desktop CMD ...      eval/desktop.py's command line (frames / detect / read / compare / boxes-pr / meiki)
+  tsdesk_eval.py desktop CMD ...  eval/desktop.py's command line (frames / detect / read / compare / boxes-pr / meiki)
                                  with this work's detectors installed: tsd:MODEL.onnx[@SIZE] (tools/tsdesk.Detector),
                                  ctsd:BLOB.vtsd[@SIZE] (the C path, when built), and the dense sets' ignore filter
                                  (eval/tsdesk_dense.install_ignore: a box at least half inside a 1b ignore area is
@@ -38,6 +38,7 @@ for _p in (ROOT / "eval", ROOT / "tools", ROOT / "synth", ROOT / "train", ROOT /
 import desktop as D  # noqa: E402
 
 PROTOCOL = ROOT / "eval" / "textspot_desktop_protocol.json"
+READ_PAD = os.environ.get("TSDESK_PAD", "auto")      # the reading pad of the tsd: / ctsd: timing pipelines
 SCHEMA = "textspot-desktop/1"
 
 
@@ -59,9 +60,16 @@ class CTsdDet:
 
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
+    refine = spec.endswith("+refine")           # tsd:MODEL.onnx[@SIZE[@MODE]]+refine: tools/tsdesk_refine on the boxes
+    if refine:
+        spec = spec[:-len("+refine")]
     if spec.startswith("tsd:"):
-        path, _, size = spec[4:].partition("@")
-        return T.Detector(path, session_options=so, size=size or None)
+        path, _, rest = spec[4:].partition("@")
+        size, _, mode = rest.partition("@")
+        return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
+                          refine=True if refine else None)
+    if refine:
+        raise ValueError(f"{spec}+refine: the refinement suffix is for tsd: specs")
     if spec.startswith("ctsd:"):
         path, _, size = spec[5:].partition("@")
         return CTsdDet(path, size or None, threads)
@@ -84,16 +92,37 @@ def install(Dm=D):
 
     Dm.detector, Dm._tsdesk_installed = detector, True
     tsdesk_dense.install_ignore(Dm)
+    base_pad, base_crop = Dm.pad_of, Dm.crop_box
+
+    def pad_of(spec, H):
+        """eval/desktop.py's pad specs plus the protocol's rules: 'kN' = max(2, round(N H / 544)) px on every side,
+        'kAvB' = A horizontally and B vertically (a tuple)."""
+        s = str(spec)
+        if s.startswith("k"):
+            kh, _, kv = s[1:].partition("v")
+            ph, pv = pad_px(float(kh), H), pad_px(float(kv or kh), H)
+            return ph if ph == pv else (ph, pv)
+        return base_pad(spec, H)
+
+    def crop_box(b, pad, W, H):
+        if isinstance(pad, tuple):
+            return crop_hv(b, pad, W, H)
+        return base_crop(b, pad, W, H)
+
+    Dm.pad_of, Dm.crop_box = pad_of, crop_box
     try:
         import desktop_time as DT
     except ImportError:
         return
+    if "tsdesk_eval" not in DT.MEM_CHILD:      # the fresh processes of desktop_time.py mem know the tsd: specs too
+        DT.MEM_CHILD = DT.MEM_CHILD.replace("import desktop_time as DT\n",
+                                            "import desktop_time as DT\nimport tsdesk_eval\ntsdesk_eval.install(D)\n")
     init = DT.Pipeline.__init__
 
     def pipeline_init(self, spec, threads, mode, *a, **k):
         init(self, spec, threads, mode, *a, **k)
         if spec.startswith(("tsd:", "ctsd:")):
-            self.pad = "auto"
+            self.pad = READ_PAD
     DT.Pipeline.__init__ = pipeline_init
 
 
@@ -151,6 +180,8 @@ def crop_hv(b, p, W, H):
     ph, pv = p
     x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
     x1, y1 = min(W, int(math.ceil(b[2] + ph))), min(H, int(math.ceil(b[3] + pv)))
+    if x1 <= x0 or y1 <= y0:
+        return None
     return (x0, y0, x1 - x0, y1 - y0)
 
 
@@ -341,6 +372,178 @@ def cmd_pads(a):
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
 
 
+def _exact_job(fr):
+    rgb = D.load_rgb(fr)
+    out = []
+    for _, _, b, _how in exact_boxes(fr, rgb):
+        out.append([b[0], b[1], b[2], b[3], 0, 9.0, 0])
+    return {"key": fr["key"], "W": fr["W"], "H": fr["H"], "boxes": out, "ms": 0.0}
+
+
+def cmd_exact_boxes(a):
+    """The exact boxes of every unit line as a detector's boxes file (eval/desktop.py detect's format): the perfect
+    boxes row (protocol: baselines.exact)."""
+    frames, _ = D.load_frames(a.frames)
+    t0 = time.time()
+    rows = []
+    with D._pool(a.workers, None, ()) as pool:
+        for r in pool.imap(_exact_job, frames, chunksize=4):
+            rows.append(r)
+    meta = {"meta": {"det": "exact", "frames_file": str(a.frames), "frames_sha256": D.sha256_file(a.frames),
+                     "rule": "eval/tsdesk.exact_ref (amendment 1)", "repo_head": D.git_head(),
+                     "seconds": round(time.time() - t0, 1)}}
+    D.write_jsonl(a.out, [meta, *rows])
+    print(f"exact boxes: {len(rows)} frames, {sum(len(r['boxes']) for r in rows)} boxes -> {a.out}", flush=True)
+
+
+# ----------------------------------------------------------------------------- timing pages
+
+def cmd_pages(a):
+    """The protocol's timing pages (metrics.timing_pages), in eval/desktop_time.py's pages format: seed 20261101, 60
+    hval Vita frames (960x544), 60 hval PSP frames (480x272), the same 60 Vita frames resampled to 1920x1080
+    (cv2.INTER_LINEAR), and 30 1b v3 training frames of exactly 1920x1080 (none of the dense sets' VNs)."""
+    import pickle
+    import random
+
+    import cv2
+    rng = random.Random(a.seed)
+    frames, _ = D.load_frames(a.hval)
+    pages = []
+    picked = {}
+    for view in ("vita", "psp"):
+        fs = sorted((f for f in frames if f["view"] == view), key=lambda f: f["key"])
+        picked[view] = sorted(rng.sample(fs, min(a.n, len(fs))), key=lambda f: f["key"])
+        for f in picked[view]:
+            D.check_sha(f)
+            pages.append({"key": f["key"], "set": "hval", "view": view, "W": f["W"], "H": f["H"], "rgb": D.load_rgb(f)})
+    for f in picked["vita"]:
+        rgb = cv2.resize(D.load_rgb(f), (1920, 1080), interpolation=cv2.INTER_LINEAR)
+        pages.append({"key": f["key"] + "@1080", "set": "hval", "view": "vita1080", "W": 1920, "H": 1080,
+                      "rgb": np.ascontiguousarray(rgb)})
+    skip = set(Path(a.skip_vns).read_text(encoding="utf-8").split())
+    man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
+    plan = {r["shot"]: r for r in json.loads(Path(a.plan).read_text(encoding="utf-8"))["rows"]}
+    cands = []
+    for s in man["shards"]:
+        js = json.loads((Path(a.shards) / s["dir"] / f"{s['name']}.json").read_text(encoding="utf-8"))
+        for smp in js["samples"]:
+            if smp["w"] == 1920 and smp["h"] == 1080 and smp["vn"] not in skip and smp["shot"] in plan:
+                cands.append(smp["shot"])
+    for shot in sorted(rng.sample(sorted(cands), min(a.n_pc, len(cands)))):
+        pr = plan[shot]
+        if D.sha256_file(pr["path"]) != pr["sha256"]:
+            raise SystemExit(f"{pr['path']}: sha256 differs from the plan's")
+        bgr = cv2.imread(pr["path"], cv2.IMREAD_COLOR)
+        pages.append({"key": shot, "set": "1b", "view": "pc1080", "W": bgr.shape[1], "H": bgr.shape[0],
+                      "rgb": np.ascontiguousarray(bgr[:, :, ::-1])})
+    with open(a.out, "wb") as f:
+        pickle.dump({"pages": pages, "seed": a.seed, "source": "eval/tsdesk_eval.py pages"}, f)
+    from collections import Counter
+    print(json.dumps({"pages": len(pages), "views": dict(Counter(p["view"] for p in pages))}), flush=True)
+
+
+# ----------------------------------------------------------------------------- the PC test set, once
+
+PCTEST_ATTEMPT = D.PV / "textspot-desktop" / "pctest" / "ATTEMPT.json"
+DECISION = ROOT / "eval" / "textspot_desktop_decision.json"
+
+
+def committed_unchanged(path):
+    import subprocess
+    rel = Path(path).resolve().relative_to(ROOT)
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", str(rel)], cwd=ROOT, capture_output=True)
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", str(rel)], cwd=ROOT, capture_output=True,
+                           text=True).stdout.strip()
+    return not tracked.returncode and not dirty
+
+
+def cmd_pctest_gate(a):
+    """The PC test set is read once (protocol rule.pctest_guard): only when the protocol and the decision record are
+    committed unchanged, and only if this protocol's attempt record does not exist yet (this call writes it)."""
+    for p in (PROTOCOL, DECISION):
+        if not p.exists() or not committed_unchanged(p):
+            raise SystemExit(f"{p.relative_to(ROOT)}: not committed unchanged")
+    if PCTEST_ATTEMPT.exists():
+        raise SystemExit(f"the PC test set was read already under this protocol ({PCTEST_ATTEMPT})")
+    PCTEST_ATTEMPT.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": D.git_head(),
+           "protocol_sha256": D.sha256_file(PROTOCOL), "decision_sha256": D.sha256_file(DECISION),
+           "what": a.what}
+    PCTEST_ATTEMPT.write_text(json.dumps(rec) + "\n", encoding="utf-8")
+    print(json.dumps(rec), flush=True)
+
+
+def errata_boxes(path):
+    """{(unit uid, box_v1 tuple): box_fixed} of the PC test set's erratum (eval/desktop_pc_test_v1_errata.json)."""
+    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    return {(ln["unit"], tuple(float(v) for v in ln["box_v1"])): [float(v) for v in ln["box_fixed"]]
+            for ln in doc["lines"]}
+
+
+def cmd_exact_pctest(a):
+    """The exact-boxes row of the PC test set: its line boxes with the erratum's 7 corrected boxes."""
+    fix = errata_boxes(a.errata)
+    frames, _ = D.load_frames(a.frames)
+    rows, n_fixed = [], 0
+    for fr in frames:
+        out = []
+        for u in fr["units"]:
+            for ln in u["lines"]:
+                b = [float(v) for v in ln["box"]]
+                k = (u["uid"], tuple(b))
+                if k in fix:
+                    b = fix[k]
+                    n_fixed += 1
+                out.append([b[0], b[1], b[0] + b[2], b[1] + b[3], 0, 9.0, 0])
+        rows.append({"key": fr["key"], "W": fr["W"], "H": fr["H"], "boxes": out, "ms": 0.0})
+    meta = {"meta": {"det": "exact", "frames_file": str(a.frames), "frames_sha256": D.sha256_file(a.frames),
+                     "rule": "the PC test set's line boxes, the erratum's corrected boxes", "fixed": n_fixed,
+                     "repo_head": D.git_head()}}
+    D.write_jsonl(a.out, [meta, *rows])
+    print(f"exact pctest boxes: {len(rows)} frames, {n_fixed} boxes from the erratum -> {a.out}", flush=True)
+
+
+# ----------------------------------------------------------------------------- R6: C path against ONNX path
+
+def cmd_parity(a):
+    """R6's crop equality: two boxes files of the same frames (the C path's ctsd: and the ONNX path's tsd:); per frame,
+    the sorted crops (each horizontal box grown by the pad rule, rounded outward, clipped) are all equal or not."""
+    fa, ma = D.load_boxes(a.a)
+    fb, mb = D.load_boxes(a.b)
+    if ma["frames_sha256"] != mb["frames_sha256"]:
+        raise SystemExit("the two boxes files were found on different frames files")
+    frames, _ = D.load_frames(a.frames)
+    if D.sha256_file(a.frames) != ma["frames_sha256"]:
+        raise SystemExit("the boxes were found on another frames file")
+    kh, kv = PAD_RULES[a.pad]
+    eq = n = 0
+    worst = 0.0
+    diff_frames = []
+    for fr in frames:
+        W, H = fr["W"], fr["H"]
+        p = (pad_px(kh, H), pad_px(kv, H))
+
+        def crops(bs):
+            return sorted(c for c in (crop_hv([float(v) for v in b[:4]], p, W, H) for b in bs if not b[4]) if c)
+        A, B = fa[fr["key"]], fb[fr["key"]]
+        n += 1
+        if crops(A) == crops(B):
+            eq += 1
+        else:
+            diff_frames.append(fr["key"])
+        if len(A) == len(B):
+            sa = sorted([[float(v) for v in b[:4]] for b in A])
+            sb = sorted([[float(v) for v in b[:4]] for b in B])
+            for x, y in zip(sa, sb):
+                worst = max(worst, max(abs(u - v) for u, v in zip(x, y)))
+    doc = {"kind": "textspot-desktop-parity", "a": str(a.a), "a_det": ma["det"], "b": str(a.b), "b_det": mb["det"],
+           "frames_sha256": ma["frames_sha256"], "pad": a.pad, "frames": n, "crops_equal_frames": eq,
+           "crops_equal_share": round(eq / max(1, n), 5), "max_abs_box_diff_px": round(worst, 6),
+           "frames_differing": len(diff_frames)}
+    Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps(doc), flush=True)
+
+
 # ----------------------------------------------------------------------------- the screening table
 
 def _cer(doc, drop=None):
@@ -392,6 +595,10 @@ def main(argv=None):
     if argv and argv[0] == "desktop":
         install(D)
         return D.main(argv[1:])
+    if argv and argv[0] == "time":
+        install(D)
+        import desktop_time as DT
+        return DT.main(argv[1:])
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("edges")
@@ -412,8 +619,36 @@ def main(argv=None):
     p.add_argument("--rows")
     p.add_argument("--rec", default=str(D.ONNX_DIR / "VOCR6.2_L_fast.onnx"))
     p.add_argument("--workers", type=int, default=5)
+    p = sub.add_parser("pages")
+    p.add_argument("--hval", default=str(D.PV / "vocr-desktop" / "frames" / "hval.pkl"))
+    p.add_argument("--manifest", default=str(ROOT / "data" / "manifests" / "desktop_data" / "realplus_native_v3.json"))
+    p.add_argument("--shards", default=str(D.ART / "desktop-data" / "pages" / "realplus_v3"))
+    p.add_argument("--plan", default=str(D.ART / "desktop-data" / "realplus" / "plan_v1.json"))
+    p.add_argument("--skip-vns", default=str(D.PV / "textspot-desktop" / "frames" / "skip_vns.txt"))
+    p.add_argument("--seed", type=int, default=20261101)
+    p.add_argument("--n", type=int, default=60)
+    p.add_argument("--n-pc", type=int, default=30)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("parity")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--a", required=True)
+    p.add_argument("--b", required=True)
+    p.add_argument("--pad", default="k6v4")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("pctest-gate")
+    p.add_argument("--what", required=True)
+    p = sub.add_parser("exact-pctest")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--errata", default=str(ROOT / "eval" / "desktop_pc_test_v1_errata.json"))
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("exact-boxes")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
     a = ap.parse_args(argv)
-    {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads}[a.cmd](a)
+    {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads, "exact-boxes": cmd_exact_boxes,
+     "pages": cmd_pages, "pctest-gate": cmd_pctest_gate, "exact-pctest": cmd_exact_pctest,
+     "parity": cmd_parity}[a.cmd](a)
 
 
 if __name__ == "__main__":

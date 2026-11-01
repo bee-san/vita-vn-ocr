@@ -16,7 +16,7 @@
   },
   "guards": "hval (title clusters) and confirm-v2 (VN clusters, read once for the candidate set after the dev decision is recorded): CER(C) - CER(R) not resolved above 0",
   "speed": "eval/desktop_time.py run at 4 intra-op threads, mode par (the detector at 4 threads, the lines on 4 Python threads sharing one recognizer session at 1 thread), interleaved with R in the same run, on the timing pages: p50 ms per page of C <= 1/4 of R's, on the Vita and on the PSP timing pages separately",
-  "pick": "each input-size policy of the chosen arm (fit:960, fit:800, fit:640, fit:480) is a candidate; among those that pass accuracy, guards and speed, the cheapest (p50 at 4 threads, Vita + PSP) is the pick; a costlier one replaces it only when it is resolved better on dev-v2",
+  "pick": "each input-size policy of the chosen arm (fit:960, fit:800, fit:640, fit:480) is a candidate; among those that pass accuracy, guards and speed, the cheapest (p50 at 4 threads, Vita + PSP) is the pick; a costlier one replaces it only when it is resolved better on dev-v2; amendment 2: the candidate policies are fit:960, fit:800, fit:640, fit:480, long:960, long:800, long:640",
   "seeds": "3 seeds of the chosen arm for the adoption claim; screening on hval with 1 seed",
   "then": "the pick ships: the chosen arm retrained with the representative seed on train + guard + hval (the final model); its own dev-v2 score is reported; the test titles are read once with it. No qualifier: the measurements are published with the gap and what would close it"
  },
@@ -732,6 +732,27 @@
    "before": "any candidate is timed or scored (the screening runs S1_d48 / S2_d64 are at step 1600 of 40,000; no candidate box has been read)",
    "what": "the speed clause's thread budget: 'at 4 threads' is a budget of 4. Each pipeline's detector runs at the intra-op thread count in {1, 2, 4} that gives it the lowest p50 on that view's timing pages in the same run (R's MeikiOCR detector included); its lines run par on 4 Python threads sharing one recognizer session at 1 intra-op thread, as before (eval/desktop_time.py run --threads 4 with the pipelines' '#d1', '#d2', '#d4' variants)",
    "why": "the baseline profile (eval/desktop_time.py profile, ORT kernel ms per run, ORT_ENABLE_ALL, 1 -> 4 intra-op threads, this shared host) shows the thread pool slowing the small graphs: textspot8 exact 8.09 -> 11.74 ms, VOCR6.2-L fast 2.35 -> 2.38 ms, while MeikiOCR's detector gains 1.73x (102.0 -> 59.1 ms). Forcing 4 intra-op threads on a graph that runs slower with them would measure the thread pool, not the model; R's detector is fastest at 4 threads, so R keeps its measured time"
+  },
+  {
+   "n": 2,
+   "time": "2026-11-01T07:37:20Z",
+   "before": "any candidate is read on dev-v2, confirm-v2, the PC test set or the test titles; the screening has read hval only (S3_d32 at fit:960/640/480 and long:1280; S1_d48 at fit:960/800/640/480 and long:1280, both with the pct pad)",
+   "owner_updates": [
+    "2026-11-01 06:45Z: an outside C AVX2 build of VOCR reads a page in 8.7-14.2 ms (1 thread) at about 9-11.5 MiB peak against ONNX fast 23-29 ms at about 115-133 MiB; compare desktop candidates against SIMD C builds, report peak RAM beside ms, keep a C (AVX2) path for a desktop model with ONNX as the portable option; the detector dominates ONNX page time",
+    "2026-11-01 06:49Z: desktops have many resolutions; desktop-data builds resolution-diverse training pages and a real PC test set; promote the PC test set to a decision set next to dev-v2 by an amendment registered before candidates are scored on it; do not decide before PCDATA_READY; report CER and ms per input resolution"
+   ],
+   "what": {
+    "memory": "every timed pipeline also reports its peak resident memory: a fresh process per pipeline reads the timing pages one at a time from disk (eval/desktop_time.py mem); the C command line desktop/vocr_desk_cli reports getrusage's peak for the C path",
+    "c_comparisons": "every candidate is also timed against SIMD C builds: VOCR's C runtime (W8I, runtime/vocr.c unchanged) at gcc -O3 -march=x86-64-v3 (AVX2 + FMA) and -O3 -march=native, with textspot8's C spotter as the C baseline detector; and the candidate's own C path (desktop/libvocrdesk.so: its VDSK weights, AVX2 + FMA kernels) with VOCR's C runtime reading the lines",
+    "c_path_ship_requirement": "the pick ships only with a C path whose crops equal its ONNX path's on at least 99% of dev-v2's frames and whose dev-v2 CER (its boxes read by VOCR6.2_L_fast.onnx) is within 0.05 points of the ONNX path's; the whole C page (C detector + runtime/vocr.c W8I) is reported. The decision's speed clause stays ONNX against ONNX, as registered (R exists only as ONNX)",
+    "pc_test_decision_set": "desktop-data's real PC test set (frozen manifest; >= 1,000 dialogue lines of >= 60 VNs in no training pool) is a decision set beside dev-v2: CER(C) <= 1.20 x CER(R) and the paired 95% VN-cluster interval of CER(C) - CER(R) not entirely above 0, read once for the candidate set after PCDATA_READY and after the dev-v2 record is committed; the decision waits for PCDATA_READY",
+    "final_training_data": "the 3-seed adoption runs train with desktop-data's frozen training pages added to the mix; their share is registered with their manifest before those runs start",
+    "per_resolution": "CER and ms are reported per input resolution: the PC test set by resolution, and dev-v2's Vita-view frames resampled to 1280x720, 1920x1080, 2560x1440 and 3840x2160 (cv2.INTER_LINEAR, every unit's geometry scaled), R and C on the same frames (report only)",
+    "policies": "the candidate set at decision time adds long:960, long:800 and long:640 (the longer side scaled to N, up or down) to fit:960, fit:800, fit:640 and fit:480: on hval the multi-scale detectors read PSP's 480x272 frames better upscaled (S1_d48: PSP 1.12% native, 0.42% at long:1280)",
+    "pad_rule": "the decode's pad rule, pct (18% of the size across, at least 2 network px: textspot8's) or frame (the ink box grown by max(2, round(4 H / 544)) frame px: R's pad), is chosen on hval for the chosen arm: the rule with the lower mean hval CER over the 7 candidate policies",
+    "S5": "an extra screening arm: d48 multi-scale with the hooked pages' ruby lines as background (shards rebuilt by synth/textspot6_pages.py --ruby background, data/manifests/desktop_pages_v21_rubybg.json) and the non-hooked sources' ruby-like boxes as ignore areas (desktop_det.py --ruby-filter). Why: on hval at fit:960, 47% of S3_d32's junk boxes are under 0.7 line heights (ruby-like), in ruby-heavy titles. S5 replaces S1's recipe for the chosen shape when its mean hval CER over the 7 policies (pct pad) is lower",
+    "order": "shape by the registered rule (hval at fit:960, S1-S3); recipe (S5 vs S1, d48) by the mean over the 7 policies; pad rule by the chosen recipe's mean over the 7 policies; every screening comparison is also reported without PCSG00854, where VOCR6.2-L's reading changes by hundreds of errors with a 1 px change of a crop's height (docs/textspot8.md); the rule uses every title"
+   }
   }
  ]
 }

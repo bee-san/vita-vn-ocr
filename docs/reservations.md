@@ -28,6 +28,13 @@ The 31 capture sessions of vita-test and psp-test (VNDB release ids, `test_games
 too: no screenshot of those releases is used, and neither is any vita-test or psp-test screenshot by image id, URL,
 file sha256 or decoded pixels.
 
+**The desktop PC test set** (2026-11-01, `docs/desktop-data.md`): vocr-desktop's (#169) real PC test, 942 dialogue
+lines of 143 VNs that were in no pool, frozen as `eval/manifests/desktop-pc-test-v1.jsonl`. Its VNs are the
+reservation's `desktop_pc_test` part (`desktop-pc-test`, with the manifest's sha256 in `desktop_pc_test_record`):
+`synth/common.is_reserved_vn` and `realplus/shots.reserved_vns` hold them out of every pool from now on, and
+`shots.py reserve` carries the part over unchanged. They held no data any pool had used, so nothing is taken from
+training.
+
 Everything else trains:
 
 - the old hash splits: `synth/common.is_test_vn` (md5 % 100 < 15, 9,816 VNs) and the val bucket (15 ≤ md5 % 100 <

@@ -316,6 +316,7 @@ def reserved_sessions(path=RESERVED):
 
 def is_reserved_vn(vn_id, dev=True, path=RESERVED):
     """True when a VN may not be used for training (or as a synthetic scene, name or calibration source):
-    a test VN, or (dev=True, the default) a development-sample VN. Everything else is training data."""
+    a test VN, a VN of the frozen desktop PC test set ("desktop_pc_test", docs/desktop-data.md), or (dev=True,
+    the default) a development-sample VN. Everything else is training data."""
     r = reservation(path)
-    return vn_id in r["test"] or (dev and vn_id in r["dev_sample"])
+    return vn_id in r["test"] or vn_id in r.get("desktop_pc_test", {}) or (dev and vn_id in r["dev_sample"])

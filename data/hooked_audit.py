@@ -78,18 +78,33 @@ def stratum(kind, m):
     return "glyph_cells"
 
 
+def sample_group(r):
+    """The round-robin group of a kept row: its title, and its capture run when it is a later one (page >= 100000)."""
+    page = r[4].get("page") or "0"
+    run = int(page) // IH.RUN_STRIDE if page.isdigit() else 0
+    return f"{r[2]}~r{run}" if run else r[2]
+
+
 def cmd_sample(a):
     rows = kept_rows(a.pools)
+    quota = json.loads(a.quota) if a.quota else QUOTA
+    if a.exclude_v1:                                # pools v2: only records that pools v1 did not hold
+        old = set()
+        for f in sorted((Path(a.exclude_v1) / "decisions").glob("*.jsonl")):
+            old.update(r["id"] for r in IH.read_jsonl(f))
+        n0 = len(rows)
+        rows = [r for r in rows if r[4]["id"] not in old]
+        print(f"{n0 - len(rows)} kept rows of pools v1's records left out; {len(rows)} new rows")
     rng = np.random.default_rng(a.seed)
     by = defaultdict(list)
     for r in rows:
         by[stratum(r[1], r[4])].append(r)
     picked = []
-    for s, q in QUOTA.items():                      # oversampled strata: spread over titles round robin
+    for s, q in quota.items():                      # oversampled strata: spread over titles round robin
         cand = by.get(s, [])
         per_title = defaultdict(list)
         for r in cand:
-            per_title[r[2]].append(r)
+            per_title[sample_group(r)].append(r)
         order = {t: list(rng.permutation(len(v))) for t, v in per_title.items()}
         titles = sorted(per_title)
         while len([p for p in picked if p[0] == s]) < min(q, len(cand)):
@@ -100,11 +115,11 @@ def cmd_sample(a):
     gc = by["glyph_cells"]
     per_title = defaultdict(list)
     for r in gc:
-        per_title[r[2]].append(r)
+        per_title[sample_group(r)].append(r)
     titles = sorted(per_title)
     order = {t: list(rng.permutation(len(v))) for t, v in per_title.items()}
     n0 = len(picked)
-    while len(picked) - n0 < rest:                  # at least one line of every title, then round robin
+    while len(picked) - n0 < min(rest, len(gc)):    # at least one line of every title, then round robin
         for t in titles:
             if order[t] and len(picked) - n0 < rest:
                 picked.append(("glyph_cells", per_title[t][order[t].pop()]))
@@ -143,6 +158,13 @@ def cmd_sheets(a):
                 cache[f] = IH.read_npz(f)
             m, lab, g = cache[f][e["index"]]
             assert m["id"] == e["id"]
+            shown = "as stored"
+            if e["pool"] == "vertical":                            # a column upright: its re-flowed copy (vreflow)
+                rf = Path(a.pools) / e["split"] / "vreflow" / f"{e['title_id']}.npz"
+                hit = [x for x in (IH.read_npz(rf) if rf.exists() else []) if x[0]["id"] == e["id"]]
+                if hit and hit[0][1] == lab:
+                    m, lab, g = hit[0]
+                    shown = "vreflow"
             view = 255 - g if m.get("inverted") else g             # as on screen
             h, w = view.shape
             scale = CROP_H / h                                     # every crop 28 px tall (small text enlarged)
@@ -154,7 +176,7 @@ def cmd_sheets(a):
             canvas[y + CROP_H:y + CROP_H + lab_img.shape[0], 56:] = lab_img[:, :SHEET_W - 56]
             num = render_label(f"{k + 1}", small, 50)
             canvas[y + 6:y + 6 + num.shape[0], 2:52] = num
-            index[f"S{sheet_no:02d}:{k + 1}"] = {**e, "label_chars": len(lab), "crop_shape": [h, w]}
+            index[f"S{sheet_no:02d}:{k + 1}"] = {**e, "label_chars": len(lab), "crop_shape": [h, w], "shown": shown}
         cv2.imwrite(str(out / f"S{sheet_no:02d}.png"), canvas)
     IH.write_json(out / "sheets.json", index)
     print(f"{(len(sample) + a.per - 1) // a.per} sheets -> {out}")
@@ -256,6 +278,8 @@ def cmd_stats(a):
                                                                    if not k.startswith("hval_fold:"))), 4)}
     for tid in sorted(set(splits["titles"]) - set(titles)):
         out_titles[tid] = {"platform": splits["titles"][tid]["platform"], "pages": splits["titles"][tid]["pages"],
+                           "title_split": splits["titles"][tid]["title_split"],
+                           "page_splits": splits["titles"][tid]["counts"],
                            "records": 0, "rows": {}, "note": "no verified lines"}
     # coverage of the 5,142 vocab kanji by the training side (train + guard + hval: what a final model sees)
     present = {c for c in vk if chars_train[c] > 0}
@@ -328,6 +352,23 @@ def shared_releases(dump, vns, protected):
     return out
 
 
+def vn_relations(dump, vns):
+    """{VN: [[related VN, relation]]} from a VNDB dump's vn_relations table, for the given VNs."""
+    out = defaultdict(list)
+    with open(Path(dump) / "db" / "vn_relations", encoding="utf-8") as f:
+        for line in f:
+            p = line.rstrip("\n").split("\t")
+            if p[0] in vns:
+                out[p[0]].append([p[1], p[2]])
+    return out
+
+
+def read_vn_set(spec):
+    """NAME=FILE (one VN id per line) -> (name, {VNs})."""
+    name, path = spec.split("=", 1)
+    return name, {x.strip() for x in Path(path).read_text().split() if x.strip()}
+
+
 def cmd_overlap(a):
     res = json.loads((ROOT / "eval" / "manifests" / "reserved.json").read_text(encoding="utf-8"))
     vt = {json.loads(x)["vn"] for x in (ROOT / "eval" / "manifests" / "vita-test.jsonl").read_text().splitlines()
@@ -339,10 +380,26 @@ def cmd_overlap(a):
     stats = json.loads(Path(a.stats).read_text(encoding="utf-8"))
     all_vns = {v for m in vmap.values() for v in m["vns"]}
     shared = shared_releases(a.vndb_dump, all_vns, vt | pt | {"v4"}) if a.vndb_dump else {}
+    # the hooked test titles (the titles index.json marks test): their VNs, and the VNs related to them
+    test_vns = {v for t, info in stats["titles"].items() if info.get("title_split") == "test"
+                for v in vmap[t]["vns"]} if getattr(a, "hooked_test", False) else set()
+    test_shared = shared_releases(a.vndb_dump, all_vns, test_vns) if a.vndb_dump and test_vns else {}
+    rel = vn_relations(a.vndb_dump, all_vns) if a.vndb_dump and getattr(a, "relations", False) else {}
+    vn_sets = dict(read_vn_set(s) for s in (getattr(a, "vn_set", None) or []))
+    v1 = json.loads(Path(a.v1_index).read_text(encoding="utf-8")) if getattr(a, "v1_index", "") else None
+    v1_titles = set(v1["titles"]) if v1 else set()
+    v1_vns = {v for t in v1_titles if t in vmap for v in vmap[t]["vns"]}
     out = {"kind": "vocr6-hooked-overlap", "reserved_sha256": IH.sha256_file(ROOT / "eval" / "manifests" /
                                                                              "reserved.json"),
            "vndb_dump": (Path(a.vndb_dump) / "TIMESTAMP").read_text().strip() if a.vndb_dump else None,
            "vocr5_pools": v5files, "titles": {}}
+    if vn_sets:
+        out["vn_sets"] = {k: {"vns": len(v), "file_sha256": IH.sha256_file(s.split("=", 1)[1])}
+                          for (k, v), s in zip(vn_sets.items(), a.vn_set)}
+    if v1:
+        out["v1_index_sha256"] = IH.sha256_file(a.v1_index)
+    if test_vns:
+        out["hooked_test_vns"] = sorted(test_vns)
     for tid, info in sorted(stats["titles"].items()):
         m = vmap[tid]
         flags, vns = [], m["vns"]
@@ -361,17 +418,39 @@ def cmd_overlap(a):
                 flags.append(f"{v}:dev_sample")
             if v in res.get("owner_vns", []):
                 flags.append(f"{v}:owner_vns")
+            for name, s in vn_sets.items():
+                if v in s:
+                    flags.append(f"{v}:{name}")
+            if info.get("title_split") != "test":
+                if v in test_vns:
+                    flags.append(f"{v}:hooked-test-vn")
+                for r, hit in test_shared.get(v, []):
+                    flags.append(f"{v}:shares-{r}-with-hooked-test:{'+'.join(hit)}")
+                for w, how in rel.get(v, []):
+                    if w in test_vns:
+                        flags.append(f"{v}:related-to-hooked-test:{how}:{w}")
         rows5 = {v: v5.get(v, 0) for v in vns}
         protected = any(":vita-test" in f or ":psp-test" in f or ":clannad" in f or ":reserved-test" in f or
-                        ":shares-" in f for f in flags)
+                        (":shares-" in f and "-with:" in f) for f in flags)
         out["titles"][tid] = {"vns": vns, "vndb_source": m["source"], "platform": info["platform"],
                               "title_split": info.get("title_split"), "flags": flags,
                               "vocr5_pool_rows": rows5, "seen_by_vocr5": any(rows5.values()),
                               "seen_protected_family": protected,
                               "dev_sample": any(":dev_sample" in f for f in flags)}
+        if vn_sets:
+            out["titles"][tid]["vn_sets"] = sorted({f.split(":")[1] for f in flags if f.split(":")[1] in vn_sets})
+        if test_vns:
+            out["titles"][tid]["hooked_test_related"] = any("hooked-test" in f for f in flags)
+        if v1:
+            out["titles"][tid]["in_pools_v1"] = tid in v1_titles
+            out["titles"][tid]["vn_in_pools_v1"] = bool(set(vns) & v1_vns)
     out["seen_protected_family"] = sorted(t for t, v in out["titles"].items() if v["seen_protected_family"])
     out["dev_sample_titles"] = sorted(t for t, v in out["titles"].items() if v["dev_sample"])
     out["seen_by_vocr5"] = sorted(t for t, v in out["titles"].items() if v["seen_by_vocr5"])
+    for name in vn_sets:
+        out[f"{name}_titles"] = sorted(t for t, v in out["titles"].items() if name in v.get("vn_sets", []))
+    if test_vns:
+        out["hooked_test_related_titles"] = sorted(t for t, v in out["titles"].items() if v["hooked_test_related"])
     IH.write_json(a.out, out)
     for tid, t in out["titles"].items():
         if t["flags"] or t["seen_by_vocr5"]:
@@ -543,6 +622,194 @@ def table_sections(index, stats, overlap, audit, baseline=None):
     return sec
 
 
+# ----------------------------------------------------------------------------- v2's tables (docs/vocr6-data-v2.md)
+
+FINAL = ("train", "guard", "hval_fold", "test")      # each duplicate cluster once: what a final model reads (+ test)
+
+
+def corpus_numbers(index, stats):
+    """{platform (vita, psp, all): {quantity: n}} of one version's committed index and stats."""
+    out = defaultdict(Counter)
+    rows = defaultdict(Counter)
+    for f, v in index["pool_files"].items():
+        split, pool, name = f.split("/")[-3:] if f.startswith("drop/") else f.split("/")
+        rows[name[:-4]][(split, pool)] += v["rows"]
+    for tid, t in index["titles"].items():
+        pc, st = t.get("pool_counts", {}), stats["titles"].get(tid, {})
+        for plat in (t["platform"], "all"):
+            o = out[plat]
+            o["titles"] += 1
+            o["runs"] += len(t.get("runs") or [None])
+            o["pages"] += t["pages"]
+            o["test pages"] += t["counts"].get("test", 0)
+            for k, name in (("records:line", "dialogue lines"), ("records:line:vertical", "vertical columns"),
+                            ("records:name", "speaker names"), ("records:ruby", "ruby readings"),
+                            ("records:ruby:vertical", "ruby readings")):
+                o[f"records: {name}"] += pc.get(k, 0)
+            for pool, name in (("line", "dialogue lines"), ("vertical", "vertical columns"),
+                               ("name", "speaker names"), ("ruby", "ruby readings"), ("line_x2", "PSP lines at 2x")):
+                o[f"usable: {name}"] += sum(rows[tid].get((s, pool), 0) for s in FINAL)
+            o["usable dialogue characters"] += sum((st.get("chars") or {}).get(f"{s}:line", 0) for s in FINAL)
+            o["label in doubt (dropped)"] += pc.get("record:label_doubt", 0)
+    return out
+
+
+def compare_table(index1, stats1, index2, stats2):
+    a, b = corpus_numbers(index1, stats1), corpus_numbers(index2, stats2)
+    keys = ["titles", "runs", "pages", "test pages", "records: dialogue lines", "records: vertical columns",
+            "records: speaker names", "records: ruby readings", "label in doubt (dropped)", "usable: dialogue lines",
+            "usable dialogue characters", "usable: vertical columns", "usable: speaker names", "usable: ruby readings",
+            "usable: PSP lines at 2x"]
+    out = ["| | Vita, v1 | Vita, v2.1 | PSP, v1 | PSP, v2.1 | all, v1 | all, v2.1 | added |",
+           "|---|---:|---:|---:|---:|---:|---:|---:|"]
+    for k in keys:
+        cells = [a["vita"][k], b["vita"][k], a["psp"][k], b["psp"][k], a["all"][k], b["all"][k]]
+        out.append(f"| {k} | " + " | ".join(f"{c:,}" for c in cells) + f" | {b['all'][k] - a['all'][k]:+,} |")
+    return "\n".join(out)
+
+
+def titles2_table(index1, index2, stats2, overlap2):
+    rows1 = Counter()
+    for f, v in index1["pool_files"].items():
+        p = f.split("/")
+        if p[0] in FINAL and p[1] == "line":
+            rows1[p[2][:-4]] += v["rows"]
+    out = ["| title | platform | split | VN | runs | pages v1 → v2.1 (hval) | usable dialogue lines v1 → v2.1 | "
+           "dialogue chars | dropped as in doubt | seen / overlaps |",
+           "|---|---|---|---|---:|---|---|---:|---:|---|"]
+    for tid, t in sorted(index2["titles"].items(), key=lambda kv: (kv[1]["platform"], kv[0])):
+        st, o = stats2["titles"][tid], overlap2["titles"][tid]
+        r = st.get("rows", {})
+        usable = sum(r.get(f"{s}:line", 0) for s in FINAL)
+        chars = sum(st.get("chars", {}).get(f"{s}:line", 0) for s in FINAL)
+        t1 = index1["titles"].get(tid)
+        pages = f"{t1['pages']:,} → {t['pages']:,}" if t1 else f"new: {t['pages']:,}"
+        lines = f"{rows1[tid]:,} → {usable:,}" if t1 else f"new: {usable:,}"
+        flags = []
+        if o["seen_protected_family"]:
+            flags.append("protected family")
+        for name, label in (("dev_units", "dev units"), ("confirm", "confirmation set")):
+            if name in o.get("vn_sets", []):
+                flags.append(label)
+        if o.get("hooked_test_related"):
+            flags.append("related to the test title")
+        if o["seen_by_vocr5"]:
+            flags.append(f"VOCR5 pools ({sum(o['vocr5_pool_rows'].values()):,} rows)")
+        nruns = len(t.get("runs") or [1])
+        out.append(f"| {tid} | {t['platform']} | {t['title_split']} | {', '.join(o['vns'])} | {nruns} "
+                   f"| {pages} ({t['counts'].get('hval', 0)}) | {lines} | {chars:,} | "
+                   f"{t['pool_counts'].get('record:label_doubt', 0)} | {'; '.join(flags)} |")
+    return "\n".join(out)
+
+
+RULES = (("undrawn_stripped", "undrawn code removed, kept"), ("undrawn_shifted", "undrawn code, shifted"),
+         ("remapped", "remapped glyph"), ("doubled_cells", "doubled cells"), ("audited_wrong", "audited wrong"))
+
+
+def rules_table(index2):
+    out = ["| title | split | " + " | ".join(n for _, n in RULES) + " | dropped (label in doubt) | pages in doubt "
+           "(no regions) |", "|---|---|" + "---:|" * (len(RULES) + 2)]
+    tot = Counter()
+    for tid, t in sorted(index2["titles"].items()):
+        pc = t["pool_counts"]
+        if not any(pc.get(f"label_rule:{k}") for k, _ in RULES):
+            continue
+        cells = [pc.get(f"label_rule:{k}", 0) for k, _ in RULES]
+        tot.update({k: c for (k, _), c in zip(RULES, cells)})
+        tot["drop"] += pc.get("record:label_doubt", 0)
+        nore = sum(v for k, v in (t.get("pagepool_counts") or {}).items() if k.startswith("untrusted:"))
+        tot["pages"] += nore
+        out.append(f"| {tid} | {t['title_split']} | " + " | ".join(f"{c:,}" for c in cells) +
+                   f" | {pc.get('record:label_doubt', 0):,} | {nore} |")
+    out.append("| all | | " + " | ".join(f"{tot[k]:,}" for k, _ in RULES) + f" | {tot['drop']:,} | {tot['pages']:,} |")
+    return "\n".join(out)
+
+
+def _cell(g):
+    if not g or g.get("cer") is None:
+        return ""
+    ci = g.get("ci95")
+    return f"{g['cer']:.2f}%" + (f" [{ci[0]:.2f}, {ci[1]:.2f}]" if ci else "")
+
+
+FINDER_NAMES = {"spot": "textspot8 spotter (Rubi's default)", "fix1": "Rubi's GRAD path (`rubi,fix=1`)",
+                "oracle": "clean crops (each line's own box)", "oraclenf": "clean crops, line filter off",
+                "spotlinespunct": "textspot8, filter lines+punct", "spotnone": "textspot8, line filter off"}
+
+
+def baseline2_tables(base):
+    sec = {}
+    hv = base["sets"].get("hval_v21", {})
+    out = ["| finder | tier | new titles, Vita | new titles, PSP | v1 titles, Vita | v1 titles, PSP | all hval |",
+           "|---|---|---|---|---|---|---|"]
+    for f in ("spot", "spotlinespunct", "spotnone", "fix1", "oracle", "oraclenf"):
+        for t in ("S", "N", "L"):
+            g = (hv.get(f) or {}).get(t, {}).get("groups")
+            if g:
+                out.append(f"| {FINDER_NAMES[f]} | {t} | " + " | ".join(_cell(g.get(k)) for k in (
+                    "new:vita", "new:psp", "v1:vita", "v1:psp", "all")) + " |")
+    sec["v2_baseline_hval"] = "\n".join(out)
+    na = base["sets"].get("new_all_base_v21", {})
+    out = ["| finder | tier | Vita | PSP | all |", "|---|---|---|---|---|"]
+    for f in ("spot", "spotlinespunct", "spotnone", "oracle", "oraclenf"):
+        for t in ("S", "N", "L"):
+            g = (na.get(f) or {}).get(t, {}).get("groups")
+            if g:
+                out.append(f"| {FINDER_NAMES[f]} | {t} | " + " | ".join(_cell(g.get(k)) for k in (
+                    "new:vita", "new:psp", "new")) + " |")
+    sec["v2_baseline_new"] = "\n".join(out)
+    sp, orc = ((na.get(f) or {}).get("N", {}).get("per_title", {}) for f in ("spot", "oracle"))
+    out = ["| title | page path, textspot8 (N) | clean crops (N) | reference chars | units |",
+           "|---|---:|---:|---:|---:|"]
+    for tid in sorted(sp, key=lambda k: (-sp[k]["errors"], k)):
+        s, o = sp[tid], orc.get(tid, {})
+        out.append(f"| {tid} | {s['cer']:.2f}% | {'' if o.get('cer') is None else format(o['cer'], '.2f') + '%'} | "
+                   f"{s['chars']:,} | {s['units']:,} |")
+    sec["v2_baseline_titles"] = "\n".join(out)
+    return sec
+
+
+def weighted_rows(audit):
+    """The post-fix bound weighted by stratum (label_audit_v2.json post_fix_check_weighted), as audit table rows."""
+    w = audit.get("post_fix_check_weighted")
+    if not w:
+        return ""
+    o, n = w["with_audit_b2_ingest2"], sum(w["sample_after_fixes"].values())
+    m = n + o["its_lines"]
+    return (f"\n| after the fixes, weighted by stratum (effective n {w['n_eff']:.0f}) | {n} | {n} | 0 | "
+            f"0.0-{100 * w['wrong_rate_ci95_upper']:.1f}% |"
+            f"\n| the same, with audit-b2-ingest2's {o['its_lines']} lines (effective n {o['n_eff']:.0f}) | {m} | "
+            f"{m - o['its_wrong']} | {o['its_wrong']} | 0.0-{100 * o['wrong_rate_ci95_upper']:.1f}% |")
+
+
+def v2_sections(index1, stats1, index2, stats2, overlap2, audit2, baseline=None):
+    """{section: markdown} of docs/vocr6-data-v2.md's generated blocks."""
+    base = corpus_tables(index2, stats2, overlap2, audit2)
+    sec = {"v2_compare": compare_table(index1, stats1, index2, stats2), "v2_splits": base["splits"],
+           "v2_filters": base["filters"], "v2_rules": rules_table(index2), "v2_coverage": base["coverage"],
+           "v2_audit": base["audit"].replace("after the fixes (pools v1)", "after the fixes (pools v2.1)") +
+           weighted_rows(audit2),
+           "v2_titles": titles2_table(index1, index2, stats2, overlap2)}
+    if baseline is not None:
+        sec.update(baseline2_tables(baseline))
+    return sec
+
+
+def cmd_tables2(a):
+    load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
+    sec = v2_sections(load(a.index_v1), load(a.stats_v1), load(a.index), load(a.stats), load(a.overlap),
+                      load(a.audit), load(a.baseline) if a.baseline else None)
+    doc = Path(a.doc).read_text(encoding="utf-8")
+    new = splice(doc, sec)
+    if a.check:
+        if new != doc:
+            raise SystemExit(f"{a.doc}: a generated table differs from the committed records")
+        print(f"{a.doc}: every generated table matches")
+        return
+    Path(a.doc).write_text(new, encoding="utf-8")
+    print(f"-> {a.doc}: {len(MARK.findall(doc))} generated blocks")
+
+
 def cmd_tables(a):
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
     sec = table_sections(load(a.index), load(a.stats), load(a.overlap), load(a.audit),
@@ -571,11 +838,18 @@ def main(argv=None):
     p.add_argument("--out", default="")
     p.add_argument("--doc", default="", help="replace the generated blocks of this markdown file")
     p.add_argument("--check", action="store_true", help="with --doc: fail if a block differs")
+    p = sub.add_parser("tables2", help="docs/vocr6-data-v2.md's generated blocks (pools v2.1 against v1)")
+    for k in ("index", "stats", "overlap", "audit", "index-v1", "stats-v1", "doc"):
+        p.add_argument(f"--{k}", required=True)
+    p.add_argument("--baseline", default="")
+    p.add_argument("--check", action="store_true", help="fail if a block differs")
     p = sub.add_parser("sample")
     p.add_argument("--pools", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--n", type=int, default=320)
     p.add_argument("--seed", type=int, default=20261026)
+    p.add_argument("--quota", default="", help='JSON {stratum: lines} replacing QUOTA (e.g. \'{"name": 60}\')')
+    p.add_argument("--exclude-v1", default="", help="pools v1's directory: leave out the records it holds")
     p = sub.add_parser("sheets")
     p.add_argument("--sample", required=True)
     p.add_argument("--pools", required=True)
@@ -595,10 +869,15 @@ def main(argv=None):
     p.add_argument("--vndb-map", required=True)
     p.add_argument("--vocr5-pools", default=str(ROOT / "eval" / "vocr5_pools.sha256"))
     p.add_argument("--vndb-dump", default="", help="a VNDB dump directory (db/releases_vn): shared releases")
+    p.add_argument("--vn-set", action="append", default=[], help="NAME=FILE: flag the titles whose VN is listed")
+    p.add_argument("--v1-index", default="", help="pools v1's committed index.json: titles and VNs VOCR6 trained on")
+    p.add_argument("--hooked-test", action="store_true",
+                   help="flag train titles that share a VN, a release or a VNDB relation with a hooked test title")
+    p.add_argument("--relations", action="store_true", help="with --hooked-test: use the dump's vn_relations")
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     {"sample": cmd_sample, "sheets": cmd_sheets, "tally": cmd_tally, "stats": cmd_stats,
-     "overlap": cmd_overlap, "tables": cmd_tables}[a.cmd](a)
+     "overlap": cmd_overlap, "tables": cmd_tables, "tables2": cmd_tables2}[a.cmd](a)
 
 
 if __name__ == "__main__":

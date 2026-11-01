@@ -1,0 +1,7050 @@
+{
+ "kind": "vocr6-hooked-stats",
+ "pools_manifest_sha256": "8577e62a94f65756b96afdff53812af8809c7fbb8d2bf6213a261ef0586d4c1e",
+ "splits_sha256": "85670e6467ef320fc4d78f40393607500e6be1e73a7afdbc6badb8b3fc50e818",
+ "pagepool_manifest_sha256": "bbadfcbff2a28975f5b36d52fb22ac8aa4dbf59d6643bfe4b60e2c3debf48495",
+ "titles": {
+  "NPJG00016": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 271,
+   "page_splits": {
+    "guard": 30,
+    "hval": 11,
+    "train": 230
+   },
+   "records": 566,
+   "rows": {
+    "guard:line": 49,
+    "hval:line": 21,
+    "hval_fold:line": 20,
+    "train:line": 377
+   },
+   "chars": {
+    "guard:line": 437,
+    "hval:line": 162,
+    "hval_fold:line": 150,
+    "train:line": 3073
+   },
+   "sources": {
+    "glyph_cells": 373,
+    "image_rows": 74
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    8.0,
+    12.0
+   ],
+   "box_height_q05_q50_q95": [
+    17.0,
+    18.0,
+    18.0
+   ],
+   "dark_on_light_share": 0.0022,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 6,
+    "guard:line:near": 15,
+    "guard:line_x2:exact": 6,
+    "guard:line_x2:near": 15,
+    "hval:line:exact": 2,
+    "hval:line:near": 7,
+    "hval:line_x2:exact": 2,
+    "hval:line_x2:near": 7,
+    "train:line:exact": 35,
+    "train:line:near": 54,
+    "train:line_x2:exact": 35,
+    "train:line_x2:near": 54
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH00140": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1640,
+   "page_splits": {
+    "guard": 60,
+    "hval": 66,
+    "train": 1514
+   },
+   "records": 3425,
+   "rows": {
+    "guard:line": 86,
+    "hval:line": 101,
+    "hval_fold:line": 101,
+    "train:line": 2698
+   },
+   "chars": {
+    "guard:line": 1167,
+    "hval:line": 1358,
+    "hval_fold:line": 1358,
+    "train:line": 35640
+   },
+   "sources": {
+    "image_rows": 2885
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line:near": 25,
+    "guard:line_x2:exact": 1,
+    "guard:line_x2:near": 25,
+    "hval:line:exact": 1,
+    "hval:line:near": 19,
+    "hval:line_x2:exact": 1,
+    "hval:line_x2:near": 19,
+    "train:line:exact": 42,
+    "train:line:near": 452,
+    "train:line_x2:exact": 42,
+    "train:line_x2:near": 452
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 0.999
+  },
+  "NPJH50001": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1602,
+   "page_splits": {
+    "guard": 60,
+    "hval": 64,
+    "train": 1478
+   },
+   "records": 2913,
+   "rows": {
+    "guard:line": 46,
+    "hval:line": 56,
+    "hval_fold:line": 41,
+    "train:line": 1331
+   },
+   "chars": {
+    "guard:line": 890,
+    "hval:line": 1014,
+    "hval_fold:line": 745,
+    "train:line": 23297
+   },
+   "sources": {
+    "glyph_cells": 1416,
+    "image_rows": 17
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    18.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    19.0,
+    19.0,
+    22.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 46,
+    "guard:line:near": 13,
+    "guard:line_x2:exact": 46,
+    "guard:line_x2:near": 13,
+    "hval:line:exact": 58,
+    "hval:line:near": 11,
+    "hval:line_x2:exact": 58,
+    "hval:line_x2:near": 11,
+    "train:line:exact": 1028,
+    "train:line:near": 319,
+    "train:line_x2:exact": 1028,
+    "train:line_x2:near": 319
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50002": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1727,
+   "page_splits": {
+    "guard": 60,
+    "hval": 69,
+    "train": 1598
+   },
+   "records": 2660,
+   "rows": {
+    "guard:line": 76,
+    "guard:ruby": 1,
+    "hval:line": 77,
+    "hval_fold:line": 76,
+    "train:line": 2022,
+    "train:ruby": 41
+   },
+   "chars": {
+    "guard:line": 1205,
+    "guard:ruby": 2,
+    "hval:line": 1258,
+    "hval_fold:line": 1244,
+    "train:line": 33949,
+    "train:ruby": 148
+   },
+   "sources": {
+    "glyph_cells": 2210,
+    "image_rows": 7
+   },
+   "label_len_q05_q50_q95": [
+    8.0,
+    18.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    19.0,
+    19.0,
+    19.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 38,
+   "duplicates_removed": {
+    "guard:furimain:near": 1,
+    "guard:line:exact": 14,
+    "guard:line:near": 4,
+    "guard:line_x2:exact": 14,
+    "guard:line_x2:near": 4,
+    "guard:ruby:near": 1,
+    "hval:line:exact": 6,
+    "hval:line:near": 5,
+    "hval:line_x2:exact": 6,
+    "hval:line_x2:near": 5,
+    "train:furimain:exact": 7,
+    "train:furimain:near": 1,
+    "train:line:exact": 323,
+    "train:line:near": 75,
+    "train:line_x2:exact": 323,
+    "train:line_x2:near": 75,
+    "train:ruby:exact": 13,
+    "train:ruby:near": 1
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 0.9995
+  },
+  "NPJH50132": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1851,
+   "page_splits": {
+    "guard": 60,
+    "hval": 74,
+    "train": 1717
+   },
+   "records": 2641,
+   "rows": {
+    "guard:line": 62,
+    "hval:line": 75,
+    "hval_fold:line": 74,
+    "train:line": 1908,
+    "train:name": 35
+   },
+   "chars": {
+    "guard:line": 1042,
+    "hval:line": 1305,
+    "hval_fold:line": 1299,
+    "train:line": 32916,
+    "train:name": 67
+   },
+   "sources": {
+    "glyph_cells": 2074,
+    "image_rows": 6
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    16.0,
+    32.0
+   ],
+   "box_height_q05_q50_q95": [
+    15.0,
+    16.0,
+    16.0
+   ],
+   "dark_on_light_share": 0.8807,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "guard:line_x2:exact": 2,
+    "guard:name:exact": 10,
+    "guard:name:near": 10,
+    "guard:name_x2:exact": 10,
+    "guard:name_x2:near": 10,
+    "hval:line:exact": 1,
+    "hval:line:near": 2,
+    "hval:line_x2:exact": 1,
+    "hval:line_x2:near": 2,
+    "hval:name:exact": 12,
+    "hval:name:near": 11,
+    "hval:name_x2:exact": 12,
+    "hval:name_x2:near": 11,
+    "train:line:exact": 29,
+    "train:line:near": 27,
+    "train:line_x2:exact": 29,
+    "train:line_x2:near": 27,
+    "train:name:exact": 174,
+    "train:name:near": 279,
+    "train:name_x2:exact": 174,
+    "train:name_x2:near": 279
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 4,
+    "line:fails_vocab": 0,
+    "line:geometry": 4,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50279": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1004,
+   "page_splits": {
+    "guard": 30,
+    "hval": 40,
+    "train": 934
+   },
+   "records": 1540,
+   "rows": {
+    "guard:line": 28,
+    "hval:line": 39,
+    "hval_fold:line": 39,
+    "train:line": 1176,
+    "train:name": 19
+   },
+   "chars": {
+    "guard:line": 458,
+    "hval:line": 593,
+    "hval_fold:line": 593,
+    "train:line": 19573,
+    "train:name": 41
+   },
+   "sources": {
+    "image_rows": 1262
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    17.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    18.0,
+    19.0,
+    19.0
+   ],
+   "dark_on_light_share": 0.0153,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 3,
+    "guard:line:near": 1,
+    "guard:line_x2:exact": 3,
+    "guard:line_x2:near": 1,
+    "guard:name:exact": 6,
+    "guard:name_x2:exact": 6,
+    "hval:line:exact": 4,
+    "hval:line_x2:exact": 4,
+    "hval:name:exact": 5,
+    "hval:name_x2:exact": 5,
+    "train:line:exact": 38,
+    "train:line:near": 5,
+    "train:line_x2:exact": 38,
+    "train:line_x2:near": 5,
+    "train:name:exact": 189,
+    "train:name:near": 24,
+    "train:name_x2:exact": 189,
+    "train:name_x2:near": 24
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50297": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1177,
+   "page_splits": {
+    "guard": 60,
+    "hval": 47,
+    "train": 1070
+   },
+   "records": 2495,
+   "rows": {
+    "guard:line": 93,
+    "hval:line": 66,
+    "hval_fold:line": 66,
+    "train:line": 1713
+   },
+   "chars": {
+    "guard:line": 1548,
+    "hval:line": 1005,
+    "hval_fold:line": 1005,
+    "train:line": 26817
+   },
+   "sources": {
+    "image_rows": 1872
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    17.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    14.0,
+    14.0,
+    14.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 30,
+    "guard:line:near": 16,
+    "guard:line_x2:exact": 30,
+    "guard:line_x2:near": 16,
+    "hval:line:exact": 11,
+    "hval:line:near": 12,
+    "hval:line_x2:exact": 11,
+    "hval:line_x2:near": 12,
+    "train:line:exact": 363,
+    "train:line:near": 191,
+    "train:line_x2:exact": 363,
+    "train:line_x2:near": 191
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50356": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1999,
+   "page_splits": {
+    "guard": 60,
+    "hval": 80,
+    "train": 1859
+   },
+   "records": 2597,
+   "rows": {
+    "guard:line": 74,
+    "hval:line": 102,
+    "hval_fold:line": 101,
+    "train:line": 2355
+   },
+   "chars": {
+    "guard:line": 1113,
+    "hval:line": 1503,
+    "hval_fold:line": 1495,
+    "train:line": 33574
+   },
+   "sources": {
+    "glyph_cells": 2531
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    18.0,
+    18.0,
+    18.0
+   ],
+   "dark_on_light_share": 0.0012,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line_x2:exact": 1,
+    "hval:line:exact": 1,
+    "hval:line_x2:exact": 1,
+    "train:line:exact": 20,
+    "train:line:near": 42,
+    "train:line_x2:exact": 20,
+    "train:line_x2:near": 42
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 2,
+    "line:oov": 2,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 0.9992
+  },
+  "NPJH50382": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1965,
+   "page_splits": {
+    "guard": 60,
+    "hval": 79,
+    "train": 1826
+   },
+   "records": 3230,
+   "rows": {
+    "guard:line": 65,
+    "hval:line": 96,
+    "hval_fold:line": 96,
+    "train:line": 2090,
+    "train:name": 66
+   },
+   "chars": {
+    "guard:line": 1031,
+    "hval:line": 1769,
+    "hval_fold:line": 1769,
+    "train:line": 34401,
+    "train:name": 169
+   },
+   "sources": {
+    "glyph_cells": 2316,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    16.0,
+    30.0
+   ],
+   "box_height_q05_q50_q95": [
+    20.0,
+    20.0,
+    20.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 4,
+    "guard:line_x2:exact": 4,
+    "guard:name:exact": 4,
+    "guard:name:near": 26,
+    "guard:name_x2:exact": 4,
+    "guard:name_x2:near": 26,
+    "hval:line:near": 2,
+    "hval:line_x2:near": 2,
+    "hval:name:exact": 7,
+    "hval:name:near": 24,
+    "hval:name_x2:exact": 7,
+    "hval:name_x2:near": 24,
+    "train:line:exact": 29,
+    "train:line:near": 36,
+    "train:line_x2:exact": 29,
+    "train:line_x2:near": 36,
+    "train:name:exact": 255,
+    "train:name:near": 453,
+    "train:name_x2:exact": 255,
+    "train:name_x2:near": 453
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50551": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 214,
+   "page_splits": {
+    "guard": 30,
+    "hval": 9,
+    "train": 175
+   },
+   "records": 369,
+   "rows": {
+    "guard:line": 50,
+    "guard:ruby": 1,
+    "hval:line": 12,
+    "hval_fold:line": 12,
+    "train:line": 296,
+    "train:ruby": 5
+   },
+   "chars": {
+    "guard:line": 1063,
+    "guard:ruby": 3,
+    "hval:line": 272,
+    "hval_fold:line": 272,
+    "train:line": 5954,
+    "train:ruby": 21
+   },
+   "sources": {
+    "glyph_cells": 358,
+    "image_rows": 6
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    22.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    20.0,
+    21.0,
+    22.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 5,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "guard:line_x2:near": 1,
+    "train:line:exact": 1,
+    "train:line:near": 1,
+    "train:line_x2:exact": 1,
+    "train:line_x2:near": 1,
+    "train:ruby:exact": 2
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50591": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1664,
+   "page_splits": {
+    "guard": 60,
+    "hval": 67,
+    "train": 1537
+   },
+   "records": 2385,
+   "rows": {
+    "guard:line": 86,
+    "hval:line": 85,
+    "hval_fold:line": 85,
+    "train:line": 2142
+   },
+   "chars": {
+    "guard:line": 1058,
+    "hval:line": 1133,
+    "hval_fold:line": 1133,
+    "train:line": 27547
+   },
+   "sources": {
+    "glyph_cells": 2313
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    13.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    18.0,
+    18.0,
+    18.0
+   ],
+   "dark_on_light_share": 0.0082,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line:near": 1,
+    "guard:line_x2:exact": 1,
+    "guard:line_x2:near": 1,
+    "hval:line:exact": 2,
+    "hval:line:near": 2,
+    "hval:line_x2:exact": 2,
+    "hval:line_x2:near": 2,
+    "train:line:exact": 19,
+    "train:line:near": 46,
+    "train:line_x2:exact": 19,
+    "train:line_x2:near": 46
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 1,
+    "line:oov": 1,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50609": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 350,
+   "page_splits": {
+    "guard": 30,
+    "hval": 14,
+    "train": 306
+   },
+   "records": 886,
+   "rows": {
+    "guard:line": 50,
+    "guard:name": 1,
+    "hval:line": 23,
+    "hval_fold:line": 23,
+    "train:line": 633,
+    "train:name": 20
+   },
+   "chars": {
+    "guard:line": 577,
+    "guard:name": 3,
+    "hval:line": 275,
+    "hval_fold:line": 275,
+    "train:line": 8441,
+    "train:name": 39
+   },
+   "sources": {
+    "glyph_cells": 713,
+    "image_rows": 14
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    13.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    17.0,
+    17.0,
+    17.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "guard:line_x2:near": 1,
+    "guard:name:exact": 10,
+    "guard:name:near": 6,
+    "guard:name_x2:exact": 10,
+    "guard:name_x2:near": 6,
+    "hval:line:near": 1,
+    "hval:line_x2:near": 1,
+    "hval:name:exact": 6,
+    "hval:name_x2:exact": 6,
+    "train:line:exact": 2,
+    "train:line:near": 4,
+    "train:line_x2:exact": 2,
+    "train:line_x2:near": 4,
+    "train:name:exact": 62,
+    "train:name:near": 67,
+    "train:name_x2:exact": 62,
+    "train:name_x2:near": 67
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50621": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1504,
+   "page_splits": {
+    "guard": 60,
+    "hval": 60,
+    "train": 1384
+   },
+   "records": 2633,
+   "rows": {
+    "guard:line": 86,
+    "guard:name": 1,
+    "hval:line": 80,
+    "hval:name": 5,
+    "hval_fold:line": 80,
+    "hval_fold:name": 4,
+    "train:line": 1756,
+    "train:name": 46
+   },
+   "chars": {
+    "guard:line": 1296,
+    "guard:name": 4,
+    "hval:line": 1255,
+    "hval:name": 18,
+    "hval_fold:line": 1255,
+    "hval_fold:name": 14,
+    "train:line": 25782,
+    "train:name": 99
+   },
+   "sources": {
+    "glyph_cells": 1971,
+    "image_rows": 3
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    15.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    17.0,
+    17.0,
+    17.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line_x2:exact": 1,
+    "guard:name:exact": 6,
+    "guard:name:near": 29,
+    "guard:name_x2:exact": 6,
+    "guard:name_x2:near": 29,
+    "hval:line:near": 1,
+    "hval:line_x2:near": 1,
+    "hval:name:exact": 9,
+    "hval:name:near": 19,
+    "hval:name_x2:exact": 9,
+    "hval:name_x2:near": 19,
+    "train:line:exact": 12,
+    "train:line:near": 22,
+    "train:line_x2:exact": 12,
+    "train:line_x2:near": 22,
+    "train:name:exact": 145,
+    "train:name:near": 413,
+    "train:name_x2:exact": 145,
+    "train:name_x2:near": 413
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50641": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1130,
+   "page_splits": {
+    "guard": 60,
+    "hval": 45,
+    "train": 1025
+   },
+   "records": 2361,
+   "rows": {
+    "guard:line": 86,
+    "guard:name": 11,
+    "hval:line": 74,
+    "hval:name": 1,
+    "hval_fold:line": 74,
+    "hval_fold:name": 1,
+    "train:line": 1551,
+    "train:name": 115
+   },
+   "chars": {
+    "guard:line": 1525,
+    "guard:name": 40,
+    "hval:line": 1351,
+    "hval:name": 3,
+    "hval_fold:line": 1351,
+    "hval_fold:name": 3,
+    "train:line": 28247,
+    "train:name": 393
+   },
+   "sources": {
+    "glyph_cells": 1834,
+    "image_rows": 4
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    20.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    17.0,
+    18.0,
+    19.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "guard:line_x2:near": 1,
+    "guard:name:exact": 9,
+    "guard:name:near": 20,
+    "guard:name_x2:exact": 9,
+    "guard:name_x2:near": 20,
+    "hval:line:near": 1,
+    "hval:line_x2:near": 1,
+    "hval:name:exact": 1,
+    "hval:name:near": 12,
+    "hval:name_x2:exact": 1,
+    "hval:name_x2:near": 12,
+    "train:line:exact": 9,
+    "train:line:near": 4,
+    "train:line_x2:exact": 9,
+    "train:line_x2:near": 4,
+    "train:name:exact": 218,
+    "train:name:near": 241,
+    "train:name_x2:exact": 218,
+    "train:name_x2:near": 241
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 7,
+    "line:fails_vocab": 0,
+    "line:geometry": 7,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50649": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1064,
+   "page_splits": {
+    "guard": 58,
+    "hval": 43,
+    "train": 963
+   },
+   "records": 2963,
+   "rows": {
+    "guard:line": 99,
+    "guard:name": 1,
+    "hval:line": 71,
+    "hval:name": 1,
+    "hval_fold:line": 71,
+    "train:line": 1762,
+    "train:name": 21
+   },
+   "chars": {
+    "guard:line": 1125,
+    "guard:name": 3,
+    "hval:line": 796,
+    "hval:name": 3,
+    "hval_fold:line": 796,
+    "train:line": 19785,
+    "train:name": 84
+   },
+   "sources": {
+    "image_rows": 1955
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    11.0,
+    17.0
+   ],
+   "box_height_q05_q50_q95": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:name:near": 51,
+    "guard:name_x2:near": 51,
+    "hval:line:exact": 1,
+    "hval:line:near": 1,
+    "hval:line_x2:exact": 1,
+    "hval:line_x2:near": 1,
+    "hval:name:near": 41,
+    "hval:name_x2:near": 41,
+    "train:line:exact": 1,
+    "train:line:near": 15,
+    "train:line_x2:exact": 1,
+    "train:line_x2:near": 15,
+    "train:name:exact": 80,
+    "train:name:near": 818,
+    "train:name_x2:exact": 80,
+    "train:name_x2:near": 818
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "name_x2:fails_ctc": 0,
+    "name_x2:fails_geometry": 0,
+    "name_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50882": {
+   "platform": "psp",
+   "title_split": "test",
+   "pages": 350,
+   "page_splits": {
+    "test": 350
+   },
+   "records": 456,
+   "rows": {
+    "test:line": 389,
+    "test:ruby": 16
+   },
+   "chars": {
+    "test:line": 4666,
+    "test:ruby": 35
+   },
+   "sources": {
+    "glyph_cells": 405
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    12.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    15.0,
+    15.0,
+    15.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 19,
+   "duplicates_removed": {
+    "test:line:exact": 6,
+    "test:line:near": 4,
+    "test:line_x2:exact": 6,
+    "test:line_x2:near": 4,
+    "test:ruby:exact": 1,
+    "test:ruby:near": 9
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00007": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 562,
+   "page_splits": {
+    "guard": 25,
+    "hval": 22,
+    "train": 515
+   },
+   "records": 956,
+   "rows": {
+    "guard:line": 30,
+    "guard:name": 3,
+    "hval:line": 26,
+    "hval:name": 2,
+    "hval_fold:line": 26,
+    "hval_fold:name": 1,
+    "train:line": 601,
+    "train:name": 29
+   },
+   "chars": {
+    "guard:line": 478,
+    "guard:name": 5,
+    "hval:line": 461,
+    "hval:name": 3,
+    "hval_fold:line": 461,
+    "hval_fold:name": 1,
+    "train:line": 9394,
+    "train:name": 63
+   },
+   "sources": {
+    "glyph_cells": 690,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    15.0,
+    27.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:name:exact": 11,
+    "guard:name:near": 2,
+    "hval:name:exact": 4,
+    "train:line:exact": 10,
+    "train:name:exact": 229,
+    "train:name:near": 9
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00020": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 51,
+   "page_splits": {
+    "train": 51
+   },
+   "records": 99,
+   "rows": {
+    "train:line": 47,
+    "train:name": 2
+   },
+   "chars": {
+    "train:line": 493,
+    "train:name": 5
+   },
+   "sources": {
+    "glyph_cells": 39,
+    "image_rows": 10
+   },
+   "label_len_q05_q50_q95": [
+    1.3000000000000003,
+    9.0,
+    25.699999999999996
+   ],
+   "box_height_q05_q50_q95": [
+    6.500000000000002,
+    27.0,
+    28.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 10,
+    "train:line:near": 8,
+    "train:name:exact": 32
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00062": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 17,
+   "page_splits": {
+    "train": 17
+   },
+   "records": 93,
+   "rows": {
+    "train:line": 23,
+    "train:ruby": 65
+   },
+   "chars": {
+    "train:line": 365,
+    "train:ruby": 190
+   },
+   "sources": {
+    "glyph_cells": 88
+   },
+   "label_len_q05_q50_q95": [
+    7.1,
+    15.0,
+    26.9
+   ],
+   "box_height_q05_q50_q95": [
+    45.1,
+    46.0,
+    47.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 22,
+   "duplicates_removed": {
+    "train:ruby:near": 5
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00122": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 922,
+   "page_splits": {
+    "guard": 30,
+    "hval": 37,
+    "train": 855
+   },
+   "records": 962,
+   "rows": {
+    "guard:line": 17,
+    "hval:line": 15,
+    "hval:ruby": 9,
+    "hval_fold:line": 15,
+    "hval_fold:ruby": 9,
+    "train:line": 420,
+    "train:ruby": 15
+   },
+   "chars": {
+    "guard:line": 230,
+    "hval:line": 208,
+    "hval:ruby": 9,
+    "hval_fold:line": 208,
+    "hval_fold:ruby": 9,
+    "train:line": 6231,
+    "train:ruby": 42
+   },
+   "sources": {
+    "glyph_cells": 452,
+    "image_rows": 24
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    14.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    33.0,
+    33.0,
+    34.0
+   ],
+   "dark_on_light_share": 0.0951,
+   "furigana_lines": 11,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "guard:line:near": 3,
+    "hval:furimain:exact": 1,
+    "hval:line:exact": 2,
+    "hval:ruby:exact": 14,
+    "hval:ruby:near": 22,
+    "train:furimain:exact": 1,
+    "train:line:exact": 67,
+    "train:line:near": 17,
+    "train:ruby:exact": 4
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00139": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 122,
+   "page_splits": {
+    "train": 122
+   },
+   "records": 361,
+   "rows": {
+    "train:line": 207,
+    "train:name": 9
+   },
+   "chars": {
+    "train:line": 3109,
+    "train:name": 18
+   },
+   "sources": {
+    "glyph_cells": 216
+   },
+   "label_len_q05_q50_q95": [
+    4.600000000000001,
+    15.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 14,
+    "train:line:near": 59,
+    "train:name:exact": 58,
+    "train:name:near": 14
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00146": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1498,
+   "page_splits": {
+    "guard": 60,
+    "hval": 60,
+    "train": 1378
+   },
+   "records": 2800,
+   "rows": {
+    "guard:line": 71,
+    "guard:ruby": 1,
+    "hval:line": 73,
+    "hval:ruby": 1,
+    "hval_fold:line": 73,
+    "hval_fold:ruby": 1,
+    "train:line": 1734,
+    "train:name": 37,
+    "train:ruby": 37
+   },
+   "chars": {
+    "guard:line": 1362,
+    "guard:ruby": 6,
+    "hval:line": 1386,
+    "hval:ruby": 3,
+    "hval_fold:line": 1386,
+    "hval_fold:ruby": 3,
+    "train:line": 33991,
+    "train:name": 106,
+    "train:ruby": 222
+   },
+   "sources": {
+    "glyph_cells": 1941,
+    "image_rows": 13
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    20.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 38,
+   "duplicates_removed": {
+    "guard:line:near": 7,
+    "guard:name:near": 35,
+    "hval:line:near": 4,
+    "hval:name:near": 23,
+    "train:furimain:near": 2,
+    "train:line:exact": 1,
+    "train:line:near": 72,
+    "train:name:exact": 105,
+    "train:name:near": 589,
+    "train:ruby:exact": 2,
+    "train:ruby:near": 3
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 5,
+    "line:oov": 5,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00147": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 56,
+   "page_splits": {
+    "train": 56
+   },
+   "records": 93,
+   "rows": {
+    "train:line": 74,
+    "train:name": 3,
+    "train:ruby": 8
+   },
+   "chars": {
+    "train:line": 1486,
+    "train:name": 9,
+    "train:ruby": 46
+   },
+   "sources": {
+    "glyph_cells": 85
+   },
+   "label_len_q05_q50_q95": [
+    6.65,
+    20.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    41.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 7,
+   "duplicates_removed": {
+    "train:name:exact": 3,
+    "train:name:near": 5
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00172": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1111,
+   "page_splits": {
+    "guard": 60,
+    "hval": 44,
+    "train": 1007
+   },
+   "records": 2507,
+   "rows": {
+    "guard:vertical": 130,
+    "hval:vertical": 110,
+    "hval_fold:vertical": 110,
+    "train:vertical": 2234
+   },
+   "chars": {
+    "guard:vertical": 2077,
+    "hval:vertical": 1837,
+    "hval_fold:vertical": 1837,
+    "train:vertical": 36035
+   },
+   "sources": {
+    "glyph_cells": 2474
+   },
+   "label_len_q05_q50_q95": null,
+   "box_height_q05_q50_q95": null,
+   "dark_on_light_share": null,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:vertical:near": 2,
+    "guard:vreflow:near": 2,
+    "hval:vertical:near": 1,
+    "hval:vreflow:near": 1,
+    "train:vertical:exact": 12,
+    "train:vertical:near": 17,
+    "train:vreflow:exact": 12,
+    "train:vreflow:near": 17
+   },
+   "filters": {
+    "vertical:fails_ctc": 0,
+    "vertical:fails_geometry": 0,
+    "vertical:fails_vocab": 1,
+    "vertical:oov": 1,
+    "vreflow:fails_ctc": 0,
+    "vreflow:fails_geometry": 0,
+    "vreflow:fails_vocab": 1,
+    "vreflow:oov": 1
+   },
+   "s_vocab_share": 0.9992
+  },
+  "PCSG00183": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 12,
+   "page_splits": {
+    "train": 12
+   },
+   "records": 17,
+   "rows": {
+    "train:line": 17
+   },
+   "chars": {
+    "train:line": 243
+   },
+   "sources": {
+    "glyph_cells": 17
+   },
+   "label_len_q05_q50_q95": [
+    3.8,
+    14.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00206": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 3292,
+   "page_splits": {
+    "guard": 120,
+    "hval": 132,
+    "train": 3040
+   },
+   "records": 5772,
+   "rows": {
+    "guard:line": 204,
+    "hval:line": 220,
+    "hval_fold:line": 219,
+    "train:line": 5317
+   },
+   "chars": {
+    "guard:line": 3482,
+    "hval:line": 3712,
+    "hval_fold:line": 3704,
+    "train:line": 91625
+   },
+   "sources": {
+    "glyph_cells": 5741
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    21.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 2,
+    "hval:line:exact": 2,
+    "hval:line:near": 1,
+    "train:line:exact": 16,
+    "train:line:near": 9
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 1,
+    "line:oov": 1
+   },
+   "s_vocab_share": 0.9998
+  },
+  "PCSG00250": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 60,
+   "page_splits": {
+    "train": 60
+   },
+   "records": 102,
+   "rows": {
+    "train:line": 76,
+    "train:name": 4,
+    "train:ruby": 2
+   },
+   "chars": {
+    "train:line": 1467,
+    "train:name": 16,
+    "train:ruby": 25
+   },
+   "sources": {
+    "glyph_cells": 82
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    21.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    16.0,
+    25.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 2,
+   "duplicates_removed": {
+    "train:line:exact": 1,
+    "train:line:near": 3,
+    "train:name:exact": 2,
+    "train:name:near": 14
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00272": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 60,
+   "page_splits": {
+    "train": 60
+   },
+   "records": 178,
+   "rows": {
+    "train:line": 122,
+    "train:name": 3
+   },
+   "chars": {
+    "train:line": 1312,
+    "train:name": 5
+   },
+   "sources": {
+    "glyph_cells": 122,
+    "image_rows": 3
+   },
+   "label_len_q05_q50_q95": [
+    3.0500000000000007,
+    11.0,
+    15.949999999999989
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    28.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0246,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:conflict": 9,
+    "train:line:exact": 3,
+    "train:line:near": 1,
+    "train:name:exact": 25,
+    "train:name:near": 15
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00291": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 53,
+   "page_splits": {
+    "train": 53
+   },
+   "records": 79,
+   "rows": {
+    "train:line": 78
+   },
+   "chars": {
+    "train:line": 1139
+   },
+   "sources": {
+    "glyph_cells": 68,
+    "image_rows": 10
+   },
+   "label_len_q05_q50_q95": [
+    5.85,
+    15.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    44.0,
+    44.0,
+    44.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:near": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00352": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 585,
+   "page_splits": {
+    "guard": 30,
+    "hval": 23,
+    "train": 532
+   },
+   "records": 936,
+   "rows": {
+    "guard:line": 48,
+    "guard:name": 1,
+    "guard:ruby": 3,
+    "hval:line": 36,
+    "hval_fold:line": 36,
+    "train:line": 725,
+    "train:name": 25,
+    "train:ruby": 13
+   },
+   "chars": {
+    "guard:line": 995,
+    "guard:name": 2,
+    "guard:ruby": 9,
+    "hval:line": 764,
+    "hval_fold:line": 764,
+    "train:line": 14457,
+    "train:name": 61,
+    "train:ruby": 47
+   },
+   "sources": {
+    "glyph_cells": 851
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    20.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 17,
+   "duplicates_removed": {
+    "train:name:exact": 58,
+    "train:name:near": 23
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 4,
+    "ruby:oov": 4
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00367": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1265,
+   "page_splits": {
+    "guard": 60,
+    "hval": 47,
+    "train": 1158
+   },
+   "records": 2225,
+   "rows": {
+    "guard:line": 90,
+    "hval:line": 76,
+    "hval_fold:line": 76,
+    "train:line": 1811
+   },
+   "chars": {
+    "guard:line": 1271,
+    "hval:line": 1155,
+    "hval_fold:line": 1155,
+    "train:line": 26763
+   },
+   "sources": {
+    "image_rows": 1977
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    22.0,
+    23.0,
+    24.0
+   ],
+   "dark_on_light_share": 0.9823,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line:near": 3,
+    "hval:line:exact": 13,
+    "hval:line:near": 2,
+    "train:line:exact": 194,
+    "train:line:near": 34
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00370": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 110,
+   "page_splits": {
+    "train": 110
+   },
+   "records": 153,
+   "rows": {
+    "train:line": 140
+   },
+   "chars": {
+    "train:line": 2075
+   },
+   "sources": {
+    "image_rows": 140
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 13
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00380": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1095,
+   "page_splits": {
+    "guard": 60,
+    "hval": 44,
+    "train": 991
+   },
+   "records": 2087,
+   "rows": {
+    "guard:line": 110,
+    "hval:line": 85,
+    "hval_fold:line": 85,
+    "train:line": 1876
+   },
+   "chars": {
+    "guard:line": 1770,
+    "hval:line": 1572,
+    "hval_fold:line": 1572,
+    "train:line": 32088
+   },
+   "sources": {
+    "glyph_cells": 2071
+   },
+   "label_len_q05_q50_q95": [
+    8.0,
+    17.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    28.0,
+    28.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:near": 1,
+    "train:line:exact": 6,
+    "train:line:near": 9
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 0.9995
+  },
+  "PCSG00382": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 26,
+   "page_splits": {
+    "train": 26
+   },
+   "records": 45,
+   "rows": {
+    "train:line": 43
+   },
+   "chars": {
+    "train:line": 526
+   },
+   "sources": {
+    "glyph_cells": 43
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    13.0,
+    18.0
+   ],
+   "box_height_q05_q50_q95": [
+    25.0,
+    25.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 2
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00410": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 784,
+   "page_splits": {
+    "guard": 78,
+    "hval": 27,
+    "train": 679
+   },
+   "records": 1484,
+   "rows": {
+    "guard:vertical": 44,
+    "hval:vertical": 24,
+    "hval_fold:vertical": 23,
+    "train:vertical": 1043
+   },
+   "chars": {
+    "guard:vertical": 396,
+    "hval:vertical": 196,
+    "hval_fold:vertical": 193,
+    "train:vertical": 10475
+   },
+   "sources": {
+    "glyph_cells": 1111
+   },
+   "label_len_q05_q50_q95": null,
+   "box_height_q05_q50_q95": null,
+   "dark_on_light_share": null,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:vertical:exact": 65,
+    "guard:vertical:near": 17,
+    "guard:vreflow:exact": 63,
+    "guard:vreflow:near": 10,
+    "hval:vertical:exact": 2,
+    "hval:vertical:near": 8,
+    "hval:vreflow:exact": 2,
+    "train:vertical:exact": 162,
+    "train:vertical:near": 38,
+    "train:vreflow:exact": 159,
+    "train:vreflow:near": 17
+   },
+   "filters": {
+    "vertical:fails_ctc": 0,
+    "vertical:fails_geometry": 0,
+    "vertical:fails_vocab": 81,
+    "vertical:oov": 81,
+    "vreflow:fails_ctc": 0,
+    "vreflow:fails_geometry": 0,
+    "vreflow:fails_vocab": 77,
+    "vreflow:oov": 77
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00420": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 675,
+   "page_splits": {
+    "guard": 30,
+    "hval": 23,
+    "train": 622
+   },
+   "records": 1062,
+   "rows": {
+    "guard:line": 41,
+    "hval:line": 41,
+    "hval_fold:line": 41,
+    "train:line": 822
+   },
+   "chars": {
+    "guard:line": 663,
+    "hval:line": 687,
+    "hval_fold:line": 687,
+    "train:line": 13496
+   },
+   "sources": {
+    "glyph_cells": 904
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    18.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "train:line:exact": 154,
+    "train:line:near": 3
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00428": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 100,
+   "page_splits": {
+    "train": 100
+   },
+   "records": 146,
+   "rows": {
+    "train:line": 145
+   },
+   "chars": {
+    "train:line": 2085
+   },
+   "sources": {
+    "glyph_cells": 145
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    22.799999999999983
+   ],
+   "box_height_q05_q50_q95": [
+    38.0,
+    38.0,
+    38.0
+   ],
+   "dark_on_light_share": 0.9172,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:near": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00448": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 596,
+   "page_splits": {
+    "guard": 30,
+    "hval": 24,
+    "train": 542
+   },
+   "records": 1196,
+   "rows": {
+    "guard:line": 63,
+    "hval:line": 42,
+    "hval_fold:line": 42,
+    "train:line": 1078
+   },
+   "chars": {
+    "guard:line": 749,
+    "hval:line": 456,
+    "hval_fold:line": 456,
+    "train:line": 12034
+   },
+   "sources": {
+    "glyph_cells": 1183
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    12.0,
+    16.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:near": 4,
+    "train:line:exact": 7,
+    "train:line:near": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 1,
+    "line:oov": 1
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00450": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 78,
+   "page_splits": {
+    "train": 78
+   },
+   "records": 181,
+   "rows": {
+    "train:line": 133,
+    "train:name": 5
+   },
+   "chars": {
+    "train:line": 2537,
+    "train:name": 15
+   },
+   "sources": {
+    "glyph_cells": 136,
+    "image_rows": 2
+   },
+   "label_len_q05_q50_q95": [
+    3.6000000000000005,
+    23.0,
+    28.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    24.0,
+    24.0
+   ],
+   "dark_on_light_share": 0.0075,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:near": 3,
+    "train:name:exact": 6,
+    "train:name:near": 34
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00451": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 64,
+   "page_splits": {
+    "train": 64
+   },
+   "records": 129,
+   "rows": {
+    "train:line": 129
+   },
+   "chars": {
+    "train:line": 2345
+   },
+   "sources": {
+    "glyph_cells": 129
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    23.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    21.0,
+    21.0,
+    21.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00459": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 51,
+   "page_splits": {
+    "train": 51
+   },
+   "records": 85,
+   "rows": {
+    "train:line": 85
+   },
+   "chars": {
+    "train:line": 1430
+   },
+   "sources": {
+    "glyph_cells": 85
+   },
+   "label_len_q05_q50_q95": [
+    4.2,
+    19.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.9059,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00468": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 412,
+   "page_splits": {
+    "guard": 30,
+    "hval": 16,
+    "train": 366
+   },
+   "records": 701,
+   "rows": {
+    "guard:line": 47,
+    "hval:line": 20,
+    "hval_fold:line": 20,
+    "train:line": 611,
+    "train:ruby": 9
+   },
+   "chars": {
+    "guard:line": 805,
+    "hval:line": 316,
+    "hval_fold:line": 316,
+    "train:line": 10142,
+    "train:ruby": 31
+   },
+   "sources": {
+    "glyph_cells": 687
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    25.149999999999977
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.8392,
+   "furigana_lines": 9,
+   "duplicates_removed": {
+    "hval:line:near": 1,
+    "train:line:exact": 1,
+    "train:line:near": 12
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00469": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 2047,
+   "page_splits": {
+    "guard": 90,
+    "hval": 82,
+    "train": 1875
+   },
+   "records": 4364,
+   "rows": {
+    "guard:line": 182,
+    "guard:name": 1,
+    "hval:line": 158,
+    "hval_fold:line": 158,
+    "train:line": 3526,
+    "train:name": 31
+   },
+   "chars": {
+    "guard:line": 2650,
+    "guard:name": 2,
+    "hval:line": 2302,
+    "hval_fold:line": 2302,
+    "train:line": 48842,
+    "train:name": 82
+   },
+   "sources": {
+    "glyph_cells": 3894,
+    "image_rows": 4
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    36.0,
+    36.0,
+    36.0
+   ],
+   "dark_on_light_share": 0.8422,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 3,
+    "guard:name:conflict": 1,
+    "guard:name:exact": 16,
+    "guard:name:near": 5,
+    "hval:line:near": 6,
+    "hval:name:conflict": 2,
+    "hval:name:exact": 17,
+    "hval:name:near": 3,
+    "train:line:exact": 22,
+    "train:line:near": 72,
+    "train:name:conflict": 19,
+    "train:name:exact": 226,
+    "train:name:near": 74
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00472": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 20,
+   "page_splits": {
+    "train": 20
+   },
+   "records": 61,
+   "rows": {
+    "train:line": 48,
+    "train:name": 4
+   },
+   "chars": {
+    "train:line": 549,
+    "train:name": 12
+   },
+   "sources": {
+    "glyph_cells": 52
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    12.0,
+    17.0
+   ],
+   "box_height_q05_q50_q95": [
+    26.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.125,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 1,
+    "train:name:exact": 6
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 2,
+    "line:oov": 2,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00476": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 21,
+   "page_splits": {
+    "train": 21
+   },
+   "records": 79,
+   "rows": {
+    "train:line": 42
+   },
+   "chars": {
+    "train:line": 560
+   },
+   "sources": {
+    "glyph_cells": 42
+   },
+   "label_len_q05_q50_q95": [
+    7.050000000000001,
+    13.0,
+    19.0
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    28.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0238,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 34
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00477": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 787,
+   "page_splits": {
+    "guard": 30,
+    "hval": 27,
+    "train": 730
+   },
+   "records": 1295,
+   "rows": {
+    "guard:line": 44,
+    "hval:line": 44,
+    "hval_fold:line": 44,
+    "train:line": 1018
+   },
+   "chars": {
+    "guard:line": 649,
+    "hval:line": 639,
+    "hval_fold:line": 639,
+    "train:line": 14570
+   },
+   "sources": {
+    "glyph_cells": 1106
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    14.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 86,
+    "train:line:near": 103
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00505": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 100,
+   "page_splits": {
+    "train": 100
+   },
+   "records": 121,
+   "rows": {
+    "train:line": 117
+   },
+   "chars": {
+    "train:line": 1614
+   },
+   "sources": {
+    "glyph_cells": 117
+   },
+   "label_len_q05_q50_q95": [
+    3.8000000000000007,
+    13.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 2,
+    "train:line:near": 2
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00509": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1299,
+   "page_splits": {
+    "guard": 60,
+    "hval": 52,
+    "train": 1187
+   },
+   "records": 1912,
+   "rows": {
+    "guard:line": 84,
+    "guard:ruby": 1,
+    "hval:line": 74,
+    "hval:ruby": 2,
+    "hval_fold:line": 74,
+    "hval_fold:ruby": 2,
+    "train:line": 1709,
+    "train:ruby": 15
+   },
+   "chars": {
+    "guard:line": 1542,
+    "guard:ruby": 7,
+    "hval:line": 1373,
+    "hval:ruby": 10,
+    "hval_fold:line": 1373,
+    "hval_fold:ruby": 10,
+    "train:line": 29576,
+    "train:ruby": 86
+   },
+   "sources": {
+    "glyph_cells": 1884,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    18.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0005,
+   "furigana_lines": 23,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "hval:line:exact": 4,
+    "train:line:exact": 22
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00510": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 552,
+   "page_splits": {
+    "guard": 30,
+    "hval": 18,
+    "train": 504
+   },
+   "records": 858,
+   "rows": {
+    "guard:line": 45,
+    "hval:line": 28,
+    "hval_fold:line": 28,
+    "train:line": 616
+   },
+   "chars": {
+    "guard:line": 655,
+    "hval:line": 420,
+    "hval_fold:line": 420,
+    "train:line": 8807
+   },
+   "sources": {
+    "glyph_cells": 689
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "hval:line:near": 1,
+    "train:line:exact": 164,
+    "train:line:near": 3
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00530": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 8,
+   "page_splits": {
+    "train": 8
+   },
+   "records": 19,
+   "rows": {
+    "train:line": 14
+   },
+   "chars": {
+    "train:line": 146
+   },
+   "sources": {
+    "glyph_cells": 14
+   },
+   "label_len_q05_q50_q95": [
+    5.65,
+    10.0,
+    16.35
+   ],
+   "box_height_q05_q50_q95": [
+    25.0,
+    25.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.8571,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 5
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00540": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1037,
+   "page_splits": {
+    "guard": 60,
+    "hval": 41,
+    "train": 936
+   },
+   "records": 1885,
+   "rows": {
+    "guard:line": 64,
+    "guard:name": 1,
+    "guard:ruby": 2,
+    "hval:line": 44,
+    "hval:name": 3,
+    "hval_fold:line": 43,
+    "hval_fold:name": 3,
+    "train:line": 992,
+    "train:name": 99,
+    "train:ruby": 69
+   },
+   "chars": {
+    "guard:line": 961,
+    "guard:name": 4,
+    "guard:ruby": 3,
+    "hval:line": 751,
+    "hval:name": 6,
+    "hval_fold:line": 745,
+    "hval_fold:name": 6,
+    "train:line": 15589,
+    "train:name": 261,
+    "train:ruby": 130
+   },
+   "sources": {
+    "glyph_cells": 1268,
+    "image_rows": 6
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    14.0,
+    29.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    32.0,
+    33.0
+   ],
+   "dark_on_light_share": 0.0173,
+   "furigana_lines": 24,
+   "duplicates_removed": {
+    "guard:line:near": 3,
+    "guard:name:exact": 21,
+    "guard:name:near": 17,
+    "hval:line:near": 2,
+    "hval:name:exact": 8,
+    "hval:name:near": 7,
+    "train:line:exact": 17,
+    "train:line:near": 61,
+    "train:name:exact": 275,
+    "train:name:near": 194
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 5,
+    "ruby:fails_vocab": 0,
+    "ruby:geometry": 5
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00547": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1021,
+   "page_splits": {
+    "guard": 60,
+    "hval": 41,
+    "train": 920
+   },
+   "records": 2208,
+   "rows": {
+    "guard:line": 84,
+    "guard:name": 1,
+    "hval:line": 49,
+    "hval:name": 1,
+    "hval_fold:line": 49,
+    "train:line": 1366,
+    "train:name": 19
+   },
+   "chars": {
+    "guard:line": 1233,
+    "guard:name": 4,
+    "hval:line": 757,
+    "hval:name": 4,
+    "hval_fold:line": 757,
+    "train:line": 22019,
+    "train:name": 75
+   },
+   "sources": {
+    "glyph_cells": 1520
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    39.0,
+    41.0
+   ],
+   "dark_on_light_share": 0.002,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 5,
+    "guard:name:exact": 4,
+    "guard:name:near": 30,
+    "hval:line:exact": 2,
+    "hval:line:near": 3,
+    "hval:name:near": 28,
+    "train:line:exact": 21,
+    "train:line:near": 65,
+    "train:name:exact": 41,
+    "train:name:near": 489
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00553": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1129,
+   "page_splits": {
+    "guard": 50,
+    "hval": 45,
+    "train": 1034
+   },
+   "records": 2237,
+   "rows": {
+    "guard:line": 111,
+    "hval:line": 86,
+    "hval_fold:line": 86,
+    "train:line": 1959
+   },
+   "chars": {
+    "guard:line": 1533,
+    "hval:line": 1154,
+    "hval_fold:line": 1154,
+    "train:line": 26313
+   },
+   "sources": {
+    "glyph_cells": 2156
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    14.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    23.0,
+    25.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.9954,
+   "furigana_lines": 9,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "guard:line:near": 4,
+    "hval:line:near": 3,
+    "train:line:exact": 31,
+    "train:line:near": 10
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 31,
+    "line:fails_vocab": 0,
+    "line:geometry": 31
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00555": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 394,
+   "page_splits": {
+    "guard": 30,
+    "hval": 16,
+    "train": 348
+   },
+   "records": 602,
+   "rows": {
+    "guard:line": 36,
+    "hval:line": 20,
+    "hval_fold:line": 20,
+    "train:line": 518,
+    "train:ruby": 4
+   },
+   "chars": {
+    "guard:line": 619,
+    "hval:line": 411,
+    "hval_fold:line": 411,
+    "train:line": 10807,
+    "train:ruby": 15
+   },
+   "sources": {
+    "glyph_cells": 578
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    22.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    21.0,
+    21.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.007,
+   "furigana_lines": 6,
+   "duplicates_removed": {
+    "guard:line:near": 2,
+    "hval:line:near": 1,
+    "train:line:exact": 9,
+    "train:line:near": 8
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 4,
+    "ruby:oov": 4
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00567": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 100,
+   "page_splits": {
+    "train": 100
+   },
+   "records": 210,
+   "rows": {
+    "train:line": 106,
+    "train:name": 6
+   },
+   "chars": {
+    "train:line": 1606,
+    "train:name": 18
+   },
+   "sources": {
+    "glyph_cells": 107,
+    "image_rows": 5
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    16.5,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    24.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 9,
+    "train:name:exact": 87,
+    "train:name:near": 2
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00576": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1319,
+   "page_splits": {
+    "guard": 91,
+    "hval": 49,
+    "train": 1179
+   },
+   "records": 2440,
+   "rows": {
+    "guard:line": 112,
+    "hval:line": 82,
+    "hval_fold:line": 82,
+    "train:line": 2037
+   },
+   "chars": {
+    "guard:line": 1521,
+    "hval:line": 1196,
+    "hval_fold:line": 1196,
+    "train:line": 28418
+   },
+   "sources": {
+    "glyph_cells": 2231
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    15.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    44.0,
+    44.0,
+    44.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 55,
+    "guard:line:near": 2,
+    "hval:line:exact": 2,
+    "hval:line:near": 1,
+    "train:line:exact": 133,
+    "train:line:near": 16
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00591": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 100,
+   "page_splits": {
+    "train": 100
+   },
+   "records": 205,
+   "rows": {
+    "train:line": 134,
+    "train:name": 21
+   },
+   "chars": {
+    "train:line": 2479,
+    "train:name": 69
+   },
+   "sources": {
+    "glyph_cells": 155
+   },
+   "label_len_q05_q50_q95": [
+    4.65,
+    19.0,
+    28.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    24.0,
+    24.0
+   ],
+   "dark_on_light_share": 0.3358,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:name:exact": 45,
+    "train:name:near": 5
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00602": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 33,
+   "page_splits": {
+    "train": 33
+   },
+   "records": 75,
+   "rows": {
+    "train:line": 54,
+    "train:name": 1
+   },
+   "chars": {
+    "train:line": 624,
+    "train:name": 5
+   },
+   "sources": {
+    "glyph_cells": 53,
+    "image_rows": 2
+   },
+   "label_len_q05_q50_q95": [
+    2.3000000000000007,
+    12.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    29.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.8704,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 8,
+    "train:line:near": 3,
+    "train:name:exact": 5,
+    "train:name:near": 4
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00611": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1482,
+   "page_splits": {
+    "guard": 99,
+    "hval": 55,
+    "train": 1328
+   },
+   "records": 2053,
+   "rows": {
+    "guard:line": 82,
+    "hval:line": 69,
+    "hval_fold:line": 69,
+    "train:line": 1579
+   },
+   "chars": {
+    "guard:line": 1576,
+    "hval:line": 1366,
+    "hval_fold:line": 1366,
+    "train:line": 31327
+   },
+   "sources": {
+    "glyph_cells": 1730
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    22.0,
+    30.0
+   ],
+   "box_height_q05_q50_q95": [
+    22.0,
+    23.0,
+    24.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 57,
+    "guard:line:near": 2,
+    "hval:line:exact": 3,
+    "hval:line:near": 3,
+    "train:line:exact": 159,
+    "train:line:near": 99
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00620": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 995,
+   "page_splits": {
+    "guard": 30,
+    "hval": 40,
+    "train": 925
+   },
+   "records": 1823,
+   "rows": {
+    "guard:line": 52,
+    "hval:line": 71,
+    "hval_fold:line": 71,
+    "train:line": 1672
+   },
+   "chars": {
+    "guard:line": 966,
+    "hval:line": 1326,
+    "hval_fold:line": 1326,
+    "train:line": 29220
+   },
+   "sources": {
+    "glyph_cells": 1794,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    22.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:exact": 4,
+    "train:line:exact": 9,
+    "train:line:near": 15
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00628": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1208,
+   "page_splits": {
+    "guard": 60,
+    "hval": 48,
+    "train": 1100
+   },
+   "records": 2402,
+   "rows": {
+    "guard:line": 93,
+    "guard:name": 1,
+    "guard:ruby": 6,
+    "hval:line": 68,
+    "hval:ruby": 5,
+    "hval_fold:line": 68,
+    "hval_fold:ruby": 5,
+    "train:line": 1699,
+    "train:name": 46,
+    "train:ruby": 42
+   },
+   "chars": {
+    "guard:line": 1407,
+    "guard:name": 2,
+    "guard:ruby": 31,
+    "hval:line": 1104,
+    "hval:ruby": 8,
+    "hval_fold:line": 1104,
+    "hval_fold:ruby": 8,
+    "train:line": 26525,
+    "train:name": 165,
+    "train:ruby": 177
+   },
+   "sources": {
+    "glyph_cells": 1951,
+    "image_rows": 9
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    15.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0962,
+   "furigana_lines": 57,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line:near": 2,
+    "guard:name:exact": 2,
+    "guard:name:near": 15,
+    "hval:name:exact": 2,
+    "hval:name:near": 5,
+    "hval:ruby:near": 2,
+    "train:line:exact": 7,
+    "train:line:near": 8,
+    "train:name:exact": 137,
+    "train:name:near": 237,
+    "train:ruby:near": 1
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 20,
+    "ruby:fails_vocab": 0,
+    "ruby:geometry": 20
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00629": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 20,
+   "page_splits": {
+    "train": 20
+   },
+   "records": 36,
+   "rows": {
+    "train:line": 31,
+    "train:name": 1
+   },
+   "chars": {
+    "train:line": 489,
+    "train:name": 4
+   },
+   "sources": {
+    "glyph_cells": 32
+   },
+   "label_len_q05_q50_q95": [
+    8.0,
+    17.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    31.0,
+    31.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:name:exact": 2,
+    "train:name:near": 2
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00648": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1393,
+   "page_splits": {
+    "guard": 60,
+    "hval": 56,
+    "train": 1277
+   },
+   "records": 3307,
+   "rows": {
+    "guard:line": 81,
+    "guard:ruby": 4,
+    "hval:line": 86,
+    "hval:ruby": 3,
+    "hval_fold:line": 82,
+    "hval_fold:ruby": 2,
+    "train:line": 1878,
+    "train:ruby": 38
+   },
+   "chars": {
+    "guard:line": 1826,
+    "guard:ruby": 14,
+    "hval:line": 1851,
+    "hval:ruby": 10,
+    "hval_fold:line": 1779,
+    "hval_fold:ruby": 7,
+    "train:line": 42446,
+    "train:ruby": 126
+   },
+   "sources": {
+    "glyph_cells": 2074,
+    "image_rows": 16
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    25.0,
+    35.0
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    28.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 41,
+   "duplicates_removed": {
+    "guard:furimain:exact": 5,
+    "guard:furimain:near": 3,
+    "guard:line:exact": 31,
+    "guard:line:near": 7,
+    "guard:ruby:exact": 8,
+    "hval:furimain:exact": 1,
+    "hval:line:exact": 25,
+    "hval:line:near": 8,
+    "hval:ruby:exact": 1,
+    "train:furimain:exact": 39,
+    "train:furimain:near": 4,
+    "train:line:exact": 929,
+    "train:line:near": 160,
+    "train:ruby:exact": 47
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 1,
+    "line:oov": 1,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00653": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 963,
+   "page_splits": {
+    "guard": 30,
+    "hval": 35,
+    "train": 898
+   },
+   "records": 1797,
+   "rows": {
+    "guard:vertical": 56,
+    "hval:vertical": 50,
+    "hval_fold:vertical": 50,
+    "train:vertical": 1461
+   },
+   "chars": {
+    "guard:vertical": 700,
+    "hval:vertical": 656,
+    "hval_fold:vertical": 656,
+    "train:vertical": 19218
+   },
+   "sources": {
+    "glyph_cells": 1567
+   },
+   "label_len_q05_q50_q95": null,
+   "box_height_q05_q50_q95": null,
+   "dark_on_light_share": null,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:vertical:near": 2,
+    "guard:vreflow:near": 2,
+    "hval:vertical:exact": 2,
+    "hval:vertical:near": 3,
+    "hval:vreflow:exact": 2,
+    "hval:vreflow:near": 3,
+    "train:vertical:exact": 126,
+    "train:vertical:near": 97,
+    "train:vreflow:exact": 117,
+    "train:vreflow:near": 94
+   },
+   "filters": {
+    "vertical:fails_ctc": 0,
+    "vertical:fails_geometry": 0,
+    "vertical:fails_vocab": 0,
+    "vreflow:fails_ctc": 0,
+    "vreflow:fails_geometry": 0,
+    "vreflow:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00666": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1683,
+   "page_splits": {
+    "guard": 132,
+    "hval": 63,
+    "train": 1488
+   },
+   "records": 2761,
+   "rows": {
+    "guard:line": 207,
+    "hval:line": 108,
+    "hval_fold:line": 107,
+    "train:line": 2401
+   },
+   "chars": {
+    "guard:line": 2701,
+    "hval:line": 1317,
+    "hval_fold:line": 1305,
+    "train:line": 31014
+   },
+   "sources": {
+    "glyph_cells": 2716
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    20.0,
+    20.0,
+    20.0
+   ],
+   "dark_on_light_share": 0.9982,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 4,
+    "guard:line:near": 3,
+    "hval:line:exact": 2,
+    "train:line:exact": 10,
+    "train:line:near": 26
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 0.9974
+  },
+  "PCSG00667": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 2000,
+   "page_splits": {
+    "guard": 60,
+    "hval": 80,
+    "train": 1860
+   },
+   "records": 3236,
+   "rows": {
+    "guard:line": 79,
+    "guard:name": 1,
+    "hval:line": 113,
+    "hval:name": 1,
+    "hval_fold:line": 113,
+    "hval_fold:name": 1,
+    "train:line": 2882,
+    "train:name": 31
+   },
+   "chars": {
+    "guard:line": 1195,
+    "guard:name": 4,
+    "hval:line": 1667,
+    "hval:name": 3,
+    "hval_fold:line": 1667,
+    "hval_fold:name": 3,
+    "train:line": 43746,
+    "train:name": 88
+   },
+   "sources": {
+    "glyph_cells": 3107
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    18.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    33.0,
+    33.0,
+    33.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 4,
+    "hval:line:exact": 1,
+    "hval:line:near": 7,
+    "train:line:exact": 45,
+    "train:line:near": 29,
+    "train:name:exact": 25,
+    "train:name:near": 18
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00673": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 101,
+   "page_splits": {
+    "train": 101
+   },
+   "records": 183,
+   "rows": {
+    "train:line": 126,
+    "train:name": 6
+   },
+   "chars": {
+    "train:line": 2413,
+    "train:name": 13
+   },
+   "sources": {
+    "glyph_cells": 132
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    20.0,
+    32.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    25.0,
+    25.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:near": 1,
+    "train:name:exact": 14,
+    "train:name:near": 36
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00696": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 135,
+   "page_splits": {
+    "train": 135
+   },
+   "records": 20,
+   "rows": {
+    "train:line": 20
+   },
+   "chars": {
+    "train:line": 245
+   },
+   "sources": {
+    "glyph_cells": 20
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    13.0,
+    16.05
+   ],
+   "box_height_q05_q50_q95": [
+    21.95,
+    22.0,
+    23.05
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00706": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 42,
+   "page_splits": {
+    "train": 42
+   },
+   "records": 64,
+   "rows": {
+    "train:line": 64
+   },
+   "chars": {
+    "train:line": 765
+   },
+   "sources": {
+    "glyph_cells": 64
+   },
+   "label_len_q05_q50_q95": [
+    4.15,
+    12.0,
+    19.849999999999994
+   ],
+   "box_height_q05_q50_q95": [
+    20.0,
+    22.0,
+    23.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00713": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1463,
+   "page_splits": {
+    "guard": 60,
+    "hval": 59,
+    "train": 1344
+   },
+   "records": 3979,
+   "rows": {
+    "guard:line": 110,
+    "hval:line": 118,
+    "hval_fold:line": 118,
+    "train:line": 2471,
+    "train:name": 27
+   },
+   "chars": {
+    "guard:line": 1440,
+    "hval:line": 1553,
+    "hval_fold:line": 1553,
+    "train:line": 33326,
+    "train:name": 138
+   },
+   "sources": {
+    "glyph_cells": 2726
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    14.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    23.0,
+    24.0,
+    33.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "guard:name:exact": 50,
+    "hval:line:exact": 1,
+    "hval:name:exact": 47,
+    "train:line:exact": 8,
+    "train:line:near": 5,
+    "train:name:exact": 1141
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00739": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 101,
+   "page_splits": {
+    "train": 101
+   },
+   "records": 181,
+   "rows": {
+    "train:line": 179,
+    "train:ruby": 2
+   },
+   "chars": {
+    "train:line": 2921,
+    "train:ruby": 6
+   },
+   "sources": {
+    "glyph_cells": 181
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    20.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 2,
+   "duplicates_removed": {},
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00745": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 503,
+   "page_splits": {
+    "guard": 30,
+    "hval": 20,
+    "train": 453
+   },
+   "records": 1006,
+   "rows": {
+    "guard:line": 53,
+    "hval:line": 41,
+    "hval_fold:line": 41,
+    "train:line": 902
+   },
+   "chars": {
+    "guard:line": 623,
+    "hval:line": 495,
+    "hval_fold:line": 495,
+    "train:line": 11227
+   },
+   "sources": {
+    "image_rows": 996
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    18.0
+   ],
+   "box_height_q05_q50_q95": [
+    25.0,
+    25.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.7028,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 1,
+    "train:line:near": 9
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00751": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 340,
+   "page_splits": {
+    "guard": 46,
+    "hval": 10,
+    "train": 284
+   },
+   "records": 353,
+   "rows": {
+    "guard:line": 31,
+    "hval:line": 10,
+    "train:line": 181
+   },
+   "chars": {
+    "guard:line": 295,
+    "hval:line": 91,
+    "train:line": 1651
+   },
+   "sources": {
+    "image_rows": 222
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    9.0,
+    14.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.05,
+    26.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.9955,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 19,
+    "guard:line:near": 3,
+    "train:line:exact": 98,
+    "train:line:near": 9
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00753": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1094,
+   "page_splits": {
+    "guard": 81,
+    "hval": 40,
+    "train": 973
+   },
+   "records": 1526,
+   "rows": {
+    "guard:line": 61,
+    "hval:line": 39,
+    "hval_fold:line": 39,
+    "train:line": 1264
+   },
+   "chars": {
+    "guard:line": 1110,
+    "hval:line": 670,
+    "hval_fold:line": 670,
+    "train:line": 24773
+   },
+   "sources": {
+    "glyph_cells": 1364
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    21.0,
+    30.0
+   ],
+   "box_height_q05_q50_q95": [
+    22.0,
+    23.0,
+    24.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 57,
+    "guard:line:near": 1,
+    "hval:line:exact": 5,
+    "train:line:exact": 74,
+    "train:line:near": 25
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00755": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 44,
+   "page_splits": {
+    "train": 44
+   },
+   "records": 82,
+   "rows": {
+    "train:line": 81
+   },
+   "chars": {
+    "train:line": 1204
+   },
+   "sources": {
+    "glyph_cells": 81
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    16.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    28.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00766": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 31,
+   "page_splits": {
+    "train": 31
+   },
+   "records": 72,
+   "rows": {
+    "train:line": 44,
+    "train:name": 2,
+    "train:ruby": 4
+   },
+   "chars": {
+    "train:line": 680,
+    "train:name": 10,
+    "train:ruby": 14
+   },
+   "sources": {
+    "glyph_cells": 48,
+    "image_rows": 2
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    24.0,
+    36.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 4,
+   "duplicates_removed": {
+    "train:line:near": 1,
+    "train:name:exact": 11,
+    "train:name:near": 10
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00769": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 37,
+   "page_splits": {
+    "train": 37
+   },
+   "records": 61,
+   "rows": {
+    "train:line": 61
+   },
+   "chars": {
+    "train:line": 846
+   },
+   "sources": {
+    "glyph_cells": 61
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    15.0,
+    19.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    27.0,
+    38.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 7,
+   "duplicates_removed": {},
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00776": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 468,
+   "page_splits": {
+    "guard": 30,
+    "hval": 15,
+    "train": 423
+   },
+   "records": 1022,
+   "rows": {
+    "guard:line": 37,
+    "hval:line": 18,
+    "hval_fold:line": 18,
+    "train:line": 436
+   },
+   "chars": {
+    "guard:line": 631,
+    "hval:line": 267,
+    "hval_fold:line": 267,
+    "train:line": 7095
+   },
+   "sources": {
+    "glyph_cells": 487,
+    "image_rows": 4
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    27.0,
+    29.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.4644,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 412,
+    "train:line:near": 115
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 4,
+    "line:fails_vocab": 0,
+    "line:geometry": 4
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00777": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 22,
+   "page_splits": {
+    "train": 22
+   },
+   "records": 25,
+   "rows": {
+    "train:line": 25
+   },
+   "chars": {
+    "train:line": 319
+   },
+   "sources": {
+    "glyph_cells": 25
+   },
+   "label_len_q05_q50_q95": [
+    4.2,
+    14.0,
+    19.799999999999997
+   ],
+   "box_height_q05_q50_q95": [
+    17.0,
+    28.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.08,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00785": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 25,
+   "page_splits": {
+    "train": 25
+   },
+   "records": 35,
+   "rows": {
+    "train:line": 35
+   },
+   "chars": {
+    "train:line": 545
+   },
+   "sources": {
+    "glyph_cells": 35
+   },
+   "label_len_q05_q50_q95": [
+    6.7,
+    17.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    37.0,
+    37.0,
+    37.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00787": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 667,
+   "page_splits": {
+    "guard": 30,
+    "hval": 27,
+    "train": 610
+   },
+   "records": 1005,
+   "rows": {
+    "guard:line": 41,
+    "hval:line": 36,
+    "hval_fold:line": 36,
+    "train:line": 887
+   },
+   "chars": {
+    "guard:line": 564,
+    "hval:line": 463,
+    "hval_fold:line": 463,
+    "train:line": 11555
+   },
+   "sources": {
+    "glyph_cells": 964
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    14.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "train:line:exact": 29,
+    "train:line:near": 11
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00794": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 41,
+   "page_splits": {
+    "train": 41
+   },
+   "records": 91,
+   "rows": {
+    "train:line": 51,
+    "train:ruby": 9
+   },
+   "chars": {
+    "train:line": 813,
+    "train:ruby": 40
+   },
+   "sources": {
+    "glyph_cells": 60
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    20.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    45.5
+   ],
+   "dark_on_light_share": 0.9412,
+   "furigana_lines": 7,
+   "duplicates_removed": {
+    "train:furimain:exact": 4,
+    "train:furimain:near": 1,
+    "train:line:exact": 22,
+    "train:line:near": 2,
+    "train:ruby:exact": 7
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00805": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1429,
+   "page_splits": {
+    "guard": 108,
+    "hval": 53,
+    "train": 1268
+   },
+   "records": 2584,
+   "rows": {
+    "guard:line": 125,
+    "hval:line": 100,
+    "hval_fold:line": 100,
+    "train:line": 2172,
+    "train:name": 1
+   },
+   "chars": {
+    "guard:line": 1856,
+    "hval:line": 1439,
+    "hval_fold:line": 1439,
+    "train:line": 30102,
+    "train:name": 6
+   },
+   "sources": {
+    "glyph_cells": 2398
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    14.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 60,
+    "guard:line:near": 4,
+    "hval:line:near": 1,
+    "train:line:exact": 72,
+    "train:line:near": 42,
+    "train:name:exact": 7
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00807": {
+   "platform": "vita",
+   "title_split": "test",
+   "pages": 690,
+   "page_splits": {
+    "test": 690
+   },
+   "records": 1174,
+   "rows": {
+    "test:line": 1152
+   },
+   "chars": {
+    "test:line": 13911
+   },
+   "sources": {
+    "glyph_cells": 1152
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    12.0,
+    19.0
+   ],
+   "box_height_q05_q50_q95": [
+    21.0,
+    23.0,
+    24.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 5,
+   "duplicates_removed": {
+    "test:line:exact": 15,
+    "test:line:near": 7
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00808": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 488,
+   "page_splits": {
+    "guard": 30,
+    "hval": 20,
+    "train": 438
+   },
+   "records": 847,
+   "rows": {
+    "guard:line": 57,
+    "hval:line": 31,
+    "hval_fold:line": 31,
+    "train:line": 748
+   },
+   "chars": {
+    "guard:line": 784,
+    "hval:line": 431,
+    "hval_fold:line": 431,
+    "train:line": 9541
+   },
+   "sources": {
+    "glyph_cells": 836
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    19.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    31.0
+   ],
+   "dark_on_light_share": 0.1734,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "hval:line:near": 1,
+    "train:line:exact": 2,
+    "train:line:near": 7
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00817": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 685,
+   "page_splits": {
+    "guard": 30,
+    "hval": 27,
+    "train": 628
+   },
+   "records": 716,
+   "rows": {
+    "guard:line": 29,
+    "hval:line": 29,
+    "hval_fold:line": 28,
+    "train:line": 586
+   },
+   "chars": {
+    "guard:line": 493,
+    "hval:line": 520,
+    "hval_fold:line": 513,
+    "train:line": 10252
+   },
+   "sources": {
+    "glyph_cells": 644
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    16.0,
+    35.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 21,
+    "train:line:near": 51
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00826": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 11,
+   "page_splits": {
+    "train": 11
+   },
+   "records": 18,
+   "rows": {
+    "train:line": 18
+   },
+   "chars": {
+    "train:line": 210
+   },
+   "sources": {
+    "glyph_cells": 18
+   },
+   "label_len_q05_q50_q95": [
+    5.85,
+    12.0,
+    17.299999999999997
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00829": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 100,
+   "page_splits": {
+    "train": 100
+   },
+   "records": 251,
+   "rows": {
+    "train:line": 165,
+    "train:name": 4
+   },
+   "chars": {
+    "train:line": 2186,
+    "train:name": 18
+   },
+   "sources": {
+    "glyph_cells": 169
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    25.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.8061,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:name:exact": 82
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00845": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1507,
+   "page_splits": {
+    "guard": 60,
+    "hval": 60,
+    "train": 1387
+   },
+   "records": 5524,
+   "rows": {
+    "guard:line": 118,
+    "guard:ruby": 17,
+    "hval:line": 143,
+    "hval:ruby": 40,
+    "hval_fold:line": 142,
+    "hval_fold:ruby": 40,
+    "train:line": 2943,
+    "train:ruby": 484
+   },
+   "chars": {
+    "guard:line": 2629,
+    "guard:ruby": 56,
+    "hval:line": 3289,
+    "hval:ruby": 119,
+    "hval_fold:line": 3281,
+    "hval_fold:ruby": 119,
+    "train:line": 64688,
+    "train:ruby": 1673
+   },
+   "sources": {
+    "glyph_cells": 3646,
+    "image_rows": 99
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    24.0,
+    31.0
+   ],
+   "box_height_q05_q50_q95": [
+    26.0,
+    28.0,
+    41.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 553,
+   "duplicates_removed": {
+    "guard:furimain:exact": 3,
+    "guard:furimain:near": 3,
+    "guard:line:exact": 53,
+    "guard:line:near": 14,
+    "guard:ruby:exact": 6,
+    "guard:ruby:near": 7,
+    "hval:furimain:exact": 12,
+    "hval:furimain:near": 6,
+    "hval:line:exact": 79,
+    "hval:line:near": 22,
+    "hval:ruby:exact": 15,
+    "hval:ruby:near": 10,
+    "train:furimain:exact": 122,
+    "train:furimain:near": 108,
+    "train:line:exact": 713,
+    "train:line:near": 515,
+    "train:ruby:exact": 179,
+    "train:ruby:near": 166
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 0.9968
+  },
+  "PCSG00852": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 396,
+   "page_splits": {
+    "guard": 30,
+    "hval": 16,
+    "train": 350
+   },
+   "records": 587,
+   "rows": {
+    "guard:line": 46,
+    "hval:line": 21,
+    "hval_fold:line": 21,
+    "train:line": 517
+   },
+   "chars": {
+    "guard:line": 817,
+    "hval:line": 437,
+    "hval_fold:line": 437,
+    "train:line": 9200
+   },
+   "sources": {
+    "glyph_cells": 584
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    19.0,
+    28.0
+   ],
+   "box_height_q05_q50_q95": [
+    34.0,
+    34.0,
+    34.0
+   ],
+   "dark_on_light_share": 0.0034,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 2,
+    "train:line:near": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00853": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 833,
+   "page_splits": {
+    "guard": 30,
+    "hval": 33,
+    "train": 770
+   },
+   "records": 1255,
+   "rows": {
+    "guard:line": 47,
+    "hval:line": 48,
+    "hval_fold:line": 48,
+    "train:line": 1132
+   },
+   "chars": {
+    "guard:line": 608,
+    "hval:line": 683,
+    "hval_fold:line": 683,
+    "train:line": 15450
+   },
+   "sources": {
+    "glyph_cells": 1227
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    14.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    34.0,
+    35.0,
+    35.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:exact": 2,
+    "train:line:exact": 2,
+    "train:line:near": 24
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00854": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1088,
+   "page_splits": {
+    "guard": 30,
+    "hval": 40,
+    "train": 1018
+   },
+   "records": 1873,
+   "rows": {
+    "guard:line": 51,
+    "hval:line": 74,
+    "hval_fold:line": 74,
+    "train:line": 1572
+   },
+   "chars": {
+    "guard:line": 898,
+    "hval:line": 1287,
+    "hval_fold:line": 1287,
+    "train:line": 25391
+   },
+   "sources": {
+    "glyph_cells": 1697
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    17.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.7549,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "train:line:exact": 52,
+    "train:line:near": 123
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00866": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 613,
+   "page_splits": {
+    "guard": 30,
+    "hval": 21,
+    "train": 562
+   },
+   "records": 1278,
+   "rows": {
+    "guard:line": 44,
+    "hval:line": 28,
+    "hval_fold:line": 28,
+    "train:line": 827
+   },
+   "chars": {
+    "guard:line": 611,
+    "hval:line": 390,
+    "hval_fold:line": 390,
+    "train:line": 12282
+   },
+   "sources": {
+    "glyph_cells": 897,
+    "image_rows": 2
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 253,
+    "train:line:near": 126
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00876": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1049,
+   "page_splits": {
+    "guard": 60,
+    "hval": 42,
+    "train": 947
+   },
+   "records": 1756,
+   "rows": {
+    "guard:line": 96,
+    "hval:line": 69,
+    "hval_fold:line": 69,
+    "train:line": 1582
+   },
+   "chars": {
+    "guard:line": 1482,
+    "hval:line": 1074,
+    "hval_fold:line": 1074,
+    "train:line": 25501
+   },
+   "sources": {
+    "glyph_cells": 1747
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:near": 1,
+    "train:line:exact": 1,
+    "train:line:near": 7
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00883": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 32,
+   "page_splits": {
+    "train": 32
+   },
+   "records": 34,
+   "rows": {
+    "train:line": 28
+   },
+   "chars": {
+    "train:line": 288
+   },
+   "sources": {
+    "glyph_cells": 23,
+    "image_rows": 5
+   },
+   "label_len_q05_q50_q95": [
+    2.35,
+    10.0,
+    19.65
+   ],
+   "box_height_q05_q50_q95": [
+    14.900000000000002,
+    27.0,
+    28.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 5,
+    "train:line:near": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00903": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 207,
+   "page_splits": {
+    "guard": 30,
+    "hval": 8,
+    "train": 169
+   },
+   "records": 580,
+   "rows": {
+    "guard:line": 54,
+    "guard:name": 1,
+    "hval:line": 13,
+    "hval_fold:line": 13,
+    "train:line": 324,
+    "train:name": 9
+   },
+   "chars": {
+    "guard:line": 691,
+    "guard:name": 3,
+    "hval:line": 156,
+    "hval_fold:line": 156,
+    "train:line": 4406,
+    "train:name": 22
+   },
+   "sources": {
+    "glyph_cells": 401
+   },
+   "label_len_q05_q50_q95": [
+    4.5,
+    14.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    29.0,
+    42.0
+   ],
+   "dark_on_light_share": 0.0026,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "guard:name:exact": 26,
+    "hval:line:near": 1,
+    "hval:name:exact": 8,
+    "train:line:exact": 3,
+    "train:name:exact": 140
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00911": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 692,
+   "page_splits": {
+    "guard": 30,
+    "hval": 24,
+    "train": 638
+   },
+   "records": 1128,
+   "rows": {
+    "guard:line": 45,
+    "hval:line": 46,
+    "hval_fold:line": 46,
+    "train:line": 868
+   },
+   "chars": {
+    "guard:line": 674,
+    "hval:line": 728,
+    "hval_fold:line": 728,
+    "train:line": 13407
+   },
+   "sources": {
+    "glyph_cells": 959
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    16.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.7873,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 1,
+    "train:line:exact": 161,
+    "train:line:near": 7
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00912": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 33,
+   "page_splits": {
+    "train": 33
+   },
+   "records": 57,
+   "rows": {
+    "train:line": 51
+   },
+   "chars": {
+    "train:line": 819
+   },
+   "sources": {
+    "glyph_cells": 51
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    17.0,
+    27.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 4,
+    "train:line:near": 2
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00914": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 515,
+   "page_splits": {
+    "guard": 28,
+    "hval": 21,
+    "train": 466
+   },
+   "records": 1089,
+   "rows": {
+    "guard:line": 57,
+    "hval:line": 44,
+    "hval_fold:line": 43,
+    "train:line": 964
+   },
+   "chars": {
+    "guard:line": 721,
+    "hval:line": 592,
+    "hval_fold:line": 587,
+    "train:line": 12303
+   },
+   "sources": {
+    "glyph_cells": 1064,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    13.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    28.0,
+    28.0,
+    28.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "hval:line:near": 1,
+    "train:line:exact": 4,
+    "train:line:near": 17
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00916": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1001,
+   "page_splits": {
+    "guard": 30,
+    "hval": 40,
+    "train": 931
+   },
+   "records": 1616,
+   "rows": {
+    "guard:line": 47,
+    "hval:line": 69,
+    "hval_fold:line": 69,
+    "train:line": 1465
+   },
+   "chars": {
+    "guard:line": 657,
+    "hval:line": 1019,
+    "hval_fold:line": 1019,
+    "train:line": 21599
+   },
+   "sources": {
+    "glyph_cells": 1581
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 16,
+    "train:line:near": 19
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00917": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1664,
+   "page_splits": {
+    "guard": 117,
+    "hval": 63,
+    "train": 1484
+   },
+   "records": 2556,
+   "rows": {
+    "guard:line": 136,
+    "hval:line": 94,
+    "hval_fold:line": 44,
+    "train:line": 2194
+   },
+   "chars": {
+    "guard:line": 2284,
+    "hval:line": 1685,
+    "hval_fold:line": 763,
+    "train:line": 35965
+   },
+   "sources": {
+    "glyph_cells": 2421,
+    "image_rows": 3
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    16.0,
+    26.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 36,
+    "hval:line:near": 1,
+    "train:line:exact": 77,
+    "train:line:near": 18
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00918": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 1600,
+   "page_splits": {
+    "guard": 60,
+    "hval": 60,
+    "train": 1480
+   },
+   "records": 2624,
+   "rows": {
+    "guard:line": 111,
+    "hval:line": 106,
+    "hval_fold:line": 106,
+    "train:line": 2204
+   },
+   "chars": {
+    "guard:line": 1775,
+    "hval:line": 1699,
+    "hval_fold:line": 1699,
+    "train:line": 35985
+   },
+   "sources": {
+    "glyph_cells": 2421
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    16.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:near": 2,
+    "hval:line:near": 1,
+    "train:line:exact": 21,
+    "train:line:near": 179
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00935": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 382,
+   "page_splits": {
+    "guard": 30,
+    "hval": 15,
+    "train": 337
+   },
+   "records": 771,
+   "rows": {
+    "guard:line": 61,
+    "hval:line": 32,
+    "hval_fold:line": 32,
+    "train:line": 665
+   },
+   "chars": {
+    "guard:line": 837,
+    "hval:line": 550,
+    "hval_fold:line": 550,
+    "train:line": 9599
+   },
+   "sources": {
+    "glyph_cells": 758
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    15.0,
+    23.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "hval:line:near": 1,
+    "train:line:exact": 9,
+    "train:line:near": 3
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00938": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 431,
+   "page_splits": {
+    "guard": 31,
+    "hval": 13,
+    "train": 387
+   },
+   "records": 782,
+   "rows": {
+    "guard:line": 55,
+    "hval:line": 23,
+    "hval_fold:line": 23,
+    "train:line": 525
+   },
+   "chars": {
+    "guard:line": 791,
+    "hval:line": 304,
+    "hval_fold:line": 304,
+    "train:line": 7630
+   },
+   "sources": {
+    "glyph_cells": 603
+   },
+   "label_len_q05_q50_q95": [
+    8.0,
+    15.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    31.0,
+    31.0
+   ],
+   "dark_on_light_share": 0.8905,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "train:line:exact": 168,
+    "train:line:near": 10
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00981": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 101,
+   "page_splits": {
+    "train": 101
+   },
+   "records": 166,
+   "rows": {
+    "train:line": 163,
+    "train:ruby": 2
+   },
+   "chars": {
+    "train:line": 2584,
+    "train:ruby": 6
+   },
+   "sources": {
+    "glyph_cells": 165
+   },
+   "label_len_q05_q50_q95": [
+    3.0999999999999996,
+    19.0,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 2,
+   "duplicates_removed": {
+    "train:line:near": 1
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00988": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 25,
+   "page_splits": {
+    "train": 25
+   },
+   "records": 49,
+   "rows": {
+    "train:line": 41
+   },
+   "chars": {
+    "train:line": 678
+   },
+   "sources": {
+    "glyph_cells": 41
+   },
+   "label_len_q05_q50_q95": [
+    2.0,
+    18.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    36.0,
+    36.0,
+    36.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 8
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG00991": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 66,
+   "page_splits": {
+    "train": 66
+   },
+   "records": 104,
+   "rows": {
+    "train:line": 98,
+    "train:ruby": 1
+   },
+   "chars": {
+    "train:line": 1473,
+    "train:ruby": 3
+   },
+   "sources": {
+    "glyph_cells": 99
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    18.0,
+    22.14999999999999
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 1,
+   "duplicates_removed": {
+    "train:line:exact": 4,
+    "train:line:near": 1
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01000": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 39,
+   "page_splits": {
+    "train": 39
+   },
+   "records": 49,
+   "rows": {
+    "train:line": 46
+   },
+   "chars": {
+    "train:line": 623
+   },
+   "sources": {
+    "glyph_cells": 46
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    15.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    36.0,
+    36.0,
+    39.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 3
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01008": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 313,
+   "page_splits": {
+    "guard": 61,
+    "hval": 9,
+    "train": 243
+   },
+   "records": 673,
+   "rows": {
+    "guard:line": 65,
+    "hval:line": 23,
+    "hval_fold:line": 23,
+    "train:line": 390
+   },
+   "chars": {
+    "guard:line": 772,
+    "hval:line": 288,
+    "hval_fold:line": 288,
+    "train:line": 4771
+   },
+   "sources": {
+    "glyph_cells": 478
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    13.0,
+    18.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 36,
+    "guard:line:near": 31,
+    "train:line:exact": 89,
+    "train:line:near": 39
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01019": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 644,
+   "page_splits": {
+    "guard": 30,
+    "hval": 26,
+    "train": 588
+   },
+   "records": 981,
+   "rows": {
+    "guard:line": 42,
+    "hval:line": 40,
+    "hval_fold:line": 39,
+    "train:line": 840,
+    "train:ruby": 8
+   },
+   "chars": {
+    "guard:line": 777,
+    "hval:line": 808,
+    "hval_fold:line": 787,
+    "train:line": 15336,
+    "train:ruby": 25
+   },
+   "sources": {
+    "glyph_cells": 930
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    20.0,
+    28.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.8221,
+   "furigana_lines": 7,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "hval:line:exact": 8,
+    "train:furimain:exact": 1,
+    "train:line:exact": 36,
+    "train:line:near": 3,
+    "train:ruby:exact": 1,
+    "train:ruby:near": 2
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01023": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 963,
+   "page_splits": {
+    "guard": 30,
+    "hval": 39,
+    "train": 894
+   },
+   "records": 1567,
+   "rows": {
+    "guard:line": 42,
+    "hval:line": 45,
+    "hval_fold:line": 45,
+    "train:line": 1092,
+    "train:name": 34
+   },
+   "chars": {
+    "guard:line": 816,
+    "hval:line": 888,
+    "hval_fold:line": 888,
+    "train:line": 21509,
+    "train:name": 127
+   },
+   "sources": {
+    "glyph_cells": 1213
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    20.0,
+    32.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0008,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:name:near": 16,
+    "hval:line:near": 1,
+    "hval:name:near": 6,
+    "train:line:exact": 15,
+    "train:line:near": 29,
+    "train:name:exact": 37,
+    "train:name:near": 249
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01046": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 461,
+   "page_splits": {
+    "guard": 30,
+    "hval": 14,
+    "train": 417
+   },
+   "records": 898,
+   "rows": {
+    "guard:line": 51,
+    "hval:line": 27,
+    "hval_fold:line": 26,
+    "train:line": 587
+   },
+   "chars": {
+    "guard:line": 748,
+    "hval:line": 410,
+    "hval_fold:line": 406,
+    "train:line": 7953
+   },
+   "sources": {
+    "glyph_cells": 665
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    14.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    23.0,
+    26.0,
+    27.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 5,
+   "duplicates_removed": {
+    "guard:line:exact": 1,
+    "guard:line:near": 1,
+    "train:line:exact": 225,
+    "train:line:near": 6
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01065": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 22,
+   "page_splits": {
+    "train": 22
+   },
+   "records": 51,
+   "rows": {
+    "train:line": 51
+   },
+   "chars": {
+    "train:line": 838
+   },
+   "sources": {
+    "glyph_cells": 51
+   },
+   "label_len_q05_q50_q95": [
+    10.0,
+    18.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    31.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01075": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 333,
+   "page_splits": {
+    "guard": 30,
+    "hval": 13,
+    "train": 290
+   },
+   "records": 662,
+   "rows": {
+    "guard:line": 64,
+    "hval:line": 26,
+    "hval_fold:line": 26,
+    "train:line": 572
+   },
+   "chars": {
+    "guard:line": 870,
+    "hval:line": 369,
+    "hval_fold:line": 369,
+    "train:line": 8224
+   },
+   "sources": {
+    "glyph_cells": 662
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    14.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    31.0
+   ],
+   "dark_on_light_share": 0.8746,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01110": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 444,
+   "page_splits": {
+    "guard": 75,
+    "hval": 14,
+    "train": 355
+   },
+   "records": 832,
+   "rows": {
+    "guard:line": 32,
+    "hval:line": 16,
+    "hval_fold:line": 11,
+    "train:line": 467
+   },
+   "chars": {
+    "guard:line": 423,
+    "hval:line": 218,
+    "hval_fold:line": 143,
+    "train:line": 6272
+   },
+   "sources": {
+    "glyph_cells": 515
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    14.0,
+    20.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 22,
+    "guard:line:near": 91,
+    "hval:line:exact": 2,
+    "hval:line:near": 8,
+    "train:line:exact": 58,
+    "train:line:near": 136
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01127": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 138,
+   "page_splits": {
+    "train": 138
+   },
+   "records": 236,
+   "rows": {
+    "train:line": 153
+   },
+   "chars": {
+    "train:line": 2358
+   },
+   "sources": {
+    "glyph_cells": 148,
+    "image_rows": 5
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    16.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    22.0,
+    22.0,
+    23.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 3,
+   "duplicates_removed": {
+    "train:line:exact": 61,
+    "train:line:near": 22
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01152": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 91,
+   "page_splits": {
+    "train": 91
+   },
+   "records": 264,
+   "rows": {
+    "train:line": 196,
+    "train:name": 7
+   },
+   "chars": {
+    "train:line": 2688,
+    "train:name": 23
+   },
+   "sources": {
+    "glyph_cells": 203
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    14.0,
+    19.25
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    25.0,
+    26.0
+   ],
+   "dark_on_light_share": 0.9898,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 7,
+    "train:name:exact": 54
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01167": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 108,
+   "page_splits": {
+    "train": 108
+   },
+   "records": 169,
+   "rows": {
+    "train:line": 169
+   },
+   "chars": {
+    "train:line": 3960
+   },
+   "sources": {
+    "glyph_cells": 169
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    28.0,
+    34.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01180": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 8,
+   "page_splits": {
+    "train": 8
+   },
+   "records": 23,
+   "rows": {
+    "train:line": 15,
+    "train:name": 3
+   },
+   "chars": {
+    "train:line": 206,
+    "train:name": 10
+   },
+   "sources": {
+    "glyph_cells": 18
+   },
+   "label_len_q05_q50_q95": [
+    8.4,
+    12.0,
+    21.599999999999998
+   ],
+   "box_height_q05_q50_q95": [
+    33.0,
+    33.0,
+    33.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:name:exact": 5
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01187": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 70,
+   "page_splits": {
+    "train": 70
+   },
+   "records": 128,
+   "rows": {
+    "train:line": 120,
+    "train:ruby": 7
+   },
+   "chars": {
+    "train:line": 1943,
+    "train:ruby": 14
+   },
+   "sources": {
+    "glyph_cells": 127
+   },
+   "label_len_q05_q50_q95": [
+    3.95,
+    20.5,
+    22.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.69999999999996
+   ],
+   "dark_on_light_share": 1.0,
+   "furigana_lines": 6,
+   "duplicates_removed": {
+    "train:line:exact": 1
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01194": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 30,
+   "page_splits": {
+    "train": 30
+   },
+   "records": 45,
+   "rows": {
+    "train:line": 45
+   },
+   "chars": {
+    "train:line": 707
+   },
+   "sources": {
+    "glyph_cells": 45
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    16.0,
+    24.799999999999997
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    31.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01196": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 10,
+   "page_splits": {
+    "train": 10
+   },
+   "records": 10,
+   "rows": {
+    "train:line": 10
+   },
+   "chars": {
+    "train:line": 134
+   },
+   "sources": {
+    "glyph_cells": 10
+   },
+   "label_len_q05_q50_q95": [
+    5.45,
+    14.0,
+    22.549999999999997
+   ],
+   "box_height_q05_q50_q95": [
+    36.0,
+    36.0,
+    36.0
+   ],
+   "dark_on_light_share": 0.4,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01197": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 87,
+   "page_splits": {
+    "train": 87
+   },
+   "records": 203,
+   "rows": {
+    "train:line": 126,
+    "train:name": 13
+   },
+   "chars": {
+    "train:line": 1972,
+    "train:name": 53
+   },
+   "sources": {
+    "glyph_cells": 139
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    16.5,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0317,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 1,
+    "train:name:exact": 33,
+    "train:name:near": 30
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01202": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 104,
+   "page_splits": {
+    "train": 104
+   },
+   "records": 168,
+   "rows": {
+    "train:line": 113,
+    "train:name": 9,
+    "train:ruby": 6
+   },
+   "chars": {
+    "train:line": 1858,
+    "train:name": 18,
+    "train:ruby": 20
+   },
+   "sources": {
+    "glyph_cells": 124,
+    "image_rows": 4
+   },
+   "label_len_q05_q50_q95": [
+    2.0,
+    17.0,
+    27.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.0,
+    26.0,
+    30.599999999999923
+   ],
+   "dark_on_light_share": 0.354,
+   "furigana_lines": 6,
+   "duplicates_removed": {
+    "train:line:near": 9,
+    "train:name:exact": 26,
+    "train:name:near": 4
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0,
+    "ruby:fails_ctc": 0,
+    "ruby:fails_geometry": 0,
+    "ruby:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01221": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 111,
+   "page_splits": {
+    "train": 111
+   },
+   "records": 160,
+   "rows": {
+    "train:line": 159
+   },
+   "chars": {
+    "train:line": 2521
+   },
+   "sources": {
+    "glyph_cells": 159
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    16.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    29.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.3459,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 1
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01245": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 29,
+   "page_splits": {
+    "train": 29
+   },
+   "records": 11,
+   "rows": {
+    "train:line": 11
+   },
+   "chars": {
+    "train:line": 106
+   },
+   "sources": {
+    "glyph_cells": 11
+   },
+   "label_len_q05_q50_q95": [
+    7.5,
+    10.0,
+    12.0
+   ],
+   "box_height_q05_q50_q95": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {},
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01247": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 83,
+   "page_splits": {
+    "train": 83
+   },
+   "records": 187,
+   "rows": {
+    "train:line": 107,
+    "train:name": 6
+   },
+   "chars": {
+    "train:line": 1846,
+    "train:name": 14
+   },
+   "sources": {
+    "glyph_cells": 113
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    18.0,
+    29.0
+   ],
+   "box_height_q05_q50_q95": [
+    30.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.9907,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 3,
+    "train:line:near": 2,
+    "train:name:exact": 37,
+    "train:name:near": 32
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01250": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 22,
+   "page_splits": {
+    "train": 22
+   },
+   "records": 32,
+   "rows": {
+    "train:line": 26
+   },
+   "chars": {
+    "train:line": 486
+   },
+   "sources": {
+    "glyph_cells": 25,
+    "image_rows": 1
+   },
+   "label_len_q05_q50_q95": [
+    3.25,
+    21.0,
+    32.0
+   ],
+   "box_height_q05_q50_q95": [
+    24.25,
+    25.0,
+    26.0
+   ],
+   "dark_on_light_share": 0.0769,
+   "furigana_lines": 1,
+   "duplicates_removed": {
+    "train:line:exact": 5
+   },
+   "filters": {
+    "furimain:fails_ctc": 0,
+    "furimain:fails_geometry": 0,
+    "furimain:fails_vocab": 0,
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01253": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 101,
+   "page_splits": {
+    "train": 101
+   },
+   "records": 185,
+   "rows": {
+    "train:line": 122,
+    "train:name": 14
+   },
+   "chars": {
+    "train:line": 2083,
+    "train:name": 61
+   },
+   "sources": {
+    "glyph_cells": 133,
+    "image_rows": 3
+   },
+   "label_len_q05_q50_q95": [
+    3.0,
+    16.5,
+    32.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    29.0,
+    29.0
+   ],
+   "dark_on_light_share": 0.3033,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 10,
+    "train:line:near": 1,
+    "train:name:exact": 34,
+    "train:name:near": 4
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01268": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 137,
+   "page_splits": {
+    "train": 137
+   },
+   "records": 276,
+   "rows": {
+    "train:line": 191,
+    "train:name": 5
+   },
+   "chars": {
+    "train:line": 2781,
+    "train:name": 15
+   },
+   "sources": {
+    "glyph_cells": 196
+   },
+   "label_len_q05_q50_q95": [
+    6.0,
+    15.0,
+    21.0
+   ],
+   "box_height_q05_q50_q95": [
+    29.0,
+    30.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.9948,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 45,
+    "train:line:near": 1,
+    "train:name:exact": 26,
+    "train:name:near": 8
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "name:fails_ctc": 0,
+    "name:fails_geometry": 0,
+    "name:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "PCSG01282": {
+   "platform": "vita",
+   "title_split": "train",
+   "pages": 31,
+   "page_splits": {
+    "train": 31
+   },
+   "records": 85,
+   "rows": {
+    "train:line": 44
+   },
+   "chars": {
+    "train:line": 762
+   },
+   "sources": {
+    "glyph_cells": 44
+   },
+   "label_len_q05_q50_q95": [
+    5.0,
+    15.0,
+    30.0
+   ],
+   "box_height_q05_q50_q95": [
+    26.0,
+    26.0,
+    30.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "train:line:exact": 41
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "ULJM05383": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1827,
+   "page_splits": {
+    "guard": 60,
+    "hval": 73,
+    "train": 1694
+   },
+   "records": 2877,
+   "rows": {
+    "guard:line": 87,
+    "hval:line": 124,
+    "hval_fold:line": 124,
+    "train:line": 2501
+   },
+   "chars": {
+    "guard:line": 1583,
+    "hval:line": 2302,
+    "hval_fold:line": 2302,
+    "train:line": 44219
+   },
+   "sources": {
+    "glyph_cells": 2695,
+    "image_rows": 17
+   },
+   "label_len_q05_q50_q95": [
+    4.0,
+    21.0,
+    25.0
+   ],
+   "box_height_q05_q50_q95": [
+    18.0,
+    18.0,
+    18.0
+   ],
+   "dark_on_light_share": 0.0,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "guard:line:near": 10,
+    "guard:line_x2:exact": 2,
+    "guard:line_x2:near": 10,
+    "hval:line:near": 4,
+    "hval:line_x2:near": 4,
+    "train:line:exact": 25,
+    "train:line:near": 118,
+    "train:line_x2:exact": 25,
+    "train:line_x2:near": 118
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 6,
+    "line:fails_vocab": 0,
+    "line:geometry": 6,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "ULJM05674": {
+   "platform": "psp",
+   "title_split": "train",
+   "pages": 1997,
+   "page_splits": {
+    "guard": 60,
+    "hval": 80,
+    "train": 1857
+   },
+   "records": 2972,
+   "rows": {
+    "guard:line": 76,
+    "hval:line": 102,
+    "hval_fold:line": 102,
+    "train:line": 2757
+   },
+   "chars": {
+    "guard:line": 1254,
+    "hval:line": 1624,
+    "hval_fold:line": 1624,
+    "train:line": 44456
+   },
+   "sources": {
+    "glyph_cells": 2935
+   },
+   "label_len_q05_q50_q95": [
+    7.0,
+    16.0,
+    24.0
+   ],
+   "box_height_q05_q50_q95": [
+    18.0,
+    18.0,
+    18.0
+   ],
+   "dark_on_light_share": 0.0743,
+   "furigana_lines": 0,
+   "duplicates_removed": {
+    "guard:line:exact": 2,
+    "guard:line:near": 1,
+    "guard:line_x2:exact": 2,
+    "guard:line_x2:near": 1,
+    "hval:line:exact": 3,
+    "hval:line:near": 1,
+    "hval:line_x2:exact": 3,
+    "hval:line_x2:near": 1,
+    "train:line:exact": 18,
+    "train:line:near": 12,
+    "train:line_x2:exact": 18,
+    "train:line_x2:near": 12
+   },
+   "filters": {
+    "line:fails_ctc": 0,
+    "line:fails_geometry": 0,
+    "line:fails_vocab": 0,
+    "line_x2:fails_ctc": 0,
+    "line_x2:fails_geometry": 0,
+    "line_x2:fails_vocab": 0
+   },
+   "s_vocab_share": 1.0
+  },
+  "NPJH50127": {
+   "platform": "psp",
+   "pages": 58,
+   "title_split": "train",
+   "page_splits": {
+    "train": 58
+   },
+   "records": 0,
+   "rows": {},
+   "note": "no verified lines"
+  },
+  "PCSG00638": {
+   "platform": "vita",
+   "pages": 19,
+   "title_split": "train",
+   "page_splits": {
+    "train": 19
+   },
+   "records": 0,
+   "rows": {},
+   "note": "no verified lines"
+  },
+  "PCSG00768": {
+   "platform": "vita",
+   "pages": 130,
+   "title_split": "train",
+   "page_splits": {
+    "train": 130
+   },
+   "records": 0,
+   "rows": {},
+   "note": "no verified lines"
+  },
+  "PCSG00926": {
+   "platform": "vita",
+   "pages": 57,
+   "title_split": "train",
+   "page_splits": {
+    "train": 57
+   },
+   "records": 0,
+   "rows": {},
+   "note": "no verified lines"
+  },
+  "PCSG01260": {
+   "platform": "vita",
+   "pages": 86,
+   "title_split": "train",
+   "page_splits": {
+    "train": 86
+   },
+   "records": 0,
+   "rows": {},
+   "note": "no verified lines"
+  }
+ },
+ "platforms": {
+  "psp": {
+   "guard:line:chars": 18372,
+   "guard:line:rows": 1199,
+   "guard:name:chars": 50,
+   "guard:name:rows": 14,
+   "guard:ruby:chars": 5,
+   "guard:ruby:rows": 2,
+   "hval:line:chars": 18975,
+   "hval:line:rows": 1204,
+   "hval:name:chars": 24,
+   "hval:name:rows": 7,
+   "test:line:chars": 4666,
+   "test:line:rows": 389,
+   "test:ruby:chars": 35,
+   "test:ruby:rows": 16,
+   "train:line:chars": 447671,
+   "train:line:rows": 29068,
+   "train:name:chars": 892,
+   "train:name:rows": 322,
+   "train:ruby:chars": 169,
+   "train:ruby:rows": 46
+  },
+  "vita": {
+   "guard:line:chars": 60516,
+   "guard:line:rows": 3885,
+   "guard:name:chars": 26,
+   "guard:name:rows": 10,
+   "guard:ruby:chars": 126,
+   "guard:ruby:rows": 34,
+   "guard:vertical:chars": 3173,
+   "guard:vertical:rows": 230,
+   "hval:line:chars": 51154,
+   "hval:line:rows": 3143,
+   "hval:name:chars": 16,
+   "hval:name:rows": 7,
+   "hval:ruby:chars": 159,
+   "hval:ruby:rows": 60,
+   "hval:vertical:chars": 2689,
+   "hval:vertical:rows": 184,
+   "test:line:chars": 13911,
+   "test:line:rows": 1152,
+   "train:line:chars": 1231973,
+   "train:line:rows": 77043,
+   "train:name:chars": 1605,
+   "train:name:rows": 516,
+   "train:ruby:chars": 2938,
+   "train:ruby:rows": 840,
+   "train:vertical:chars": 65728,
+   "train:vertical:rows": 4738
+  }
+ },
+ "vocab": {
+  "file": "data/vocab_vn_5631.txt",
+  "kanji": 5142,
+  "kanji_in_training_side": 2868,
+  "kanji_training_occurrence_bands": {
+   "0": 2274,
+   "1-9": 922,
+   "10-79": 1012,
+   "80+": 934
+  },
+  "kanji_absent": "丑丕丗丙丞个乂乍乎乕乖乘乢于亘亙亞亢亥亦亮亰亶什仂仆仍仗仝仞仟仭价伉伎伜伶佃佑佗佚佛佞佯佰佶佻侃侑侖侠侭俎俐俑俘俚俟俣俤俥俱俶俸倅倆倖倚倨倩倪倬倹偃假偈偕偖做偸傀傅傭傳僊僑僥僵價儁儔儕儞儡儼兀允兇兌兒兔兜兢內兪冀冉冕冢冤冦冨冪冰冲冶凉凋凩凭凱凸凾刎刔刮剃剋剏剔剝剪剱剽剿劃劉劍劒劔劼劾勁勍勒勣勳勵勺勾匁匈匍匐匕匝匡匪區卅卉卍卜卞卦卮卿厂厖厠厥厦厩參叉叙叛叟叢叭吁吃吋后吏吝吞听吭吶吻呎呰呱呷咋咏咒咢咤咫咸哇哈哘哥哩哺唳唵啀啄啓啖啞啣啾喀喃喇喊喙喞喨喬單嗄嗇嗎嗔嗣嗽嗾嘖嘛嘱嘶嘸噎噓噦噫噬噸嚆嚊嚔嚙嚥嚮嚴囂囃囈囓囗圀圃圓圖團圦圷址坎坏坑坡坤坫垈垓垤垰垳埓埜埠埴培堆堡堯堺塁塑塒塘塙墫墳墹墺墾壟壯壷壹壻壽夘夙夭夾奄奐奕奘奚奠奬奸妁妍姆姚姥姦姨娜娥娩娶娼婀婁婉婢婪婬媛媧媼媽媾嫐嫗嫣嫦嫩嬪嬬嬰嬴嬶孀孃孑孚孜孰孺宋宍宕宦宸寇寐寓寞寤實寨寫寳寶將尉對尠尢尤尨尭尸尹屎屠屡屬屹岑岱岾峨峪峭峽崋崑崔崗崙崚崛崟崢嵒嵜嵯嵶嶝嶼嶽巍巓巖巴巵巽帑帙帚帶帷幀幄幇幌幔幟幡幺广庖庚庸廂廈廏廖廟廠廬廸廿弉弋弌弍弑弖弗弩弭弼彊彌彎彜彪彬彭彳徽忖忝忰忸忿怎怏怙怜怩怫怱怺恂恃恆恙恚恢恣恪恬悃悄悅悋悍悖悚悛悧悴悵悽惇惟惠惡惣惶惷惺惻愈愍愧愨愴愼愾慓慙慚慥慳慴慷慾憔憙憺懈應懋懍懦懶懷懼懿戀戈戊戌戍戎戔或戛截戰扠扨扼抄抔抛拇拈拌拜拮拱拿挂按挌挾捐捥捷捺掉掏掣掵掾揆插揖揣搏搔搗搦摑摧摸撈撚撞撩撹撻擂擅擒擡擴擽擾攀攘攝攬攵收攸效敍敖敝敞敦敲數斂斈斌斡斤旁旌旒旛无旱昊昜昵昿晁晃晄晋晏晟晢晧晨晰暉暠暢暸暹曄曉曙曚曠曳曼曾會朏朕朖朮杆李杓杙杠杢杣杤杦杪杮杰杲杵杷杼枇枉枋枘枡枦枳枸枹柁柚柝柞柢柮柯栁栂栞栢栩栫栴栽框桎桑桓桔桙桝桟桴桷梁梍梏梔梛梟梠梧梭梯梱梲梵梶梺梼棈棉棔棕棡棣棹椈椋椏椒椙椚椛椢椨椴椹椿楔楕楙楝楠楡楢楪楫楮楳楷楸楾榑榛榜榧榮榾槃槇槙槫槿樂樅樊樋樒樓樗樟樫樵樸樺橄橇橈橡橦橿檄檍檗檣檬檸櫂櫃櫓櫚櫞櫨櫺欅欖欝欣欷欹欽款歇歎歐歔歡歸歿殃殉殯殱殳殷毀毬毳氈氐氓氣汀汞汪汾沃沐沓沛沮沱沺泄泓泗泙泛泝泯泱洌洟洲洵洸洽浙浚浣浬涅涌涎涓涕涜涵淆淙淦淨淪淮淳淺渓渕渙渚渠渣渤渥渫渭游渺湃湊湍湛湫湮湶溂溝溥溪溯滂滄滉滔滕滬滸滿漉漑漓漣漱漲漸漿潁潅潑潘潟潭潴澁澂澆澎澗澪澱澳濘濛濠濬濮濱濶濺濾瀆瀉瀋瀑瀛瀝瀞瀟瀧瀰瀲瀾灌灘灣灸炙炬炮炯炳烙烝烟烱烽焙焜煉煕煖煢煤煥煦熄熒熔熙熨熬熹熾燁燈燎燔燗營燠燧燵燹燼燿爐爨爬爲爻爼牀牆牌牟牽牾犀犂犢狄狆狎狒狷狹狽猊猖猜猩猯猴猷猾獏獗獪獺玳玻珂珊珎珞珪琅琳琵琶琺瑕瑙瑚瑜瑟瑣瑤瑩瑪瑯瑰瑳瑶瑾璋璞璽瓊瓔瓢瓣瓩瓮瓲甄甌甍甑甕甜甞甥甫甸畚畝畠畢畦畯當畷畸畿疆疊疋疏疔疝疣疥疱疳疵疸疹疽痔痘痞痢痰痲痼痾瘁瘋瘠瘢瘦瘧瘻癈癌癘癜癡癩癬癰癲癸發皎皓皖皙皰皴皷皸盂盃盈盌盒盖盞盡盥盧盪眄眈眥眦眴眷睚睛睺睾睿瞋瞞瞠瞽矍矧砌砒砠砥砧砰砺硅硯硲碇碍碓碕碩碰碼碾磊磐磔磚磧磬磴礁礑礒礙礪礬祁祇祗祚祢禅禊禎禦禧禪禰禹禽禾秉秕租秡秣秦秧稈稍稔稗稠稷稻穆穎穐穗穰穽窄窈窒窕窖窗窩窪窶窿竃竄竇竈竏竓竸竺竽笄笈笊笏笘笙笞笥笨笳筅筌筍筏筑筝筥筧筬筮筺箆箏箒箕箙箝箪箭箴篁篆篇篝篠篥篦篩篳篶篷簀簇簑簒簓簔簣簧簸籃籌籔籖籘籟籬籵籾粁粂粍粟粢粨粮粱粲粽糀糅糎糒糜糟糠糯糶糺糾紂紆紊紬紮絃絣絲絽經綛綜綟綠綢綣綬綮綰綵綸綽緇緘緞緤緬緲縅縒縢縣縹縺總繃繆繖繙繚繝繞繧繩繫繭繹繻繽纈續纐纓纜缺罅罌罍罎罐罔罫罷罹羂羃羆羇羈羌羔羚羝羯羲羸羹翁翆翊翡翦翫翰翹耀耄耆耒耘耨耻耿聊聘聚聢聯聰聲聾肆肇肋肓肚肛肱胄胚胛胝胤胥胯胼脊脣脯脹脾腆腋腓腟腥腮腴腺膈膊膕膣膰膵膺膾臀臂臈臍臑臘臙臺臻臼臾舁舂舅與舍舒舘舛舜舩舫舳舶舷艀艇艘艙艤艪艫艮艷艸艾芍芒芟芬芭芹苅苒苓苙苞苟苣苧苫苹范茄茅茉茎茗茘茣茱茲茴茵荀荊荏荳荵荼莅莇莎莓莚莞莟莠莢莨莱莽菊菖菘菟菠菩菰菲菴萃萄萍萠萱萵萸萼葎葡葫葭葷葺蒋蒐蒜蒟蒡蒲蒴蒻蓁蓆蓊蓐蓖蓙蓴蔀蔔蔕蔗蔚蔟蔡蔦蔲蕁蕈蕉蕊蕋蕗蕨蕭蕷薀薊薐薑薗薛薜薤薨薩薯薹薺藉藏藐藝藷藹藺蘂蘆蘊蘖蘗蘚蘿處虞號虧虱蚋蚓蚕蚣蚤蚩蚪蚫蚯蚶蛄蛉蛋蛎蛞蛟蛤蛭蛯蛸蛹蛻蜀蜃蜆蜈蜉蜊蜍蜑蜒蜚蜥蜩蜴蜷蜻蜿蝌蝎蝓蝗蝙蝟蝠蝣蝦蝨蝮蝴蝸蝿螂螳螻螽蟀蟆蟇蟋蟒蟠蟯蟲蟷蟾蠆蠍蠎蠏蠕蠧蠰衍衒衙衞衢衫衵衷衽衾衿袁袍袗袢袷袿裃裄裘裲裳褄褌褓褞褫褶褸褻襁襄襞襠襤襦襯襴襷覃覓覘覡覯覺覿觚觸訌訟註詔詢誂誄誣誦誨誼誾諂諄諏諚諛諠諡諤諧諫諮諱諳諷謁謂謄謔謖謚謦謨謫譁證譏譫譬譴譽讀變讒讓讖讚谺谿豁豈豌豎豐豕豬豺貂貉貍貘貮貳貽賂賈賎賦賺賽贋贏贐贓赧赫赭趙趨趺趾跌跏跑跛跣跫踉踞蹇蹈蹉蹊蹌蹕蹙蹟蹠蹶躁躄躅躑躪躬躰軀軛軣軫軻輛輜輦輳輻輾轂轅轆轉轡轤辨辷迚迢迩迪迭迴迹逍逑逓逗逵逹遉遑遲邀邁邃邇邊邯邱邳邵郡鄂鄒鄭鄲酉酋酖酣醂醋醍醐醗醪醫醬醺釆釉釦釧釵釼釿鈎鈑鈕鈞鈷鈿鉅鉉鉋鉗鉞鉤鉦鉱鉾銑銕銖銚銛銜銷鋒鋤鋩鋪鋲鋳錐錚錢錣錦錨錮錺錻鍍鍜鍬鍼鍾鎔鎗鎚鎹鏃鏈鏑鏘鏤鏨鐃鐐鐔鐙鐚鐡鐵鐸鑄鑚鑞鑠鑪鑰鑼鑽鑿閂閇閊閏閒閔閘閠閤閨閻閼閾闃闌闍闔闕闖關闡闥阡阮陀附陋陌陞陟陦陪隋隍隕隗隘隧隨隱隶隹隻雉雋雍雕雹霄霆霍霏霑霓霙霜霰霹霽霾靂靆靉靖靜靨靫靱靼鞅鞆鞋鞏鞜鞠鞣鞦鞴韃韆韋韓韘韜韭韮韵韶頌頏頒頗頡頤頰頴顆顫顬顯顱顳顴颪颱飜飩飮餃餘餝餞餠餮饂饌饐饑饕馗馘馥馨馭馮駁駑駒駘駝駟駭駮駱駻騅騏騾驀驍驎驛驢驥驪骭骰骼髀髏髑體髙髞髢髣髮髯髱髴髷髻鬆鬘鬚鬢鬣鬨鬩鬲鬻魃魍魎魏魑魘魯鮃鮎鮑鮒鮟鮠鮨鮪鮴鮹鯑鯒鯔鯡鯣鯤鯰鯱鰆鰈鰊鰌鰍鰒鰓鰔鰕鰤鰭鰺鰻鰾鱇鱒鱚鱠鱧鱨鱶鱸鳫鳰鳶鴆鴇鴎鴒鴛鴟鴦鴫鴬鴻鵄鵐鵑鵙鵞鵠鵤鵬鵯鵲鵺鶇鶉鶚鶩鶫鶯鶸鶺鷄鷙鷦鷭鸛鸞鹵鹹鹼麁麋麒麕麝麟麩麭麵麸麹麼麾麿黍黐黝黥黶黽鼈鼎鼡鼬鼯鼾齊齋齒齣齪齷龕龗",
+  "kanji_rare_1_9": "且丘串丹丼乞亀享亭仄仇仔仙伍伐但佩佳併侈侏侘侯侶俄俊俳俵倣倦偲傑傲債僭僻儂儒儘儚儺克党其冑冠冽准凜几凧凪凹函刈刳剌剖剰劈劫勃勅勲匙升卸厨厭又叡吊吠吼吽呈呉呵呻咀咆咥咬咽哂哄哨哭哮哲唄唆唖唾啜啼喘喩嗅嗚嗜嗤嘉嘔嘗嘯嘴噤噪噺嚢嚼囀囮國圭坐坦坩坪垣埒埼堕堝堤堰填塹塾墜墨壌壕壜壬壺夥夷奔奧奨妃妊姑姜姪姻娑娠娯婿媒媚嫋嫡嬌嬲孕孝孟孵學宏宥宰寅寛寡寥寵尖尺尼尿屁屍屏屓屯岬岳峡峯峻崇嵌嵩嶌嶮巌已巳巷帆帖帛帥幣庄廉廓廣廷弊弐弔弘弛弥弦弧彗彙彰彷彿徂径徊徘徠徨循忽怨恍恕恫恰悉悌悠悶悸悼惧惰愁慄慇慟慧慶憊憚憫憬憮憲憾懃懊懣懲懺戟戮扁扇扈托扮扶批抉抒抓抹抽拉拐拙括拵拷挫挺挽挿捌捏捗捩捲掌掟掠掩掬揄揶搬搭搾摩摯摺撓撥播撰撲撼擁擢擬擱擲攣攪攫斎斑斟斥斧斯於旋旗旨旬旭旺昂昆昌昭昴晒晦暁暈曝曽朔朦朧朴朶杉杏杖杞杭杳枕枠枢枷柊柏柑柩柴柵柿栃栓栗株核桂桧桶桿梃梗條梢梳棋棍棗棘棲棺椀楊楓楚楯榔槌槍槓槽樽檀檎檜檳櫛櫻欒欧殖殲毅毘毟毫毯氾汎汐汝汲汽沁沌沖沫沽泌泡泪泰洛洩洪浩涛涸淀淋淑淘淫淵渇港渾湘湾溌溺滋滓滝滾漆漕潮澤澹濤濫瀕灼炉炒炸烹焉焔煎燐燕燦燭燻爾牒牙牝牡牢犇狗狛狡狢狸猟猥猪猶獰玲珀珈琉琢琲琴瑛瑠瓏瓜甚甦畔畜疇疚疫疼痍痒痙痣痩瘍瘡瘤癇癪皐皹皺盟盲眇眸睥睦睫瞭瞰矜矩矮矯砦硝硫碁碌碑碗碧磁磋祀祉祐祓祟祠祥祷祿禮秤秩稜稟稲穀穢穣穹窃窘窯站竟竣竦竪竿笛符笹筐筵箇箋箍箔篤篭簪簾籐籤粕粘粛粥糊糞累紺絨綱綻綿緋緻縊縋縞縷繍繕羞翅翠翳翻而耕耗耽聡聳肖肥肪肴肺胎胡胱胴脂脆脛脩腎腑腔腫腱腸腿膀膂膏膚膠膿臥舗舟航舵艦艱芋芥芻苑苔茨茫茹荻莫菅菫菱萎萬著董葦葱蒙蓄蓑蓬蓼蔑蔓蔭蔽蕃蕩蕪蕾薪薫薮藁藍藪藻蘭虔虜虻蚊蛆蛙蛮蛾蜂蜜蝉蝋螺蟄蟻蠅蠢蠣蠱衡衰袂袈袱袴裔裟裡裾褐褥褪訂訃訛訣訥訶詈詛詣詭該誅誑誹諌諍諒諺諾謐謗謬謳譚譜讃豹貞貢貨貪貶貿賄賓賜賠賤贔贖跋跨跪践踝蹂蹄蹲躓躙躯躱躾軒輌輸輿轍辜辟辣農辻迂迄迅迦迸逅逐逞逡逼遁遍遙遡遵遷遼遽邂邏邑邦邸郊郭郵鄙酊酌酎酢酩酪酵醇醤醸采釜鉈鉛銅鋏鋸錘錬鍔鍮鎌鎧鎬鏖鏝鐺鑢鑷閑閲闊闢阜阪阻陳陵隆隈隷隼雁雌雖雛雫需霖靄靡革靭鞍鞘鞭韻頁頓頸頻頽顏顕顰颶飄飢飴餅餉餐餡饅饉饒饗駈駕騨騰驕驟髄髭魄鮫鮭鯉鯖鯛鯨鯵鰐鰥鰯鰹鱈鱗鴉鴨鵜鵡鶏鶴鷲鷺鸚鹸麓黎黛黴鼠齎齟齧齬",
+  "distinct_chars_all_splits": 3160,
+  "distinct_kanji_all_splits": 2872,
+  "kanji_outside_vocab_in_kept_rows": "",
+  "oov_chars_dropped_lines": {
+   "⁉": 119,
+   "‼": 42,
+   "•": 8,
+   "⑯": 3,
+   "頚": 3,
+   "²": 2,
+   "´": 1,
+   "Е": 1,
+   "Я": 1,
+   "Ⅳ": 1,
+   "④": 1,
+   "⑤": 1,
+   "┏": 1,
+   "┛": 1,
+   "｀": 1
+  },
+  "outside_small_vocab_in_kept_rows": "儺吽哂嶌恫狢瘴皹鑷鯵",
+  "training_side_characters": 1906261,
+  "training_side_kanji_characters": 422171
+ }
+}

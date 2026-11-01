@@ -1,0 +1,1379 @@
+{
+ "kind": "vocr6-hooked-vndb-map",
+ "version": 2,
+ "note": "VNDB VN ids of the hooked corpus v2's 138 titles (b2-ingest2, #166). 'metadata': the VNDB id in the title's runs' metadata.json (the farm's match; catalog_releases / catalog_vns: the dump's releases whose catalog number is the title id, where they exist). 'vndb-catalog': no metadata id; the VNs of the dump's releases whose catalog number is the title id. 'vndb-dump': neither; matched by hand by the release's title and platform (PS Vita, the Japanese release). Dump: the VNDB dump of 2026-10-13 ($HERD/shared/artifacts/native-frames/vndb/dump). VNDB data: ODbL 1.0 / DbCL 1.0 (vndb.org/d17).",
+ "titles": {
+  "NPJG00016": {
+   "vns": [
+    "v14909"
+   ],
+   "source": "metadata"
+  },
+  "NPJH00140": {
+   "vns": [
+    "v7301"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50001": {
+   "vns": [
+    "v2063"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50002": {
+   "vns": [
+    "v21259"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50127": {
+   "vns": [
+    "v3360"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r6566"
+   ]
+  },
+  "NPJH50132": {
+   "vns": [
+    "v1171"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50279": {
+   "vns": [
+    "v4091"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50297": {
+   "vns": [
+    "v1322"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50356": {
+   "vns": [
+    "v398"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50382": {
+   "vns": [
+    "v1646"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50551": {
+   "vns": [
+    "v22505"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50591": {
+   "vns": [
+    "v6173"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50609": {
+   "vns": [
+    "v1805"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r38228"
+   ],
+   "catalog_vns": [
+    "v1805"
+   ]
+  },
+  "NPJH50621": {
+   "vns": [
+    "v57"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50641": {
+   "vns": [
+    "v7018"
+   ],
+   "source": "metadata"
+  },
+  "NPJH50649": {
+   "vns": [
+    "v10623"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r34123"
+   ],
+   "catalog_vns": [
+    "v10623"
+   ]
+  },
+  "NPJH50882": {
+   "vns": [
+    "v3"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r117205"
+   ],
+   "catalog_vns": [
+    "v3"
+   ]
+  },
+  "PCSG00007": {
+   "vns": [
+    "v5"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r19841"
+   ],
+   "title": "リトルバスターズ！Converted Edition"
+  },
+  "PCSG00020": {
+   "vns": [
+    "v7809"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r15652",
+    "r19906"
+   ],
+   "title": "極限脱出ADV 善人シボウデス"
+  },
+  "PCSG00062": {
+   "vns": [
+    "v10856"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00122": {
+   "vns": [
+    "v11"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r21752",
+    "r36304"
+   ],
+   "title": "フェイト/ステイナイト［レアルタ・ヌア］"
+  },
+  "PCSG00139": {
+   "vns": [
+    "v11000"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00146": {
+   "vns": [
+    "v6618"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r55781"
+   ],
+   "catalog_vns": [
+    "v6618"
+   ]
+  },
+  "PCSG00147": {
+   "vns": [
+    "v2002"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r88732"
+   ],
+   "catalog_vns": [
+    "v2002"
+   ]
+  },
+  "PCSG00172": {
+   "vns": [
+    "v5844"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r24666",
+    "r24667"
+   ],
+   "title": "神咒神威神楽 曙之光"
+  },
+  "PCSG00183": {
+   "vns": [
+    "v2089"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r44774"
+   ],
+   "catalog_vns": [
+    "v2089"
+   ]
+  },
+  "PCSG00206": {
+   "vns": [
+    "v5154"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00250": {
+   "vns": [
+    "v11660"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00272": {
+   "vns": [
+    "v9846"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r29077"
+   ],
+   "catalog_vns": [
+    "v9846"
+   ]
+  },
+  "PCSG00291": {
+   "vns": [
+    "v1281"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r143231"
+   ],
+   "catalog_vns": [
+    "v1281"
+   ]
+  },
+  "PCSG00352": {
+   "vns": [
+    "v5883"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00367": {
+   "vns": [
+    "v15118"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r41114"
+   ],
+   "catalog_vns": [
+    "v15118"
+   ]
+  },
+  "PCSG00370": {
+   "vns": [
+    "v5297"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00380": {
+   "vns": [
+    "v18456"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00382": {
+   "vns": [
+    "v14813"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r33252"
+   ],
+   "catalog_vns": [
+    "v14813"
+   ]
+  },
+  "PCSG00410": {
+   "vns": [
+    "v15253"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r34068"
+   ],
+   "catalog_vns": [
+    "v15253"
+   ]
+  },
+  "PCSG00420": {
+   "vns": [
+    "v5916"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r33663",
+    "r35971",
+    "r35972",
+    "r36999",
+    "r37000"
+   ],
+   "title": "DRAMAtical Murder re:code"
+  },
+  "PCSG00428": {
+   "vns": [
+    "v14917"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r33628"
+   ],
+   "catalog_vns": [
+    "v14917"
+   ]
+  },
+  "PCSG00448": {
+   "vns": [
+    "v14652"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r33425"
+   ]
+  },
+  "PCSG00450": {
+   "vns": [
+    "v17739"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00451": {
+   "vns": [
+    "v22613"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00459": {
+   "vns": [
+    "v14267"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r35175",
+    "r41168"
+   ],
+   "title": "Flowers"
+  },
+  "PCSG00468": {
+   "vns": [
+    "v15771"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r36300"
+   ]
+  },
+  "PCSG00469": {
+   "vns": [
+    "v6723"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r37449"
+   ],
+   "catalog_vns": [
+    "v6723"
+   ]
+  },
+  "PCSG00472": {
+   "vns": [
+    "v15448"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r34582"
+   ],
+   "catalog_vns": [
+    "v15448"
+   ]
+  },
+  "PCSG00476": {
+   "vns": [
+    "v12150"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r36113"
+   ],
+   "catalog_vns": [
+    "v12150"
+   ]
+  },
+  "PCSG00477": {
+   "vns": [
+    "v15773"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r35966"
+   ],
+   "catalog_vns": [
+    "v15773"
+   ]
+  },
+  "PCSG00505": {
+   "vns": [
+    "v12480"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00509": {
+   "vns": [
+    "v16049"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r38527"
+   ],
+   "catalog_vns": [
+    "v16049"
+   ]
+  },
+  "PCSG00510": {
+   "vns": [
+    "v2021"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53449"
+   ],
+   "catalog_vns": [
+    "v2021",
+    "v5258"
+   ]
+  },
+  "PCSG00530": {
+   "vns": [
+    "v14649"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r33686"
+   ],
+   "catalog_vns": [
+    "v14649"
+   ]
+  },
+  "PCSG00540": {
+   "vns": [
+    "v12260"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r39059"
+   ],
+   "catalog_vns": [
+    "v12260"
+   ]
+  },
+  "PCSG00547": {
+   "vns": [
+    "v17285"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r39996"
+   ],
+   "catalog_vns": [
+    "v17285"
+   ]
+  },
+  "PCSG00553": {
+   "vns": [
+    "v11472"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r37476"
+   ],
+   "catalog_vns": [
+    "v11472"
+   ]
+  },
+  "PCSG00555": {
+   "vns": [
+    "v14018"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00567": {
+   "vns": [
+    "v1377"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r42977",
+    "r46645",
+    "r46646"
+   ],
+   "title": "この世の果てで恋を唄う少女YU-NO"
+  },
+  "PCSG00576": {
+   "vns": [
+    "v12188"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r38211"
+   ],
+   "catalog_vns": [
+    "v12188",
+    "v9915"
+   ]
+  },
+  "PCSG00591": {
+   "vns": [
+    "v16467"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r39882"
+   ],
+   "catalog_vns": [
+    "v16467"
+   ]
+  },
+  "PCSG00602": {
+   "vns": [
+    "v12751"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r40475"
+   ],
+   "catalog_vns": [
+    "v12751"
+   ]
+  },
+  "PCSG00611": {
+   "vns": [
+    "v15248"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r41219"
+   ],
+   "catalog_vns": [
+    "v15248"
+   ]
+  },
+  "PCSG00620": {
+   "vns": [
+    "v14973"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00628": {
+   "vns": [
+    "v11301"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00629": {
+   "vns": [
+    "v1715"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r40382"
+   ],
+   "catalog_vns": [
+    "v1715"
+   ]
+  },
+  "PCSG00638": {
+   "vns": [
+    "v2835"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00648": {
+   "vns": [
+    "v10680"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00653": {
+   "vns": [
+    "v17343"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r40693"
+   ],
+   "catalog_vns": [
+    "v17343"
+   ]
+  },
+  "PCSG00666": {
+   "vns": [
+    "v14759"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r42708"
+   ],
+   "catalog_vns": [
+    "v14759"
+   ]
+  },
+  "PCSG00667": {
+   "vns": [
+    "v17608"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69950"
+   ],
+   "catalog_vns": [
+    "v17608"
+   ]
+  },
+  "PCSG00673": {
+   "vns": [
+    "v17102"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00696": {
+   "vns": [
+    "v28235"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r70719"
+   ]
+  },
+  "PCSG00706": {
+   "vns": [
+    "v16770"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r44779"
+   ],
+   "catalog_vns": [
+    "v16770"
+   ]
+  },
+  "PCSG00713": {
+   "vns": [
+    "v17287"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r41495"
+   ],
+   "catalog_vns": [
+    "v17287"
+   ]
+  },
+  "PCSG00739": {
+   "vns": [
+    "v15395"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r41338",
+    "r53965"
+   ],
+   "title": "FLOWERS - Le volume sur été -"
+  },
+  "PCSG00745": {
+   "vns": [
+    "v4719"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r70226"
+   ]
+  },
+  "PCSG00751": {
+   "vns": [
+    "v8203"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r42845"
+   ],
+   "catalog_vns": [
+    "v8203"
+   ]
+  },
+  "PCSG00753": {
+   "vns": [
+    "v8243"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r42843"
+   ],
+   "catalog_vns": [
+    "v8243"
+   ]
+  },
+  "PCSG00755": {
+   "vns": [
+    "v7557"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r45170"
+   ],
+   "catalog_vns": [
+    "v7557"
+   ]
+  },
+  "PCSG00766": {
+   "vns": [
+    "v18163"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53158"
+   ],
+   "catalog_vns": [
+    "v18163"
+   ]
+  },
+  "PCSG00768": {
+   "vns": [
+    "v13833"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r43941"
+   ],
+   "catalog_vns": [
+    "v13833"
+   ]
+  },
+  "PCSG00769": {
+   "vns": [
+    "v19140"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r46783"
+   ],
+   "catalog_vns": [
+    "v19140"
+   ]
+  },
+  "PCSG00776": {
+   "vns": [
+    "v93"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00777": {
+   "vns": [
+    "v92"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00785": {
+   "vns": [
+    "v12438"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r44773"
+   ],
+   "catalog_vns": [
+    "v12438"
+   ]
+  },
+  "PCSG00787": {
+   "vns": [
+    "v18159"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r45491"
+   ]
+  },
+  "PCSG00794": {
+   "vns": [
+    "v11469"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r50022"
+   ],
+   "catalog_vns": [
+    "v11469"
+   ]
+  },
+  "PCSG00805": {
+   "vns": [
+    "v18314"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r46897"
+   ],
+   "catalog_vns": [
+    "v18314"
+   ]
+  },
+  "PCSG00807": {
+   "vns": [
+    "v18432"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r45086"
+   ],
+   "catalog_vns": [
+    "v18432"
+   ]
+  },
+  "PCSG00808": {
+   "vns": [
+    "v19012"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r46749"
+   ]
+  },
+  "PCSG00817": {
+   "vns": [
+    "v147"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00826": {
+   "vns": [
+    "v17345"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r44834"
+   ],
+   "catalog_vns": [
+    "v17345"
+   ]
+  },
+  "PCSG00829": {
+   "vns": [
+    "v17750"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r46369"
+   ],
+   "catalog_vns": [
+    "v17750"
+   ]
+  },
+  "PCSG00845": {
+   "vns": [
+    "v16134"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00852": {
+   "vns": [
+    "v18838"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r69660"
+   ]
+  },
+  "PCSG00853": {
+   "vns": [
+    "v17640"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r44778"
+   ],
+   "catalog_vns": [
+    "v17640"
+   ]
+  },
+  "PCSG00854": {
+   "vns": [
+    "v18833"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r45944"
+   ],
+   "catalog_vns": [
+    "v18833"
+   ]
+  },
+  "PCSG00866": {
+   "vns": [
+    "v18160"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r45942"
+   ],
+   "catalog_vns": [
+    "v18160"
+   ]
+  },
+  "PCSG00876": {
+   "vns": [
+    "v18162"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r42539"
+   ],
+   "catalog_vns": [
+    "v18162"
+   ]
+  },
+  "PCSG00883": {
+   "vns": [
+    "v3112",
+    "v7809"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r55489",
+    "r55506"
+   ],
+   "title": "ZERO ESCAPE ９時間９人９の扉 善人シボウデス ダブルパック (both VNs)"
+  },
+  "PCSG00903": {
+   "vns": [
+    "v19717"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00911": {
+   "vns": [
+    "v15070"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69920"
+   ],
+   "catalog_vns": [
+    "v15070"
+   ]
+  },
+  "PCSG00912": {
+   "vns": [
+    "v20117"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69918"
+   ],
+   "catalog_vns": [
+    "v20117"
+   ]
+  },
+  "PCSG00914": {
+   "vns": [
+    "v4602"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r70229"
+   ],
+   "catalog_vns": [
+    "v4602"
+   ]
+  },
+  "PCSG00916": {
+   "vns": [
+    "v2022",
+    "v5854"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r53448"
+   ]
+  },
+  "PCSG00917": {
+   "vns": [
+    "v2023"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53447"
+   ],
+   "catalog_vns": [
+    "v2023",
+    "v7540"
+   ]
+  },
+  "PCSG00918": {
+   "vns": [
+    "v2024"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53446"
+   ],
+   "catalog_vns": [
+    "v2024",
+    "v7553"
+   ]
+  },
+  "PCSG00926": {
+   "vns": [
+    "v14265"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00935": {
+   "vns": [
+    "v8095",
+    "v12775"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r48862"
+   ]
+  },
+  "PCSG00938": {
+   "vns": [
+    "v4542"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r46386"
+   ],
+   "catalog_vns": [
+    "v4542"
+   ]
+  },
+  "PCSG00981": {
+   "vns": [
+    "v18152"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r47473",
+    "r53966"
+   ],
+   "title": "FLOWERS -Le Volume sur Automne-"
+  },
+  "PCSG00988": {
+   "vns": [
+    "v15080"
+   ],
+   "source": "metadata"
+  },
+  "PCSG00991": {
+   "vns": [
+    "v12928"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r50021"
+   ],
+   "catalog_vns": [
+    "v12928"
+   ]
+  },
+  "PCSG01000": {
+   "vns": [
+    "v18498"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01008": {
+   "vns": [
+    "v20747"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r50532"
+   ],
+   "catalog_vns": [
+    "v20747"
+   ]
+  },
+  "PCSG01019": {
+   "vns": [
+    "v18295"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r50329"
+   ]
+  },
+  "PCSG01023": {
+   "vns": [
+    "v20577"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01046": {
+   "vns": [
+    "v20634"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r51773"
+   ],
+   "catalog_vns": [
+    "v20634"
+   ]
+  },
+  "PCSG01065": {
+   "vns": [
+    "v20958"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r54007"
+   ],
+   "catalog_vns": [
+    "v20958"
+   ]
+  },
+  "PCSG01075": {
+   "vns": [
+    "v21140"
+   ],
+   "source": "vndb-catalog",
+   "releases": [
+    "r52291"
+   ]
+  },
+  "PCSG01110": {
+   "vns": [
+    "v21521"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53282"
+   ],
+   "catalog_vns": [
+    "v21521"
+   ]
+  },
+  "PCSG01127": {
+   "vns": [
+    "v15708"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01152": {
+   "vns": [
+    "v22114"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69511"
+   ],
+   "catalog_vns": [
+    "v22114"
+   ]
+  },
+  "PCSG01167": {
+   "vns": [
+    "v18291"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r54438"
+   ],
+   "catalog_vns": [
+    "v18291"
+   ]
+  },
+  "PCSG01180": {
+   "vns": [
+    "v21784"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r53961"
+   ],
+   "catalog_vns": [
+    "v21784"
+   ]
+  },
+  "PCSG01187": {
+   "vns": [
+    "v19545"
+   ],
+   "source": "vndb-dump",
+   "releases": [
+    "r54950",
+    "r54951"
+   ],
+   "title": "FLOWERS 冬篇"
+  },
+  "PCSG01194": {
+   "vns": [
+    "v12096"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69960"
+   ],
+   "catalog_vns": [
+    "v12096"
+   ]
+  },
+  "PCSG01196": {
+   "vns": [
+    "v1399"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r153725"
+   ],
+   "catalog_vns": [
+    "v1399"
+   ]
+  },
+  "PCSG01197": {
+   "vns": [
+    "v18695"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69780"
+   ],
+   "catalog_vns": [
+    "v18695"
+   ]
+  },
+  "PCSG01202": {
+   "vns": [
+    "v18842"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r56982"
+   ],
+   "catalog_vns": [
+    "v18842"
+   ]
+  },
+  "PCSG01221": {
+   "vns": [
+    "v1940"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01245": {
+   "vns": [
+    "v24291"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69244"
+   ],
+   "catalog_vns": [
+    "v24291"
+   ]
+  },
+  "PCSG01247": {
+   "vns": [
+    "v1892"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r70342"
+   ],
+   "catalog_vns": [
+    "v1892"
+   ]
+  },
+  "PCSG01250": {
+   "vns": [
+    "v19444"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01253": {
+   "vns": [
+    "v22045"
+   ],
+   "source": "metadata"
+  },
+  "PCSG01260": {
+   "vns": [
+    "v20314"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r61178"
+   ],
+   "catalog_vns": [
+    "v20314"
+   ]
+  },
+  "PCSG01268": {
+   "vns": [
+    "v22311"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r69442"
+   ],
+   "catalog_vns": [
+    "v22311"
+   ]
+  },
+  "PCSG01282": {
+   "vns": [
+    "v6656"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r70117"
+   ],
+   "catalog_vns": [
+    "v6656"
+   ]
+  },
+  "ULJM05383": {
+   "vns": [
+    "v34"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r13787",
+    "r6626"
+   ],
+   "catalog_vns": [
+    "v34"
+   ]
+  },
+  "ULJM05674": {
+   "vns": [
+    "v10"
+   ],
+   "source": "metadata",
+   "catalog_releases": [
+    "r7480"
+   ],
+   "catalog_vns": [
+    "v10",
+    "v1542",
+    "v18736",
+    "v18738",
+    "v70"
+   ]
+  }
+ }
+}

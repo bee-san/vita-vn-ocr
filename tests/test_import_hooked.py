@@ -395,3 +395,225 @@ def test_hval_targets_guard_copies_and_the_tall_band(tmp_path):
     assert pp["000007"]["complete"] is False and pp["000007"]["regions"] == []
     assert pp["000007"]["lines"][0]["tall_band"] is True
     assert pp["000008"]["complete"] is True and [g["variant"] for g in pp["000008"]["regions"]][0] == "base"
+
+
+# ----------------------------------------------------------------------------- capture runs (pools v2)
+
+def test_moved_page_and_record():
+    assert IH.moved_page("000123", 0) == "000123" and IH.moved_page("000123", 1) == "100123"
+    assert IH.moved_page("003292", 2) == "203292"
+    with pytest.raises(ValueError):
+        IH.moved_page("100000", 1)                         # outside the scheme: would collide with run 1's ids
+    line = {"id": "T1:000007:line2", "page": "000007", "image": "pages/000007.png", "kind": "line"}
+    m = IH.move_record(line, 1, "T1")
+    assert (m["id"], m["page"], m["image"]) == ("T1:100007:line2", "100007", "pages/100007.png")
+    assert (m["src_id"], m["src_page"], m["src_image"], m["run_index"]) == \
+        ("T1:000007:line2", "000007", "pages/000007.png", 1)
+    page = {"id": "000007", "image": "pages/000007.png"}
+    assert IH.move_record(page, 2, "T1")["id"] == "200007" and IH.move_record(page, 2, "T1")["src_id"] == "000007"
+    assert line["id"] == "T1:000007:line2"                  # the input is not changed
+    ruby = {"id": "T1:000007:ruby1", "page": "000007", "image": "pages/000007.png", "host_line": "T1:000007:line2"}
+    assert IH.move_record(ruby, 1, "T1")["host_line"] == "T1:100007:line2"      # the host line moves with the page
+
+
+def test_split_runs_one_run_is_split_title():
+    pages = ids(1000)
+    texts = {p: f"t{p}" * 3 for p in pages}
+    assert IH.split_runs([pages], "train", "PCSG00001", texts, {}) == \
+        (*IH.split_title(pages, "train", "PCSG00001"), [])
+
+
+def test_cross_run_guard_moves_repeats_of_held_out_pages():
+    run0 = ids(1000)
+    run1 = [IH.moved_page(p, 1) for p in ids(100)]          # a re-capture of the opening
+    assign, blocks = IH.split_title(run0, "train", "PCSG00001")
+    for p in run1:
+        assign[p] = "train"
+    hv = [p for p in run0 if assign[p] == "hval"]
+    gd = [p for p in run0 if assign[p] == "guard"]
+    texts = {p: f"page text {p}" for p in run0}
+    texts.update({p: f"other text {p}" for p in run1})      # by default no run 1 page repeats a run 0 page
+    t_h, t_g = hv[0], gd[0]
+    texts[run1[10]] = texts[t_h]                           # repeats an hval page: guard, with a 15-page band
+    texts[run1[80]] = texts[t_g]                           # repeats a guard page: guard, no band
+    texts[run1[50]] = "short"                              # under CROSS_MIN characters: never matched
+    labels = {run1[60]: {"あいうえおかきく"}, hv[1]: {"あいうえおかきく"}}   # a shared line label with an hval page
+    a = dict(assign)
+    moved = IH.cross_run_guard([run0, run1], a, texts, labels)
+    band = set(run1[max(0, 10 - 15):10 + 16]) | set(run1[60 - 15:60 + 16])
+    assert set(moved) == band | {run1[80]}
+    assert all(a[p] == "guard" for p in moved) and all(a[p] == assign[p] for p in run0)   # run 0 unchanged
+    assert a[run1[50]] == "train" or run1[50] in band
+
+
+def write_run(root, folder_rel, tid, n_pages, texts, run, packaged, split="train", platform="vita"):
+    """A one-run folder at root/folder_rel: n_pages pages, page k showing texts[k] as one line."""
+    W, H = (480, 272) if platform == "psp" else (960, 544)
+    folder = root / folder_rel
+    folder.mkdir(parents=True)
+    pages, lines, members = [], [], {}
+    for k in range(1, n_pages + 1):
+        pid = f"{k:06d}"
+        text = texts[k]
+        box = [40, 400, 20 * len(text), 24]
+        img = fake_page(W, H, [(text, box)])
+        img[0, 0, 0] = run                                  # the runs' frames differ by a pixel
+        ok, png = cv2.imencode(".png", img[..., ::-1])
+        members[f"pages/{pid}.png"] = png.tobytes()
+        sha = hashlib.sha256(png.tobytes()).hexdigest()
+        pages.append({"id": pid, "image": f"pages/{pid}.png", "image_sha256": sha, "text_clean": text,
+                      "boxes": [{"xyxy": [box[0], box[1], box[0] + box[2], box[1] + box[3]], "kind": "line"}]})
+        lines.append({"id": f"{tid}:{pid}:line1", "kind": "line", "title_id": tid, "platform": platform,
+                      "page": pid, "image": f"pages/{pid}.png", "image_sha256": sha, "dimensions": [W, H],
+                      "box": box, "pad": 4, "vertical": False, "text": text, "text_hook": text, "cell_boxes": [],
+                      "cell_chars": [], "source": "glyph_cells", "source_check": "cell_count_match",
+                      "box_index": [1], "split": split, "text_source": "stored"})
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        for name, data in members.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+    zst(folder / "pages.tar.zst", buf.getvalue())
+    zst(folder / "pages.jsonl.zst", "".join(json.dumps(p, ensure_ascii=False) + "\n" for p in pages).encode())
+    zst(folder / "lines.jsonl.zst", "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in lines).encode())
+    files = {f: {"bytes": (folder / f).stat().st_size, "sha256": IH.sha256_file(folder / f)}
+             for f in ("pages.tar.zst", "pages.jsonl.zst", "lines.jsonl.zst")}
+    meta = {"title_id": tid, "title": "Fake", "platform": platform, "resolution": [W, H], "pages": n_pages,
+            "characters": sum(len(texts[k]) for k in range(1, n_pages + 1)), "split": split,
+            "vndb": {"vn": None}, "lines": {"verified_lines": n_pages}, "run": run, "packaged": packaged,
+            "files": files}
+    (folder / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False))
+    return meta
+
+
+@pytest.mark.skipif(not HAVE_ZSTD, reason="needs the zstd and tar binaries")
+def test_two_run_title_end_to_end(tmp_path):
+    """A title of two runs: the later run uploaded into the earlier run's folder (its first run recovered under
+    versions/ and listed in index.json), a third recovered export that index.json does not list (left out). Run 1's
+    pages and records are moved by 100000 and keep their own ids; run 0 splits as a title of its own; run 1's
+    repeats of held-out pages are guard; the pools carry the run and the VN from the map."""
+    mirror = tmp_path / "mirror"
+    tid = "PCSG99999"
+    kana = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
+    texts0 = {k: kana[k % 40] + kana[(k // 40) % 40] + kana[(k // 1600) % 40] + "のこと" for k in range(1, 301)}
+    assign0, blocks0 = IH.split_title([f"{k:06d}" for k in range(1, 301)], "train", tid)
+    first = int(blocks0[0][0])
+    src = {k: min(300, max(1, first - 10 + k)) for k in range(1, 41)}   # run 1 page k shows run 0 page src[k]
+    texts1 = {k: texts0[src[k]] for k in range(1, 41)}       # a re-capture of the stretch around the hval block
+    m0 = write_run(mirror, f"versions/vita/{tid} Fake/20261025T000000Z", tid, 300, texts0, 0, "2026-10-25T00:00:00Z")
+    m1 = write_run(mirror, f"vita/{tid} Fake", tid, 40, texts1, 1, "2026-10-27T00:00:00Z")
+    write_run(mirror, f"versions/vita/{tid} Fake/20261024T000000Z", tid, 2, texts0, 2, "2026-10-24T00:00:00Z")
+    (mirror / "index.json").write_text(json.dumps({"titles": [
+        {"title_id": tid, "pages": m["pages"], "characters": m["characters"],
+         "lines": {"verified_lines": m["lines"]["verified_lines"]}} for m in (m0, m1)]}))
+    runs = IH.title_runs(mirror)
+    assert [f.name for f in runs[tid]] == ["20261025T000000Z", f"{tid} Fake"]   # packaged order; the export left out
+    art = tmp_path / "art"
+    IH.main(["extract", "--root", str(mirror), "--out", str(art / "pages"), "--procs", "1"])
+    got = sorted(p.stem for p in (art / "pages" / tid / "pages").glob("*.png"))
+    assert got == [f"{k:06d}" for k in range(1, 301)] + [f"{100000 + k:06d}" for k in range(1, 41)]
+    IH.main(["split", "--root", str(mirror), "--out", str(art / "splits.json")])
+    sp = json.loads((art / "splits.json").read_text())["titles"][tid]
+    assert sp["hval_blocks"] == blocks0 and all(sp["assign"][p] == s for p, s in assign0.items())
+    s0 = {k: assign0[f"{src[k]:06d}"] for k in range(1, 41)}
+    hv1 = [k for k in range(1, 41) if s0[k] == "hval"]
+    assert hv1                                               # run 1 repeats hval pages
+    for k in range(1, 41):
+        want = "guard" if s0[k] in ("hval", "guard") or any(abs(k - j) <= 15 for j in hv1) else "train"
+        assert sp["assign"][f"{100000 + k:06d}"] == want, k
+    assert sorted(sp["cross_run_guard"]) == sorted(f"{100000 + k:06d}" for k in range(1, 41)
+                                                   if sp["assign"][f"{100000 + k:06d}"] == "guard")
+    assert [r["index"] for r in sp["runs"]] == [0, 1] and sp["runs"][1]["page_offset"] == 100000
+    vmap = tmp_path / "vndb_map.json"
+    vmap.write_text(json.dumps({"titles": {tid: {"vns": ["v1234"], "source": "vndb-dump"}}}))
+    IH.main(["lines", "--root", str(mirror), "--pages", str(art / "pages"), "--splits", str(art / "splits.json"),
+             "--out", str(art / "pools"), "--procs", "1", "--vndb-map", str(vmap)])
+    man = json.loads((art / "pools" / "manifest.json").read_text())
+    assert man["pool_tag"] == "hooked-v2" and man["titles"][tid]["counts"]["records"] == 340
+    rows = [r for s in ("train", "guard", "hval_fold") for f in [art / "pools" / s / "line" / f"{tid}.npz"]
+            if f.exists() for r in IH.read_npz(f)]
+    assert all(m["vn"] == "v1234" and m["pool"] == "hooked-v2" for m, _, _ in rows)
+    later = [m for m, _, _ in rows if int(m["page"]) > 100000]
+    assert later and all(m["run"] == 1 and m["src_id"] == f"{tid}:{m['src_page']}:line1" and
+                         m["id"] == f"{tid}:{m['page']}:line1" for m in later)
+    assert not any("run" in m for m, _, _ in rows if int(m["page"]) < 100000)    # run 0's rows as in v1
+    IH.main(["pages", "--root", str(mirror), "--pages", str(art / "pages"), "--splits", str(art / "splits.json"),
+             "--pools", str(art / "pools"), "--out", str(art / "pagepool"), "--procs", "1"])
+    pp = {r["page"]: r for r in IH.read_jsonl(art / "pagepool" / f"{tid}.jsonl")}
+    assert len(pp) == 340 and pp["100007"]["src_page"] == "000007" and pp["100007"]["run"] == 1
+    assert "run" not in pp["000007"]
+    IH.main(["manifests", "--splits", str(art / "splits.json"), "--pools", str(art / "pools"),
+             "--pagepool", str(art / "pagepool"), "--out", str(tmp_path / "man")])
+    mrows = {r["page"]: r for r in IH.read_jsonl(tmp_path / "man" / f"{tid}.jsonl")}
+    assert mrows["100007"]["src"] == "1:000007" and "src" not in mrows["000007"]
+    idx = json.loads((tmp_path / "man" / "index.json").read_text())
+    assert idx["titles"][tid]["runs"][1]["run"] == 1 and idx["pool_tag"] == "hooked-v2"
+    text = "".join(p.read_text(encoding="utf-8") for p in (tmp_path / "man").iterdir())
+    assert not any(t in text for t in texts0.values())       # ids, hashes and codes only
+
+
+# ----------------------------------------------------------------------------- pools v2's label rules
+
+def test_doubled_cells_and_remapped():
+    pair = [[0, 0, 36, 36], [2, 2, 34, 34]]                 # one glyph drawn twice under two keys
+    rec = {"source": "glyph_cells", "vertical": False, "cell_boxes": pair * 3}
+    rec["cell_boxes"] = [[x + 36 * (i // 2), y, xx + 36 * (i // 2), yy] for i, (x, y, xx, yy) in
+                         enumerate(rec["cell_boxes"])]
+    assert IH.doubled_cells(rec)
+    plain = {"source": "glyph_cells", "vertical": False,
+             "cell_boxes": [[30 * i, 0, 30 * i + 32, 32] for i in range(6)]}  # neighbours overlap 2 px: normal
+    assert not IH.doubled_cells(plain)
+    assert not IH.doubled_cells(dict(rec, source="image_rows"))
+    assert IH.remapped("NPJH50882", "「あⅥⅧッ！」") and not IH.remapped("NPJH50882", "「あーーッ！」")
+    assert not IH.remapped("PCSG00807", "ⅥⅧ")               # the classes are per title
+
+
+def test_undrawn_check_strips_a_blank_code_and_refuses_a_shifted_one():
+    grey = np.full((60, 200), 20, np.uint8)
+    cells = [[10 + 30 * i, 10, 40 + 30 * i, 40] for i in range(5)]
+    for i in (1, 2, 3):                                     # glyphs in cells 1-3; cells 0 and 4 blank
+        x0 = 10 + 30 * i
+        grey[16:34, x0 + 8:x0 + 22] = 230
+    rec = {"text": "^あいう", "cell_chars": ["^", "あ", "い", "う"], "cell_boxes": cells[:4],
+           "box": [10, 10, 150, 30], "source": "glyph_cells"}
+    out, label = IH.undrawn_check(rec, grey, "^")
+    assert label == "あいう" and out["cell_chars"] == ["あ", "い", "う"] and out["undrawn_removed"] == 1
+    assert out["cell_boxes"] == cells[1:4] and rec["cell_chars"][0] == "^"     # the input is not changed
+    trailing = dict(rec, text="^あいう^", cell_chars=["^", "あ", "い", "う", "^"], cell_boxes=cells)
+    assert IH.undrawn_check(trailing, grey, "^") is None    # a code after the line's start: dropped, even on a blank
+    on_ink = dict(rec, text="^いう", cell_chars=["^", "い", "う"], cell_boxes=cells[1:4])   # a code on a drawn glyph
+    assert IH.undrawn_check(on_ink, grey, "^") is None
+    blank = dict(rec, text="^あいうえ", cell_chars=["^", "あ", "い", "う", "え"], cell_boxes=cells)  # え on a blank
+    assert IH.undrawn_check(blank, grey, "^") is None
+
+
+@pytest.mark.skipif(not HAVE_ZSTD, reason="needs the zstd and tar binaries")
+def test_label_rules_in_the_import(tmp_path, monkeypatch):
+    """v2's rules in import_title: a record of a remapped codepoint and one of doubled cells are dropped as
+    label_doubt (their pages lose their regions); --label-rules v1 keeps both, as v1 did."""
+    tid = "NPJH99997"
+    monkeypatch.setitem(IH.REMAPPED, tid, "Ⅷ")
+    a, b = [40, 200, 90, 18], [40, 200, 72, 18]
+    dbl = {"cell_boxes": [[40 + 24 * (i // 2) + (i % 2), 200, 64 + 24 * (i // 2) + (i % 2), 218] for i in range(6)],
+           "cell_chars": list("「ふーん…」")}
+    spec = {1: ([("あいうえお", a, {})], None), 2: ([("かⅧき", b, {})], None), 3: ([("「ふーん…」", b, dbl)], None)}
+    folder = write_title(tmp_path / "mirror", tid, spec)
+    pages_dir = tmp_path / "pages"
+    IH.main(["extract", "--root", str(tmp_path / "mirror"), "--out", str(pages_dir), "--procs", "1"])
+    assign = {"000001": "train", "000002": "train", "000003": "train"}
+    vocab, vocab_s = IH.load_vocab_set(IH.VOCAB), IH.load_vocab_set(IH.VOCAB_S)
+    vocab = vocab | {"Ⅷ"}                                   # let the remapped character pass the vocab filter
+    for rules, out in (("v2", tmp_path / "v2"), ("v1", tmp_path / "v1")):
+        _, counts, _ = IH.import_title((folder, pages_dir, assign, out, vocab, vocab_s, IH.NEAR_MAD, "t", None, rules))
+        dec = {r["id"]: r for r in IH.read_jsonl(out / "decisions" / f"{tid}.jsonl")}
+        got = {k.split(":")[1]: (v.get("drop"), v.get("label_rule")) for k, v in dec.items()}
+        if rules == "v2":
+            assert got == {"000001": (None, None), "000002": ("label_doubt", "remapped"),
+                           "000003": ("label_doubt", "doubled_cells")}
+            assert counts["label_rule:remapped"] == 1 and counts["record:label_doubt"] == 2
+            IH.import_pages((folder, assign, out, tmp_path / "pp"))
+            pp = {r["page"]: r for r in IH.read_jsonl(tmp_path / "pp" / f"{tid}.jsonl")}
+            assert pp["000002"]["regions"] == [] and pp["000002"]["untrusted"] and pp["000001"]["regions"]
+        else:
+            assert all(d is None and r is None for d, r in got.values())

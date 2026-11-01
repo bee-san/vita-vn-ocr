@@ -61,8 +61,13 @@ result's finder record); a box without its dark flag gets synth/common.line_dark
 lies in its region, clipped to it (a page given as a number is zero-padded to six digits; fractional coordinates
 are rounded outward). Units left with no box are counted and printed.
 
+--heads: every blob read with the head sections it carries (the head gate on when it has one, the two-level head when
+it has one) and Rubi's ungated re-read of a line whose re-decode finds a counter context in a run that skipped
+frames (eval/vocr6_final_test.rubi_line), as Rubi runs VOCR6.2's blobs; off (the default): every blob plain, as
+before.
+
 Cached readings are keyed by the crop's pixels and polarity and by a tag naming the blob, the LM and its decoder
-settings, the re-decode, the top-K, the width clamp and the sha256 of the runtime library that read them.
+settings, the re-decode, the top-K, the width clamp, the sha256 of the runtime library that read them and --heads.
 
 Everything read here is private (copyrighted frames and the owner's text): units, rows and the cache stay under
 $HERD/shared/artifacts; RESULT.json holds counts only.
@@ -471,17 +476,31 @@ def run_driver(exe, jobs):
 _W = {}
 
 
-def _init(lib, blobs, lm, lm_opts):
+def _init(lib, blobs, lm, lm_opts, heads=False):
+    """Each worker's readers: tag -> (runtime, LM, heads, two-level). heads: the blob read with the head sections it
+    carries, as Rubi runs it (the head gate on when it has one, the two-level head when it has one)."""
     from pyvocr import Vocr, VocrLM, load_lib
     L = load_lib(lib)
     for tag, path in blobs.items():
-        r = Vocr(path, mode="w8i", max_width=MAX_WIDTH, lib=L)
-        _W[tag] = (r, VocrLM(r, lm, **lm_opts))
+        kw, two = {}, False
+        if heads:
+            from vocr6_final_test import blob_heads
+            gate, two = blob_heads(path, L)
+            kw = dict(head_gate="on" if gate else "off", two_level=1 if two else 0)
+        r = Vocr(path, mode="w8i", max_width=MAX_WIDTH, lib=L, **kw)
+        _W[tag] = (r, VocrLM(r, lm, **lm_opts), heads, two)
 
 
 def _read(job):
     key, tag, img, inv = job
-    r, lm = _W[tag]
+    r, lm, heads, two = _W[tag]
+    if heads:
+        # Rubi's line read with the heads on (eval/vocr6_final_test.rubi_line: core/vocr_ocr.c finish_line): the
+        # ungated re-read where the re-decode finds a counter context in a run that skipped frames; the line's
+        # confidence is the read used's, so compose's line_conf(g, cmin) gives Rubi's
+        from vocr6_final_test import rubi_line
+        o = rubi_line(r, lm, img, inv, two, REDECODE)
+        return key, tag, o["g"], o["b"], o["conf"] / 1000.0, int(o["frames"])
     o = r.run_topk(img, TOPK, invert=bool(inv), blank=True)
     b = ""
     if o["text"]:
@@ -542,13 +561,13 @@ def lm_settings(lm, alpha=None, beta=None, flags=None):
     return opts
 
 
-def model_tag(blob, lm, lm_opts, lib_sha256):
+def model_tag(blob, lm, lm_opts, lib_sha256, heads=False):
     return (f"{sha256_file(blob)[:20]}|{sha256_file(lm)[:20]}|"
             f"{json.dumps(lm_opts, sort_keys=True)}|rd{REDECODE[0]}/{REDECODE[1]}|k{TOPK}|w{MAX_WIDTH}|"
-            f"lib{lib_sha256[:20]}")
+            f"lib{lib_sha256[:20]}" + ("|heads" if heads else ""))
 
 
-def read_all(crops, tags, lm, cache, workers, lm_opts, lib):
+def read_all(crops, tags, lm, cache, workers, lm_opts, lib, heads=False):
     """crops: {key: (img, invert)}; tags: [(tag, blob)] to read every crop with. Fills the cache."""
     for tag, blob in tags:
         have = cache.get(tag, crops)
@@ -557,7 +576,7 @@ def read_all(crops, tags, lm, cache, workers, lm_opts, lib):
             continue
         t0 = time.time()
         rows = []
-        with Pool(workers, initializer=_init, initargs=(lib, {tag: blob}, lm, lm_opts)) as pool:
+        with Pool(workers, initializer=_init, initargs=(lib, {tag: blob}, lm, lm_opts, heads)) as pool:
             for i, (k, t, g, b, c, fr) in enumerate(pool.imap_unordered(_read, todo, chunksize=8)):
                 rows.append((t, k, g, b, c, fr))
                 if len(rows) >= 2000:
@@ -730,13 +749,15 @@ def cmd_run(a):
     blobs = {t: Path(a.models) / BLOBS[t] for t in ("S", "N", "L")}
     lm_opts = lm_settings(a.lm, a.lm_alpha, a.lm_beta, a.lm_flags)
     lib, lib_sha = runtime_lib()
-    tags = {t: model_tag(blobs[t], a.lm, lm_opts, lib_sha) for t in blobs}
+    heads = bool(getattr(a, "heads", False))
+    tags = {t: model_tag(blobs[t], a.lm, lm_opts, lib_sha, heads) for t in blobs}
     meta = {"schema": SCHEMA, "kind": "vocr6-pagepath-result", "units_file": str(a.units),
             "units_sha256": sha256_file(a.units), **umeta, "view": a.view, "tier": tier,
             "cascade": NEXT_TIER[tier] if not a.no_cascade else None,
             "blobs": {t: {"name": blobs[t].name, "sha256": sha256_file(blobs[t])} for t in blobs},
             "lm": {"name": Path(a.lm).name, "sha256": sha256_file(a.lm)}, "lm_opts": lm_opts,
-            "runtime_lib_sha256": lib_sha,
+            "runtime_lib_sha256": lib_sha, **({"heads": "each blob's own head sections on, as Rubi runs it"}
+                                               if heads else {}),
             "redecode": REDECODE, "cascade_conf": CASCADE_CONF, "filter": a.filter, "repo_head": subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
             "pagepath_sha256": sha256_file(__file__)}
@@ -817,11 +838,11 @@ def cmd_run(a):
     # 2. readings
     cache = Cache(a.cache)
     up = NEXT_TIER[tier] if not a.no_cascade else None
-    read_all(crops, [(tags[tier], blobs[tier])], a.lm, cache, a.workers, lm_opts, lib)
+    read_all(crops, [(tags[tier], blobs[tier])], a.lm, cache, a.workers, lm_opts, lib, heads)
     first = cache.get(tags[tier], crops)
     if up:
         low = {k: crops[k] for k, (g, b, c, fr) in first.items() if g and line_conf(g, c) < CASCADE_CONF}
-        read_all(low, [(tags[up], blobs[up])], a.lm, cache, a.workers, lm_opts, lib)
+        read_all(low, [(tags[up], blobs[up])], a.lm, cache, a.workers, lm_opts, lib, heads)
         second = cache.get(tags[up], low)
     else:
         second = {}
@@ -909,7 +930,7 @@ def cluster_bootstrap(rows_a, rows_b, reps=BOOT_REPS, seed=BOOT_SEED, min_cluste
 
 # the settings of a run that a comparison may vary on purpose (a finder arm, an LM, a tier) but should show
 SETTINGS = ("view", "tier", "cascade", "blobs", "lm", "lm_opts", "redecode", "cascade_conf", "filter", "textnorm",
-            "runtime_lib_sha256", "finder")
+            "runtime_lib_sha256", "finder", "heads")
 
 
 def check_pair(A, B):
@@ -993,6 +1014,8 @@ def main(argv=None):
     p.add_argument("--rubi", help="a Rubi_for_vita checkout (core/textnorm.c); without it no textnorm")
     p.add_argument("--tier", default="N", choices=("S", "N", "L"))
     p.add_argument("--no-cascade", action="store_true")
+    p.add_argument("--heads", action="store_true", help="read each blob with its own head sections (the head gate, "
+                   "the two-level head) and Rubi's ungated re-read, as Rubi runs it (default: off, every blob plain)")
     p.add_argument("--filter", default="lines", choices=sorted(FILTERS),
                    help="the Shell's line filter: lines (Rubi: non_japanese_filter = lines), lines+punct, none")
     p.add_argument("--cache", required=True)

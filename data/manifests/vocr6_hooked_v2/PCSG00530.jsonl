@@ -1,0 +1,8 @@
+{"page":"000001","sha256":"f2b501dfcf711dbe1cd0ef9c4eef1604b52529187bdfdf710d78a420b4ce8cbd","split":"train","complete":true,"lines":{"line1":"line:train","line2":"line:train"}}
+{"page":"000002","sha256":"e5be966b14b0b8549d658f928a2babb01017469b7ba3a5b49c28240c10ac0a0f","split":"train","complete":true,"lines":{"line1":"line:train","line2":"line:train"}}
+{"page":"000003","sha256":"ad686dd0c9a0657e136661c683ffccde4e88a60906636551e049f1ba7ecfa16c","split":"train","complete":false,"lines":{"line2":"line:train"}}
+{"page":"000004","sha256":"6b405291521772e3fb48ec3c75ce013d984862066e77617fcb85abc8177d3c7e","split":"train","complete":true,"lines":{"line1":"line:dup-exact","line2":"line:train"}}
+{"page":"000005","sha256":"9ea82bd431a04465d5ce5e1cc8d12310093b17aa71a2d71ac4908747bc7c499a","split":"train","complete":true,"lines":{"line1":"line:dup-exact","line2":"line:train"}}
+{"page":"000006","sha256":"d0d70e647d65ce6f3f5b4787d1fb7e97e51a81db946d843510599682b1351c42","split":"train","complete":true,"lines":{"line1":"line:dup-exact","line2":"line:train","line3":"line:train","line4":"line:train"}}
+{"page":"000007","sha256":"d103e17ae063ace4a7fbcf3d55685ba8011c2f702fdc5199a110f10fbca4d761","split":"train","complete":true,"lines":{"line1":"line:dup-exact","line2":"line:train"}}
+{"page":"000008","sha256":"674c9d8dfebab2068276d62a4291655b8e46961bb5fabf3811c18dda89bedfed","split":"train","complete":true,"lines":{"line1":"line:dup-exact","line2":"line:train","line3":"line:train","line4":"line:train"}}

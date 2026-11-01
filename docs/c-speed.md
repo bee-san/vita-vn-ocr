@@ -31,8 +31,8 @@ head; nothing here has run on a console):
 
 The box column is the recognizer's nominal box as the earlier docs give it (`docs/vocr6.md`): its 0.1 s stands for
 the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 region is about 0.774 + 0.076 → 0.744 +
-0.055 s (estimates, Rubi's flags). Rubi builds the recognizer with `-DVOCR_NO_ATTN` (below): 0.579 / 0.743 / 1.813 s,
-the same code in every kernel.
+0.055 s (estimates, Rubi's flags). Built with `-DVOCR_NO_ATTN` (below), as Rubi's pin of this change builds it:
+0.579 / 0.743 / 1.813 s, the same code in every kernel.
 
 ## What changed
 
@@ -106,7 +106,10 @@ Every check compares `main` (205f47e) with this change on development data only 
   - W8I and W8F, every logit of every frame and every frame's top 8 (the full head, which a run asking for the logits
     computes): the same in every build, before and after;
   - W8I (and W8F for N and L) with Rubi's options and no logits, so that the head gate and the two-level head run as
-    in Rubi: the texts and every frame's top 8, blank logit and line confidence the same (`--no-logits`, new).
+    in Rubi: the texts and every frame's top 8, blank logit and line confidence the same (`--no-logits`, new), also
+    in a sixth build, the Vita objects with `-DVOCR_NO_ATTN` (Rubi's).
+- **Against Rubi's current pin** (`f8a1856`, the `vocr.c` Rubi runs today): with Rubi's options in W8I, the same
+  texts and every frame's top 8 (host gcc, the Vita objects with and without `-DVOCR_NO_ATTN`, Cortex-A9 scalar).
 - **`make check-arm`** (the C unit tests, known-answer logits of every NEON kernel, the head's ties, -0 / +0 and NaN in
   W8I, W8F and F32, the top 1, 3, 8 and 16 against the per-class insertion; NEON and scalar under qemu) and **`make
   parity-arm`** (the PyTorch reference, f32 / w8f / w8i, NEON and scalar) pass.
@@ -149,8 +152,8 @@ Every check compares `main` (205f47e) with this change on development data only 
   for 960×544.
 - **Code** (VitaSDK gcc 15.2 `-O2`, Thumb-2, NEON objects): `vocr.o` 26,435 → 26,723 B (+288: the stem kernel, the
   filter, the `asm` pass in place of the intrinsics one), 24,083 B with `-DVOCR_NO_ATTN`; `vocr_textspot6.o` with
-  `-DVOCR_TEXTSPOT6_NO_MS` (Rubi's) 13,516 → 15,228 B (+1,712), its `--gc-sections` text 13,020 → 14,664 B. As Rubi
-  builds the two (`-DVOCR_NO_ATTN`, `-DVOCR_TEXTSPOT6_NO_MS`, `-ffunction-sections`) they shrink: 26,423 + 13,532 →
+  `-DVOCR_TEXTSPOT6_NO_MS` (Rubi's) 13,516 → 15,228 B (+1,712), its `--gc-sections` text 13,020 → 14,664 B. As Rubi's
+  pin builds the two (`-DVOCR_NO_ATTN`, `-DVOCR_TEXTSPOT6_NO_MS`, `-ffunction-sections`) they shrink: 26,423 + 13,532 →
   24,083 + 15,240 B (−632 B). The scalar and PSP objects do not change.
 - **Stack** (`-fcallgraph-info=su`, the heaviest path): the recognizer's deepest chain 2,536 → 2,320 B. Before it was
   `vocr_run` → `run_head` → `mm_i16` (616 B); `mm_i16`'s frame is 336 B now, so the deepest path goes through

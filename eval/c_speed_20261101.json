@@ -10,7 +10,7 @@
    "vocr_textspot6.c": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c"
   },
   "after": {
-   "vocr.c": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+   "vocr.c": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
    "vocr_textspot6.c": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33"
   }
  },
@@ -35,6 +35,7 @@
     "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
     "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
       "ms_per_frame": 1.934,
@@ -49,28 +50,46 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.0202,
-      "box_ms": 584.8
+      "ms_per_frame": 1.9998,
+      "box_ms": 580.0
      },
      "444": {
-      "ms_per_frame": 1.5159,
-      "box_ms": 463.8
+      "ms_per_frame": 1.5007,
+      "box_ms": 460.2
      }
     },
-    "insns_per_frame": 482550,
+    "insns_per_frame": 476117,
     "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
-    "vocr_c_sha256": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 1.7594,
-      "box_ms": 522.3
+      "ms_per_frame": 1.7391,
+      "box_ms": 517.4
      },
      "444": {
-      "ms_per_frame": 1.32,
-      "box_ms": 416.8
+      "ms_per_frame": 1.3047,
+      "box_ms": 413.1
      }
     }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 1.9942,
+      "box_ms": 578.6
+     },
+     "444": {
+      "ms_per_frame": 1.4964,
+      "box_ms": 459.1
+     }
+    },
+    "insns_per_frame": 475001,
+    "texts_sha256": "b5a204984142de93aad099011dd5793751afec5aacaf7693f2300b327a5f409c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
    },
    "blob": "VOCR6.2_S_w8.vocr",
    "cli_opts": "--topk 8",
@@ -92,6 +111,7 @@
     "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
     "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
       "ms_per_frame": 2.3814,
@@ -106,28 +126,46 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.7011,
-      "box_ms": 748.3
+      "ms_per_frame": 2.6828,
+      "box_ms": 743.9
      },
      "444": {
-      "ms_per_frame": 2.0269,
-      "box_ms": 586.4
+      "ms_per_frame": 2.0131,
+      "box_ms": 583.2
      }
     },
-    "insns_per_frame": 595489,
+    "insns_per_frame": 590017,
     "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
-    "vocr_c_sha256": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 2.2759,
-      "box_ms": 646.2
+      "ms_per_frame": 2.2576,
+      "box_ms": 641.8
      },
      "444": {
-      "ms_per_frame": 1.7074,
-      "box_ms": 509.8
+      "ms_per_frame": 1.6937,
+      "box_ms": 506.5
      }
     }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 2.6783,
+      "box_ms": 742.8
+     },
+     "444": {
+      "ms_per_frame": 2.0098,
+      "box_ms": 582.3
+     }
+    },
+    "insns_per_frame": 588588,
+    "texts_sha256": "12f31083ee25af3f116f1d469a66378d5a5e426901bedd9083c51af0ee2d790c",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
    },
    "blob": "VOCR6.2_N_w8g2.vocr",
    "cli_opts": "--topk 8 --head-gate on --two-level",
@@ -149,6 +187,7 @@
     "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
     "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
       "ms_per_frame": 5.146,
@@ -163,28 +202,46 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 7.1747,
-      "box_ms": 1821.9
+      "ms_per_frame": 7.1455,
+      "box_ms": 1814.9
      },
      "444": {
-      "ms_per_frame": 5.5272,
-      "box_ms": 1426.5
+      "ms_per_frame": 5.5051,
+      "box_ms": 1421.2
      }
     },
-    "insns_per_frame": 1285762,
+    "insns_per_frame": 1277225,
     "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
-    "vocr_c_sha256": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
     "frames": 1609,
+    "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 4.9066,
-      "box_ms": 1277.6
+      "ms_per_frame": 4.8784,
+      "box_ms": 1270.8
      },
      "444": {
-      "ms_per_frame": 3.6986,
-      "box_ms": 987.7
+      "ms_per_frame": 3.6774,
+      "box_ms": 982.6
      }
     }
+   },
+   "after_no_attn": {
+    "nopld": {
+     "333": {
+      "ms_per_frame": 7.1393,
+      "box_ms": 1813.4
+     },
+     "444": {
+      "ms_per_frame": 5.5005,
+      "box_ms": 1420.1
+     }
+    },
+    "insns_per_frame": 1275031,
+    "texts_sha256": "e9859f1f0430e71bf39a52e6e7e456dc1a25326bac7b57396b314b5325067bd9",
+    "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
+    "frames": 1609,
+    "vocr_cflags": "-O2 -DVOCR_NO_ATTN"
    },
    "blob": "VOCR6.2_L_w8_2l.vocr",
    "cli_opts": "--topk 8 --two-level",
@@ -336,6 +393,7 @@
     "logits": true,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 1,
     "rows": [
      {
       "mode": "w8i",
@@ -446,6 +504,7 @@
     "logits": false,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 1,
     "rows": [
      {
       "mode": "w8i",
@@ -496,6 +555,16 @@
       "logit_bytes": 0,
       "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
       "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
      }
     ]
    },
@@ -506,6 +575,7 @@
     "logits": true,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 1,
     "rows": [
      {
       "mode": "w8i",
@@ -616,6 +686,7 @@
     "logits": false,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 1,
     "rows": [
      {
       "mode": "w8i",
@@ -668,6 +739,16 @@
       "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
      },
      {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
       "mode": "w8f",
       "build": "host-gcc",
       "new_equals_base": true,
@@ -716,6 +797,16 @@
       "logit_bytes": 0,
       "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
       "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "50e7bdd047a9ceb0dfa3194f975f8939d791208f6c4166f81118ad313a8c44a2"
      }
     ]
    },
@@ -726,6 +817,7 @@
     "logits": true,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 10,
     "rows": [
      {
       "mode": "w8i",
@@ -836,6 +928,7 @@
     "logits": false,
     "pack_sha256": "6cff78dc5a44d9501d64260a20c70e9ed1f9ead56fa61fc9af3643032e38c961",
     "ok": true,
+    "split_runs": 12,
     "rows": [
      {
       "mode": "w8i",
@@ -888,6 +981,16 @@
       "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
      },
      {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
       "mode": "w8f",
       "build": "host-gcc",
       "new_equals_base": true,
@@ -930,6 +1033,16 @@
      {
       "mode": "w8f",
       "build": "vita-neon",
+      "new_equals_base": true,
+      "equals_other_builds": true,
+      "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logit_bytes": 0,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "5d062de41cd548449a8eb3c50e7d3794d1059a17ee348e5eafd8dedfaa5a5ede"
+     },
+     {
+      "mode": "w8f",
+      "build": "vita-neon-noattn",
       "new_equals_base": true,
       "equals_other_builds": true,
       "logits_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -966,6 +1079,13 @@
       "new_equals_base": true,
       "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
       "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "texts_sha256": "ca0fbbef4f6c9d8f556a899e545d7b44e459aee52f1b0cc5466cf79f1a9c0cbe",
+      "topk_sha256": "0db5a9fc81eb475842993ce6b49b84aa8267a0c19a83d930a99f43d65e22eb7f"
      }
     ]
    },
@@ -994,6 +1114,13 @@
       "new_equals_base": true,
       "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
       "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
+      "new_equals_base": true,
+      "texts_sha256": "f6a9cceb59894b8b63424e06dd84f91a24603cced90b83468a826d08a16d69f2",
+      "topk_sha256": "a4fc18d553af94cb3b794edf83d4b6847ccdb852581e820f0e114c873eae36ef"
      }
     ]
    },
@@ -1019,6 +1146,13 @@
      {
       "mode": "w8i",
       "build": "arm-scalar",
+      "new_equals_base": true,
+      "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
+      "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
+     },
+     {
+      "mode": "w8i",
+      "build": "vita-neon-noattn",
       "new_equals_base": true,
       "texts_sha256": "1c39fedc664405c927ee2ab70208ca8a2eda73f1f62d54a273ff5fd26631a706",
       "topk_sha256": "c1a9d7d9b742816e98f0ae0c0e6c8873dbef3092878e10d13a3a52ffcfddf867"
@@ -1125,7 +1259,7 @@
    ]
   },
   "vita3k": {
-   "record": "vita3k_head.json",
+   "record": "vita3k_head2.json",
    "ok": true,
    "jobs": [
     "cli {D}S.vocr --mode w8i --pack {D}sub.bin --logits {D}logits_S_w8i.bin",
@@ -1144,12 +1278,12 @@
     "base": {
      "vocr_c_sha256": "8ff76d83651447ecca9ea77f6e71d56ed941b6cfff920dd2b3d25857ce121d51",
      "vocr_textspot6_c_sha256": "678e88b60a8347b2019c054f74eb9c741b0bf871b97505f70c682a8e34bb018c",
-     "vpk_sha256": "98585a735857d13eb90ef2248887bdeec9c98f3674c6807cf0e7e6aa6e831797"
+     "vpk_sha256": "8aec558ab9768a65bc9212b7ea147a3eb6ab9b1d50fdce8359487dd574197fba"
     },
     "new": {
-     "vocr_c_sha256": "3d07b405aee5ac2aeaddaeb21d6d1a566823168852af1cd1ae59f5e61ac7db23",
+     "vocr_c_sha256": "f4d5262c5d1e6155249e9494df827d5c6afa306d6c3fa36b63639981572cf55b",
      "vocr_textspot6_c_sha256": "71e956fb81e06bdc78860b2e43f9c62754a6a20257e7cc044d126bfda5153b33",
-     "vpk_sha256": "e36360d91d3f408c1fa01f1cb7db60e3272970304cc9248705b5ad19d68d8a6e"
+     "vpk_sha256": "ce2e12898f6a81d61ef131d25029898a71e660980a9e4d5850ecdb888870d043"
     }
    },
    "outputs": [
@@ -2499,6 +2633,198 @@
    "spot_480x272_flags0": {
     "before": 243647,
     "after": 243647
+   }
+  },
+  "vita_code": {
+   "vita -O2: vocr.c": {
+    "before": 26435,
+    "after": 26723
+   },
+   "vita -O2: vocr.c -DVOCR_NO_ATTN": {
+    "before": 26435,
+    "after": 24083
+   },
+   "vita -O2: vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS": {
+    "before": 13516,
+    "after": 15228
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c": {
+    "before": 26423,
+    "after": 26711
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c -DVOCR_NO_ATTN": {
+    "before": 26423,
+    "after": 24083
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr_textspot6.c -DVOCR_TEXTSPOT6_NO_MS": {
+    "before": 13532,
+    "after": 15240
+   }
+  },
+  "vocr_stack": {
+   "vita -O2: vocr.c": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2320,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_f32 400"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2256,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "vita -O2: vocr.c -DVOCR_NO_ATTN": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2304,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_f32 384"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2256,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2328,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_f32 400"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2264,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
+   },
+   "rubi -O2 -ffunction-sections -fdata-sections: vocr.c -DVOCR_NO_ATTN": {
+    "before": {
+     "vocr_run": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2536,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1320",
+       "mm_i16 616",
+       "memset (extern)"
+      ]
+     }
+    },
+    "after": {
+     "vocr_run": {
+      "bytes": 2312,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_f32 384"
+      ]
+     },
+     "vocr_run without mm_f32": {
+      "bytes": 2264,
+      "chain": [
+       "vocr_run 600",
+       "run_head 1328",
+       "mm_i16 336",
+       "memset (extern)"
+      ]
+     }
+    }
    }
   },
   "stack": {

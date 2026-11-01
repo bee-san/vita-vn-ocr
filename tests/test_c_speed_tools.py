@@ -114,6 +114,41 @@ def test_the_parity_app_resets_the_cli_state():
 
 # ----------------------------------------------------------------------------- the re-pins and the record
 
+def test_a_split_parity_run_is_one_run(tmp_path):
+    """eval/c_speed_record.py reads a speed_parity run split per build and mode as the one run would have written it:
+    the rows in its order, every build's new hashes against the first build's base hashes per mode."""
+    sys.path[:0] = [str(ROOT / "eval")]
+    import c_speed_record as R
+
+    def row(build, mode, base, new):
+        h = {"logits_sha256": "", "texts_sha256": "", "logit_bytes": 0, "cli": "", "topk_sha256": ""}
+        return {"blob": "b.vocr", "mode": mode, "build": build, "base": h | {"texts_sha256": base},
+                "new": h | {"texts_sha256": new}, "new_equals_base": base == new, "equals_other_builds": True}
+
+    def part(name, *rows):
+        (tmp_path / name).write_text(json.dumps({"ok": True, "pack_sha256": "p", "cli_opts": "--topk 8",
+                                                 "logits": False, "results": list(rows)}))
+
+    part("sp_L_rubi.vita-neon.w8i.json", row("vita-neon", "w8i", "a", "a"))
+    part("sp_L_rubi.host-gcc.w8i.json", row("host-gcc", "w8i", "a", "a"))
+    part("sp_L_rubi.host-gcc.w8f.json", row("host-gcc", "w8f", "f", "f"))
+    d = R.sp_run(tmp_path, "sp_L_rubi")
+    assert d["ok"] and d["split_runs"] == 3 and d["cli_opts"] == "--topk 8" and d["logits"] is False
+    assert [(r["mode"], r["build"]) for r in d["results"]] == [("w8i", "host-gcc"), ("w8i", "vita-neon"),
+                                                               ("w8f", "host-gcc")]
+    part("sp_L_rubi.vita-neon.w8i.json", row("vita-neon", "w8i", "b", "b"))   # equal to its base, not to host-gcc's
+    d = R.sp_run(tmp_path, "sp_L_rubi")
+    assert not d["ok"] and [r["equals_other_builds"] for r in d["results"]] == [True, False, True]
+    part("sp_L_rubi.arm-neon.w8i.json", row("arm-neon", "w8i", "a", "a"))
+    (tmp_path / "sp_L_rubi.arm-neon.w8i.json").write_text(
+        (tmp_path / "sp_L_rubi.arm-neon.w8i.json").read_text().replace("--topk 8", "--topk 3"))
+    try:
+        R.sp_run(tmp_path, "sp_L_rubi")
+        raise AssertionError("split runs with different options were merged")
+    except SystemExit as e:
+        assert "cli_opts" in str(e)
+
+
 RECORD = ROOT / "eval" / "c_speed_20261101.json"
 
 

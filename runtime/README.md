@@ -7,7 +7,8 @@
 - The line is processed in tiles of a few CTC frames (8 input columns each; 12 or 16 for the coarser-frame models of `train2.py --stride`, which `docs/stride16.md` trains). Every layer keeps its left context between tiles, so the arena stays the same size for any line width, and the output doesn't depend on the tile size (checked bit for bit).
 - NEON kernels sit behind `__ARM_NEON` (Vita). The scalar fallback gives the same bits; it's the PSP path, and `-DVOCR_NO_NEON` forces it.
 - `-DVOCR_NO_ATTN` leaves out the attention op (below; no released blob has one): `vocr_load` refuses a blob with it,
-  and every other blob runs as in the default build. Rubi builds it so (`docs/c-speed.md`: −2,640 B of Vita code).
+  and every other blob runs as in the default build. Rubi's pin of #165 builds it so (`docs/c-speed.md`: −2,640 B of
+  Vita code).
 
 ## Numbers (v1 checkpoint)
 

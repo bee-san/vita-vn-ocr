@@ -7,7 +7,7 @@ DIR is the work directory ($HERD/shared/artifacts/vocr-c-speed) with:
   a9/{base,final2}/{nopld,pld}_{S,N,L}/report.json, report444.json  vita/a9_layers.py on sub24 (Rubi's options)
   a9/final2_noattn/nopld_{S,N,L}/                                    the same, -DVOCR_NO_ATTN (Rubi's build)
   ts/{base,final}_{dark4,nodark}/                                    eval/textspot6_a9.py measure (t64n8c16_t4)
-  parity/sp2_{S,N,L}_{logits,rubi}.json, sp2_rubipin_{S,N,L}.json   vita/speed_parity.py
+  parity/sp2_{S,N,L}_{logits,rubi}[.<build>.<mode>].json, sp2_rubipin_{S,N,L}.json   vita/speed_parity.py
   parity/ts_full_final2.json, parity/vita3k_*.json                   vita/ts_speed_parity.py, vita/vita3k_parity.py
   logs/twin_arm_final2.log, logs/check_arm_new2.log, logs/parity_arm_new2.log
   results_host_ms.json, size/{codesize,stack}_{base,final}.json      host timing, eval/textspot6_a9.py codesize / stack
@@ -90,19 +90,48 @@ def spotter(art):
     return out
 
 
+BUILDS = ("host-gcc", "host-clang", "arm-neon", "arm-scalar", "vita-neon", "vita-neon-noattn")
+
+
+def sp_run(p, stem):
+    """A vita/speed_parity.py record: STEM.json, or the union of STEM.<build>.<mode>.json (one run split per build and
+    mode to run in parallel), its cross-build check recomputed as speed_parity.py does it (every build's new hashes
+    against the first build's base hashes, per blob and mode)."""
+    one = p / f"{stem}.json"
+    if one.exists():
+        return json.loads(one.read_text())
+    parts = [json.loads(f.read_text()) for f in sorted(p.glob(f"{stem}.*.json"))]
+    if not parts:
+        raise SystemExit(f"no {stem}.json or {stem}.*.json in {p}")
+    for k in ("pack_sha256", "cli_opts", "logits"):
+        if len({json.dumps(d[k]) for d in parts}) != 1:
+            raise SystemExit(f"{stem}: the split runs differ in {k}")
+    rows = sorted((r for d in parts for r in d["results"]),
+                  key=lambda r: (r["blob"], r["mode"] != "w8i", BUILDS.index(r["build"])))
+    keys = ("logits_sha256", "texts_sha256", "topk_sha256")
+    ref = {}
+    for r in rows:
+        ref.setdefault((r["blob"], r["mode"]), tuple(r["base"][k] for k in keys))
+        r["equals_other_builds"] = tuple(r["new"][k] for k in keys) == ref[r["blob"], r["mode"]]
+        r["new_equals_base"] = all(r["new"][k] == r["base"][k] for k in keys)
+    return {"ok": all(r["new_equals_base"] and r["equals_other_builds"] for r in rows),
+            "pack_sha256": parts[0]["pack_sha256"], "cli_opts": parts[0]["cli_opts"], "logits": parts[0]["logits"],
+            "results": rows, "split_runs": len(parts)}
+
+
 def parity(art):
     p = art / "parity"
     res = {"recognizer": [], "recognizer_vs_rubi_pin": [], "spotter": None, "vita3k": None}
     for t in TIERS:
         for kind, key in (("logits", "recognizer"), ("rubi", "recognizer")):
-            d = json.loads((p / f"{SP}{t}_{kind}.json").read_text())
+            d = sp_run(p, f"{SP}{t}_{kind}")
             res[key].append({"tier": t, "run": kind, "cli_opts": d["cli_opts"], "logits": d.get("logits", True),
-                             "pack_sha256": d["pack_sha256"], "ok": d["ok"],
+                             "pack_sha256": d["pack_sha256"], "ok": d["ok"], "split_runs": d.get("split_runs", 1),
                              "rows": [{k: r[k] for k in ("mode", "build", "new_equals_base", "equals_other_builds")}
                                       | {"logits_sha256": r["new"]["logits_sha256"], "logit_bytes":
                                          r["new"]["logit_bytes"], "texts_sha256": r["new"]["texts_sha256"],
                                          "topk_sha256": r["new"]["topk_sha256"]} for r in d["results"]]})
-        d = json.loads((p / f"{SP}rubipin_{t}.json").read_text())
+        d = sp_run(p, f"{SP}rubipin_{t}")
         res["recognizer_vs_rubi_pin"].append({"tier": t, "cli_opts": d["cli_opts"], "ok": d["ok"],
                                               "rows": [{"mode": r["mode"], "build": r["build"],
                                                         "new_equals_base": r["new_equals_base"],

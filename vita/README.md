@@ -243,6 +243,8 @@ data (`vita/dev_pack.py`); the work directory holds crops of copyrighted screens
 
 `vita/speed_parity.py --no-logits` hashes texts and top-K without asking for the logits: a run that asks for them reads
 every frame through the full head, so only such a run checks the head gate and the two-level head.
+`--builds ...,vita-neon-noattn` adds the Vita objects built with `-DVOCR_NO_ATTN` (the recognizer without the
+attention op, as Rubi's pin builds it).
 
 ## Not done here
 

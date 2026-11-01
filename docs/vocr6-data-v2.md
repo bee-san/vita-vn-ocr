@@ -77,8 +77,8 @@ v1's filters, crops, pools and duplicate rules are unchanged. What is new:
   own; run 0 keeps v1's seed, so every v1 title's first run has v1's split. Then a page of one run that repeats a
   held-out page of another run (the same page text of 6 or more characters, or for an hval page a shared verified
   line label of 6 or more characters) becomes guard, with a 15-page band around it when the page it repeats is hval.
-  This moved 452 pages of 11 titles. No train page repeats the page text of another run's hval page (checked on the
-  page pool).
+  This moved 452 pages of 11 titles. No train page repeats a page text of 6 or more characters of another run's hval
+  page (checked on the page pool); 4 train pages repeat one of 4-5 characters (PCSG00420, PCSG00653 ×2, PCSG00917).
 - **VNDB ids** (`--vndb-map`, `data/manifests/vocr6_hooked_v2/vndb_map.json`). 23 titles carry no VNDB id in their
   metadata. 12 were matched by catalog number in the VNDB dump of 2026-10-13, 11 by hand by release title and
   platform. Three titles are two VNs each (meta `vns`): PCSG00883, PCSG00916 and PCSG00935.
@@ -88,8 +88,8 @@ v1's filters, crops, pools and duplicate rules are unchanged. What is new:
   v1's files exactly: 370 of 370 pool files, 49 of 49 decision files, 49 of 49 page-pool files and all 49 titles'
   splits have v1's sha256 (`$HERD/shared/artifacts/b2-ingest2/v1check/report.json`).
 - **The recorded importer hash.** pools v2.1's manifests record `importer_sha256` `ed671363…`, the importer as it
-  ran. Its later edits changed comments, the committed index's page-pool counts and `host_line` (below), not one
-  pool row: audit-b2-ingest2 rebuilt every title with the committed importer of #168's first head, and all 626 pool
+  ran. Its later edits changed comments, the committed index's page-pool counts, `host_line` (below) and the
+  undrawn-code rule's wording (leading codes only: the same 150 records), not one pool row: audit-b2-ingest2 rebuilt every title with the committed importer of #168's first head, and all 626 pool
   files, 138 decision files and 138 page-pool files were byte-identical to v2.1.
 - **pools v2 is superseded.** The first v2 import (pools manifest `22dbd259…`) predates the label rules. It is kept
   read only, marked `SUPERSEDED.txt`; use pools v2.1.
@@ -428,8 +428,8 @@ report of a model trained on v2.1 has to carry them.
 ## Baseline: VOCR6.2 as Rubi 0.10.5 runs it
 
 **What was read** (`eval/pagepath.py run --heads`). The protocol line in `vocr6/experiments.jsonl` (label
-b2-ingest2, 01:21Z) registered the three finders below with Rubi's line filter, on the two sets, before their v2.1
-reads (01:21:31Z on). The filter arms (clean crops with the filter off; the spotter's path with `lines+punct` or no
+b2-ingest2, 01:21Z) registered the three finders below with Rubi's line filter, before their v2.1 reads (01:21:31Z
+on): the spotter and the clean crops on both sets, `rubi,fix=1` on hval only. The filter arms (clean crops with the filter off; the spotter's path with `lines+punct` or no
 filter) were added after the first v2.1 results, as report-only diagnostics: the decomposition and the filter
 findings below rest on them. A first read on pools v2's units (superseded for the label rules) ran 00:30-01:29Z;
 its crop readings are cached and reused, and its numbers are not reported. (The protocol line's note says 00:30-01:20Z;
@@ -670,7 +670,7 @@ $PY eval/pagepath.py run --units hval_v21.jsonl --pages $A/pages --models MODELS
     --lm-alpha 600 --lm-beta 2500 --lm-flags 1 --heads --tier N --rubi RUBI --cache CACHE \
     --boxes hval_v21_spot.jsonl --out hval_v21_spot_N.json          # also --finder rubi,fix=1 | oracle; S, L
 $PY eval/hooked_v2_baseline.py score --res RESULTS --overlap data/manifests/vocr6_hooked_v2/overlap_v2.json \
-    --protocol PROTOCOL_LINE.json --out eval/hooked_v2_baseline_20261101.json
+    --protocol PROTOCOL_LINE.json --correction PROTOCOL_CORRECTION.jsonl --out eval/hooked_v2_baseline_20261101.json
 $PY data/hooked_audit.py tables2 --index data/manifests/vocr6_hooked_v2/index.json \
     --stats data/manifests/vocr6_hooked_v2/stats_v2.json --overlap data/manifests/vocr6_hooked_v2/overlap_v2.json \
     --audit data/manifests/vocr6_hooked_v2/label_audit_v2.json --index-v1 data/manifests/vocr6_hooked/index.json \
@@ -693,7 +693,7 @@ and 8 more of its `fixed` lines); CONFIRM_VNS the 41 VNs of `eval/textspot7_conf
   2.3% at 95% weighted by stratum (1.5% with the auditor's 148 lines). The rare-character scan covers characters
   unique to one title. A remapping of a common character, or one shared by two titles, would not show in it;
   audit-b2-ingest2's per-title confusion check of VOCR6.2's clean-crop reads on all 82 new titles found none.
-- **Stale `host_line` ids.** In pagepool v2.1, 7 ruby rows of PCSG00794's later run (pages 100003 to 100007) name a
+- **Stale `host_line` ids.** In pagepool v2.1, 7 ruby rows of PCSG00794's later run (pages 100003, 100004, 100007 and 100011) name a
   `host_line` on the run's own page id (`PCSG00794:000003:line3` for `PCSG00794:100003:ruby1`): `move_record` did
   not move it then. Nothing in the repo reads `host_line`, and no pool row or number depends on it; the importer now
   moves it, so a rebuild differs from pagepool v2.1 in PCSG00794's page-pool file only.

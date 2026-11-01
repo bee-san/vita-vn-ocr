@@ -116,11 +116,23 @@ Every check compares `main` (205f47e) with this change on development data only 
   32-36 MB each), the texts and every frame's top 8 of the 884 development lines with Rubi's options for each tier,
   and textspot8's boxes and decode maps of the 363 development regions, as Rubi's crop decode reads them and by the
   default call (27 MB of map lines). All 20 output files are byte-identical in the four runs: `main` on the host and
-  in Vita3K, this change on the host and in Vita3K (`vita3k_final.json`; 270-290 s of emulation each).
+  in Vita3K, this change on the host and in Vita3K (about 290 s of emulation each).
 - **No other build changes:** the `.text` of host gcc 11.5 and clang 18.1.8 `-O2`, the Vita compiler and Arm GNU 14.2
   with `-DVOCR_NO_NEON` (also with `-DVOCR_TEXTSPOT6_NO_MS`) and psp-gcc 15.2 (VFPU 0 and 1) objects of both files is
   byte-identical to `main`'s. A host gcc `-O3 -march=native` build gives the `-O2` build's logits, top 8, texts, maps
   and boxes too.
+
+## Records
+
+- `eval/c_speed_20261101.json` (`eval/c_speed_record.py`): every number above from the measurement directories, with
+  the source hashes before and after, the parity runs' hashes, the arenas and the builds whose machine code is
+  unchanged. Hashes and counts only. `tests/test_c_speed_tools.py` checks it against the files and this page.
+- `eval/runtime_repins.json`: the two files' changes after protocols and records had pinned them, with this record as
+  the evidence that every read those pins stand for is unchanged. The tests of frozen pins accept a re-pinned file
+  (`tests/repins.py`): `eval/textspot6_a9_20261026.json`'s sources (its times are the earlier code's) and
+  `eval/vocr6_final_test_protocol.json`'s checkout. `eval/textspot3_protocol.json` re-pins `runtime/vocr.c` by its
+  amendment 13, as amendments 8-12 did for earlier runtime changes. The final test's harness itself still accepts
+  only the runtime pair its runtime check recorded, so it refuses to read again with this runtime.
 
 ## Memory
 
@@ -165,8 +177,17 @@ median of 5 runs (`tools` in `$HERD/shared/artifacts/vocr-c-speed/`):
 | recognizer, ms per line (24 lines of 60-100 frames, top-8, Rubi's options) S / N / L | 25.9 / 31.5 / 78.3 | 6.2 / 7.2 / 15.4 |
 | textspot8, ms per region (60 development regions, Rubi's crop decode) | 7.13 | 2.96 |
 
-Before and after agree to 0.4%. For desktop builds of the C runtime, `-O3` with the target's SIMD (keeping
-`-ffp-contract=off`) is 4-5x faster on the recognizer and 2.4x on the spotter, bit for bit (the research's §6).
+Before and after agree to 0.4%. These lines average 67 CTC frames, about twice the 32.5 of the research's timing set,
+so the per-line times are about twice its.
+
+This checks astra's main desktop finding against our best gcc build rather than redoing the ONNX side, which
+vocr-research reproduced (#164, its §2): astra's C reference was the MSVC `/O2 /fp:strict` build (12.30 / 13.77 /
+34.05 ms per line, S / N / L, against 3.82 / 5.61 / 8.99 for the faithful ONNX graphs and 1.47 / 2.31 / 3.58 for the
+fast ones). Built with `-O3 -march=native`, the same unchanged C source runs 4.2-5.1x faster here than gcc `-O2`, and
+the spotter 2.4x, with the same logits, top 8, texts, maps and boxes (checked on these 24 lines and 726 region
+records). So most of the gap astra saw is the desktop compiler's: `vocr.c` and `vocr_textspot6.c` have hand-written
+NEON for the Vita and none for x86. For desktop builds, `-O3` with the target's SIMD (keeping `-ffp-contract=off`) is
+the cheap win (the research's §6); the Vita's own build stays `-O2` (above).
 
 ## Reproduce
 

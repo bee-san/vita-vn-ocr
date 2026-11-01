@@ -17,6 +17,7 @@ for _p in (ROOT / "eval", ROOT / "train", ROOT / "synth", ROOT / "vita", ROOT / 
         sys.path.insert(0, str(_p))
 import textspot6_a9 as A6  # noqa: E402
 
+import repins  # noqa: E402
 import textspot6_model as M6  # noqa: E402
 
 TABLE = ROOT / "eval" / "textspot6_a9_20261026.json"
@@ -61,8 +62,8 @@ def test_blobs_frames_and_sources(table):
     measured on the committed runtime (one source hash), every table of the report one of its measured directories."""
     assert table["calibration"] == 1.0007 and "estimates" in table["note"] and "nothing ran on a console" in \
         table["note"]
-    for f, digest in table["sources_sha256"].items():
-        assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() == digest, f
+    for f, digest in table["sources_sha256"].items():   # or a registered re-pin of it (#165: the same maps and boxes)
+        assert hashlib.sha256((ROOT / f).read_bytes()).hexdigest() in repins.reachable(f, digest), f
     seen = set()
     for t in table["table"]:
         if t["shape"] in seen:

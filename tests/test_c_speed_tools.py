@@ -1,12 +1,17 @@
-"""c-speed's tools (#165, docs/c-speed.md): the spotter's parity records (vita/ts_speed_parity.py), the Vita3K parity
-driver's jobs and region records (vita/vita3k_parity.py), vita/a9_layers.py's --vocr-cflags and the parity app's
-argument splitting. None of it needs VitaSDK, qemu, Vita3K or screenshots."""
+"""c-speed's tools and record (#165, docs/c-speed.md): the spotter's parity records (vita/ts_speed_parity.py), the
+Vita3K parity driver's jobs and region records (vita/vita3k_parity.py), vita/a9_layers.py's --vocr-cflags, vocr_cli's
+reset for the parity app, the runtime re-pins (eval/runtime_repins.json) and eval/c_speed_20261101.json against the
+files and docs/c-speed.md. None of it needs VitaSDK, qemu, Vita3K or screenshots."""
 import argparse
+import hashlib
+import json
 import struct
 import sys
 from pathlib import Path
 
 import numpy as np
+
+import repins
 
 ROOT = Path(__file__).resolve().parents[1]
 VITA = ROOT / "vita"
@@ -105,3 +110,72 @@ def test_the_parity_app_resets_the_cli_state():
                  "gated_total"):
         assert f"\n    {name} = " in main[:main.index("for (i = 2; i < argc; i++)")], name
     assert "memset(&redecode_o, 0, sizeof redecode_o);" in main
+
+
+# ----------------------------------------------------------------------------- the re-pins and the record
+
+RECORD = ROOT / "eval" / "c_speed_20261101.json"
+
+
+def sha256(p):
+    return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+
+def test_repins_reach_the_files_and_name_their_records():
+    reg = json.loads(repins.REGISTRY.read_text(encoding="utf-8"))["repins"]
+    for r in reg:
+        assert set(r) >= {"file", "from", "to", "issue", "record", "what"} and r["from"] != r["to"]
+        assert (ROOT / r["record"]).exists() and (ROOT / r["file"]).exists()
+    for f in {r["file"] for r in reg}:
+        firsts = [r["from"] for r in reg if r["file"] == f and not any(q["to"] == r["from"] for q in reg
+                                                                        if q["file"] == f)]
+        assert len(firsts) == 1
+        assert sha256(ROOT / f) in repins.reachable(f, firsts[0])
+    assert repins.reachable("runtime/none.c", "x") == {"x"}
+
+
+def test_the_record_holds_and_the_doc_quotes_it():
+    rec = json.loads(RECORD.read_text(encoding="utf-8"))
+    after, before = rec["sources"]["after"], rec["sources"]["before"]
+    for f in ("vocr.c", "vocr_textspot6.c"):
+        assert sha256(ROOT / "runtime" / f) == after[f]
+        assert after[f] in repins.reachable(f"runtime/{f}", before[f])
+    doc = (ROOT / "docs" / "c-speed.md").read_text(encoding="utf-8")
+    for t, row in rec["recognizer"].items():
+        b, a = row["before"], row["after"]
+        assert b["texts_sha256"] == a["texts_sha256"] and b["frames"] == a["frames"] == 1609
+        assert a["vocr_c_sha256"] == after["vocr.c"] and b["vocr_c_sha256"] == before["vocr.c"]
+        for pld in ("nopld", "pld"):
+            for mhz in ("333", "444"):
+                x, y = b[pld][mhz], a[pld][mhz]
+                for z in (x, y):   # the record rounds ms per frame to 4 places, the box from the unrounded value
+                    box = rec["box"]["frames"] * z["ms_per_frame"] + rec["box"]["finder_ms"]
+                    assert abs(z["box_ms"] - box) <= 0.05 + rec["box"]["frames"] * 0.00005
+                assert y["ms_per_frame"] < x["ms_per_frame"]
+        n0, n1 = b["nopld"]["333"]["ms_per_frame"], a["nopld"]["333"]["ms_per_frame"]
+        assert f"{n0:.3f} → **{n1:.3f}**" in doc, t
+        b_s, a_s = (round(x["nopld"]["333"]["box_ms"]) / 1000 for x in (b, a))   # whole ms, then seconds
+        assert f"{b_s:.3f} → **{a_s:.3f} s**" in doc, t
+    for size in ("900x150", "960x544"):
+        d = rec["spotter"][size]["dark"]
+        assert f"{d['before']['ms_333']:.1f} → **{d['after']['ms_333']:.1f}**" in doc, size
+    for size, v in rec["spotter"].items():
+        if size != "sources":
+            for mode in ("dark", "no_dark"):
+                assert v[mode]["after"]["ms_333"] < v[mode]["before"]["ms_333"]
+    p = rec["parity"]
+    for run in p["recognizer"] + p["recognizer_vs_rubi_pin"]:
+        assert run["ok"] and all(r["new_equals_base"] for r in run["rows"])
+    assert {(r["tier"], r["run"]) for r in p["recognizer"]} == {(t, k) for t in "SNL" for k in ("logits", "rubi")}
+    assert all(r["equals_other_builds"] for run in p["recognizer"] for r in run["rows"])
+    assert p["spotter"]["ok"] and len(p["spotter"]["rows"]) == 10
+    assert all(r["new_equals_base"] and r["equals_other_builds"] for r in p["spotter"]["rows"])
+    v3 = p["vita3k"]
+    assert v3["ok"] and v3["outputs"] and all(o["all_equal"] for o in v3["outputs"])
+    assert v3["versions"]["new"]["vocr_c_sha256"] == after["vocr.c"]
+    assert v3["versions"]["new"]["vocr_textspot6_c_sha256"] == after["vocr_textspot6.c"]
+    assert v3["versions"]["base"]["vocr_c_sha256"] == before["vocr.c"]
+    assert p["spotter_twin_neon"]["ok"] and p["check_arm"] and p["parity_arm"]
+    for k, v in rec["memory"]["arena"].items():
+        assert v["before"] == v["after"] > 0, k
+    assert rec["machine_code_without_neon"] and all(v["identical"] for v in rec["machine_code_without_neon"].values())

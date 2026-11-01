@@ -349,7 +349,7 @@ def main(argv=None):
             res["results"][f"lm {t}"] = {k: stat(v) for k, v in out.items()}
             res["results"][f"lm {t}"]["lines"] = len(tops)
             res["results"][f"lm {t}"]["same_text"] = int(same)
-            print(f"lm {t}:", json.dumps({k: v["median"] for k, v in out.items()}), len(tops), "lines,",
+            print(f"lm {t}:", json.dumps({k: stat(v)["median"] for k, v in out.items()}), len(tops), "lines,",
                   same, "same text", flush=True)
     if "spot" in parts:
         for set_name, items in (("region", regions), ("frame", frames)):

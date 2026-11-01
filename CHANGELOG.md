@@ -5,6 +5,24 @@ Every model is published as release assets; the pre-releases between the normal 
 release that collects them. Numbers are measured on the host unless marked as estimates; nothing of VOCR6 or the
 spotter has run on a console.
 
+## [Unreleased]
+
+### Added
+
+- **ONNX files for desktop apps** (pre-release v0.5.1-onnx.1, #163, [`docs/onnx.md`](docs/onnx.md)): VOCR6.2 Small,
+  Normal and Large and the textspot8 spotter converted from v0.5.0's int8 blobs by `tools/export_onnx.py`, unchanged
+  weights, the blobs' non-commercial terms.
+  - **exact**: the C runtime's W8I arithmetic in every float32 step and order, with the blobs' head gate and two-level
+    head; on 7,745 development line reads per tier and 1,710 development frames and regions every logit, text,
+    character cell and spotter box equals the C runtime's (`eval/onnx_parity_20261031.json`).
+  - **fast**: ONNX Runtime's own float32 kernels (W8F's classes on every development frame; 17 of 792,654 frames and
+    2 line texts differ from W8I).
+  - `tools/vocr_onnx.py`: the reference pipeline, NumPy and ONNX Runtime only (spotter, recognizer, the beam + LM
+    decoder, character cells).
+  - The method follows a report by an outside researcher, astra (int16 digits through two `MatMulInteger` calls,
+    int32 reconstruction, float64 requantisation in the spotter); the C-order convolutions and the gated head are this
+    export's. Host times against `runtime/` at `-O2` and `-O3 -march=native`: `docs/onnx.md`, "Speed".
+
 ## [0.5.0] - 2026-10-28
 
 **VOCR6: recognizers, dialogue-line spotter, LMs and every model so far.** One normal release with every model from

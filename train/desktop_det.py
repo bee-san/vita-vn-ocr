@@ -358,7 +358,7 @@ def make_window_ms(canvas, smp, src, rng, sources, scale, aug=True, ruby_filter=
     import cv2
     B, T2, T8M, _ = _setup()
     lines, ignore = smp["lines"], smp["ignore"]
-    if ruby_filter and src != "hook":
+    if ruby_filter and not src.startswith("hook") and not src.startswith("desk_hook"):
         rb = set(ruby_like(lines))
         if rb:
             ignore = list(ignore) + [ln[:4] for i, ln in enumerate(lines) if i in rb]
@@ -438,6 +438,63 @@ def make_batch_ms(sources, rng, scale, batch, aug=True, ruby_filter=False):
             torch.from_numpy(tg[4]), torch.from_numpy(mk))
 
 
+class ExtraPool:
+    """The shards of one manifest (textspot6-pages or #97's frames: entries with "dir", "name", npy / json sha256)
+    under ROOT, memory-mapped, as one source of the mix (--extra NAME=MANIFEST:ROOT[:SPLITS]). A sample needs off, h,
+    w, kind, lines and ignore; its window is cut like a synthetic frame's (no Adrenaline upscale)."""
+
+    def __init__(self, manifest, root, splits=None, verify=False):
+        doc = json.loads(Path(manifest).read_text(encoding="utf-8"))
+        self.data, self.items = [], []
+        for s in doc["shards"]:
+            if splits and s.get("split") and s["split"] not in splits:
+                continue
+            base = Path(root) / s.get("dir", "") / s["name"]
+            npy, js = base.with_suffix(".npy"), base.with_suffix(".json")
+            if verify:
+                for path, want in ((npy, s["npy_sha256"]), (js, s["json_sha256"])):
+                    if sha256_file(path) != want:
+                        raise SystemExit(f"{path}: sha256 is not {manifest}'s")
+            d = len(self.data)
+            self.data.append(np.load(npy, mmap_mode="r"))
+            for smp in json.loads(js.read_text(encoding="utf-8"))["samples"]:
+                if splits and smp.get("split") and smp["split"] not in splits:
+                    continue
+                self.items.append((d, smp))
+        if not self.items:
+            raise SystemExit(f"{manifest}: no samples under {root}")
+
+    def draw(self, rng):
+        d, smp = self.items[int(rng.integers(len(self.items)))]
+        return np.asarray(self.data[d][smp["off"]:smp["off"] + smp["h"] * smp["w"]]).reshape(smp["h"], smp["w"]), smp
+
+
+def parse_extra(specs):
+    """--extra NAME=MANIFEST:ROOT[:SPLITS] -> {name: (manifest, root, splits or None)}."""
+    out = {}
+    for sp in specs or []:
+        name, _, rest = sp.partition("=")
+        parts = rest.split(":")
+        if len(parts) < 2:
+            raise SystemExit(f"--extra {sp}: NAME=MANIFEST:ROOT[:SPLITS]")
+        out[name] = (parts[0], parts[1], tuple(parts[2].split(",")) if len(parts) > 2 and parts[2] else None)
+    return out
+
+
+def add_extra_sources(sources, mix, extra):
+    """Add every --extra pool to a textspot6_train.Sources with its --mix weight, and renormalise."""
+    for name, (man, root, splits) in extra.items():
+        if name not in mix:
+            raise SystemExit(f"--extra {name}: no weight for it in --mix")
+        pool = ExtraPool(man, root, splits)
+        sources.names.append(name)
+        sources.p = np.append(np.asarray(sources.p, np.float64) * 1.0, float(mix[name]))
+        sources.draw[name] = pool.draw
+    p = np.asarray(sources.p, np.float64)
+    sources.p = p / p.sum()
+    return sources
+
+
 class Batches(torch.utils.data.IterableDataset):
     def __init__(self, cfg, seed):
         super().__init__()
@@ -450,7 +507,10 @@ class Batches(torch.utils.data.IterableDataset):
         wid = info.id if info is not None else 0
         hook = B.HookPool(c["hook_manifest"], c["hook_shards"], c["hook_splits"]) if c["mix"].get("hook") else None
         frames = ST.FramePool(c["manifests"], c["shards"], skip=c["skip"]) if c["manifests"] else None
-        sources = B.Sources(c["mix"], hook, frames, c["title_temp"])
+        base_mix = {k: v for k, v in c["mix"].items() if k in ("hook", "synth", "real")}
+        sources = B.Sources(base_mix, hook, frames, c["title_temp"])
+        sources.p = np.asarray(sources.p) * sum(base_mix.values())     # back to the --mix scale before the extras
+        add_extra_sources(sources, c["mix"], c.get("extra", {}))
         rng = np.random.default_rng([self.seed, wid])
         while True:
             yield make_batch_ms(sources, rng, c["scale"], c["batch"], c.get("aug", True),
@@ -474,6 +534,7 @@ def parse(argv=None):
     ap.add_argument("--warmup", type=int, default=500)
     ap.add_argument("--batch", type=int, default=16)
     ap.add_argument("--mix", default="hook=0.45,synth=0.2,real=0.35")
+    ap.add_argument("--extra", nargs="*", default=[], help="NAME=MANIFEST:ROOT[:SPLITS]: more sources for --mix")
     ap.add_argument("--scale", default="0.42,1.9")
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--workers", type=int, default=1)
@@ -537,11 +598,16 @@ def main(argv=None):
     cfg = {"mix": a.mix_d, "hook_manifest": a.hook_manifest, "hook_shards": a.hook_shards,
            "hook_splits": tuple(a.hook_splits.split(",")), "manifests": list(a.manifest), "shards": list(a.shards),
            "skip": (skip_shots, skip_vns), "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch,
-           "aug": not a.no_aug, "ruby_filter": a.ruby_filter}
+           "aug": not a.no_aug, "ruby_filter": a.ruby_filter, "extra": parse_extra(a.extra)}
     hook = B.HookPool(a.hook_manifest, a.hook_shards, cfg["hook_splits"]) if a.mix_d.get("hook") else None
     frames = ST.FramePool(a.manifest, a.shards, skip=(skip_shots, skip_vns)) if a.manifest else None
-    sources = B.Sources(a.mix_d, hook, frames, B.TITLE_TEMP)
+    base_mix = {k: v for k, v in a.mix_d.items() if k in ("hook", "synth", "real")}
+    sources = B.Sources(base_mix, hook, frames, B.TITLE_TEMP)
+    sources.p = np.asarray(sources.p) * sum(base_mix.values())
+    add_extra_sources(sources, a.mix_d, cfg["extra"])
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
+                "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2],
+                              "manifest_sha256": sha256_file(v[0])} for k, v in cfg["extra"].items()},
                 "hook": hook.summary(B.TITLE_TEMP) if hook else None,
                 "frames": frames.summary() if frames else None, "text_free_synthetic": len(sources.empty)}
     skip_rec = ST.skip_record(lists, frames.dropped) if lists and frames is not None else None

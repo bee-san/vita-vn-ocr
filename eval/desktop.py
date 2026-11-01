@@ -5,6 +5,10 @@ recognizer (greedy CTC), the boxes of each dialogue unit scored as eval/pagepath
 
   desktop.py frames --set hval|dev|confirm|pc|test --out FRAMES.pkl [--protocol eval/desktop_protocol.json]
       the frames of a set and their dialogue units (frame px), no pixels (they are read from the shared box)
+  desktop.py resample --frames FRAMES.pkl --height H --out FRAMES_H.pkl
+      the same frames resampled to height H, the aspect kept (cv2.INTER_LINEAR up, INTER_AREA down; desktop
+      windows of 720 to 2160 px), every unit's region, line boxes and cells scaled with them: CER per input
+      resolution (report only; amendment 2)
   desktop.py detect --frames FRAMES.pkl --det SPEC --out BOXES.jsonl [--workers 5]
       a detector's boxes on every frame: SPEC = meiki (MeikiOCR 0.3.5's detector, threshold 0.5, its own fit to
       960 x 544) | ts8 (textspot8_exact.onnx on the whole frame, a frame larger than 960 x 544 fit to it first, as
@@ -290,7 +294,7 @@ def build_frames(name, protocol=None):
 
 
 def load_rgb(fr):
-    """A frame's RGB pixels at its view's size."""
+    """A frame's RGB pixels at its view's size (and its resample, for a per-resolution set)."""
     import cv2
     import geometry as G
     s = fr["src"]
@@ -301,6 +305,12 @@ def load_rgb(fr):
     rgb = np.ascontiguousarray(bgr[:, :, ::-1])
     if s.get("scale"):
         rgb = np.ascontiguousarray(G.scale_image(rgb, float(s["scale"])))
+    rs = fr.get("resample")
+    if rs:
+        if rgb.shape[:2] != (rs["from"][1], rs["from"][0]):
+            raise SystemExit(f"{fr['key']}: {rgb.shape[1]}x{rgb.shape[0]} before the resample, expected {rs['from']}")
+        interp = cv2.INTER_AREA if rs["to"][1] < rs["from"][1] else cv2.INTER_LINEAR
+        rgb = np.ascontiguousarray(cv2.resize(rgb, tuple(rs["to"]), interpolation=interp))
     if rgb.shape[:2] != (fr["H"], fr["W"]):
         raise SystemExit(f"{fr['key']}: {rgb.shape[1]}x{rgb.shape[0]}, expected {fr['W']}x{fr['H']}")
     return rgb
@@ -645,6 +655,39 @@ def cmd_frames(a):
     print(json.dumps(meta), flush=True)
 
 
+def resample_frame(fr, height):
+    """A frame record resampled to `height` px (aspect kept): its units' geometry scaled by the exact factors."""
+    W, H = fr["W"], fr["H"]
+    nw, nh = max(1, int(round(W * height / H))), int(height)
+    sx, sy = nw / W, nh / H
+
+    def box(b):
+        return [b[0] * sx, b[1] * sy, b[2] * sx, b[3] * sy]
+
+    units = []
+    for u in fr["units"]:
+        x0, y0, x1, y1 = u["region"]
+        region = [int(math.floor(x0 * sx)), int(math.floor(y0 * sy)), min(nw, int(math.ceil(x1 * sx))),
+                  min(nh, int(math.ceil(y1 * sy)))]
+        units.append(dict(u, uid=f"{u['uid']}@{nh}", region=region,
+                          lines=[dict(ln, box=box(ln["box"]), cells=[[c[0] * sx, c[1] * sy, c[2] * sx, c[3] * sy]
+                                                                     for c in ln["cells"]]) for ln in u["lines"]]))
+    return dict(fr, key=f"{fr['key']}@{nh}", W=nw, H=nh, units=units,
+                resample={"from": [W, H], "to": [nw, nh], "method": "cv2.INTER_LINEAR up, cv2.INTER_AREA down"})
+
+
+def cmd_resample(a):
+    frames, meta = load_frames(a.frames)
+    out = [resample_frame(fr, a.height) for fr in frames]
+    meta = dict(meta, resampled_to_height=a.height, source_frames_sha256=sha256_file(a.frames),
+                views={**{f"{v}@{a.height}": n for v, n in Counter(f["view"] for f in out).items()}})
+    for fr in out:
+        fr["view"] = f"{fr['view']}@{a.height}"
+    with open(a.out, "wb") as f:
+        pickle.dump({"frames": out, "meta": meta}, f)
+    print(json.dumps({k: meta[k] for k in ("resampled_to_height", "views")}), flush=True)
+
+
 def cmd_detect(a):
     frames, _ = load_frames(a.frames)
     if a.limit:
@@ -832,6 +875,10 @@ def main(argv=None):
     p.add_argument("--set", required=True, choices=SETS)
     p.add_argument("--out", required=True)
     p.add_argument("--protocol")
+    p = sub.add_parser("resample")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--height", type=int, required=True)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("detect")
     p.add_argument("--frames", required=True)
     p.add_argument("--det", required=True)
@@ -862,8 +909,8 @@ def main(argv=None):
     p.add_argument("--arm", required=True)
     p.add_argument("--out")
     a = ap.parse_args(argv)
-    {"frames": cmd_frames, "detect": cmd_detect, "read": cmd_read, "meiki": cmd_meiki, "boxes-pr": cmd_boxes_pr,
-     "compare": cmd_compare}[a.cmd](a)
+    {"frames": cmd_frames, "resample": cmd_resample, "detect": cmd_detect, "read": cmd_read, "meiki": cmd_meiki,
+     "boxes-pr": cmd_boxes_pr, "compare": cmd_compare}[a.cmd](a)
 
 
 if __name__ == "__main__":

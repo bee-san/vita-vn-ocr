@@ -21,9 +21,20 @@ Runtime's per-op profiles and the models' MACs. Development frames only (eval/de
         meiki+T         MeikiOCR's detector, boxes grown by eval/desktop.py's auto pad, read by VOCR6.2-T (T = S, N, L;
                         ":exact" for the exact file, else the fast one)
         ts8+T           textspot8_exact.onnx on the frame (fit to 960 x 544 first when larger), read by VOCR6.2-T
-        desk:M@SIZE+T   tools/vocr_desktop.py's detector M at input policy SIZE, read by VOCR6.2-T
+        desk:M@SIZE+T   tools/vocr_desktop.py's detector M at input policy SIZE (M@SIZE@frame: the frame pad rule),
+                        read by VOCR6.2-T
+        cdesk:V@SIZE+c:T the C path (desktop/libvocrdesk.so, $VOCR_DESK_LIB or desktop/build): the VDSK blob V and
+                        VOCR6.2-T's int8 blob read by runtime/vocr.c W8I with its head sections, the whole page in one
+                        call (the frame's luma, the detector, every line on N C threads)
+        cts8+c:T        textspot8's C spotter (runtime/vocr_textspot6.c) on the frame (fit to 960 x 544 first when
+                        larger) and VOCR6.2-T in C (W8I, head sections on), the lines on N Python threads, both built
+                        -O3 -march=native (eval/onnx_timing.build, its O3n libraries)
       a "#dK" suffix runs the pipeline's detector at K intra-op threads (K <= N; the protocol's amendment 1: a budget
       of N threads, the detector at its fastest K in {1, 2, 4}); without it the detector runs at N
+  desktop_time.py mem --frames FRAMES.pkl --pipelines P,... --threads N --out M.json [--limit 60]
+      peak resident memory: each pipeline in a fresh Python process that reads the frames one at a time from disk
+      (eval/desktop.load_rgb) and runs the pipeline on each; VmHWM after the imports (and one frame), after the
+      models load, and at the end
   desktop_time.py nets --pages PAGES.pkl --threads 1,2,4,8 --opts disable,basic,extended,all --out N.json
                        [--models meiki,ts8,L,desk:M@SIZE] [--cbin DIR]
       each network alone (session.run on inputs already preprocessed) at every graph optimisation level and intra-op
@@ -99,13 +110,50 @@ def load_pages(path):
 
 # ----------------------------------------------------------------------------- pipelines
 
+C_LIBS = {}
+
+
+def c_libs():
+    """eval/onnx_timing's -O2 and -O3 -march=native builds of runtime/ (the C baselines' libraries), built once."""
+    if not C_LIBS:
+        import onnx_timing as OT
+        C_LIBS.update(OT.build(D.PV / "vocr-desktop" / "cbuild"))
+    return C_LIBS
+
+
 class Pipeline:
     """One desktop pipeline at one intra-op thread count and mode (module docstring)."""
 
     def __init__(self, spec, threads, mode, onnx_dir=D.ONNX_DIR):
         import vocr_onnx as V
         self.spec, self.threads, self.mode, self.V = spec, threads, mode, V
-        self.meiki = None
+        self.meiki = self.cpage = self.cspot = None
+        if spec.startswith("cdesk:"):
+            import vocr_desktop as VD
+            det, _, rec = spec[6:].rpartition("+c:")
+            vdsk, _, size = det.partition("@")
+            self.cpage = VD.CDesk(vdsk, V05 / BLOBS[rec], threads=threads, size=size or None)
+            return
+        if spec.startswith("cts8+c:"):
+            import onnx_timing as OT
+            import pyvocr
+
+            import head2level
+            libs = c_libs()
+            self.cspot = OT.CSpot(libs["O3n"][1], V05 / SPOT_BLOB)
+            data = (V05 / BLOBS[spec[7:]]).read_bytes()
+            lib = pyvocr.load_lib(libs["O3n"][0])
+            probe = pyvocr.Vocr(data, mode="w8i", lib=lib)
+            two = head2level.read_trailer(data) is not None
+            self.crecs = [pyvocr.Vocr(data, mode="w8i", lib=lib, head_gate="on" if probe.has_gate else "off",
+                                      two_level=1 if two else 0) for _ in range(threads)]
+            if threads > 1:
+                import threading
+                from concurrent.futures import ThreadPoolExecutor
+                self.pool = ThreadPoolExecutor(max_workers=threads)
+                self.tl = threading.local()
+                self.free = list(self.crecs)
+            return
         spec, _, dt = spec.partition("#d")
         det_threads = int(dt) if dt else threads
         if det_threads > threads:
@@ -134,7 +182,42 @@ class Pipeline:
         x, y, w, h = cb
         return self.rec.read(g[y:y + h, x:x + w], invert=bool(dark)).text
 
+    def _cline(self, job):
+        g, cb = job
+        if not hasattr(self.tl, "r"):
+            self.tl.r = self.free.pop()
+        x, y, w, h = cb
+        return self.tl.r.run_topk(np.ascontiguousarray(g[y:y + h, x:x + w]), 8,
+                                  invert=bool(self.V.line_dark(g, cb)))["text"]
+
+    def _cts8(self, rgb):
+        import cv2
+        g = self.V.grey_of(rgb)
+        H, W = g.shape
+        f = min(1.0, 960 / W, 544 / H)
+        gs = g if f >= 1.0 else cv2.resize(g, (max(1, int(round(W * f))), max(1, int(round(H * f)))),
+                                           interpolation=cv2.INTER_AREA)
+        self.cspot.find(gs)
+        sp = self.cspot
+        n = sp.L.ts6_boxes(sp.set, sp.box_buf.ctypes.data)
+        jobs = []
+        for x, y, w, h, vertical, _dark in sp.box_buf[:6 * n].reshape(n, 6).tolist():
+            if vertical:
+                continue
+            cb = D.crop_box([x / f, y / f, (x + w) / f, (y + h) / f], 0, W, H)
+            if cb:
+                jobs.append((g, cb))
+        if self.threads > 1 and len(jobs) > 1:
+            return list(self.pool.map(self._cline, jobs))
+        r = self.crecs[0]
+        return [r.run_topk(np.ascontiguousarray(gg[y:y + h, x:x + w]), 8,
+                           invert=bool(self.V.line_dark(gg, (x, y, w, h))))["text"] for gg, (x, y, w, h) in jobs]
+
     def __call__(self, rgb):
+        if self.cpage is not None:
+            return self.cpage.page(rgb)
+        if self.cspot is not None:
+            return self._cts8(rgb)
         if self.meiki is not None:
             return [t for _, t, _ in D.meiki_ocr(self.meiki, np.ascontiguousarray(rgb[:, :, ::-1]))]
         boxes = self.det.boxes(rgb)
@@ -168,8 +251,8 @@ def cmd_run(a):
     pipes = {}
     for s in specs:
         for m in modes:
-            if s.startswith("meikiocr") and m != "seq":
-                continue
+            if (s.startswith("meikiocr") or s.startswith("c")) and m != modes[0]:
+                continue                                # one mode: their own threading
             pipes[f"{s}|{m}"] = Pipeline(s, threads, m, a.onnx_dir)
     rng = random.Random(a.seed)
     names = list(pipes)
@@ -207,6 +290,54 @@ def cmd_run(a):
         res["results"][n] = r
         print(n, json.dumps({k: (v["p50"], v["p95"]) for k, v in r.items()}), flush=True)
     res["load_1min_at_end"] = round(os.getloadavg()[0], 1)
+    Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+
+
+# ----------------------------------------------------------------------------- peak memory
+
+MEM_CHILD = r"""
+import json, sys, time
+sys.path[:0] = {paths!r}
+def hwm():
+    for ln in open("/proc/self/status"):
+        if ln.startswith("VmHWM:"):
+            return int(ln.split()[1])
+import numpy as np
+import desktop as D
+import desktop_time as DT
+frames, _ = D.load_frames({frames!r})
+frames = frames[:{limit}]
+D.load_rgb(frames[0])
+base = hwm()
+p = DT.Pipeline({spec!r}, {threads}, {mode!r})
+loaded = hwm()
+n = 0
+for fr in frames:
+    out = p(D.load_rgb(fr))
+    n += len(out)
+print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(frames), "lines": n}}))
+"""
+
+
+def cmd_mem(a):
+    res = {"kind": "vocr-desktop-mem/1", "host": host(), "frames_file": str(a.frames),
+           "frames_sha256": D.sha256_file(a.frames), "threads": int(a.threads), "limit": a.limit,
+           "repo_head": D.git_head(), "results": {}}
+    paths = [str(ROOT / "tools"), str(ROOT / "eval"), str(ROOT / "synth"), str(ROOT / "train"), str(ROOT / "teacher"),
+             str(ROOT / "runtime"), str(ROOT)]
+    import subprocess
+    for spec in a.pipelines.split(","):
+        mode = "par" if not (spec.startswith("meikiocr") or spec.startswith("c")) else "seq"
+        code = MEM_CHILD.format(paths=paths, frames=str(a.frames), limit=int(a.limit), spec=spec,
+                                threads=int(a.threads), mode=mode)
+        r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600)
+        if r.returncode:
+            raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
+        rec = json.loads(r.stdout.strip().splitlines()[-1])
+        rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
+                   peak_mib=round(rec["peak_kib"] / 1024, 1))
+        res["results"][spec] = rec
+        print(spec, json.dumps(rec), flush=True)
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 
@@ -523,6 +654,12 @@ def main(argv=None):
     p.add_argument("--ref", default="meiki+L|par", help="the pipeline|mode the ratios are taken to")
     p.add_argument("--onnx-dir", default=str(D.ONNX_DIR))
     p.add_argument("--out", required=True)
+    p = sub.add_parser("mem")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--pipelines", required=True)
+    p.add_argument("--threads", default="4")
+    p.add_argument("--limit", type=int, default=60)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("nets")
     p.add_argument("--pages", required=True)
     p.add_argument("--models", default="meiki,ts8,L")
@@ -546,7 +683,8 @@ def main(argv=None):
     p.add_argument("--desk", nargs="*")
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
-    {"pages": cmd_pages, "run": cmd_run, "nets": cmd_nets, "profile": cmd_profile, "macs": cmd_macs}[a.cmd](a)
+    {"pages": cmd_pages, "run": cmd_run, "mem": cmd_mem, "nets": cmd_nets, "profile": cmd_profile,
+     "macs": cmd_macs}[a.cmd](a)
 
 
 if __name__ == "__main__":

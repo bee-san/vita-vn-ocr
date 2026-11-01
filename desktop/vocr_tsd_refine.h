@@ -29,9 +29,10 @@ typedef struct {
     int floor_, k_pct;
     int margin_pct, margin_gap_pct, margin_min, noise_add, texture_pct;
     int busy_pct;
+    int neighbours;           /* 1: an edge never grows into another box (neighbour limits) */
 } vocr_tsdr_opts;
 
-#define VOCR_TSDR_NOPTS 27
+#define VOCR_TSDR_NOPTS 28
 
 /* status bits, one word per box (tools/tsdesk_refine.ST_*) */
 enum {
@@ -50,12 +51,14 @@ enum { VOCR_TSDR_OK = 0, VOCR_TSDR_E_ARG = -1, VOCR_TSDR_E_SCRATCH = -2 };
 void vocr_tsdr_defaults(vocr_tsdr_opts *o);
 int vocr_tsdr_nopts(void);
 
-/* Scratch bytes for vocr_tsdr_refine on a w x h frame (enough for any box on it). */
-size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h);
+/* Scratch bytes for vocr_tsdr_refine of n boxes on a w x h frame (enough for any box on it). */
+size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h, unsigned n);
 
 /* Refine n boxes in place on a grey frame (w x h, row stride `stride` bytes): xyxy holds n x 4 doubles [x0, y0, x1,
  * y1] in frame px; vertical (n flags, or NULL: all horizontal); opts NULL: the defaults; status (n words, or NULL)
- * receives each box's bits. Returns VOCR_TSDR_OK, or an error before any box is touched. */
+ * receives each box's bits. An edge never grows into another of the n boxes (opts->neighbours; the limits come from
+ * the input boxes, so the order of the boxes does not matter). Returns VOCR_TSDR_OK, or an error before any box is
+ * touched. */
 int vocr_tsdr_refine(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, double *xyxy,
                      const unsigned char *vertical, unsigned n, const vocr_tsdr_opts *opts, unsigned *status,
                      void *scratch, size_t scratch_bytes);

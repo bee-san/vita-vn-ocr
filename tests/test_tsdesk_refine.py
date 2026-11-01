@@ -353,6 +353,25 @@ def test_start_band_is_shorter_than_the_end_band():
     assert out[0] == box[0] and st & TR.ST_LIMIT     # before the start it runs past the start band: kept
 
 
+def test_an_edge_never_grows_into_another_box():
+    # a line the detector split into two boxes (a small gap between them): neither grows over the other's text, and
+    # a box above (another line) stops the top edge; with neighbours=0 the left fragment walks into the right one
+    rng = np.random.default_rng(14)
+    img, box = make_line(rng, "flat", "plain", h=20, W=600)
+    mid = (box[0] + box[2]) // 2
+    left = [box[0], box[1], mid - 3.0, box[3], 0]
+    right = [mid + 2.0, box[1], box[2], box[3], 0]
+    above = [box[0], box[1] - 30.0, box[2], box[1] - 8.0, 0]
+    st = []
+    out = TR.refine(img, [left, right, above], None, st)
+    assert out[0][2] <= mid + 2 and out[1][0] >= mid - 3, out
+    solo = TR.refine(img, [left], {"neighbours": 0})
+    assert solo[0][2] > mid + 2                     # alone, the left fragment takes the right one's text in
+    lim = TR.neighbour_limits([left, right, above], img.shape[1], img.shape[0])
+    assert lim[0][2] == int(np.floor(right[0])) and lim[1][0] == int(np.ceil(left[2]))
+    assert lim[0][1] == int(np.ceil(above[3]))      # the box above limits the top edge
+
+
 def test_shrink_bound_keeps_the_edge():
     rng = np.random.default_rng(2)
     img, box = make_line(rng, "flat", "plain", h=20, W=520)

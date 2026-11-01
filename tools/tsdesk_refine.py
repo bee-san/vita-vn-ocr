@@ -67,6 +67,7 @@ DEFAULTS = {
     "floor": 28, "k_pct": 40,
     "margin_pct": 90, "margin_gap_pct": 50, "margin_min": 3, "noise_add": 12, "texture_pct": 0,
     "busy_pct": 25,
+    "neighbours": 1,
 }
 KEYS = tuple(DEFAULTS)      # the C struct's field order (desktop/vocr_tsd_refine.h)
 
@@ -132,7 +133,7 @@ def _walk(cnt, start, step, n, gap, stop=None):
     return last, True
 
 
-def _walk_rows(cnt, start, step, n, gap, low, rise, low_max, beyond_max):
+def _walk_rows(cnt, start, step, n, gap, low, rise, low_max, beyond_max, stop=None):
     """The across walk (_walk with `gap` empty rows) that also ends at a valley: a row with 0 < cnt <= low is a low
     row, and a valley the first low row of a run of them. The walk ends at the latest valley (that row included) when
     the run grows longer than low_max rows (a sparse band: ruby, a texture), when a row with cnt >= rise follows it (a
@@ -143,6 +144,8 @@ def _walk_rows(cnt, start, step, n, gap, low, rise, low_max, beyond_max):
     lows = 0
     valley = -1
     while 0 <= i < n:
+        if stop is not None and stop[i]:
+            return last, False
         c = int(cnt[i])
         if c > 0:
             if c <= low:
@@ -167,9 +170,10 @@ def _walk_rows(cnt, start, step, n, gap, low, rise, low_max, beyond_max):
     return last, True
 
 
-def refine_box(g, b, o=None, dbg=None):
+def refine_box(g, b, o=None, dbg=None, lim=None):
     """(x0, y0, x1, y1, status) of one horizontal box b = (x0, y0, x1, y1) on grey g (H x W uint8): the module
-    docstring's steps. o: options (DEFAULTS); dbg: a dict that receives the internals (tests and diagnostics)."""
+    docstring's steps. o: options (DEFAULTS); dbg: a dict that receives the internals (tests and diagnostics); lim:
+    (left, top, right, bottom) frame px the edges may not grow past (the other boxes, neighbour_limits)."""
     if o is None:
         o = DEFAULTS
     H, W = g.shape
@@ -220,6 +224,13 @@ def refine_box(g, b, o=None, dbg=None):
         dbg.update(win=(wx0, wy0, wx1, wy1), bg=bg, t=t, tc=tc, noise=noise, mask=m, A=A, Ls=Ls, Le=Le)
     lim_t, lim_b, lim_l, lim_r = wy0 > 0, wy1 < H, wx0 > 0, wx1 < W     # window sides that are band limits
     S_a = r100(h, o["shrink_a_pct"])
+    rstop = cstop = None
+    if lim is not None:                     # rows / columns of the window beyond another box: the walks stop there
+        nl, nt, nr, nb_ = (int(v) for v in lim)
+        ys = np.arange(mh) + wy0
+        xs = np.arange(mw) + wx0
+        rstop = (ys < nt) | (ys >= nb_)
+        cstop = (xs < nl) | (xs >= nr)
 
     def across(cx0, cx1):
         """(top or None, bottom or None, status) in window rows over window columns [cx0, cx1); None: no ink."""
@@ -237,12 +248,12 @@ def refine_box(g, b, o=None, dbg=None):
         low_max = max(2, r100(h, o["low_run_pct"]))
         beyond = max(2, r100(h, o["beyond_pct"]))
         st = 0
-        top, more = _walk_rows(rc, k0 + int(ink[0]), -1, mh, o["row_gap"], low, rise, low_max, beyond)
+        top, more = _walk_rows(rc, k0 + int(ink[0]), -1, mh, o["row_gap"], low, rise, low_max, beyond, rstop)
         if more and lim_t:
             top, st = None, st | ST_LIMIT
         elif top - by0 > S_a:
             top, st = None, st | ST_SHRINK
-        bot, more = _walk_rows(rc, k0 + int(ink[-1]), +1, mh, o["row_gap"], low, rise, low_max, beyond)
+        bot, more = _walk_rows(rc, k0 + int(ink[-1]), +1, mh, o["row_gap"], low, rise, low_max, beyond, rstop)
         if more and lim_b:
             bot, st = None, st | ST_LIMIT
         elif (by0 + h - 1) - bot > S_a:
@@ -273,6 +284,8 @@ def refine_box(g, b, o=None, dbg=None):
         return x0, y0, x1, y1, status | ST_NOINK
     G = max(o["gap_min"], r100(hh, o["gap_pct"]))
     S_l = r100(hh, o["shrink_l_pct"])
+    if cstop is not None:
+        barrier = cstop if barrier is None else (barrier | cstop)
     left, more = _walk(cc, k0 + int(ink[0]), -1, mw, G, barrier)
     if more and lim_l:
         left, status = None, status | ST_LIMIT
@@ -307,6 +320,47 @@ def refine_box(g, b, o=None, dbg=None):
     return out[0], out[1], out[2], out[3], status
 
 
+def neighbour_limits(boxes, W, H):
+    """[(left, top, right, bottom)] for every box: the frame px its edges may not grow past, from the other boxes
+    (vertical ones too) that lie beside it (a vertical overlap of at least half the smaller height: left and right)
+    or above / below it (a horizontal overlap of at least half the smaller width: top and bottom). A box that
+    overlaps it already stops that edge at the box's own pixel edge."""
+    n = len(boxes)
+    px = []
+    for b in boxes:
+        v = [float(t) for t in b[:4]]
+        if not all(math.isfinite(t) for t in v):
+            px.append(None)
+            continue
+        px.append((v, min(max(int(math.floor(v[0])), 0), W), min(max(int(math.floor(v[1])), 0), H),
+                   min(max(int(math.ceil(v[2])), 0), W), min(max(int(math.ceil(v[3])), 0), H)))
+    out = []
+    for i in range(n):
+        if px[i] is None:
+            out.append((0, 0, W, H))
+            continue
+        (a0, a1, a2, a3), ix0, iy0, ix1, iy1 = px[i]
+        nl, nt, nr, nb = 0, 0, W, H
+        for j in range(n):
+            if j == i or px[j] is None:
+                continue
+            (b0, b1, b2, b3), jx0, jy0, jx1, jy1 = px[j]
+            oy = min(a3, b3) - max(a1, b1)
+            ox = min(a2, b2) - max(a0, b0)
+            if oy >= 0.5 * min(a3 - a1, b3 - b1):
+                if b0 > a0:
+                    nr = min(nr, max(ix1, jx0))
+                if b2 < a2:
+                    nl = max(nl, min(ix0, jx1))
+            if ox >= 0.5 * min(a2 - a0, b2 - b0):
+                if b1 < a1:
+                    nt = max(nt, min(iy0, jy1))
+                if b3 > a3:
+                    nb = min(nb, max(iy1, jy0))
+        out.append((nl, nt, nr, nb))
+    return out
+
+
 def options(opts=None):
     o = dict(DEFAULTS)
     for k, v in (opts or {}).items():
@@ -324,15 +378,16 @@ def refine(grey, boxes, opts=None, status=None):
     g = np.ascontiguousarray(grey, np.uint8)
     if g.ndim != 2:
         raise ValueError("refine reads an H x W grey frame (tools/tsdesk.grey_of)")
+    lims = neighbour_limits(boxes, g.shape[1], g.shape[0]) if o["neighbours"] else [None] * len(boxes)
     out = []
-    for b in boxes:
+    for b, lim in zip(boxes, lims):
         nb = list(b)
         if len(b) > 4 and b[4]:
             if status is not None:
                 status.append(ST_VERT)
             out.append(nb)
             continue
-        x0, y0, x1, y1, st = refine_box(g, b, o)
+        x0, y0, x1, y1, st = refine_box(g, b, o, lim=lim)
         nb[:4] = [x0, y0, x1, y1]
         if status is not None:
             status.append(st)
@@ -368,7 +423,7 @@ class CRefine:
         self.lib.vocr_tsdr_defaults.argtypes = [C.POINTER(C.c_int)]
         self.lib.vocr_tsdr_nopts.restype = C.c_int
         self.lib.vocr_tsdr_scratch_bytes.restype = C.c_size_t
-        self.lib.vocr_tsdr_scratch_bytes.argtypes = [C.c_uint, C.c_uint]
+        self.lib.vocr_tsdr_scratch_bytes.argtypes = [C.c_uint, C.c_uint, C.c_uint]
         self.lib.vocr_tsdr_refine.restype = C.c_int
         self.lib.vocr_tsdr_refine.argtypes = [C.c_void_p, C.c_uint, C.c_uint, C.c_uint, C.c_void_p,
                                               C.c_void_p, C.c_uint, C.c_void_p, C.c_void_p, C.c_void_p, C.c_size_t]
@@ -393,7 +448,7 @@ class CRefine:
             xy[i] = [float(v) for v in b[:4]]
             vert[i] = 1 if (len(b) > 4 and b[4]) else 0
         st = np.zeros(max(1, n), np.uint32)
-        need = self.lib.vocr_tsdr_scratch_bytes(W, H)
+        need = self.lib.vocr_tsdr_scratch_bytes(W, H, n)
         if self._scratch is None or self._scratch.size < need:
             self._scratch = np.zeros(need, np.uint8)
         rc = self.lib.vocr_tsdr_refine(g.ctypes.data, W, H, W, xy.ctypes.data, vert.ctypes.data, n,

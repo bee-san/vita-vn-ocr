@@ -35,6 +35,7 @@ void vocr_tsdr_defaults(vocr_tsdr_opts *o)
     o->floor_ = 28; o->k_pct = 40;
     o->margin_pct = 90; o->margin_gap_pct = 50; o->margin_min = 3; o->noise_add = 12; o->texture_pct = 0;
     o->busy_pct = 25;
+    o->neighbours = 1;
 }
 
 int vocr_tsdr_nopts(void) { return VOCR_TSDR_NOPTS; }
@@ -53,10 +54,15 @@ typedef struct {
     unsigned char *barrier;           /* W */
 } tsdr_scr;
 
-size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h)
+static size_t frame_bytes(unsigned w, unsigned h)
 {
     size_t W = w, H = h;
     return 2 * W * H + 2 * (W + 2) + (H + W + H) * sizeof(int) + W + 64;
+}
+
+size_t vocr_tsdr_scratch_bytes(unsigned w, unsigned h, unsigned n)
+{
+    return frame_bytes(w, h) + 4 * (size_t)n * sizeof(int);
 }
 
 static void scr_map(tsdr_scr *s, void *buf, unsigned w, unsigned h)
@@ -273,11 +279,12 @@ static void col_counts(const unsigned char *m, int mw, int y0, int y1, int *cc)
 
 /* ---- the walks (tools/tsdesk_refine._walk / _walk_rows) ---- */
 
-static int walk(const int *cnt, int start, int step, int n, int gap, const unsigned char *stop, int *more)
+static int walk(const int *cnt, int start, int step, int n, int gap, const unsigned char *stop, int s_lo, int s_hi,
+                int *more)
 {
     int last = start, i = start + step, run = 0;
     while (i >= 0 && i < n) {
-        if (stop && stop[i]) { *more = 0; return last; }
+        if ((stop && stop[i]) || i < s_lo || i >= s_hi) { *more = 0; return last; }
         if (cnt[i] > 0) { last = i; run = 0; }
         else if (++run > gap) { *more = 0; return last; }
         i += step;
@@ -287,11 +294,13 @@ static int walk(const int *cnt, int start, int step, int n, int gap, const unsig
 }
 
 static int walk_rows(const int *cnt, int start, int step, int n, int gap, int low, int rise, int low_max,
-                     int beyond_max, int *more)
+                     int beyond_max, int s_lo, int s_hi, int *more)
 {
     int last = start, i = start + step, run = 0, lows = 0, valley = -1;
     while (i >= 0 && i < n) {
-        int c = cnt[i];
+        int c;
+        if (i < s_lo || i >= s_hi) { *more = 0; return last; }
+        c = cnt[i];
         if (c > 0) {
             if (c <= low) {
                 if (lows == 0) valley = i;
@@ -319,6 +328,7 @@ typedef struct {
     const vocr_tsdr_opts *o;
     const unsigned char *m;
     int mw, mh, bx0, by0, w, h, lim_t, lim_b, S_a;
+    int r_lo, r_hi;                   /* window rows outside [r_lo, r_hi) are beyond another box */
     int *rc, *sortbuf;
 } tsdr_box;
 
@@ -347,10 +357,10 @@ static int across(const tsdr_box *B, int cx0, int cx1, int *top, int *bot, unsig
     low_max = imax(2, r100(h, o->low_run_pct));
     beyond = imax(2, r100(h, o->beyond_pct));
     *st = 0;
-    t = walk_rows(B->rc, first, -1, B->mh, o->row_gap, low, rise, low_max, beyond, &more);
+    t = walk_rows(B->rc, first, -1, B->mh, o->row_gap, low, rise, low_max, beyond, B->r_lo, B->r_hi, &more);
     if (more && B->lim_t) { t = -1; *st |= VOCR_TSDR_LIMIT; }
     else if (t - by0 > B->S_a) { t = -1; *st |= VOCR_TSDR_SHRINK; }
-    b = walk_rows(B->rc, last, +1, B->mh, o->row_gap, low, rise, low_max, beyond, &more);
+    b = walk_rows(B->rc, last, +1, B->mh, o->row_gap, low, rise, low_max, beyond, B->r_lo, B->r_hi, &more);
     if (more && B->lim_b) { b = -1; *st |= VOCR_TSDR_LIMIT; }
     else if ((by0 + h - 1) - b > B->S_a) { b = -1; *st |= VOCR_TSDR_SHRINK; }
     *top = t;
@@ -359,7 +369,7 @@ static int across(const tsdr_box *B, int cx0, int cx1, int *top, int *bot, unsig
 }
 
 static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsigned stride, double *bx,
-                           const vocr_tsdr_opts *o, tsdr_scr *s)
+                           const vocr_tsdr_opts *o, tsdr_scr *s, const int *nlim)
 {
     double x0 = bx[0], y0 = bx[1], x1 = bx[2], y1 = bx[3], f;
     int ix0, iy0, ix1, iy1, h, w, A, Ls, Le, wx0, wx1, wy0, wy1, mw, mh, bx0, by0, x, y, bg, mg, nq = 0, qv[2], noise, t,
@@ -450,6 +460,7 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
     B.lim_t = wy0 > 0; B.lim_b = wy1 < (int)H;
     B.S_a = r100(h, o->shrink_a_pct);
     B.rc = s->rc; B.sortbuf = s->sortbuf;
+    B.r_lo = nlim[1] - wy0; B.r_hi = nlim[3] - wy0;
     if (!across(&B, bx0, bx0 + w, &top, &bot, &st)) return VOCR_TSDR_NOINK;
     rt = top >= 0 ? top : by0;
     rb = bot >= 0 ? bot + 1 : by0 + h;
@@ -480,10 +491,10 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
     if (first < 0) return st | VOCR_TSDR_NOINK;
     G = imax(o->gap_min, r100(hh, o->gap_pct));
     S_l = r100(hh, o->shrink_l_pct);
-    left = walk(s->cc, first, -1, mw, G, have_bar ? s->barrier : NULL, &more);
+    left = walk(s->cc, first, -1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, &more);
     if (more && wx0 > 0) { left = -1; st |= VOCR_TSDR_LIMIT; }
     else if (left - bx0 > S_l) { left = -1; st |= VOCR_TSDR_SHRINK; }
-    right = walk(s->cc, last, +1, mw, G, have_bar ? s->barrier : NULL, &more);
+    right = walk(s->cc, last, +1, mw, G, have_bar ? s->barrier : NULL, nlim[0] - wx0, nlim[2] - wx0, &more);
     if (more && wx1 < (int)W) { right = -1; st |= VOCR_TSDR_LIMIT; }
     else if ((bx0 + w - 1) - right > S_l) { right = -1; st |= VOCR_TSDR_SHRINK; }
     cl = left >= 0 ? left : bx0;
@@ -513,6 +524,51 @@ static unsigned refine_one(const unsigned char *g, unsigned W, unsigned H, unsig
     return st;
 }
 
+static int pix_floor(double v, unsigned lim)
+{
+    double f = floor(v);
+    return f < 0 ? 0 : (f > lim ? (int)lim : (int)f);
+}
+
+static int pix_ceil(double v, unsigned lim)
+{
+    double f = ceil(v);
+    return f < 0 ? 0 : (f > lim ? (int)lim : (int)f);
+}
+
+static int finite4(const double *b)
+{
+    return isfinite(b[0]) && isfinite(b[1]) && isfinite(b[2]) && isfinite(b[3]);
+}
+
+/* tools/tsdesk_refine.neighbour_limits for box i (the input boxes, before any is refined) */
+static void neighbour_limits(const double *xyxy, unsigned n, unsigned i, unsigned W, unsigned H, int *out)
+{
+    const double *a = xyxy + 4 * (size_t)i;
+    int ix0, iy0, ix1, iy1, nl = 0, nt = 0, nr = (int)W, nb = (int)H;
+    unsigned j;
+    out[0] = 0; out[1] = 0; out[2] = (int)W; out[3] = (int)H;
+    if (!finite4(a)) return;
+    ix0 = pix_floor(a[0], W); iy0 = pix_floor(a[1], H); ix1 = pix_ceil(a[2], W); iy1 = pix_ceil(a[3], H);
+    for (j = 0; j < n; j++) {
+        const double *b = xyxy + 4 * (size_t)j;
+        double oy, ox, ha, hb, wa, wb;
+        if (j == i || !finite4(b)) continue;
+        oy = (a[3] < b[3] ? a[3] : b[3]) - (a[1] > b[1] ? a[1] : b[1]);
+        ox = (a[2] < b[2] ? a[2] : b[2]) - (a[0] > b[0] ? a[0] : b[0]);
+        ha = a[3] - a[1]; hb = b[3] - b[1]; wa = a[2] - a[0]; wb = b[2] - b[0];
+        if (oy >= 0.5 * (ha < hb ? ha : hb)) {
+            if (b[0] > a[0]) nr = imin(nr, imax(ix1, pix_floor(b[0], W)));
+            if (b[2] < a[2]) nl = imax(nl, imin(ix0, pix_ceil(b[2], W)));
+        }
+        if (ox >= 0.5 * (wa < wb ? wa : wb)) {
+            if (b[1] < a[1]) nt = imax(nt, imin(iy0, pix_ceil(b[3], H)));
+            if (b[3] > a[3]) nb = imin(nb, imax(iy1, pix_floor(b[1], H)));
+        }
+    }
+    out[0] = nl; out[1] = nt; out[2] = nr; out[3] = nb;
+}
+
 int vocr_tsdr_refine(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, double *xyxy,
                      const unsigned char *vertical, unsigned n, const vocr_tsdr_opts *opts, unsigned *status,
                      void *scratch, size_t scratch_bytes)
@@ -520,17 +576,25 @@ int vocr_tsdr_refine(const unsigned char *grey, unsigned w, unsigned h, unsigned
     vocr_tsdr_opts def;
     tsdr_scr s;
     unsigned i;
+    int *lims;
     if (!grey || !w || !h || stride < w || (n && !xyxy) || !scratch) return VOCR_TSDR_E_ARG;
-    if (scratch_bytes < vocr_tsdr_scratch_bytes(w, h)) return VOCR_TSDR_E_SCRATCH;
+    if (scratch_bytes < vocr_tsdr_scratch_bytes(w, h, n)) return VOCR_TSDR_E_SCRATCH;
     if (!opts) {
         vocr_tsdr_defaults(&def);
         opts = &def;
     }
     scr_map(&s, scratch, w, h);
+    lims = (int *)((unsigned char *)scratch + frame_bytes(w, h));
+    /* every box's neighbour limits from the input boxes, before any box is refined */
+    for (i = 0; i < n; i++) {
+        int *l = lims + 4 * (size_t)i;
+        if (opts->neighbours) neighbour_limits(xyxy, n, i, w, h, l);
+        else { l[0] = 0; l[1] = 0; l[2] = (int)w; l[3] = (int)h; }
+    }
     for (i = 0; i < n; i++) {
         unsigned st;
         if (vertical && vertical[i]) st = VOCR_TSDR_VERT;
-        else st = refine_one(grey, w, h, stride, xyxy + 4 * (size_t)i, opts, &s);
+        else st = refine_one(grey, w, h, stride, xyxy + 4 * (size_t)i, opts, &s, lims + 4 * (size_t)i);
         if (status) status[i] = st;
     }
     return VOCR_TSDR_OK;

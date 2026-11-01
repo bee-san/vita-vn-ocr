@@ -5,10 +5,11 @@ recognizer (greedy CTC), the boxes of each dialogue unit scored as eval/pagepath
 
   desktop.py frames --set hval|dev|confirm|pc|test --out FRAMES.pkl [--protocol eval/desktop_protocol.json]
       the frames of a set and their dialogue units (frame px), no pixels (they are read from the shared box)
-  desktop.py resample --frames FRAMES.pkl --height H --out FRAMES_H.pkl
-      the same frames resampled to height H, the aspect kept (cv2.INTER_LINEAR up, INTER_AREA down; desktop
-      windows of 720 to 2160 px), every unit's region, line boxes and cells scaled with them: CER per input
-      resolution (report only; amendment 2)
+  desktop.py resample --frames FRAMES.pkl (--height H | --fit WxH) --out FRAMES_H.pkl
+      the same frames resampled, the aspect kept (cv2.INTER_LINEAR up, INTER_AREA down), every unit's region, line
+      boxes and cells scaled with them: --height H to that height (desktop windows of 720 to 2160 px: CER per input
+      resolution, amendment 2), --fit WxH by min(W / w, H / h) up or down (960x544: MeikiOCR's own detector scale, the
+      like-for-like frames of amendment 4, where every pipeline reads the same pixels)
   desktop.py detect --frames FRAMES.pkl --det SPEC --out BOXES.jsonl [--workers 5]
       a detector's boxes on every frame: SPEC = meiki (MeikiOCR 0.3.5's detector, threshold 0.5, its own fit to
       960 x 544) | ts8 (textspot8_exact.onnx on the whole frame, a frame larger than 960 x 544 fit to it first, as
@@ -655,10 +656,16 @@ def cmd_frames(a):
     print(json.dumps(meta), flush=True)
 
 
-def resample_frame(fr, height):
-    """A frame record resampled to `height` px (aspect kept): its units' geometry scaled by the exact factors."""
+def resample_frame(fr, height=None, fit=None, tag=None):
+    """A frame record resampled to `height` px or fit into fit = (W, H) (aspect kept): its units' geometry scaled by
+    the exact factors."""
     W, H = fr["W"], fr["H"]
-    nw, nh = max(1, int(round(W * height / H))), int(height)
+    if fit:
+        f = min(fit[0] / W, fit[1] / H)
+        nw, nh = max(1, int(round(W * f))), max(1, int(round(H * f)))
+    else:
+        nw, nh = max(1, int(round(W * height / H))), int(height)
+    tag = tag or str(nh)
     sx, sy = nw / W, nh / H
 
     def box(b):
@@ -669,23 +676,27 @@ def resample_frame(fr, height):
         x0, y0, x1, y1 = u["region"]
         region = [int(math.floor(x0 * sx)), int(math.floor(y0 * sy)), min(nw, int(math.ceil(x1 * sx))),
                   min(nh, int(math.ceil(y1 * sy)))]
-        units.append(dict(u, uid=f"{u['uid']}@{nh}", region=region,
+        units.append(dict(u, uid=f"{u['uid']}@{tag}", region=region,
                           lines=[dict(ln, box=box(ln["box"]), cells=[[c[0] * sx, c[1] * sy, c[2] * sx, c[3] * sy]
                                                                      for c in ln["cells"]]) for ln in u["lines"]]))
-    return dict(fr, key=f"{fr['key']}@{nh}", W=nw, H=nh, units=units,
+    return dict(fr, key=f"{fr['key']}@{tag}", W=nw, H=nh, units=units,
                 resample={"from": [W, H], "to": [nw, nh], "method": "cv2.INTER_LINEAR up, cv2.INTER_AREA down"})
 
 
 def cmd_resample(a):
     frames, meta = load_frames(a.frames)
-    out = [resample_frame(fr, a.height) for fr in frames]
-    meta = dict(meta, resampled_to_height=a.height, source_frames_sha256=sha256_file(a.frames),
-                views={**{f"{v}@{a.height}": n for v, n in Counter(f["view"] for f in out).items()}})
+    if bool(a.height) == bool(a.fit):
+        raise SystemExit("resample: --height or --fit")
+    fit = tuple(int(v) for v in a.fit.split("x")) if a.fit else None
+    tag = f"fit{a.fit}" if fit else str(a.height)
+    out = [resample_frame(fr, a.height, fit, tag) for fr in frames]
+    meta = dict(meta, resampled_to_height=a.height, resampled_fit=a.fit, source_frames_sha256=sha256_file(a.frames),
+                views={**{f"{v}@{tag}": n for v, n in Counter(f["view"] for f in out).items()}})
     for fr in out:
-        fr["view"] = f"{fr['view']}@{a.height}"
+        fr["view"] = f"{fr['view']}@{tag}"
     with open(a.out, "wb") as f:
         pickle.dump({"frames": out, "meta": meta}, f)
-    print(json.dumps({k: meta[k] for k in ("resampled_to_height", "views")}), flush=True)
+    print(json.dumps({k: meta[k] for k in ("resampled_to_height", "resampled_fit", "views")}), flush=True)
 
 
 def cmd_detect(a):
@@ -877,7 +888,8 @@ def main(argv=None):
     p.add_argument("--protocol")
     p = sub.add_parser("resample")
     p.add_argument("--frames", required=True)
-    p.add_argument("--height", type=int, required=True)
+    p.add_argument("--height", type=int)
+    p.add_argument("--fit", help="WxH: fit every frame into it, up or down (960x544: MeikiOCR's detector scale)")
     p.add_argument("--out", required=True)
     p = sub.add_parser("detect")
     p.add_argument("--frames", required=True)

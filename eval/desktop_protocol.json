@@ -777,6 +777,26 @@
      "shape": "pending S2_d64 (fit:960, pct): S3_d32 4.932%, S1_d48 2.664%"
     }
    }
+  },
+  {
+   "n": 4,
+   "time": "2026-11-01T16:37:51Z",
+   "before": "any candidate (the final seeds F1-F3 are at step ~21,000 of 40,000) is read on dev-v2, the PC test set, confirm-v2 or the test titles",
+   "owner_update": "2026-11-01 15:49Z, MeikiOCR's author's benchmarking tip: MeikiOCR's detection resizes every image to 960x544, so a comparison on smaller inputs favours the other model and on larger ones MeikiOCR; for detection and end to end, images resized to 960x544 give the most comparable results. Conductor: report every pipeline with frames resized to 960x544 as the like-for-like row beside each pipeline's own best policy",
+   "what": {
+    "like_for_like_frames": "every frame fit into 960x544 with its aspect kept, up or down (scale min(960 / W, 544 / H), cv2.INTER_LINEAR up, INTER_AREA down: MeikiOCR's own detector scale), its units' geometry scaled exactly (eval/desktop.py resample --fit 960x544): a Vita frame unchanged, a PSP frame 2x, a 1920x1080 frame 960x540, a 4:3 frame 725x544",
+    "rows": "on those frames every pipeline reads the same pixels, detector and recognizer: MeikiOCR itself, R (MeikiOCR's detector + VOCR6.2-L, auto pad 4 px), textspot8 + VOCR6.2-L, and the candidate at fit:960 (on these frames it reads them as they are: the same input as MeikiOCR's detector)",
+    "sets": "dev-v2, the PC test set, hval and confirm-v2 (and the test titles at their read), and the timing pages fit the same way (ms per page and peak memory): frames files dev_l544, pctest_l544, hval_l544, confirm_l544 (sha256 below)",
+    "decision": "unchanged: the like-for-like rows are reported beside each pipeline's own best policy; the rule reads the registered sets and policies",
+    "frames_sha256": {
+     "dev": "ef1b3264e82b49c6cf5b88939c74605227511e807f13557c3a933165650827fb",
+     "hval": "c90d2b4a6011bd9a1ea6d046be7345511a4c08c29c2994fbc012b019dd3e7c6a",
+     "pc": "8163663664f1cd0f40a7f48bc6f38fd5bb9f48999f17ed9dea57a2f44b708fb5",
+     "confirm": "a9fabc1b469574467dfd9ec5d25a9baa3523a3e765a3c633179d584573bec04c",
+     "pctest": "66287a122dee8cfe2fa7549a931b3f9b09774a02d455e07fe9739c56f8e046c6"
+    },
+    "baseline_arm_pending": "mida-ocr-eval evaluates MeikiOCR's author's new detector (mida_ocr_l.onnx) and will say whether to add it as a registered baseline arm; if so, an amendment registers it before the PC test read"
+   }
   }
  ]
 }

@@ -330,6 +330,84 @@ def test_c_resize_is_vocr_desktops(nets, libs):
         assert np.array_equal(cm.resize(g, dw, dh), VD.CModel.resize(probe, g, dw, dh))
 
 
+Q14 = 16384
+
+
+def _axis_weights(n, m):
+    """desktop/vocr_desk.c axis_weights in integers: (index, weight) [m][K] of an n -> m axis (Q14 area weights down,
+    bilinear on pixel centres up)."""
+    K = 1 if m == n else (n // m + 2 if m < n else 2)
+    idx = np.zeros((m, K), np.int64)
+    wt = np.zeros((m, K), np.int64)
+    for i in range(m):
+        if m == n:
+            idx[i, 0], wt[i, 0] = i, Q14
+        elif m < n:
+            lo, hi, cum, prev, j, k = i * n, i * n + n, 0, 0, (i * n) // m, 0
+            while j * m < hi and k < K:
+                cum += min(hi, (j + 1) * m) - max(lo, j * m)
+                q = (cum * 2 * Q14 + n) // (2 * n)
+                idx[i, k], wt[i, k], prev = j, q - prev, q
+                j, k = j + 1, k + 1
+            idx[i, k:] = idx[i, k - 1]
+        else:
+            num = (2 * i + 1) * n - m
+            if num <= 0:
+                wt[i, 0] = Q14
+            else:
+                x0, r = divmod(num, 2 * m)
+                if x0 >= n - 1:
+                    idx[i, :], wt[i, 0] = n - 1, Q14
+                else:
+                    w1 = (r * Q14 + m) // (2 * m)
+                    idx[i], wt[i] = (x0, x0 + 1), (Q14 - w1, w1)
+    return idx, wt
+
+
+def _resize_ref(g, dw, dh):
+    """vocr_desk_resize's rule in numpy integers (the horizontal pass, then the vertical, round half up, clamp)."""
+    h, w = g.shape
+    ix, wx = _axis_weights(w, dw)
+    iy, wy = _axis_weights(h, dh)
+    t = (g.astype(np.int64)[:, ix] * wx).sum(-1)
+    acc = (t[iy] * wy[:, :, None]).sum(1)
+    return np.clip((acc + (1 << 27)) >> 28, 0, 255).astype(np.uint8)
+
+
+def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
+    """vocr_desk_resize (SIMD paths: 2:1, identity, consecutive taps, the row ring) and vocr_desk_grey (SIMD RGB /
+    RGBA) give their integer rule's bits in every build: VDSK and VTSD inputs unchanged by the faster code."""
+    rng = np.random.default_rng(12)
+    sizes = [((1080, 1920), (540, 960)), ((720, 1280), (540, 960)), ((272, 480), (544, 960)), ((544, 960), (544, 960)),
+             ((1440, 2560), (540, 960)), ((2160, 3840), (540, 960)), ((768, 1366), (538, 960)), ((1, 1), (3, 5)),
+             ((5, 3), (1, 1)), ((300, 200), (3, 2)), ((130, 7), (2, 7)), ((17, 33), (17, 16)), ((40, 4000), (1, 30))]
+    sizes += [((int(rng.integers(1, 400)), int(rng.integers(1, 400))),
+               (int(rng.integers(1, 500)), int(rng.integers(1, 500)))) for _ in range(25)]
+    for lib in libs.values():
+        cm = TC.CModel(_any_blob(), lib=lib)
+        for (h, w), (dh, dw) in sizes:
+            g = rng.integers(0, 256, (h, w), dtype=np.uint8)
+            assert np.array_equal(cm.resize(g, dw, dh), _resize_ref(g, dw, dh)), ((h, w), (dh, dw))
+        for ch in (3, 4):
+            for h, w in ((37, 1921), (1, 1), (3, 17), (2, 33)):
+                rgb = rng.integers(0, 256, (h, w, ch), dtype=np.uint8)
+                out = np.zeros((h, w), np.uint8)
+                cm.L.vocr_desk_grey(rgb.ctypes.data, w, h, w * ch, ch, out.ctypes.data)
+                assert np.array_equal(out, T.grey_of(rgb)), (ch, h, w)
+
+
+_BLOB = []
+
+
+def _any_blob():
+    """A VTSD blob for a CModel used only for its library's helpers."""
+    if not _BLOB:
+        pytest.importorskip("torch")
+        import tsdesk_blob as TB
+        _BLOB.append(TB.blob_bytes(_random_net("p8t", seed=3)))
+    return _BLOB[0]
+
+
 def test_ctsd_spec_in_eval(nets, libs, tmp_path):
     """eval/tsdesk.py's ctsd: detector spec reads a VTSD blob through tools/tsdesk_c.CModel."""
     pytest.importorskip("cv2")

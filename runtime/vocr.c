@@ -42,6 +42,14 @@ enum { T_CONV = 1, T_DW = 2, T_PW = 3, T_HEAD = 4, T_ATTN = 5 };
 #else
 #define VOCR_PREFETCH(p) ((void)(p))
 #endif
+/* VOCR_ASM: the inline-asm form of mm_i16's inner pass (gcc or clang on 32-bit ARM with NEON; -DVOCR_NO_ASM builds the
+ * intrinsics alone, the same bits) */
+#if defined(VOCR_NEON) && defined(__GNUC__) && defined(__arm__) && !defined(VOCR_NO_ASM)
+#define VOCR_ASM 1
+#else
+#define VOCR_ASM 0
+#endif
+
 /* The NEON kernels stay out of step_op: inlined, their loop state spills to the stack (gcc 14/15).
  * Other builds (the PSP's, the scalar ones) inline them as before. */
 #if defined(__GNUC__) && defined(VOCR_NEON)
@@ -867,6 +875,79 @@ int vocr_preprocess(const vocr_model *m, const vocr_image *img, unsigned char *o
  */
 static float relu_f(float v) { return v > 0.0f ? v : 0.0f; }
 
+#ifdef VOCR_NEON
+/* The 3x3 stem with C a multiple of 16, 4 channels at a time with the group's 9 tap weights held in 9 Q registers over
+ * every output of the call (k_conv1's 16-channel loop reloads 16 channels' 9 weight vectors and loads each input
+ * value 4 times for every output position), and each column's 3 input rows in one load: each output is still bias,
+ * then + w * x over the taps in order (dy, then dx), one VMLA by lane (a product and a sum, each rounded, as
+ * k_conv1's vmlaq_lane_f32; -ffp-contract=off keeps the scalar code's the same) per tap, the vertical taps outside the
+ * input skipped (the rows whose window crosses the top or bottom take the taps one by one, as k_conv1 does) and the
+ * columns outside the line zero; only the order in which independent outputs are computed changes. With C % 16 the
+ * general loop runs every channel on NEON too, so the bits are the same (NEON's flush of denormals included). The
+ * depthwise layers keep k_dw: the same 4-channel form measured slower there (their 2-8 rows are mostly border rows,
+ * and their 16-channel loop already loads each input once per output). */
+#define VOCR_W9(P, C)                                                                         \
+    const float32x4_t w0_ = vld1q_f32(P), w1_ = vld1q_f32((P) + (C)), w2_ = vld1q_f32((P) + 2 * (C)); \
+    const float32x4_t w3_ = vld1q_f32((P) + 3 * (C)), w4_ = vld1q_f32((P) + 4 * (C));               \
+    const float32x4_t w5_ = vld1q_f32((P) + 5 * (C)), w6_ = vld1q_f32((P) + 6 * (C));               \
+    const float32x4_t w7_ = vld1q_f32((P) + 7 * (C)), w8_ = vld1q_f32((P) + 8 * (C))
+
+/* the stem: win [col][h_in] floats, one input channel */
+static VOCR_NOINLINE void k_conv1_3x3(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
+{
+    const unsigned C = op->cout, Ho = op->h_out, Hi = op->h_in;
+    const int relu = (op->flags & F_RELU) != 0;
+    const float32x4_t z = vdupq_n_f32(0.0f);
+    unsigned c0, t, y, dy, dx;
+    for (c0 = 0; c0 < C; c0 += 4) {
+        const float *wq = op->w + c0;
+        const float32x4_t bv = op->bias ? vld1q_f32(op->bias + c0) : z;
+        VOCR_W9(wq, C);
+        for (t = t0; t < t1; t++) {
+            const float *col = win + (size_t)(t * op->sw) * Hi;
+            float *o = out + (size_t)(t - t0) * Ho * C + c0;
+            for (y = 0; y < Ho; y++, o += C) {
+                const int r0 = (int)(y * op->sh) - (int)op->ph;
+                float32x4_t a = bv;
+                if (r0 >= 0 && r0 + 3 <= (int)Hi) {
+                    /* the window's 3 rows of each column as lanes 0-2 of one load (lane 3 the row below, in the
+                     * column, or the next one, unused) when r0 + 3 < Hi; the last rows read their third separately */
+                    const float *x = col + r0;
+                    float32x2_t l0, l1, l2, h0, h1, h2;
+                    if (r0 + 4 <= (int)Hi) {
+                        const float32x4_t c0v = vld1q_f32(x), c1v = vld1q_f32(x + Hi), c2v = vld1q_f32(x + 2 * Hi);
+                        l0 = vget_low_f32(c0v), l1 = vget_low_f32(c1v), l2 = vget_low_f32(c2v);
+                        h0 = vget_high_f32(c0v), h1 = vget_high_f32(c1v), h2 = vget_high_f32(c2v);
+                    } else {
+                        l0 = vld1_f32(x), l1 = vld1_f32(x + Hi), l2 = vld1_f32(x + 2 * Hi);
+                        h0 = vld1_dup_f32(x + 2), h1 = vld1_dup_f32(x + Hi + 2), h2 = vld1_dup_f32(x + 2 * Hi + 2);
+                    }
+                    a = vmlaq_lane_f32(a, w0_, l0, 0);
+                    a = vmlaq_lane_f32(a, w1_, l1, 0);
+                    a = vmlaq_lane_f32(a, w2_, l2, 0);
+                    a = vmlaq_lane_f32(a, w3_, l0, 1);
+                    a = vmlaq_lane_f32(a, w4_, l1, 1);
+                    a = vmlaq_lane_f32(a, w5_, l2, 1);
+                    a = vmlaq_lane_f32(a, w6_, h0, 0);
+                    a = vmlaq_lane_f32(a, w7_, h1, 0);
+                    a = vmlaq_lane_f32(a, w8_, h2, 0);
+                } else {
+                    const unsigned dy0 = r0 < 0 ? (unsigned)-r0 : 0u;
+                    const unsigned dy1 = umin(3u, (unsigned)((int)Hi - r0));
+                    for (dy = dy0; dy < dy1; dy++)
+                        for (dx = 0; dx < 3; dx++)
+                            a = vmlaq_lane_f32(a, vld1q_f32(wq + (size_t)(dy * 3 + dx) * C),
+                                               vld1_dup_f32(col + (size_t)dx * Hi + (unsigned)(r0 + (int)dy)), 0);
+                }
+                vst1q_f32(o, relu ? vmaxq_f32(a, z) : a);
+            }
+        }
+    }
+}
+
+#undef VOCR_W9
+#endif
+
 /* CONV with one input channel (the stem). win: [col][h_in]; output column t reads
  * window columns t * sw + dx. Writes output columns [t0, t1) to out. */
 static VOCR_NOINLINE void k_conv1(const vocr_op *op, const float *win, float *out, unsigned t0, unsigned t1)
@@ -874,6 +955,12 @@ static VOCR_NOINLINE void k_conv1(const vocr_op *op, const float *win, float *ou
     const unsigned C = op->cout, kw = op->kw, Ho = op->h_out, Hi = op->h_in;
     const int relu = (op->flags & F_RELU) != 0;
     unsigned t, y, c0, c, dy, dx;
+#ifdef VOCR_NEON
+    if (op->kh == 3 && kw == 3 && !(C & 15u)) { /* every channel on the NEON path below too (C % 16): its bits */
+        k_conv1_3x3(op, win, out, t0, t1);
+        return;
+    }
+#endif
     for (t = t0; t < t1; t++)
         for (y = 0; y < Ho; y++) {
             const int r0 = (int)(y * op->sh) - (int)op->ph;
@@ -1416,6 +1503,66 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
             a7 = vmlal_n_s16(a7, wh_, x3[k]);                                                \
         }                                                                                    \
     } while (0)
+#if VOCR_ASM
+    /* The same sums when K0 and K1 are multiples of 8 and every row starts 16-byte aligned (al below), as one asm
+     * loop: VOCR_ISUMS4's pass with its registers fixed. gcc keeps the intrinsics' 8 sums, 4 inputs, 32 weight bytes
+     * and a widened row in the 16 Q registers only by rotating a sum through them (4 VORR a pass) and copies the
+     * weight pointer for the PLD (2 more), 88 instructions a pass; this is 82, with the alignment hints the A9 issues
+     * the loads in 6 cycles instead of 14. The inputs in q0-q3 (the by-scalar VMLAL.S16 reads its scalar from
+     * d0-d7), the weights in q4-q5, the widened row in q6 / q7 in turn, the sums in the 8 registers the asm leaves
+     * (q8-q15). The same VMLAL in the same order as VOCR_ISUMS4 (integer sums are exact in any order anyway), the
+     * PLDs at the same addresses (wk + 128 and wk + 160 before the pass). */
+#define VOCR_A8(TL, TH, X0, X1, X2, X3, L)                                                   \
+    "vmlal.s16 %q[a0], " TL ", " X0 "[" L "]\n\t" "vmlal.s16 %q[a1], " TH ", " X0 "[" L "]\n\t"   \
+    "vmlal.s16 %q[a2], " TL ", " X1 "[" L "]\n\t" "vmlal.s16 %q[a3], " TH ", " X1 "[" L "]\n\t"   \
+    "vmlal.s16 %q[a4], " TL ", " X2 "[" L "]\n\t" "vmlal.s16 %q[a5], " TH ", " X2 "[" L "]\n\t"   \
+    "vmlal.s16 %q[a6], " TL ", " X3 "[" L "]\n\t" "vmlal.s16 %q[a7], " TH ", " X3 "[" L "]\n\t"
+#ifdef VOCR_NO_PREFETCH
+#define VOCR_PLD2 ""
+#else
+#define VOCR_PLD2 "pld [%[wk], #96]\n\tpld [%[wk], #128]\n\t"
+#endif
+#define VOCR_ISUMS4_ASM(K0, K1)                                                              \
+    do {                                                                                     \
+        const int16_t *p0_ = x0 + (K0), *p1_ = x1 + (K0), *p2_ = x2 + (K0), *p3_ = x3 + (K0); \
+        const int8_t *wk_ = qw + (size_t)(K0) * 8;                                           \
+        unsigned n_ = ((K1) - (K0)) / 8u;                                                    \
+        a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = vdupq_n_s32(0);                              \
+        __asm__ volatile("1:\n\t"                                                            \
+                         "vld1.16 {d0-d1}, [%[p0]:128]!\n\t"                                 \
+                         "vld1.16 {d2-d3}, [%[p1]:128]!\n\t"                                 \
+                         "vld1.16 {d4-d5}, [%[p2]:128]!\n\t"                                 \
+                         "vld1.16 {d6-d7}, [%[p3]:128]!\n\t"                                 \
+                         "vld1.8 {d8-d11}, [%[wk]:128]!\n\t"                                 \
+                         VOCR_PLD2                                                           \
+                         "vmovl.s8 q6, d8\n\t"                                               \
+                         VOCR_A8("d12", "d13", "d0", "d2", "d4", "d6", "0")                  \
+                         "vmovl.s8 q7, d9\n\t"                                               \
+                         VOCR_A8("d14", "d15", "d0", "d2", "d4", "d6", "1")                  \
+                         "vmovl.s8 q6, d10\n\t"                                              \
+                         VOCR_A8("d12", "d13", "d0", "d2", "d4", "d6", "2")                  \
+                         "vmovl.s8 q7, d11\n\t"                                              \
+                         "vld1.8 {d8-d11}, [%[wk]:128]!\n\t"                                 \
+                         VOCR_A8("d14", "d15", "d0", "d2", "d4", "d6", "3")                  \
+                         "vmovl.s8 q6, d8\n\t"                                               \
+                         VOCR_A8("d12", "d13", "d1", "d3", "d5", "d7", "0")                  \
+                         "vmovl.s8 q7, d9\n\t"                                               \
+                         VOCR_A8("d14", "d15", "d1", "d3", "d5", "d7", "1")                  \
+                         "vmovl.s8 q6, d10\n\t"                                              \
+                         VOCR_A8("d12", "d13", "d1", "d3", "d5", "d7", "2")                  \
+                         "vmovl.s8 q7, d11\n\t"                                              \
+                         VOCR_A8("d14", "d15", "d1", "d3", "d5", "d7", "3")                  \
+                         "subs %[n], %[n], #1\n\t"                                            \
+                         "bne 1b\n\t"                                                         \
+                         : [a0] "+w"(a0), [a1] "+w"(a1), [a2] "+w"(a2), [a3] "+w"(a3), [a4] "+w"(a4), \
+                           [a5] "+w"(a5), [a6] "+w"(a6), [a7] "+w"(a7), [p0] "+r"(p0_), [p1] "+r"(p1_), \
+                           [p2] "+r"(p2_), [p3] "+r"(p3_), [wk] "+r"(wk_), [n] "+r"(n_)          \
+                         :                                                                   \
+                         : "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "cc", "memory");   \
+    } while (0)
+#else
+#define VOCR_ISUMS4_ASM(K0, K1) VOCR_ISUMS4(K0, K1)
+#endif
     /* position P's 8 outputs from its float sums LO / HI, S the position's scale as a lane of
      * SXH (a D register): the scalar code's steps, in order (scale[j] * sx[p], times S, + bias,
      * relu, + res); a multiply by a lane is the multiply by that scalar, bit for bit. */
@@ -1438,11 +1585,18 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
         vst1q_f32(y + (P) * ys, lo_);                                                        \
         vst1q_f32(y + (P) * ys + 4, hi_);                                                    \
     } while (0)
+    /* the inputs' rows and the weight rows start 16-byte aligned when K is a multiple of 8 and both bases are (the
+     * arena's scratch and the blob's sections always are): every VOCR model's matrices. Then every chunk [K0, K1)
+     * holds a multiple of 8 terms too (chunks start at multiples of 512). */
+    const int al = !(K & 7u) && !(((uintptr_t)qx | (uintptr_t)qw) & 15u);
     for (; p + 4 <= P; p += 4) {
         const int16_t *x0 = qx + (size_t)p * K, *x1 = x0 + K, *x2 = x1 + K, *x3 = x2 + K;
         int32x4_t a0, a1, a2, a3, a4, a5, a6, a7;
         if (K <= W8I_CHUNK) {
-            VOCR_ISUMS4(0u, K);
+            if (al)
+                VOCR_ISUMS4_ASM(0u, K);
+            else
+                VOCR_ISUMS4(0u, K);
             {
                 const float32x4_t sxv = vld1q_f32(sx + p);
                 VOCR_IOUT(p, vcvtq_f32_s32(a0), vcvtq_f32_s32(a1), vget_low_f32(sxv), 0);
@@ -1455,7 +1609,10 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
             for (q = 0; q < 8; q++) fs[q] = vdupq_n_f32(0.0f);
             for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
                 const unsigned k1 = umin(K, k0 + W8I_CHUNK);
-                VOCR_ISUMS4(k0, k1);
+                if (al)
+                    VOCR_ISUMS4_ASM(k0, k1);
+                else
+                    VOCR_ISUMS4(k0, k1);
                 fs[0] = vaddq_f32(fs[0], vcvtq_f32_s32(a0));
                 fs[1] = vaddq_f32(fs[1], vcvtq_f32_s32(a1));
                 fs[2] = vaddq_f32(fs[2], vcvtq_f32_s32(a2));
@@ -1539,6 +1696,7 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
     }
 #undef VOCR_IOUT
 #undef VOCR_ISUMS4
+#undef VOCR_ISUMS4_ASM
 #undef VOCR_IHALF
 #undef VOCR_IROW
 #endif
@@ -1700,6 +1858,28 @@ static int32x4_t fkey(float32x4_t v)
     return vbslq_s32(vcgtq_s32(m, vdupq_n_s32(0x7F800000)), vdupq_n_s32(INT32_MIN), key);
 }
 
+/* A cheaper key for the top-K filter, which only has to let through every block holding a logit above the frame's
+ * K-th largest so far (the per-class insertion then decides with IEEE compares): the float's bits with the magnitude
+ * flipped for negatives, as int32. It orders every two non-NaN floats as `>` does, except that -0 < +0, and puts a
+ * NaN above or below everything; the threshold is never NaN (insertion keeps none), so v > t implies
+ * okey(v) > okey(t), and the filter passes a superset of the blocks it must. 3 NEON operations instead of fkey's 6. */
+static int32x4_t okey(float32x4_t v)
+{
+    const int32x4_t b = vreinterpretq_s32_f32(v);
+    return veorq_s32(b, vreinterpretq_s32_u32(vshrq_n_u32(vreinterpretq_u32_s32(vshrq_n_s32(b, 31)), 1)));
+}
+
+/* okey of one float, as its int32 bits */
+static int32_t okey1(float v)
+{
+    uint32_t u;
+    int32_t k;
+    memcpy(&u, &v, sizeof u);
+    u ^= (u >> 31) ? 0x7FFFFFFFu : 0u;
+    memcpy(&k, &u, sizeof k);
+    return k;
+}
+
 /* The first maximum of each frame from its lanes: lane j of frame f holds the key (fkey) of the
  * largest logit of the classes nb * 8 + j and the first block nb that had it. The frame's first
  * maximum is the largest key; of the lanes that hold it, the smallest class. With every logit
@@ -1776,7 +1956,8 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
     float tmp[VOCR_HEAD_CHUNK * 8];
     vocr_lane_i32 *lk = (vocr_lane_i32 *)(void *)x;              /* nf x 8 lane maxima (keys) ... */
     vocr_lane_u32 *li = (vocr_lane_u32 *)(void *)(x + (size_t)nf * 8u); /* ... and blocks: 16 nf <= K nf */
-    vocr_lane_u32 *ro = (vocr_lane_u32 *)(void *)x; /* top-K: each frame's row in the caller's buffers */
+    vocr_lane_u32 *ro = (vocr_lane_u32 *)(void *)x; /* top-K: each frame's row in the caller's buffers ... */
+    vocr_lane_i32 *tk = (vocr_lane_i32 *)(void *)(x + nf); /* ... and okey of its K-th largest logit so far */
 #endif
     for (f = 0; f < nf; f++) {
         bestv[f] = -INFINITY;
@@ -1797,7 +1978,10 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
         step = VOCR_HEAD_CHUNK;
         if (TK) {
             n_tk = N / 8u;
-            for (f = 0; f < nf; f++) ro[f] = (uint32_t)VOCR_FRAME(f) * TK; /* once per batch, not per block */
+            for (f = 0; f < nf; f++) {
+                ro[f] = (uint32_t)VOCR_FRAME(f) * TK; /* once per batch, not per block */
+                tk[f] = okey1(-INFINITY);
+            }
         } else {
             n_lanes = N / 8u;
             for (f = 0; f < nf * 8u; f++) {
@@ -1849,23 +2033,55 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                 continue;
             }
             if (nb < n_tk) {
-                for (q = 0; q < pn; q++) {
-                    float *tv = ex->topk_logit + ro[f0 + q];
-                    uint16_t *tc = ex->topk_class + ro[f0 + q];
-                    const int32x4_t kt = fkey(vld1q_dup_f32(tv + TK - 1));
-                    const uint32x4_t gt = vorrq_u32(vcgtq_s32(fkey(vld1q_f32(tmp + q * 8)), kt),
-                                                    vcgtq_s32(fkey(vld1q_f32(tmp + q * 8 + 4)), kt));
-                    const uint32x2_t g2 = vorr_u32(vget_low_u32(gt), vget_high_u32(gt));
-                    if (ex->logits && VOCR_FRAME(f0 + q) < ex->cap_frames)
-                        memcpy(ex->logits + (size_t)VOCR_FRAME(f0 + q) * N + nb * 8, tmp + q * 8,
-                               8 * sizeof(float));
-                    if (!nb && ex->blank_logit) ex->blank_logit[VOCR_FRAME(f0 + q)] = tmp[q * 8];
-                    if (!vget_lane_u32(vpmax_u32(g2, g2), 0)) continue;
+                /* which frames may take a class of this block: okey's test (a superset of the blocks with a logit
+                 * above the frame's K-th largest, tk) 4 frames at a time, their bits gathered in one register and
+                 * moved to the ARM side once per block (each move is a NEON-to-ARM transfer); the frames past the
+                 * last group of 4 one by one */
+                uint32_t pass = 0;
+                if (ex->logits || (!nb && ex->blank_logit))
+                    for (q = 0; q < pn; q++) {
+                        if (ex->logits && VOCR_FRAME(f0 + q) < ex->cap_frames)
+                            memcpy(ex->logits + (size_t)VOCR_FRAME(f0 + q) * N + nb * 8, tmp + q * 8,
+                                   8 * sizeof(float));
+                        if (!nb && ex->blank_logit) ex->blank_logit[VOCR_FRAME(f0 + q)] = tmp[q * 8];
+                    }
+                {
+                    static const uint32_t bit0[4] = {1u, 2u, 4u, 8u};
+                    uint32x4_t bits = vld1q_u32(bit0), acc = vdupq_n_u32(0);
+                    uint32x2_t a2;
+                    for (q = 0; q + 4 <= pn; q += 4, bits = vshlq_n_u32(bits, 4)) {
+                        const float *v = tmp + q * 8;
+                        const int32x4_t m0 = vmaxq_s32(okey(vld1q_f32(v)), okey(vld1q_f32(v + 4)));
+                        const int32x4_t m1 = vmaxq_s32(okey(vld1q_f32(v + 8)), okey(vld1q_f32(v + 12)));
+                        const int32x4_t m2 = vmaxq_s32(okey(vld1q_f32(v + 16)), okey(vld1q_f32(v + 20)));
+                        const int32x4_t m3 = vmaxq_s32(okey(vld1q_f32(v + 24)), okey(vld1q_f32(v + 28)));
+                        const int32x2_t p01 = vpmax_s32(vpmax_s32(vget_low_s32(m0), vget_high_s32(m0)),
+                                                        vpmax_s32(vget_low_s32(m1), vget_high_s32(m1)));
+                        const int32x2_t p23 = vpmax_s32(vpmax_s32(vget_low_s32(m2), vget_high_s32(m2)),
+                                                        vpmax_s32(vget_low_s32(m3), vget_high_s32(m3)));
+                        const uint32x4_t gt = vcgtq_s32(vcombine_s32(p01, p23), vld1q_s32(tk + f0 + q));
+                        acc = vorrq_u32(acc, vandq_u32(gt, bits));
+                    }
+                    a2 = vorr_u32(vget_low_u32(acc), vget_high_u32(acc));
+                    pass = vget_lane_u32(vorr_u32(a2, vrev64_u32(a2)), 0);
+                    for (; q < pn; q++) {
+                        const int32x4_t mk = vmaxq_s32(okey(vld1q_f32(tmp + q * 8)), okey(vld1q_f32(tmp + q * 8 + 4)));
+                        const int32x2_t m2 = vpmax_s32(vget_low_s32(mk), vget_high_s32(mk));
+                        if (vget_lane_s32(vpmax_s32(m2, m2), 0) > tk[f0 + q]) pass |= 1u << q;
+                    }
+                }
+                for (q = 0; pass; q++, pass >>= 1) {
+                    const unsigned qq = q;
+                    float *tv;
+                    uint16_t *tc;
+                    if (!(pass & 1u)) continue;
+                    tv = ex->topk_logit + ro[f0 + qq];
+                    tc = ex->topk_class + ro[f0 + qq];
                     for (j = 0; j < 8; j++) { /* the per-class loop below, for this frame */
-                        const float v = tmp[q * 8 + j];
-                        if (v > bestv[f0 + q]) {
-                            bestv[f0 + q] = v;
-                            besti[f0 + q] = nb * 8 + j;
+                        const float v = tmp[qq * 8 + j];
+                        if (v > bestv[f0 + qq]) {
+                            bestv[f0 + qq] = v;
+                            besti[f0 + qq] = nb * 8 + j;
                         }
                         if (v > tv[TK - 1]) {
                             unsigned p = TK - 1;
@@ -1878,6 +2094,7 @@ static void run_head(const vocr_ctx *c, unsigned nf, out_t *o)
                             tc[p] = (uint16_t)(nb * 8 + j);
                         }
                     }
+                    tk[f0 + qq] = okey1(tv[TK - 1]);
                 }
                 continue;
             }
@@ -2041,14 +2258,14 @@ static unsigned gate_tile(const vocr_ctx *c, out_t *o, unsigned s0, unsigned s1,
 #define H2_STEP 4u
 #endif
 
-/* any of the 8 values above thr (a NaN never is) */
+/* any of the 8 values above thr (a NaN never is); with NEON a superset test (okey: the per-class loop after it compares
+ * exactly; thr is never NaN, every frame state starting at -inf and taking only values above it) */
 static int block_above(const float *v8, float thr)
 {
 #ifdef VOCR_NEON
-    const int32x4_t kt = fkey(vdupq_n_f32(thr));
-    const uint32x4_t gt = vorrq_u32(vcgtq_s32(fkey(vld1q_f32(v8)), kt), vcgtq_s32(fkey(vld1q_f32(v8 + 4)), kt));
-    const uint32x2_t g2 = vorr_u32(vget_low_u32(gt), vget_high_u32(gt));
-    return vget_lane_u32(vpmax_u32(g2, g2), 0) != 0;
+    const int32x4_t m = vmaxq_s32(okey(vld1q_f32(v8)), okey(vld1q_f32(v8 + 4)));
+    const int32x2_t m2 = vpmax_s32(vget_low_s32(m), vget_high_s32(m));
+    return vget_lane_s32(vpmax_s32(m2, m2), 0) > okey1(thr);
 #else
     unsigned j;
     for (j = 0; j < 8; j++)

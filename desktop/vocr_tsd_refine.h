@@ -3,9 +3,11 @@
  *
  * tools/tsdesk_refine.py is the reference (its module docstring states the rule step by step); this C99 file gives
  * its boxes bit for bit: every step is integer arithmetic on the grey frame (the input box's floor / ceil aside), so
- * the two cannot drift by rounding. No allocation: the caller passes a scratch buffer of vocr_tsdr_scratch_bytes(w,
- * h) bytes, reused for every box. AVX2 kernels when the compiler targets them (-mavx2, -march=x86-64-v3), plain C
- * otherwise (-DVOCR_TSDR_SCALAR forces it); both give the same bits. Vertical boxes are left alone.
+ * the two cannot drift by rounding (the neighbour limits compare the input doubles the same way; build with
+ * -ffp-contract=off, as desktop/Makefile does). No allocation: the caller passes a scratch buffer of
+ * vocr_tsdr_scratch_bytes(w, h, n) bytes, reused for every box. AVX2 kernels when the compiler targets them (-mavx2,
+ * -march=x86-64-v3), plain C otherwise (-DVOCR_TSDR_SCALAR forces it); both give the same bits. Vertical boxes are
+ * left alone. Cost: about 0.05 ms per 960 x 544 page of 4 boxes at 1 thread (AVX2, 2026-11-01).
  */
 #ifndef VOCR_TSD_REFINE_H
 #define VOCR_TSD_REFINE_H

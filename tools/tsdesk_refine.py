@@ -24,19 +24,26 @@ For one horizontal box (frame px, floats), with r(v, p) = (v p + 50) div 100 (a 
   5. the thresholds: t = max(floor, r(q99(d), k_pct), noise) and tc = max(floor, r(q99(c3), k_pct)), q99 over the
      pixel box (qP of n values: the element ceil(P n / 100) - 1 of the sorted values); noise = the lower of the
      margin_pct quantiles of d on the along margins (the box's rows, the window's columns more than
-     max(2, r(h, margin_gap_pct)) px beyond either end of the box; a margin under margin_min columns is not used)
-     plus noise_add, or 0 when neither margin is used: a textured background (a dithered or patterned box, a scene)
-     raises it above its own texture;
+     max(2, r(h, margin_gap_pct)) px beyond either end of the box; a margin under margin_min columns is not used;
+     texture_pct > 0: only its pixels with c3 > tc, and 0 when they are fewer than texture_pct %) plus noise_add, or
+     0 when neither margin is used: a textured background (a dithered or patterned box, a scene) raises it above
+     its own texture;
   6. the ink: d > t and c3 > tc, without the pixels that have no 4-neighbour in it (specks, dither);
   7. across: the rows' ink counts over the box's columns; the body is the core's ink rows (the pixel box less
      min(r(h, core_pct), (h - 1) div 2) rows each side); the top edge walks up from the body's first row through ink
-     rows (gaps of at most row_gap empty rows) to its last ink row, the bottom edge down the same way;
+     rows (gaps of at most row_gap empty rows) to its last ink row, the bottom edge down the same way. A row with
+     0 < count <= r(median body count, valley_pct) is low, a valley the first of a run of low rows; the walk ends at
+     the latest valley (included) when the run grows longer than max(2, r(h, low_run_pct)) rows (a sparse band:
+     ruby, a texture), when a row of at least r(median, rise_pct) follows it (a dense band: ruby over many glyphs,
+     a touching line) or when it goes on more than max(2, r(h, beyond_pct)) rows past it;
   8. along: the columns' ink counts over the new rows [rt, rb), H' = rb - rt, a barrier column (its ink, a column
      either side included, unbroken from max(1, r(H', bar_pct)) rows above the new rows to as many below them: a box
      frame, a border) counted empty; the body is the along core's ink columns (the pixel box less
-     min(r(H', along_core_pct), (w - 1) div 2) columns at each end); the left edge walks left from the body's first
-     column, crossing gaps of at most G = max(gap_min, r(H', gap_pct)) empty columns and stopping at a barrier, to
-     its last ink column; the right edge the same way right;
+     min(r(H', along_core_pct), (w - 1) div 2) columns at each end); the right edge walks right from the body's last
+     column, crossing gaps of at most G = max(gap_min, r(H', gap_pct)) empty columns (！？ sit in the middle of
+     their cells) and stopping at a barrier, to its last ink column; the left edge the same way left, crossing at
+     most max(gap_min, r(H', gap_start_pct)) empty columns once it is before the box (a 「 sits next to the glyph
+     after it; a box frame's ornament does not);
   9. across again (step 7) over the new columns.
 
 Guards (the edge that fails keeps the detector's value; `status` says why):
@@ -48,6 +55,8 @@ Guards (the edge that fails keeps the detector's value; `status` says why):
     re-adds any slack, so trimming it never helps the recognizer, while it changes a junk box's aspect ratio) or
     r(H', shrink_l_pct) columns (a quarter of the line height: it trims slack, it never drops a faint glyph that the
     grey test misses);
+  - neighbours: an edge never grows into another box of the frame (neighbour_limits, from the input boxes: a
+    detector's fragments of a split line, the next line, a name plate beside the text);
   - BUSY: when more than busy_pct % of the window's pixels outside the new box are ink, the box is kept.
 Vertical boxes are left alone.
 """

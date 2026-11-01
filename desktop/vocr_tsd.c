@@ -635,24 +635,151 @@ static void src_floats(const tsd_src *S, unsigned x, unsigned y, unsigned n, flo
     }
 }
 
-/* the stem's patches of output row oy, columns [x0, x1): [x1 - x0][16] floats, tap ky * 4 + kx */
-static void stem_patches(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1, float *patch)
+/* the stem's four source rows of output row oy, columns [x0, x1): R[ky][0 .. 4 (x1 - x0)) floats (the edge padding:
+ * columns past the source repeat its last column, rows past it its last row) */
+static void stem_rows(const tsd_src *S, unsigned oy, unsigned x0, unsigned x1, float (*R)[4 * CHUNK_MAX])
 {
-    float row[4 * CHUNK_MAX];
     const unsigned n = 4 * (x1 - x0), sx = 4 * x0;
-    unsigned ky, inside = sx < S->w ? S->w - sx : 0, i, p;
+    unsigned ky, inside = sx < S->w ? S->w - sx : 0, i;
     if (inside > n) inside = n;
     for (ky = 0; ky < 4; ky++) {
         unsigned sy = 4 * oy + ky;
         if (sy >= S->h) sy = S->h - 1;
-        if (inside) src_floats(S, sx, sy, inside, row);
-        if (inside < n) {   /* the edge padding: the last column repeated */
+        if (inside) src_floats(S, sx, sy, inside, R[ky]);
+        if (inside < n) {
             float v;
             src_floats(S, S->w - 1, sy, 1, &v);
-            for (i = inside; i < n; i++) row[i] = v;
+            for (i = inside; i < n; i++) R[ky][i] = v;
         }
-        for (p = 0; p < x1 - x0; p++) memcpy(patch + 16 * p + 4 * ky, row + 4 * p, 4 * sizeof(float));
     }
+}
+
+/* the stem (4x4 at stride 4, 1 -> C, ReLU) on n output columns from their four source rows: out[p][co] = relu(b[co] +
+ * sum_{ky, kx} R[ky][4 p + kx] w[4 ky + kx][co]), the taps in ci = 4 ky + kx order (pw_chunk's order on the patches:
+ * the same bits as the patch form) */
+static void stem_chunk(const float (*R)[4 * CHUNK_MAX], unsigned n, const vocr_tsd_layer *L, float *out)
+{
+    const unsigned C = L->cout;
+    const float *w = L->w, *b = L->b;
+    unsigned co = 0, p;
+#if TSD_AVX2
+    const __m256 z = _mm256_setzero_ps();
+    /* the taps in ci = 4 ky + kx order: ky outermost (a source row pointer), kx unrolled (constant offsets) */
+#define ST6(kx)                                                                       \
+    do {                                                                              \
+        const __m256 w0 = _mm256_loadu_ps(wk + (kx) * C), w1 = _mm256_loadu_ps(wk + (kx) * C + 8); \
+        __m256 v;                                                                     \
+        v = _mm256_broadcast_ss(rk + (kx));                                           \
+        a00 = _mm256_fmadd_ps(v, w0, a00);                                            \
+        a01 = _mm256_fmadd_ps(v, w1, a01);                                            \
+        v = _mm256_broadcast_ss(rk + 4 + (kx));                                       \
+        a10 = _mm256_fmadd_ps(v, w0, a10);                                            \
+        a11 = _mm256_fmadd_ps(v, w1, a11);                                            \
+        v = _mm256_broadcast_ss(rk + 8 + (kx));                                       \
+        a20 = _mm256_fmadd_ps(v, w0, a20);                                            \
+        a21 = _mm256_fmadd_ps(v, w1, a21);                                            \
+        v = _mm256_broadcast_ss(rk + 12 + (kx));                                      \
+        a30 = _mm256_fmadd_ps(v, w0, a30);                                            \
+        a31 = _mm256_fmadd_ps(v, w1, a31);                                            \
+        v = _mm256_broadcast_ss(rk + 16 + (kx));                                      \
+        a40 = _mm256_fmadd_ps(v, w0, a40);                                            \
+        a41 = _mm256_fmadd_ps(v, w1, a41);                                            \
+        v = _mm256_broadcast_ss(rk + 20 + (kx));                                      \
+        a50 = _mm256_fmadd_ps(v, w0, a50);                                            \
+        a51 = _mm256_fmadd_ps(v, w1, a51);                                            \
+    } while (0)
+    for (; co + 16 <= C; co += 16) {
+        const __m256 b0 = _mm256_loadu_ps(b + co), b1 = _mm256_loadu_ps(b + co + 8);
+        for (p = 0; p + 6 <= n; p += 6) {
+            __m256 a00 = b0, a01 = b1, a10 = b0, a11 = b1, a20 = b0, a21 = b1;
+            __m256 a30 = b0, a31 = b1, a40 = b0, a41 = b1, a50 = b0, a51 = b1;
+            unsigned ky;
+            for (ky = 0; ky < 4; ky++) {
+                const float *rk = R[ky] + 4 * p, *wk = w + (size_t)(4 * ky) * C + co;
+                ST6(0);
+                ST6(1);
+                ST6(2);
+                ST6(3);
+            }
+            _mm256_storeu_ps(out + (size_t)p * C + co, _mm256_max_ps(a00, z));
+            _mm256_storeu_ps(out + (size_t)p * C + co + 8, _mm256_max_ps(a01, z));
+            _mm256_storeu_ps(out + (size_t)(p + 1) * C + co, _mm256_max_ps(a10, z));
+            _mm256_storeu_ps(out + (size_t)(p + 1) * C + co + 8, _mm256_max_ps(a11, z));
+            _mm256_storeu_ps(out + (size_t)(p + 2) * C + co, _mm256_max_ps(a20, z));
+            _mm256_storeu_ps(out + (size_t)(p + 2) * C + co + 8, _mm256_max_ps(a21, z));
+            _mm256_storeu_ps(out + (size_t)(p + 3) * C + co, _mm256_max_ps(a30, z));
+            _mm256_storeu_ps(out + (size_t)(p + 3) * C + co + 8, _mm256_max_ps(a31, z));
+            _mm256_storeu_ps(out + (size_t)(p + 4) * C + co, _mm256_max_ps(a40, z));
+            _mm256_storeu_ps(out + (size_t)(p + 4) * C + co + 8, _mm256_max_ps(a41, z));
+            _mm256_storeu_ps(out + (size_t)(p + 5) * C + co, _mm256_max_ps(a50, z));
+            _mm256_storeu_ps(out + (size_t)(p + 5) * C + co + 8, _mm256_max_ps(a51, z));
+        }
+        for (; p < n; p++) {
+            __m256 a0 = b0, a1 = b1;
+            unsigned ci;
+            for (ci = 0; ci < 16; ci++) {
+                const __m256 v = _mm256_broadcast_ss(R[ci >> 2] + 4 * p + (ci & 3));
+                a0 = _mm256_fmadd_ps(v, _mm256_loadu_ps(w + (size_t)ci * C + co), a0);
+                a1 = _mm256_fmadd_ps(v, _mm256_loadu_ps(w + (size_t)ci * C + co + 8), a1);
+            }
+            _mm256_storeu_ps(out + (size_t)p * C + co, _mm256_max_ps(a0, z));
+            _mm256_storeu_ps(out + (size_t)p * C + co + 8, _mm256_max_ps(a1, z));
+        }
+    }
+#undef ST6
+#define ST12(kx)                                                                      \
+    do {                                                                              \
+        const __m256 w0 = _mm256_loadu_ps(wk + (kx) * C);                             \
+        a[0] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + (kx)), w0, a[0]);             \
+        a[1] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 4 + (kx)), w0, a[1]);         \
+        a[2] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 8 + (kx)), w0, a[2]);         \
+        a[3] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 12 + (kx)), w0, a[3]);        \
+        a[4] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 16 + (kx)), w0, a[4]);        \
+        a[5] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 20 + (kx)), w0, a[5]);        \
+        a[6] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 24 + (kx)), w0, a[6]);        \
+        a[7] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 28 + (kx)), w0, a[7]);        \
+        a[8] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 32 + (kx)), w0, a[8]);        \
+        a[9] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 36 + (kx)), w0, a[9]);        \
+        a[10] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 40 + (kx)), w0, a[10]);      \
+        a[11] = _mm256_fmadd_ps(_mm256_broadcast_ss(rk + 44 + (kx)), w0, a[11]);      \
+    } while (0)
+    if (co < C) {   /* 8 channels left: 12 columns a step */
+        const __m256 b0 = _mm256_loadu_ps(b + co);
+        for (p = 0; p + 12 <= n; p += 12) {
+            __m256 a[12];
+            unsigned ky, r;
+            for (r = 0; r < 12; r++) a[r] = b0;
+            for (ky = 0; ky < 4; ky++) {
+                const float *rk = R[ky] + 4 * p, *wk = w + (size_t)(4 * ky) * C + co;
+                ST12(0);
+                ST12(1);
+                ST12(2);
+                ST12(3);
+            }
+            for (r = 0; r < 12; r++) _mm256_storeu_ps(out + (size_t)(p + r) * C + co, _mm256_max_ps(a[r], z));
+        }
+        for (; p < n; p++) {
+            __m256 a0 = b0;
+            unsigned ci;
+            for (ci = 0; ci < 16; ci++)
+                a0 = _mm256_fmadd_ps(_mm256_broadcast_ss(R[ci >> 2] + 4 * p + (ci & 3)),
+                                     _mm256_loadu_ps(w + (size_t)ci * C + co), a0);
+            _mm256_storeu_ps(out + (size_t)p * C + co, _mm256_max_ps(a0, z));
+        }
+    }
+#undef ST12
+#else
+    for (p = 0; p < n; p++) {
+        float acc[VOCR_TSD_MAX_CHANNELS];
+        unsigned ci;
+        for (co = 0; co < C; co++) acc[co] = b[co];
+        for (ci = 0; ci < 16; ci++) {
+            const float v = R[ci >> 2][4 * p + (ci & 3)], *wr = w + (size_t)ci * C;
+            for (co = 0; co < C; co++) acc[co] += v * wr[co];
+        }
+        for (co = 0; co < C; co++) out[(size_t)p * C + co] = acc[co] > 0.0f ? acc[co] : 0.0f;
+    }
+#endif
 }
 
 /* ----------------------------------------------------------------------------- the network */
@@ -755,13 +882,13 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
     epi_t e;
     memset(&e, 0, sizeof e);
     if (t->kind == ST_STEM) {
-        const unsigned C = m->c[0], ch = chunk_of(16 > C ? 16 : C);
-        e.kind = EPI_RELU;
+        float R[4][4 * CHUNK_MAX];
+        const unsigned C = m->c[0], ch = CHUNK_MAX;
         for (y = y0; y < y1; y++)
             for (x0 = 0; x0 < t->Wo; x0 += ch) {
                 const unsigned x1 = x0 + ch < t->Wo ? x0 + ch : t->Wo;
-                stem_patches(&N->src, y, x0, x1, T);
-                pw_chunk(T, x1 - x0, &m->stem, &e, t->out + ((size_t)y * t->Wo + x0) * C);
+                stem_rows(&N->src, y, x0, x1, R);
+                stem_chunk((const float (*)[4 * CHUNK_MAX])R, x1 - x0, &m->stem, t->out + ((size_t)y * t->Wo + x0) * C);
             }
         return;
     }

@@ -1038,7 +1038,8 @@ def main(argv=None):
         print(json.dumps({"image": p, "lines": [
             {"text": ln.text, "greedy": ln.greedy, "box": list(ln.box), "tag": spot.classes[ln.tag],
              "dark": ln.dark, "conf_min": round(ln.conf_min, 4),
-             "chars": [[c.text, c.f0, round(c.x0, 2), round(c.x1, 2)] for c in ln.chars]} for ln in lines]},
+             # one [character, first CTC frame (-1: inserted by the LM), cell start, cell end] per character of "text"
+             "chars": [[c.text, c.f0, round(c.x0, 2), round(c.x1, 2)] for c in ln.text_chars]} for ln in lines]},
             ensure_ascii=False))
 
 

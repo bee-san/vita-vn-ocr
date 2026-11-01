@@ -456,3 +456,29 @@ def test_place_gives_every_shown_character_a_cell():
     sub = V.place("あXう", chars)
     assert (sub[1].text, sub[1].f0, sub[1].x0) == ("X", 2, 10.0)                  # a substitution keeps its cell
     assert V.place("", chars) == [] and V.place("X", []) == [V.Char("X", -1, -1, -1, 0.0, 0.0, 0.0)]
+
+
+def test_command_line_reads_an_image(blobs, tmp_path):
+    """vocr_onnx.py's command line on a drawn frame with generated models: one JSON line, one cell per character of
+    each line's text."""
+    import json
+    import subprocess
+
+    from PIL import Image
+
+    import textspot6_model as M6
+    d = tmp_path / "models"
+    d.mkdir()
+    (d / "VOCR6.2_N_exact.onnx").write_bytes(X.recognizer(blobs[1], "exact").SerializeToString())
+    blob, _ = M6.random_blob(TINY_T, 1, 4, n_cal=2)
+    (d / "textspot8_exact.onnx").write_bytes(X.spotter(blob, "exact").SerializeToString())
+    g = np.full((272, 480, 3), 30, np.uint8)
+    g[200:224, 40:400] = 230
+    Image.fromarray(g).save(tmp_path / "f.png")
+    out = subprocess.run([sys.executable, str(ROOT / "tools" / "vocr_onnx.py"), "--models", str(d), "--tier", "N",
+                          str(tmp_path / "f.png")], capture_output=True, text=True, check=True).stdout.splitlines()
+    assert len(out) == 1
+    rec = json.loads(out[0])
+    assert rec["image"].endswith("f.png")
+    for ln in rec["lines"]:
+        assert len(ln["chars"]) == len(ln["text"]) and len(ln["box"]) == 4

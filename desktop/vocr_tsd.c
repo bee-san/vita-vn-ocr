@@ -22,6 +22,7 @@
 #define CHUNK_FLOATS 6144u   /* a row chunk's scratch (floats): at most 48 px x 128 channels or 24 px x 256 */
 #define CHUNK_MAX 48u
 #define MAX_STEPS 64u
+#define RESIZE_MAX_TASKS 64u
 
 /* ----------------------------------------------------------------------------- profiling (-DVOCR_TSD_PROF) */
 
@@ -1344,8 +1345,8 @@ int vocr_tsd_decode(const vocr_tsd_model *m, const float *maps, unsigned mw, uns
 /* ----------------------------------------------------------------------------- the detector */
 
 typedef struct {
-    size_t net, grey, resized, rscratch, decode, end;   /* byte offsets from the 64-byte aligned arena start */
-    unsigned iw, ih, pw, ph, resize;
+    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, end;   /* byte offsets (aligned arena) */
+    unsigned iw, ih, pw, ph, resize, ntasks;
 } detect_plan;
 
 static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h, unsigned channels,
@@ -1362,6 +1363,13 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->rscratch = off;
     off += D->resize ? ALIGN_UP(channels == 1 ? vocr_desk_resize_scratch(w, h, D->iw, D->ih)
                                               : vocr_desk_resize_rgb_scratch(w, h, D->iw, D->ih), 64) : 0;
+    /* the banded resize for threads: its plan and a work area per task */
+    D->ntasks = ntasks < 1 ? 1 : ntasks > RESIZE_MAX_TASKS ? RESIZE_MAX_TASKS : ntasks;
+    D->rplan = off;
+    off += D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_desk_resize_plan_bytes(w, h, D->iw, D->ih), 64) : 0;
+    D->rwork = off;
+    D->rwork_bytes = D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_desk_resize_band_bytes(w, h, D->iw, D->ih), 64) : 0;
+    off += D->rwork_bytes * D->ntasks;
     D->decode = off;
     off += ALIGN_UP(vocr_tsd_decode_bytes(D->pw / m->hs, D->ph / m->hs, m->tags), 64);
     D->end = off + 64;
@@ -1374,6 +1382,21 @@ size_t vocr_tsd_arena_bytes(const vocr_tsd_model *m, unsigned kind, unsigned n, 
     if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE) return 0;
     dplan(m, kind, n, w, h, channels, ntasks, &D);
     return D.end;
+}
+
+typedef struct {               /* the banded resize on the runner */
+    const void *plan;
+    const unsigned char *src;
+    unsigned stride, channels, dh;
+    unsigned char *dst, *work;
+    size_t work_bytes;
+} resize_job;
+
+static void resize_task(void *arg, unsigned task, unsigned ntasks)
+{
+    const resize_job *j = (const resize_job *)arg;
+    vocr_desk_resize_band(j->plan, j->src, j->stride, j->channels, j->dst, (unsigned)((size_t)j->dh * task / ntasks),
+                          (unsigned)((size_t)j->dh * (task + 1) / ntasks), j->work + j->work_bytes * task);
 }
 
 int vocr_tsd_detect(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
@@ -1411,11 +1434,23 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
     if (D.resize) {
         /* the policy's resize of the frame's luma (vocr_desk_resize; an RGB(A) frame's luma row by row inside it:
          * vocr_desk_resize_rgb, the same bits as vocr_desk_grey then vocr_desk_resize) */
-        if (channels == 1)
+        if (D.ntasks > 1 && run && !vocr_desk_resize_plan(w, h, D.iw, D.ih, base + D.rplan)) {
+            resize_job j;   /* bands of output rows on the runner (vocr_desk_resize_band): the same bits */
+            j.plan = base + D.rplan;
+            j.src = img;
+            j.stride = stride;
+            j.channels = channels;
+            j.dh = D.ih;
+            j.dst = base + D.resized;
+            j.work = base + D.rwork;
+            j.work_bytes = D.rwork_bytes;
+            run(ctx, resize_task, &j, D.ntasks < D.ih ? D.ntasks : D.ih);
+        } else if (channels == 1) {
             vocr_desk_resize(img, w, h, stride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
-        else
+        } else {
             vocr_desk_resize_rgb(img, w, h, stride, channels, base + D.resized, D.iw, D.ih,
                                  (int *)(void *)(base + D.rscratch));
+        }
         PROF_MARK(1u, "resize");
         N.src.px = base + D.resized;
         N.src.w = D.iw;

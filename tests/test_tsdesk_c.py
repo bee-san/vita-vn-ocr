@@ -293,7 +293,7 @@ def test_c_detect_is_its_pieces(nets, libs):
     rng = np.random.default_rng(8)
     _, blob, _ = nets["p8a"]
     cases = [((544, 960), None), ((720, 1280), None), ((1080, 1920), None), ((272, 480), "long:960"),
-             ((300, 517), "native"), ((413, 999), "fit:640"), ((50, 70), "long:96")]
+             ((300, 517), "native"), ((413, 999), "fit:640"), ((50, 70), "long:96"), ((7, 3000), None)]
     for lib in libs.values():
         cm = TC.CModel(blob, lib=lib)
         for (h, w), size in cases:
@@ -314,6 +314,8 @@ def test_c_detect_is_its_pieces(nets, libs):
             wide = np.zeros((h, w + 13, 3), np.uint8)                     # a strided view
             wide[:, :w] = rgb
             assert cm.detect(wide[:, :w], size) == got
+            for threads in (2, 5):                                        # the banded resize and row bands
+                assert TC.CModel(blob, threads=threads, lib=lib).detect(rgb, size) == got
 
 
 def test_c_resize_is_vocr_desktops(nets, libs):
@@ -394,6 +396,39 @@ def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
                 out = np.zeros((h, w), np.uint8)
                 cm.L.vocr_desk_grey(rgb.ctypes.data, w, h, w * ch, ch, out.ctypes.data)
                 assert np.array_equal(out, T.grey_of(rgb)), (ch, h, w)
+        # vocr_desk_resize_rgb (the luma row by row inside the resize) and the banded form (any split of the rows)
+        import ctypes as C
+        L = cm.L
+        L.vocr_desk_resize_rgb.argtypes = [C.c_void_p, C.c_uint, C.c_uint, C.c_uint, C.c_uint, C.c_void_p, C.c_uint,
+                                           C.c_uint, C.c_void_p]
+        L.vocr_desk_resize_rgb_scratch.argtypes = [C.c_uint] * 4
+        L.vocr_desk_resize_rgb_scratch.restype = C.c_size_t
+        for fn in ("vocr_desk_resize_plan_bytes", "vocr_desk_resize_band_bytes"):
+            getattr(L, fn).argtypes = [C.c_uint] * 4
+            getattr(L, fn).restype = C.c_size_t
+        L.vocr_desk_resize_plan.argtypes = [C.c_uint] * 4 + [C.c_void_p]
+        L.vocr_desk_resize_band.argtypes = [C.c_void_p, C.c_void_p, C.c_uint, C.c_uint, C.c_void_p, C.c_uint, C.c_uint,
+                                            C.c_void_p]
+        for (h, w), (dh, dw) in sizes[:12]:
+            for ch in (1, 3, 4):
+                img = rng.integers(0, 256, (h, w, ch), dtype=np.uint8) if ch > 1 else \
+                    rng.integers(0, 256, (h, w), dtype=np.uint8)
+                ref = _resize_ref(T.grey_of(img), dw, dh)
+                if ch > 1:
+                    out = np.zeros((dh, dw), np.uint8)
+                    sc = np.zeros(L.vocr_desk_resize_rgb_scratch(w, h, dw, dh) + 64, np.uint8)
+                    L.vocr_desk_resize_rgb(img.ctypes.data, w, h, w * ch, ch, out.ctypes.data, dw, dh, sc.ctypes.data)
+                    assert np.array_equal(out, ref), ("rgb", ch, (h, w), (dh, dw))
+                plan = np.zeros(L.vocr_desk_resize_plan_bytes(w, h, dw, dh) + 64, np.uint8)
+                if L.vocr_desk_resize_plan(w, h, dw, dh, plan.ctypes.data):
+                    continue                                       # the whole-frame form only
+                work = np.zeros(L.vocr_desk_resize_band_bytes(w, h, dw, dh) + 64, np.uint8)
+                out = np.zeros((dh, dw), np.uint8)
+                cuts = sorted({0, dh, *(int(v) for v in rng.integers(0, dh + 1, 3))})
+                for y0, y1 in zip(cuts, cuts[1:]):
+                    L.vocr_desk_resize_band(plan.ctypes.data, img.ctypes.data, w * ch, ch, out.ctypes.data, y0, y1,
+                                            work.ctypes.data)
+                assert np.array_equal(out, ref), ("band", ch, (h, w), (dh, dw), cuts)
 
 
 _BLOB = []

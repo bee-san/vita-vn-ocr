@@ -457,27 +457,61 @@ static const unsigned char *src_row(const unsigned char *src, unsigned w, unsign
     return rowbuf;
 }
 
-static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned channels,
-                        unsigned char *dst, unsigned dw, unsigned dh, int *scratch, unsigned char *rowbuf)
+/* output rows [y0, y1) through a ring of R horizontally resized source rows: output row y reads the source rows
+ * iyy[y][0 ..] (consecutive, at most ky), so each source row of the band is resized once and the ring holds every row
+ * an output needs. Each output row is the same integer sums whatever the band (the ring is only a cache). */
+static void resize_rows(const unsigned char *src, unsigned w, unsigned stride, unsigned channels, unsigned char *dst,
+                        unsigned dw, unsigned kx, unsigned ky, unsigned R, int mode, const int *ixx, const int *wx,
+                        const int *iyy, const int *wy, unsigned y0, unsigned y1, int *ring, unsigned char *rowbuf)
 {
-    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k, R;
-    int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
-    int *ring = wy + (size_t)ky * dh, slot_row[64], mode;
+    int slot_row[64];
     const int *rows[64];
-    axis_weights(w, dw, kx, ixx, wx);
-    axis_weights(h, dh, ky, iyy, wy);
-    mode = resize_hmode(w, dw, kx, ixx, wx);
-    R = ky < h ? ky : h;
-    for (y = 0; y < dh && ky <= 64; y++) {          /* the ring's condition: each output's rows span <= R rows */
+    unsigned y, k;
+    for (k = 0; k < R; k++) slot_row[k] = -1;
+    for (y = y0; y < y1; y++) {
+        const int *ii = iyy + (size_t)y * ky;
+        for (k = 0; k < ky; k++) {
+            const int j = ii[k];
+            const unsigned s = (unsigned)j % R;
+            if (slot_row[s] != j) {
+                resize_row_h(src_row(src, w, stride, channels, (unsigned)j, rowbuf), w, dw, kx, ixx, wx,
+                             ring + (size_t)s * dw, mode);
+                slot_row[s] = j;
+            }
+            rows[k] = ring + (size_t)s * dw;
+        }
+        resize_row_v(rows, wy + (size_t)y * ky, ky, dw, dst + (size_t)y * dw);
+    }
+}
+
+/* 1 if the ring applies: ky <= 64 and each output's source rows span fewer than R = min(ky, h) rows */
+static int ring_fits(const int *iyy, unsigned ky, unsigned h, unsigned dh)
+{
+    const unsigned R = ky < h ? ky : h;
+    unsigned y, k;
+    if (ky > 64) return 0;
+    for (y = 0; y < dh; y++) {
         int lo = iyy[(size_t)y * ky], hi = lo;
         for (k = 1; k < ky; k++) {
             const int j = iyy[(size_t)y * ky + k];
             lo = j < lo ? j : lo;
             hi = j > hi ? j : hi;
         }
-        if ((unsigned)(hi - lo) >= R) break;
+        if ((unsigned)(hi - lo) >= R) return 0;
     }
-    if (ky > 64 || y < dh) {                        /* a shrink by more than 62: the whole-frame intermediate */
+    return 1;
+}
+
+static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                        unsigned char *dst, unsigned dw, unsigned dh, int *scratch, unsigned char *rowbuf)
+{
+    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k;
+    int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
+    int *ring = wy + (size_t)ky * dh, mode;
+    axis_weights(w, dw, kx, ixx, wx);
+    axis_weights(h, dh, ky, iyy, wy);
+    mode = resize_hmode(w, dw, kx, ixx, wx);
+    if (!ring_fits(iyy, ky, h, dh)) {               /* a shrink by more than 62: the whole-frame intermediate */
         int *tmp = ring;
         for (y = 0; y < h; y++)
             resize_row_h(src_row(src, w, stride, channels, y, rowbuf), w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode);
@@ -494,24 +528,61 @@ static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsign
         }
         return;
     }
-    /* a ring of R horizontally resized source rows: output row y reads the source rows iyy[y][0 ..] (consecutive,
-     * at most ky), so each source row is resized once and the ring holds every row an output needs (R <= h rows:
-     * inside the scratch's old whole-frame intermediate) */
-    for (k = 0; k < R; k++) slot_row[k] = -1;
-    for (y = 0; y < dh; y++) {
-        const int *ii = iyy + (size_t)y * ky;
-        for (k = 0; k < ky; k++) {
-            const int j = ii[k];
-            const unsigned s = (unsigned)j % R;
-            if (slot_row[s] != j) {
-                resize_row_h(src_row(src, w, stride, channels, (unsigned)j, rowbuf), w, dw, kx, ixx, wx,
-                             ring + (size_t)s * dw, mode);
-                slot_row[s] = j;
-            }
-            rows[k] = ring + (size_t)s * dw;
-        }
-        resize_row_v(rows, wy + (size_t)y * ky, ky, dw, dst + (size_t)y * dw);
-    }
+    resize_rows(src, w, stride, channels, dst, dw, kx, ky, ky < h ? ky : h, mode, ixx, wx, iyy, wy, 0, dh, ring, rowbuf);
+}
+
+/* the banded resize's tables: a header, then the four axis tables */
+typedef struct {
+    unsigned w, h, dw, dh, kx, ky, R;
+    int mode, ring;
+} resize_plan_hdr;
+
+#define PLAN_HDR ALIGN_UP(sizeof(resize_plan_hdr), 64)
+
+size_t vocr_desk_resize_plan_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    size_t kx = axis_taps(w, dw), ky = axis_taps(h, dh);
+    return PLAN_HDR + sizeof(int) * (2 * kx * dw + 2 * ky * dh);
+}
+
+int vocr_desk_resize_plan(unsigned w, unsigned h, unsigned dw, unsigned dh, void *plan)
+{
+    resize_plan_hdr *P = (resize_plan_hdr *)plan;
+    int *ixx = (int *)(void *)((unsigned char *)plan + PLAN_HDR);
+    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh);
+    int *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
+    axis_weights(w, dw, kx, ixx, wx);
+    axis_weights(h, dh, ky, iyy, wy);
+    P->w = w;
+    P->h = h;
+    P->dw = dw;
+    P->dh = dh;
+    P->kx = kx;
+    P->ky = ky;
+    P->R = ky < h ? ky : h;
+    P->mode = resize_hmode(w, dw, kx, ixx, wx);
+    P->ring = ring_fits(iyy, ky, h, dh);
+    return P->ring ? 0 : -1;
+}
+
+size_t vocr_desk_resize_band_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    size_t ky = axis_taps(h, dh), R = ky < h ? ky : h;
+    return ALIGN_UP(sizeof(int) * R * dw, 64) + ALIGN_UP((size_t)w + 64, 64);
+}
+
+void vocr_desk_resize_band(const void *plan, const unsigned char *src, unsigned stride, unsigned channels,
+                           unsigned char *dst, unsigned y0, unsigned y1, void *work)
+{
+    const resize_plan_hdr *P = (const resize_plan_hdr *)plan;
+    const int *ixx = (const int *)(const void *)((const unsigned char *)plan + PLAN_HDR);
+    const int *wx = ixx + (size_t)P->kx * P->dw, *iyy = wx + (size_t)P->kx * P->dw, *wy = iyy + (size_t)P->ky * P->dh;
+    int *ring = (int *)work;
+    unsigned char *rowbuf = (unsigned char *)work + ALIGN_UP(sizeof(int) * P->R * P->dw, 64);
+    if (y1 > P->dh) y1 = P->dh;
+    if (y0 >= y1 || !P->ring) return;
+    resize_rows(src, P->w, stride, channels, dst, P->dw, P->kx, P->ky, P->R, P->mode, ixx, wx, iyy, wy, y0, y1, ring,
+                rowbuf);
 }
 
 void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,

@@ -132,6 +132,16 @@ size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh
 void vocr_desk_resize_rgb(const unsigned char *rgb, unsigned w, unsigned h, unsigned stride, unsigned channels,
                           unsigned char *dst, unsigned dw, unsigned dh, int *scratch);
 size_t vocr_desk_resize_rgb_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh);
+/* The same resize in bands of output rows (for threads): vocr_desk_resize_plan fills `plan`
+ * (vocr_desk_resize_plan_bytes) once and returns 0, or -1 when only the whole-frame form applies (a shrink by more than
+ * 62: call vocr_desk_resize(_rgb)); vocr_desk_resize_band then makes output rows [y0, y1) of a grey (channels 1) or
+ * RGB(A) (3, 4) source with `work` (vocr_desk_resize_band_bytes; one per concurrent band). Any split of the rows gives
+ * the bits of vocr_desk_resize (grey) or vocr_desk_resize_rgb. */
+size_t vocr_desk_resize_plan_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh);
+int vocr_desk_resize_plan(unsigned w, unsigned h, unsigned dw, unsigned dh, void *plan);
+size_t vocr_desk_resize_band_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh);
+void vocr_desk_resize_band(const void *plan, const unsigned char *src, unsigned stride, unsigned channels,
+                           unsigned char *dst, unsigned y0, unsigned y1, void *work);
 
 /* sizeof(vocr_desk_model) and sizeof(vocr_desk_set), for callers that allocate them (ctypes). */
 size_t vocr_desk_model_bytes(void);

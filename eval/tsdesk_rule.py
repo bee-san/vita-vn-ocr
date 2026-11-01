@@ -4,7 +4,7 @@
   tsdesk_rule.py decide --res DIR --arm ARM --seeds 1,2,3 [--policies fit960,long960] --timing T.json
                         --parity P.json --out DECISION.json
 
-Reads (DIR holds eval/desktop.py read results and eval/tsdesk.py edges results, named as the screening and decision
+Reads (DIR holds eval/desktop.py read results and eval/tsdesk_eval.py edges results, named as the screening and decision
 scripts write them):
   dev_{ARM}_s{N}_{POL}_L_fast.json, dev_T8_L_fast.json          R1 (dev-v2: CER, and each view's paired interval)
   dense_dev_{ARM}_s{N}_{POL}_L_fast.json                        R2 (CER <= 2.00%)

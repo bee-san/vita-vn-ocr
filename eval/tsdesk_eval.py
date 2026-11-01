@@ -2,7 +2,7 @@
 """textspot-desktop's evaluation (issue #173, eval/textspot_desktop_protocol.json), on vocr-desktop's harness
 (eval/desktop.py, eval/desktop_time.py), which this file installs into at run time instead of editing it.
 
-  tsdesk.py desktop CMD ...      eval/desktop.py's command line (frames / detect / read / compare / boxes-pr / meiki)
+  tsdesk_eval.py desktop CMD ...  eval/desktop.py's command line (frames / detect / read / compare / boxes-pr / meiki)
                                  with this work's detectors installed: tsd:MODEL.onnx[@SIZE] (tools/tsdesk.Detector),
                                  ctsd:BLOB.vtsd[@SIZE] (the C path, when built), and the dense sets' ignore filter
                                  (eval/tsdesk_dense.install_ignore: a box at least half inside a 1b ignore area is
@@ -107,6 +107,9 @@ def install(Dm=D):
         import desktop_time as DT
     except ImportError:
         return
+    if "tsdesk_eval" not in DT.MEM_CHILD:      # the fresh processes of desktop_time.py mem know the tsd: specs too
+        DT.MEM_CHILD = DT.MEM_CHILD.replace("import desktop_time as DT\n",
+                                            "import desktop_time as DT\nimport tsdesk_eval\ntsdesk_eval.install(D)\n")
     init = DT.Pipeline.__init__
 
     def pipeline_init(self, spec, threads, mode, *a, **k):
@@ -427,7 +430,7 @@ def cmd_pages(a):
         pages.append({"key": shot, "set": "1b", "view": "pc1080", "W": bgr.shape[1], "H": bgr.shape[0],
                       "rgb": np.ascontiguousarray(bgr[:, :, ::-1])})
     with open(a.out, "wb") as f:
-        pickle.dump({"pages": pages, "seed": a.seed, "source": "eval/tsdesk.py pages"}, f)
+        pickle.dump({"pages": pages, "seed": a.seed, "source": "eval/tsdesk_eval.py pages"}, f)
     from collections import Counter
     print(json.dumps({"pages": len(pages), "views": dict(Counter(p["view"] for p in pages))}), flush=True)
 
@@ -486,7 +489,6 @@ def main(argv=None):
     if argv and argv[0] == "time":
         install(D)
         import desktop_time as DT
-        install(D)
         return DT.main(argv[1:])
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)

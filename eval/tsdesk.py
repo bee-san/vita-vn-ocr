@@ -362,6 +362,76 @@ def cmd_pads(a):
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
 
 
+def _exact_job(fr):
+    rgb = D.load_rgb(fr)
+    out = []
+    for _, _, b, _how in exact_boxes(fr, rgb):
+        out.append([b[0], b[1], b[2], b[3], 0, 9.0, 0])
+    return {"key": fr["key"], "W": fr["W"], "H": fr["H"], "boxes": out, "ms": 0.0}
+
+
+def cmd_exact_boxes(a):
+    """The exact boxes of every unit line as a detector's boxes file (eval/desktop.py detect's format): the perfect
+    boxes row (protocol: baselines.exact)."""
+    frames, _ = D.load_frames(a.frames)
+    t0 = time.time()
+    rows = []
+    with D._pool(a.workers, None, ()) as pool:
+        for r in pool.imap(_exact_job, frames, chunksize=4):
+            rows.append(r)
+    meta = {"meta": {"det": "exact", "frames_file": str(a.frames), "frames_sha256": D.sha256_file(a.frames),
+                     "rule": "eval/tsdesk.exact_ref (amendment 1)", "repo_head": D.git_head(),
+                     "seconds": round(time.time() - t0, 1)}}
+    D.write_jsonl(a.out, [meta, *rows])
+    print(f"exact boxes: {len(rows)} frames, {sum(len(r['boxes']) for r in rows)} boxes -> {a.out}", flush=True)
+
+
+# ----------------------------------------------------------------------------- timing pages
+
+def cmd_pages(a):
+    """The protocol's timing pages (metrics.timing_pages), in eval/desktop_time.py's pages format: seed 20261101, 60
+    hval Vita frames (960x544), 60 hval PSP frames (480x272), the same 60 Vita frames resampled to 1920x1080
+    (cv2.INTER_LINEAR), and 30 1b v3 training frames of exactly 1920x1080 (none of the dense sets' VNs)."""
+    import pickle
+    import random
+
+    import cv2
+    rng = random.Random(a.seed)
+    frames, _ = D.load_frames(a.hval)
+    pages = []
+    picked = {}
+    for view in ("vita", "psp"):
+        fs = sorted((f for f in frames if f["view"] == view), key=lambda f: f["key"])
+        picked[view] = sorted(rng.sample(fs, min(a.n, len(fs))), key=lambda f: f["key"])
+        for f in picked[view]:
+            D.check_sha(f)
+            pages.append({"key": f["key"], "set": "hval", "view": view, "W": f["W"], "H": f["H"], "rgb": D.load_rgb(f)})
+    for f in picked["vita"]:
+        rgb = cv2.resize(D.load_rgb(f), (1920, 1080), interpolation=cv2.INTER_LINEAR)
+        pages.append({"key": f["key"] + "@1080", "set": "hval", "view": "vita1080", "W": 1920, "H": 1080,
+                      "rgb": np.ascontiguousarray(rgb)})
+    skip = set(Path(a.skip_vns).read_text(encoding="utf-8").split())
+    man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
+    plan = {r["shot"]: r for r in json.loads(Path(a.plan).read_text(encoding="utf-8"))["rows"]}
+    cands = []
+    for s in man["shards"]:
+        js = json.loads((Path(a.shards) / s["dir"] / f"{s['name']}.json").read_text(encoding="utf-8"))
+        for smp in js["samples"]:
+            if smp["w"] == 1920 and smp["h"] == 1080 and smp["vn"] not in skip and smp["shot"] in plan:
+                cands.append(smp["shot"])
+    for shot in sorted(rng.sample(sorted(cands), min(a.n_pc, len(cands)))):
+        pr = plan[shot]
+        if D.sha256_file(pr["path"]) != pr["sha256"]:
+            raise SystemExit(f"{pr['path']}: sha256 differs from the plan's")
+        bgr = cv2.imread(pr["path"], cv2.IMREAD_COLOR)
+        pages.append({"key": shot, "set": "1b", "view": "pc1080", "W": bgr.shape[1], "H": bgr.shape[0],
+                      "rgb": np.ascontiguousarray(bgr[:, :, ::-1])})
+    with open(a.out, "wb") as f:
+        pickle.dump({"pages": pages, "seed": a.seed, "source": "eval/tsdesk.py pages"}, f)
+    from collections import Counter
+    print(json.dumps({"pages": len(pages), "views": dict(Counter(p["view"] for p in pages))}), flush=True)
+
+
 # ----------------------------------------------------------------------------- the screening table
 
 def _cer(doc, drop=None):
@@ -413,6 +483,11 @@ def main(argv=None):
     if argv and argv[0] == "desktop":
         install(D)
         return D.main(argv[1:])
+    if argv and argv[0] == "time":
+        install(D)
+        import desktop_time as DT
+        install(D)
+        return DT.main(argv[1:])
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("edges")
@@ -433,8 +508,23 @@ def main(argv=None):
     p.add_argument("--rows")
     p.add_argument("--rec", default=str(D.ONNX_DIR / "VOCR6.2_L_fast.onnx"))
     p.add_argument("--workers", type=int, default=5)
+    p = sub.add_parser("pages")
+    p.add_argument("--hval", default=str(D.PV / "vocr-desktop" / "frames" / "hval.pkl"))
+    p.add_argument("--manifest", default=str(ROOT / "data" / "manifests" / "desktop_data" / "realplus_native_v3.json"))
+    p.add_argument("--shards", default=str(D.ART / "desktop-data" / "pages" / "realplus_v3"))
+    p.add_argument("--plan", default=str(D.ART / "desktop-data" / "realplus" / "plan_v1.json"))
+    p.add_argument("--skip-vns", default=str(D.PV / "textspot-desktop" / "frames" / "skip_vns.txt"))
+    p.add_argument("--seed", type=int, default=20261101)
+    p.add_argument("--n", type=int, default=60)
+    p.add_argument("--n-pc", type=int, default=30)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("exact-boxes")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
     a = ap.parse_args(argv)
-    {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads}[a.cmd](a)
+    {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads, "exact-boxes": cmd_exact_boxes,
+     "pages": cmd_pages}[a.cmd](a)
 
 
 if __name__ == "__main__":

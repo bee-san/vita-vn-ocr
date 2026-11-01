@@ -237,9 +237,9 @@ class Pipeline:
     def _cnet(self, x):
         m, L, C = self.m, self.m.L, self.TC.C
         ph, pw = x.shape
-        arena = m.arena(L.vocr_tsd_maps_bytes(m.m.ctypes.data, pw, ph, m.threads) + 64)
-        out = C.POINTER(C.c_float)()
         run, pool, nt = m._run()
+        arena = m.arena(L.vocr_tsd_maps_bytes(m.m.ctypes.data, pw, ph, nt) + 64)
+        out = C.POINTER(C.c_float)()
         rc = L.vocr_tsd_maps_mt(m.m.ctypes.data, x.ctypes.data, pw, ph, arena.ctypes.data, arena.size, C.byref(out),
                                 run, pool, nt)
         if rc:
@@ -251,9 +251,9 @@ class Pipeline:
         m, L, C = self.m, self.m.L, self.TC.C
         h, w, ch = rgb.shape
         kind, n = self.policy
-        need = L.vocr_tsd_arena_bytes(m.m.ctypes.data, kind, n, w, h, ch, m.threads)
-        arena = m.arena(need)
         run, pool, nt = m._run()
+        need = L.vocr_tsd_arena_bytes(m.m.ctypes.data, kind, n, w, h, ch, nt)
+        arena = m.arena(need)
         rc = L.vocr_tsd_detect_mt(m.m.ctypes.data, rgb.ctypes.data, w, h, rgb.strides[0], ch, kind, n,
                                   arena.ctypes.data, arena.size, C.byref(m._set), run, pool, nt)
         if rc:

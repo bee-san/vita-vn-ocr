@@ -19,6 +19,8 @@
 #endif
 
 #define MAX_THREADS 64
+/* tasks per detector step for a pool of n threads: one row band per thread (the split never changes the bits) */
+#define TASKS_OF(n) (n)
 #define SPIN 4000u   /* pause iterations a pool thread spins on before it sleeps (about 0.1 ms) */
 
 static double now_us(void)
@@ -48,7 +50,7 @@ struct vocr_tsd_pool {
     unsigned threads;
     worker_fn fn;              /* the current job: fn(arg, task, worker) for task < ntasks */
     void *arg;
-    unsigned ntasks;
+    unsigned ntasks, fixed;    /* fixed: worker w runs tasks w, w + threads, ... (else they are handed out) */
     unsigned next, checked, gen, quit;   /* atomics (GCC builtins) */
 #ifndef VOCR_DESK_NO_THREADS
     pthread_mutex_t mu;
@@ -72,6 +74,11 @@ static void relax(void)
 
 static void pool_work(vocr_tsd_pool *p, unsigned worker)
 {
+    if (p->fixed) {   /* the same rows on the same thread step after step: its caches hold them */
+        unsigned t;
+        for (t = worker; t < p->ntasks; t += p->threads) p->fn(p->arg, t, worker);
+        return;
+    }
     for (;;) {
         unsigned t = A_ADD(p->next, 1u);
         if (t >= p->ntasks) break;
@@ -140,8 +147,10 @@ unsigned vocr_tsd_pool_threads(const vocr_tsd_pool *p)
     return p ? p->threads : 0;
 }
 
-/* run fn(arg, task, worker) for every task on the pool (the caller is worker 0); returns when all are done */
-static void pool_run_w(vocr_tsd_pool *p, worker_fn fn, void *arg, unsigned ntasks)
+/* run fn(arg, task, worker) for every task on the pool (the caller is worker 0); returns when all are done. fixed:
+ * worker w runs tasks w, w + threads, ... (the detector's row bands: each thread keeps its rows across steps), else
+ * the tasks are handed out as threads come free (the lines) */
+static void pool_run_w(vocr_tsd_pool *p, worker_fn fn, void *arg, unsigned ntasks, unsigned fixed)
 {
     unsigned t;
 #ifndef VOCR_DESK_NO_THREADS
@@ -149,6 +158,7 @@ static void pool_run_w(vocr_tsd_pool *p, worker_fn fn, void *arg, unsigned ntask
         p->fn = fn;
         p->arg = arg;
         p->ntasks = ntasks;
+        p->fixed = fixed;
         A_STORE(p->next, 0u);
         A_STORE(p->checked, 0u);
         A_STORE(p->gen, p->gen + 1u);
@@ -182,7 +192,7 @@ void vocr_tsd_pool_run(void *pool, vocr_tsd_task_fn fn, void *arg, unsigned ntas
     j.fn = fn;
     j.arg = arg;
     j.ntasks = ntasks;
-    pool_run_w((vocr_tsd_pool *)pool, runner_task, &j, ntasks);
+    pool_run_w((vocr_tsd_pool *)pool, runner_task, &j, ntasks, 1);
 }
 
 void vocr_tsd_pool_free(vocr_tsd_pool *p)
@@ -334,7 +344,7 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
         return VOCR_TSD_E_ARG;
     rc = grey_of(p, img, w, h, stride, channels);
     if (rc) return rc;
-    need = vocr_tsd_arena_bytes(&p->det, p->kind, p->n, w, h, 1, p->threads);
+    need = vocr_tsd_arena_bytes(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads));
     if (!need) return VOCR_TSD_E_ARG;
     if (need > p->arena_bytes) {
         free(p->arena);
@@ -344,7 +354,7 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
     }
     p->count = 0;
     return vocr_tsd_detect_mt(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, p->arena, p->arena_bytes, &p->set,
-                              vocr_tsd_pool_run, p->pool, p->threads);
+                              vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
 }
 
 int vocr_tsd_page_detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
@@ -506,7 +516,7 @@ int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, un
     }
     p->count = k;
     for (i = 0; i < p->threads; i++) p->work[i].rc = 0;
-    pool_run_w(p->pool, line_task, p, k);
+    pool_run_w(p->pool, line_task, p, k, 0);
     for (i = 0; i < p->threads; i++)
         if (p->work[i].rc) return p->work[i].rc;
     p->total_us = now_us() - t0;

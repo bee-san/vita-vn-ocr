@@ -238,6 +238,7 @@ class CModel:
             self.pool = None
 
     def _run(self):
+        """(runner, pool, tasks): one row band per thread (vocr_tsd_page.c's TASKS_OF)."""
         return (self.L.runner, self.pool, self.threads) if self.pool else (None, None, 1)
 
     def arena(self, n):
@@ -251,7 +252,7 @@ class CModel:
         [6 + T, H / hs, W / hs] float32 (the ONNX graph's output layout)."""
         x = np.ascontiguousarray(np.asarray(x, np.uint8).reshape(np.asarray(x).shape[-2:]))
         ph, pw = x.shape
-        arena = self.arena(self.L.vocr_tsd_maps_bytes(self.m.ctypes.data, pw, ph, self.threads) + 64)
+        arena = self.arena(self.L.vocr_tsd_maps_bytes(self.m.ctypes.data, pw, ph, self._run()[2]) + 64)
         out = C.POINTER(C.c_float)()
         run, pool, nt = self._run()
         rc = self.L.vocr_tsd_maps_mt(self.m.ctypes.data, x.ctypes.data, pw, ph, arena.ctypes.data, arena.size,
@@ -286,7 +287,7 @@ class CModel:
         input policy `size` (None: the blob's)."""
         a, w, h, stride, ch = _image(img)
         kind, n = policy_of(size, self.default_policy)
-        need = self.L.vocr_tsd_arena_bytes(self.m.ctypes.data, kind, n, w, h, ch, self.threads)
+        need = self.L.vocr_tsd_arena_bytes(self.m.ctypes.data, kind, n, w, h, ch, self._run()[2])
         if not need:
             raise ValueError(f"a {w} x {h} frame")
         arena = self.arena(need)

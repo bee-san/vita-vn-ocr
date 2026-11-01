@@ -1,7 +1,7 @@
 /* vocr_tsd_bench.c - time textspot-desktop's C detector (vocr_tsd.h) on frames in memory, for profiling.
  *
  *   vocr_tsd_bench BLOB.vtsd [--w 960] [--h 544] [--ch 3] [--raw FRAMES.rgb] [--runs 200] [--warmup 20]
- *                  [--threads 1] [--size fit:960|long:N|native] [--seed 1]
+ *                  [--threads 1] [--tasks-per-thread 1] [--size fit:960|long:N|native] [--seed 1]
  *
  * The frames: --raw holds consecutive w x h x ch byte frames (as many as the file has), else one seeded random frame
  * (smoothed noise). Prints one JSON line: the detector's p50 / p95 / mean in us over the runs (each run one frame,
@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 {
     const char *blob_path = NULL, *raw = NULL, *size = "fit:960";
     unsigned w = 960, h = 544, ch = 3, runs = 200, warmup = 20, threads = 1, seed = 1, kind, n = 0, i, nframes;
+    unsigned tasks_per = 1, ntasks;
     size_t blob_n = 0, raw_n = 0, frame_bytes, arena_n;
     unsigned char *blob_raw, *blob, *frames;
     vocr_tsd_model m;
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[a], "--threads") && a + 1 < argc) threads = (unsigned)atoi(argv[++a]);
         else if (!strcmp(argv[a], "--size") && a + 1 < argc) size = argv[++a];
         else if (!strcmp(argv[a], "--seed") && a + 1 < argc) seed = (unsigned)atoi(argv[++a]);
+        else if (!strcmp(argv[a], "--tasks-per-thread") && a + 1 < argc) tasks_per = (unsigned)atoi(argv[++a]);
         else if (!blob_path) blob_path = argv[a];
         else {
             fprintf(stderr, "unknown argument %s\n", argv[a]);
@@ -128,7 +130,8 @@ int main(int argc, char **argv)
                     frames[((size_t)y * w + x) * ch + c] = (unsigned char)(((s >> 16) & 255u) / 2u + 64u * ((x / 37 + y / 23) & 1u));
                 }
     }
-    arena_n = vocr_tsd_arena_bytes(&m, kind, n, w, h, ch, threads);
+    ntasks = threads > 1 ? tasks_per * threads : 1;
+    arena_n = vocr_tsd_arena_bytes(&m, kind, n, w, h, ch, ntasks);
     arena = malloc(arena_n);
     set = (vocr_tsd_set *)malloc(sizeof *set);
     t = (double *)malloc(sizeof(double) * runs);
@@ -149,7 +152,7 @@ int main(int argc, char **argv)
 #endif
         t0 = now_us();
         rc = vocr_tsd_detect_mt(&m, fr, w, h, w * ch, ch, kind, n, arena, arena_n, set,
-                                pool ? vocr_tsd_pool_run : NULL, pool, threads);
+                                pool ? vocr_tsd_pool_run : NULL, pool, ntasks);
         if (rc) {
             fprintf(stderr, "vocr_tsd_detect: %d\n", rc);
             return 1;
@@ -161,10 +164,10 @@ int main(int argc, char **argv)
         for (i = 0; i < runs; i++) mean += t[i];
         mean /= runs;
         qsort(t, runs, sizeof(double), cmp_d);
-        printf("{\"blob\": \"%s\", \"w\": %u, \"h\": %u, \"ch\": %u, \"size\": \"%s\", \"threads\": %u, \"simd\": %d, "
+        printf("{\"blob\": \"%s\", \"w\": %u, \"h\": %u, \"ch\": %u, \"size\": \"%s\", \"threads\": %u, \"tasks\": %u, \"simd\": %d, "
                "\"frames\": %u, \"runs\": %u, \"p50_us\": %.1f, \"p95_us\": %.1f, \"mean_us\": %.1f, \"min_us\": %.1f, "
                "\"boxes\": %u, \"arena_bytes\": %zu",
-               blob_path, w, h, ch, size, threads, vocr_tsd_simd(), nframes, runs, t[runs / 2], t[runs * 95 / 100],
+               blob_path, w, h, ch, size, threads, ntasks, vocr_tsd_simd(), nframes, runs, t[runs / 2], t[runs * 95 / 100],
                mean, t[0], set->count, arena_n);
 #ifdef VOCR_TSD_PROF
         {

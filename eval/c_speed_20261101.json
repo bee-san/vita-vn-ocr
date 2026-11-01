@@ -23,11 +23,11 @@
    "before": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.1948,
+      "ms_per_frame": 2.194759837,
       "box_ms": 626.7
      },
      "444": {
-      "ms_per_frame": 1.6469,
+      "ms_per_frame": 1.64686465,
       "box_ms": 495.2
      }
     },
@@ -38,11 +38,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 1.934,
+      "ms_per_frame": 1.934017855,
       "box_ms": 564.2
      },
      "444": {
-      "ms_per_frame": 1.4509,
+      "ms_per_frame": 1.45092954,
       "box_ms": 448.2
      }
     }
@@ -50,11 +50,11 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 1.9998,
+      "ms_per_frame": 1.999836984,
       "box_ms": 580.0
      },
      "444": {
-      "ms_per_frame": 1.5007,
+      "ms_per_frame": 1.500672459,
       "box_ms": 460.2
      }
     },
@@ -65,11 +65,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 1.7391,
+      "ms_per_frame": 1.739096642,
       "box_ms": 517.4
      },
      "444": {
-      "ms_per_frame": 1.3047,
+      "ms_per_frame": 1.304738578,
       "box_ms": 413.1
      }
     }
@@ -77,11 +77,11 @@
    "after_no_attn": {
     "nopld": {
      "333": {
-      "ms_per_frame": 1.9942,
+      "ms_per_frame": 1.994181773,
       "box_ms": 578.6
      },
      "444": {
-      "ms_per_frame": 1.4964,
+      "ms_per_frame": 1.496431,
       "box_ms": 459.1
      }
     },
@@ -99,11 +99,11 @@
    "before": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.8066,
+      "ms_per_frame": 2.806603223,
       "box_ms": 773.6
      },
      "444": {
-      "ms_per_frame": 2.106,
+      "ms_per_frame": 2.105975975,
       "box_ms": 605.4
      }
     },
@@ -114,11 +114,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 2.3814,
+      "ms_per_frame": 2.38141556,
       "box_ms": 671.5
      },
      "444": {
-      "ms_per_frame": 1.7865,
+      "ms_per_frame": 1.786526373,
       "box_ms": 528.8
      }
     }
@@ -126,11 +126,11 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.6828,
+      "ms_per_frame": 2.682808874,
       "box_ms": 743.9
      },
      "444": {
-      "ms_per_frame": 2.0131,
+      "ms_per_frame": 2.013130128,
       "box_ms": 583.2
      }
     },
@@ -141,11 +141,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 2.2576,
+      "ms_per_frame": 2.257621844,
       "box_ms": 641.8
      },
      "444": {
-      "ms_per_frame": 1.6937,
+      "ms_per_frame": 1.693681001,
       "box_ms": 506.5
      }
     }
@@ -153,11 +153,11 @@
    "after_no_attn": {
     "nopld": {
      "333": {
-      "ms_per_frame": 2.6783,
+      "ms_per_frame": 2.678337978,
       "box_ms": 742.8
      },
      "444": {
-      "ms_per_frame": 2.0098,
+      "ms_per_frame": 2.009777008,
       "box_ms": 582.3
      }
     },
@@ -175,11 +175,11 @@
    "before": {
     "nopld": {
      "333": {
-      "ms_per_frame": 7.4147,
+      "ms_per_frame": 7.41474705,
       "box_ms": 1879.5
      },
      "444": {
-      "ms_per_frame": 5.7073,
+      "ms_per_frame": 5.707280409,
       "box_ms": 1469.7
      }
     },
@@ -190,11 +190,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 5.146,
+      "ms_per_frame": 5.146035278,
       "box_ms": 1335.0
      },
      "444": {
-      "ms_per_frame": 3.8782,
+      "ms_per_frame": 3.87816566,
       "box_ms": 1030.8
      }
     }
@@ -202,11 +202,11 @@
    "after": {
     "nopld": {
      "333": {
-      "ms_per_frame": 7.1455,
+      "ms_per_frame": 7.145499547,
       "box_ms": 1814.9
      },
      "444": {
-      "ms_per_frame": 5.5051,
+      "ms_per_frame": 5.505098449,
       "box_ms": 1421.2
      }
     },
@@ -217,11 +217,11 @@
     "vocr_cflags": "-O2",
     "pld": {
      "333": {
-      "ms_per_frame": 4.8784,
+      "ms_per_frame": 4.878353664,
       "box_ms": 1270.8
      },
      "444": {
-      "ms_per_frame": 3.6774,
+      "ms_per_frame": 3.677373219,
       "box_ms": 982.6
      }
     }
@@ -229,11 +229,11 @@
    "after_no_attn": {
     "nopld": {
      "333": {
-      "ms_per_frame": 7.1393,
+      "ms_per_frame": 7.139252533,
       "box_ms": 1813.4
      },
      "444": {
-      "ms_per_frame": 5.5005,
+      "ms_per_frame": 5.500477496,
       "box_ms": 1420.1
      }
     },
@@ -1440,29 +1440,29 @@
   "parity_arm": true
  },
  "host_ms": {
-  "what": "host_ms.py OUT.json: host ms of the recognizer (ms per line, vocr_cli --repeat) and the spotter (ms per region,\nvocr_textspot6_test --bench) for the base and the new runtime, gcc at -O2 (the runtime's flags) and at -O3 -march=native,\none thread, on the development lines (sub24, 24 lines of 60-100 frames) and 60 development regions as Rubi's crop decode\nreads them. Each figure is the median over --runs runs (the box is shared: other jobs run beside these).",
+  "what": "c-speed's host times (#165, docs/c-speed.md \"Host speed\"): the recognizer's ms per line and the spotter's ms per\nregion, for two runtime versions, each built by gcc at -O2 (the runtime's flags) and at -O3 -march=native.",
   "runs": 5,
+  "regions": 60,
   "cpu": "model name\t: AMD EPYC 9R14",
   "gcc": "gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
-  "regions": 60,
   "recognizer_ms_per_line": {
-   "S_base_O2": 25.878,
-   "N_base_O2": 31.539,
-   "L_base_O2": 78.303,
-   "S_base_O3n": 6.158,
-   "N_base_O3n": 7.245,
-   "L_base_O3n": 15.354,
-   "S_new_O2": 25.879,
-   "N_new_O2": 31.535,
-   "L_new_O2": 78.29,
-   "S_new_O3n": 6.182,
-   "N_new_O3n": 7.239,
-   "L_new_O3n": 15.345
+   "S_base_O2": 25.893,
+   "N_base_O2": 31.56,
+   "L_base_O2": 78.382,
+   "S_base_O3n": 6.169,
+   "N_base_O3n": 7.265,
+   "L_base_O3n": 15.387,
+   "S_new_O2": 25.975,
+   "N_new_O2": 31.714,
+   "L_new_O2": 78.558,
+   "S_new_O3n": 6.246,
+   "N_new_O3n": 7.255,
+   "L_new_O3n": 15.385
   },
   "spotter_ms_per_region": {
-   "base_O2": 7.133,
-   "base_O3n": 2.964,
-   "new_O2": 7.134,
+   "base_O2": 7.137,
+   "base_O3n": 2.963,
+   "new_O2": 7.138,
    "new_O3n": 2.964
   }
  },

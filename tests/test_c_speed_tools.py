@@ -189,11 +189,27 @@ def test_the_record_holds_and_the_doc_quotes_it():
                 assert y["ms_per_frame"] < x["ms_per_frame"]
         n0, n1 = b["nopld"]["333"]["ms_per_frame"], a["nopld"]["333"]["ms_per_frame"]
         assert f"{n0:.3f} → **{n1:.3f}**" in doc, t
-        na = row["after_no_attn"]   # Rubi's build: the same code but the attention op's, the same texts
+        na = row["after_no_attn"]   # Rubi's build: the same arithmetic without the attention op, the same texts
         assert na["texts_sha256"] == b["texts_sha256"] and na["vocr_cflags"] == "-O2 -DVOCR_NO_ATTN"
         assert na["vocr_c_sha256"] == after["vocr.c"] and na["nopld"]["333"]["ms_per_frame"] < n0
         b_s, a_s = (round(x["nopld"]["333"]["box_ms"]) / 1000 for x in (b, a))   # whole ms, then seconds
         assert f"{b_s:.3f} → **{a_s:.3f} s**" in doc, t
+    # the other pages that quote the recognizer's estimates (runtime/README.md, CHANGELOG): the record's figures
+    rt_readme = (ROOT / "runtime" / "README.md").read_text(encoding="utf-8")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    ms = {t: (row["before"]["nopld"]["333"]["ms_per_frame"], row["after"]["nopld"]["333"]["ms_per_frame"])
+          for t, row in rec["recognizer"].items()}
+    assert ("VOCR6.2 S / N / L as Rubi runs them: est. " + ", ".join(
+        f"{b:.3f} → {a:.3f}" for b, a in (ms["S"], ms["N"])) + f" and {ms['L'][0]:.3f} → {ms['L'][1]:.3f}"
+        ) in " ".join(rt_readme.split()), "runtime/README.md quotes other estimates than the record"
+    box = {t: tuple(round(row[v]["nopld"]["333"]["box_ms"]) / 1000 for v in ("before", "after"))
+           for t, row in rec["recognizer"].items()}
+    assert (f"VOCR6.2 S / N / L {box['S'][0]:.3f} → {box['S'][1]:.3f}, {box['N'][0]:.3f} → {box['N'][1]:.3f}, "
+            f"{box['L'][0]:.3f} → {box['L'][1]:.3f} s") in " ".join(changelog.split()), "CHANGELOG's boxes"
+    gains = [100 * (1 - v[m]["after"]["ms_333"] / v[m]["before"]["ms_333"])
+             for size, v in rec["spotter"].items() if size != "sources" for m in ("dark", "no_dark")]
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert f"and {int(min(gains))}-{int(max(gains) + 0.5)}% faster" in readme, (min(gains), max(gains))
     for size in ("900x150", "960x544"):
         d = rec["spotter"][size]["dark"]
         assert f"{d['before']['ms_333']:.1f} → **{d['after']['ms_333']:.1f}**" in doc, size

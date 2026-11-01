@@ -20,7 +20,7 @@ head; nothing here has run on a console):
 |---|---:|---:|---:|---:|
 | Small `VOCR6.2_S_w8` | 2.195 → **2.000** (−8.9%) | 0.627 → **0.580 s** | 0.495 → 0.460 s | 0.564 → 0.517 s |
 | Normal `VOCR6.2_N_w8g2` (default) | 2.807 → **2.683** (−4.4%) | 0.774 → **0.744 s** | 0.605 → 0.583 s | 0.672 → 0.642 s |
-| Large `VOCR6.2_L_w8_2l` | 7.415 → **7.146** (−3.6%) | 1.880 → **1.815 s** | 1.470 → 1.421 s | 1.335 → 1.271 s |
+| Large `VOCR6.2_L_w8_2l` | 7.415 → **7.145** (−3.6%) | 1.880 → **1.815 s** | 1.470 → 1.421 s | 1.335 → 1.271 s |
 
 | textspot8 (`t64n8c16`, 4 tags), est. ms @333 / @444 | with the dark pass (the published figures) | without it (Rubi's `VOCR_TEXTSPOT_NO_DARK`) |
 |---|---:|---:|
@@ -32,7 +32,8 @@ head; nothing here has run on a console):
 The box column is the recognizer's nominal box as the earlier docs give it (`docs/vocr6.md`): its 0.1 s stands for
 the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 region is about 0.774 + 0.076 → 0.744 +
 0.055 s (estimates, Rubi's flags). Built with `-DVOCR_NO_ATTN` (below), as Rubi's pin of this change builds it:
-0.579 / 0.743 / 1.813 s, the same code in every kernel.
+0.579 / 0.743 / 1.813 s, the same arithmetic in every kernel (gcc allocates some registers differently without the
+attention code, so the machine code is not byte-identical).
 
 ## What changed
 
@@ -40,7 +41,7 @@ the line finder. With textspot8 as Rubi's finder, a Normal box with a 900×150 r
 
 | kernel | before | after | why the bits are the same |
 |---|---|---|---|
-| `mm_i16`'s 4 positions × 8 outputs pass (every pointwise layer, the head, the gate and the escape) | intrinsics: gcc kept the 8 sums, 4 inputs, 32 weight bytes and a widened row in the 16 Q registers only by rotating a sum through the weight registers (4 `VORR` a pass) and copied the weight pointer for the `PLD`s: 88 instructions per 256 multiply-adds | the same pass as an `asm` loop (`VOCR_ASM`; `-DVOCR_NO_ASM` keeps the intrinsics) with the registers fixed and `:128` alignment hints on the 6 loads: 82 instructions, and the loads issue in 6 cycles instead of 14. It runs when the rows are 16-byte aligned and K is a multiple of 8 (every VOCR matrix: the arena's scratch and the blob's sections are aligned); any other call takes the one-position loop, so there is one copy of the pass | the same `VMLAL.S16` in the same order; integer sums are exact in any order anyway. The `PLD`s go to the same addresses |
+| `mm_i16`'s 4 positions × 8 outputs pass (every pointwise layer, the head, the gate and the escape) | intrinsics: gcc kept the 8 sums, 4 inputs, 32 weight bytes and a widened row in the 16 Q registers only by rotating a sum through the weight registers (4 `VORR` a pass) and copied the weight pointer for the `PLD`s: 88 instructions per 256 multiply-adds | the same pass as an `asm` loop (`VOCR_ASM`; `-DVOCR_NO_ASM` keeps the intrinsics) with the registers fixed and `:128` alignment hints on the 6 loads: 82 instructions, and the loads issue in 8 cycles instead of 14 (the cost model's count). It runs when the rows are 16-byte aligned and K is a multiple of 8 (every VOCR matrix: the arena's scratch and the blob's sections are aligned); any other call takes the one-position loop, so there is one copy of the pass | the same `VMLAL.S16` in the same order; integer sums are exact in any order anyway. The `PLD`s go to the same addresses |
 | the 3×3 stem (`k_conv1`, C a multiple of 16) | 16 channels per output position: per tap, two 32-byte weight loads, the input as a lane, 4 `VMLA` | `k_conv1_3x3`: 4 channels at a time with their 9 tap weights in 9 Q registers over every output of the call, and each column's 3 rows in one load | each output is still bias, then + w · x over the taps in order (dy, then dx) by `VMLA` by lane, the vertical taps outside the input skipped (the border rows take the taps one by one, as before); only the order of independent outputs changes. With C % 16 the old loop ran every channel on NEON too, so the flush of denormals is the same |
 | the top-K filter in `run_head` (Small; any head with the top-K and without the two-level head) | per block of 8 classes and frame: `fkey` (6 operations) of the 8 logits and of the frame's K-th largest, then one NEON→ARM move, which the A9 pays as a NEON/VFP switch | a cheaper order key (`okey`: 3 operations, the magnitude bits flipped for negatives), the frames' thresholds kept as keys (updated after an insertion), 4 frames per test and the pass bits of the whole batch gathered in one register, so one move per block | the filter only decides which blocks go through the per-class insertion, which compares exactly as before; `okey` orders every two non-NaN floats as `>` does (only -0 < +0 more), the threshold is never NaN, so every block with a logit above the threshold still passes (a superset); the insertion itself is unchanged |
 | `block_above` (the two-level head's block test) | `fkey` of both | `okey`, the same superset argument | as above |
@@ -59,7 +60,7 @@ the code: `vocr.o` 26,723 → 24,083 B, which more than pays for this change's c
 
 | kernel | before | after | why the bits are the same |
 |---|---|---|---|
-| 1×1 layers (`k1_block`, 56% of a region's instructions before) | 2 output channels per pass: each input channel's 8 pixels loaded and widened twice per 4 output channels | 4 output channels per pass (8 sums, the 4 weight rows of 8 input channels, the inputs of 4 channels in one 32-byte load); the lone channels past a multiple of 4 one at a time | the int32 sums are exact (at most 64 products of two int8 codes) in any order |
+| 1×1 layers (`k1_block`, 60% of a region's instructions before) | 2 output channels per pass: each input channel's 8 pixels loaded and widened twice per 4 output channels | 4 output channels per pass (8 sums, the 4 weight rows of 8 input channels, the inputs of 4 channels in one 32-byte load); the lone channels past a multiple of 4 one at a time | the int32 sums are exact (at most 64 products of two int8 codes) in any order |
 | the requantisation (`RQ_STORE`, every output) | `VMULL.S32` into int64, `VRSHL.S64`, two narrowing steps | for a channel whose bias + sum fits int32 and whose shift is at least 32 (every channel of a trained blob): `VQDMULH.S32` then `VRSHL.S32` by 31 − shift, the multi-scale path's mode 0 (`rq4v`), whose proof the module comment gives; a 1×1 layer whose every channel has that form takes its 4 channels' constants with one `VLD4` and by lane; the int64 forms moved out of line (`rq_int64`), unchanged | floor((floor(v m / 2^31) + 2^(k − 1)) / 2^k) = floor((v m + 2^(shift − 1)) / 2^shift) for k = shift − 31 ≥ 1, the twin's value; then the same saturation and ReLU |
 | depthwise 3×3 (`K3_DW`) | `K3_BLOCK`'s loop, inlined into `feed`, which spilled its row pointers per channel | its own loop, the row pointers and weights in registers | the same products and exact sums |
 | the stem (one input channel, stride 2: `k3_c1_s2`) | `K3_BLOCK`: each of the 8 output channels loaded and widened the 9 inputs again | the 9 inputs loaded and widened once per block; a kernel row outside the input reads zeros instead of the centre row with masked weights | either way each such product is 0 and the sums are exact |
@@ -83,7 +84,7 @@ int8-pair form of the 1×1 layers (`VMULL.S8` + `VMLAL.S8` + `VPADAL`, as the mu
 | the 10 pointwise layers (collapse included) | 0.973 | 0.935 | 1.888 | 1.809 | 5.931 | 5.715 |
 | the 8 depthwise layers | 0.200 | 0.200 | 0.343 | 0.342 | 0.596 | 0.595 |
 | the input columns, the gate's step, the rest of `vocr_run` | 0.061 | 0.061 | 0.071 | 0.071 | 0.071 | 0.071 |
-| **all** | **2.195** | **2.000** | **2.807** | **2.683** | **7.415** | **7.146** |
+| **all** | **2.195** | **2.000** | **2.807** | **2.683** | **7.415** | **7.145** |
 
 The per-phase tables are in the PR (`vita/a9_layers.py compare`).
 
@@ -93,7 +94,7 @@ late layers' weight stream but grow the arena by 87-183 KB per context: the rese
 Instructions per frame: S 529,642 → 476,117, N 626,586 → 590,017, L 1,349,842 → 1,277,225 (with `-DVOCR_NO_ATTN`:
 475,001, 588,588 and 1,275,031).
 
-textspot8 on a 900×150 region: 23.89 M → 16.82 M instructions; the 1×1 layers 14.40 M → 9.44 M, the depthwise layers
+textspot8 on a 900×150 region: 23.89 M → 16.82 M instructions; the 1×1 layers 14.40 M → 9.43 M, the depthwise layers
 and the rest of the stream 6.93 M → 3.97 M + 0.59 M (the stem's own function), the dark pass 1.75 M (unchanged).
 
 ## Bit identity
@@ -184,14 +185,14 @@ From astra's report and vocr-research's (§4-5 of `reports/vocr-research.md`):
 ## Host speed (x86, unchanged)
 
 The changes are NEON-only, so host builds run `main`'s code. One pinned core of the EPYC host (load 12-20), gcc 11.5,
-median of 5 runs (`tools` in `$HERD/shared/artifacts/vocr-c-speed/`):
+median of 5 runs (`eval/c_speed_host_ms.py`; the record's `host_ms`):
 
 | | `-O2` (the Makefile's) | `-O3 -march=native` |
 |---|---:|---:|
 | recognizer, ms per line (24 lines of 60-100 frames, top-8, Rubi's options) S / N / L | 25.9 / 31.5 / 78.3 | 6.2 / 7.2 / 15.4 |
 | textspot8, ms per region (60 development regions, Rubi's crop decode) | 7.13 | 2.96 |
 
-Before and after agree to 0.4%. These lines average 67 CTC frames, about twice the 32.5 of the research's timing set,
+Before and after agree to 0.5%. These lines average 67 CTC frames, about twice the 32.5 of the research's timing set,
 so the per-line times are about twice its.
 
 This checks astra's main desktop finding against our best gcc build rather than redoing the ONNX side, which
@@ -219,6 +220,8 @@ python vita/speed_parity.py --base <main's runtime/> --new runtime --pack dev.bi
 python vita/ts_speed_parity.py --base <main's runtime/> --new runtime --blob textspot8_t64n8c16_w8.vtsp \
     --regions dev_regions.bin --frames 27
 make -C runtime check-arm parity-arm ARM_CC=... QEMU=...
+python eval/c_speed_host_ms.py --base <main's runtime/> --new runtime --models <the v0.5.0 blobs> --sub sub24.bin \
+    --regions dev_regions.bin --out host_ms.json
 python vita/vita3k_parity.py --base <main's runtime/> --new runtime --sub sub24.bin --pack dev.bin \
     --regions dev_regions.bin --spot textspot8_t64n8c16_w8.vtsp --blob S=VOCR6.2_S_w8.vocr \
     --blob 'N=VOCR6.2_N_w8g2.vocr:--head-gate on --two-level' --blob 'L=VOCR6.2_L_w8_2l.vocr:--two-level' --work DIR

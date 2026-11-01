@@ -53,7 +53,7 @@ def recognizer(art):
                     F, s = r["frames"], r["scale"]
                     ms = sum(v["high"] for v in r["phases"].values()) * s / F / (mhz * 1000)
                     row.setdefault(ver, {}).setdefault(b, {})[str(mhz)] = {
-                        "ms_per_frame": round(ms, 4), "box_ms": round(BOX_FRAMES * ms + BOX_FINDER_MS, 1)}
+                        "ms_per_frame": round(ms, 9), "box_ms": round(BOX_FRAMES * ms + BOX_FINDER_MS, 1)}
                 row[ver]["insns_per_frame"] = round(sum(v["insns"] for v in r["phases"].values()) / F)
                 row[ver]["texts_sha256"] = r["meta"]["runs"]["prof"]["texts_sha256"]
                 row[ver]["vocr_c_sha256"] = r["meta"]["vocr_c_sha256"]

@@ -139,7 +139,7 @@ every NEON kernel, as Cortex-A9 NEON and scalar builds under qemu-arm.
 c-speed (#165, `docs/c-speed.md`) then cut the NEON kernels' instructions again, bit for bit: `mm_i16`'s 4 × 8 pass
 as an `asm` loop with aligned loads (82 instructions per 256 multiply-adds, 88 before), the 3×3 stem with its tap
 weights in registers, and the head's top-K filter with a cheaper key, 4 frames per test and one NEON-to-ARM move per
-block. VOCR6.2 S / N / L as Rubi runs them: est. 2.195 → 2.020, 2.807 → 2.701 and 7.415 → 7.175 ms per frame at 333 MHz
+block. VOCR6.2 S / N / L as Rubi runs them: est. 2.195 → 2.000, 2.807 → 2.683 and 7.415 → 7.145 ms per frame at 333 MHz
 without prefetch credit; arenas unchanged; builds without NEON compile to the same machine code.
 
 ## API

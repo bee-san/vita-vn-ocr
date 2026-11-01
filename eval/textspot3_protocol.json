@@ -634,7 +634,7 @@
   },
   {
    "id": 13,
-   "utc": "2026-11-01T01:00:00Z",
+   "utc": "2026-11-01T03:09:18Z",
    "before": "nothing of textspot3: its selection, protected read and merge (#113) are done, and no textspot3 score is affected",
    "what": [
     "A harness file re-pinned, not a textspot3 change (as amendments 8-12): runtime/vocr.c, the recognizer the scores read text with, got c-speed's NEON kernels (#165, docs/c-speed.md) on top of amendment 12's runtime: mm_i16's 4 x 8 pass as an asm loop with aligned loads, the 3x3 stem with its tap weights in registers, and run_head's top-K filter with a cheaper key, and the build option -DVOCR_NO_ATTN (off by default), which leaves out the attention op; vocr.h is unchanged. Only NEON builds change, and every logit, top-K and text is bit for bit as before in five builds and in Vita3K (eval/c_speed_20261101.json); every build without NEON compiles to the same machine code; runtime/tests/test_vocr.c's known-answer logit hashes are unchanged"

@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-for _p in (ROOT / "runtime", ROOT / "train", ROOT / "tools"):   # tools first: tools/tsdesk.py, not eval/tsdesk.py
+for _p in (ROOT / "runtime", ROOT / "train", ROOT / "tools"):   # tools first: tools/tsdesk.py
     if str(_p) in sys.path:
         sys.path.remove(str(_p))
     sys.path.insert(0, str(_p))
@@ -444,16 +444,16 @@ def _any_blob():
 
 
 def test_ctsd_spec_in_eval(nets, libs, tmp_path):
-    """eval/tsdesk.py's ctsd: detector spec reads a VTSD blob through tools/tsdesk_c.CModel."""
+    """eval/tsdesk_eval.py's ctsd: detector spec reads a VTSD blob through tools/tsdesk_c.CModel."""
     pytest.importorskip("cv2")
     sys.path.insert(1, str(ROOT / "eval"))
     try:
         import importlib.util
-        spec = importlib.util.spec_from_file_location("tsdesk_eval", ROOT / "eval" / "tsdesk.py")
+        spec = importlib.util.spec_from_file_location("tsdesk_eval", ROOT / "eval" / "tsdesk_eval.py")
         E = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(E)
     except ImportError as e:
-        pytest.skip(f"eval/tsdesk.py: {e}")
+        pytest.skip(f"eval/tsdesk_eval.py: {e}")
     finally:
         sys.path.remove(str(ROOT / "eval"))
     p = tmp_path / "p8a.vtsd"
@@ -536,7 +536,7 @@ def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
 
 
 def TC_crop(b, ph, pv, W, H):
-    """tools/tsdesk.crop_of with a horizontal and a vertical pad (eval/tsdesk.crop_hv's rounding), or None."""
+    """tools/tsdesk.crop_of with a horizontal and a vertical pad (eval/tsdesk_eval.crop_hv's rounding), or None."""
     import math
     x0, y0 = max(0, int(math.floor(b.x - ph))), max(0, int(math.floor(b.y - pv)))
     x1, y1 = min(W, int(math.ceil(b.x + b.w + ph))), min(H, int(math.ceil(b.y + b.h + pv)))

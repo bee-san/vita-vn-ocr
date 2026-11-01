@@ -436,6 +436,67 @@ def cmd_pages(a):
     print(json.dumps({"pages": len(pages), "views": dict(Counter(p["view"] for p in pages))}), flush=True)
 
 
+# ----------------------------------------------------------------------------- the PC test set, once
+
+PCTEST_ATTEMPT = D.PV / "textspot-desktop" / "pctest" / "ATTEMPT.json"
+DECISION = ROOT / "eval" / "textspot_desktop_decision.json"
+
+
+def committed_unchanged(path):
+    import subprocess
+    rel = Path(path).resolve().relative_to(ROOT)
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", str(rel)], cwd=ROOT, capture_output=True)
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", str(rel)], cwd=ROOT, capture_output=True,
+                           text=True).stdout.strip()
+    return not tracked.returncode and not dirty
+
+
+def cmd_pctest_gate(a):
+    """The PC test set is read once (protocol rule.pctest_guard): only when the protocol and the decision record are
+    committed unchanged, and only if this protocol's attempt record does not exist yet (this call writes it)."""
+    for p in (PROTOCOL, DECISION):
+        if not p.exists() or not committed_unchanged(p):
+            raise SystemExit(f"{p.relative_to(ROOT)}: not committed unchanged")
+    if PCTEST_ATTEMPT.exists():
+        raise SystemExit(f"the PC test set was read already under this protocol ({PCTEST_ATTEMPT})")
+    PCTEST_ATTEMPT.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "head": D.git_head(),
+           "protocol_sha256": D.sha256_file(PROTOCOL), "decision_sha256": D.sha256_file(DECISION),
+           "what": a.what}
+    PCTEST_ATTEMPT.write_text(json.dumps(rec) + "\n", encoding="utf-8")
+    print(json.dumps(rec), flush=True)
+
+
+def errata_boxes(path):
+    """{(unit uid, box_v1 tuple): box_fixed} of the PC test set's erratum (eval/desktop_pc_test_v1_errata.json)."""
+    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    return {(ln["unit"], tuple(float(v) for v in ln["box_v1"])): [float(v) for v in ln["box_fixed"]]
+            for ln in doc["lines"]}
+
+
+def cmd_exact_pctest(a):
+    """The exact-boxes row of the PC test set: its line boxes with the erratum's 7 corrected boxes."""
+    fix = errata_boxes(a.errata)
+    frames, _ = D.load_frames(a.frames)
+    rows, n_fixed = [], 0
+    for fr in frames:
+        out = []
+        for u in fr["units"]:
+            for ln in u["lines"]:
+                b = [float(v) for v in ln["box"]]
+                k = (u["uid"], tuple(b))
+                if k in fix:
+                    b = fix[k]
+                    n_fixed += 1
+                out.append([b[0], b[1], b[0] + b[2], b[1] + b[3], 0, 9.0, 0])
+        rows.append({"key": fr["key"], "W": fr["W"], "H": fr["H"], "boxes": out, "ms": 0.0})
+    meta = {"meta": {"det": "exact", "frames_file": str(a.frames), "frames_sha256": D.sha256_file(a.frames),
+                     "rule": "the PC test set's line boxes, the erratum's corrected boxes", "fixed": n_fixed,
+                     "repo_head": D.git_head()}}
+    D.write_jsonl(a.out, [meta, *rows])
+    print(f"exact pctest boxes: {len(rows)} frames, {n_fixed} boxes from the erratum -> {a.out}", flush=True)
+
+
 # ----------------------------------------------------------------------------- the screening table
 
 def _cer(doc, drop=None):
@@ -521,13 +582,19 @@ def main(argv=None):
     p.add_argument("--n", type=int, default=60)
     p.add_argument("--n-pc", type=int, default=30)
     p.add_argument("--out", required=True)
+    p = sub.add_parser("pctest-gate")
+    p.add_argument("--what", required=True)
+    p = sub.add_parser("exact-pctest")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--errata", default=str(ROOT / "eval" / "desktop_pc_test_v1_errata.json"))
+    p.add_argument("--out", required=True)
     p = sub.add_parser("exact-boxes")
     p.add_argument("--frames", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--workers", type=int, default=5)
     a = ap.parse_args(argv)
     {"edges": cmd_edges, "screen": cmd_screen, "pads": cmd_pads, "exact-boxes": cmd_exact_boxes,
-     "pages": cmd_pages}[a.cmd](a)
+     "pages": cmd_pages, "pctest-gate": cmd_pctest_gate, "exact-pctest": cmd_exact_pctest}[a.cmd](a)
 
 
 if __name__ == "__main__":

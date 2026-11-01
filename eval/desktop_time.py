@@ -2,9 +2,10 @@
 """Host timings of the desktop pipelines (issue #169, docs/desktop.md): whole pages, the networks alone, ONNX
 Runtime's per-op profiles and the models' MACs. Development frames only (eval/desktop.py's dev and pc sets).
 
-  desktop_time.py pages --out PAGES.pkl [--vita 60] [--psp 60] [--pc 30] [--seed 20261101]
+  desktop_time.py pages --out PAGES.pkl [--vita 60] [--psp 60] [--pc 30] [--seed 20261101] [--source F.pkl:N,...]
       a seeded sample of dev-v2's frames (Vita view: the 960 x 544 frames, PSP view: 480 x 272) and of the PC sample
-      (the screenshots' own sizes), pixels included (private: the shared box only)
+      (the screenshots' own sizes), pixels included (private: the shared box only); --source: N frames of every view
+      of the given frame files instead (e.g. dev-v2 resampled to 1080 and 2160 px: timing per input resolution)
   desktop_time.py run --pages PAGES.pkl --pipelines P,... --threads N --out T.json [--modes seq,par] [--passes 3]
                       [--warmup 1]
       every pipeline on every page, interleaved per page: each pass visits the pages in a shuffled order (seeded) and
@@ -89,6 +90,20 @@ def host():
 def cmd_pages(a):
     rng = random.Random(a.seed)
     pages = []
+    if a.source:                                 # FRAMES.pkl:N[,...]: N frames of each view of other frame files
+        for spec in a.source.split(","):
+            path, _, n = spec.rpartition(":")
+            frames, _ = D.load_frames(path)
+            for view in sorted({f["view"] for f in frames}):
+                fs = sorted((f for f in frames if f["view"] == view), key=lambda f: f["key"])
+                for f in sorted(rng.sample(fs, min(int(n), len(fs))), key=lambda f: f["key"]):
+                    pages.append({"key": f["key"], "set": f["set"], "view": view, "W": f["W"], "H": f["H"],
+                                  "rgb": D.load_rgb(f)})
+        with open(a.out, "wb") as f:
+            pickle.dump({"pages": pages, "seed": a.seed, "source": a.source}, f)
+        print(json.dumps({"pages": len(pages), "views": {v: sum(p["view"] == v for p in pages)
+                                                         for v in sorted({p["view"] for p in pages})}}), flush=True)
+        return
     for name, views in (("dev", {"vita": a.vita, "psp": a.psp}), ("pc", {"pc": a.pc})):
         frames, _ = D.load_frames(Path(a.frames_dir) / f"{name}.pkl")
         for view, n in views.items():
@@ -274,13 +289,13 @@ def cmd_run(a):
         print(f"pass {p + 1}/{a.warmup + a.passes} {time.time() - t0:.0f} s", flush=True)
     res = {"kind": "vocr-desktop-timing/1", "host": host(), "threads": threads, "passes": a.passes, "ref": a.ref,
            "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
-           "pages": {v: sum(p["view"] == v for p in pages) for v in ("vita", "psp", "pc")},
+           "pages": {v: sum(p["view"] == v for p in pages) for v in sorted({p["view"] for p in pages})},
            "repo_head": D.git_head(), "results": {}}
     ref = {i: float(np.median(v)) for i, v in times[a.ref].items()} if a.ref in times else None
     for n in pipes:
         per_page = {i: float(np.median(v)) for i, v in times[n].items()}
         r = {}
-        for view in ("vita", "psp", "pc", "all"):
+        for view in sorted({pg["view"] for pg in pages}) + ["all"]:
             idx = [i for i, pg in enumerate(pages) if view == "all" or pg["view"] == view]
             if idx:
                 r[view] = pstats([per_page[i] for i in idx])
@@ -643,6 +658,7 @@ def main(argv=None):
     p.add_argument("--psp", type=int, default=60)
     p.add_argument("--pc", type=int, default=30)
     p.add_argument("--seed", type=int, default=20261101)
+    p.add_argument("--source", help="FRAMES.pkl:N[,FRAMES2.pkl:N]: N frames of every view of these files instead")
     p = sub.add_parser("run")
     p.add_argument("--pages", required=True)
     p.add_argument("--pipelines", required=True)

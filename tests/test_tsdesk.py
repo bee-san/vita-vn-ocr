@@ -604,3 +604,21 @@ def test_merge_touching_and_the_guard_band():
     assert T.post_post(g, [b2], o)[0] == b2
     got = T.post_post(g, [b2], dict(o, ext_band_pct=10))[0]
     assert got.x == b2.x and got.x + got.w > end + 40
+
+
+def test_vflip_turns_a_gappy_column_into_rows():
+    g = np.full((240, 300), 20, np.uint8)
+    for col in range(3):                                                 # a 3 x 4 kana grid: 18 px glyphs, 12 px gaps
+        for row in range(4):
+            _glyphs(g, 20 + 30 * col, 20 + 30 * row, 1, 18, 0)
+    cols = [_box(20 + 30 * c - 1, 19, 20 + 30 * c + 19, 19 + 30 * 3 + 20, vertical=1) for c in range(3)]
+    out = T.post_pre(g, cols, {"vflip_pct": 30})
+    assert all(not b.vertical for b in out) and len(out) == 4               # one horizontal box per grid row
+    for k, b in enumerate(sorted(out, key=lambda b: b.y)):
+        assert b.x < 21 and b.x + b.w > 97 and abs(b.y - (20 + 30 * k)) <= 2 and b.h <= 22
+    t = np.full((240, 60), 20, np.uint8)                                   # vertical text: glyphs 2 px apart
+    for row in range(7):
+        _glyphs(t, 20, 10 + 20 * row, 1, 18, 0)
+    col = [_box(19, 9, 39, 150, vertical=1)]
+    assert T.post_pre(t, col, {"vflip_pct": 30}) == col
+    assert T.post_pre(g, cols, {}) == cols

@@ -480,7 +480,9 @@ def _clamp_ends(boxes, kern, w, h):
 #
 # Options on the decode's frame-px boxes (helper textspot-desktop-boxes). Every option is an integer and 0 turns it
 # off, so with POST_DEFAULTS the boxes are the decode's and the refinement's bit for bit. The pre-refinement options
-# run in this order on the decode's boxes, before tools/tsdesk_refine.py:
+# run in this order on the decode's boxes, before tools/tsdesk_refine.py (vflip_pct first, then merge_pct, touch_pct
+# (merge_touching), rows_pct and gap_pct; vflip, touch_pct and ext_band_pct have no C twin yet):
+#   vflip_pct  a vertical box whose ink is a stack of glyph bands with wide gaps becomes horizontal boxes (vflip);
 #   merge_pct  two boxes of one orientation that overlap across by at least half the smaller one's size across and
 #              whose intersection is at least merge_pct % of the smaller one's area become their union (the larger
 #              box's fields): a fragment the decode found inside or beside its line (a 「, a ―。 at the end);
@@ -500,8 +502,8 @@ def _clamp_ends(boxes, kern, w, h):
 
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
                  "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
-                 "ext_band_pct": 0, "touch_pct": 0}
-POST_PRE = ("merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
+                 "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100}
+POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
 
@@ -629,6 +631,73 @@ def merge_touching(boxes, pct):
             if changed:
                 break
     return out
+
+
+def vflip(g, boxes, gap_pct, join_pct=100):
+    """vflip_pct: a vertical box whose ink is a stack of glyph bands (runs of ink rows, each at least max(2, 15 % of the
+    box's width) tall) with a median gap between them of at least gap_pct % of their median height is a stack of
+    horizontal items, not a column of vertical text (whose glyphs nearly touch): a kana grid, a menu, a list of short
+    labels. It becomes one horizontal box per band (the band's rows, its ink columns); then the pieces of the frame's
+    converted boxes that sit in one row (vertical overlap at least half the smaller height) within a gap of
+    join_pct % of the larger height join, pairs in order until none does (the larger piece's fields)."""
+    import dataclasses
+    H, W = g.shape
+    out, pieces = [], []
+    for b in boxes:
+        if not b.vertical:
+            out.append(b)
+            continue
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        w, h = ix1 - ix0, iy1 - iy0
+        if w < 4 or h < 8:
+            out.append(b)
+            continue
+        m = ink_mask(g, ix0, iy0, ix1, iy1)
+        rc = m.sum(1)
+        bands, y = [], 0
+        while y < h:
+            if not rc[y]:
+                y += 1
+                continue
+            y0 = y
+            while y < h and rc[y]:
+                y += 1
+            if y - y0 >= max(2, _r100(w, 15)):
+                bands.append((y0, y))
+        if len(bands) < 2:
+            out.append(b)
+            continue
+        hs = sorted(e - a for a, e in bands)
+        gaps = sorted(bands[i + 1][0] - bands[i][1] for i in range(len(bands) - 1))
+        if gaps[(len(gaps) - 1) // 2] * 100 < gap_pct * hs[(len(hs) - 1) // 2]:
+            out.append(b)
+            continue
+        for a, e in bands:
+            cols = np.flatnonzero(m[a:e].any(0))
+            pieces.append(dataclasses.replace(b, x=float(ix0 + int(cols[0])), y=float(iy0 + a),
+                                              w=float(int(cols[-1]) - int(cols[0]) + 1), h=float(e - a), vertical=0,
+                                              cells=1))
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(pieces)):
+            a = pieces[i]
+            for j in range(i + 1, len(pieces)):
+                c = pieces[j]
+                if min(a.y + a.h, c.y + c.h) - max(a.y, c.y) < 0.5 * min(a.h, c.h):
+                    continue
+                if max(c.x - (a.x + a.w), a.x - (c.x + c.w)) * 100 > join_pct * max(a.h, c.h):
+                    continue
+                big = a if a.w * a.h >= c.w * c.h else c
+                x0, y0 = min(a.x, c.x), min(a.y, c.y)
+                x1, y1 = max(a.x + a.w, c.x + c.w), max(a.y + a.h, c.y + c.h)
+                pieces[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + c.cells)
+                del pieces[j]
+                changed = True
+                break
+            if changed:
+                break
+    return out + pieces
 
 
 def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
@@ -885,6 +954,8 @@ def post_pre(g, boxes, opts):
     """The pre-refinement options (above) on frame-px Box objects of grey frame g."""
     o = post_options(opts)
     out = list(boxes)
+    if o["vflip_pct"]:
+        out = vflip(g, out, o["vflip_pct"], o["vflip_join_pct"])
     if o["merge_pct"]:
         out = merge_overlaps(out, o["merge_pct"])
     if o["touch_pct"]:

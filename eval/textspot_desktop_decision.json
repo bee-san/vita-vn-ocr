@@ -1,0 +1,263 @@
+{
+ "kind": "textspot-desktop-decision",
+ "protocol": "eval/textspot_desktop_protocol.json",
+ "thresholds": {
+  "dense_dev_cer": 2.0,
+  "edge_median": 1.0,
+  "edge_p90": 2.0,
+  "junk_854": 5,
+  "ms_960": 3.0,
+  "ms_1080": 8.0,
+  "parity_share": 0.99,
+  "parity_cer": 0.05
+ },
+ "arm": "Si",
+ "seeds_dev_cer_fit960": {
+  "1": 8.1673,
+  "2": 9.8141,
+  "3": 10.9695
+ },
+ "representative_seed": 2,
+ "candidates": [
+  {
+   "tag": "Si_s2_fit960",
+   "policy": "fit960",
+   "R1": {
+    "cer": 9.8141,
+    "t8": 1.3546,
+    "point_ok": false,
+    "views": {
+     "vita": {
+      "delta": -0.145349,
+      "ci95": [
+       -0.85605,
+       0.576249
+      ],
+      "ok": true
+     },
+     "psp": {
+      "delta": 15.696822,
+      "ci95": [
+       8.489794,
+       23.552854
+      ],
+      "ok": false
+     }
+    },
+    "all_vs_t8": {
+     "delta": 8.459495,
+     "ci95": [
+      4.387206,
+      12.427106
+     ]
+    },
+    "pass": false
+   },
+   "R2": {
+    "cer": 4.0122,
+    "pass": false
+   },
+   "R3": {
+    "edges": {
+     "left": {
+      "median_abs": 0.0,
+      "p90_abs": 4.0
+     },
+     "top": {
+      "median_abs": 1.045,
+      "p90_abs": 2.557
+     },
+     "right": {
+      "median_abs": 0.0,
+      "p90_abs": 11.0
+     },
+     "bottom": {
+      "median_abs": 0.961,
+      "p90_abs": 2.186
+     }
+    },
+    "matched_share": 0.9879,
+    "cost": {
+     "det_cer": 1.380451,
+     "exact_cer": 0.415345,
+     "delta": 0.965106,
+     "ci95": [
+      0.470561,
+      1.501442
+     ]
+    },
+    "pass": false
+   },
+   "R4": {
+    "junk_PCSG00854": 56,
+    "pass": false
+   },
+   "R5": {
+    "ms_960": 2.201,
+    "ms_1080": 2.751,
+    "pass": true
+   },
+   "R6": {
+    "crops_equal_share": 1.0,
+    "frames": 313,
+    "max_abs_box_diff_px": 3e-05,
+    "cer_onnx": 9.8141,
+    "cer_c": 9.8141,
+    "pass": true
+   },
+   "qualifies": false,
+   "cost_ms": 5.5920000000000005
+  },
+  {
+   "tag": "Si_s2_long960",
+   "policy": "long960",
+   "R1": {
+    "cer": 3.413,
+    "t8": 1.3546,
+    "point_ok": false,
+    "views": {
+     "vita": {
+      "delta": -0.203488,
+      "ci95": [
+       -0.904317,
+       0.500517
+      ],
+      "ok": true
+     },
+     "psp": {
+      "delta": 3.96088,
+      "ci95": [
+       0.500428,
+       8.135243
+      ],
+      "ok": false
+     }
+    },
+    "all_vs_t8": {
+     "delta": 2.058433,
+     "ci95": [
+      0.260595,
+      4.2758
+     ]
+    },
+    "pass": false
+   },
+   "R2": {
+    "cer": 3.3424,
+    "pass": false
+   },
+   "R3": {
+    "edges": {
+     "left": {
+      "median_abs": 0.0,
+      "p90_abs": 3.0
+     },
+     "top": {
+      "median_abs": 1.017,
+      "p90_abs": 2.488
+     },
+     "right": {
+      "median_abs": 0.0,
+      "p90_abs": 9.761
+     },
+     "bottom": {
+      "median_abs": 0.993,
+      "p90_abs": 2.117
+     }
+    },
+    "matched_share": 0.9913,
+    "cost": {
+     "det_cer": 1.232932,
+     "exact_cer": 0.419009,
+     "delta": 0.813922,
+     "ci95": [
+      0.344209,
+      1.316623
+     ]
+    },
+    "pass": false
+   },
+   "R4": {
+    "junk_PCSG00854": 56,
+    "pass": false
+   },
+   "R5": {
+    "ms_960": 2.179,
+    "ms_1080": 2.709,
+    "pass": true
+   },
+   "R6": {
+    "crops_equal_share": 1.0,
+    "frames": 313,
+    "max_abs_box_diff_px": 3.4e-05,
+    "cer_onnx": 3.413,
+    "cer_c": 3.413,
+    "pass": true
+   },
+   "qualifies": false,
+   "cost_ms": 7.073
+  }
+ ],
+ "pick": null,
+ "verdict": "no qualifier",
+ "seed_spread": {
+  "s1": {
+   "fit960": {
+    "dev": 8.1673,
+    "dense_dev": 4.0184,
+    "hval": 2.7983
+   },
+   "long960": {
+    "dev": 1.4874,
+    "dense_dev": 3.392,
+    "hval": 1.4462
+   }
+  },
+  "s2": {
+   "fit960": {
+    "dev": 9.8141,
+    "dense_dev": 4.0122,
+    "hval": 3.811
+   },
+   "long960": {
+    "dev": 3.413,
+    "dense_dev": 3.3424,
+    "hval": 3.3311
+   }
+  },
+  "s3": {
+   "fit960": {
+    "dev": 10.9695,
+    "dense_dev": 4.6137,
+    "hval": 3.6546
+   },
+   "long960": {
+    "dev": 2.4436,
+    "dense_dev": 2.8215,
+    "hval": 2.8499
+   }
+  }
+ },
+ "baselines": {
+  "dev": {
+   "T8": 1.3546,
+   "R": 0.7703,
+   "exact": 0.8632
+  },
+  "dense_dev": {
+   "T8": 7.5344,
+   "R": 0.3535,
+   "exact": 0.3473
+  }
+ },
+ "research_candidate": {
+  "rule": "amendment 6: the representative seed's train + guard + hval retrain at the representative's policy with the lower dev-v2 CER, with the refinement",
+  "run": "final_Si_p8g_junk_endig_80k_s2",
+  "policy": "long:960",
+  "refine": true
+ },
+ "notes": [
+  "the representative is seed 2: the median of the three seeds' dev-v2 CER at fit:960 (8.17 / 9.81 / 10.97%); at fit:960 every seed reads dev-v2's PSP frames at their own 480x272, where these detectors miss and cut small text",
+  "seed 1 is the screening run that the screening chose the arm by; it reads dev-v2 at long:960 1.49%, seeds 2 and 3 3.41% and 2.44%: the screening's lowest score carries a winner's curse with one seed per arm"
+ ]
+}

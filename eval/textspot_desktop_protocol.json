@@ -1,0 +1,239 @@
+{
+ "kind": "textspot-desktop-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/173",
+ "related": "https://github.com/bee-san/vita-vn-ocr/issues/169 (vocr-desktop: the accuracy tier; its harness, data and C path are shared here)",
+ "created": "2026-11-01T20:07:44Z",
+ "registered_in": "/local/home/skerraut/herd-synth3/vocr6/experiments.jsonl (label textspot-desktop, kind protocol) and #173's body, before any candidate is trained and before dev-v2, the dense sets or the PC test set are read by this work",
+ "owner_request": "2026-11-01 19:38Z: \"queue agents to do textspot-desktop too, like a text detection algo that has really tight bounding boxes but is ultra fast.\"",
+ "goal": "the fastest desktop line detector whose boxes VOCR6.2-L reads as well as it reads exact boxes: tight ink boxes (no margin) out of the detector, R's reading pad added only when a line is read",
+ "read_before_registration": [
+  "docs and code only, plus: vocr-desktop's stored baseline results on hval and dev-v2 (#169's published numbers: textspot8 + L, R, their junk counts); 400 seeded hval pages' renderer boxes against teacher/geometry.refine's ink boxes (geometry only, no detector, no text read: the ink box lies inside the renderer box by a median of 4 / 2 / 10 / 3 px left / top / right / bottom on Vita, 2 / 1 / 2 / 1 on PSP); two PCSG00854 train pages' shard labels viewed by eye (the ornament strip is a weak MeikiOCR box, an ignore area); random-weight timings of the family in train/tsdesk_net.py (no data)",
+  "nothing of dev-v2, the dense sets, the PC test set, confirm-v2, the hooked test titles, vita-test, psp-test or CLANNAD"
+ ],
+ "shared_with_vocr_desktop": {
+  "harness": "eval/desktop.py (sets, reading, scoring, compare) and eval/desktop_time.py at feat/vocr-desktop e6e99c0, used unchanged; this work's detector is installed into eval/desktop.py's detector() at run time by eval/tsdesk.py (as eval/mida_det.py does), so their files are not edited",
+  "data": "pools v2.1's hooked page shards (data/manifests/desktop_pages_v21.json), textspot's synthetic frames, textspot2's MeikiOCR-labelled real half, #171's 1a / 1b v3 / 1c pages and its PC test set, frozen",
+  "c_path": "desktop/ (vocr_desk.[ch], vocr_desk_page.c): the detector here runs in the same library and page pipeline as a new blob version, VDSK version 1 (vocr-desktop's) staying bit for bit",
+  "independence": "the PC test set is read once by this protocol, with this work's own baseline reads (R, textspot8 + L) beside it; vocr-desktop reads it under eval/desktop_protocol.json, and neither read informs the other's decisions"
+ },
+ "detector": {
+  "family": "train/tsdesk_net.py TsdNet: a 4x4-patch stem at stride 4 (a 4x4 convolution at stride 4, 1 -> c0), separable stages at strides 8, 16 and 32 (a stride-2 separable down block and n residual separable blocks with dilations), optional global context at stride 32, a top-down pyramid of 1x1 laterals to F channels back to the head's stride (8 or 4), optional separable smoothing, a 1x1 head with 6 + 4 maps: K, O logits, A1, A2 (across, input px), E1, E2 (along: distances from a cell's centre to the line's start and end, input px), 4 tag logits; float32, grey uint8 input normalised in the graph",
+  "targets": "textspot6_train.targets at the head's stride on the window, with textspot8's edge-kernel weights (the K weight of the end cells x 4) and E1 / E2 regressed on the kernel cells within 2 cells of each end (smooth L1 of (E - target) / 8, as A's); positives are the training pages' ink boxes (the hooked pages' renderer boxes refined to ink, synth/textspot6_pages.refined_line; the other sources' boxes as built)",
+  "decode": "the 4-connected components of K > 0 at the head's stride with at least 2 cells and a mean K logit >= 0; across: the mean over the component's cells of centre - A1 and centre + A2; along: the mean of centre - E1 over the cells of its first column (row for a vertical line) and of centre + E2 over its last; no pad: the box is the line's ink box; tag as vocr-desktop's decode; boxes sorted by mean logit, at most 256; mapped to frame px by the input policy's factor",
+  "refinement": "optional: a full-resolution ink snap of each box's four edges on the grey frame (a helper arm; adopted only by the screening rule below)",
+  "reading": "every horizontal box grown by eval/desktop.py's pad 'auto' (max(2, round(4 H / 544)) frame px: R's pad, eval's crop pad) and read by VOCR6.2_L_fast.onnx (v0.5.1-onnx.2), greedy CTC, no LM, no line filter (eval/desktop.py read --pad auto)",
+  "input_policies": "fit:960 (the longer side down to 960 px when longer, never up) and long:960 (the longer side to 960 px, up or down); the frame's luma, then the policy's resize (INTER_AREA down, INTER_LINEAR up; the C path's integer resize), padded right and bottom to a multiple of 32 by edge replication"
+ },
+ "recipe": {
+  "trainer": "train/tsdesk_det.py: vocr-desktop's train/desktop_det.py windows (make_window_ms: 256 x 512, the canvas resized by a log-uniform factor in [0.42, 1.9], a desk_* canvas first to a 960 px long side), textspot6's photometric augmentation with textspot8's blends, icons (p 0.35) and tight cuts (p 0.15), textspot2's loss, textspot6's tag loss, AdamW lr 3e-3, warm-up 500, cosine to 1e-4, batch 16, 40,000 steps, gradient clip 5, EMA 0.999 from step 1,000 (the run's model), BatchNorm re-estimated on 32 batches, folded, exported to ONNX (opset 17, dynamic H / W) and checked against torch",
+  "mix": {
+   "hook": 0.3375,
+   "synth": 0.15,
+   "real": 0.2625,
+   "desk_hook": 0.1,
+   "desk_realplus": 0.1,
+   "desk_synth": 0.05,
+   "why": "vocr-desktop's amendment-3 mix, with #171's 1b v3 (realplus_native_v3.json) in place of v1"
+  },
+  "sources": {
+   "hook": "pools v2.1's hooked page shards, split train (data/manifests/desktop_pages_v21.json, $PV/vocr-desktop/shards_v21)",
+   "synth": "data/manifests/textspot_shards_v1.json",
+   "real": "data/manifests/textspot2_shards_v1.json with its skip lists, plus the dense sets' VNs (below)",
+   "desk_hook": "data/manifests/desktop_data/hooked_desktop_v1.json (train pages only)",
+   "desk_realplus": "data/manifests/desktop_data/realplus_native_v3.json without the dense sets' VNs",
+   "desk_synth": "data/manifests/desktop_data/synth_desktop_v1.json"
+  },
+  "junk_recipe": "arm J: on the hooked sources (hook, desk_hook), the weak MeikiOCR boxes (score < 0.5, meeting no renderer box) that the page shards made ignore areas are background instead: a sample's last counts.meiki_ignore ignore entries (build_labels appends them last; for a desk_hook sample only when its ignore count equals meta.src_ignore, else unchanged). Ruby stays an ignore area",
+  "seeds": "screening: seed 1; the chosen arm: seeds 1, 2, 3 (a screening run of exactly the chosen shape and recipe counts as seed 1)",
+  "final": "the representative seed's recipe retrained on train + guard + hval (hook and desk_hook splits), as vocr-desktop's rule does; it ships"
+ },
+ "sets": {
+  "hval": "eval/desktop.py frames --set hval (vocr-desktop's frames file hval.pkl, sha256 c79dbbb9...): 2,836 dialogue units on 2,809 pages of 71 titles, native frames; the screening set",
+  "dense_screen": "screening set: 100 VNs' dense 1b v3 frames (below)",
+  "dev": "dev-v2 (vocr-desktop's dev.pkl, sha256 8613d244...): 339 units of 84 VNs; a decision set",
+  "dense_dev": "decision set: the other 100 VNs' dense 1b v3 frames (below)",
+  "dense_rule": "1b v3's frames (realplus_native_v3.json) with >= 8 horizontal positives of class text; their VNs minus every VN of a hooked pools v2.1 title, of dev-v2 and of the PC test set; sorted by sha256('textspot-desktop-dense-v1:' + vn); the first 100 are dense_screen, the next 100 dense_dev; each VN's first 3 dense frames by sha256('textspot-desktop-dense-v1:' + shot); every frame of those 200 VNs is left out of desk_realplus and of the real half (FramePool skip by VN). Units: one per labelled text line, mida-ocr-eval's pc1b.py rule (its region the line's box grown by 0.3 line heights, the vertical growth capped at half the gap to an x-overlapping line; its text realplus v3's label matched to the 1b line by box, IoU >= 0.3); a detector box at least half inside one of 1b's ignore areas is dropped before reading (pc1b.py filter). The frames are VNDB PC screenshots at their own size",
+  "pctest": "#171's real PC test set (eval/manifests/desktop-pc-test-v1.jsonl sha256 20576c40..., frames file pctest.pkl): 518 clean dialogue units, 942 dialogue lines of 142 VNs; read once, after the decision record is committed (below)",
+  "like_for_like": "vocr-desktop's amendment-4 frames fit into 960x544 (hval_l544, dev_l544, pctest_l544): every pipeline on the same pixels, MeikiOCR's own detector scale; report only",
+  "per_resolution": "dev-v2's Vita frames at 720 / 1080 / 1440 / 2160 px (vocr-desktop's dev_h*.pkl); report only, read with the pick after the decision",
+  "not_read": "vita-test, psp-test, CLANNAD (never); confirm-v2 and the hooked test titles (vocr-desktop's; not read here)"
+ },
+ "baselines": {
+  "T8": "textspot8 + VOCR6.2-L: eval/desktop.py detect --det ts8 (textspot8_exact.onnx on the whole frame, a frame larger than 960x544 fit to it first), read --pad none: the textspot8 row of #169 (dev-v2 1.355%, 102 errors in 7,530 characters)",
+  "R": "MeikiOCR's detector + VOCR6.2-L, read --pad auto: #169's reference (dev-v2 0.770%)",
+  "exact": "the exact boxes read the same way (each reference line's ink box + pad auto): what perfect boxes give",
+  "report_only": "MeikiOCR 0.3.5 itself; vocr-desktop's d64 final when it is published (its stored reads or its file); mida_ocr_l.onnx with mida-ocr-eval's adapter at its 960x544 configuration, measurement only (its licence is not stated: not redistributed, not trained on)"
+ },
+ "metrics": {
+  "cer": "dialogue CER of eval/desktop.py read (pagepath.score_unit); line recall (whole lines / lines), box precision, cut / missed / merged / junk counts; VN clusters on dev-v2, the dense sets and the PC test set, title clusters on hval; eval/desktop.py compare (pagepath.cluster_bootstrap, 10,000 resamples, seed 0)",
+  "edge_error": "hval: every verified horizontal dialogue line of the units (box_main for a line with furigana, else box: the renderer's box) refined to ink by synth/textspot6_pages.refined_line on the page's colour frame (the exact ink box; a line whose refinement falls back to the quad is left out and counted); the detector's tight boxes (before any reading pad) matched one to one to these (vertical overlap >= 0.5 of the smaller height and horizontal overlap >= 0.5 of the smaller width, largest overlap first, eval/desktop.py box_pr's rule); per edge e = detector - reference in native frame px (left x0, top y0, right x1, bottom y1); median |e|, p90 |e| and mean e per edge, pooled over the matched lines and per view; the share of reference lines matched",
+  "tightness_cost": "hval: the matched lines read twice by VOCR6.2-L (greedy): from the detector's box + pad auto and from the exact ink box + pad auto; the CER of each over those lines and the paired title-cluster interval of the difference",
+  "junk": "pagepath's junk boxes (a box in a unit holding no reference cell's ink point) per title and set, and eval/desktop.py boxes-pr's false boxes per page on hval",
+  "speed": "the C AVX2 build (desktop/, gcc -O3 -march=x86-64-v3) through tools' ctypes binding: the detector alone from an RGB frame in memory to its final boxes (luma, the policy's resize, padding, the network, the decode and the refinement when on), and the whole page with VOCR6.2-L in C (runtime/vocr.c W8I, head sections on), at 1 and 4 threads; the ONNX FP32 path (ONNX Runtime 1.30.0 CPU) the same; ms per page p50 / p95 over the timing pages, 3 passes after 1 warm-up, a page's time the median of its passes, pipelines interleaved per page, in one heavy slot, the load recorded; peak RSS of a fresh process per pipeline",
+  "timing_pages": "seed 20261101: 60 hval Vita frames (960x544), 60 hval PSP frames (480x272), those 60 Vita frames resampled to 1920x1080 (INTER_LINEAR), and 30 1b v3 training frames of exactly 1920x1080 (pc1080). No dev-v2 frame is timed before the dev-v2 record",
+  "cost": "MACs at 960x544 and 1920x1088 (train/tsdesk_net.macs), parameters, ONNX and blob bytes"
+ },
+ "screening": {
+  "arms": {
+   "Sa_p8a": {
+    "shape": "p8a",
+    "recipe": "base"
+   },
+   "Sb_p8s": {
+    "shape": "p8s",
+    "recipe": "base"
+   },
+   "Sc_p4a": {
+    "shape": "p4a",
+    "recipe": "base",
+    "question": "a stride-4 head against stride 8"
+   },
+   "Sd_p8g": {
+    "shape": "p8g",
+    "recipe": "base",
+    "question": "global context at stride 32 (the cheap stand-in for attention) against none"
+   },
+   "Se_p8a_junk": {
+    "shape": "p8a",
+    "recipe": "junk",
+    "question": "the weak MeikiOCR ignore areas of the hooked pages as background"
+   }
+  },
+  "score": "the mean of four dialogue CERs: hval and dense_screen, each at fit:960 and long:960 (pad auto)",
+  "rule": [
+   "1. recipe: arm Se replaces the base recipe when its score is lower than Sa's",
+   "2. shape: among Sa, Sb, Sc and Sd, the arms whose network takes <= 2.5 ms at 960x544 in ONNX Runtime at 1 thread (median of 25 runs, random input) are eligible; the lowest score wins, and a cheaper eligible arm (MACs at 960x544) within 0.10 points of the lowest replaces it (the cheapest such)",
+   "3. refinement: adopted for the chosen arm when, on hval, it lowers the score's hval half and the pooled median |e| (the mean over the four edges); if it is not ready before the seeds are read on dev-v2, its decision and its dev-v2 read need an amendment registered first",
+   "the chosen arm is the chosen shape with the chosen recipe; every arm's numbers are reported, with and without PCSG00854"
+  ],
+  "more_arms": "further screening arms (other sizes, scale ranges, stems) may be added on hval and dense_screen only, each registered in the experiment log before its first score; the rule above then reads them as shape arms"
+ },
+ "rule": {
+  "candidates": "the chosen arm's representative seed (the median of 3 by dev-v2 CER at fit:960) at each input policy (fit:960, long:960), with the refinement if adopted",
+  "qualifies_when": {
+   "R1_accuracy": "dev-v2: CER(C) <= CER(T8) in point, and in each view (Vita, PSP) the paired 95% VN-cluster interval of CER(C) - CER(T8) not entirely above 0",
+   "R2_dense": "dense_dev: CER(C) <= 2.00%",
+   "R3_tightness": "hval (the representative seed): for each of the four edges, median |e| <= 1 px and p90 |e| <= 2 px, pooled; and the tightness cost's paired title-cluster interval not entirely above 0",
+   "R4_junk": "at most 5 junk boxes in PCSG00854's 40 hval units (the ornament-strip title: R 0, T8 24, mida 49, vocr-desktop's S2_d64 180)",
+   "R5_speed": "C AVX2 build at 1 thread, the detector alone: p50 <= 3.0 ms on the 960x544 Vita timing pages and p50 <= 8.0 ms on the 1920x1080 pc1080 timing pages",
+   "R6_parity": "the C path's crops equal the ONNX path's on >= 99% of dev-v2's frames, and the dev-v2 CER of the C path's boxes within 0.05 points of the ONNX path's"
+  },
+  "pick": "the cheapest qualifier (C 1-thread p50, Vita + pc1080 timing pages); a costlier one replaces it only when resolved better on dev-v2 (the paired interval entirely below 0)",
+  "then": "the pick's recipe is retrained on train + guard + hval with the representative seed (the final model); its own dev-v2, dense_dev and hval scores are reported (hval is then in its training); C == ONNX parity and speed are measured on it; the PC test set is read once with it",
+  "pctest_guard": "read once, after the decision record is committed: the final model at the pick's policy, T8, R, the exact boxes, MeikiOCR itself and mida (report only), also on pctest_l544; the guard: CER(final) - CER(T8) not resolved above 0 (VN clusters). If the guard fails, nothing is presented as recommended: the files are published as research and the result reported",
+  "no_qualifier": "the measurements are published with the gap and what would close it; the best eligible candidate may be released as research"
+ },
+ "ship": "C AVX2 + scalar fallback (desktop/), the ONNX FP32 file, the reference Python pipeline with VOCR's recognizer, parity tests in tests/, docs/textspot-desktop.md (speed / tightness / accuracy against textspot8, mida, vocr-desktop's d64 and MeikiOCR), a vita-vn-ocr pre-release with SHA256SUMS and the same attribution and licence notes as the other weights",
+ "vita": "the docs say whether the approach helps on the Vita (MACs and an A9 estimate of an int8 variant); a smaller Vita variant for Rubi is a follow-up, not this work",
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-11-01T20:36:48Z",
+   "before": "any candidate is trained to completion, scored or timed; dev-v2, dense_dev, the PC test set and the detector-free reads of dense_screen have not been read; the three screening runs started 20:15Z (Sa_p8a, Se_p8a_junk, Sb_p8s, old targets) were stopped at steps 10,800-12,600 and are never scored",
+   "found": "the registered exact reference and the hooked pages' training targets (synth/textspot6_pages.refined_line: teacher/geometry.refine, the smallest of three masks' boxes) cut thin or faint end glyphs. On 400 seeded hval pages (700 lines; geometry only) refined_line's box lacks an end of at least 0.3 line heights that the ink inside the glyph cells reaches on 6.2% of Vita lines and 12.4% of PSP lines, in a few titles (PCSG00845, NPJH50621, NPJH50591, PCSG00667, ...); two contact sheets show dropped ――, 「, 」, 。, …… and one coloured word, and the plain contrast extent running into dithered and patterned boxes. Read detector-free by VOCR6.2-L fast with pad auto, 662 of those hval lines: renderer box 0.361% CER, refined_line 1.073%, the cells' ink box (below) 0.484%, the cells' union 0.389%",
+   "what": {
+    "exact_reference": "metrics.edge_error and metrics.tightness_cost: the exact box of a hooked line is train/tsdesk_targets.ink_box on the union of the line's glyph cells (the frames' cells: the renderer's cell_boxes, or even cells of the box): the window's ring median as the background, the threshold max(28, 0.4 x p99 inside, p90 on the ring + 12), the ink where the pixel differs from the background by more than it and lies at a 3x3 local-contrast edge (above max(28, 0.4 x p99 of that contrast)), blobs under 3 px dropped, the first and last ink rows and columns; refined_line is no longer the reference. A line whose cells hold no ink is left out and counted (as before)",
+    "training_targets": "every arm: the verified positives of the hooked sources (hook: the page shards, train split; desk_hook: #171's 1a, its exact capture rebuilt from its seed) get the ink box of the cache train/tsdesk_targets.py build (targets_v1, all train / guard / hval pages of pools v2.1), a sample changed only when its stored boxes equal the cache's refined_line boxes (checked per line; vertical lines keep theirs); every other label unchanged",
+    "e_loss_sources": "the along-end (E1 / E2) loss is applied on the sources with exact ink boxes only: hook, desk_hook, synth, desk_synth (tsdesk_det.py --e-exact); the real half and 1b keep their K, O, A and tag terms (their boxes come from teacher/geometry.refine)",
+    "reading_pad": "chosen detector-free before any candidate read: every reference line's exact box (hval: the ink box above; dense_screen: its 1b box) read by VOCR6.2_L_fast.onnx (greedy) at each pad rule of eval/tsdesk.py PAD_RULES (k3, k4, k5, k6, k8, k4v6, k6v4: max(2, round(k H / 544)) frame px horizontally / vertically; k4 = eval/desktop.py's auto); the rule with the lowest mean of the two sets' CER is the reading pad of every candidate and of the exact reference (rules.reading and R3's tightness cost); R and T8 keep their registered reading (R: auto; T8: none, its boxes carry textspot8's pad)",
+    "restart": "the five screening arms (Sa_p8a, Sb_p8s, Sc_p4a, Sd_p8g, Se_p8a_junk) run from scratch with these targets, seed 1, 40,000 steps; the screening score and rule are unchanged"
+   },
+   "read_before_this_amendment": "hval only (the screening set): the geometry and the detector-free reads above, and three contact sheets of hval lines; nothing of dev-v2, dense_screen, dense_dev or the PC test set by any detector"
+  },
+  {
+   "n": 2,
+   "time": "2026-11-01T20:54:30Z",
+   "before": "any candidate is read on any set or timed (the five screening arms are training; no checkpoint exists)",
+   "what": {
+    "resize": "every read of a tsd: detector resizes the frame with the C path's integer resize (tools/tsdesk.resize, the numpy twin of desktop/vocr_desk.c's vocr_desk_resize, equal bit for bit on every size tested), so the ONNX and C paths see the same network input (R6); ONNX Runtime timings use cv2 (INTER_AREA down, INTER_LINEAR up, the tsd: spec's @cv2 suffix), as an app would",
+    "pick_cost": "the pick's cost is the C 1-thread p50 summed over the Vita, PSP and pc1080 timing pages (the PSP pages added: fit:960 and long:960 cost the same on the Vita and pc1080 pages and differ on small frames)"
+   }
+  },
+  {
+   "n": 3,
+   "time": "2026-11-01T21:53:04Z",
+   "before": "Sc_p4a and Sd_p8g are read on any set; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sa_p8a, Se_p8a_junk and Sb_p8s were read on hval and dense_screen (scores 4.455, 3.755, 4.916): disclosed",
+   "found": "on hval the arms cut thin end glyphs (a trailing ―― or ……, a 。 after them) and split lines at full-width spaces; the hooked targets hold those glyphs (amendment 1), but the real half and 1b, whose boxes come from teacher/geometry.refine, teach the kernel to stop before them; the training loss still falls at 40,000 steps",
+   "what": {
+    "arms": {
+     "Sf_p8a_junk_endig": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000,
+      "question": "the cells within one line height past each end of a positive of a source whose boxes are not exact (the real half, 1b) are ignore areas (tsdesk_det.py --end-ignore 1.0): no source teaches the kernel to stop before a thin end glyph"
+     },
+     "Sg_p8a_junk_endig_80k": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000,
+      "question": "the same with twice the steps"
+     }
+    },
+    "rule": "screening.rule's steps 1 and 2 are replaced by one: among every screening arm whose network takes <= 2.5 ms at 960x544 in ONNX Runtime at 1 thread, the lowest score wins; an eligible arm within 0.10 points of it that costs less (MACs at 960x544, then training steps) replaces it (the cheapest such). Step 3 (the refinement) is unchanged. The chosen arm's seeds 2 and 3 and its train + guard + hval retrains train with its recipe and steps"
+   }
+  },
+  {
+   "n": 4,
+   "time": "2026-11-01T22:06:14Z",
+   "before": "Sf_p8a_junk_endig is read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sd_p8g (score 3.122, the lowest) and Sc_p4a (11.455) were read on hval and dense_screen: disclosed",
+   "what": {
+    "stopped": "Sg_p8a_junk_endig_80k (step ~3,000), never scored: amendment 3's twice-the-steps question moves to the shape with global context, which screened best",
+    "arms": {
+     "Sh_p8g_junk_endig": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000
+     },
+     "Si_p8g_junk_endig_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm (Sa-Sf, Sh, Si)"
+   }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-01T22:15:35Z",
+   "before": "Sf, Sh and Si are read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "found": "every screened arm boxes PCSG00854's ornament strip as lines (39-114 junk boxes in its 40 hval units; R4 allows 5); the junk recipe (its weak MeikiOCR boxes as background) did not remove them",
+   "what": {
+    "arms": {
+     "Sj_p8g_junk_endig_orn": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 40000,
+      "question": "a quarter of the windows get one row of repeated small ornaments (stars, diamonds, rings, flowers, crosses, dot rings, hourglasses, cursors; one motif or two alternating) drawn as background above or below a line or on free background (tsdesk_det.py --ornaments 0.25)"
+     },
+     "Sk_p8g_junk_endig_orn_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm"
+   }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-01T23:45:14Z",
+   "before": "the screening decision (Si, Sk unread) and any read of dev-v2, dense_dev or the PC test set by a candidate",
+   "what": {
+    "no_qualifier_path": "if no candidate qualifies, the research candidate is the representative seed's train + guard + hval retrain at the representative's policy with the lower dev-v2 CER (fit:960 on a tie), with the refinement if screening rule 3 adopts it; it is read once on the PC test set after the decision record is committed, with the rows rule.pctest_guard lists, for the report; no recommendation is made from it, and the files may be released as a research pre-release",
+    "refinement_in_decision_reads": "when screening rule 3 adopts the refinement, every decision read of the chosen arm (dev-v2, dense_dev, hval, the PC test set) uses it (tsd:MODEL@SIZE+refine), and R5 and R6 time and compare the C path with it"
+   }
+  }
+ ]
+}

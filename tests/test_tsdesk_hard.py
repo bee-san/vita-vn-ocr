@@ -97,6 +97,9 @@ def test_select_ranks_and_caps():
     picked, _ = HS.select(rows, per_vn=2, cap=2)
     assert [r["shot"] for r in picked] == ["f", "b"]
     assert [r["shot"] for r in HS.select(rows, 5, 10, min_score=3)[0]] == ["f", "b", "a"]
+    # hooked titles without a VNDB id are capped per title
+    t = [dict(row(f"t{k}", None, 2, 2), title="A" if k < 3 else "B") for k in range(5)]
+    assert len(HS.select(t, per_vn=2, cap=10)[0]) == 4
 
 
 # ----------------------------------------------------------------------------- the build

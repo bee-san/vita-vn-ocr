@@ -16,7 +16,7 @@ frames: the frames where it misses, cuts or merges labelled lines, for the lead 
       tsdesk_targets.patch_sample, train/tsdesk_coverage.apply_edits) by line_status.
       DIR/rows/<source>_<shard>.jsonl: one row per frame (statuses, counts, the detector's boxes; no pixels, no
       text); a finished shard is skipped; DIR/mine.json: the run record
-  tsdesk_hard_source.py build --mined DIR --out OUT [--per-vn-1b 3] [--per-vn-1a 25] [--max-1b 2000] [--max-1a 1000]
+  tsdesk_hard_source.py build --mined DIR --out OUT [--per-vn-1b 3] [--per-vn-1a 10] [--max-1b 2000] [--max-1a 1000]
                         [--min-score 1] [--manifest-out-1b M] [--manifest-out-1a M]
       the hard frames: score = the main lines (1b: text and name; 1a: dialogue and name) the detector (before the
       filter: what training can change) misses or cuts, plus its boxes that merge two or more lines; frames with a
@@ -299,17 +299,23 @@ def load_rows(mined):
     return rows
 
 
+def vn_key(r):
+    """The VN a frame counts against for the per-VN cap: its VNDB id, or its title for a hooked title with none."""
+    return r.get("vn") or f"title:{r.get('title')}"
+
+
 def select(rows, per_vn, cap, min_score=1):
     """The hard frames of one source's rows: score >= min_score, worst first (score, then the failed share of the
-    frame's main lines, then a salted hash of the frame for a fixed order), at most per_vn a VN and cap in all."""
+    frame's main lines, then a salted hash of the frame for a fixed order), at most per_vn a VN (vn_key) and cap in
+    all."""
     cand = [r for r in rows if r["pre"].get("score", 0) >= min_score]
     cand.sort(key=lambda r: (-r["pre"]["score"], -r["pre"]["score"] / max(1, r["pre"].get("main", 0)),
                              hashlib.sha256((SALT + str(r["shot"])).encode()).hexdigest()))
     out, per = [], Counter()
     for r in cand:
-        if per[r["vn"]] >= per_vn:
+        if per[vn_key(r)] >= per_vn:
             continue
-        per[r["vn"]] += 1
+        per[vn_key(r)] += 1
         out.append(r)
         if len(out) >= cap:
             break
@@ -368,6 +374,7 @@ def build_source(src, picked, out, shard_frames=200):
                  "shots_in_set": len(e["shots"]), "source": e["source"]} for n, e in ex.items()}
     src_of = {f["shot"]: f["from"] for f in frames}
     n_frames = n_pix = 0
+    read = {}
     for rec in shards:
         data, samples = SH.read_shard(Path(out) / dname / rec["name"])
         for smp in samples:
@@ -378,7 +385,10 @@ def build_source(src, picked, out, shard_frames=200):
                 check[n]["sha256"] += ids["sha256"] in e["sha256"]
                 check[n]["shot"] += ids["shot"] in e["shots"]
             sd, si = src_of[ids["shot"]].rsplit(":", 1)
-            d0, s0 = SH.read_shard(Path(root) / sd)
+            if sd not in read:
+                read.clear()
+                read[sd] = SH.read_shard(Path(root) / sd)
+            d0, s0 = read[sd]
             if not np.array_equal(SH.canvas(data, smp), SH.canvas(d0, s0[int(si)])):
                 n_pix += 1
     bad = sum(v[w] for v in check.values() for w in ("vn", "sha256", "shot")) + n_pix
@@ -418,6 +428,7 @@ def cmd_build(a):
                "source": mine["sources"][src],
                "rule": {"score": "main lines missed or cut plus boxes merging two or more lines, by the detector "
                                  "before the reading filter (line_status on even cells)", "main": MAIN[src],
+                        "per_vn_key": "the VNDB id, or the title for a hooked title without one",
                         "min_score": a.min_score, "order": "score, the failed share of the main lines, a salted hash",
                         "per_vn": per_vn, "cap": cap, "salt": SALT},
                "candidates": {"frames_mined": len(rows[src]), "frames_with_score": n_cand,
@@ -429,7 +440,7 @@ def cmd_build(a):
                           "by_class": tot.get("by_class", {}), "failure_kinds_pre": _kinds(picked, "pre"),
                           "failure_kinds_post": _kinds(picked, "post"),
                           "sizes": dict(Counter(f"{f['size'][0]}x{f['size'][1]}" for f in frames).most_common(15)),
-                          "max_frames_per_vn": max(Counter(f["vn"] for f in frames).values()) if frames else 0,
+                          "max_frames_per_vn": max(Counter(vn_key(f) for f in frames).values()) if frames else 0,
                           "in_desk_dense": sum(1 for f in frames if f["shot"] in dense),
                           "npy_bytes": sum((out / dname / f"{r['name']}.npy").stat().st_size for r in shards)},
                "code_sha256": sha256_file(Path(__file__)), "frames": frames, "shards": shards,
@@ -465,7 +476,7 @@ def main(argv=None):
     p.add_argument("--mined", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--per-vn-1b", type=int, default=3)
-    p.add_argument("--per-vn-1a", type=int, default=25)
+    p.add_argument("--per-vn-1a", type=int, default=10)
     p.add_argument("--max-1b", type=int, default=2000)
     p.add_argument("--max-1a", type=int, default=1000)
     p.add_argument("--min-score", type=int, default=1)

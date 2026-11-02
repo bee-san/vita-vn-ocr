@@ -815,3 +815,23 @@ def test_nojp_num_keeps_a_far_value():
     assert T.drop_set([label, value, junk], on) == {2}
     assert T.is_numeric("100/100") and T.is_numeric("１５") and not T.is_numeric("HP") and not T.is_numeric("A1B")
     assert T.DROP_DEFAULTS["nojp_num_pct"] == 0
+
+
+def test_trim_ends_drops_a_low_confidence_icon_across_a_gap():
+    g = np.full((40, 300), 20, np.uint8)
+    g[12:28, 8:24] = 230                                                 # an icon, then a 12 px gap, then 4 glyphs
+    e = _glyphs(g, 36, 10, 4, 16, 2)
+    b = [7.0, 9.0, e + 1.0, 29.0, 0, 1.0, 3]
+    chars = [("ゲ", 16.0), ("グ", 44.0), ("レ", 62.0), ("ナ", 80.0), ("ダ", 98.0)]
+    o = T.drop_options({"trim_milli": 700})
+    x0, x1, kept, kc = T.trim_ends(g, b, chars, [0.4, 1.0, 1.0, 0.95, 1.0], o)
+    assert [t for t, _ in kept] == ["グ", "レ", "ナ", "ダ"] and abs(x0 - 35) <= 1 and x1 == b[2]
+    assert T.trim_ends(g, b, chars, [0.9, 1.0, 1.0, 0.95, 1.0], o) is None             # confident: kept
+    assert T.trim_ends(g, b, chars, [0.4, 0.5, 0.5, 0.5, 0.6], o) is None              # the whole line is unsure
+    touching = [("ゲ", 16.0)] + chars[1:]
+    g2 = g.copy()
+    g2[12:28, 24:36] = 230                                              # no gap: nothing to trim at
+    assert T.trim_ends(g2, b, touching, [0.4, 1.0, 1.0, 0.95, 1.0], o) is None
+    out = T.cut_pieces(g, b, 0, chars, o, [0.4, 1.0, 1.0, 0.95, 1.0])          # any tag, the cut off
+    assert [t for _, _, t in out] == ["グレナダ"]
+    assert T.cut_pieces(g, b, 0, chars, T.drop_options({}), [0.4, 1.0, 1.0, 0.95, 1.0]) is None

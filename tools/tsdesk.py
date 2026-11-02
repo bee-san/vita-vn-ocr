@@ -1153,7 +1153,8 @@ def post_pre(g, boxes, opts):
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
 DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
-                 "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1, "nojp_num_pct": 0}
+                 "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1, "nojp_num_pct": 0,
+                 "trim_milli": 0, "trim_len": 2, "trim_gap_pct": 25}
 # cut_reading's marks: no cut on either side of a punctuation mark (a phrase's end, a bracket, a dash, a dot: the
 # gap beside it is the sentence's own, and the mark belongs to the text it closes or opens)
 CUT_MARKS = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・「『（(【〈《〔［[｛{")
@@ -1215,18 +1216,77 @@ def cut_reading(g, b, chars, pct, rel_pct=200):
     return out
 
 
-def cut_pieces(g, b, tag, chars, o):
-    """The reading stage's cut of one read horizontal line under reading-filter options o (drop_options(): cut_pct,
-    cut_rel_pct, cut_dlg): cut_reading's pieces [(x0, x1, text)], or None (the line stays whole: the cut off, no cut
-    found, or a line the detector tags as dialogue (tag 0) with cut_dlg 0, or with cut_dlg N >= 2 unless every
-    piece holds at most N characters). b: the tight box [x0, y0, x1, y1] in frame px; chars: [(text, x)] the
-    reading's characters with their centres in frame px."""
-    if not o["cut_pct"]:
+def trim_ends(g, b, chars, confs, o):
+    """trim_milli: a line's first (last) at most trim_len characters dropped when an ink gap of at least
+    max(2, trim_gap_pct % of the box's pixel height) parts them from the rest, their mean confidence is under
+    trim_milli / 1000 and the rest's is not (an icon read as a character: ゲ、 before グレナダ). b: the tight box
+    [x0, y0, x1, ...]; chars: [(text, x)] with confs their probabilities. None (no trim), or (x0, x1, kept chars,
+    kept confs): the box's new ends (on the ink beside the gap; the other end as it was)."""
+    H, W = g.shape
+    n = len(chars)
+    if n < 2 or not o["trim_milli"]:
         return None
-    cut = cut_reading(g, b, chars, o["cut_pct"], o["cut_rel_pct"])
-    if cut is not None and tag == 0 and o["cut_dlg"] != 1:
-        if o["cut_dlg"] == 0 or max(len(t) for _, _, t in cut) > o["cut_dlg"]:
-            return None
+    ix0 = min(max(int(math.floor(b[0])), 0), W)
+    iy0 = min(max(int(math.floor(b[1])), 0), H)
+    ix1 = min(max(int(math.ceil(b[2])), 0), W)
+    iy1 = min(max(int(math.ceil(b[3])), 0), H)
+    h = iy1 - iy0
+    if h < 4 or ix1 - ix0 < 4:
+        return None
+    ink = np.flatnonzero(ink_mask(g, ix0, iy0, ix1, iy1).any(0))
+    runs = [(int(ink[j]) + 1, int(ink[j + 1])) for j in np.flatnonzero(np.diff(ink) > 1)]
+    thr = max(2, _r100(h, o["trim_gap_pct"]))
+    lim = o["trim_milli"] / 1000.0
+
+    def gap(i):                      # the widest run between characters i and i + 1 at least thr long, or None
+        a, e = chars[i][1] - ix0, chars[i + 1][1] - ix0
+        best = None
+        for r in runs:
+            if r[0] >= a and r[1] <= e and r[1] - r[0] >= thr and (best is None or r[1] - r[0] > best[1] - best[0]):
+                best = r
+        return best
+
+    def mean(v):
+        return sum(v) / len(v) if v else 1.0
+
+    lo, hi, x0, x1 = 0, n, float(b[0]), float(b[2])
+    for k in range(1, min(o["trim_len"], n - 1) + 1):            # the leading k characters
+        r = gap(k - 1)
+        if r and mean(confs[:k]) < lim <= mean(confs[k:]):
+            lo, x0 = k, float(ix0 + r[1])
+            break
+    for k in range(1, min(o["trim_len"], n - 1 - lo) + 1):       # the trailing k characters
+        r = gap(n - k - 1)
+        if r and mean(confs[n - k:]) < lim <= mean(confs[lo:n - k]):
+            hi, x1 = n - k, float(ix0 + r[0])
+            break
+    if lo == 0 and hi == n:
+        return None
+    return x0, x1, chars[lo:hi], confs[lo:hi]
+
+
+def cut_pieces(g, b, tag, chars, o, confs=None):
+    """The reading stage's cut of one read horizontal line under reading-filter options o (drop_options(): cut_pct,
+    cut_rel_pct, cut_dlg; trim_milli with confs): cut_reading's pieces [(x0, x1, text)], or None (the line stays
+    whole: the cut off, no cut found, or a line the detector tags as dialogue (tag 0) with cut_dlg 0, or with
+    cut_dlg N >= 2 unless every piece holds at most N characters). With trim_milli, trim_ends first drops an end
+    read with low confidence across an ink gap (any tag), and the cut runs on the rest. b: the tight box [x0, y0,
+    x1, y1] in frame px; chars: [(text, x)] the reading's characters with their centres in frame px; confs their
+    probabilities."""
+    trimmed = None
+    if o["trim_milli"] and confs is not None:
+        trimmed = trim_ends(g, b, chars, confs, o)
+        if trimmed is not None:
+            x0, x1, chars, _ = trimmed
+            b = [x0, b[1], x1, b[3]] + list(b[4:])
+    cut = None
+    if o["cut_pct"]:
+        cut = cut_reading(g, b, chars, o["cut_pct"], o["cut_rel_pct"])
+        if cut is not None and tag == 0 and o["cut_dlg"] != 1:
+            if o["cut_dlg"] == 0 or max(len(t) for _, _, t in cut) > o["cut_dlg"]:
+                cut = None
+    if cut is None and trimmed is not None:
+        cut = [(b[0], b[2], "".join(t for t, _ in chars))]
     return cut
 
 

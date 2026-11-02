@@ -1,0 +1,823 @@
+{
+ "kind": "vocr-desktop-protocol",
+ "schema": 1,
+ "issue": "https://github.com/bee-san/vita-vn-ocr/issues/169",
+ "created": "2026-11-01T04:04:46Z",
+ "registered_in": "/local/home/skerraut/herd-synth3/vocr6/experiments.jsonl (label vocr-desktop, kind protocol, 2026-11-01T03:40Z) and #169's body, before any baseline or candidate was scored",
+ "rule": {
+  "reference_R": "MeikiOCR 0.3.5's detector (meiki.text.detect.v0.1, sha256 40b6a016..., threshold 0.5, its own fit to 960x544, BGR) on the whole frame; each box grown by eval/desktop.py's auto pad (4 px on a 960x544-class frame, 2 px on a native PSP frame) and read by VOCR6.2_L_fast.onnx (v0.5.1-onnx.2), greedy CTC, no LM, no line filter",
+  "candidate_C": "the desktop detector (train/desktop_det.py, tools/vocr_desktop.py) at an input-size policy, read the same way by VOCR6.2_L_fast.onnx",
+  "metric": "dialogue CER of eval/desktop.py read: every box whose centre lies in a unit's region, in reading order, against the unit's references (eval/pagepath.py score_unit); VN clusters on dev / confirm, title clusters on hval; eval/pagepath.py cluster_bootstrap (10,000, seed 0)",
+  "accuracy": "dev-v2: CER(C) <= 1.20 x CER(R) for the representative seed (the median of 3 seeds by dev-v2 CER at fit:960); the paired 95% interval of CER(C) - CER(R) not entirely above 0; the Vita view and the PSP view each CER(C) <= 1.5 x CER(R) of that view",
+  "thresholds_from_the_baseline": {
+   "all": 0.9244,
+   "vita": 0.5232,
+   "psp": 1.6871
+  },
+  "guards": "hval (title clusters) and confirm-v2 (VN clusters, read once for the candidate set after the dev decision is recorded): CER(C) - CER(R) not resolved above 0",
+  "speed": "eval/desktop_time.py run at 4 intra-op threads, mode par (the detector at 4 threads, the lines on 4 Python threads sharing one recognizer session at 1 thread), interleaved with R in the same run, on the timing pages: p50 ms per page of C <= 1/4 of R's, on the Vita and on the PSP timing pages separately",
+  "pick": "each input-size policy of the chosen arm (fit:960, fit:800, fit:640, fit:480) is a candidate; among those that pass accuracy, guards and speed, the cheapest (p50 at 4 threads, Vita + PSP) is the pick; a costlier one replaces it only when it is resolved better on dev-v2; amendment 2: the candidate policies are fit:960, fit:800, fit:640, fit:480, long:960, long:800, long:640",
+  "seeds": "3 seeds of the chosen arm for the adoption claim; screening on hval with 1 seed",
+  "then": "the pick ships: the chosen arm retrained with the representative seed on train + guard + hval (the final model); its own dev-v2 score is reported; the test titles are read once with it. No qualifier: the measurements are published with the gap and what would close it"
+ },
+ "screening": {
+  "arms": {
+   "S1_d48": {
+    "shape": "d48",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S2_d64": {
+    "shape": "d64",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S3_d32": {
+    "shape": "d32",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.42,
+     1.9
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1
+   },
+   "S4_d48_single": {
+    "shape": "d48",
+    "mix": "hook=0.45,synth=0.2,real=0.35",
+    "scale": [
+     0.8,
+     1.25
+    ],
+    "steps": 40000,
+    "lr": 0.003,
+    "seed": 1,
+    "role": "report only: the single-scale control (trained near one text size, then read at other input sizes, as the dynamic-size MeikiOCR variant was): the per-size accuracy against S1 shows what the multi-scale training buys"
+   }
+  },
+  "rule": "on hval at fit:960 (R's pipeline otherwise): the multi-scale arm (S1-S3) with the lowest CER; an arm within 0.10 points of the lowest that is cheaper (MACs at 960x544) replaces it",
+  "data": "data/manifests/desktop_pages_v21.json (train split; textspot6_pages.py on pagepool v2.1 with MeikiOCR's boxes for the text the hook does not cover), data/manifests/textspot_shards_v1.json (synthetic frames), data/manifests/textspot2_shards_v1.json (MeikiOCR-labelled VNDB / owner screenshots outside the dev sample) with its skip lists"
+ },
+ "sets": {
+  "hval": {
+   "frames_file_sha256": "c79dbbb95c8ba736768abb9be8b5b0db2b8b700995a29fe590e7bc8dd286f937",
+   "frames": 2809,
+   "units": 2836,
+   "clusters": 71,
+   "views": {
+    "psp": 876,
+    "vita": 1933
+   },
+   "groups": {
+    "psp": 879,
+    "vita": 1957
+   },
+   "excluded_vns": null,
+   "note": "the hval pages of hooked pools v2.1 (b2-ingest2 #166, pagepool v2.1 bbadfcbf), base dialogue regions; screening only"
+  },
+  "dev": {
+   "frames_file_sha256": "8613d2441f529c55608f7f8dfecba19d8d711b244783e7ed6af9788f4c65c40f",
+   "frames": 313,
+   "units": 339,
+   "clusters": 84,
+   "views": {
+    "psp": 178,
+    "vita": 135
+   },
+   "groups": {
+    "psp": 144,
+    "psp-hires": 46,
+    "vita-pc": 119,
+    "vita": 30
+   },
+   "excluded_vns": [
+    "v12188",
+    "v13833",
+    "v14267",
+    "v15708",
+    "v16770",
+    "v18163",
+    "v18432",
+    "v2835",
+    "v6656"
+   ],
+   "note": "\"dev-v2\": #119 units (base variant) without the 9 VNs pools v2.1 trains on; the decision set"
+  },
+  "confirm": {
+   "frames_file_sha256": "96ab5e4bd40e5a07932b057c77c2805514386ef59626814c2e489d8aec5d419a",
+   "frames": 153,
+   "units": 155,
+   "clusters": 37,
+   "views": {
+    "psp": 135,
+    "vita": 18
+   },
+   "groups": {
+    "psp": 137,
+    "vita": 18
+   },
+   "excluded_vns": [
+    "v12150",
+    "v12928",
+    "v2021",
+    "v4542"
+   ],
+   "note": "\"confirm-v2\": textspot7 confirmation units (base) without the 4 VNs pools v2.1 trains on; read once, at the end, for the candidate set"
+  },
+  "pc": {
+   "frames_file_sha256": "7412157b21c1c7aa9d7223b0cfc49c63104e94789065d0c257424dcac8a2e157",
+   "frames": 101,
+   "units": 115,
+   "clusters": 51,
+   "views": {
+    "pc": 101
+   },
+   "groups": {
+    "pc": 115
+   },
+   "excluded_vns": [
+    "v12188",
+    "v13833",
+    "v14267",
+    "v15708",
+    "v16770",
+    "v18163",
+    "v18432",
+    "v2835",
+    "v6656"
+   ],
+   "note": "the dev units cut from PC screenshots, at the screenshots own size; report only"
+  }
+ },
+ "test": {
+  "titles": [
+   "PCSG00807",
+   "NPJH50882"
+  ],
+  "what": "the hooked test titles index.json marks test (pagepool v2.1 split test), base dialogue regions, native frames",
+  "when": "once, after the final model exists and the dev-v2 decision record is committed; R, C (the pick), MeikiOCR itself and textspot8 + VOCR6.2-L",
+  "attempt_record": "/local/home/skerraut/herd-vita-ocr/shared/private/vocr-desktop/test/ATTEMPT.json"
+ },
+ "timing": {
+  "pages_file_sha256": "7fb31b6150bcfa4c79c95fccf5099d9d4b192b620d66e748d100a078d044acd8",
+  "pages": "eval/desktop_time.py pages --seed 20261101: 60 Vita-view and 60 PSP-view frames of dev-v2, 30 PC-sample frames",
+  "method": "eval/desktop_time.py run: passes 3 after 1 warm-up, the pipelines in a shuffled order each pass, a page's time the median of its passes; threads 1, 2, 4 in one heavy slot each, 8 in two"
+ },
+ "baselines_measured": {
+  "dev": {
+   "meiki4_L_fast": {
+    "cer": 0.7703,
+    "errors": 58,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.1247,
+      "errors": 46,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.3488,
+      "errors": 12,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 0.7703,
+    "errors": 58,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.1247,
+      "errors": 46,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.3488,
+      "errors": 12,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 3.5458,
+    "errors": 267,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 4.7922,
+      "errors": 196,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 2.064,
+      "errors": 71,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 1.2616,
+    "errors": 95,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.9071,
+      "errors": 78,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.4942,
+      "errors": 17,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 1.0491,
+    "errors": 79,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 1.4425,
+      "errors": 59,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.5814,
+      "errors": 20,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.1116,
+    "errors": 159,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 2.5672,
+      "errors": 105,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.5698,
+      "errors": 54,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 1.6202,
+    "errors": 122,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.8826,
+      "errors": 77,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.3081,
+      "errors": 45,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 1.3546,
+    "errors": 102,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.5159,
+      "errors": 62,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.1628,
+      "errors": 40,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 1.3546,
+    "errors": 102,
+    "chars": 7530,
+    "line_recall": 0.9763,
+    "by_view": {
+     "psp": {
+      "cer": 1.5159,
+      "errors": 62,
+      "chars": 4090,
+      "line_recall": 0.9758
+     },
+     "vita": {
+      "cer": 1.1628,
+      "errors": 40,
+      "chars": 3440,
+      "line_recall": 0.9771
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 2.5365,
+    "errors": 191,
+    "chars": 7530,
+    "line_recall": 0.998,
+    "by_view": {
+     "psp": {
+      "cer": 4.1565,
+      "errors": 170,
+      "chars": 4090,
+      "line_recall": 1.0
+     },
+     "vita": {
+      "cer": 0.6105,
+      "errors": 21,
+      "chars": 3440,
+      "line_recall": 0.9954
+     }
+    }
+   }
+  },
+  "hval": {
+   "meiki4_L_fast": {
+    "cer": 2.3462,
+    "errors": 1770,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 0.9769,
+      "errors": 203,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8669,
+      "errors": 1567,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 2.3462,
+    "errors": 1770,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 0.9769,
+      "errors": 203,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8669,
+      "errors": 1567,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 4.2285,
+    "errors": 3190,
+    "chars": 75440,
+    "line_recall": 0.9042,
+    "by_view": {
+     "psp": {
+      "cer": 4.61,
+      "errors": 958,
+      "chars": 20781,
+      "line_recall": 0.8387
+     },
+     "vita": {
+      "cer": 4.0835,
+      "errors": 2232,
+      "chars": 54659,
+      "line_recall": 0.9307
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 2.6352,
+    "errors": 1988,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 1.7083,
+      "errors": 355,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.9876,
+      "errors": 1633,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 2.4284,
+    "errors": 1832,
+    "chars": 75440,
+    "line_recall": 0.9536,
+    "by_view": {
+     "psp": {
+      "cer": 1.3137,
+      "errors": 273,
+      "chars": 20781,
+      "line_recall": 0.9087
+     },
+     "vita": {
+      "cer": 2.8522,
+      "errors": 1559,
+      "chars": 54659,
+      "line_recall": 0.9717
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.6843,
+    "errors": 2025,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 2.4878,
+      "errors": 517,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.7589,
+      "errors": 1508,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 2.9706,
+    "errors": 2241,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 2.0884,
+      "errors": 434,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 3.306,
+      "errors": 1807,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 2.606,
+    "errors": 1966,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 1.8815,
+      "errors": 391,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.8815,
+      "errors": 1575,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 2.606,
+    "errors": 1966,
+    "chars": 75440,
+    "line_recall": 0.9572,
+    "by_view": {
+     "psp": {
+      "cer": 1.8815,
+      "errors": 391,
+      "chars": 20781,
+      "line_recall": 0.9529
+     },
+     "vita": {
+      "cer": 2.8815,
+      "errors": 1575,
+      "chars": 54659,
+      "line_recall": 0.959
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 4.6514,
+    "errors": 3509,
+    "chars": 75440,
+    "line_recall": 0.9042,
+    "by_view": {
+     "psp": {
+      "cer": 4.124,
+      "errors": 857,
+      "chars": 20781,
+      "line_recall": 0.8387
+     },
+     "vita": {
+      "cer": 4.8519,
+      "errors": 2652,
+      "chars": 54659,
+      "line_recall": 0.9307
+     }
+    }
+   }
+  },
+  "pc": {
+   "meiki4_L_fast": {
+    "cer": 0.2357,
+    "errors": 6,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.2357,
+      "errors": 6,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_L_exact": {
+    "cer": 0.2357,
+    "errors": 6,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.2357,
+      "errors": 6,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki0_L_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_S_fast": {
+    "cer": 0.7463,
+    "errors": 19,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.7463,
+      "errors": 19,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "meiki4_N_fast": {
+    "cer": 0.5499,
+    "errors": 14,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.5499,
+      "errors": 14,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   },
+   "ts8_S_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_N_fast": {
+    "cer": 2.0424,
+    "errors": 52,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 2.0424,
+      "errors": 52,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_L_fast": {
+    "cer": 1.414,
+    "errors": 36,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 1.414,
+      "errors": 36,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "ts8_L_exact": {
+    "cer": 1.414,
+    "errors": 36,
+    "chars": 2546,
+    "line_recall": 0.9618,
+    "by_view": {
+     "pc": {
+      "cer": 1.414,
+      "errors": 36,
+      "chars": 2546,
+      "line_recall": 0.9618
+     }
+    }
+   },
+   "meikiocr": {
+    "cer": 0.0393,
+    "errors": 1,
+    "chars": 2546,
+    "line_recall": 0.9936,
+    "by_view": {
+     "pc": {
+      "cer": 0.0393,
+      "errors": 1,
+      "chars": 2546,
+      "line_recall": 0.9936
+     }
+    }
+   }
+  }
+ },
+ "not_read": "vita-test, psp-test, CLANNAD (never); the test titles until the attempt above",
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-11-01T04:13:58Z",
+   "before": "any candidate is timed or scored (the screening runs S1_d48 / S2_d64 are at step 1600 of 40,000; no candidate box has been read)",
+   "what": "the speed clause's thread budget: 'at 4 threads' is a budget of 4. Each pipeline's detector runs at the intra-op thread count in {1, 2, 4} that gives it the lowest p50 on that view's timing pages in the same run (R's MeikiOCR detector included); its lines run par on 4 Python threads sharing one recognizer session at 1 intra-op thread, as before (eval/desktop_time.py run --threads 4 with the pipelines' '#d1', '#d2', '#d4' variants)",
+   "why": "the baseline profile (eval/desktop_time.py profile, ORT kernel ms per run, ORT_ENABLE_ALL, 1 -> 4 intra-op threads, this shared host) shows the thread pool slowing the small graphs: textspot8 exact 8.09 -> 11.74 ms, VOCR6.2-L fast 2.35 -> 2.38 ms, while MeikiOCR's detector gains 1.73x (102.0 -> 59.1 ms). Forcing 4 intra-op threads on a graph that runs slower with them would measure the thread pool, not the model; R's detector is fastest at 4 threads, so R keeps its measured time"
+  },
+  {
+   "n": 2,
+   "time": "2026-11-01T07:37:20Z",
+   "before": "any candidate is read on dev-v2, confirm-v2, the PC test set or the test titles; the screening has read hval only (S3_d32 at fit:960/640/480 and long:1280; S1_d48 at fit:960/800/640/480 and long:1280, both with the pct pad)",
+   "owner_updates": [
+    "2026-11-01 06:45Z: an outside C AVX2 build of VOCR reads a page in 8.7-14.2 ms (1 thread) at about 9-11.5 MiB peak against ONNX fast 23-29 ms at about 115-133 MiB; compare desktop candidates against SIMD C builds, report peak RAM beside ms, keep a C (AVX2) path for a desktop model with ONNX as the portable option; the detector dominates ONNX page time",
+    "2026-11-01 06:49Z: desktops have many resolutions; desktop-data builds resolution-diverse training pages and a real PC test set; promote the PC test set to a decision set next to dev-v2 by an amendment registered before candidates are scored on it; do not decide before PCDATA_READY; report CER and ms per input resolution"
+   ],
+   "what": {
+    "memory": "every timed pipeline also reports its peak resident memory: a fresh process per pipeline reads the timing pages one at a time from disk (eval/desktop_time.py mem); the C command line desktop/vocr_desk_cli reports getrusage's peak for the C path",
+    "c_comparisons": "every candidate is also timed against SIMD C builds: VOCR's C runtime (W8I, runtime/vocr.c unchanged) at gcc -O3 -march=x86-64-v3 (AVX2 + FMA) and -O3 -march=native, with textspot8's C spotter as the C baseline detector; and the candidate's own C path (desktop/libvocrdesk.so: its VDSK weights, AVX2 + FMA kernels) with VOCR's C runtime reading the lines",
+    "c_path_ship_requirement": "the pick ships only with a C path whose crops equal its ONNX path's on at least 99% of dev-v2's frames and whose dev-v2 CER (its boxes read by VOCR6.2_L_fast.onnx) is within 0.05 points of the ONNX path's; the whole C page (C detector + runtime/vocr.c W8I) is reported. The decision's speed clause stays ONNX against ONNX, as registered (R exists only as ONNX)",
+    "pc_test_decision_set": "desktop-data's real PC test set (frozen manifest; >= 1,000 dialogue lines of >= 60 VNs in no training pool) is a decision set beside dev-v2: CER(C) <= 1.20 x CER(R) and the paired 95% VN-cluster interval of CER(C) - CER(R) not entirely above 0, read once for the candidate set after PCDATA_READY and after the dev-v2 record is committed; the decision waits for PCDATA_READY",
+    "final_training_data": "the 3-seed adoption runs train with desktop-data's frozen training pages added to the mix; their share is registered with their manifest before those runs start",
+    "per_resolution": "CER and ms are reported per input resolution: the PC test set by resolution, and dev-v2's Vita-view frames resampled to 1280x720, 1920x1080, 2560x1440 and 3840x2160 (cv2.INTER_LINEAR, every unit's geometry scaled), R and C on the same frames (report only)",
+    "policies": "the candidate set at decision time adds long:960, long:800 and long:640 (the longer side scaled to N, up or down) to fit:960, fit:800, fit:640 and fit:480: on hval the multi-scale detectors read PSP's 480x272 frames better upscaled (S1_d48: PSP 1.12% native, 0.42% at long:1280)",
+    "pad_rule": "the decode's pad rule, pct (18% of the size across, at least 2 network px: textspot8's) or frame (the ink box grown by max(2, round(4 H / 544)) frame px: R's pad), is chosen on hval for the chosen arm: the rule with the lower mean hval CER over the 7 candidate policies",
+    "S5": "an extra screening arm: d48 multi-scale with the hooked pages' ruby lines as background (shards rebuilt by synth/textspot6_pages.py --ruby background, data/manifests/desktop_pages_v21_rubybg.json) and the non-hooked sources' ruby-like boxes as ignore areas (desktop_det.py --ruby-filter). Why: on hval at fit:960, 47% of S3_d32's junk boxes are under 0.7 line heights (ruby-like), in ruby-heavy titles. S5 replaces S1's recipe for the chosen shape when its mean hval CER over the 7 policies (pct pad) is lower",
+    "order": "shape by the registered rule (hval at fit:960, S1-S3); recipe (S5 vs S1, d48) by the mean over the 7 policies; pad rule by the chosen recipe's mean over the 7 policies; every screening comparison is also reported without PCSG00854, where VOCR6.2-L's reading changes by hundreds of errors with a 1 px change of a crop's height (docs/textspot8.md); the rule uses every title"
+   }
+  },
+  {
+   "n": 3,
+   "time": "2026-11-01T11:17:03Z",
+   "before": "any final (3-seed) run starts and any candidate is read on dev-v2, confirm-v2, the PC test set or the test titles",
+   "what": {
+    "final_data": "the final runs (3 seeds of the chosen arm, then the representative's retrain on train + guard + hval) add desktop-data's frozen training pages (PCDATA_READY 2026-11-01T10:19Z; frozen_v1/FROZEN.sha256) as three sources: desk_hook (hooked_desktop_v1.json e99df722: 20,000 hooked train pages re-rendered at desktop sizes; its splits are pools v2.1's train pages only), desk_realplus (realplus_native_v1.json e33c2b3d: 49,267 realplus PC screenshots at their own size with ignore areas) and desk_synth (synth_desktop_v1.json be043689: 10,000 synthetic desktop pages)",
+    "mix": {
+     "hook": 0.3375,
+     "synth": 0.15,
+     "real": 0.2625,
+     "desk_hook": 0.1,
+     "desk_realplus": 0.1,
+     "desk_synth": 0.05,
+     "why": "the screened mix (0.45 / 0.2 / 0.35) at 75%, the desktop sources 25% (chosen without data: no screening read them)"
+    },
+    "windows": "a desk_* canvas is first scaled to a 960 px long side (the policies' scale), then the arm's log-uniform factor in [0.42, 1.9] (train/desktop_det.py DESK_LONG)",
+    "steps": "40,000, as screened; seeds 1, 2, 3",
+    "screening_outcome_so_far": {
+     "recipe": "S5 (ruby background + filter) mean7 hval CER 2.634% (pct pad) against S1's 2.368%: not lower, so S1's recipe stays (without PCSG00854: S5 0.884 against S1 0.938, report only)",
+     "pad": "S1: frame 1.996% against pct 2.368% (mean over the 7 policies): the frame pad rule",
+     "shape": "pending S2_d64 (fit:960, pct): S3_d32 4.932%, S1_d48 2.664%"
+    }
+   }
+  },
+  {
+   "n": 4,
+   "time": "2026-11-01T16:37:51Z",
+   "before": "any candidate (the final seeds F1-F3 are at step ~21,000 of 40,000) is read on dev-v2, the PC test set, confirm-v2 or the test titles",
+   "owner_update": "2026-11-01 15:49Z, MeikiOCR's author's benchmarking tip: MeikiOCR's detection resizes every image to 960x544, so a comparison on smaller inputs favours the other model and on larger ones MeikiOCR; for detection and end to end, images resized to 960x544 give the most comparable results. Conductor: report every pipeline with frames resized to 960x544 as the like-for-like row beside each pipeline's own best policy",
+   "what": {
+    "like_for_like_frames": "every frame fit into 960x544 with its aspect kept, up or down (scale min(960 / W, 544 / H), cv2.INTER_LINEAR up, INTER_AREA down: MeikiOCR's own detector scale), its units' geometry scaled exactly (eval/desktop.py resample --fit 960x544): a Vita frame unchanged, a PSP frame 2x, a 1920x1080 frame 960x540, a 4:3 frame 725x544",
+    "rows": "on those frames every pipeline reads the same pixels, detector and recognizer: MeikiOCR itself, R (MeikiOCR's detector + VOCR6.2-L, auto pad 4 px), textspot8 + VOCR6.2-L, and the candidate at fit:960 (on these frames it reads them as they are: the same input as MeikiOCR's detector)",
+    "sets": "dev-v2, the PC test set, hval and confirm-v2 (and the test titles at their read), and the timing pages fit the same way (ms per page and peak memory): frames files dev_l544, pctest_l544, hval_l544, confirm_l544 (sha256 below)",
+    "decision": "unchanged: the like-for-like rows are reported beside each pipeline's own best policy; the rule reads the registered sets and policies",
+    "frames_sha256": {
+     "dev": "ef1b3264e82b49c6cf5b88939c74605227511e807f13557c3a933165650827fb",
+     "hval": "c90d2b4a6011bd9a1ea6d046be7345511a4c08c29c2994fbc012b019dd3e7c6a",
+     "pc": "8163663664f1cd0f40a7f48bc6f38fd5bb9f48999f17ed9dea57a2f44b708fb5",
+     "confirm": "a9fabc1b469574467dfd9ec5d25a9baa3523a3e765a3c633179d584573bec04c",
+     "pctest": "66287a122dee8cfe2fa7549a931b3f9b09774a02d455e07fe9739c56f8e046c6"
+    },
+    "baseline_arm_pending": "mida-ocr-eval evaluates MeikiOCR's author's new detector (mida_ocr_l.onnx) and will say whether to add it as a registered baseline arm; if so, an amendment registers it before the PC test read"
+   }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-01T21:00:17Z",
+   "before": "the PC test set, confirm-v2 and the test titles are read (dev-v2 reads of the final seeds have started: they are not inputs to this amendment, which adds a report-only row)",
+   "what": {
+    "mida_arm": "MeikiOCR's author's new detector, mida_ocr_l.onnx (sha256 9f72bce5...; measurement only: not committed, not redistributed, not trained on), as a REPORT-ONLY baseline arm in every final read: dev-v2, the PC test set, confirm-v2, the test titles and the like-for-like frames, with the timing and memory rows",
+    "configuration": "mida-ocr-eval's recommended one, fixed by that agent before this amendment (reports/mida-ocr-eval.md section 6): eval/mida_det.py (main a50dd8c / 673ee5c) installed into eval/desktop.py, spec mida@box:960x544@along=1.0@min_cells=2 (BGR, the input fit into 960x544 up or down, thr 0, the frame pad), crops cut from the frame and read by VOCR6.2_L_fast.onnx",
+    "role": "none in the decision rule (C against R); reported beside R, MeikiOCR itself and textspot8 + VOCR6.2-L",
+    "source": "mida-ocr-eval's recommendation (pane message and status 2026-11-01T20:52Z); owner 15:49Z: 'Use their model if its useful'"
+   }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-01T21:15:16Z",
+   "before": "the PC test set, confirm-v2 and the test titles are read; after the dev-v2 record (eval/desktop_dev_20261101.json, a19bede)",
+   "finding": "no policy of the representative (F3, seed 3) meets the dev-v2 accuracy clause: the lowest is long:960 at 0.983% against the limit 0.924% (1.2 x R's 0.770%); fit:640, fit:480 and long:640 meet the speed clause (Vita / PSP ratios 0.247 / 0.175, 0.187 / 0.174, 0.247 / 0.222). The rule's verdict will be no qualifier unless the PC test set changes nothing (it cannot make a candidate qualify: every clause must hold)",
+   "what": {
+    "research_release": "as textspot6's rule did for a negative verdict: a research pre-release, labelled not adopted, of the representative's train + guard + hval retrain (final_d64_seed3, trained alongside the seeds; ONNX ad730729..., VDSK 7fde78d2...) at the policy with the lowest dev-v2 CER among those that meet the speed clause: long:640 (F3 1.102%); its own dev-v2 score at every policy is reported",
+    "reads": "the PC test set, confirm-v2 (and their like-for-like frames) and the test titles are read once, together, for R, MeikiOCR itself, textspot8 + VOCR6.2-L, mida (report only) and the representative F3 at the 7 policies (the rule's reads), plus the research model at long:640 and, on the like-for-like frames, at fit:960 (report only)"
+   }
+  }
+ ]
+}

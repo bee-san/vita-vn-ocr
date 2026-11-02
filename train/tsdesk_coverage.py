@@ -508,6 +508,8 @@ def cmd_run(a):
 # ----------------------------------------------------------------------------- label edits (apart -> notdlg)
 
 EDIT_ROW_OVERLAP = 0.5      # a box shares a verified line's row: vertical overlap >= this x the smaller height
+EDIT_RUBY_MIN_REL = 0.33    # ruby is about half its line's height: a ruby-like box under a third of it is other text
+                            # (the star map's Latin labels above a line: 0.21-0.28; the furigana seen: 0.38-0.59)
 
 
 def edit_candidates(smp, rows, meiki):
@@ -516,7 +518,8 @@ def edit_candidates(smp, rows, meiki):
     with the target cache); rows: its rows of kind uncovered and where apart; meiki: the page's pool MeikiOCR boxes
     ({"raw", "score", "box", "vertical"}). Left out: a box on a verified dialogue or name line's row (a page cursor or
     an icon far past the line's end: background, as the 'row' kind), a ruby-like box over a line (furigana the hook
-    gives no ruby line for: desktop_det.ruby_like; the pools make ruby an ignore area, never a positive), a box that
+    gives no ruby line for: desktop_det.ruby_like over that line, at least EDIT_RUBY_MIN_REL of its height; the
+    pools make ruby an ignore area, never a positive), a box that
     overlaps a positive, and the lower-scored of two that overlap. The box is the pools' refined box, its weight the
     pools' notdlg weight (synth/textspot6_pages.meiki_weight)."""
     import desktop_det as DD
@@ -539,7 +542,8 @@ def edit_candidates(smp, rows, meiki):
                for ln in verified):
             why["row"] += 1
             continue
-        if not m["vertical"] and 0 in DD.ruby_like([[*b, 0]] + [[*ln[:4], ln[4]] for ln in verified]):
+        if not m["vertical"] and any(hb >= EDIT_RUBY_MIN_REL * (ln[3] - ln[1]) and
+                                     0 in DD.ruby_like([[*b, 0], [*ln[:4], ln[4]]]) for ln in verified):
             why["ruby"] += 1
             continue
         if any(ov(b, p) for p in pos):
@@ -615,8 +619,9 @@ def cmd_edits(a):
                             "with unlabelled ink away from every labelled row)",
                     "add": "a notdlg positive: the pools' refined box and orientation, weight meiki_weight(score)",
                     "left_out": ["row: on a verified dialogue or name line's row", "ruby: desktop_det.ruby_like over "
-                                 "a verified line", "overlap: overlaps a positive", "duplicate: overlaps a kept edit"],
-                    "row_overlap": EDIT_ROW_OVERLAP,
+                                 "a verified line, at least ruby_min_rel of its height", "overlap: overlaps a positive",
+                                 "duplicate: overlaps a kept edit"],
+                    "row_overlap": EDIT_ROW_OVERLAP, "ruby_min_rel": EDIT_RUBY_MIN_REL,
                     "coords": "native page px; desk_hook maps them through its capture"},
            "rows_files": {str(p): sha256_file(p) for p in a.rows}, "targets": a.targets,
            "targets_sha256": sha256_file(Path(a.targets) / "targets.json") if a.targets else None,

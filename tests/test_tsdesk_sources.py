@@ -232,9 +232,12 @@ def test_edit_candidates_keep_scene_text_only():
              {"raw": [120, 188, 200, 198], "score": 0.9, "box": [121, 189, 199, 198], "vertical": False}, # ruby
              {"raw": [690, 35, 760, 60], "score": 0.7, "box": [692, 36, 758, 58], "vertical": False},     # overlap
              {"raw": [300, 60, 320, 160], "score": 0.75, "box": [302, 62, 318, 158], "vertical": True}]   # kept
+    meiki.append({"raw": [210, 192, 290, 198], "score": 0.6, "box": [211, 193, 289, 199], "vertical": False})
+    # ^ a small Latin label just above the line (a quarter of its height): ruby-like by place, too small for ruby
     rows = [_row(m["raw"], m["score"]) for m in meiki] + [_row([1, 1, 5, 5], 0.9)]                     # no box
     adds, why = C.edit_candidates(smp, rows, meiki)
-    assert adds == [[52, 42, 148, 55, 0, "notdlg", 1.0], [302, 62, 318, 158, 1, "notdlg", 0.9167]]
+    assert adds == [[52, 42, 148, 55, 0, "notdlg", 1.0], [302, 62, 318, 158, 1, "notdlg", 0.9167],
+                    [211, 193, 289, 199, 0, "notdlg", 0.6667]]
     assert dict(why) == {"duplicate": 1, "row": 1, "ruby": 1, "overlap": 1, "no_meiki_box": 1}
 
 

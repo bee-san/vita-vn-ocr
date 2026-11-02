@@ -189,6 +189,16 @@ typedef struct {
 vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *rec, size_t rec_bytes,
                                  unsigned threads, int kind, unsigned n, unsigned pad_h, unsigned pad_v,
                                  unsigned pad_px, int *err);
+/* The reading rule in full (eval/tsdesk_eval.margin_hv: protocol v2 amendments 1 and 2), in place of the pad given to
+ * vocr_tsd_page_new. Each horizontal box (x, y, w, h) is grown by (ph, pv) frame px and rounded outward:
+ *   VOCR_TSD_RULE_FRAME  "kAvBfC": ph = max(c, nearbyint(a H / 544)), pv = max(2, nearbyint(b H / 544)) for an H px
+ *                        tall frame (kN and kAvB are c = 2: vocr_tsd_page_new's rule);
+ *   VOCR_TSD_RULE_LINE   "hXvY": with bw = max(1, (x + w) - x) and bh = max(1, (y + h) - y), ph = max(1, a bh) and
+ *                        pv = max(1, b bh) when bw >= bh, else ph = max(1, b bw) and pv = max(1, a bw);
+ *   VOCR_TSD_RULE_PX     ph = a, pv = b.
+ * VOCR_TSD_E_ARG (the rule unchanged) for an unknown kind, or a value that is negative, NaN or above 4096. */
+enum { VOCR_TSD_RULE_FRAME = 0, VOCR_TSD_RULE_LINE = 1, VOCR_TSD_RULE_PX = 2 };
+int vocr_tsd_page_set_rule(vocr_tsd_page *p, unsigned kind, double a, double b, double c);
 /* Only boxes whose tag bit is set in mask are read (bit t: tag t; the default ~0u: all). */
 void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask);
 /* The box refinement on the detector's boxes before they are grown and read (opts copied; NULL: off, the default). */
@@ -204,7 +214,8 @@ unsigned vocr_tsd_page_count(const vocr_tsd_page *p);
 const vocr_tsd_line *vocr_tsd_page_line(const vocr_tsd_page *p, unsigned i);
 size_t vocr_tsd_line_bytes(void);
 const vocr_tsd_set *vocr_tsd_page_boxes(const vocr_tsd_page *p);
-/* The pad in frame px of the last run (horizontal, vertical). */
+/* The pad in frame px of the last run (horizontal, vertical), truncated to integers; (-1, -1) under a line rule
+ * (VOCR_TSD_RULE_LINE: the pad is each line's own, its crop says it). */
 void vocr_tsd_page_pad(const vocr_tsd_page *p, int *ph, int *pv);
 /* The detector's last run alone, in us, and the whole page (detector + lines), in us. */
 double vocr_tsd_page_detect_us(const vocr_tsd_page *p);

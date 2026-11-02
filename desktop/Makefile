@@ -7,6 +7,8 @@
 #   make                 build/libvocrdesk.so, build/vocr_desk_cli and build/vocr_tsd_bench, AVX2 + FMA
 #                        (x86-64-v3: 2013+ x86 CPUs), and build/libvocrtsdr.so (the box refinement alone)
 #   make ARCH=           the same without SIMD flags (portable C; the plain-C kernels)
+#   make ARCH=-march=x86-64-v4    textspot-desktop's AVX-512 kernels (AVX-512 F/BW/CD/DQ/VL CPUs; the maps are the
+#                        AVX2 build's bit for bit; -DVOCR_TSD_NO_AVX512 keeps the AVX2 kernels in such a build)
 #   make ARCH=-march=native
 #   make OUT=build-o2 OPT=-O2 ARCH=    a plain -O2 build in another directory
 #   make OUT=build-scalar EXTRA=-DVOCR_TSD_SCALAR    textspot-desktop's plain-C kernels in an AVX2 build

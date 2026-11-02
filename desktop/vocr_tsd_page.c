@@ -229,7 +229,9 @@ struct vocr_tsd_page {
     vocr_model rec;
     vocr_opts opts;
     vocr_tsd_pool *pool;
-    unsigned threads, kind, n, pad_h, pad_v, pad_px, tags, refine_on;
+    unsigned threads, kind, n, tags, refine_on;
+    unsigned rule;             /* the reading rule (VOCR_TSD_RULE_*) and its values a, b, c */
+    double ra, rb, rc;
     vocr_tsdr_opts refine;     /* the box refinement's options (refine_on) */
     rec_worker work[MAX_THREADS];
     void *arena;               /* the detector's arena (grown as frames need) */
@@ -241,7 +243,7 @@ struct vocr_tsd_page {
     vocr_tsd_line lines[VOCR_TSD_MAX_BOXES];
     const unsigned char *g;    /* the grey frame being read */
     unsigned w, h, stride;
-    int ph, pv;
+    double ph, pv;             /* the frame's pad of the last run (a frame or px rule) */
     double detect_us, total_us;
 };
 
@@ -274,9 +276,10 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
     p->threads = threads;
     p->kind = kind < 0 ? p->det.size_kind : (unsigned)kind;
     p->n = kind < 0 ? p->det.size_n : n;
-    p->pad_h = pad_h;
-    p->pad_v = pad_v;
-    p->pad_px = pad_px;
+    p->rule = pad_px ? VOCR_TSD_RULE_PX : VOCR_TSD_RULE_FRAME;
+    p->ra = (double)pad_h;
+    p->rb = (double)pad_v;
+    p->rc = 2.0;
     p->tags = ~0u;
     p->opts.mode = VOCR_MODE_W8I;
     p->opts.head_gate = p->rec.gate.hidden ? VOCR_HEAD_GATE_ON : VOCR_HEAD_GATE_OFF;
@@ -303,6 +306,23 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
 void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask)
 {
     if (p) p->tags = mask;
+}
+
+static int rule_value_ok(double v)
+{
+    return v >= 0.0 && v <= 4096.0;   /* false for NaN */
+}
+
+int vocr_tsd_page_set_rule(vocr_tsd_page *p, unsigned kind, double a, double b, double c)
+{
+    if (!p || kind > VOCR_TSD_RULE_PX || !rule_value_ok(a) || !rule_value_ok(b) ||
+        (kind == VOCR_TSD_RULE_FRAME && !rule_value_ok(c)))
+        return VOCR_TSD_E_ARG;
+    p->rule = kind;
+    p->ra = a;
+    p->rb = b;
+    p->rc = kind == VOCR_TSD_RULE_FRAME ? c : 0.0;
+    return VOCR_TSD_OK;
 }
 
 void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts)
@@ -432,13 +452,24 @@ static void reading_order(const vocr_tsd_box *bx, const unsigned *ids, unsigned 
     }
 }
 
-/* the pad in frame px of an H px tall frame: max(2, nearbyint(k H / 544)) (eval/tsdesk.pad_px), or k px */
-static int pad_of(unsigned k, unsigned px, unsigned H)
+/* the frame rule's pad of an H px tall frame: max(lo, nearbyint(k H / 544)) (eval/tsdesk_eval.pad_px / floor_hv) */
+static double frame_pad(double k, double lo, unsigned H)
 {
-    double v;
-    if (px) return (int)k;
-    v = nearbyint((double)k * (double)H / 544.0);
-    return v < 2.0 ? 2 : (int)v;
+    const double v = nearbyint(k * (double)H / 544.0);
+    return v < lo ? lo : v;
+}
+
+/* the line rule's pad of a box (eval/tsdesk_eval.rel_hv on [x, y, x + w, y + h]) */
+static void line_pad(const vocr_tsd_page *p, const vocr_tsd_box *b, double *ph, double *pv)
+{
+    double bw = (b->x + b->w) - b->x, bh = (b->y + b->h) - b->y, s, u, v;
+    bw = bw > 1.0 ? bw : 1.0;
+    bh = bh > 1.0 ? bh : 1.0;
+    s = bw >= bh ? bh : bw;
+    u = (bw >= bh ? p->ra : p->rb) * s;
+    v = (bw >= bh ? p->rb : p->ra) * s;
+    *ph = u > 1.0 ? u : 1.0;
+    *pv = v > 1.0 ? v : 1.0;
 }
 
 static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
@@ -498,16 +529,27 @@ int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, un
     if (!p) return VOCR_TSD_E_ARG;
     p->detect_us = now_us() - t0;
     if (rc) return rc;
-    p->ph = pad_of(p->pad_h, p->pad_px, h);
-    p->pv = pad_of(p->pad_v, p->pad_px, h);
+    if (p->rule == VOCR_TSD_RULE_PX) {
+        p->ph = p->ra;
+        p->pv = p->rb;
+    } else if (p->rule == VOCR_TSD_RULE_FRAME) {
+        p->ph = frame_pad(p->ra, p->rc, h);
+        p->pv = frame_pad(p->rb, 2.0, h);
+    } else {
+        p->ph = p->pv = -1.0;
+    }
     for (i = 0; i < p->set.count; i++)
         if (p->set.boxes[i].tag < 32 && (p->tags >> p->set.boxes[i].tag & 1u)) ids[n++] = i;
     reading_order(p->set.boxes, ids, n, order);
     for (i = 0; i < n; i++) {
         const vocr_tsd_box *b = &p->set.boxes[order[i]];
-        double x0 = floor(b->x - (double)p->ph), y0 = floor(b->y - (double)p->pv);
-        double x1 = ceil(b->x + b->w + (double)p->ph), y1 = ceil(b->y + b->h + (double)p->pv);
+        double ph = p->ph, pv = p->pv, x0, y0, x1, y1;
         vocr_tsd_line *ln = &p->lines[k];
+        if (p->rule == VOCR_TSD_RULE_LINE) line_pad(p, b, &ph, &pv);
+        x0 = floor(b->x - ph);
+        y0 = floor(b->y - pv);
+        x1 = ceil(b->x + b->w + ph);
+        y1 = ceil(b->y + b->h + pv);
         if (x0 < 0) x0 = 0;
         if (y0 < 0) y0 = 0;
         if (x1 > (double)w) x1 = (double)w;
@@ -557,8 +599,8 @@ const vocr_tsd_set *vocr_tsd_page_boxes(const vocr_tsd_page *p)
 
 void vocr_tsd_page_pad(const vocr_tsd_page *p, int *ph, int *pv)
 {
-    if (ph) *ph = p ? p->ph : 0;
-    if (pv) *pv = p ? p->pv : 0;
+    if (ph) *ph = p ? (int)p->ph : 0;
+    if (pv) *pv = p ? (int)p->pv : 0;
 }
 
 double vocr_tsd_page_detect_us(const vocr_tsd_page *p)

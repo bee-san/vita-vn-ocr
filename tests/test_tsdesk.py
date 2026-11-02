@@ -467,10 +467,19 @@ def test_extend_ends_over_dash_runs():
     g2 = g.copy()
     cv2.line(g2, (0, 16), (122, 16), 230, 1)
     assert T.post_post(g2, [b], o)[0].x == 124
-    # another box beside it stops the extension at its edge
-    nb = _box(60, 20, 100, 38)
-    out3 = T.post_post(g, [b, nb], o)
-    assert out3[0].x >= 100 and out3[1] == nb
+    # another box beside it stops the extension at its edge; with ext_join the two become one when it reaches it
+    nb = _box(10, 20, 60, 38)
+    out3 = T.post_post(g, [b, nb], dict(o, ext_join=0))
+    assert out3[0].x == 60 and out3[1].x == 10 and out3[1].x + out3[1].w == 113    # nb runs on over the dashes and 、
+    out4 = T.post_post(g, [b, nb], o)
+    assert len(out4) == 1 and (out4[0].x, out4[0].x + out4[0].w) == (10, end + 55)
+    # the dots of an ellipsis (gaps inside the run) are not a dash run
+    g4 = np.full((60, 420), 20, np.uint8)
+    end4 = _glyphs(g4, 130, 20, 2, 18, 4)
+    for k in range(8):
+        cv2.rectangle(g4, (end4 + 3 + 7 * k, 28), (end4 + 4 + 7 * k, 29), 230, -1)
+    b4 = _box(130, 20, end4, 38)
+    assert T.post_post(g4, [b4], o)[0] == b4
     # a run under ext_dash_pct of the height is not a dash run; ordinary glyphs beyond the end are not taken
     g3 = np.full((60, 420), 20, np.uint8)
     end3 = _glyphs(g3, 130, 20, 2, 18, 4)
@@ -478,3 +487,19 @@ def test_extend_ends_over_dash_runs():
     _glyphs(g3, end3 + 40, 20, 2, 18, 4)
     b3 = _box(130, 20, end3, 38)
     assert T.post_post(g3, [b3], o)[0] == b3
+
+
+def test_decode_saddle_split():
+    m = _maps(80, 400, 8, [[40.0, 20.0, 360.0, 44.0]])
+    on = m[0] > 0
+    m[0][on] = 6.0
+    col = 24                                                # a weak column inside the kernel: a K saddle
+    m[0][:, col][on[:, col]] = 0.5
+    one = T.decode(m, 400, 80, 8)
+    assert len(one) == 1 and T.decode(m, 400, 80, 8, saddle_pct=5) == one       # 0.5 > 5 % of 6
+    two = sorted(T.decode(m, 400, 80, 8, saddle_pct=20), key=lambda b: b.x)
+    assert len(two) == 2
+    assert two[0].x == pytest.approx(40.0) and two[0].x + two[0].w == pytest.approx(8 * (col + 1))
+    assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
+    assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
+    assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept

@@ -146,6 +146,34 @@ def test_blob_header_and_checks(nets, libs):
 HEADER_BODY = 400                           # a byte inside the weights
 
 
+def test_blob_loader_survives_mutated_headers(nets, libs):
+    """Header bytes changed and the CRC recomputed: vocr_tsd_load refuses the blob, or the network and the detector
+    run on it without a crash (every array is sized from the header and checked against the blob's length)."""
+    import struct
+    import zlib
+    rng = np.random.default_rng(13)
+    lib = next(iter(libs.values()))
+    _, blob, _ = nets["x4"]
+    loaded = 0
+    for _ in range(120):
+        b = bytearray(blob)
+        for _ in range(int(rng.integers(1, 4))):
+            off = int(rng.integers(16, 160))
+            b[off] = int(rng.integers(0, 256)) if rng.random() < 0.5 else b[off] ^ (1 << int(rng.integers(0, 8)))
+        struct.pack_into("<I", b, len(b) - 4, zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
+        try:
+            cm = TC.CModel(bytes(b), lib=lib)
+        except ValueError:
+            continue
+        loaded += 1
+        cm.maps(rng.integers(0, 256, (64, 96), dtype=np.uint8))
+        try:
+            cm.detect(rng.integers(0, 256, (70, 100, 3), dtype=np.uint8))
+        except ValueError:
+            pass
+    assert loaded < 120
+
+
 # ----------------------------------------------------------------------------- the network
 
 @pytest.mark.parametrize("shape", sorted(_shapes()))

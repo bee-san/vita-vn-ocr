@@ -286,6 +286,37 @@
     "P_policy": "the finished arms B1, B2, B3, C1 read with C7 at k6v4 at the input policies long:1120 and long:1280 (every frame's long side scaled to that, up or down) on all four goal sets (the l544 frames too: the detector reads the same 960x544 pixels, scaled inside it) and hval + dense_screen; G2 is measured at the policy a candidate is declared with"
    },
    "rule": "a candidate's policy may be any registered policy; its G2 timing must use it"
+  },
+  {
+   "n": 9,
+   "time": "2026-11-02T17:40Z",
+   "before": "any read of F1 and any C8 read of a new model; D2 and E1 reads running",
+   "after": [
+    "amendment 8's policy study (C7, k6v4): long:1120 helps some models and not others (gap B2 0.533 -> 0.425, C1 0.471 -> 0.428, B1 0.546 -> 0.589, B3 0.508 -> 0.949); long:1280 helps none; G2 at long:1120 (textspot-desktop-speed, policy_B1_B3_7224ce7.json): q8b 16.8 ms (7.3x), q4b 20.0 ms (6.1x), q8c would exceed the bar",
+    "E2 (q8b, B1 + 40k steps with amendment 6's fixes): long:1120 C7 k6v4 dev 0.770% (R 0.770), dev_l544 0.770 (R 0.677), dense_dev 0.719 (R 0.353), dense_dev_l544 0.763 (R 0.347), gap 0.415, junk 1; long:960 gap 0.447",
+    "textspot-desktop-boxes' narrow join (join_pct 10, dialogue pieces that touch or overlap), read once on the goal sets: dev and dev_l544 better for every model and policy (resolved for C1 at both: dev -0.199 [-0.384, -0.059] at long:960), no dense-set change resolved"
+   ],
+   "pipeline": {
+    "options": "C8 = +refine+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200,vflip_pct=30,join_pct=10+drop:nojp=2,nojp_gap_pct=200,nojp_anchor_pct=50,rep_pct=50,cut_pct=25,cut_dlg=0 replaces C7 for new reads (C7 still reported)"
+   },
+   "arms": {
+    "F1_q8b_from_E2": {
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q8b",
+     "init": "runs/r2e_E2_q8b_from_B1",
+     "steps": 80000,
+     "lr": 0.001,
+     "question": "E2 trained 80k more steps (200k in total) with the same fixes"
+    }
+   }
   }
  ]
 }

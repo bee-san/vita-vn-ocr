@@ -302,11 +302,56 @@ static void axis_weights(unsigned n, unsigned m, unsigned K, int *idx, int *wt)
     }
 }
 
+/* The horizontal pass's polyphase blocks (resize mode 4): output block b is outputs 4b .. 4b + 3, each with up to 4
+ * taps inside the 16 source bytes from start[b]: a byte shuffle puts the 16 tap bytes in output order, then 16-bit
+ * products summed in pairs (pmaddwd) give the same exact int32 sums as the table loop (a padded tap has weight 0). */
+#define HB_TAPS 4u
+static size_t hb_bytes(unsigned dw)
+{
+    const size_t nb = (size_t)dw / 4 + 1;
+    return ALIGN_UP(nb * (4 + 16 + 32) + 64, 64);
+}
+
+/* fill the blocks of an axis's tables (kx <= 4 consecutive taps); returns how many leading blocks the SIMD path may
+ * take (their 16 source bytes inside the row), 0 if none */
+static unsigned hb_build(unsigned w, unsigned dw, unsigned kx, const int *ixx, const int *wx, void *buf)
+{
+    const unsigned nb = dw / 4;
+    int32_t *start = (int32_t *)buf;
+    uint8_t *shuf = (uint8_t *)(start + nb + 1);
+    int16_t *wt = (int16_t *)(void *)(shuf + 16 * (size_t)(nb + 1));
+    unsigned b, o, k, ok_blocks = 0;
+    if (kx > HB_TAPS || ((uintptr_t)wt & 1u)) return 0;
+    for (b = 0; b < nb; b++) {
+        const int s0 = ixx[(size_t)4 * b * kx];
+        int fits = s0 >= 0 && (unsigned)s0 + 16 <= w;
+        start[b] = s0;
+        for (o = 0; o < 4; o++)
+            for (k = 0; k < HB_TAPS; k++) {
+                const size_t x = 4 * (size_t)b + o;
+                int idx = s0, wv = 0;
+                if (k < kx) {
+                    idx = ixx[x * kx + k];
+                    wv = wx[x * kx + k];
+                }
+                if (!wv) idx = s0;
+                if (idx < s0 || idx > s0 + 15 || wv < 0 || wv > Q14) fits = 0, idx = s0, wv = 0;
+                shuf[16 * b + 4 * o + k] = (uint8_t)(idx - s0);
+                wt[16 * b + 4 * o + k] = (int16_t)wv;
+            }
+        if (!fits) break;   /* a block past the row's end or with a tap outside its window: the rest scalar */
+        ok_blocks = b + 1;
+    }
+    return ok_blocks;
+}
+
 size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh)
 {
     size_t kx = axis_taps(w, dw), ky = axis_taps(h, dh);
-    /* the axis tables, the row ring (or the whole-frame intermediate), and a uint16 row of w (coarse_rows) */
-    return sizeof(int) * (2 * kx * dw + 2 * ky * dh + (size_t)h * dw) + 2 * (size_t)w + 64;
+    /* the axis tables, the row ring (or the whole-frame intermediate), a uint16 row of w (coarse_rows) and the
+     * polyphase blocks (hb_build) */
+    return sizeof(int) * (2 * kx * dw + 2 * ky * dh + (size_t)h * dw) + ALIGN_UP(2 * (size_t)w + 64, 64) + 64 +
+           hb_bytes(dw);
 }
 
 /* one source row through the horizontal taps: t[x] = sum_k r[ix[x][k]] wx[x][k] (exact int32: at most 255 x 16384).
@@ -315,11 +360,31 @@ size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh
  * padded or clamped tap repeats an index with weight 0), which resize_hmode checks, so the SIMD paths read
  * r[s0 + k]: the same exact sums. */
 static void resize_row_h(const unsigned char *r, unsigned w, unsigned dw, unsigned kx, const int *ixx, const int *wx,
-                         int *t, int mode)
+                         int *t, int mode, const void *hb, unsigned nbs)
 {
     unsigned x = 0, k;
 #if DESK_AVX2
-    if (mode == 1) {                                /* identity: r[x] x 16384 */
+    if (mode == 4 && hb && nbs) {                   /* the polyphase blocks (hb_build), two a step */
+        const unsigned nb = dw / 4;
+        const int32_t *start = (const int32_t *)hb;
+        const uint8_t *shuf = (const uint8_t *)(start + nb + 1);
+        const int16_t *wt = (const int16_t *)(const void *)(shuf + 16 * (size_t)(nb + 1));
+        unsigned b = 0;
+        for (; b + 2 <= nbs; b += 2) {
+            const __m128i s0 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(const void *)(r + start[b])),
+                                                _mm_loadu_si128((const __m128i *)(const void *)(shuf + 16 * b)));
+            const __m128i s1 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(const void *)(r + start[b + 1])),
+                                                _mm_loadu_si128((const __m128i *)(const void *)(shuf + 16 * b + 16)));
+            const __m256i p0 = _mm256_madd_epi16(_mm256_cvtepu8_epi16(s0),
+                                                 _mm256_loadu_si256((const __m256i *)(const void *)(wt + 16 * b)));
+            const __m256i p1 = _mm256_madd_epi16(_mm256_cvtepu8_epi16(s1),
+                                                 _mm256_loadu_si256((const __m256i *)(const void *)(wt + 16 * b + 16)));
+            /* p0 = [o0a o0b o1a o1b | o2a o2b o3a o3b]: the pair sums of block b, p1 of block b + 1 */
+            const __m256i q = _mm256_permute4x64_epi64(_mm256_hadd_epi32(p0, p1), 0xD8);
+            _mm256_storeu_si256((__m256i *)(void *)(t + 4 * b), q);
+        }
+        x = 4 * b;
+    } else if (mode == 1) {                         /* identity: r[x] x 16384 */
         for (; x + 8 <= dw; x += 8) {
             const __m256i v = _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)(const void *)(r + x)));
             _mm256_storeu_si256((__m256i *)(void *)(t + x), _mm256_slli_epi32(v, 14));
@@ -355,6 +420,8 @@ static void resize_row_h(const unsigned char *r, unsigned w, unsigned dw, unsign
 #else
     (void)w;
     (void)mode;
+    (void)hb;
+    (void)nbs;
 #endif
     for (; x < dw; x++) {
         const int *ii = ixx + (size_t)x * kx, *ww = wx + (size_t)x * kx;
@@ -390,6 +457,20 @@ static int resize_hmode(unsigned w, unsigned dw, unsigned kx, const int *idx, co
 /* output row y from the ring of horizontally resized rows: (sum_k t_k[x] wy_k + 2^27) >> 28, clamped (int64 exact;
  * the SIMD forms are the same integer: one tap of 16384 gives (t + 2^13) >> 14, two of 8192 (t0 + t1 + 2^14) >> 15,
  * and the general sum is exact in double, every term below 2^36 and the sum below 2^40) */
+#if DESK_AVX2
+/* 1 if n vertical weights are >= 0 and sum to 16384 (axis_weights' do): the int32 split path's bounds */
+static int wsum_q14(const int *w, unsigned n)
+{
+    int sum = 0;
+    unsigned k;
+    for (k = 0; k < n; k++) {
+        if (w[k] < 0 || w[k] > Q14) return 0;
+        sum += w[k];
+    }
+    return sum == Q14;
+}
+#endif
+
 static void resize_row_v(const int *const *rows, const int *wy, unsigned ky, unsigned dw, unsigned char *o)
 {
     const int *rr[64];
@@ -422,7 +503,28 @@ static void resize_row_v(const int *const *rows, const int *wy, unsigned ky, uns
             s = _mm256_permute4x64_epi64(_mm256_packs_epi32(a, b), 0xD8);
             _mm_storeu_si128((__m128i *)(void *)(o + x), _mm_packus_epi16(_mm256_castsi256_si128(s), _mm256_extracti128_si256(s, 1)));
         }
-    } else if (n >= 1 && n <= 16) {
+    } else if (n >= 1 && n <= 16 && wsum_q14(ww, n)) {
+        /* exact in int32: t = 2^11 t_hi + t_lo (0 <= t < 2^22), A = sum t_hi w, B = sum t_lo w (each < 2^25 with the
+         * weights summing to 16384), and (2^11 A + B + 2^27) >> 28 = (A + ((B + 2^27) >> 11)) >> 17 (the low 11 bits
+         * of B + 2^27 cannot carry into bit 28) */
+        const __m256i m11 = _mm256_set1_epi32(2047), h27 = _mm256_set1_epi32(1 << 27);
+        __m256i wv[16];
+        for (k = 0; k < n; k++) wv[k] = _mm256_set1_epi32(ww[k]);
+        for (; x + 8 <= dw; x += 8) {
+            __m256i A = _mm256_setzero_si256(), Bs = _mm256_setzero_si256(), q;
+            __m128i q16;
+            for (k = 0; k < n; k++) {
+                const __m256i t = _mm256_loadu_si256((const __m256i *)(const void *)(rr[k] + x));
+                A = _mm256_add_epi32(A, _mm256_mullo_epi32(_mm256_srli_epi32(t, 11), wv[k]));
+                Bs = _mm256_add_epi32(Bs, _mm256_mullo_epi32(_mm256_and_si256(t, m11), wv[k]));
+            }
+            q = _mm256_srli_epi32(_mm256_add_epi32(A, _mm256_srli_epi32(_mm256_add_epi32(Bs, h27), 11)), 17);
+            q = _mm256_permute4x64_epi64(_mm256_packus_epi32(q, _mm256_setzero_si256()), 0x08);
+            q16 = _mm256_castsi256_si128(q);
+            _mm_storel_epi64((__m128i *)(void *)(o + x), _mm_packus_epi16(q16, q16));
+        }
+    }
+    if (n >= 1 && n <= 16) {
         const __m256d half = _mm256_set1_pd(134217728.0), scale = _mm256_set1_pd(1.0 / 268435456.0);
         const __m256d hi = _mm256_set1_pd(255.0), zero = _mm256_setzero_pd();
         for (; x + 4 <= dw; x += 4) {
@@ -463,7 +565,8 @@ static const unsigned char *src_row(const unsigned char *src, unsigned w, unsign
  * an output needs. Each output row is the same integer sums whatever the band (the ring is only a cache). */
 static void resize_rows(const unsigned char *src, unsigned w, unsigned stride, unsigned channels, unsigned char *dst,
                         unsigned dw, unsigned kx, unsigned ky, unsigned R, int mode, const int *ixx, const int *wx,
-                        const int *iyy, const int *wy, unsigned y0, unsigned y1, int *ring, unsigned char *rowbuf)
+                        const int *iyy, const int *wy, unsigned y0, unsigned y1, int *ring, unsigned char *rowbuf,
+                        const void *hb, unsigned nbs)
 {
     int slot_row[64];
     const int *rows[64];
@@ -476,7 +579,7 @@ static void resize_rows(const unsigned char *src, unsigned w, unsigned stride, u
             const unsigned s = (unsigned)j % R;
             if (slot_row[s] != j) {
                 resize_row_h(src_row(src, w, stride, channels, (unsigned)j, rowbuf), w, dw, kx, ixx, wx,
-                             ring + (size_t)s * dw, mode);
+                             ring + (size_t)s * dw, mode, hb, nbs);
                 slot_row[s] = j;
             }
             rows[k] = ring + (size_t)s * dw;
@@ -697,9 +800,10 @@ static void coarse_rows(const unsigned char *src, unsigned w, unsigned stride, u
 static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned channels,
                         unsigned char *dst, unsigned dw, unsigned dh, int *scratch, unsigned char *rowbuf)
 {
-    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k;
+    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k, nbs = 0;
     int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
     int *ring = wy + (size_t)ky * dh, mode;
+    unsigned char *hb;
     if (dw == 2 * w && dh == 2 * h) {               /* the exact 2x enlargement (up2_rows: the same bits) */
         up2_rows(src, w, h, stride, channels, dst, 0, dh, (uint16_t *)(void *)scratch, rowbuf);   /* 6 dw bytes */
         return;
@@ -713,10 +817,15 @@ static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsign
         return;
     }
     mode = resize_hmode(w, dw, kx, ixx, wx);
+    /* the polyphase blocks after the ring and the uint16 row (vocr_desk_resize_scratch) */
+    hb = (unsigned char *)(void *)(ring + (size_t)h * dw) + ALIGN_UP(2 * (size_t)w + 64, 64);
+    hb = (unsigned char *)(((uintptr_t)hb + 63u) & ~(uintptr_t)63u);
+    if (mode == 3 && (nbs = hb_build(w, dw, kx, ixx, wx, hb)) > 0) mode = 4;
     if (!ring_fits(iyy, ky, h, dh)) {               /* a shrink by more than 62: the whole-frame intermediate */
         int *tmp = ring;
         for (y = 0; y < h; y++)
-            resize_row_h(src_row(src, w, stride, channels, y, rowbuf), w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode);
+            resize_row_h(src_row(src, w, stride, channels, y, rowbuf), w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode,
+                         hb, nbs);
         for (y = 0; y < dh; y++) {
             const int *ii = iyy + (size_t)y * ky, *ww = wy + (size_t)y * ky;
             unsigned char *o = dst + (size_t)y * dw;
@@ -730,12 +839,13 @@ static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsign
         }
         return;
     }
-    resize_rows(src, w, stride, channels, dst, dw, kx, ky, ky < h ? ky : h, mode, ixx, wx, iyy, wy, 0, dh, ring, rowbuf);
+    resize_rows(src, w, stride, channels, dst, dw, kx, ky, ky < h ? ky : h, mode, ixx, wx, iyy, wy, 0, dh, ring, rowbuf,
+                hb, nbs);
 }
 
 /* the banded resize's tables: a header, then the four axis tables */
 typedef struct {
-    unsigned w, h, dw, dh, kx, ky, R;
+    unsigned w, h, dw, dh, kx, ky, R, nbs;
     int mode, ring;
 } resize_plan_hdr;
 
@@ -744,7 +854,14 @@ typedef struct {
 size_t vocr_desk_resize_plan_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh)
 {
     size_t kx = axis_taps(w, dw), ky = axis_taps(h, dh);
-    return PLAN_HDR + sizeof(int) * (2 * kx * dw + 2 * ky * dh);
+    return PLAN_HDR + ALIGN_UP(sizeof(int) * (2 * kx * dw + 2 * ky * dh), 64) + hb_bytes(dw);
+}
+
+/* the plan's polyphase blocks, after its axis tables */
+static unsigned char *plan_hb(const void *plan, unsigned kx, unsigned ky, unsigned dw, unsigned dh)
+{
+    return (unsigned char *)(uintptr_t)plan + PLAN_HDR +
+           ALIGN_UP(sizeof(int) * (2 * (size_t)kx * dw + 2 * (size_t)ky * dh), 64);
 }
 
 int vocr_desk_resize_plan(unsigned w, unsigned h, unsigned dw, unsigned dh, void *plan)
@@ -763,6 +880,8 @@ int vocr_desk_resize_plan(unsigned w, unsigned h, unsigned dw, unsigned dh, void
     P->ky = ky;
     P->R = ky < h ? ky : h;
     P->mode = resize_hmode(w, dw, kx, ixx, wx);
+    P->nbs = 0;
+    if (P->mode == 3 && (P->nbs = hb_build(w, dw, kx, ixx, wx, plan_hb(plan, kx, ky, dw, dh))) > 0) P->mode = 4;
     P->ring = ring_fits(iyy, ky, h, dh);
     if (!(w == 2 * dw && kx == 4) && coarse_axis(wx, dw, kx) && coarse_axis(wy, dh, ky))
         P->mode = -3, P->ring = 1;                                   /* quarter weights (coarse_rows) */
@@ -804,7 +923,7 @@ void vocr_desk_resize_band(const void *plan, const unsigned char *src, unsigned 
         return;
     }
     resize_rows(src, P->w, stride, channels, dst, P->dw, P->kx, P->ky, P->R, P->mode, ixx, wx, iyy, wy, y0, y1, ring,
-                rowbuf);
+                rowbuf, plan_hb(plan, P->kx, P->ky, P->dw, P->dh), P->nbs);
 }
 
 void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,

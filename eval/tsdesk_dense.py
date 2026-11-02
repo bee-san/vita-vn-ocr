@@ -244,14 +244,39 @@ def install_ignore(Dm):
     Dm._read_job, Dm._meiki_job, Dm.meiki_ocr = _ign_read_job, _ign_meiki_job, _ign_meiki_ocr
 
 
+def resample_dense(fr, fit):
+    """eval/desktop.resample_frame for a dense frame: its units as there, and its ignore areas scaled by the same
+    factors (desktop.py's resample carries fr["ignore"] unscaled; protocol v2 amendment 1's l544 dense frames)."""
+    out = D.resample_frame(fr, fit=fit, tag=f"fit{fit[0]}x{fit[1]}")
+    sx, sy = out["W"] / fr["W"], out["H"] / fr["H"]
+    if fr.get("ignore"):
+        out["ignore"] = [[b[0] * sx, b[1] * sy, b[2] * sx, b[3] * sy] for b in fr["ignore"]]
+    return out
+
+
+def cmd_resample(a):
+    import pickle
+    frames, meta = D.load_frames(a.frames)
+    fit = tuple(int(v) for v in a.fit.split("x"))
+    out = [resample_dense(fr, fit) for fr in frames]
+    meta = dict(meta, resampled_fit=a.fit, source_frames_sha256=D.sha256_file(a.frames), ignore_scaled=True)
+    with open(a.out, "wb") as f:
+        pickle.dump({"frames": out, "meta": meta}, f)
+    print(json.dumps({"frames": len(out), "fit": a.fit, "ignore_areas": sum(len(f.get("ignore") or []) for f in out)}))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("build")
     p.add_argument("--out-dir", required=True)
     p.add_argument("--manifest-out")
+    p = sub.add_parser("resample", help="fit a dense frames file into WxH, its ignore areas scaled too")
+    p.add_argument("--frames", required=True)
+    p.add_argument("--fit", default="960x544")
+    p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
-    {"build": cmd_build}[a.cmd](a)
+    {"build": cmd_build, "resample": cmd_resample}[a.cmd](a)
 
 
 if __name__ == "__main__":

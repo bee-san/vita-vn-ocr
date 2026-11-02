@@ -2,10 +2,10 @@
 
 The runtime has hand-written NEON for the Vita and nothing for x86, so a desktop build ran plain C: gcc `-O2` leaves
 its loops unvectorised, and `-O3 -march=native` vectorises only part of them (`docs/c-speed.md`, "Host speed"). This
-change adds AVX2 paths to the hot kernels of the two files a desktop app runs, `runtime/vocr.c` (the recognizer) and
-`runtime/vocr_textspot6.c` (textspot8, the line finder). Every output stays the same bit for bit, the arenas and the
-API do not change, and every build without AVX2 (the Vita's, the PSP's, plain x86 `-O2`) compiles to `main`'s exact
-machine code.
+change adds AVX2 paths to the hot kernels of `runtime/vocr.c` (the recognizer, which every desktop pipeline reads its
+lines with, `desktop/` included) and `runtime/vocr_textspot6.c` (textspot8, Rubi's line finder). Every output stays
+the same bit for bit, the arenas and the API do not change, and every build without AVX2 (the Vita's, the PSP's,
+plain x86 `-O2`) compiles to `main`'s exact machine code.
 
 **Measured effect** (one thread, a Ryzen 7 5800X3D, a whole screenshot read the way Rubi reads it; details in "Host
 speed" below): about 3-4x faster than the best plain-C build (gcc `-O3 -march=native`) and about 4.5x faster than

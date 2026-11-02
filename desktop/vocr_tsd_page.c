@@ -65,6 +65,7 @@ struct vocr_tsd_pool {
 #define A_STORE(x, v) __atomic_store_n(&(x), (v), __ATOMIC_RELEASE)
 #define A_ADD(x, v) __atomic_fetch_add(&(x), (v), __ATOMIC_ACQ_REL)
 
+#ifndef VOCR_DESK_NO_THREADS
 static void relax(void)
 {
 #if defined(__x86_64__) || defined(__i386__)
@@ -86,7 +87,6 @@ static void pool_work(vocr_tsd_pool *p, unsigned worker)
     }
 }
 
-#ifndef VOCR_DESK_NO_THREADS
 static void *pool_main(void *arg)
 {
     pool_arg *a = (pool_arg *)arg;
@@ -153,7 +153,10 @@ unsigned vocr_tsd_pool_threads(const vocr_tsd_pool *p)
 static void pool_run_w(vocr_tsd_pool *p, worker_fn fn, void *arg, unsigned ntasks, unsigned fixed)
 {
     unsigned t;
-#ifndef VOCR_DESK_NO_THREADS
+#ifdef VOCR_DESK_NO_THREADS
+    (void)p;
+    (void)fixed;
+#else
     if (p->threads > 1 && ntasks > 1) {
         p->fn = fn;
         p->arg = arg;

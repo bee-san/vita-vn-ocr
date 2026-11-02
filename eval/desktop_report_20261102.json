@@ -1,0 +1,1741 @@
+{
+ "kind": "vocr-desktop-report-record",
+ "issue": 169,
+ "created": "2026-11-02T01:21:06Z",
+ "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+ "note": "derived figures of docs/desktop.md (audit-vocr-desktop's N1, N2, N7, N12, N13 and F3), counts and rates only, from the stored reads; no new read of a protected set",
+ "pc_test_width_classes": {
+  "frames": {
+   "1280-1919": {
+    "frames": 150,
+    "vns": 47
+   },
+   "801-1279": {
+    "frames": 37,
+    "vns": 9
+   },
+   "<=800": {
+    "frames": 130,
+    "vns": 37
+   },
+   ">=1920": {
+    "frames": 163,
+    "vns": 46
+   }
+  },
+  "arms": {
+   "meiki4_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 20,
+     "cer": 0.4856
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 5,
+     "cer": 0.336
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 39,
+     "cer": 0.9377
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 47,
+     "cer": 0.7828
+    }
+   },
+   "meikiocr": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 92,
+     "cer": 2.2336
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 19,
+     "cer": 1.2769
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 67,
+     "cer": 1.611
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 133,
+     "cer": 2.2152
+    }
+   },
+   "ts8_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 104,
+     "cer": 2.5249
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 15,
+     "cer": 1.0081
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 226,
+     "cer": 5.434
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 267,
+     "cer": 4.447
+    }
+   },
+   "mida_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 43,
+     "cer": 1.0439
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 11,
+     "cer": 0.7392
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 79,
+     "cer": 1.8995
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 84,
+     "cer": 1.3991
+    }
+   },
+   "F3_fit960_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 37,
+     "cer": 0.8983
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 6,
+     "cer": 0.4032
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 212,
+     "cer": 5.0974
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 91,
+     "cer": 1.5157
+    }
+   },
+   "F3_fit800_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 44,
+     "cer": 1.0682
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 5,
+     "cer": 0.336
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 212,
+     "cer": 5.0974
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 99,
+     "cer": 1.6489
+    }
+   },
+   "F3_fit640_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 71,
+     "cer": 1.7237
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 7,
+     "cer": 0.4704
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 204,
+     "cer": 4.905
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 156,
+     "cer": 2.5983
+    }
+   },
+   "F3_fit480_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 89,
+     "cer": 2.1607
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 6,
+     "cer": 0.4032
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 112,
+     "cer": 2.693
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 299,
+     "cer": 4.98
+    }
+   },
+   "F3_long960_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 37,
+     "cer": 0.8983
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 5,
+     "cer": 0.336
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 131,
+     "cer": 3.1498
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 91,
+     "cer": 1.5157
+    }
+   },
+   "F3_long800_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 44,
+     "cer": 1.0682
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 5,
+     "cer": 0.336
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 144,
+     "cer": 3.4624
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 99,
+     "cer": 1.6489
+    }
+   },
+   "F3_long640_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 71,
+     "cer": 1.7237
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 7,
+     "cer": 0.4704
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 204,
+     "cer": 4.905
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 156,
+     "cer": 2.5983
+    }
+   },
+   "final3_long640_L_fast": {
+    "1280-1919": {
+     "units": 159,
+     "chars": 4119,
+     "errors": 72,
+     "cer": 1.748
+    },
+    "801-1279": {
+     "units": 37,
+     "chars": 1488,
+     "errors": 7,
+     "cer": 0.4704
+    },
+    "<=800": {
+     "units": 136,
+     "chars": 4159,
+     "errors": 200,
+     "cer": 4.8088
+    },
+    ">=1920": {
+     "units": 186,
+     "chars": 6004,
+     "errors": 154,
+     "cer": 2.565
+    }
+   }
+  }
+ },
+ "dev_v2_decomposition": {
+  "F3_long960": {
+   "arm_fault": {
+    "units": 14,
+    "extra_errors": 21,
+    "cut": 7,
+    "missed": 1,
+    "merged": 0,
+    "junk": 10
+   },
+   "whole_arm_only": {
+    "units": 1,
+    "extra_errors": -2,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   },
+   "whole_both": {
+    "units": 324,
+    "extra_errors": -3,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   }
+  },
+  "F3_long640": {
+   "arm_fault": {
+    "units": 13,
+    "extra_errors": 20,
+    "cut": 6,
+    "missed": 1,
+    "merged": 0,
+    "junk": 6
+   },
+   "whole_arm_only": {
+    "units": 1,
+    "extra_errors": -3,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   },
+   "whole_both": {
+    "units": 325,
+    "extra_errors": 8,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   }
+  },
+  "final3_long640": {
+   "arm_fault": {
+    "units": 14,
+    "extra_errors": 35,
+    "cut": 8,
+    "missed": 1,
+    "merged": 0,
+    "junk": 8
+   },
+   "whole_arm_only": {
+    "units": 1,
+    "extra_errors": -3,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   },
+   "whole_both": {
+    "units": 324,
+    "extra_errors": 5,
+    "cut": 0,
+    "missed": 0,
+    "merged": 0,
+    "junk": 0
+   }
+  }
+ },
+ "c_crop_differences": {
+  "frames": 313,
+  "frames_differ": 37,
+  "worst_edge_shift_px": {
+   "0": 2,
+   "1": 9,
+   "2": 1,
+   "3": 22,
+   "6": 1,
+   "18": 2
+  },
+  "boxes_only_onnx": 5,
+  "boxes_only_c": 1,
+  "frames_with_a_box_one_path_finds": 6,
+  "note": "crops matched by largest IoU; the shift is the largest edge move of a matched crop on the frame (0: only the box count differs)"
+ },
+ "c_checks": {
+  "resampler": {
+   "frames": 313,
+   "frames_same_crops_as_c": 313,
+   "note": "the ONNX network and Python decode on vocr_desk_resize's input, against the C detector's crops"
+  },
+  "page": {
+   "frames": 313,
+   "frames_same_lines": 313,
+   "frames_same_order": 313,
+   "lines_page": 1893,
+   "lines_harness": 1893,
+   "note": "vocr_desk_page_run_rgb's horizontal lines (crop, dark flag, text) against the harness's composition of the C detector's boxes, eval/desktop.py's crop (no pad), vocr_onnx.line_dark and eval/mida_det.CRec (runtime/vocr.c W8I, head sections)"
+  }
+ },
+ "luma_ms": {
+  "960x544": {
+   "reps": 50,
+   "ms_median": 0.61,
+   "ms_min": 0.6,
+   "ms_max": 0.65,
+   "load_1min_before": 30.0,
+   "load_1min_after": 30.0
+  },
+  "3840x2160": {
+   "reps": 50,
+   "ms_median": 73.48,
+   "ms_min": 72.44,
+   "ms_max": 75.22,
+   "load_1min_before": 30.0,
+   "load_1min_after": 29.6
+  }
+ },
+ "checks_meta": {
+  "created": "2026-11-02T01:14:46Z",
+  "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+  "det_onnx_sha256": "ad7307298e9f30f35703b45660da7e6b56dd999957044a6304d70dd83ea7b1cf",
+  "det_vdsk_sha256": "7fde78d2becb920cd32b2be94eb6e3c83de1459ade7c2a5b54afc630a18c0d9f",
+  "rec_sha256": "65310013e8f990886e4e8097b2fe55eb98cdf082d7193eea510601fc0ac26c82",
+  "frames_sha256": "8613d2441f529c55608f7f8dfecba19d8d711b244783e7ed6af9788f4c65c40f",
+  "c_boxes_sha256": "61130c5d0315068a49e95c169e9867ef957916d48cad800ba3a5ae42330dc8ae"
+ },
+ "mida": {
+  "model": {
+   "file": "mida_ocr_l.onnx",
+   "bytes": 1751881,
+   "sha256": "9f72bce58b50b1837bb16e81c5c035d32d9cd45d84dcef56f0b6fb2ef25e8aed",
+   "params": 429988
+  },
+  "macs": [
+   {
+    "input": [
+     960,
+     544
+    ],
+    "maps": [
+     4,
+     68,
+     120
+    ],
+    "macs": 1035112320,
+    "conv_macs": 935103360,
+    "matmul_macs": 100008960,
+    "attention_tokens": 510
+   }
+  ],
+  "reads": {
+   "dev": {
+    "kind": "vocr-desktop-record",
+    "set": "dev",
+    "created": "2026-11-02T01:21:06Z",
+    "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
+    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "frames_sha256": "8613d2441f529c55608f7f8dfecba19d8d711b244783e7ed6af9788f4c65c40f",
+    "reference": "meiki4_L_fast",
+    "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
+    "clusters": "the units' (VNs; titles on hooked sets)",
+    "rows": {
+     "meiki4_L_fast": {
+      "file_sha256": "05ac8308bf4f159cf6b1e04448248b5b41f6f8c20cf3532ad043d31e62cc2a76",
+      "det": "meiki",
+      "pad": "auto",
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 339,
+       "errors": 58,
+       "chars": 7530,
+       "lines": 507,
+       "boxes": 507,
+       "whole": 506,
+       "cut": 1,
+       "missed": 0,
+       "merged": 0,
+       "junk": 0,
+       "cer": 0.7703,
+       "line_recall": 0.998,
+       "box_precision": 1.0
+      },
+      "by_view": {
+       "dev:psp": {
+        "units": 190,
+        "errors": 46,
+        "chars": 4090,
+        "lines": 289,
+        "boxes": 289,
+        "whole": 289,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 1.1247,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita": {
+        "units": 149,
+        "errors": 12,
+        "chars": 3440,
+        "lines": 218,
+        "boxes": 218,
+        "whole": 217,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3488,
+        "line_recall": 0.9954,
+        "box_precision": 1.0
+       }
+      },
+      "by_group": {
+       "dev:psp": {
+        "units": 144,
+        "errors": 28,
+        "chars": 3020,
+        "lines": 220,
+        "boxes": 220,
+        "whole": 220,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.9272,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:psp-hires": {
+        "units": 46,
+        "errors": 18,
+        "chars": 1070,
+        "lines": 69,
+        "boxes": 69,
+        "whole": 69,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 1.6822,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita": {
+        "units": 30,
+        "errors": 2,
+        "chars": 808,
+        "lines": 53,
+        "boxes": 53,
+        "whole": 53,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.2475,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita-pc": {
+        "units": 119,
+        "errors": 10,
+        "chars": 2632,
+        "lines": 165,
+        "boxes": 165,
+        "whole": 164,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3799,
+        "line_recall": 0.9939,
+        "box_precision": 1.0
+       }
+      }
+     },
+     "mida_L_fast": {
+      "file_sha256": "7b7683e2c2c9f36d4ef532659a0d509cb74bae1b1a5ad435df897d5fed60f739",
+      "det": "mida@box:960x544@order=bgr@along=1.0@thr=0@min_cells=2",
+      "pad": null,
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 339,
+       "errors": 107,
+       "chars": 7530,
+       "lines": 507,
+       "boxes": 511,
+       "whole": 500,
+       "cut": 5,
+       "missed": 2,
+       "merged": 0,
+       "junk": 2,
+       "cer": 1.421,
+       "line_recall": 0.9862,
+       "box_precision": 0.9961
+      },
+      "by_view": {
+       "dev:psp": {
+        "units": 190,
+        "errors": 77,
+        "chars": 4090,
+        "lines": 289,
+        "boxes": 293,
+        "whole": 283,
+        "cut": 5,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.8826,
+        "line_recall": 0.9792,
+        "box_precision": 0.9966
+       },
+       "dev:vita": {
+        "units": 149,
+        "errors": 30,
+        "chars": 3440,
+        "lines": 218,
+        "boxes": 218,
+        "whole": 217,
+        "cut": 0,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 0.8721,
+        "line_recall": 0.9954,
+        "box_precision": 0.9954
+       }
+      },
+      "by_group": {
+       "dev:psp": {
+        "units": 144,
+        "errors": 55,
+        "chars": 3020,
+        "lines": 220,
+        "boxes": 222,
+        "whole": 215,
+        "cut": 4,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.8212,
+        "line_recall": 0.9773,
+        "box_precision": 0.9955
+       },
+       "dev:psp-hires": {
+        "units": 46,
+        "errors": 22,
+        "chars": 1070,
+        "lines": 69,
+        "boxes": 71,
+        "whole": 68,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 2.0561,
+        "line_recall": 0.9855,
+        "box_precision": 1.0
+       },
+       "dev:vita": {
+        "units": 30,
+        "errors": 3,
+        "chars": 808,
+        "lines": 53,
+        "boxes": 53,
+        "whole": 53,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3713,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita-pc": {
+        "units": 119,
+        "errors": 27,
+        "chars": 2632,
+        "lines": 165,
+        "boxes": 165,
+        "whole": 164,
+        "cut": 0,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.0258,
+        "line_recall": 0.9939,
+        "box_precision": 0.9939
+       }
+      },
+      "against_reference": {
+       "dev:all": {
+        "delta": 0.65073,
+        "ci95": [
+         0.131194,
+         1.334618
+        ],
+        "arm_cer": 1.420983,
+        "base_cer": 0.770252,
+        "clusters": 84,
+        "clusters_better": 13,
+        "clusters_worse": 20
+       },
+       "dev:psp": {
+        "delta": 0.757946,
+        "ci95": [
+         0.070434,
+         1.693376
+        ],
+        "arm_cer": 1.882641,
+        "base_cer": 1.124694,
+        "clusters": 51,
+        "clusters_better": 9,
+        "clusters_worse": 15
+       },
+       "dev:psp-hires": {
+        "delta": 0.373832,
+        "ci95": [
+         -1.01937,
+         3.53234
+        ],
+        "arm_cer": 2.056075,
+        "base_cer": 1.682243,
+        "clusters": 24,
+        "clusters_better": 5,
+        "clusters_worse": 2
+       },
+       "dev:vita": {
+        "delta": 0.523256,
+        "ci95": [
+         -0.152324,
+         1.585678
+        ],
+        "arm_cer": 0.872093,
+        "base_cer": 0.348837,
+        "clusters": 59,
+        "clusters_better": 5,
+        "clusters_worse": 5
+       },
+       "dev:vita-pc": {
+        "delta": 0.645897,
+        "ci95": [
+         -0.2189,
+         2.011651
+        ],
+        "arm_cer": 1.025836,
+        "base_cer": 0.379939,
+        "clusters": 53,
+        "clusters_better": 4,
+        "clusters_worse": 4
+       }
+      }
+     }
+    },
+    "source_files": {
+     "reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/res/dev_meiki4_L_fast.json",
+     "arm": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/dev_box960_L_fast.json"
+    }
+   },
+   "hval": {
+    "kind": "vocr-desktop-record",
+    "set": "hval",
+    "created": "2026-11-02T01:21:06Z",
+    "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
+    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "frames_sha256": "c79dbbb95c8ba736768abb9be8b5b0db2b8b700995a29fe590e7bc8dd286f937",
+    "reference": "meiki4_L_fast",
+    "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
+    "clusters": "the units' (VNs; titles on hooked sets)",
+    "rows": {
+     "meiki4_L_fast": {
+      "file_sha256": "ba0b4b5b15d5130213a97693617d6ccb22183dcce88e4915f1a375c66304e377",
+      "det": "meiki",
+      "pad": "auto",
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 2836,
+       "errors": 1770,
+       "chars": 75440,
+       "lines": 4720,
+       "boxes": 4908,
+       "whole": 4501,
+       "cut": 149,
+       "missed": 70,
+       "merged": 0,
+       "junk": 248,
+       "cer": 2.3462,
+       "line_recall": 0.9536,
+       "box_precision": 0.9495
+      },
+      "by_view": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 203,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1353,
+        "whole": 1234,
+        "cut": 113,
+        "missed": 11,
+        "merged": 0,
+        "junk": 6,
+        "cer": 0.9769,
+        "line_recall": 0.9087,
+        "box_precision": 0.9956
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 1567,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3555,
+        "whole": 3267,
+        "cut": 36,
+        "missed": 59,
+        "merged": 0,
+        "junk": 242,
+        "cer": 2.8669,
+        "line_recall": 0.9717,
+        "box_precision": 0.9319
+       }
+      },
+      "by_group": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 203,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1353,
+        "whole": 1234,
+        "cut": 113,
+        "missed": 11,
+        "merged": 0,
+        "junk": 6,
+        "cer": 0.9769,
+        "line_recall": 0.9087,
+        "box_precision": 0.9956
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 1567,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3555,
+        "whole": 3267,
+        "cut": 36,
+        "missed": 59,
+        "merged": 0,
+        "junk": 242,
+        "cer": 2.8669,
+        "line_recall": 0.9717,
+        "box_precision": 0.9319
+       }
+      }
+     },
+     "mida_L_fast": {
+      "file_sha256": "4afc988795f068a000615679cd690e1790186d4ce4fabd363510c92eee5fd8c6",
+      "det": "mida@box:960x544@order=bgr@along=1.0@thr=0@min_cells=2",
+      "pad": null,
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 2836,
+       "errors": 3203,
+       "chars": 75440,
+       "lines": 4720,
+       "boxes": 4861,
+       "whole": 4634,
+       "cut": 60,
+       "missed": 26,
+       "merged": 1,
+       "junk": 135,
+       "cer": 4.2458,
+       "line_recall": 0.9818,
+       "box_precision": 0.9722
+      },
+      "by_view": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 172,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1374,
+        "whole": 1331,
+        "cut": 21,
+        "missed": 6,
+        "merged": 1,
+        "junk": 10,
+        "cer": 0.8277,
+        "line_recall": 0.9801,
+        "box_precision": 0.9927
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 3031,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3487,
+        "whole": 3303,
+        "cut": 39,
+        "missed": 20,
+        "merged": 0,
+        "junk": 125,
+        "cer": 5.5453,
+        "line_recall": 0.9825,
+        "box_precision": 0.9642
+       }
+      },
+      "by_group": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 172,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1374,
+        "whole": 1331,
+        "cut": 21,
+        "missed": 6,
+        "merged": 1,
+        "junk": 10,
+        "cer": 0.8277,
+        "line_recall": 0.9801,
+        "box_precision": 0.9927
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 3031,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3487,
+        "whole": 3303,
+        "cut": 39,
+        "missed": 20,
+        "merged": 0,
+        "junk": 125,
+        "cer": 5.5453,
+        "line_recall": 0.9825,
+        "box_precision": 0.9642
+       }
+      },
+      "against_reference": {
+       "hval:all": {
+        "delta": 1.899523,
+        "ci95": [
+         -2.002279,
+         9.280037
+        ],
+        "arm_cer": 4.245758,
+        "base_cer": 2.346235,
+        "clusters": 71,
+        "clusters_better": 41,
+        "clusters_worse": 15
+       },
+       "hval:psp": {
+        "delta": -0.149175,
+        "ci95": [
+         -0.737515,
+         0.500158
+        ],
+        "arm_cer": 0.827679,
+        "base_cer": 0.976854,
+        "clusters": 17,
+        "clusters_better": 9,
+        "clusters_worse": 5
+       },
+       "hval:vita": {
+        "delta": 2.678424,
+        "ci95": [
+         -2.676304,
+         12.879755
+        ],
+        "arm_cer": 5.54529,
+        "base_cer": 2.866865,
+        "clusters": 54,
+        "clusters_better": 32,
+        "clusters_worse": 10
+       }
+      }
+     }
+    },
+    "source_files": {
+     "reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/res/hval_meiki4_L_fast.json",
+     "arm": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/hval_box960_L_fast.json"
+    }
+   },
+   "dev960": {
+    "kind": "vocr-desktop-record",
+    "set": "dev960",
+    "created": "2026-11-02T01:21:06Z",
+    "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
+    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "frames_sha256": "cc80443fdf7f7f9b0725ba6e17acf7afc602a80e58cd1cb4cd03971d51cdd3e0",
+    "reference": "meiki4_L_fast",
+    "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
+    "clusters": "the units' (VNs; titles on hooked sets)",
+    "rows": {
+     "meiki4_L_fast": {
+      "file_sha256": "f715c4733b022a0affbb2880060e22b6411de4e32b3486cb3a1e9f604bed8d53",
+      "det": "meiki",
+      "pad": "auto",
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 339,
+       "errors": 51,
+       "chars": 7530,
+       "lines": 507,
+       "boxes": 507,
+       "whole": 506,
+       "cut": 1,
+       "missed": 0,
+       "merged": 0,
+       "junk": 0,
+       "cer": 0.6773,
+       "line_recall": 0.998,
+       "box_precision": 1.0
+      },
+      "by_view": {
+       "dev:psp@fit960": {
+        "units": 190,
+        "errors": 39,
+        "chars": 4090,
+        "lines": 289,
+        "boxes": 289,
+        "whole": 289,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.9535,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita@fit960": {
+        "units": 149,
+        "errors": 12,
+        "chars": 3440,
+        "lines": 218,
+        "boxes": 218,
+        "whole": 217,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3488,
+        "line_recall": 0.9954,
+        "box_precision": 1.0
+       }
+      },
+      "by_group": {
+       "dev:psp": {
+        "units": 144,
+        "errors": 23,
+        "chars": 3020,
+        "lines": 220,
+        "boxes": 220,
+        "whole": 220,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.7616,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:psp-hires": {
+        "units": 46,
+        "errors": 16,
+        "chars": 1070,
+        "lines": 69,
+        "boxes": 69,
+        "whole": 69,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 1.4953,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita": {
+        "units": 30,
+        "errors": 2,
+        "chars": 808,
+        "lines": 53,
+        "boxes": 53,
+        "whole": 53,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.2475,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita-pc": {
+        "units": 119,
+        "errors": 10,
+        "chars": 2632,
+        "lines": 165,
+        "boxes": 165,
+        "whole": 164,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3799,
+        "line_recall": 0.9939,
+        "box_precision": 1.0
+       }
+      }
+     },
+     "mida_L_fast": {
+      "file_sha256": "b265b2cd5721d0eb7f1845af7ddd2a2e8874fab5d420c0f1bbd580e5122b9468",
+      "det": "mida@native@order=bgr@along=1.0@thr=0@min_cells=2",
+      "pad": null,
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 339,
+       "errors": 100,
+       "chars": 7530,
+       "lines": 507,
+       "boxes": 511,
+       "whole": 500,
+       "cut": 5,
+       "missed": 2,
+       "merged": 0,
+       "junk": 2,
+       "cer": 1.328,
+       "line_recall": 0.9862,
+       "box_precision": 0.9961
+      },
+      "by_view": {
+       "dev:psp@fit960": {
+        "units": 190,
+        "errors": 70,
+        "chars": 4090,
+        "lines": 289,
+        "boxes": 293,
+        "whole": 283,
+        "cut": 5,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.7115,
+        "line_recall": 0.9792,
+        "box_precision": 0.9966
+       },
+       "dev:vita@fit960": {
+        "units": 149,
+        "errors": 30,
+        "chars": 3440,
+        "lines": 218,
+        "boxes": 218,
+        "whole": 217,
+        "cut": 0,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 0.8721,
+        "line_recall": 0.9954,
+        "box_precision": 0.9954
+       }
+      },
+      "by_group": {
+       "dev:psp": {
+        "units": 144,
+        "errors": 46,
+        "chars": 3020,
+        "lines": 220,
+        "boxes": 222,
+        "whole": 215,
+        "cut": 4,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.5232,
+        "line_recall": 0.9773,
+        "box_precision": 0.9955
+       },
+       "dev:psp-hires": {
+        "units": 46,
+        "errors": 24,
+        "chars": 1070,
+        "lines": 69,
+        "boxes": 71,
+        "whole": 68,
+        "cut": 1,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 2.243,
+        "line_recall": 0.9855,
+        "box_precision": 1.0
+       },
+       "dev:vita": {
+        "units": 30,
+        "errors": 3,
+        "chars": 808,
+        "lines": 53,
+        "boxes": 53,
+        "whole": 53,
+        "cut": 0,
+        "missed": 0,
+        "merged": 0,
+        "junk": 0,
+        "cer": 0.3713,
+        "line_recall": 1.0,
+        "box_precision": 1.0
+       },
+       "dev:vita-pc": {
+        "units": 119,
+        "errors": 27,
+        "chars": 2632,
+        "lines": 165,
+        "boxes": 165,
+        "whole": 164,
+        "cut": 0,
+        "missed": 1,
+        "merged": 0,
+        "junk": 1,
+        "cer": 1.0258,
+        "line_recall": 0.9939,
+        "box_precision": 0.9939
+       }
+      },
+      "against_reference": {
+       "dev:all": {
+        "delta": 0.65073,
+        "ci95": [
+         0.161692,
+         1.286588
+        ],
+        "arm_cer": 1.328021,
+        "base_cer": 0.677291,
+        "clusters": 84,
+        "clusters_better": 10,
+        "clusters_worse": 16
+       },
+       "dev:psp": {
+        "delta": 0.761589,
+        "ci95": [
+         0.240213,
+         1.461799
+        ],
+        "arm_cer": 1.523179,
+        "base_cer": 0.761589,
+        "clusters": 28,
+        "clusters_better": 2,
+        "clusters_worse": 9
+       },
+       "dev:psp-hires": {
+        "delta": 0.747664,
+        "ci95": [
+         -0.726169,
+         3.491087
+        ],
+        "arm_cer": 2.242991,
+        "base_cer": 1.495327,
+        "clusters": 24,
+        "clusters_better": 4,
+        "clusters_worse": 3
+       },
+       "dev:psp@fit960": {
+        "delta": 0.757946,
+        "ci95": [
+         0.168843,
+         1.553172
+        ],
+        "arm_cer": 1.711491,
+        "base_cer": 0.953545,
+        "clusters": 51,
+        "clusters_better": 6,
+        "clusters_worse": 12
+       },
+       "dev:vita": {
+        "delta": 0.123762,
+        "ci95": [
+         -0.374532,
+         0.672948
+        ],
+        "arm_cer": 0.371287,
+        "base_cer": 0.247525,
+        "clusters": 6,
+        "clusters_better": 1,
+        "clusters_worse": 1
+       },
+       "dev:vita-pc": {
+        "delta": 0.645897,
+        "ci95": [
+         -0.2189,
+         2.011651
+        ],
+        "arm_cer": 1.025836,
+        "base_cer": 0.379939,
+        "clusters": 53,
+        "clusters_better": 4,
+        "clusters_worse": 4
+       },
+       "dev:vita@fit960": {
+        "delta": 0.523256,
+        "ci95": [
+         -0.152324,
+         1.585678
+        ],
+        "arm_cer": 0.872093,
+        "base_cer": 0.348837,
+        "clusters": 59,
+        "clusters_better": 5,
+        "clusters_worse": 5
+       }
+      }
+     }
+    },
+    "source_files": {
+     "reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/dev960_meiki4_L_fast.json",
+     "arm": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/dev960_mida_native_L_fast.json"
+    }
+   },
+   "hval960": {
+    "kind": "vocr-desktop-record",
+    "set": "hval960",
+    "created": "2026-11-02T01:21:06Z",
+    "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
+    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "frames_sha256": "984cf21476b0d8183f4fde6ce27919aade742c5b901507f5fe5b344bd72d1d72",
+    "reference": "meiki4_L_fast",
+    "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
+    "clusters": "the units' (VNs; titles on hooked sets)",
+    "rows": {
+     "meiki4_L_fast": {
+      "file_sha256": "124fd2e95f311b0316e0942d41b35c15c5b866f78ee026234276be710a37de8e",
+      "det": "meiki",
+      "pad": "auto",
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 2836,
+       "errors": 1742,
+       "chars": 75440,
+       "lines": 4720,
+       "boxes": 4908,
+       "whole": 4569,
+       "cut": 81,
+       "missed": 70,
+       "merged": 0,
+       "junk": 248,
+       "cer": 2.3091,
+       "line_recall": 0.968,
+       "box_precision": 0.9495
+      },
+      "by_view": {
+       "hval:psp@fit960": {
+        "units": 879,
+        "errors": 175,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1353,
+        "whole": 1302,
+        "cut": 45,
+        "missed": 11,
+        "merged": 0,
+        "junk": 6,
+        "cer": 0.8421,
+        "line_recall": 0.9588,
+        "box_precision": 0.9956
+       },
+       "hval:vita@fit960": {
+        "units": 1957,
+        "errors": 1567,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3555,
+        "whole": 3267,
+        "cut": 36,
+        "missed": 59,
+        "merged": 0,
+        "junk": 242,
+        "cer": 2.8669,
+        "line_recall": 0.9717,
+        "box_precision": 0.9319
+       }
+      },
+      "by_group": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 175,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1353,
+        "whole": 1302,
+        "cut": 45,
+        "missed": 11,
+        "merged": 0,
+        "junk": 6,
+        "cer": 0.8421,
+        "line_recall": 0.9588,
+        "box_precision": 0.9956
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 1567,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3555,
+        "whole": 3267,
+        "cut": 36,
+        "missed": 59,
+        "merged": 0,
+        "junk": 242,
+        "cer": 2.8669,
+        "line_recall": 0.9717,
+        "box_precision": 0.9319
+       }
+      }
+     },
+     "mida_L_fast": {
+      "file_sha256": "cacb6e3ea24fdec99d3f9cc2cda0f03fe1d58616389644e6e88eabea4587f1ad",
+      "det": "mida@native@order=bgr@along=1.0@thr=0@min_cells=2",
+      "pad": null,
+      "rec": "VOCR6.2_L_fast.onnx",
+      "all": {
+       "units": 2836,
+       "errors": 3204,
+       "chars": 75440,
+       "lines": 4720,
+       "boxes": 4861,
+       "whole": 4635,
+       "cut": 59,
+       "missed": 26,
+       "merged": 1,
+       "junk": 135,
+       "cer": 4.2471,
+       "line_recall": 0.982,
+       "box_precision": 0.9722
+      },
+      "by_view": {
+       "hval:psp@fit960": {
+        "units": 879,
+        "errors": 173,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1374,
+        "whole": 1332,
+        "cut": 20,
+        "missed": 6,
+        "merged": 1,
+        "junk": 10,
+        "cer": 0.8325,
+        "line_recall": 0.9809,
+        "box_precision": 0.9927
+       },
+       "hval:vita@fit960": {
+        "units": 1957,
+        "errors": 3031,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3487,
+        "whole": 3303,
+        "cut": 39,
+        "missed": 20,
+        "merged": 0,
+        "junk": 125,
+        "cer": 5.5453,
+        "line_recall": 0.9825,
+        "box_precision": 0.9642
+       }
+      },
+      "by_group": {
+       "hval:psp": {
+        "units": 879,
+        "errors": 173,
+        "chars": 20781,
+        "lines": 1358,
+        "boxes": 1374,
+        "whole": 1332,
+        "cut": 20,
+        "missed": 6,
+        "merged": 1,
+        "junk": 10,
+        "cer": 0.8325,
+        "line_recall": 0.9809,
+        "box_precision": 0.9927
+       },
+       "hval:vita": {
+        "units": 1957,
+        "errors": 3031,
+        "chars": 54659,
+        "lines": 3362,
+        "boxes": 3487,
+        "whole": 3303,
+        "cut": 39,
+        "missed": 20,
+        "merged": 0,
+        "junk": 125,
+        "cer": 5.5453,
+        "line_recall": 0.9825,
+        "box_precision": 0.9642
+       }
+      },
+      "against_reference": {
+       "hval:all": {
+        "delta": 1.937964,
+        "ci95": [
+         -1.968041,
+         9.299367
+        ],
+        "arm_cer": 4.247084,
+        "base_cer": 2.30912,
+        "clusters": 71,
+        "clusters_better": 39,
+        "clusters_worse": 16
+       },
+       "hval:psp": {
+        "delta": -0.009624,
+        "ci95": [
+         -0.596917,
+         0.64456
+        ],
+        "arm_cer": 0.832491,
+        "base_cer": 0.842115,
+        "clusters": 17,
+        "clusters_better": 7,
+        "clusters_worse": 6
+       },
+       "hval:psp@fit960": {
+        "delta": -0.009624,
+        "ci95": [
+         -0.596917,
+         0.64456
+        ],
+        "arm_cer": 0.832491,
+        "base_cer": 0.842115,
+        "clusters": 17,
+        "clusters_better": 7,
+        "clusters_worse": 6
+       },
+       "hval:vita": {
+        "delta": 2.678424,
+        "ci95": [
+         -2.676304,
+         12.879755
+        ],
+        "arm_cer": 5.54529,
+        "base_cer": 2.866865,
+        "clusters": 54,
+        "clusters_better": 32,
+        "clusters_worse": 10
+       },
+       "hval:vita@fit960": {
+        "delta": 2.678424,
+        "ci95": [
+         -2.676304,
+         12.879755
+        ],
+        "arm_cer": 5.54529,
+        "base_cer": 2.866865,
+        "clusters": 54,
+        "clusters_better": 32,
+        "clusters_worse": 10
+       }
+      }
+     }
+    },
+    "source_files": {
+     "reference": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/hval960_meiki4_L_fast.json",
+     "arm": "/local/home/skerraut/herd-vita-ocr/shared/artifacts/mida-ocr-eval/res/hval960_mida_native_L_fast.json"
+    }
+   }
+  }
+ },
+ "budget_t4": {
+  "meikiocr": {
+   "vita": {
+    "p50": 120.094,
+    "variant": "meikiocr|seq"
+   },
+   "psp": {
+    "p50": 106.401,
+    "variant": "meikiocr|seq"
+   },
+   "pc": {
+    "p50": 122.293,
+    "variant": "meikiocr|seq"
+   }
+  },
+  "meiki+L": {
+   "vita": {
+    "p50": 74.162,
+    "variant": "meiki+L|par"
+   },
+   "psp": {
+    "p50": 70.933,
+    "variant": "meiki+L|par"
+   },
+   "pc": {
+    "p50": 77.195,
+    "variant": "meiki+L|par"
+   }
+  },
+  "ts8+L": {
+   "vita": {
+    "p50": 18.643,
+    "variant": "ts8+L#d1|par"
+   },
+   "psp": {
+    "p50": 16.771,
+    "variant": "ts8+L#d1|par"
+   },
+   "pc": {
+    "p50": 20.061,
+    "variant": "ts8+L#d1|par"
+   }
+  },
+  "mida@box:960x544@along=1.0@min_cells=2+L": {
+   "vita": {
+    "p50": 39.618,
+    "variant": "mida@box:960x544@along=1.0@min_cells=2+L#d1|par"
+   },
+   "psp": {
+    "p50": 38.332,
+    "variant": "mida@box:960x544@along=1.0@min_cells=2+L|par"
+   },
+   "pc": {
+    "p50": 41.981,
+    "variant": "mida@box:960x544@along=1.0@min_cells=2+L|par"
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@long:640+L": {
+   "vita": {
+    "p50": 20.741,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@long:640+L|par"
+   },
+   "psp": {
+    "p50": 17.978,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@long:640+L#d1|par"
+   },
+   "pc": {
+    "p50": 23.744,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@long:640+L#d1|par"
+   }
+  },
+  "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@fit:960+L": {
+   "vita": {
+    "p50": 29.235,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@fit:960+L|par"
+   },
+   "psp": {
+    "p50": 13.539,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@fit:960+L|par"
+   },
+   "pc": {
+    "p50": 32.086,
+    "variant": "desk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.onnx@fit:960+L|par"
+   }
+  },
+  "cdesk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.vdsk@long:640+c:L": {
+   "vita": {
+    "p50": 23.684,
+    "variant": "cdesk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.vdsk@long:640+c:L|par"
+   },
+   "psp": {
+    "p50": 20.324,
+    "variant": "cdesk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.vdsk@long:640+c:L|par"
+   },
+   "pc": {
+    "p50": 26.035,
+    "variant": "cdesk:/local/home/skerraut/herd-vita-ocr/shared/artifacts/vocr-desktop/models/final3/vocr_desktop_det.vdsk@long:640+c:L|par"
+   }
+  },
+  "cts8+c:L": {
+   "vita": {
+    "p50": 32.34,
+    "variant": "cts8+c:L|par"
+   },
+   "psp": {
+    "p50": 30.769,
+    "variant": "cts8+c:L|par"
+   },
+   "pc": {
+    "p50": 33.595,
+    "variant": "cts8+c:L|par"
+   }
+  }
+ },
+ "corrections": [
+  "eval/desktop_timing_20261101.json and eval/desktop_timing_decide_20261101.json: in the records of eval/desktop_time.py run, host.load_1min_at_start was read after the passes, so it equals load_1min_at_end (audit-vocr-desktop N6); the records are left as written, and desktop_time.py now reads it before the passes",
+  "eval/desktop_protocol.json registered_in: the rule was in #169's body at 03:20:18Z, before any baseline was scored (the first at 03:33:26Z); the experiment log's protocol line (03:40Z) came after the dev-v2 and PC-sample baselines (audit-vocr-desktop F1); the file is left as registered",
+  "the hooked test titles were read with SKIP_F3=1: the representative's 7 policies, which amendment 6 lists, were not read on them (audit-vocr-desktop F2)"
+ ]
+}

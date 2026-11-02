@@ -629,3 +629,22 @@ def test_vflip_turns_a_gappy_column_into_rows():
         thin[20 + 12 * row:24 + 12 * row, 20:38] = 230
     tb = [_box(19, 19, 39, 19 + 12 * 4 + 6, vertical=1)]
     assert T.post_pre(thin, tb, {"vflip_pct": 30}) == tb
+
+
+def test_split_kgap_cuts_where_k_does_not_bridge_the_gap():
+    g = np.full((40, 220), 20, np.uint8)
+    e1 = _glyphs(g, 8, 10, 4, 16, 2)                                      # a label: 4 glyphs, 2 px apart
+    _glyphs(g, e1 + 12, 10, 3, 16, 2)                                     # a second item 12 px (0.6 h) to its right
+    b = [_box(8, 10, e1 + 12 + 3 * 18 - 2, 26)]
+    K = np.full((5, 28), 6.0, np.float32)                                 # stride 8, scale 1: the K map bridges ...
+    assert T.split_kgap(g, b, K, 1.0, 1.0, 8, 40) == b
+    K[:, (e1 + 2) // 8:(e1 + 10) // 8 + 1] = -5.0                         # ... until it does not
+    out = T.split_kgap(g, b, K, 1.0, 1.0, 8, 40)
+    assert len(out) == 2 and out[0].x == b[0].x and abs(out[0].x + out[0].w - e1) <= 1    # 2 px strokes: +-1 px
+    assert abs(out[1].x - (e1 + 12)) <= 1 and out[1].x + out[1].w == b[0].x + b[0].w
+    assert T.split_kgap(g, b, K, 1.0, 1.0, 8, 80) == b                    # the gap is shorter than 80 % of h
+    narrow = np.full((40, 220), 20, np.uint8)                             # a 3 px mark after the gap: kept whole
+    e2 = _glyphs(narrow, 8, 10, 4, 16, 2)
+    narrow[12:24, e2 + 12:e2 + 15] = 230
+    nb = [_box(8, 10, e2 + 15, 26)]
+    assert T.split_kgap(narrow, nb, K, 1.0, 1.0, 8, 40) == nb

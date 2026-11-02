@@ -483,6 +483,8 @@ def _clamp_ends(boxes, kern, w, h):
 # run in this order on the decode's boxes, before tools/tsdesk_refine.py (vflip_pct first, then merge_pct, touch_pct
 # (merge_touching), rows_pct and gap_pct; vflip, touch_pct and ext_band_pct have no C twin yet):
 #   vflip_pct  a vertical box whose ink is a stack of glyph bands with wide gaps becomes horizontal boxes (vflip);
+#   ksplit_pct the last step, after the post-refinement options: a horizontal box is cut at an ink gap the detector's
+#              own K map does not bridge (split_kgap; Detector only, it needs the maps);
 #   merge_pct  two boxes of one orientation that overlap across by at least half the smaller one's size across and
 #              whose intersection is at least merge_pct % of the smaller one's area become their union (the larger
 #              box's fields): a fragment the decode found inside or beside its line (a 「, a ―。 at the end);
@@ -503,7 +505,7 @@ def _clamp_ends(boxes, kern, w, h):
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
                  "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
                  "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100,
-                 "vflip_min": 3, "vflip_h_pct": 50}
+                 "vflip_min": 3, "vflip_h_pct": 50, "ksplit_pct": 0, "ksplit_k": -2, "ksplit_min_pct": 50}
 POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
@@ -701,6 +703,58 @@ def vflip(g, boxes, gap_pct, join_pct=100, min_bands=3, h_pct=50):
             if changed:
                 break
     return out + pieces
+
+
+def split_kgap(g, boxes, K, fx, fy, stride, gap_pct, k_max=-2, min_pct=50):
+    """ksplit_pct: [Box] with each horizontal box cut at its runs of empty ink columns (ink_mask) at least
+    max(2, gap_pct % of its height) long where the detector's K map does not bridge the gap: the lowest, over the K
+    columns the run covers, of the column's maximum over the box's K rows is below k_max (a logit). Such a box was
+    joined after the decode (the refinement's or the extension's reach, or the merge): a line and an icon beside it,
+    two items of a row. A cut is kept only when the ink on either side, to the next kept cut, is at least min_pct % of
+    the height wide (an end mark like the 」 after a ？ stays). The first part keeps the box's start and the last its
+    end; the edges at a cut lie on the ink either side of the gap."""
+    import dataclasses
+    H, W = g.shape
+    KH, KW = K.shape
+    out = []
+    for b in boxes:
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        h, w = iy1 - iy0, ix1 - ix0
+        if b.vertical or h < 4 or w < 4:
+            out.append(b)
+            continue
+        cc = ink_mask(g, ix0, iy0, ix1, iy1).any(0)
+        ink = np.flatnonzero(cc)
+        if len(ink) < 2:
+            out.append(b)
+            continue
+        G = max(2, _r100(h, gap_pct))
+        r0 = min(max(int(iy0 * fy) // stride, 0), KH - 1)
+        r1 = min(max(int(math.ceil(iy1 * fy / stride)), r0 + 1), KH)
+        cuts = []                                                        # (last ink col + 1, next ink col), box px
+        for i in np.flatnonzero(np.diff(ink) - 1 >= G):
+            a, e = int(ink[i]) + 1, int(ink[i + 1])
+            c0 = min(max(int((ix0 + a) * fx) // stride, 0), KW - 1)
+            c1 = min(max(int(math.ceil((ix0 + e) * fx / stride)), c0 + 1), KW)
+            if float(K[r0:r1, c0:c1].max(0).min()) < k_max:
+                cuts.append((a, e))
+        if not cuts:
+            out.append(b)
+            continue
+        mw = _r100(h, min_pct)
+        keep, start = [], int(ink[0])
+        for k, (a, e) in enumerate(cuts):
+            nxt = cuts[k + 1][0] if k + 1 < len(cuts) else int(ink[-1]) + 1
+            if a - start >= mw and nxt - e >= mw:
+                keep.append((a, e))
+                start = e
+        if not keep:
+            out.append(b)
+            continue
+        xs = [b.x] + [float(ix0 + e) for _, e in keep]
+        xe = [float(ix0 + a) for a, _ in keep] + [b.x + b.w]
+        out.extend(dataclasses.replace(b, x=s0, w=e0 - s0) for s0, e0 in zip(xs, xe) if e0 > s0)
+    return out[:MAX_BOXES]
 
 
 def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
@@ -1107,7 +1161,8 @@ class Detector:
         g = grey_of(img)
         x, (fx, fy, iw, ih) = self.preprocess(g)
         o = self.opts
-        boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
+        maps = self.maps(x)
+        boxes = decode(maps, iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
                        o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
                        int(o["rescue_milli"]), int(o["clamp_ends"]))
         H, W = g.shape
@@ -1124,6 +1179,9 @@ class Detector:
             out = tsdesk_refine.refine_det(g, out, self.refine)
         if self.post is not None and any(self.post[k] for k in POST_POST):
             out = post_post(g, out, self.post)
+        if self.post is not None and self.post["ksplit_pct"]:
+            p = self.post
+            out = split_kgap(g, out, maps[0], fx, fy, self.stride, p["ksplit_pct"], p["ksplit_k"], p["ksplit_min_pct"])
         return out
 
     def boxes(self, rgb):

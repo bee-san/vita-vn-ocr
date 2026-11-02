@@ -721,7 +721,8 @@ def vflip(g, boxes, gap_pct, join_pct=100, min_bands=3, h_pct=50):
     least max(2, 15 % of the box's width) tall), their median height at least h_pct % of the box's width, with a
     median gap between them of at least gap_pct % of their median height, is a stack of horizontal items, not a
     column of vertical text (whose glyphs nearly touch): a kana grid, a menu, a list of short labels. It becomes one
-    horizontal box per band (the band's rows, its ink columns); then the pieces of the frame's
+    horizontal box per band (the band's rows, its ink columns; at most MAX_BOXES with the boxes kept, the C twin's
+    room: desktop/vocr_tsd_post.c); then the pieces of the frame's
     converted boxes that sit in one row (vertical overlap at least half the smaller height) within a gap of
     join_pct % of the larger height join, pairs in order until none does (the larger piece's fields)."""
     import dataclasses
@@ -762,6 +763,7 @@ def vflip(g, boxes, gap_pct, join_pct=100, min_bands=3, h_pct=50):
             pieces.append(dataclasses.replace(b, x=float(ix0 + int(cols[0])), y=float(iy0 + a),
                                               w=float(int(cols[-1]) - int(cols[0]) + 1), h=float(e - a), vertical=0,
                                               cells=1))
+    pieces = pieces[:max(0, MAX_BOXES - len(out))]                      # the C twin's room (cap = MAX_BOXES)
     changed = True
     while changed:
         changed = False

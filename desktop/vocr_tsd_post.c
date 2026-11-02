@@ -24,6 +24,9 @@ void vocr_tsdp_defaults(vocr_tsdp_opts *o)
     o->ext_run_pct = 15;
     o->ext_dash_pct = 80;
     o->ext_join = 1;
+    o->vflip_join_pct = 100;
+    o->vflip_min = 3;
+    o->vflip_h_pct = 50;
 }
 
 void vocr_tsdd_defaults(vocr_tsdd_opts *o)
@@ -37,7 +40,10 @@ void vocr_tsdd_defaults(vocr_tsdd_opts *o)
 int vocr_tsdp_nopts(void) { return VOCR_TSDP_NOPTS; }
 int vocr_tsdd_nopts(void) { return VOCR_TSDD_NOPTS; }
 
-int vocr_tsdp_pre_on(const vocr_tsdp_opts *o) { return o && (o->merge_pct || o->rows_pct || o->gap_pct); }
+int vocr_tsdp_pre_on(const vocr_tsdp_opts *o)
+{
+    return o && (o->vflip_pct || o->merge_pct || o->rows_pct || o->gap_pct);
+}
 int vocr_tsdp_post_on(const vocr_tsdp_opts *o) { return o && o->ext_pct; }
 
 static int r100(long v, int pct) { return (int)((v * (long)pct + 50) / 100); }
@@ -536,6 +542,141 @@ static void split_rows(const unsigned char *g, unsigned W, unsigned H, unsigned 
     }
 }
 
+/* ----------------------------------------------------------------------------- vflip_pct */
+
+/* insertion sort of a few ints (the bands of a box) */
+static void isort(int *v, int n)
+{
+    int i;
+    for (i = 1; i < n; i++) {
+        int x = v[i], j = i;
+        while (j > 0 && v[j - 1] > x) {
+            v[j] = v[j - 1];
+            j--;
+        }
+        v[j] = x;
+    }
+}
+
+/* tools/tsdesk.vflip on boxes[0 .. *n_): the boxes left as they were stay first (in order), the pieces of the turned
+ * ones (joined) follow, at most cap in all */
+static void vflip(const unsigned char *g, unsigned W, unsigned H, unsigned stride, vocr_tsdp_box *boxes,
+                  unsigned *n_, unsigned cap, const vocr_tsdp_opts *o, tsdp_scr *s)
+{
+    vocr_tsdp_box *pc = s->tmp;
+    unsigned n = *n_, i, nout = 0, np = 0, room;
+    /* first the kept boxes, compacted in place; the turned boxes' pieces go to s->tmp in box order. A piece is made
+     * only while kept + pieces stay under cap (tools/tsdesk.vflip caps the same way) */
+    for (i = 0; i < n; i++) {
+        const vocr_tsdp_box b = boxes[i];
+        const int ix0 = pix_floor(b.x, W), iy0 = pix_floor(b.y, H);
+        const int ix1 = pix_ceil(b.x + b.w, W), iy1 = pix_ceil(b.y + b.h, H);
+        const int bw = ix1 - ix0, bh = iy1 - iy0;
+        int mw, bx0, by0, x, y, nb = 0, k, hm, gm, minb;
+        int *ba = s->cc, *be;                /* band starts and ends in cc (2 (bh / 2 + 1) <= H + W ints); the row
+                                                counts in rc, which then sorts the band heights and gaps */
+        if (!b.vertical || bw < 4 || bh < 8) {
+            boxes[nout++] = b;
+            continue;
+        }
+        ink_box(g, W, H, stride, ix0, iy0, ix1, iy1, s, &mw, &bx0, &by0);
+        for (y = 0; y < bh; y++) {
+            const unsigned char *r = s->m + (size_t)(by0 + y) * mw + bx0;
+            int c = 0;
+            for (x = 0; x < bw; x++) c += r[x];
+            s->rc[y] = c;
+        }
+        minb = imax(2, r100(bw, 15));
+        be = ba + (bh / 2 + 1);
+        y = 0;
+        while (y < bh) {
+            int y0;
+            if (!s->rc[y]) {
+                y++;
+                continue;
+            }
+            y0 = y;
+            while (y < bh && s->rc[y]) y++;
+            if (y - y0 >= minb) {
+                ba[nb] = y0;
+                be[nb] = y;
+                nb++;
+            }
+        }
+        if (nb < imax(2, o->vflip_min)) {
+            boxes[nout++] = b;
+            continue;
+        }
+        for (k = 0; k < nb; k++) s->rc[k] = be[k] - ba[k];
+        isort(s->rc, nb);
+        hm = s->rc[(nb - 1) / 2];
+        for (k = 0; k + 1 < nb; k++) s->rc[k] = ba[k + 1] - be[k];
+        isort(s->rc, nb - 1);
+        gm = s->rc[(nb - 2) / 2];
+        if ((long)gm * 100 < (long)o->vflip_pct * hm || (long)hm * 100 < (long)o->vflip_h_pct * bw) {
+            boxes[nout++] = b;
+            continue;
+        }
+        for (k = 0; k < nb; k++) {
+            int c0 = -1, c1 = -1;
+            for (x = 0; x < bw; x++) {
+                int any = 0;
+                for (y = ba[k]; y < be[k] && !any; y++) any = s->m[(size_t)(by0 + y) * mw + bx0 + x];
+                if (any) {
+                    if (c0 < 0) c0 = x;
+                    c1 = x;
+                }
+            }
+            if (np < cap) {
+                vocr_tsdp_box q = b;
+                q.x = (double)(ix0 + c0);
+                q.y = (double)(iy0 + ba[k]);
+                q.w = (double)(c1 - c0 + 1);
+                q.h = (double)(be[k] - ba[k]);
+                q.vertical = 0;
+                q.cells = 1;
+                pc[np++] = q;
+            }
+        }
+    }
+    room = cap > nout ? cap - nout : 0;
+    if (np > room) np = room;
+    for (;;) {                              /* the joins: the first pair in order, until none */
+        int changed = 0;
+        unsigned a, c;
+        for (a = 0; a < np && !changed; a++) {
+            for (c = a + 1; c < np; c++) {
+                const vocr_tsdp_box A = pc[a], C = pc[c];
+                const vocr_tsdp_box *big;
+                vocr_tsdp_box u;
+                double x0, y0, x1, y1;
+                if (dmin(A.y + A.h, C.y + C.h) - dmax(A.y, C.y) < 0.5 * dmin(A.h, C.h)) continue;
+                if (dmax(C.x - (A.x + A.w), A.x - (C.x + C.w)) * 100 > (double)o->vflip_join_pct * dmax(A.h, C.h))
+                    continue;
+                big = A.w * A.h >= C.w * C.h ? &A : &C;
+                x0 = dmin(A.x, C.x);
+                y0 = dmin(A.y, C.y);
+                x1 = dmax(A.x + A.w, C.x + C.w);
+                y1 = dmax(A.y + A.h, C.y + C.h);
+                u = *big;
+                u.x = x0;
+                u.y = y0;
+                u.w = x1 - x0;
+                u.h = y1 - y0;
+                u.cells = A.cells + C.cells;
+                pc[a] = u;
+                memmove(&pc[c], &pc[c + 1], (np - c - 1) * sizeof *pc);
+                np--;
+                changed = 1;
+                break;
+            }
+        }
+        if (!changed) break;
+    }
+    memcpy(boxes + nout, pc, np * sizeof *pc);
+    *n_ = nout + np;
+}
+
 int vocr_tsdp_pre(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, vocr_tsdp_box *boxes,
                   unsigned *n, unsigned cap, const vocr_tsdp_opts *o, void *scratch, size_t bytes)
 {
@@ -543,10 +684,11 @@ int vocr_tsdp_pre(const unsigned char *grey, unsigned w, unsigned h, unsigned st
     unsigned i, k = 0, m;
     if (!n || !o || (*n && !boxes) || *n > cap) return VOCR_TSDP_E_ARG;
     if (o->gap_pct) return VOCR_TSDP_E_ARG;
-    if (!o->merge_pct && !o->rows_pct) return VOCR_TSDP_OK;
+    if (!o->vflip_pct && !o->merge_pct && !o->rows_pct) return VOCR_TSDP_OK;
     if (!grey || !w || !h || stride < w || !scratch) return VOCR_TSDP_E_ARG;
     if (bytes < vocr_tsdp_scratch_bytes(w, h, cap)) return VOCR_TSDP_E_SCRATCH;
     scr_map(&s, scratch, w, h, cap);
+    if (o->vflip_pct) vflip(grey, w, h, stride, boxes, n, cap, o, &s);
     if (o->merge_pct) merge_overlaps(boxes, n, o->merge_pct);
     if (o->rows_pct) {
         m = *n;

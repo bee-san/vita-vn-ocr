@@ -421,9 +421,20 @@ def test_drop_set_rules():
                 (30, 40, 30, 20, "Max", 0.9))
     assert T.drop_set(row, o1) == {0, 2, 3}
     assert T.drop_set(row, o2) == {2, 3}                     # "A" sits 8 px from a Japanese reading in its row
+    assert T.drop_set(items((10, 10, 12, 20, "", 0.9), (30, 10, 150, 20, "スポーツ", 0.99)), o2) == {0}   # empty
     far = items((10, 10, 40, 20, "行動力", 0.99), (75, 12, 40, 18, "Max", 0.9))     # 25 px on: 1.25 heights
     assert T.drop_set(far, o2) == {1} and T.drop_set(far, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
+    strip = items((10, 10, 120, 20, "「000OO000", 0.7), (140, 10, 60, 20, "0000", 0.7))
+    assert T.drop_set(strip, o2) == set()                    # 「 makes the ornament an anchor
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_anchor_pct": 50})) == {1}
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50})) == {1}
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
+    assert T.japanese_share("「000") == 0.25 and T.japanese_share("") == 0.0
     assert T.drop_set(row, T.drop_options({})) == set()
+    r = T.drop_options({"rep_pct": 50})
+    reps = items((0, 0, 99, 20, "イf0u000u00000000000c", 0.9), (0, 30, 99, 20, "【AccessingtheWorld】", 0.9),
+                 (0, 60, 99, 20, "……………………", 0.9), (0, 90, 99, 20, "000", 0.9), (0, 120, 99, 20, "所持金100000円", 0.9))
+    assert T.drop_set(reps, r) == {0, 4} and T.drop_set(reps, T.drop_options({"rep_pct": 80})) == set()
     c = T.drop_options({"conf_milli": 600})
     assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
     with pytest.raises(KeyError):
@@ -503,3 +514,59 @@ def test_decode_saddle_split():
     assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
     assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
     assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept
+
+
+def test_decode_vote_split_two_touching_lines():
+    s, hm, wm = 8, 12, 40
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    lines = {range(3, 5): (20.0, 44.0), range(5, 8): (46.0, 70.0)}       # kernel rows 3-7 touch: one component
+    for rows_, (y0, y1) in lines.items():
+        for r in rows_:
+            for q in range(5, 31):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y1 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - 40.0, 248.0 - cs[q]
+    one = T.decode(m, wm * s, hm * s, s)
+    assert len(one) == 1
+    two = sorted(T.decode(m, wm * s, hm * s, s, vote_pct=70), key=lambda b: b.y)
+    assert len(two) == 2
+    assert two[0].y == pytest.approx(20.0) and two[0].y + two[0].h == pytest.approx(44.0)
+    assert two[1].y == pytest.approx(46.0) and two[1].y + two[1].h == pytest.approx(70.0)
+    assert all(b.x == pytest.approx(40.0) and b.x + b.w == pytest.approx(248.0) for b in two)
+    m1 = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0]])                   # one line: its votes agree, no split
+    assert len(T.decode(m1, 320, 160, 8, vote_pct=70)) == 1
+
+
+def test_decode_rescue_weak_lines():
+    m = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0], [37.0, 100.0, 221.0, 124.0]])
+    weak = m[0][12:16] > 0                                  # the second line's kernel rows: made weak (K -1)
+    m[0][12:16][weak] = -1.0
+    assert len(T.decode(m, 320, 160, 8)) == 1
+    two = sorted(T.decode(m, 320, 160, 8, rescue_milli=1500), key=lambda b: b.y)
+    assert len(two) == 2 and two[1].logit == pytest.approx(-1.0)
+    assert abs(two[1].y - 100.0) < 1e-9 and abs(two[1].x + two[1].w - 221.0) < 1e-9
+    assert len(T.decode(m, 320, 160, 8, rescue_milli=500)) == 1          # -1 is under -0.5
+    assert T.decode(m, 320, 160, 8, rescue_milli=1500)[0] == T.decode(m, 320, 160, 8)[0]   # the strong line as before
+
+
+def test_read_frame_reading_filter():
+    import vocr_onnx as V
+
+    class Det:
+        def detect(self, g):
+            return [_box(10, 10, 60, 30), _box(110, 10, 200, 30), _box(204, 10, 220, 30), _box(10, 60, 30, 90, 1)]
+
+    class Rec:
+        def read(self, img, invert=False, lm=None):
+            t = {54: "0000000", 94: "あいう", 20: "A"}.get(img.shape[1], "?")       # crop widths (pad 2 px)
+            return V.Line(t, t, conf_mean=0.99)
+
+    g = np.full((100, 300), 30, np.uint8)
+    texts = lambda drop: [ln.text for ln in T.read_frame(g, Det(), Rec(), drop=drop)]    # noqa: E731
+    assert texts(None) == ["0000000", "あいう", "A", ""]
+    assert texts({"nojp": 1}) == ["あいう", ""]                           # a vertical box is never read or dropped
+    assert texts({"nojp": 2}) == ["あいう", "A", ""]
+    assert texts({"rep_pct": 50}) == ["あいう", "A", ""]

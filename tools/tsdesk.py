@@ -28,6 +28,18 @@ centre + E2 over its last, each kept within the component's cells' reach (`along
 them, and never inside the first or last cell's far edge). The recognizer reads a box grown by `pad` (default
 READ_PAD = "k6v4", the protocol's: max(2, round(6 H / 544)) frame px left and right and max(2, round(4 H / 544)) top
 and bottom for an H px tall frame; "auto" is k4, the pad VOCR's eval crops and MeikiOCR's reference pipeline use).
+
+Options (#173 round 2, helper textspot-desktop-boxes), every one off by default, so that with none set the boxes are
+the decode's and the refinement's bit for bit; none has a C twin yet:
+  - the decode's DECODE_EXTRA: vote_pct (split a component across where its cells' edge votes are bimodal: two
+    tightly spaced rows), saddle_pct (split along at K saddles), rescue_milli (decode weak isolated components too);
+  - the post-pass on frame-px boxes, POST_DEFAULTS: merge_pct, rows_pct and gap_pct before the refinement, ext_pct
+    after it (the section "the post-pass" below);
+  - the reading filter, DROP_DEFAULTS, in read_frame(drop=...): nojp and rep_pct (readings that are not Japanese or
+    are an ornament), conf_milli (drop_set()).
+    det = Detector(path, decode_opts={"vote_pct": 70}, refine=True,
+                   post={"merge_pct": 70, "rows_pct": 65, "valley_pct": 0, "ext_pct": 1200})
+    lines = read_frame(frame, det, rec, drop={"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "rep_pct": 50})
 """
 import json
 import math
@@ -39,7 +51,8 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
-DECODE_EXTRA = {"saddle_pct": 0}    # decode options without a C twin yet (helper textspot-desktop-boxes), 0 = off
+DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0}    # decode options without a C twin yet
+#                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
 def _session(path, threads=1, providers=None, options=None):
@@ -236,14 +249,95 @@ def saddle_split(K, Om, lab, n, stats, pct):
     return out_n, lab, np.array(st, dtype=stats.dtype).reshape(out_n, stats.shape[1]), cut
 
 
+def vote_split(maps, lab, n, stats, pct, s, depth=2):
+    """The decode's vote option: a component whose cells span two or more indices across its line (the orientation
+    of its mean O) is split across where its cells' edge votes are bimodal, two tightly spaced lines whose kernels
+    touched: over the split points between consecutive across indices, the one that best separates the mean near
+    votes (centre - A1) of the cells before it from those after it, kept when both that separation and the far votes'
+    (centre + A2) are at least pct % of the component's mean size across (A1 + A2); recursively, `depth` levels.
+    (n, lab, stats) with stats in cv2's layout."""
+    hm, wm = lab.shape
+    K, Om, A1, A2 = (np.ascontiguousarray(maps[i, :hm, :wm]) for i in range(4))
+    lab = lab.copy()
+    st = [list(stats[c]) for c in range(n)]
+    half = (s - 1) / 2.0
+    todo = [(c, depth) for c in range(1, n)]
+    while todo:
+        c, dep = todo.pop()
+        x, y, cw, ch = (int(v) for v in st[c][:4])
+        sub = lab[y:y + ch, x:x + cw] == c
+        rr, qq = np.nonzero(sub)
+        if len(rr) < 4:
+            continue
+        vert = float(Om[y:y + ch, x:x + cw][sub].mean()) > 0
+        ai = (qq + x) if vert else (rr + y)
+        cc = s * ai.astype(np.float64) + half
+        near = cc - A1[y:y + ch, x:x + cw][sub].astype(np.float64)
+        far = cc + A2[y:y + ch, x:x + cw][sub].astype(np.float64)
+        size = float(np.mean(far - near))
+        idx = np.unique(ai)
+        if len(idx) < 2 or size <= 0:
+            continue
+        best = None
+        for k in range(len(idx) - 1):
+            lo = ai <= idx[k]
+            dn = float(near[~lo].mean() - near[lo].mean())
+            df = float(far[~lo].mean() - far[lo].mean())
+            sep = min(dn, df)
+            if best is None or sep > best[0]:
+                best = (sep, k)
+        if best is None or best[0] * 100.0 < pct * size:
+            continue
+        lo = ai <= idx[best[1]]
+        part = np.zeros_like(sub)
+        part[rr[~lo], qq[~lo]] = True
+        lab[y:y + ch, x:x + cw][part] = n
+        keep = sub & ~part
+        for msk, lbl in ((keep, c), (part, n)):
+            r2, q2 = np.nonzero(msk)
+            entry = [x + int(q2.min()), y + int(r2.min()), int(q2.max() - q2.min()) + 1, int(r2.max() - r2.min()) + 1,
+                     int(msk.sum())]
+            if lbl == c:
+                st[c] = entry
+            else:
+                st.append(entry)
+        n += 1
+        if dep > 1:
+            todo += [(c, dep - 1), (n - 1, dep - 1)]
+    return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
+
+
+def rescue_components(k, lab, n, stats, t_low):
+    """The decode's rescue option: the 4-connected components of K > -t_low that hold no cell of K > 0 (a line the
+    network saw too weakly: no kernel cell, nothing found there) added with new labels. (n, lab, stats, first new
+    label)."""
+    import cv2
+    m, lab2, st2, _ = cv2.connectedComponentsWithStats((k > -t_low).astype(np.uint8), connectivity=4)
+    if m <= 1:
+        return n, lab, stats, n
+    has_pos = np.bincount(lab2.ravel(), weights=(k > 0).ravel().astype(np.float64), minlength=m) > 0
+    new = [c for c in range(1, m) if not has_pos[c]]
+    if not new:
+        return n, lab, stats, n
+    lab = lab.copy()
+    rows = [stats]
+    for i, c in enumerate(new):
+        lab[lab2 == c] = n + i
+        rows.append(st2[c:c + 1].astype(stats.dtype))
+    return n + len(new), lab, np.concatenate(rows, 0), n
+
+
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
-    the first max_boxes kept. saddle_pct > 0 (off by default, no C twin yet): each component split along at the K
-    saddles saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there)."""
+    the first max_boxes kept. Off by default, no C twin yet: vote_pct > 0, each component split across where its
+    cells' edge votes are bimodal (vote_split()); saddle_pct > 0, each component split along at the K saddles
+    saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there);
+    rescue_milli > 0, the components of K > -rescue_milli / 1000 with no K > 0 cell decoded too (rescue_components();
+    their mean logit is negative, so conf_min_logit does not apply to them)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -252,6 +346,10 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if n <= 1:
         return []
     cut = None
+    if rescue_milli:
+        n, lab, stats, _ = rescue_components(k, lab, n, stats, rescue_milli / 1000.0)
+    if vote_pct:
+        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s)
     if saddle_pct:
         n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
@@ -264,6 +362,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
 
     cnt = np.bincount(L, minlength=n).astype(np.float64)
     cnt[0] = 1.0
+    pos = np.bincount(L, (m_of(0) > 0).astype(np.float64), minlength=n) if rescue_milli else cnt
     logit = np.bincount(L, m_of(0), minlength=n) / cnt
     vert = np.bincount(L, m_of(1), minlength=n) / cnt > 0
     vL = vert[L]
@@ -285,7 +384,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     tsum = [np.bincount(L, m_of(6 + i), minlength=n) for i in range(tags)]
     out = []
     for c in range(1, n):
-        if stats[c, cv2.CC_STAT_AREA] < min_cells or logit[c] < conf_min_logit:
+        if stats[c, cv2.CC_STAT_AREA] < min_cells or (logit[c] < conf_min_logit and pos[c] > 0):
             continue
         size = float(far[c] - near[c])
         if size < min_across:
@@ -703,7 +802,7 @@ def post_pre(g, boxes, opts):
 
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
-DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "conf_milli": 0}
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0}
 _JP_RE = None
 
 
@@ -716,35 +815,56 @@ def drop_options(opts=None):
     return o
 
 
-def has_japanese(text):
+def _jp_re():
     global _JP_RE
     if _JP_RE is None:
         import re
         _JP_RE = re.compile(f"[{JAPANESE}]")
-    return bool(_JP_RE.search(text))
+    return _JP_RE
+
+
+def has_japanese(text):
+    return bool(_jp_re().search(text))
+
+
+def japanese_share(text):
+    """The share of a reading's characters that are Japanese (JAPANESE), 0 for the empty reading."""
+    return len(_jp_re().findall(text)) / len(text) if text else 0.0
 
 
 def drop_set(items, o):
     """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
     items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
       nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
-      nojp 2: the same, unless a reading with one sits in the same row (vertical overlap >= half the smaller height)
+      nojp 2: the same, unless the reading is not empty and a reading with one sits in the same row (vertical
+              overlap >= half the smaller height)
               within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
-              before スポーツ);
+              before スポーツ), and at least nojp_anchor_pct % of that reading's characters are Japanese (an
+              ornament misread as 「000OO0 does not anchor its neighbours);
+      rep_pct: a reading of at least 4 characters whose most frequent character is not Japanese and makes up at least
+              rep_pct % of it (an ornament strip read as イf0u000u0000000c; no reference line of hval, the dense sets
+              or dev-v2 is one);
       conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
+    from collections import Counter
     out = set()
     jp = [has_japanese(t) for _, t, _ in items]
+    anchor = [j and japanese_share(t) * 100.0 >= o["nojp_anchor_pct"] for j, (_, t, _) in zip(jp, items)]
     for i, (b, t, c) in enumerate(items):
         if o["conf_milli"] and c * 1000.0 < o["conf_milli"]:
             out.add(i)
             continue
+        if o["rep_pct"] and len(t) >= 4:
+            ch, k = Counter(t).most_common(1)[0]
+            if not has_japanese(ch) and k * 100 >= o["rep_pct"] * len(t):
+                out.add(i)
+                continue
         if not o["nojp"] or jp[i]:
             continue
-        if o["nojp"] >= 2:
+        if o["nojp"] >= 2 and t:
             x, y, w, h = b
             keep = False
             for j, (b2, _, _) in enumerate(items):
-                if j == i or not jp[j]:
+                if j == i or not anchor[j]:
                     continue
                 x2, y2, w2, h2 = b2
                 if min(y + h, y2 + h2) - max(y, y2) < 0.5 * min(h, h2):
@@ -816,7 +936,8 @@ class Detector:
         x, (fx, fy, iw, ih) = self.preprocess(g)
         o = self.opts
         boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
-                       o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]))
+                       o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
+                       int(o["rescue_milli"]))
         H, W = g.shape
         out = []
         for b in boxes:
@@ -945,15 +1066,21 @@ def main(argv=None):
     ap.add_argument("--size", help="the detector's input policy: fit:N, long:N or native (default: the file's)")
     ap.add_argument("--pad", default="k6v4", help="the reading pad: k6v4 (the default), kN, auto or N frame px")
     ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--refine", action="store_true", help="tools/tsdesk_refine.py on the boxes")
+    ap.add_argument("--decode", help="JSON: decode options (DEFAULTS, DECODE_EXTRA), e.g. '{\"vote_pct\": 70}'")
+    ap.add_argument("--post", help="JSON: post-pass options (POST_DEFAULTS)")
+    ap.add_argument("--drop", help="JSON: reading-filter options (DROP_DEFAULTS)")
     ap.add_argument("images", nargs="+")
     a = ap.parse_args(argv)
-    det = Detector(a.det, threads=1, size=a.size)
+    det = Detector(a.det, threads=1, size=a.size, refine=True if a.refine else None,
+                   decode_opts=json.loads(a.decode) if a.decode else None, post=json.loads(a.post) if a.post else None)
+    drop = json.loads(a.drop) if a.drop else None
     rec = V.Recognizer(a.rec, threads=1)
     lm = V.CharLM(a.lm, tier=rec.name[-1:] if rec.name else None) if a.lm else None
     for p in a.images:
         img = _load_image(p)
         t0 = time.perf_counter()
-        lines = read_frame(img, det, rec, pad=a.pad, lm=lm, workers=a.threads)
+        lines = read_frame(img, det, rec, pad=a.pad, lm=lm, workers=a.threads, drop=drop)
         ms = (time.perf_counter() - t0) * 1e3
         print(json.dumps({"image": p, "ms": round(ms, 1), "lines": [
             {"text": ln.text, "box": [round(v, 1) for v in ln.box], "crop": list(ln.crop), "tag": CLASSES[ln.tag],

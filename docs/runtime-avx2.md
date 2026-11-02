@@ -100,6 +100,12 @@ gcc 13.3 (Ubuntu 24.04 under WSL 2):
 | 960×544 | 135.1 (30.1) | 41.9-45.9 (18.6) | 15.0-16.3 (3.5) | 14.2-15.3 (3.2) |
 | 1200×680 | 82.4 (43.7) | 37.5 (26.9) | 10.3 (5.1) | 9.4 (4.6) |
 
+The two screenshots hold the same two dialogue lines. 960×544 takes longer although its spotter is cheaper: at native
+size Normal's weakest character on the first line scores 0.67, so the cascade reads that line again with Large (7.2 ms
+of the AVX2 `-O2` build's 16 ms). On the upscaled frame it scores 0.95 and Large never runs. Each line is resized to 32
+px tall, so Normal's reads cost about the same on both (5.4 and 5.2 ms). Every build reads the same text, so every
+column has this split.
+
 clang 21.1 (zig cc 0.16, Windows 11): plain C `-O2` 63.1 (16.9) and 45.3 (26.7); AVX2 `-O2 -mavx2` 14.1 (3.8) and
 10.4 (5.9). clang's `-O3 -march=native` without the kernels is no faster than its `-O2` (62.8 and 45.0).
 

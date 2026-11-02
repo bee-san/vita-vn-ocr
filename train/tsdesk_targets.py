@@ -29,6 +29,13 @@ above and below on the same page that overlaps the line horizontally (gap_bounds
 a region; the rows: every other horizontal line of any kind and drop, ruby included, and every uncovered renderer
 box), in the middle of the overlap where the cells overlap. Steps 2-4 (the background and the thresholds) are
 unchanged, so a line no bound cuts keeps targets_v1's box exactly.
+
+The cells fix (`build --cells-fix`, targets_v3 = targets_v2 + this; off by default): a horizontal line whose glyph
+cells match its label's characters, and whose box leaves a non-space character's cell wholly outside (part of the
+line cut: a trailing 。 or a leading 「, a faint or coloured word), is boxed again with three changes, each a cause
+of such cuts: ring_noise's fix (a ring through the line's outline or a neighbour's ink no longer lifts the threshold),
+colour_edges (a coloured glyph's stroke edges on its own channel) and glyph_cells (a small glyph whose ink the speck
+filter breaks up is kept: its cell must hold ink). Every other line keeps its targets_v2 box.
 """
 import numpy as np
 
@@ -40,6 +47,7 @@ NOISE_MARGIN = 12.0
 MIN_BLOB = 3
 GAP_MIN_OFFSET = 0.5     # a row is above / below a line when the centres lie this x the smaller height apart or more
 GAP_MIN_KEEP = 0.5       # bounds that would keep less of the cells' height than this are not applied
+NOISE_INK_SHARE = 0.5    # noise_fix: the ring's ink-like pixels leave its noise when they are under this share
 
 
 def cells_union(line):
@@ -116,13 +124,31 @@ def across_rows(across, H):
     return lo, hi
 
 
+def ring_noise(dr, body, fix=False):
+    """The ring's noise level (step 4): the 90th percentile of the ring's differences. fix (targets_v3): without the
+    ring pixels at or above the body term (ink-like: the line's outline past its cells, the neighbouring line, a plate
+    border) when they are under NOISE_INK_SHARE of the ring, so a ring through ink no longer lifts the threshold over
+    the line's faint parts; a ring mostly above the body term (a dither or pattern as strong as the text) keeps the
+    plain 90th percentile."""
+    if fix:
+        inky = dr >= body
+        if inky.mean() < NOISE_INK_SHARE and (~inky).sum() >= 8:
+            return float(np.percentile(dr[~inky], 90))
+    return float(np.percentile(dr, 90))
+
+
 def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE_MARGIN, min_blob=MIN_BLOB,
-            across=None):
+            across=None, noise_fix=False, colour_edges=False, glyph_cells=None):
     """(box, how): the ink box of a line inside c = [x0, y0, x1, y1] (its cells' union, module docstring); how is
     "ink" or "cells". across: None (targets_v1's rule), or the line's across bounds (top, bottom) in frame px
     (gap_bounds: #177's gap clip): the ink is searched, and the "cells" box kept, only on the rows between them
     (across_rows); the background and the thresholds are the unclipped window's, so a line no bound cuts gets
-    exactly targets_v1's box."""
+    exactly targets_v1's box. noise_fix (targets_v3): ring_noise's fix. colour_edges (targets_v3): the stroke-edge test
+    on the largest per-channel 3x3 contrast instead of the channel mean's (a coloured glyph's edge is as strong as its
+    difference from the background on its own channel, as d already measures it); grey frames are unchanged.
+    glyph_cells (targets_v3): the cells [x0, y0, x1, y1] of the line's non-space characters; a cell left with no ink
+    after the speck filter keeps its own raw ink when that holds at least min_blob pixels (a small 。 or 、 at PSP
+    size whose ring falls apart into 1-2 px pieces: a glyph is known to be there)."""
     import math
     H, W = rgb.shape[:2]
     x0, y0 = max(0, int(math.floor(c[0]))), max(0, int(math.floor(c[1])))
@@ -140,13 +166,22 @@ def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE
     d = np.abs(win - bg[None, None, :]).max(axis=2).astype(np.float32)
     dr = np.concatenate([d[0], d[-1], d[1:-1, 0], d[1:-1, -1]])
     inner = d[y0 - wy0:y1 - wy0, x0 - wx0:x1 - wx0]
-    t = max(float(floor), float(k) * float(np.percentile(inner, 99)), float(np.percentile(dr, 90)) + noise_margin)
+    body = float(k) * float(np.percentile(inner, 99))
+    t = max(float(floor), body, ring_noise(dr, body, noise_fix) + noise_margin)
     # local contrast (the 3x3 max - min of the luma): a smooth gradient behind the text differs from the ring's
     # median without being ink; a stroke edge has both
-    g = win.mean(axis=2).astype(np.float32)
-    gp = np.pad(g, 1, mode="edge")
-    sh = [gp[i:i + g.shape[0], j:j + g.shape[1]] for i in range(3) for j in range(3)]
-    c3 = np.max(sh, 0) - np.min(sh, 0)
+    if colour_edges and win.shape[2] > 1:
+        c3 = None
+        for ch in range(win.shape[2]):
+            gp = np.pad(win[:, :, ch].astype(np.float32), 1, mode="edge")
+            sh = [gp[i:i + win.shape[0], j:j + win.shape[1]] for i in range(3) for j in range(3)]
+            e = np.max(sh, 0) - np.min(sh, 0)
+            c3 = e if c3 is None else np.maximum(c3, e)
+    else:
+        g = win.mean(axis=2).astype(np.float32)
+        gp = np.pad(g, 1, mode="edge")
+        sh = [gp[i:i + g.shape[0], j:j + g.shape[1]] for i in range(3) for j in range(3)]
+        c3 = np.max(sh, 0) - np.min(sh, 0)
     c3i = c3[y0 - wy0:y1 - wy0, x0 - wx0:x1 - wx0]
     tc = max(float(floor), float(k) * float(np.percentile(c3i, 99)))
     sx0, sy0 = max(wx0, x0 - spill), max(wy0, y0 - spill, lo)
@@ -157,7 +192,13 @@ def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE
     # a pixel is ink when it differs from the background; it counts toward the extent when it also lies within one
     # pixel of a stroke edge (local contrast above tc), so a gradient alone never makes ink
     near_edge = c3[sl] > tc
-    m = _drop_small((d[sl] > t) & near_edge, min_blob)
+    m0 = (d[sl] > t) & near_edge
+    m = _drop_small(m0, min_blob)
+    for cb in glyph_cells or ():
+        a0 = max(0, int(math.floor(cb[0])) - sx0)
+        a1 = min(m.shape[1], int(math.ceil(cb[2])) - sx0)
+        if a1 > a0 and not m[:, a0:a1].any() and int(m0[:, a0:a1].sum()) >= min_blob:
+            m[:, a0:a1] |= m0[:, a0:a1]
     cols = np.flatnonzero(m.any(0))
     rows = np.flatnonzero(m.any(1))
     if not len(cols) or not len(rows):
@@ -165,9 +206,10 @@ def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE
     return [int(sx0 + cols[0]), int(sy0 + rows[0]), int(sx0 + cols[-1] + 1), int(sy0 + rows[-1] + 1)], "ink"
 
 
-def line_ink(rgb, line, across=None):
-    """(box, how) of a pool line: ink_box on its cells' union (across: its gap bounds, or None)."""
-    return ink_box(rgb, cells_union(line), across=across)
+def line_ink(rgb, line, across=None, **kw):
+    """(box, how) of a pool line: ink_box on its cells' union (across: its gap bounds, or None; kw: ink_box's
+    targets_v3 options)."""
+    return ink_box(rgb, cells_union(line), across=across, **kw)
 
 
 # ----------------------------------------------------------------------------- the training targets (amendment 1)
@@ -186,34 +228,54 @@ def positive_lines(rec):
     return out
 
 
+def glyph_line(ln):
+    """True when a pool line's cells are its label's characters, one cell each (source glyph_cells)."""
+    return ln.get("source") == "glyph_cells" and len(ln.get("cell_boxes") or []) == len(ln["text"])
+
+
+def missed_cells(ln, box):
+    """The indices of a glyph line's non-space characters whose cell lies wholly outside box along the line."""
+    return [j for j, (ch, cb) in enumerate(zip(ln["text"], ln["cell_boxes"]))
+            if not ch.isspace() and (cb[2] <= box[0] or cb[0] >= box[2])]
+
+
 def _page_targets(job):
     import cv2
 
     import textspot6_pages as TP
-    tid, rec, path, gap = job
+    tid, rec, path, gap = job[:4]
+    fix = bool(job[4]) if len(job) > 4 else False
     bgr = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr is None:
         return tid, rec["page"], None, None
     rgb = np.ascontiguousarray(bgr[:, :, ::-1])
     H, W = rgb.shape[:2]
     rows = row_unions(rec) if gap else None
-    old, new, hows = [], [], []
+    old, new, hows, fixes = [], [], [], []
     for ln in positive_lines(rec):
         b = TP.xyxy(ln["box_main"] if ln.get("furigana") and ln.get("box_main") else ln["box"])
         ob, _ = TP.refined_line(rgb, b, bool(ln["vertical"]))
         ob = [max(0, ob[0]), max(0, ob[1]), min(W, ob[2]), min(H, ob[3])]
-        gh = None
+        gh = fx = None
         if ln["vertical"]:
             nb = ob                                  # vertical lines keep their targets (horizontal reading only)
-        elif gap:
-            top, bot, gh = gap_bounds(cells_union(ln), [u for i, u in rows if i != ln["id"]])
-            nb, _ = line_ink(rgb, ln, across=(top, bot))
         else:
-            nb, _ = line_ink(rgb, ln)
+            across = None
+            if gap:
+                top, bot, gh = gap_bounds(cells_union(ln), [u for i, u in rows if i != ln["id"]])
+                across = (top, bot)
+            nb, _ = line_ink(rgb, ln, across=across)
+            if fix and glyph_line(ln) and missed_cells(ln, nb):
+                gc = [cb for ch, cb in zip(ln["text"], ln["cell_boxes"]) if not ch.isspace()]
+                fb, _ = line_ink(rgb, ln, across=across, noise_fix=True, colour_edges=True, glyph_cells=gc)
+                fx = ("fixed" if not missed_cells(ln, fb) else "partly" if len(missed_cells(ln, fb)) <
+                      len(missed_cells(ln, nb)) else "kept") if fb != nb else "kept"
+                nb = fb
         old.append([int(v) for v in ob])
         new.append([int(v) for v in nb])
         hows.append(gh)
-    return tid, rec["page"], {"old": old, "new": new}, hows
+        fixes.append(fx)
+    return tid, rec["page"], {"old": old, "new": new}, {"gap": hows, "fix": fixes}
 
 
 def cmd_build(a):
@@ -236,15 +298,16 @@ def cmd_build(a):
         for line in f.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
             if r["split"] in splits:
-                jobs.append((f.stem, r, str(Path(a.pages) / r["image"]), bool(a.gap_clip)))
+                jobs.append((f.stem, r, str(Path(a.pages) / r["image"]), bool(a.gap_clip), bool(a.cells_fix)))
     t0 = time.time()
     res = {}
-    gap_how = Counter()
+    gap_how, fix_how = Counter(), Counter()
     with mp.get_context("fork").Pool(a.workers) as p:
-        for tid, page, v, hows in p.imap(_page_targets, jobs, chunksize=16):
+        for tid, page, v, info in p.imap(_page_targets, jobs, chunksize=16):
             if v is not None:
                 res.setdefault(tid, {})[page] = v
-                gap_how.update(h for h in hows if h is not None)
+                gap_how.update(h for h in info["gap"] if h is not None)
+                fix_how.update(h for h in info["fix"] if h is not None)
     n_lines = n_changed = 0
     for tid, pages in sorted(res.items()):
         for v in pages.values():
@@ -257,6 +320,12 @@ def cmd_build(a):
                             "rows": "every other horizontal line's cells' union (any kind and drop) and every "
                                     "uncovered renderer box",
                             "horizontal_lines": dict(sorted(gap_how.items()))}
+    if a.cells_fix:
+        rule["cells_fix"] = {"gate": "a horizontal glyph-cell line whose box leaves a non-space character's cell "
+                                     "wholly outside",
+                             "changes": [f"ring_noise fix (NOISE_INK_SHARE {NOISE_INK_SHARE})", "colour_edges",
+                                         "glyph_cells"],
+                             "lines_gated": dict(sorted(fix_how.items()))}
     rec = {"kind": "textspot-desktop-targets", "pool_manifest_sha256": _sha(pool / "manifest.json"),
            "splits": sorted(splits), "titles": len(res), "pages": sum(len(v) for v in res.values()),
            "lines": n_lines, "changed": n_changed, "rule": rule,
@@ -432,6 +501,8 @@ def main(argv=None):
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--gap-clip", action="store_true", help="#177: clip each horizontal line's ink search across at "
                                                            "half the gap to its neighbouring rows (targets_v2)")
+    p.add_argument("--cells-fix", action="store_true", help="targets_v3: box again the lines whose box leaves a "
+                                                            "non-space character's cell outside (module docstring)")
     p = sub.add_parser("compare", help="counts of how cache B's ink boxes differ from cache A's (no pixels)")
     p.add_argument("--a", required=True)
     p.add_argument("--b", required=True)

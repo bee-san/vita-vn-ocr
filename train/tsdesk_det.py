@@ -235,6 +235,8 @@ def make_sources(c):
     extra = add_extra_sources(sources, c["mix"], c.get("extra", {}), frozenset(c.get("skip_vns", ())))
     if c.get("targets"):
         extra["targets"] = patch_pools(sources, hook, c["targets"])
+    if c.get("label_edits"):
+        extra["label_edits"] = edit_pools(sources, hook, c["label_edits"])
     return sources, hook, frames, extra
 
 
@@ -488,6 +490,30 @@ def patch_pools(sources, hook, targets_dir):
     return rec
 
 
+def edit_pools(sources, hook, edits_dir):
+    """--label-edits: the hooked sources' samples get the edit cache's notdlg positives appended (train/
+    tsdesk_coverage.py edits: MeikiOCR's 'apart' text boxes, native px; desk_hook's mapped through its capture), after
+    the target patch; their other lines and ignore areas are untouched."""
+    import tsdesk_coverage as TC
+    edits, doc = TC.load_edits(edits_dir)
+    rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json")}
+    pools = [("hook", [lst for lst in hook.by_title.values()] if hook is not None else [])]
+    pool = getattr(sources, "extra_pools", {}).get("desk_hook")
+    if pool is not None:
+        pools.append(("desk_hook", [pool.items]))
+    for src, lists in pools:
+        n_s = n_l = 0
+        for lst in lists:
+            for i, (d, smp) in enumerate(lst):
+                es = TC.apply_edits(smp, edits, src)
+                if es is not None:
+                    n_s += 1
+                    n_l += len(es["lines"]) - len(smp["lines"])
+                    lst[i] = (d, es)
+        rec[src] = {"samples_edited": n_s, "lines_added": n_l}
+    return rec
+
+
 def make_batch(sources, rng, cfg):
     B, _, _, _ = DD._setup()
     s = int(cfg["stride"])
@@ -633,6 +659,8 @@ def parse(argv=None):
     ap.add_argument("--skip-vns", help="a file of VNs (one per line) left out of the real half and the extra pools")
     ap.add_argument("--targets", help="amendment 1: the ink-box target cache (train/tsdesk_targets.py build) for the "
                                       "hooked sources' verified positives")
+    ap.add_argument("--label-edits", help="the label-edit cache (train/tsdesk_coverage.py edits): notdlg positives "
+                                          "appended to the hooked sources' samples, after --targets")
     ap.add_argument("--e-exact", action="store_true", help="amendment 1: the along-end (E) loss only on the sources "
                                                             "with exact ink boxes (EXACT_SOURCES)")
     ap.add_argument("--ornaments", type=float, default=0.0,
@@ -693,7 +721,7 @@ def main(argv=None):
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
            "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
-           "end_ignore": a.end_ignore, "ornaments": a.ornaments, "marks": a.marks}
+           "end_ignore": a.end_ignore, "ornaments": a.ornaments, "marks": a.marks, "label_edits": a.label_edits}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -703,7 +731,7 @@ def main(argv=None):
                 "skip_vns": {"file": a.skip_vns, "sha256": sha256_file(a.skip_vns) if a.skip_vns else None,
                              "vns": len(skip_vns)},
                 "real_half_dropped": frames.dropped if frames is not None else None,
-                "targets": extra_rec.get("targets")}
+                "targets": extra_rec.get("targets"), "label_edits": extra_rec.get("label_edits")}
     skip_rec = ST.skip_record(lists, frames.dropped) if lists and frames is not None else None
     del hook, frames, sources
     torch.set_num_threads(a.threads)

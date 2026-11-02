@@ -34,6 +34,10 @@ PSP boxes), so it overcounts.
       desk_hook: the same cache, each box mapped through its page's capture (train/tsdesk_targets.capture_of);
       desk_synth: a cache of `meiki` above. COUNTS holds counts only; ROWS (private) each uncovered box and each
       weak MeikiOCR ignore area the junk recipe turns to background, with its sample, for the sheets
+  tsdesk_coverage.py edits --rows ROWS.jsonl ... --shards DIR --meiki CACHE [--targets DIR] --pool P --out EDITS
+      the label-edit cache: each hook page's 'apart' boxes as notdlg positives (edit_candidates: not on a verified
+      line's row, not ruby-like, not over a positive), per title {page: [lines]} in native px, and EDITS/edits.json
+      (counts, sha256); train/tsdesk_det.py --label-edits EDITS appends them to the hook and desk_hook samples
   tsdesk_coverage.py sheet --rows ROWS.jsonl --root DIR --out DIR --name NAME [--kind uncovered|weak] [--n 24]
                      [--seed 0] [--min-score S] [--max-score S] [--source S] [--exclude-titles T,...] [--distinct]
                      [--min-frac F] [--max-frac F]
@@ -501,6 +505,190 @@ def cmd_run(a):
                       "distinct": distinct}), flush=True)
 
 
+# ----------------------------------------------------------------------------- label edits (apart -> notdlg)
+
+EDIT_ROW_OVERLAP = 0.5      # a box shares a verified line's row: vertical overlap >= this x the smaller height
+EDIT_RUBY_MIN_REL = 0.33    # ruby is about half its line's height: a ruby-like box under a third of it is other text
+                            # (the star map's Latin labels above a line: 0.21-0.28; the furigana seen: 0.38-0.59)
+EDIT_CLIP = 0.3             # a box touching a positive above or below by at most this x its height is clipped there
+EDIT_SKIP_TITLES = ("PCSG00854",)   # the ornament-strip guard title (protocol v2 G4): its strong 'apart' boxes are
+                                    # its frame strip above the text, junk the detector must not learn as text
+
+
+def edit_candidates(smp, rows, meiki):
+    """(adds, reasons): the notdlg positives [x0, y0, x1, y1, vertical, "notdlg", weight] a hook sample gets from its
+    'apart' coverage rows, and Counter of the rows left out. smp: the sample as the trainer sees it (positives patched
+    with the target cache); rows: its rows of kind uncovered and where apart; meiki: the page's pool MeikiOCR boxes
+    ({"raw", "score", "box", "vertical"}). Left out: a box on a verified dialogue or name line's row (a page cursor or
+    an icon far past the line's end: background, as the 'row' kind), a ruby-like box over a line (furigana the hook
+    gives no ruby line for: desktop_det.ruby_like over that line, at least EDIT_RUBY_MIN_REL of its height; the
+    pools make ruby an ignore area, never a positive), a box that overlaps a positive (one that only touches a
+    positive above or below it, by at most EDIT_CLIP of its height, is clipped at the positive's edge instead), and
+    the lower-scored of two that overlap. The box is the pools' refined box, its weight the pools' notdlg weight
+    (synth/textspot6_pages.meiki_weight)."""
+    import desktop_det as DD
+    import textspot6_pages as TP
+    by_raw = {tuple(m["raw"]): m for m in meiki}
+    verified = [ln for ln in smp["lines"] if not ln[4] and ln[5] in ("dialogue", "name")]
+    pos = [ln[:4] for ln in smp["lines"]]
+    out, why = [], Counter()
+
+    def ov(a, b):
+        return min(a[2], b[2]) - max(a[0], b[0]) > 0 and min(a[3], b[3]) - max(a[1], b[1]) > 0
+    for r in sorted(rows, key=lambda r: -r["score"]):
+        m = by_raw.get(tuple(r["raw"]))
+        if m is None:
+            why["no_meiki_box"] += 1
+            continue
+        b = [int(v) for v in m["box"]]
+        hb = b[3] - b[1]
+        if any(min(b[3], ln[3]) - max(b[1], ln[1]) >= EDIT_ROW_OVERLAP * max(1, min(hb, ln[3] - ln[1]))
+               for ln in verified):
+            why["row"] += 1
+            continue
+        if not m["vertical"] and any(hb >= EDIT_RUBY_MIN_REL * (ln[3] - ln[1]) and
+                                     0 in DD.ruby_like([[*b, 0], [*ln[:4], ln[4]]]) for ln in verified):
+            why["ruby"] += 1
+            continue
+        clipped = False
+        for p in pos:
+            if not ov(b, p):
+                continue
+            iy = min(b[3], p[3]) - max(b[1], p[1])
+            if iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 < p[1]:
+                b[3], clipped = p[1], True              # the positive lies below: stop at its top
+            elif iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 > p[3]:
+                b[1], clipped = p[3], True              # above: start at its bottom
+        if any(ov(b, p) for p in pos) or b[3] - b[1] < (1 - EDIT_CLIP) * hb:
+            why["overlap"] += 1
+            continue
+        why["clipped"] += clipped
+        if any(ov(b, a[:4]) for a in out):
+            why["duplicate"] += 1
+            continue
+        out.append([*b, int(bool(m["vertical"])), "notdlg", round(TP.meiki_weight(m["score"]), 4)])
+    return out, why
+
+
+def _edits_title(job):
+    import tsdesk_targets as TT
+    title, rows, shards_dir, meiki_dir, targets = job
+    cache = TT.load_cache(targets)[0] if targets else None
+    pm = _load_meiki(Path(meiki_dir) / f"{title}.jsonl", "page")
+    by_shard = defaultdict(list)
+    for r in rows:
+        by_shard[(r["dir"], r["shard"])].append(r)
+    out, why = {}, Counter()
+    for (d, shard), rs in sorted(by_shard.items()):
+        samples = json.loads((Path(shards_dir) / d / f"{shard}.json").read_text(encoding="utf-8"))["samples"]
+        by_i = defaultdict(list)
+        for r in rs:
+            by_i[r["i"]].append(r)
+        for i, rr in sorted(by_i.items()):
+            smp = samples[i]
+            if cache is not None:
+                smp = TT.patch_sample(smp, cache, "hook") or smp
+            adds, w = edit_candidates(smp, rr, pm.get(smp["page"]) or [])
+            why.update(w)
+            if adds:
+                out[smp["page"]] = adds
+    return title, out, why
+
+
+def cmd_edits(a):
+    """The label-edit cache: per title {page: [notdlg positives]} in native page px (edit_candidates), from the
+    hook coverage rows' 'apart' boxes; train/tsdesk_det.py --label-edits appends them to hook and desk_hook samples."""
+    rows = defaultdict(list)
+    skip = set(t for t in (a.skip_titles or "").split(",") if t)
+    skipped = Counter()
+    for p in a.rows:
+        for line in Path(p).read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            if r["kind"] == "uncovered" and r.get("where") == "apart" and r["source"] == "hook":
+                if r["title"] in skip:
+                    skipped[r["title"]] += 1
+                    continue
+                rows[r["title"]].append(r)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+    res, why = {}, Counter()
+    jobs = [(t, rs, a.shards, a.meiki, a.targets) for t, rs in sorted(rows.items())]
+    with mp.get_context("fork").Pool(a.workers) as p:
+        for title, pages, w in p.imap_unordered(_edits_title, jobs):
+            why.update(w)
+            if pages:
+                res[title] = pages
+    splits = {}
+    for f in sorted(Path(a.pool).glob("*.jsonl")):
+        if f.stem in res:
+            for line in f.read_text(encoding="utf-8").splitlines():
+                r = json.loads(line)
+                splits[(f.stem, r["page"])] = r["split"]
+    by_split, by_title, elements = Counter(), Counter(), set()
+    for t, pages in sorted(res.items()):
+        for page, adds in pages.items():
+            by_split[splits.get((t, page), "?")] += len(adds)
+            by_title[t] += len(adds)
+            for b in adds:
+                elements.add((t, *(int(round(v / GRID)) for v in b[:4])))
+        (out / f"{t}.json").write_text(json.dumps(pages, separators=(",", ":")) + "\n", encoding="utf-8")
+    rec = {"kind": "textspot-desktop-label-edits", "issue": 173,
+           "rule": {"from": "tsdesk_coverage run rows of kind uncovered, where apart (strong MeikiOCR boxes >= 0.5 "
+                            "with unlabelled ink away from every labelled row)",
+                    "add": "a notdlg positive: the pools' refined box and orientation, weight meiki_weight(score)",
+                    "left_out": ["row: on a verified dialogue or name line's row", "ruby: desktop_det.ruby_like over "
+                                 "a verified line, at least ruby_min_rel of its height", "overlap: overlaps a positive "
+                                 "(clipped: kept, its edge moved to a positive it touched above or below by at most "
+                                 "clip of its height)", "duplicate: overlaps a kept edit"],
+                    "clip": EDIT_CLIP,
+                    "row_overlap": EDIT_ROW_OVERLAP, "ruby_min_rel": EDIT_RUBY_MIN_REL,
+                    "coords": "native page px; desk_hook maps them through its capture"},
+           "rows_files": {str(p): sha256_file(p) for p in a.rows}, "targets": a.targets,
+           "targets_sha256": sha256_file(Path(a.targets) / "targets.json") if a.targets else None,
+           "skip_titles": sorted(skip), "skipped_by_title": dict(skipped),
+           "candidates": sum(len(v) for v in rows.values()), "left_out": dict(sorted(why.items())),
+           "added": sum(by_title.values()), "pages": sum(len(v) for v in res.values()), "titles": len(res),
+           "distinct_elements": len(elements), "by_split": dict(sorted(by_split.items())),
+           "by_title": dict(by_title.most_common()), "code_sha256": sha256_file(Path(__file__)),
+           "seconds": round(time.time() - t0, 1),
+           "files": {f"{t}.json": sha256_file(out / f"{t}.json") for t in sorted(res)}}
+    (out / "edits.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({k: rec[k] for k in ("candidates", "added", "pages", "titles", "distinct_elements", "left_out",
+                                           "by_split")}), flush=True)
+
+
+def load_edits(d):
+    """({title: {page: [lines]}}, the edits.json record) of a label-edit cache (cmd_edits); every file's sha256
+    checked."""
+    d = Path(d)
+    doc = json.loads((d / "edits.json").read_text(encoding="utf-8"))
+    out = {}
+    for name, sha in doc["files"].items():
+        if sha256_file(d / name) != sha:
+            raise SystemExit(f"{d / name}: sha256 differs from edits.json's")
+        out[name[:-5]] = json.loads((d / name).read_text(encoding="utf-8"))
+    return out, doc
+
+
+def apply_edits(smp, edits, src):
+    """A hook (src "hook") or desk_hook sample with its label edits appended to its lines (desk_hook: mapped through
+    the page's capture, train/tsdesk_targets.capture_of), or None when it has none (or its capture does not
+    reproduce). Its other lines and its ignore areas are untouched (the junk recipe's counts stay right)."""
+    import tsdesk_targets as TT
+    adds = (edits.get(smp.get("title")) or {}).get(smp.get("page"))
+    if not adds:
+        return None
+    if src == "desk_hook":
+        cap = TT.capture_of(smp)
+        if cap is None:
+            return None
+        adds = [[*m, *b[4:]] for b in adds for m in [cap.box(b[:4])] if m is not None]
+        if not adds:
+            return None
+    return dict(smp, lines=[list(x) for x in smp["lines"]] + [list(b) for b in adds])
+
+
 # ----------------------------------------------------------------------------- sheets
 
 def _frame(root, r, cache):
@@ -609,8 +797,18 @@ def main(argv=None):
     p.add_argument("--distinct", action="store_true", help="draw distinct elements (one row per element)")
     p.add_argument("--min-frac", type=float, default=0.0, help="the unlabelled spans' share of the box, at least")
     p.add_argument("--max-frac", type=float, default=1.0, help="... at most")
+    p = sub.add_parser("edits", help="the label-edit cache: the 'apart' rows as notdlg positives (edit_candidates)")
+    p.add_argument("--rows", nargs="+", required=True, help="hook coverage rows (run --source hook)")
+    p.add_argument("--shards", required=True, help="the hook page shards the rows were measured on")
+    p.add_argument("--meiki", required=True, help="the pools' MeikiOCR cache")
+    p.add_argument("--targets", help="the target cache the rows were measured with")
+    p.add_argument("--pool", required=True, help="the page pool (for the per-split counts)")
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--skip-titles", default=",".join(EDIT_SKIP_TITLES),
+                   help="titles left out of the edits (default: the ornament-strip guard title)")
     a = ap.parse_args(argv)
-    {"meiki": cmd_meiki, "run": cmd_run, "sheet": cmd_sheet}[a.cmd](a)
+    {"meiki": cmd_meiki, "run": cmd_run, "sheet": cmd_sheet, "edits": cmd_edits}[a.cmd](a)
 
 
 if __name__ == "__main__":

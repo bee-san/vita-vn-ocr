@@ -18,6 +18,10 @@
  *                 intersection is at least merge_pct % of the smaller one's area become their union (tools/tsdesk.
  *                 merge_overlaps: the pair with the largest share first, the larger box's fields, its place the
  *                 earlier of the two);
+ *     join_pct    two horizontal boxes the detector tags as dialogue (tag 0) on one row (vertical overlap at least
+ *                 join_ov_pct % of the smaller height), the smaller height at least join_h_pct % of the larger, with a
+ *                 gap along of at most join_pct % of the larger height become their union (tools/tsdesk.join_row: the
+ *                 first pair in order, the larger box's fields, its place the earlier's), until none qualifies;
  *     rows_pct    a horizontal box split across at an ink valley between two bands of similar height (tools/tsdesk.
  *                 split_rows, valley_pct and rows_len), at most two levels;
  *     gap_pct     the along split (tools/tsdesk.split_along): not in C (not adopted); a nonzero value is refused.
@@ -47,9 +51,10 @@ typedef struct {
     int merge_pct, rows_pct, valley_pct, rows_len, gap_pct, gap_weak;
     int ext_pct, ext_gap_pct, ext_run_pct, ext_dash_pct, ext_join;
     int vflip_pct, vflip_join_pct, vflip_min, vflip_h_pct;
+    int join_pct, join_h_pct, join_ov_pct;
 } vocr_tsdp_opts;
 
-#define VOCR_TSDP_NOPTS 15
+#define VOCR_TSDP_NOPTS 18
 
 /* The reading filter's options, in tools/tsdesk.DROP_DEFAULTS order. */
 typedef struct {
@@ -73,7 +78,7 @@ void vocr_tsdp_defaults(vocr_tsdp_opts *o);
 void vocr_tsdd_defaults(vocr_tsdd_opts *o);
 int vocr_tsdp_nopts(void);
 int vocr_tsdd_nopts(void);
-/* 1 when any option of vocr_tsdp_pre (vflip, merge, rows) or of vocr_tsdp_post (ext) is on. */
+/* 1 when any option of vocr_tsdp_pre (vflip, merge, join, rows) or of vocr_tsdp_post (ext) is on. */
 int vocr_tsdp_pre_on(const vocr_tsdp_opts *o);
 int vocr_tsdp_post_on(const vocr_tsdp_opts *o);
 

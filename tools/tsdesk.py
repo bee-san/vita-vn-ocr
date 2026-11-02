@@ -561,7 +561,8 @@ def _clamp_ends(boxes, kern, w, h):
 # Options on the decode's frame-px boxes (helper textspot-desktop-boxes). Every option is an integer and 0 turns it
 # off, so with POST_DEFAULTS the boxes are the decode's and the refinement's bit for bit. The pre-refinement options
 # run in this order on the decode's boxes, before tools/tsdesk_refine.py (vflip_pct first, then merge_pct, touch_pct
-# (merge_touching), rows_pct and gap_pct; vflip, touch_pct and ext_band_pct have no C twin yet):
+# (merge_touching), join_pct (join_row), rows_pct and gap_pct; touch_pct, gap_pct, ext_band_pct and ksplit_pct have no
+# C twin):
 #   vflip_pct  a vertical box whose ink is a stack of glyph bands with wide gaps becomes horizontal boxes (vflip);
 #   join_pct   two dialogue-tagged boxes on one row with a small gap along and similar heights join (join_row);
 #   ksplit_pct the last step, after the post-refinement options: a horizontal box is cut at an ink gap the detector's

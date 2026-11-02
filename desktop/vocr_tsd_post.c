@@ -27,6 +27,8 @@ void vocr_tsdp_defaults(vocr_tsdp_opts *o)
     o->vflip_join_pct = 100;
     o->vflip_min = 3;
     o->vflip_h_pct = 50;
+    o->join_h_pct = 70;
+    o->join_ov_pct = 80;
 }
 
 void vocr_tsdd_defaults(vocr_tsdd_opts *o)
@@ -44,7 +46,7 @@ int vocr_tsdd_nopts(void) { return VOCR_TSDD_NOPTS; }
 
 int vocr_tsdp_pre_on(const vocr_tsdp_opts *o)
 {
-    return o && (o->vflip_pct || o->merge_pct || o->rows_pct || o->gap_pct);
+    return o && (o->vflip_pct || o->merge_pct || o->join_pct || o->rows_pct || o->gap_pct);
 }
 int vocr_tsdp_post_on(const vocr_tsdp_opts *o) { return o && o->ext_pct; }
 
@@ -424,6 +426,54 @@ static void merge_overlaps(vocr_tsdp_box *b, unsigned *n_, int pct)
     *n_ = n;
 }
 
+/* ----------------------------------------------------------------------------- join_pct */
+
+/* tools/tsdesk.join_row: dialogue-tagged horizontal pieces of one row joined, the first pair in order each time */
+static void join_row(vocr_tsdp_box *b, unsigned *n_, int pct, int h_pct, int ov_pct)
+{
+    unsigned n = *n_;
+    for (;;) {
+        unsigned i, j, bi = 0, bj = 0;
+        int found = 0;
+        for (i = 0; i < n && !found; i++) {
+            const vocr_tsdp_box *a = &b[i];
+            if (a->vertical || a->tag != 0) continue;
+            for (j = i + 1; j < n; j++) {
+                const vocr_tsdp_box *c = &b[j];
+                double lo, hi;
+                if (c->vertical || c->tag != 0) continue;
+                lo = dmin(a->h, c->h);
+                hi = dmax(a->h, c->h);
+                if ((dmin(a->y + a->h, c->y + c->h) - dmax(a->y, c->y)) * 100 < (double)ov_pct * lo ||
+                    lo * 100 < (double)h_pct * hi)
+                    continue;
+                if (dmax(c->x - (a->x + a->w), a->x - (c->x + c->w)) * 100 > (double)pct * hi) continue;
+                bi = i;
+                bj = j;
+                found = 1;
+                break;
+            }
+        }
+        if (!found) break;
+        {
+            const vocr_tsdp_box a = b[bi], c = b[bj];
+            const vocr_tsdp_box *big = a.w * a.h >= c.w * c.h ? &a : &c;
+            const double x0 = dmin(a.x, c.x), y0 = dmin(a.y, c.y);
+            const double x1 = dmax(a.x + a.w, c.x + c.w), y1 = dmax(a.y + a.h, c.y + c.h);
+            vocr_tsdp_box u = *big;
+            u.x = x0;
+            u.y = y0;
+            u.w = x1 - x0;
+            u.h = y1 - y0;
+            u.cells = a.cells + c.cells;
+            b[bi] = u;
+            memmove(&b[bj], &b[bj + 1], (n - bj - 1) * sizeof *b);
+            n--;
+        }
+    }
+    *n_ = n;
+}
+
 /* ----------------------------------------------------------------------------- rows_pct */
 
 /* the lower median of the nonzero row counts rc[0 .. h) */
@@ -686,12 +736,13 @@ int vocr_tsdp_pre(const unsigned char *grey, unsigned w, unsigned h, unsigned st
     unsigned i, k = 0, m;
     if (!n || !o || (*n && !boxes) || *n > cap) return VOCR_TSDP_E_ARG;
     if (o->gap_pct) return VOCR_TSDP_E_ARG;
-    if (!o->vflip_pct && !o->merge_pct && !o->rows_pct) return VOCR_TSDP_OK;
+    if (!o->vflip_pct && !o->merge_pct && !o->join_pct && !o->rows_pct) return VOCR_TSDP_OK;
     if (!grey || !w || !h || stride < w || !scratch) return VOCR_TSDP_E_ARG;
     if (bytes < vocr_tsdp_scratch_bytes(w, h, cap)) return VOCR_TSDP_E_SCRATCH;
     scr_map(&s, scratch, w, h, cap);
     if (o->vflip_pct) vflip(grey, w, h, stride, boxes, n, cap, o, &s);
     if (o->merge_pct) merge_overlaps(boxes, n, o->merge_pct);
+    if (o->join_pct) join_row(boxes, n, o->join_pct, o->join_h_pct, o->join_ov_pct);
     if (o->rows_pct) {
         m = *n;
         for (i = 0; i < m && k < cap; i++)

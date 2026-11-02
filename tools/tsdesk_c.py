@@ -82,8 +82,7 @@ class COpts(C.Structure):
                 ("vote_pct", C.c_int), ("vote_depth", C.c_int)]
 
 
-NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct", "join_pct",
-             "join_h_pct", "join_ov_pct")                                 # post options, no C twin yet
+NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct")   # post options, no C twin
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
 DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts' (the cut's three: the C page runs it)
 
@@ -370,7 +369,7 @@ def post_struct(post):
     if post in (None, False):
         return None
     o = T.post_options(post)
-    no = [k for k in ("gap_pct", "touch_pct", "ext_band_pct", "ksplit_pct", "join_pct") if o[k]]
+    no = [k for k in ("gap_pct", "touch_pct", "ext_band_pct", "ksplit_pct") if o[k]]
     if no:
         raise ValueError(f"post {no}: no C twin")
     o = {k: o[k] for k in POST_KEYS}

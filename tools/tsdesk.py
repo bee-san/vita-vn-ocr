@@ -499,8 +499,9 @@ def _clamp_ends(boxes, kern, w, h):
 # its 3 x 3 contrast both exceed max(28, 40 % of their 99th percentile over the box) and a 4-neighbour is ink too.
 
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
-                 "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1}
-POST_PRE = ("merge_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
+                 "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
+                 "ext_band_pct": 0, "touch_pct": 0}
+POST_PRE = ("merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
 
@@ -591,6 +592,43 @@ def merge_overlaps(boxes, pct):
         x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
         out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
         del out[j]
+
+
+def merge_touching(boxes, pct):
+    """touch_pct: two boxes of one orientation that overlap across by at least pct % of the smaller size across and
+    touch or overlap along (no gap between them) become their union (the larger box's fields, the place of the
+    earlier), pairs in order until none qualifies: a line the decode cut in two where its kernel dips (at a ――)."""
+    import dataclasses
+    out = list(boxes)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(out)):
+            a = out[i]
+            for j in range(i + 1, len(out)):
+                b = out[j]
+                if a.vertical != b.vertical:
+                    continue
+                if a.vertical:
+                    across = min(a.x + a.w, b.x + b.w) - max(a.x, b.x)
+                    size = min(a.w, b.w)
+                    gap = max(b.y - (a.y + a.h), a.y - (b.y + b.h))
+                else:
+                    across = min(a.y + a.h, b.y + b.h) - max(a.y, b.y)
+                    size = min(a.h, b.h)
+                    gap = max(b.x - (a.x + a.w), a.x - (b.x + b.w))
+                if gap > 0 or across * 100 < pct * size:
+                    continue
+                big = a if a.w * a.h >= b.w * b.h else b
+                x0, y0 = min(a.x, b.x), min(a.y, b.y)
+                x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
+                out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
+                del out[j]
+                changed = True
+                break
+            if changed:
+                break
+    return out
 
 
 def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
@@ -753,7 +791,8 @@ def extend_ends(g, boxes, o):
     r(h, ext_pct) px: from the end at most max(2, r(h, ext_gap_pct)) empty columns to the run (past a 、 or 。 before
     it), inside the run at most max(2, r(h, ext_run_pct)), and the 「 」 or 。 after it; a run shorter than
     r(h, ext_dash_pct) px, one that reaches the search window's end on ink, or one with ink in the rows just above or
-    below it on more than a tenth of its columns (a frame's border, a texture) is not taken. An end never grows into
+    below it on more than a tenth of its columns (a frame's border, a texture: the window's max(2, r(h, 25)) rows, or
+    max(1, r(h, ext_band_pct)) of them) is not taken. An end never grows into
     another box beside it (tools/tsdesk_refine's neighbour_limits); with ext_join an end that reaches that box (within
     2 px) joins the two (a line the decode found in two pieces either side of its dashes). The network gives long
     dashes background logits, so its boxes stop where the dashes start."""
@@ -793,7 +832,9 @@ def extend_ends(g, boxes, o):
                 continue
             c = cols[k]
             span = range(min(c, cols[0]), max(c, cols[0]) + 1)
-            outer = np.concatenate([m[:r0, span], m[r0 + h:nr, span]]) if nr > r0 + h or r0 > 0 else None
+            band = max(1, _r100(h, o["ext_band_pct"])) if o["ext_band_pct"] else nr     # the guard's rows
+            bt, bb = max(0, r0 - band), min(nr, r0 + h + band)
+            outer = np.concatenate([m[bt:r0, span], m[r0 + h:bb, span]]) if bb > r0 + h or r0 > bt else None
             if outer is not None and outer.size and int(outer.any(0).sum()) * 10 > len(span):
                 continue
             if side < 0:
@@ -846,6 +887,8 @@ def post_pre(g, boxes, opts):
     out = list(boxes)
     if o["merge_pct"]:
         out = merge_overlaps(out, o["merge_pct"])
+    if o["touch_pct"]:
+        out = merge_touching(out, o["touch_pct"])
     if o["rows_pct"]:
         out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:

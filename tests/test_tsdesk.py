@@ -585,3 +585,22 @@ def test_decode_clamp_ends_at_a_neighbour():
     assert b[0].x + b[0].w == pytest.approx(200.0) and b[1] == a[1]       # it stops at the number's first cell
     one = _maps(80, 400, 8, [[40.0, 20.0, 160.0, 44.0]])
     assert T.decode(one, 400, 80, 8, clamp_ends=1) == T.decode(one, 400, 80, 8)
+
+
+def test_merge_touching_and_the_guard_band():
+    a, b = _box(10, 10, 200, 34), _box(196, 11, 300, 33)              # one line in two boxes, 4 px of overlap
+    assert len(T.merge_overlaps([a, b], 70)) == 2
+    out = T.post_pre(np.zeros((60, 400), np.uint8), [a, b], {"touch_pct": 70})
+    assert len(out) == 1 and (out[0].x, out[0].x + out[0].w, out[0].y, out[0].y + out[0].h) == (10, 300, 10, 34)
+    assert len(T.merge_touching([a, _box(201, 10, 300, 34)], 70)) == 2                 # a 1 px gap: apart
+    assert len(T.merge_touching([a, _box(196, 30, 300, 54)], 70)) == 2                 # 4 px across: another row
+    # the guard: ink 6 px above the run (beyond a 10 % band of an 18 px line) rejects it only with the full margin
+    o = T.post_options({"ext_pct": 1200})
+    g = np.full((60, 420), 20, np.uint8)
+    end = _glyphs(g, 124, 20, 2, 18, 4)
+    cv2.line(g, (end + 2, 29), (end + 46, 29), 230, 2)
+    cv2.line(g, (end + 2, 15), (end + 46, 15), 230, 1)                 # a rule 5 px above the line's top
+    b2 = _box(124, 20, end, 38)
+    assert T.post_post(g, [b2], o)[0] == b2
+    got = T.post_post(g, [b2], dict(o, ext_band_pct=10))[0]
+    assert got.x == b2.x and got.x + got.w > end + 40

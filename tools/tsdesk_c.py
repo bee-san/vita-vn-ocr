@@ -82,7 +82,7 @@ class COpts(C.Structure):
                 ("vote_pct", C.c_int)]
 
 
-POST_KEYS = tuple(T.POST_DEFAULTS)          # vocr_tsd_post.h vocr_tsdp_opts' field order
+POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in ("ext_band_pct", "touch_pct"))   # vocr_tsdp_opts
 DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts'
 
 
@@ -326,8 +326,10 @@ def post_struct(post):
     if post in (None, False):
         return None
     o = T.post_options(post)
-    if o["gap_pct"]:
-        raise ValueError("post gap_pct: the along split has no C twin")
+    no = [k for k in ("gap_pct", "touch_pct", "ext_band_pct") if o[k]]
+    if no:
+        raise ValueError(f"post {no}: no C twin")
+    o = {k: o[k] for k in POST_KEYS}
     return CPost(*[o[k] for k in POST_KEYS])
 
 

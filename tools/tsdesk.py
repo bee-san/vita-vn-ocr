@@ -269,15 +269,17 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
 #              box's fields): a fragment the decode found inside or beside its line (a 「, a ―。 at the end);
 #   rows_pct   a horizontal box split across at an ink valley (rows with at most valley_pct % of the median ink row's
 #              count) between two ink bands whose heights are within rows_pct % of each other, each at least
-#              max(4, 20 % of the box's height) rows tall and twice its height long in ink: two tightly spaced rows
-#              boxed as one (a band of ruby, about half a line's height, is not split off); at most two levels;
+#              max(4, 20 % of the box's height) rows tall and at least rows_len % of the box's height long in ink:
+#              two tightly spaced rows boxed as one (a band of ruby, about half a line's height, is not split off,
+#              nor a short label whose glyphs have a gap across); at most two levels;
 #   gap_pct    a horizontal box split along at every run of at least max(2, r(h, gap_pct)) empty ink columns between
-#              its first and last ink column (h its height): neighbouring buttons, labels and numbers in one box.
+#              its first and last ink column (h its height) that holds fewer than gap_weak pixels of weak ink (both
+#              thresholds halved: a faint 、 or 。): neighbouring buttons, labels and numbers in one box.
 # The ink is the refinement's test (tools/tsdesk_refine.py steps 3-6, without its margins' noise term): on the box
 # grown by max(2, r(h, 25)) px, bg the lower median of that window's border ring, a pixel is ink when |g - bg| and
 # its 3 x 3 contrast both exceed max(28, 40 % of their 99th percentile over the box) and a 4-neighbour is ink too.
 
-POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "gap_pct": 0}
+POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3}
 POST_PRE = ("merge_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
 
 
@@ -303,9 +305,10 @@ def _pixel_box(b, W, H):
     return ix0, iy0, ix1, iy1
 
 
-def ink_mask(g, ix0, iy0, ix1, iy1, floor=28, k_pct=40):
+def ink_mask(g, ix0, iy0, ix1, iy1, floor=28, k_pct=40, weak=False):
     """The ink of the pixel box [ix0, ix1) x [iy0, iy1) of grey g (the post-pass's test, above): a bool array of the
-    box's shape."""
+    box's shape. weak: also the weak ink, (mask, weak mask), where both thresholds are halved (a faint 、 or 。 that
+    the strong test misses), without the 4-neighbour rule."""
     import tsdesk_refine as TR
     H, W = g.shape
     h, w = iy1 - iy0, ix1 - ix0
@@ -325,7 +328,11 @@ def ink_mask(g, ix0, iy0, ix1, iy1, floor=28, k_pct=40):
     nb[:-1] |= m0[1:]
     nb[:, 1:] |= m0[:, :-1]
     nb[:, :-1] |= m0[:, 1:]
-    return (m0 & nb)[by0:by0 + h, bx0:bx0 + w]
+    m = (m0 & nb)[by0:by0 + h, bx0:bx0 + w]
+    if not weak:
+        return m
+    wk = ((d > t // 2) & (c3 > tc // 2))[by0:by0 + h, bx0:bx0 + w]
+    return m, wk
 
 
 def merge_overlaps(boxes, pct):
@@ -365,8 +372,10 @@ def merge_overlaps(boxes, pct):
         del out[j]
 
 
-def split_rows(g, b, rows_pct, valley_pct=10, depth=0):
-    """rows_pct: [Box] of a horizontal box split across at an ink valley (above), recursively to two levels."""
+def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
+    """rows_pct: [Box] of a horizontal box split across at an ink valley (above), recursively to two levels; each
+    band's ink must run at least rows_len % of the box's height along (two rows of a page, not a short label whose
+    glyphs have a gap across)."""
     import dataclasses
     H, W = g.shape
     ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
@@ -386,6 +395,7 @@ def split_rows(g, b, rows_pct, valley_pct=10, depth=0):
         return [b]
     lo, hi = int(dense[0]), int(dense[-1]) + 1
     min_band = max(4, _r100(h, 20))
+    min_len = _r100(h, rows_len)
     best = None
     y = lo
     while y < hi:
@@ -401,7 +411,7 @@ def split_rows(g, b, rows_pct, valley_pct=10, depth=0):
             continue
         ca = np.flatnonzero(m[lo:v0].any(0))
         cb = np.flatnonzero(m[v1:hi].any(0))
-        if not len(ca) or not len(cb) or ca[-1] - ca[0] + 1 < 2 * ha or cb[-1] - cb[0] + 1 < 2 * hb:
+        if not len(ca) or not len(cb) or ca[-1] - ca[0] + 1 < min_len or cb[-1] - cb[0] + 1 < min_len:
             continue
         key = (min(ha, hb) / max(ha, hb), v1 - v0)
         if best is None or key > best[0]:
@@ -411,25 +421,30 @@ def split_rows(g, b, rows_pct, valley_pct=10, depth=0):
     _, v0, v1 = best
     top = dataclasses.replace(b, h=float(iy0 + v0) - b.y)
     bot = dataclasses.replace(b, y=float(iy0 + v1), h=b.y + b.h - float(iy0 + v1))
-    return split_rows(g, top, rows_pct, valley_pct, depth + 1) + split_rows(g, bot, rows_pct, valley_pct, depth + 1)
+    return (split_rows(g, top, rows_pct, valley_pct, rows_len, depth + 1)
+            + split_rows(g, bot, rows_pct, valley_pct, rows_len, depth + 1))
 
 
-def split_along(g, b, gap_pct):
-    """gap_pct: [Box] of a horizontal box split along at its long runs of empty ink columns (above). The first part
-    keeps the box's start and the last its end; the edges at a split lie on the ink either side of the gap."""
+def split_along(g, b, gap_pct, gap_weak=3):
+    """gap_pct: [Box] of a horizontal box split along at its long runs of empty ink columns (above); a run that holds
+    at least gap_weak pixels of weak ink (ink_mask(weak=True): a faint 、 or 。) is not a gap. The first part keeps
+    the box's start and the last its end; the edges at a split lie on the ink either side of the gap."""
     import dataclasses
     H, W = g.shape
     ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
     h, w = iy1 - iy0, ix1 - ix0
     if b.vertical or h < 4 or w < 4:
         return [b]
-    cc = ink_mask(g, ix0, iy0, ix1, iy1).sum(0)
+    m, wk = ink_mask(g, ix0, iy0, ix1, iy1, weak=True)
+    cc = m.sum(0)
     ink = np.flatnonzero(cc)
     if len(ink) < 2:
         return [b]
     G = max(2, _r100(h, gap_pct))
-    cut = np.flatnonzero(np.diff(ink) - 1 >= G)
-    if not len(cut):
+    wc = wk.sum(0)
+    cut = [int(c) for c in np.flatnonzero(np.diff(ink) - 1 >= G)
+           if gap_weak <= 0 or int(wc[ink[c] + 1:ink[c + 1]].sum()) < gap_weak]
+    if not cut:
         return [b]
     starts = [b.x] + [float(ix0 + int(ink[c + 1])) for c in cut]
     ends = [float(ix0 + int(ink[c]) + 1) for c in cut] + [b.x + b.w]
@@ -443,9 +458,9 @@ def post_pre(g, boxes, opts):
     if o["merge_pct"]:
         out = merge_overlaps(out, o["merge_pct"])
     if o["rows_pct"]:
-        out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"])]
+        out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:
-        out = [p for b in out for p in split_along(g, b, o["gap_pct"])]
+        out = [p for b in out for p in split_along(g, b, o["gap_pct"], o["gap_weak"])]
     return out
 
 
@@ -454,6 +469,7 @@ def post_pre(g, boxes, opts):
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
 DROP_DEFAULTS = {"nojp": 0, "conf_milli": 0}
+_JP_RE = None
 
 
 def drop_options(opts=None):
@@ -465,22 +481,46 @@ def drop_options(opts=None):
     return o
 
 
-_JP_RE = None
-
-
-def drop_reading(line, o):
-    """True when a horizontal box's reading (a vocr_onnx.Line) drops the box, for options o (drop_options(); every
-    rule off by default): nojp, a reading with no Japanese character (JAPANESE; the empty reading too); conf_milli, a
-    reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
+def has_japanese(text):
     global _JP_RE
     if _JP_RE is None:
         import re
         _JP_RE = re.compile(f"[{JAPANESE}]")
-    if o["nojp"] and not _JP_RE.search(line.text):
-        return True
-    if o["conf_milli"] and line.conf_mean * 1000.0 < o["conf_milli"]:
-        return True
-    return False
+    return bool(_JP_RE.search(text))
+
+
+def drop_set(items, o):
+    """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
+    items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
+      nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
+      nojp 2: the same, unless a reading with one sits in the same row (vertical overlap >= half the smaller height)
+              within a gap of the larger height along it (a line's own Latin or digit part: "A" before スポーツ);
+      conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
+    out = set()
+    jp = [has_japanese(t) for _, t, _ in items]
+    for i, (b, t, c) in enumerate(items):
+        if o["conf_milli"] and c * 1000.0 < o["conf_milli"]:
+            out.add(i)
+            continue
+        if not o["nojp"] or jp[i]:
+            continue
+        if o["nojp"] >= 2:
+            x, y, w, h = b
+            keep = False
+            for j, (b2, _, _) in enumerate(items):
+                if j == i or not jp[j]:
+                    continue
+                x2, y2, w2, h2 = b2
+                if min(y + h, y2 + h2) - max(y, y2) < 0.5 * min(h, h2):
+                    continue
+                gap = max(x2 - (x + w), x - (x2 + w2))
+                if gap <= max(h, h2):
+                    keep = True
+                    break
+            if keep:
+                continue
+        out.add(i)
+    return out
 
 
 class Detector:
@@ -604,7 +644,7 @@ def reading_order(boxes):
 def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, executor=None, drop=None):
     """Every line of a frame, top to bottom: [Line] in frame px. det: a Detector; rec: a vocr_onnx.Recognizer;
     lm: a vocr_onnx.CharLM; tags: the tag classes to read (None: all); workers: lines read on that many threads;
-    drop: None (off) or DROP_DEFAULTS options: a horizontal line whose reading drop_reading() rejects is left out."""
+    drop: None (off) or DROP_DEFAULTS options: the horizontal lines whose readings drop_set() rejects are left out."""
     import vocr_onnx as V
     g = grey_of(frame)
     H, W = g.shape
@@ -628,17 +668,21 @@ def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, exe
             return Line("", tight, (cx, cy, cw, ch), b.tag, b.logit, 0, 1)
         dark = V.line_dark(g, (cx, cy, cw, ch))
         r = rec.read(g[cy:cy + ch, cx:cx + cw], invert=bool(dark), lm=lm)
-        if dropo is not None and drop_reading(r, dropo):
-            return None
-        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0)
+        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0), r.conf_mean
 
     if executor is not None and len(jobs) > 1:
-        return [ln for ln in executor.map(one, jobs) if ln is not None]
-    if workers > 1 and len(jobs) > 1:
+        res = list(executor.map(one, jobs))
+    elif workers > 1 and len(jobs) > 1:
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            return [ln for ln in ex.map(one, jobs) if ln is not None]
-    return [ln for ln in map(one, jobs) if ln is not None]
+            res = list(ex.map(one, jobs))
+    else:
+        res = [one(j) for j in jobs]
+    if dropo is None:
+        return [r if isinstance(r, Line) else r[0] for r in res]
+    hz = [k for k, r in enumerate(res) if not isinstance(r, Line)]
+    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1]) for k in hz], dropo)}
+    return [r if isinstance(r, Line) else r[0] for k, r in enumerate(res) if k not in gone]
 
 
 def _load_image(path):

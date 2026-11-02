@@ -129,9 +129,10 @@ def strip_drop(spec):
 
 
 def _drop_read_job(job):
-    """eval/desktop.py's _read_job with the reading filter of the boxes' detector spec (+drop:...): a horizontal box
-    whose reading tools/tsdesk.drop_reading rejects is not scored, neither its text nor its box. With no filter it is
-    _read_job itself."""
+    """eval/desktop.py's _read_job with the reading filter of the boxes' detector spec (+drop:...): the horizontal
+    boxes whose readings tools/tsdesk.drop_set rejects are not scored, neither their text nor their boxes. The filter
+    sees the readings of every box read (with nojp 2 also the horizontal boxes outside the units, as a page reads them
+    all). With no filter it is _read_job itself."""
     o = _DROP["opts"]
     if not o:
         return _DROP["base"](job)
@@ -149,20 +150,26 @@ def _drop_read_job(job):
             cb = D.crop_box(b, p, W, H)
             if cb and x0 <= cb[0] + cb[2] / 2.0 < x1 and y0 <= cb[1] + cb[3] / 2.0 < y1:
                 want.add(k)
-    crops, texts = [], []
+    read = {}
     for k, b in enumerate(boxes):
-        if k not in want:
+        if b[4] or not (k in want or o["nojp"] >= 2):
             continue
         cb = D.crop_box(b, p, W, H)
-        t = ""
-        if not b[4]:
-            dark = V.line_dark(g, cb)
-            ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
-            if T.drop_reading(ln, o):
-                continue
-            t = ln.text
+        if not cb:
+            continue
+        dark = V.line_dark(g, cb)
+        ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
+        read[k] = (ln.text, ln.conf_mean)
+    ks = sorted(read)
+    items = [((boxes[k][0], boxes[k][1], boxes[k][2] - boxes[k][0], boxes[k][3] - boxes[k][1]), *read[k]) for k in ks]
+    gone = {ks[i] for i in T.drop_set(items, o)}
+    crops, texts = [], []
+    for k, b in enumerate(boxes):
+        if k not in want or k in gone:
+            continue
+        cb = D.crop_box(b, p, W, H)
         crops.append((*cb, len(texts)))
-        texts.append(t)
+        texts.append("" if b[4] else read[k][0])
     return D.score_frame_units(fr, g, crops, texts)
 
 

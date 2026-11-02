@@ -19,6 +19,24 @@
 #define Q14 16384
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
 
+/* size arithmetic that saturates at SIZE_MAX instead of wrapping: an arena that large fails to allocate or is
+ * refused, never undersized (the sides are bounded first, so this only matters where size_t is 32 bits) */
+static size_t sz_mul(size_t a, size_t b)
+{
+    return a && b > SIZE_MAX / a ? SIZE_MAX : a * b;
+}
+
+static size_t sz_add(size_t a, size_t b)
+{
+    return b > SIZE_MAX - a ? SIZE_MAX : a + b;
+}
+
+static size_t sz_align(size_t x, size_t a)
+{
+    size_t y = sz_add(x, a - 1);
+    return y == SIZE_MAX ? SIZE_MAX : y / a * a;
+}
+
 /* ----------------------------------------------------------------------------- the blob */
 
 static uint32_t rd32(const unsigned char *p)
@@ -111,7 +129,7 @@ int vocr_desk_load(vocr_desk_model *m, const void *blob, size_t bytes)
     m->min_across = rdf64(b + 128);
     m->pad_frame = rd32(b + 136);
     m->pad_frame_min = rd32(b + 140);
-    if (m->tags > VOCR_DESK_MAX_TAGS || m->size_kind > VOCR_DESK_SIZE_LONG || m->F % 8 || !m->F ||
+    if (m->tags > VOCR_DESK_MAX_TAGS || !vocr_desk_policy_ok(m->size_kind, m->size_n) || m->F % 8 || !m->F ||
         m->F > VOCR_DESK_MAX_CHANNELS)
         return VOCR_DESK_E_BLOB;
     for (i = 0; i < 5; i++)
@@ -147,29 +165,46 @@ int vocr_desk_load(vocr_desk_model *m, const void *blob, size_t bytes)
 
 /* ----------------------------------------------------------------------------- the input */
 
+int vocr_desk_policy_ok(unsigned kind, unsigned n)
+{
+    if (kind == VOCR_DESK_SIZE_NATIVE) return 1;
+    if (kind != VOCR_DESK_SIZE_FIT && kind != VOCR_DESK_SIZE_LONG) return 0;
+    return n >= 1 && n <= VOCR_DESK_MAX_SIDE;
+}
+
+static int frame_ok(unsigned w, unsigned h)
+{
+    return w && h && w <= VOCR_DESK_MAX_SIDE && h <= VOCR_DESK_MAX_SIDE;
+}
+
 void vocr_desk_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
                           unsigned *pw, unsigned *ph)
 {
     double f = 1.0, lng = (double)(w > h ? w : h);
-    unsigned a, c;
-    if (kind == VOCR_DESK_SIZE_FIT && n && lng > 0) {
-        f = (double)n / lng;
-        if (f > 1.0) f = 1.0;
-    } else if (kind == VOCR_DESK_SIZE_LONG && n && lng > 0) {
-        f = (double)n / lng;
-    }
-    if (f == 1.0) {
-        a = w;
-        c = h;
-    } else {
-        double x = nearbyint((double)w * f), y = nearbyint((double)h * f);
-        a = x < 1.0 ? 1u : (unsigned)x;
-        c = y < 1.0 ? 1u : (unsigned)y;
+    unsigned a = 0, c = 0, pa = 0, pc = 0;
+    if (vocr_desk_policy_ok(kind, n) && frame_ok(w, h)) {
+        /* each side ends up at most max(n, the frame's side) <= 8192, a multiple of 32: the padding cannot wrap */
+        if (kind == VOCR_DESK_SIZE_FIT) {
+            f = (double)n / lng;
+            if (f > 1.0) f = 1.0;
+        } else if (kind == VOCR_DESK_SIZE_LONG) {
+            f = (double)n / lng;
+        }
+        if (f == 1.0) {
+            a = w;
+            c = h;
+        } else {
+            double x = nearbyint((double)w * f), y = nearbyint((double)h * f);
+            a = x < 1.0 ? 1u : (unsigned)x;
+            c = y < 1.0 ? 1u : (unsigned)y;
+        }
+        pa = (a + VOCR_DESK_ALIGN - 1) / VOCR_DESK_ALIGN * VOCR_DESK_ALIGN;
+        pc = (c + VOCR_DESK_ALIGN - 1) / VOCR_DESK_ALIGN * VOCR_DESK_ALIGN;
     }
     if (iw) *iw = a;
     if (ih) *ih = c;
-    if (pw) *pw = (a + VOCR_DESK_ALIGN - 1) / VOCR_DESK_ALIGN * VOCR_DESK_ALIGN;
-    if (ph) *ph = (c + VOCR_DESK_ALIGN - 1) / VOCR_DESK_ALIGN * VOCR_DESK_ALIGN;
+    if (pw) *pw = pa;
+    if (ph) *ph = pc;
 }
 
 size_t vocr_desk_model_bytes(void)
@@ -255,16 +290,26 @@ static void axis_weights(unsigned n, unsigned m, unsigned K, int *idx, int *wt)
 
 size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh)
 {
-    size_t kx = axis_taps(w, dw), ky = axis_taps(h, dh);
+    size_t kx, ky;
+    if (!frame_ok(w, h) || !frame_ok(dw, dh)) return 0;
+    kx = axis_taps(w, dw);
+    ky = axis_taps(h, dh);
     return sizeof(int) * (2 * kx * dw + 2 * ky * dh + (size_t)h * dw);
 }
 
-void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
-                      unsigned dw, unsigned dh, int *scratch)
+int vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
+                     unsigned dw, unsigned dh, int *scratch)
 {
-    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), x, y, k;
-    int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
-    int *tmp = wy + (size_t)ky * dh;
+    unsigned kx, ky, x, y, k;
+    int *ixx, *wx, *iyy, *wy, *tmp;
+    if (!src || !dst || !scratch || !frame_ok(w, h) || !frame_ok(dw, dh) || stride < w) return VOCR_DESK_E_ARG;
+    kx = axis_taps(w, dw);
+    ky = axis_taps(h, dh);
+    ixx = scratch;
+    wx = ixx + (size_t)kx * dw;
+    iyy = wx + (size_t)kx * dw;
+    wy = iyy + (size_t)ky * dh;
+    tmp = wy + (size_t)ky * dh;
     axis_weights(w, dw, kx, ixx, wx);
     axis_weights(h, dh, ky, iyy, wy);
     for (y = 0; y < h; y++) {
@@ -287,6 +332,7 @@ void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned
             o[x] = (unsigned char)(acc > 255 ? 255 : acc < 0 ? 0 : acc);
         }
     }
+    return VOCR_DESK_OK;
 }
 
 /* ----------------------------------------------------------------------------- kernels */
@@ -625,33 +671,34 @@ static unsigned max3(unsigned a, unsigned b, unsigned c)
     return m > c ? m : c;
 }
 
+/* every size saturates (sz_*): an input too large for size_t gives P->end == SIZE_MAX, never a wrapped plan */
 static void plan(const vocr_desk_model *m, unsigned pw, unsigned ph, desk_plan *P)
 {
     const size_t A = 8;   /* floats: 32 bytes */
     size_t H2 = ph / 2, W2 = pw / 2, H4 = ph / 4, W4 = pw / 4, off = 0, s0, p4;
     unsigned s, cmax = 0;
-    s0 = H2 * W2 * m->c[0];
-    p4 = H4 * W4 * m->F;
+    s0 = sz_mul(sz_mul(H2, W2), m->c[0]);
+    p4 = sz_mul(sz_mul(H4, W4), m->F);
     P->S = off;
-    off += ALIGN_UP(s0 > p4 ? s0 : p4, A);
+    off = sz_add(off, sz_align(s0 > p4 ? s0 : p4, A));
     for (s = 0; s <= 4; s++)
         if (m->c[s] > cmax) cmax = m->c[s];
     P->T = off;
-    off += ALIGN_UP(H4 * W4 * max3(cmax, m->F, 1), A);
+    off = sz_add(off, sz_align(sz_mul(sz_mul(H4, W4), max3(cmax, m->F, 1)), A));
     for (s = 0; s < 4; s++) {
         size_t hs = ph >> (2 + s), ws = pw >> (2 + s);
         P->f[s] = off;
-        off += ALIGN_UP(hs * ws * m->c[s + 1], A);
+        off = sz_add(off, sz_align(sz_mul(sz_mul(hs, ws), m->c[s + 1]), A));
     }
     for (s = 0; s < 3; s++) {   /* p8, p16, p32 */
         size_t hs = ph >> (3 + s), ws = pw >> (3 + s);
         P->p[s] = off;
-        off += ALIGN_UP(hs * ws * m->F, A);
+        off = sz_add(off, sz_align(sz_mul(sz_mul(hs, ws), m->F), A));
     }
     P->maps = off;
-    off += ALIGN_UP(H4 * W4 * (4 + m->tags), A);
+    off = sz_add(off, sz_align(sz_mul(sz_mul(H4, W4), 4 + m->tags), A));
     P->xp = off;
-    off += ALIGN_UP(((size_t)ph + 2) * ((size_t)pw + 2), A);
+    off = sz_add(off, sz_align(sz_mul((size_t)ph + 2, (size_t)pw + 2), A));
     P->end = off;
 }
 
@@ -659,7 +706,7 @@ static size_t maps_bytes(const vocr_desk_model *m, unsigned pw, unsigned ph)
 {
     desk_plan P;
     plan(m, pw, ph, &P);
-    return P.end * sizeof(float) + 32;
+    return sz_add(sz_mul(P.end, sizeof(float)), 32);
 }
 
 static float *aligned_floats(void *arena)
@@ -763,7 +810,7 @@ int vocr_desk_maps_mt(const vocr_desk_model *m, const unsigned char *in, unsigne
     unsigned s, i, Hs, Ws, Hin, Win;
     const float *x;
     desk_step *t;
-    if (!m || !in || !arena || !maps || !pw || !ph || pw % VOCR_DESK_ALIGN || ph % VOCR_DESK_ALIGN)
+    if (!m || !in || !arena || !maps || !frame_ok(pw, ph) || pw % VOCR_DESK_ALIGN || ph % VOCR_DESK_ALIGN)
         return VOCR_DESK_E_ARG;
     if (bytes < maps_bytes(m, pw, ph)) return VOCR_DESK_E_ARENA;
     if (!run || ntasks < 1) ntasks = 1;
@@ -828,9 +875,12 @@ int vocr_desk_maps(const vocr_desk_model *m, const unsigned char *in, unsigned p
 
 /* ----------------------------------------------------------------------------- the decode */
 
+#define MAX_MAP_SIDE (VOCR_DESK_MAX_SIDE / VOCR_DESK_STRIDE)
+
 size_t vocr_desk_decode_bytes(unsigned mw, unsigned mh, unsigned tags)
 {
     size_t cells = (size_t)mw * mh, labels = cells / 2 + 2;
+    if (mw > MAX_MAP_SIDE || mh > MAX_MAP_SIDE || tags > VOCR_DESK_MAX_TAGS) return 0;
     /* labels per cell, the union-find parents, the final ids; per label 7 + tags doubles and 4 ints; candidates */
     return sizeof(int) * (cells + 2 * labels) + sizeof(double) * labels * (7 + tags) + sizeof(int) * labels * 4 +
            sizeof(vocr_desk_box) * labels + sizeof(int) * labels + 64;
@@ -864,7 +914,9 @@ int vocr_desk_decode(const vocr_desk_model *m, const float *maps, unsigned mw, u
     double *cnt, *sk, *so, *sn, *sf, *st;
     vocr_desk_box *cand;
     unsigned ncand = 0, k;
-    if (!m || !maps || !scratch || !out || hm > mh || wm > mw) return VOCR_DESK_E_ARG;
+    if (!m || !maps || !scratch || !out || mw > MAX_MAP_SIDE || mh > MAX_MAP_SIDE || iw > VOCR_DESK_MAX_SIDE ||
+        ih > VOCR_DESK_MAX_SIDE || hm > mh || wm > mw)
+        return VOCR_DESK_E_ARG;
     if (bytes < vocr_desk_decode_bytes(mw, mh, T)) return VOCR_DESK_E_ARENA;
     cells = (size_t)hm * wm;
     labels = (size_t)mw * mh / 2 + 2;
@@ -1009,21 +1061,28 @@ int vocr_desk_decode(const vocr_desk_model *m, const float *maps, unsigned mw, u
         bx->vertical = vertical;
         bx->tag = tag;
         bx->cells = (unsigned)cnt[k];
-        order[ncand] = (int)ncand;
         ncand++;
     }
-    /* stable order: logit descending, then y, then x (insertion sort on the indices) */
-    for (k = 1; k < ncand; k++) {
-        int v = order[k];
-        unsigned j = k;
-        while (j > 0 && box_before(&cand[v], v, &cand[order[j - 1]], order[j - 1])) {
-            order[j] = order[j - 1];
-            j--;
+    /* the first VOCR_DESK_MAX_BOXES in the stable order logit descending, then y, then x (then the candidate's index):
+     * a sorted insertion into at most VOCR_DESK_MAX_BOXES slots, so linear in the candidates; it keeps the same boxes
+     * in the same order as sorting every candidate and truncating (tools/vocr_desktop.decode) */
+    {
+        unsigned kept = 0;
+        for (k = 0; k < ncand; k++) {
+            unsigned j;
+            if (kept == VOCR_DESK_MAX_BOXES &&
+                !box_before(&cand[k], (int)k, &cand[order[kept - 1]], order[kept - 1]))
+                continue;
+            j = kept < VOCR_DESK_MAX_BOXES ? kept++ : kept - 1;
+            while (j > 0 && box_before(&cand[k], (int)k, &cand[order[j - 1]], order[j - 1])) {
+                order[j] = order[j - 1];
+                j--;
+            }
+            order[j] = (int)k;
         }
-        order[j] = v;
+        out->truncated = ncand > VOCR_DESK_MAX_BOXES;
+        out->count = kept;
     }
-    out->truncated = ncand > VOCR_DESK_MAX_BOXES;
-    out->count = ncand > VOCR_DESK_MAX_BOXES ? VOCR_DESK_MAX_BOXES : ncand;
     for (k = 0; k < out->count; k++) out->boxes[k] = cand[order[k]];
     return VOCR_DESK_OK;
 }
@@ -1034,30 +1093,31 @@ typedef struct {
     size_t net, input, resized, rscratch, decode, end;
 } detect_plan;
 
+/* for a policy and frame the callers have checked (vocr_desk_policy_ok, frame_ok); the sizes saturate (sz_*) */
 static void dplan(const vocr_desk_model *m, unsigned kind, unsigned n, unsigned w, unsigned h, detect_plan *D)
 {
     unsigned iw, ih, pw, ph;
     size_t off = 0;
     vocr_desk_input_size(kind, n, w, h, &iw, &ih, &pw, &ph);
     D->net = off;
-    off += ALIGN_UP(maps_bytes(m, pw, ph), 64);
+    off = sz_add(off, sz_align(maps_bytes(m, pw, ph), 64));
     D->input = off;
-    off += ALIGN_UP((size_t)pw * ph, 64);
+    off = sz_add(off, sz_align((size_t)pw * ph, 64));
     D->resized = off;
-    off += (iw != w || ih != h) ? ALIGN_UP((size_t)iw * ih, 64) : 0;
+    off = sz_add(off, (iw != w || ih != h) ? sz_align((size_t)iw * ih, 64) : 0);
     D->rscratch = off;
-    off += (iw != w || ih != h) ? ALIGN_UP(vocr_desk_resize_scratch(w, h, iw, ih), 64) : 0;
+    off = sz_add(off, (iw != w || ih != h) ? sz_align(vocr_desk_resize_scratch(w, h, iw, ih), 64) : 0);
     D->decode = off;
-    off += ALIGN_UP(vocr_desk_decode_bytes(pw / VOCR_DESK_STRIDE, ph / VOCR_DESK_STRIDE, m->tags), 64);
-    D->end = off + 64;
+    off = sz_add(off, sz_align(vocr_desk_decode_bytes(pw / VOCR_DESK_STRIDE, ph / VOCR_DESK_STRIDE, m->tags), 64));
+    D->end = sz_add(off, 64);
 }
 
 size_t vocr_desk_arena_bytes(const vocr_desk_model *m, unsigned kind, unsigned n, unsigned w, unsigned h)
 {
     detect_plan D;
-    if (!m || !w || !h || w > VOCR_DESK_MAX_SIDE || h > VOCR_DESK_MAX_SIDE) return 0;
+    if (!m || !frame_ok(w, h) || !vocr_desk_policy_ok(kind, n)) return 0;
     dplan(m, kind, n, w, h, &D);
-    return D.end;
+    return D.end == SIZE_MAX ? 0 : D.end;
 }
 
 int vocr_desk_detect(const vocr_desk_model *m, const unsigned char *grey, unsigned w, unsigned h, unsigned stride,
@@ -1076,16 +1136,18 @@ int vocr_desk_detect_mt(const vocr_desk_model *m, const unsigned char *grey, uns
     const float *maps;
     double fx, fy;
     int rc;
-    if (!m || !grey || !arena || !out || !w || !h || w > VOCR_DESK_MAX_SIDE || h > VOCR_DESK_MAX_SIDE || stride < w)
+    if (!m || !grey || !arena || !out || !frame_ok(w, h) || stride < w || !vocr_desk_policy_ok(kind, n))
         return VOCR_DESK_E_ARG;
     dplan(m, kind, n, w, h, &D);
+    if (D.end == SIZE_MAX) return VOCR_DESK_E_ARG;
     if (bytes < D.end) return VOCR_DESK_E_ARENA;
     vocr_desk_input_size(kind, n, w, h, &iw, &ih, &pw, &ph);
     base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
     in = base + D.input;
     if (iw != w || ih != h) {
         src = base + D.resized;
-        vocr_desk_resize(grey, w, h, stride, src, iw, ih, (int *)(void *)(base + D.rscratch));
+        rc = vocr_desk_resize(grey, w, h, stride, src, iw, ih, (int *)(void *)(base + D.rscratch));
+        if (rc) return rc;
         stride = iw;
     } else {
         src = (unsigned char *)(uintptr_t)grey;

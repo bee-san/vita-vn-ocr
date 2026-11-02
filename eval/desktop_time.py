@@ -276,6 +276,7 @@ def cmd_run(a):
     names = list(pipes)
     times = {n: defaultdict(list) for n in names}
     lines = {n: {} for n in names}
+    host_start = host()                                 # the load before the passes (N6: it was read after them)
     t0 = time.time()
     order = list(range(len(pages)))
     for p in range(a.warmup + a.passes):
@@ -290,7 +291,7 @@ def cmd_run(a):
                     times[n][i].append(ms)
                     lines[n][i] = len(out)
         print(f"pass {p + 1}/{a.warmup + a.passes} {time.time() - t0:.0f} s", flush=True)
-    res = {"kind": "vocr-desktop-timing/1", "host": host(), "threads": threads, "passes": a.passes, "ref": a.ref,
+    res = {"kind": "vocr-desktop-timing/1", "host": host_start, "threads": threads, "passes": a.passes, "ref": a.ref,
            "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
            "pages": {v: sum(p["view"] == v for p in pages) for v in sorted({p["view"] for p in pages})},
            "repo_head": D.git_head(), "results": {}}

@@ -259,7 +259,7 @@ def vdsk_bytes(model, size=DEFAULT_SIZE, decode=None):
     dl = [DILATIONS[s] for s in (4, 8, 16, 32)]
     hdr = b"VDSK" + struct.pack("<III", 1, VDSK_HEADER, VDSK_HEADER + len(body) + 4)
     hdr += struct.pack("<5I", *sh["c"]) + struct.pack("<4I", *sh["n"])
-    hdr += struct.pack("<5I", sh["F"], TAGS, int(d["min_cells"]), kind, n)
+    hdr += struct.pack("<5I", sh["F"], model.head.out_channels - 4, int(d["min_cells"]), kind, n)
     hdr += struct.pack("<4I", *[len(x) for x in dl]) + bytes(v for x in dl for v in (x + [0, 0, 0, 0])[:4])
     hdr += struct.pack("<4d", float(d["conf_min_logit"]), float(d["pad_pct"]), float(d["pad_min"]),
                        float(d["min_across"]))
@@ -293,7 +293,8 @@ def cmd_export(argv):
     m, ck = load_run(a.run)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    worst = export_onnx(m, out / f"{a.name}.onnx", onnx_meta(ck["shape"], a.name, a.size, PAD_RULES[a.pad]))
+    worst = export_onnx(m, out / f"{a.name}.onnx", onnx_meta(ck["shape"], a.name, a.size, PAD_RULES[a.pad],
+                                                           m.head.out_channels - 4))
     blob = vdsk_bytes(m, a.size, PAD_RULES[a.pad])
     (out / f"{a.name}.vdsk").write_bytes(blob)
     rec = {"run": str(a.run), "pt_sha256": sha256_file(Path(a.run) / "final.pt"), "size": a.size,
@@ -305,14 +306,15 @@ def cmd_export(argv):
     return rec
 
 
-def onnx_meta(shape, run_name, size=DEFAULT_SIZE, decode=None):
+def onnx_meta(shape, run_name, size=DEFAULT_SIZE, decode=None, tags=TAGS):
     d = dict(DECODE, **(decode or {}))
+    out = f"maps float32 [1, {4 + tags}, H / 4, W / 4]: K, O logits, A1, A2 (input px), {tags} tag logits"
     return {"vocr.kind": KIND, "vocr.name": run_name, "vocr.shape": shape, "vocr.stride": 4, "vocr.align": 32,
-            "vocr.tags": TAGS, "vocr.classes": ["dialogue", "name", "choice", "ui", "scene"], "vocr.size": size,
-            **{f"vocr.{k}": v for k, v in d.items()}, "vocr.input": "grey uint8 [1, 1, H, W], H and W multiples of "
-            "32; integer luma (77 R + 150 G + 29 B) >> 8", "vocr.output": "maps float32 [1, 8, H / 4, W / 4]: K, O "
-            "logits, A1, A2 (input px), 4 tag logits", "vocr.licence": "GPL-3.0-or-later; non-commercial use only "
-            "(training inputs)", "vocr.attribution": ATTRIBUTION}
+            "vocr.tags": tags, "vocr.classes": ["dialogue", "name", "choice", "ui", "scene"][:1 + tags],
+            "vocr.size": size, **{f"vocr.{k}": v for k, v in d.items()},
+            "vocr.input": "grey uint8 [1, 1, H, W], H and W multiples of 32; integer luma (77 R + 150 G + 29 B) >> 8",
+            "vocr.output": out, "vocr.licence": "GPL-3.0-or-later; non-commercial use only (training inputs)",
+            "vocr.attribution": ATTRIBUTION}
 
 
 # ----------------------------------------------------------------------------- windows

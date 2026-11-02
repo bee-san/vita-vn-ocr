@@ -327,17 +327,15 @@ def test_c_resize_close_to_opencv(model_files, c_libs):
     assert (cm.resize(flat, 37, 23) == 77).all()         # the weights sum to 1
 
 
-def test_c_page_reads_like_the_c_runtime(model_files, c_libs, tmp_path):
-    """The page pipeline's lines: the detector's crops in reading order, each read by runtime/vocr.c (W8I) with its
-    dark flag, the same text pyvocr gives for the same crop."""
+@pytest.fixture(scope="module")
+def rec_blob(tmp_path_factory):
+    """A small random VOCR recognizer blob (train/export.py) for the page pipeline's tests."""
     pytest.importorskip("torch")
     import torch
-    from pyvocr import Vocr
     from torch import nn
 
     import export
     from model import TinyVNOCR
-    _, d = model_files
     torch.manual_seed(7)
     rec = TinyVNOCR(60, width=0.25).eval()
     with torch.no_grad():
@@ -346,8 +344,17 @@ def test_c_page_reads_like_the_c_runtime(model_files, c_libs, tmp_path):
                 mod.running_var.uniform_(0.5, 2.0)
     vocab = [chr(0x3042 + i) for i in range(59)]
     blob, _ = export.build_blob(export.model_ops(rec, 32), vocab, 32, True, 1024, b"")
-    rp = tmp_path / "rec.vocr"
+    rp = tmp_path_factory.mktemp("rec") / "rec.vocr"
     rp.write_bytes(blob)
+    return rp
+
+
+def test_c_page_reads_like_the_c_runtime(model_files, c_libs, rec_blob):
+    """The page pipeline's lines: the detector's crops in reading order, each read by runtime/vocr.c (W8I) with its
+    dark flag, the same text pyvocr gives for the same crop."""
+    from pyvocr import Vocr
+    _, d = model_files
+    rp = rec_blob
     g = np.random.default_rng(8).integers(0, 256, (272, 480), dtype=np.uint8)
     for lib in c_libs.values():
         page = VD.CDesk(d / "d32.vdsk", rp, threads=2, lib=lib)
@@ -359,10 +366,158 @@ def test_c_page_reads_like_the_c_runtime(model_files, c_libs, tmp_path):
             other = VD.CDesk(d / "d32.vdsk", rp, threads=threads, lib=lib)
             assert other.page(g) == lines and other.detect(g) == boxes
         import vocr_onnx as V
-        r = Vocr(blob, mode="w8i")
+        r = Vocr(rp.read_bytes(), mode="w8i")
         for text, (x, y, w, h), _tag, dark, vertical in lines:
             if vertical:
                 assert text == ""
                 continue
             assert dark == V.line_dark(g, (x, y, w, h))
             assert text == r.run(np.ascontiguousarray(g[y:y + h, x:x + w]), invert=bool(dark))[0]
+
+
+# ----------------------------------------------------------------------------- bounds (audit-vocr-desktop F5, N16-N20)
+
+def test_policy_bounds_in_python():
+    assert VD.policy_of("long:640") == (2, 640) and VD.policy_of("fit:960") == (1, 960)
+    assert VD.policy_of("native") == (0, 0) and VD.policy_of(None) == (-1, 0)
+    for bad in ("long:0", "long:8193", "long:4294967278", "fit:-5", "wide:640", "long:6.5"):
+        with pytest.raises(ValueError):
+            VD.policy_of(bad)
+    assert VD.scale_for("long:8192", 1, 1) == 8192.0
+    for bad in ("long:0", "fit:8193", "long:4294967278"):
+        with pytest.raises(ValueError):
+            VD.scale_for(bad, 640, 480)
+
+
+def _patched_blob(path, kind, n):
+    """A VDSK blob with another default policy in its header, the CRC-32 refitted (a crafted model file)."""
+    import struct
+    import zlib
+    b = bytearray(Path(path).read_bytes())
+    struct.pack_into("<II", b, 64, kind, n)
+    struct.pack_into("<I", b, len(b) - 4, zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
+    return bytes(b)
+
+
+def test_c_refuses_bad_policies_sizes_and_blobs(model_files, c_libs, rec_blob, tmp_path):
+    import ctypes as C
+    _, d = model_files
+    huge = 4294967278                                     # the audit's long:N whose arena size used to wrap
+    for name, lib in c_libs.items():
+        L = VD.c_library(lib)
+        cm = VD.CModel(d / "d32.vdsk", lib=lib)
+        m = cm.m.ctypes.data
+        assert [L.vocr_desk_policy_ok(k, n) for k, n in ((0, 12345), (1, 1), (2, 8192), (1, 960))] == [1, 1, 1, 1]
+        assert [L.vocr_desk_policy_ok(k, n) for k, n in ((2, 0), (2, 8193), (2, huge), (1, 0), (3, 640))] == [0] * 5
+        for k, n, w, h in ((2, huge, 1, 1), (2, huge, 640, 480), (2, 9000, 640, 480), (7, 0, 640, 480),
+                           (2, 640, 0, 480), (2, 640, 8193, 10)):
+            assert L.vocr_desk_arena_bytes(m, k, n, w, h) == 0, (name, k, n, w, h)
+        assert L.vocr_desk_arena_bytes(m, 2, 640, 640, 480) > 0
+        out = [C.c_uint(7) for _ in range(4)]
+        L.vocr_desk_input_size(2, huge, 1, 1, *[C.byref(v) for v in out])
+        assert [v.value for v in out] == [0, 0, 0, 0]
+        L.vocr_desk_input_size(2, 640, 1920, 1080, *[C.byref(v) for v in out])
+        assert [v.value for v in out] == [640, 360, 640, 384]
+        _, CSet, _ = VD._c_types()
+        g = np.full((1, 1), 128, np.uint8)
+        arena = np.zeros(1 << 20, np.uint8)
+        rc = L.vocr_desk_detect(m, g.ctypes.data, 1, 1, 1, 2, huge, arena.ctypes.data, arena.size, C.byref(CSet()))
+        assert rc == -1                                   # VOCR_DESK_E_ARG, before any resize
+        with pytest.raises(ValueError):
+            cm.detect(np.full((480, 640), 128, np.uint8), size="long:9000")
+        # the decode and the resize check their own arguments (N17)
+        assert L.vocr_desk_decode_bytes(4096, 10, 4) == 0 and L.vocr_desk_decode_bytes(2048, 2048, 4) > 0
+        assert L.vocr_desk_resize_scratch(5, 3, 0, 1) == 0 and L.vocr_desk_resize_scratch(5, 3, 9000, 1) == 0
+        src, dst, scr = np.zeros(15, np.uint8), np.zeros(16, np.uint8), np.zeros(256, np.int32)
+        assert L.vocr_desk_resize(src.ctypes.data, 5, 3, 5, dst.ctypes.data, 0, 1, scr.ctypes.data) == -1
+        with pytest.raises(ValueError):
+            cm.resize(np.zeros((3, 5), np.uint8), 0, 1)
+        # a model file whose default policy is out of range, or of no kind, is refused (VOCR_DESK_E_BLOB)
+        for k, n in ((2, huge), (2, 0), (3, 640), (1, 8193)):
+            bad = tmp_path / f"{name}_{k}_{n}.vdsk"
+            bad.write_bytes(_patched_blob(d / "d32.vdsk", k, n))
+            with pytest.raises(ValueError, match="-2"):
+                VD.CModel(bad, lib=lib)
+            with pytest.raises(ValueError, match="-2"):
+                VD.CDesk(bad, rec_blob, lib=lib)
+        ok = tmp_path / f"{name}_ok.vdsk"
+        ok.write_bytes(_patched_blob(d / "d32.vdsk", 2, 8192))
+        VD.CModel(ok, lib=lib)
+        # the page pipeline: a policy out of range or of no kind (N18), and the frame's sides before any allocation
+        det, rec = VD._aligned((d / "d32.vdsk").read_bytes()), VD._aligned(rec_blob.read_bytes())
+        for k, n in ((2, huge), (7, 0), (1, 0)):
+            err = C.c_int(0)
+            p = L.vocr_desk_page_new(det.ctypes.data, len(det), rec.ctypes.data, len(rec), 1, k, n, C.byref(err))
+            assert not p and err.value == -1, (k, n)
+        page = VD.CDesk(d / "d32.vdsk", rec_blob, lib=lib)
+        rgb = np.zeros(48, np.uint8)
+        assert L.vocr_desk_page_run_rgb(page.p, rgb.ctypes.data, 65535, 65535, 65535 * 3, 3) == -1
+
+
+def test_c_decode_keeps_the_first_256_like_python(model_files, c_libs):
+    """More than 256 components, with equal logits and equal clipped corners (ties down to the component's index):
+    the C decode's bounded selection keeps the boxes, in the order, that sorting everything and truncating keeps."""
+    _, d = model_files
+    mh, mw = 64, 120
+    mp = np.full((8, mh, mw), -4.0, np.float32)
+    mp[2:4] = 3.0
+    for r in range(0, mh, 2):
+        for c in range(0, mw - 1, 3):
+            mp[0, r, c:c + 2] = (0.5, 1.5, 2.5)[(r // 2 + c // 3) % 3]
+            if c == 0:
+                mp[2, r, c:c + 2] = 500.0                 # the box reaches above the frame: clipped to y 0, x 0
+    n = (mh // 2) * len(range(0, mw - 1, 3))
+    assert n > 256
+    ref = VD.decode(mp, mw * 4, mh * 4)
+    assert len(ref) == 256
+    for lib in c_libs.values():
+        cm = VD.CModel(d / "d32.vdsk", lib=lib)
+        assert cm.decode(mp, mw * 4, mh * 4) == ref
+
+
+def test_region_reads_at_the_frame_scale_and_pad(model_files, monkeypatch):
+    """read_frame's region (N20): the policy's factor and the frame pad come from the whole frame, so a region reads
+    as the same region of a whole-frame read would."""
+    _, d = model_files
+    det = VD.Detector(d / "d32f.onnx", size="long:640")
+    shapes = []
+    real_maps = det.maps
+    monkeypatch.setattr(det, "maps", lambda x: (shapes.append(x.shape), real_maps(x))[1])
+    fixed = [VD.Box(30.0, 10.0, 60.0, 10.0, 0, 1.0, 0, 1.0, 4)]   # one box in network-input px
+    monkeypatch.setattr(VD, "decode", lambda *a, **k: list(fixed))
+    sub = np.full((150, 900), 128, np.uint8)
+    (b,) = det.detect(sub, frame=(1920, 1080))            # 1920 x 1080 at long:640: a factor of 1/3
+    assert shapes[-1] == (1, 1, 64, 320)                  # 900 x 150 -> 300 x 50, padded to 320 x 64
+    pad = max(2, round(4 * 1080 / 544))                   # the frame's pad: 8 px
+    assert (b.x, b.y) == (90.0 - pad, 30.0 - pad)
+    assert b.x + b.w == pytest.approx(270.0 + pad) and b.y + b.h == pytest.approx(60.0 + pad)
+    (b,) = det.detect(sub)                                # the region alone: its own scale and pad (2 px)
+    assert shapes[-1] == (1, 1, 128, 640)
+    seen = {}
+    monkeypatch.setattr(det, "detect", lambda img, frame=None: seen.setdefault("frame", frame) and [])
+    VD.read_frame(np.zeros((1080, 1920), np.uint8), det, None, region=(100, 800, 900, 150))
+    assert seen["frame"] == (1920, 1080)
+
+
+def test_export_writes_the_networks_tag_count(model_files, c_libs):
+    """train/desktop_det.py's VDSK header and ONNX metadata carry the network's own tag count (N16)."""
+    torch = pytest.importorskip("torch")
+    import struct
+
+    import desktop_det as DD
+    torch.manual_seed(9)
+    m = DD.DeskNet(DD.SHAPES["d32"], tags=2).eval()
+    blob = DD.vdsk_bytes(m)
+    assert struct.unpack_from("<I", blob, 56)[0] == 2
+    meta = DD.onnx_meta(DD.SHAPES["d32"], "t2", tags=2)
+    assert meta["vocr.tags"] == 2 and meta["vocr.classes"] == ["dialogue", "name", "choice"]
+    assert "[1, 6, H / 4, W / 4]" in meta["vocr.output"]
+    assert DD.onnx_meta(DD.SHAPES["d32"], "t4")["vocr.output"] == (
+        "maps float32 [1, 8, H / 4, W / 4]: K, O logits, A1, A2 (input px), 4 tag logits")
+    x = np.random.default_rng(10).integers(0, 256, (64, 96), dtype=np.uint8)
+    with torch.no_grad():
+        ref = m(torch.from_numpy(x)[None, None]).numpy()[0]
+    for lib in c_libs.values():
+        got = VD.CModel(blob, lib=lib).maps(x)
+        assert got.shape == ref.shape == (6, 16, 24)
+        assert float(np.abs(ref - got).max()) <= 1e-3 * max(1.0, float(np.abs(ref).max()))

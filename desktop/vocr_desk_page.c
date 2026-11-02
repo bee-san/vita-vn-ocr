@@ -220,7 +220,8 @@ vocr_desk_page *vocr_desk_page_new(const void *det, size_t det_bytes, const void
     size_t need;
     int rc = VOCR_DESK_OK;
     if (err) *err = VOCR_DESK_OK;
-    if (!det || !rec || threads < 1 || threads > MAX_THREADS) {
+    if (!det || !rec || threads < 1 || threads > MAX_THREADS ||
+        (kind >= 0 && !vocr_desk_policy_ok((unsigned)kind, n))) {
         if (err) *err = VOCR_DESK_E_ARG;
         return NULL;
     }
@@ -389,7 +390,8 @@ int vocr_desk_page_run_rgb(vocr_desk_page *p, const unsigned char *rgb, unsigned
                            unsigned channels)
 {
     double t0 = now_us();
-    if (!p || !rgb || !w || !h || (channels != 3 && channels != 4) || stride < (size_t)w * channels)
+    if (!p || !rgb || !w || !h || w > VOCR_DESK_MAX_SIDE || h > VOCR_DESK_MAX_SIDE ||
+        (channels != 3 && channels != 4) || stride < (size_t)w * channels)
         return VOCR_DESK_E_ARG;
     if ((size_t)w * h > p->grey_cap) {
         free(p->grey_buf);

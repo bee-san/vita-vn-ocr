@@ -36,6 +36,14 @@ static unsigned char *load(const char *path, size_t *n)
     return b;
 }
 
+/* a policy's n: a decimal number of 1-8192, or 0 (refused by vocr_desk_page_new) for anything else */
+static unsigned size_n(const char *s)
+{
+    char *end;
+    unsigned long v = strtoul(s, &end, 10);
+    return (*s && !*end && v >= 1 && v <= VOCR_DESK_MAX_SIDE) ? (unsigned)v : 0u;
+}
+
 static unsigned rd32(const unsigned char *p)
 {
     return (unsigned)p[0] | (unsigned)p[1] << 8 | (unsigned)p[2] << 16 | (unsigned)p[3] << 24;
@@ -90,8 +98,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[a], "--size") && a + 1 < argc) {
             const char *s = argv[++a];
             if (!strcmp(s, "native")) kind = VOCR_DESK_SIZE_NATIVE, n = 0;
-            else if (!strncmp(s, "fit:", 4)) kind = VOCR_DESK_SIZE_FIT, n = (unsigned)atoi(s + 4);
-            else if (!strncmp(s, "long:", 5)) kind = VOCR_DESK_SIZE_LONG, n = (unsigned)atoi(s + 5);
+            else if (!strncmp(s, "fit:", 4)) kind = VOCR_DESK_SIZE_FIT, n = size_n(s + 4);
+            else if (!strncmp(s, "long:", 5)) kind = VOCR_DESK_SIZE_LONG, n = size_n(s + 5);
             else {
                 fprintf(stderr, "--size: fit:N, long:N or native\n");
                 return 2;

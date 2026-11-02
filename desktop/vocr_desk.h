@@ -33,12 +33,13 @@ extern "C" {
 #define VOCR_DESK_MAX_BLOCKS 8u         /* separable blocks per stage after its down-sampling block */
 #define VOCR_DESK_MAX_CHANNELS 512u
 #define VOCR_DESK_MAX_BOXES 256u        /* boxes kept per frame (the highest mean kernel logits) */
-#define VOCR_DESK_MAX_SIDE 8192u        /* a frame side the detector accepts */
+#define VOCR_DESK_MAX_SIDE 8192u        /* a frame side, a network input side and a policy's n the detector accepts */
 #define VOCR_DESK_TEXT 1024u            /* bytes of a line's text, NUL included */
 
 enum {
     VOCR_DESK_OK = 0,
-    VOCR_DESK_E_ARG = -1,     /* a bad argument: a NULL pointer, a frame of 0 or more than 8192 px a side */
+    VOCR_DESK_E_ARG = -1,     /* a bad argument: a NULL pointer, a frame of 0 or more than 8192 px a side, or a size
+                                 policy other than native, fit:n or long:n with n 1-8192 (vocr_desk_policy_ok) */
     VOCR_DESK_E_BLOB = -2,    /* not a VDSK version-1 blob, or one this build cannot read */
     VOCR_DESK_E_CRC = -3,     /* the blob's CRC-32 does not match */
     VOCR_DESK_E_ARENA = -4,   /* the arena is too small */
@@ -56,7 +57,8 @@ typedef struct {
 
 typedef struct {               /* a parsed blob: points into it, so keep the blob alive */
     unsigned c[5], n[4], F, tags, min_cells;
-    unsigned size_kind, size_n;            /* the default input policy: fit:960 */
+    unsigned size_kind, size_n;            /* the blob's default input policy (the exporter's --size; long:640 in
+                                              release v0.5.2-desktop.1's blob); vocr_desk_load checks it */
     unsigned dil_len[4], dil[4][4];        /* each stage's dilation pattern */
     double conf_min_logit, pad_pct, pad_min, min_across;
     unsigned pad_frame, pad_frame_min;     /* pad_frame > 0: boxes grown by max(pad_frame_min, nearbyint(pad_frame x
@@ -82,20 +84,27 @@ typedef struct {
     vocr_desk_box boxes[VOCR_DESK_MAX_BOXES];   /* sorted: logit descending, then y, then x */
 } vocr_desk_set;
 
-/* Parse and check a blob (magic, version, sizes, CRC-32). */
+/* Parse and check a blob (magic, version, sizes, CRC-32, its default size policy). */
 int vocr_desk_load(vocr_desk_model *m, const void *blob, size_t bytes);
+
+/* 1 when (kind, n) is a size policy the detector reads: native (n ignored), or fit:n or long:n with 1 <= n <= 8192
+ * (VOCR_DESK_MAX_SIDE); 0 otherwise. Every function that takes a policy refuses the others (VOCR_DESK_E_ARG, or 0
+ * bytes). */
+int vocr_desk_policy_ok(unsigned kind, unsigned n);
 
 /* The network input for a w x h frame under a size policy (kind, n): fit:n scales the longer side down to n px when it
  * is longer (never up), long:n scales it to n px, native keeps the frame; the image part iw x ih (each side
- * nearbyint(side * f), at least 1) and the padded input pw x ph (multiples of 32). */
+ * nearbyint(side * f), at least 1) and the padded input pw x ph (multiples of 32, at most 8192). Every output is 0 for
+ * a policy vocr_desk_policy_ok refuses or a frame of 0 or more than 8192 px a side. */
 void vocr_desk_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
                           unsigned *pw, unsigned *ph);
 
-/* Arena bytes for vocr_desk_detect on a w x h frame under a policy (vocr_desk_maps needs the same for its input). */
+/* Arena bytes for vocr_desk_detect on a w x h frame under a policy (vocr_desk_maps needs the same for its input); 0
+ * for a policy or frame vocr_desk_detect refuses. */
 size_t vocr_desk_arena_bytes(const vocr_desk_model *m, unsigned kind, unsigned n, unsigned w, unsigned h);
 
-/* The network on a padded grey input (pw x ph, multiples of 32, row-major, stride pw): *maps points into the arena,
- * channel-innermost float32 [ph / 4][pw / 4][4 + tags]. */
+/* The network on a padded grey input (pw x ph, multiples of 32 and at most 8192, row-major, stride pw): *maps points
+ * into the arena, channel-innermost float32 [ph / 4][pw / 4][4 + tags]. */
 int vocr_desk_maps(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
                    size_t bytes, const float **maps);
 
@@ -107,9 +116,9 @@ typedef void (*vocr_desk_runner)(void *ctx, vocr_desk_task_fn fn, void *arg, uns
 int vocr_desk_maps_mt(const vocr_desk_model *m, const unsigned char *in, unsigned pw, unsigned ph, void *arena,
                       size_t bytes, const float **maps, vocr_desk_runner run, void *ctx, unsigned ntasks);
 
-/* The decode on maps (as vocr_desk_maps gives them, mw x mh cells of 4 + tags channels): the boxes of the iw x ih
- * image part, in input px (tools/vocr_desktop.decode's rule). scratch: (mw * mh + 2) ints and the per-component
- * sums, vocr_desk_decode_bytes(mw, mh, tags). */
+/* The decode on maps (as vocr_desk_maps gives them, mw x mh cells of 4 + tags channels, mw and mh at most 8192 / 4):
+ * the boxes of the iw x ih image part (at most 8192 px a side), in input px (tools/vocr_desktop.decode's rule).
+ * scratch: vocr_desk_decode_bytes(mw, mh, tags) bytes (0 when mw or mh is over 8192 / 4). */
 size_t vocr_desk_decode_bytes(unsigned mw, unsigned mh, unsigned tags);
 int vocr_desk_decode(const vocr_desk_model *m, const float *maps, unsigned mw, unsigned mh, unsigned iw, unsigned ih,
                      void *scratch, size_t bytes, vocr_desk_set *out);
@@ -123,9 +132,10 @@ int vocr_desk_detect_mt(const vocr_desk_model *m, const unsigned char *grey, uns
                         void *ctx, unsigned ntasks);
 
 /* The resize the detector uses (exposed for tests): Q14 area weights when a side shrinks, bilinear (pixel centres)
- * when it grows, separable, integer arithmetic. */
-void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
-                      unsigned dw, unsigned dh, int *scratch);
+ * when it grows, separable, integer arithmetic. Every side is 1-8192 px and stride >= w (VOCR_DESK_E_ARG otherwise);
+ * scratch holds vocr_desk_resize_scratch(w, h, dw, dh) bytes (0 for a side out of that range). */
+int vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
+                     unsigned dw, unsigned dh, int *scratch);
 size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh);
 
 /* sizeof(vocr_desk_model) and sizeof(vocr_desk_set), for callers that allocate them (ctypes). */
@@ -147,7 +157,8 @@ typedef struct {
     char text[VOCR_DESK_TEXT];  /* greedy UTF-8; empty for a vertical box (not read) */
 } vocr_desk_line;
 
-/* det/rec: the blobs (kept alive by the caller); threads >= 1; kind/n: the input policy (kind < 0: the blob's). */
+/* det/rec: the blobs (kept alive by the caller); threads 1-64; kind/n: the input policy (kind < 0: the blob's; any
+ * other must pass vocr_desk_policy_ok, or the call fails with VOCR_DESK_E_ARG). */
 vocr_desk_page *vocr_desk_page_new(const void *det, size_t det_bytes, const void *rec, size_t rec_bytes,
                                    unsigned threads, int kind, unsigned n, int *err);
 /* Read a grey frame: lines in reading order (rows top to bottom by vertical overlap, left to right in a row). */

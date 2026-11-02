@@ -37,6 +37,7 @@ import numpy as np
 
 STRIDE = 4                 # the maps' stride in input px
 ALIGN = 32                 # the network's input sides are multiples of this
+MAX_SIDE = 8192            # a policy's N, as desktop/vocr_desk.h's VOCR_DESK_MAX_SIDE
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 
 
@@ -63,13 +64,16 @@ def grey_of(img):
 
 
 def scale_for(policy, w, h):
-    """The factor a w x h frame is resized by before the network, for a size policy (module docstring)."""
+    """The factor a w x h frame is resized by before the network, for a size policy (module docstring). N is 1 to
+    8192 px, as the C path accepts (ValueError otherwise)."""
     if policy in (None, "", "native"):
         return 1.0
     kind, _, n = str(policy).partition(":")
     if not n:
         kind, n = "fit", kind
     n = float(n)
+    if not 1 <= n <= MAX_SIDE:
+        raise ValueError(f"size policy {policy!r}: N is 1 to {MAX_SIDE} px")
     long = max(w, h)
     if kind == "fit":
         return min(1.0, n / long)
@@ -136,12 +140,14 @@ class Detector:
         self.tags = int(meta.get("vocr.tags", 4))
         self.input_name = self.sess.get_inputs()[0].name
 
-    def preprocess(self, g):
+    def preprocess(self, g, f=None):
         """(network input [1, 1, H', W'] uint8, factor) of a grey frame: resized by the size policy (INTER_AREA down,
-        INTER_LINEAR up), padded right and bottom to a multiple of 32 by edge replication."""
+        INTER_LINEAR up) or by the factor f when given, padded right and bottom to a multiple of 32 by edge
+        replication."""
         import cv2
         h, w = g.shape
-        f = scale_for(self.size, w, h)
+        if f is None:
+            f = scale_for(self.size, w, h)
         if f != 1.0:
             nw, nh = max(1, int(round(w * f))), max(1, int(round(h * f)))
             g = cv2.resize(g, (nw, nh), interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_LINEAR)
@@ -155,16 +161,24 @@ class Detector:
     def maps(self, x):
         return self.sess.run(None, {self.input_name: x})[0][0]
 
-    def detect(self, img):
-        """[Box] in the frame's px, in the decode's order (by confidence)."""
+    def detect(self, img, frame=None):
+        """[Box] in the image's px, in the decode's order (by confidence). frame=(W, H): the image is a region of a
+        W x H frame, read at the scale the size policy gives the whole frame and with the whole frame's pad, as a
+        read of the whole frame would read it (read_frame's region)."""
         g = grey_of(img)
-        x, (fx, fy, ww, hh) = self.preprocess(g)
+        H, W = g.shape
+        f = None
+        ph = H
+        if frame is not None:
+            fw, fh = (int(v) for v in frame)
+            f = scale_for(self.size, fw, fh)
+            ph = fh
+        x, (fx, fy, ww, hh) = self.preprocess(g, f)
         boxes = decode(self.maps(x), ww, hh, self.min_cells, self.conf_min_logit, self.pad_pct, self.pad_min,
                        self.min_across, self.tags)
-        H, W = g.shape
         fp = 0.0
         if self.pad_frame:
-            fp = float(max(self.pad_frame_min, round(self.pad_frame * H / 544.0)))
+            fp = float(max(self.pad_frame_min, round(self.pad_frame * ph / 544.0)))
         out = []
         for b in boxes:
             x0, y0 = max(0.0, b.x / fx - fp), max(0.0, b.y / fy - fp)
@@ -271,7 +285,9 @@ def crop_of(b, W, H):
 def read_frame(frame, det, rec, lm=None, sections=True, tags=None, region=None, workers=1, executor=None):
     """Every line of a frame (or of a region (x, y, w, h) of it), top to bottom: [Line], boxes and character cells
     in frame px. det: a Detector; rec: a vocr_onnx.Recognizer; lm: a vocr_onnx.CharLM; tags: the tag classes to read
-    (None: all); workers: lines read in parallel on that many threads (or pass a concurrent.futures executor)."""
+    (None: all); workers: lines read in parallel on that many threads (or pass a concurrent.futures executor). A region
+    is read at the scale and with the box pad the detector's policy gives the whole frame (Detector.detect's frame);
+    no benchmark set read a region (docs/desktop.md)."""
     import vocr_onnx as V
     g = grey_of(frame)
     H, W = g.shape
@@ -284,7 +300,7 @@ def read_frame(frame, det, rec, lm=None, sections=True, tags=None, region=None, 
         sub = np.ascontiguousarray(g[y0:y1, x0:x1])
         if not sub.size:
             return []
-    boxes = det.detect(sub)
+    boxes = det.detect(sub, frame=(W, H)) if region is not None else det.detect(sub)
     if tags is not None:
         boxes = [b for b in boxes if b.tag in tags]
     order = reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
@@ -370,6 +386,9 @@ def c_library(path=None):
     L.vocr_desk_arena_bytes.restype = sz
     L.vocr_desk_detect.argtypes = [vp, vp, u, u, u, u, u, vp, sz, C.POINTER(CSet)]
     L.vocr_desk_resize.argtypes = [vp, u, u, u, vp, u, u, vp]
+    L.vocr_desk_resize.restype = i
+    L.vocr_desk_policy_ok.argtypes = [u, u]
+    L.vocr_desk_policy_ok.restype = i
     L.vocr_desk_resize_scratch.argtypes = [u, u, u, u]
     L.vocr_desk_resize_scratch.restype = sz
     L.vocr_desk_input_size.argtypes = [u, u, u, u] + [C.POINTER(u)] * 4
@@ -405,7 +424,8 @@ def _aligned(data):
 
 
 def policy_of(size):
-    """(kind, n) of a size policy string for the C API: native 0, fit:N 1, long:N 2; None: the blob's (-1)."""
+    """(kind, n) of a size policy string for the C API: native 0, fit:N 1, long:N 2 (N 1-8192); None: the blob's
+    (-1). ValueError for anything else, before the C library sees it (it refuses those too)."""
     if size is None:
         return -1, 0
     if size in ("", "native"):
@@ -413,6 +433,8 @@ def policy_of(size):
     kind, _, n = str(size).partition(":")
     if not n:
         kind, n = "fit", kind
+    if kind not in ("fit", "long") or not n.isdigit() or not 1 <= int(n) <= MAX_SIDE:
+        raise ValueError(f"size policy {size!r}: fit:N, long:N (N 1 to {MAX_SIDE}) or native")
     return {"fit": 1, "long": 2}[kind], int(n)
 
 
@@ -492,7 +514,9 @@ class CModel:
         h, w = g.shape
         out = np.zeros((dh, dw), np.uint8)
         scratch = np.zeros(self.L.vocr_desk_resize_scratch(w, h, dw, dh) + 64, np.uint8)
-        self.L.vocr_desk_resize(g.ctypes.data, w, h, w, out.ctypes.data, dw, dh, scratch.ctypes.data)
+        rc = self.L.vocr_desk_resize(g.ctypes.data, w, h, w, out.ctypes.data, dw, dh, scratch.ctypes.data)
+        if rc:
+            raise ValueError(f"vocr_desk_resize: {rc}")
         return out
 
 

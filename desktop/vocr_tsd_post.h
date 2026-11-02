@@ -23,7 +23,8 @@
  * The reading filter (vocr_tsdd_drop: tools/tsdesk.drop_set) decides which of a page's read horizontal lines are left
  * out, from their tight boxes and UTF-8 readings: nojp (no Japanese character; 2: unless a mostly Japanese reading
  * sits in the row within nojp_gap_pct % of the larger height, nojp_anchor_pct), rep_pct (a reading dominated by one
- * non-Japanese character), conf_milli (the mean character confidence under conf_milli / 1000).
+ * non-Japanese character, rep_len characters or more), conf_milli (the mean character confidence under
+ * conf_milli / 1000).
  */
 #ifndef VOCR_TSD_POST_H
 #define VOCR_TSD_POST_H
@@ -44,10 +45,10 @@ typedef struct {
 
 /* The reading filter's options, in tools/tsdesk.DROP_DEFAULTS order. */
 typedef struct {
-    int nojp, nojp_gap_pct, nojp_anchor_pct, rep_pct, conf_milli;
+    int nojp, nojp_gap_pct, nojp_anchor_pct, rep_pct, conf_milli, rep_len;
 } vocr_tsdd_opts;
 
-#define VOCR_TSDD_NOPTS 5
+#define VOCR_TSDD_NOPTS 6
 
 enum { VOCR_TSDP_OK = 0, VOCR_TSDP_E_ARG = -1, VOCR_TSDP_E_SCRATCH = -2 };
 

@@ -5,13 +5,19 @@ MeikiOCR's detector boxes (score >= 0.5), each refined to ink as the pools refin
 meiki: textspot2_labels.refine_h / refine_t, refined_of P1).
 
 --measure ink (the default): the ink inside the box (ink_in: train/tsdesk_targets.ink_box's stroke rule on the stored
-grey frame, without its ring-noise term) that lies in no positive and no ignore area (each grown by 1 px); the box
-counts when that unlabelled ink holds at least INK_SHARE of the box's ink and its extent is at least 0.4 x the box's
-size across along the line and 0.3 x it across (about half a glyph): text the trainer sees as background, whatever
-the box's own offset. --measure box: desktop-data 1b v3's geometric test (desktopdata/realplus.uncovered_spans: a run
-of unlabelled columns at least 0.4 x the box's height long, or of unlabelled rows at least 0.2 x it tall), spans
-thinner than MIN_SPAN px dropped; a box offset from its line by a quarter of its height fails it although its line is
-labelled (MeikiOCR's PSP boxes), so it overcounts.
+grey frame, without its ring-noise term) that lies in no positive and no ignore area (each grown by 1 px), as
+8-connected components after a 3x3 dilation; a component counts when it is at least INK_ALONG x the box's size across
+long along the line and INK_ACROSS x it across (about half a glyph: a shadow sliver above or below a labelled line
+does not count), and the box counts when its counted components hold at least INK_SHARE of its ink: text the trainer
+sees as background, whatever the box's own offset. Each counted box is placed (where): "cells" when its unlabelled ink
+lies mostly inside a positive line's own glyph cells (hook / desk_hook with --pool: the target box cut its line),
+"row" when it shares the row of a positive or an ignore area within WHERE_REACH line heights of its ends (a page
+cursor, an icon, an end glyph past a renderer box), "apart" otherwise (other text: UI, names, scene text).
+
+--measure box: desktop-data 1b v3's geometric test (desktopdata/realplus.uncovered_spans: a run of unlabelled columns
+at least 0.4 x the box's height long, or of unlabelled rows at least 0.2 x it tall), spans thinner than MIN_SPAN px
+dropped; a box offset from its line by a quarter of its height fails it although its line is labelled (MeikiOCR's
+PSP boxes), so it overcounts.
 
   tsdesk_coverage.py meiki --manifest M --root DIR --out CACHE [--workers 5] [--shards N]       (one heavy slot)
       MeikiOCR's detector (teacher/engines.Meiki: its pinned files, threshold 0.2) on every sample of a shard set
@@ -19,8 +25,8 @@ labelled (MeikiOCR's PSP boxes), so it overcounts.
       refine theirs; CACHE/<shard>.jsonl, one line per sample {"shard", "i", "meiki": [{"raw", "score", "box",
       "vertical"}]} (the pools' format); a finished shard is skipped
   tsdesk_coverage.py run --source hook|desk_hook|desk_synth --manifest M --root DIR --meiki CACHE
-                     [--targets DIR] [--splits train] [--measure ink|box] --out COUNTS.json --rows ROWS.jsonl
-                     [--workers 5]
+                     [--targets DIR] [--splits train] [--measure ink|box] [--pool P] --out COUNTS.json
+                     --rows ROWS.jsonl [--workers 5]
       the labels of each sample as the trainer sees them (on hook and desk_hook the positives patched with the
       --targets cache, train/tsdesk_targets.patch_sample), under recipe base and under recipe junk (tsdesk_det.
       strip_weak), against each MeikiOCR box. hook: CACHE = the pools' cache (synth/textspot6_pages.py meiki: one
@@ -59,6 +65,7 @@ GRID = 8            # px: distinct elements are counted per title on this grid o
 INK_SHARE = 0.15    # the unlabelled share of a box's ink that counts (ink measure)
 INK_ALONG = 0.4     # the unlabelled ink's extent along the line, x the box's size across
 INK_ACROSS = 0.3    # its extent across, x the box's size across
+WHERE_REACH = 1.5   # "row": within this many line heights past a positive's ends on its row
 BANDS = (0.2, 0.3, 0.4, 0.5, 0.7, 0.9)
 
 
@@ -150,8 +157,9 @@ def labelled_in(b, boxes, g=1):
 
 
 def uncovered_ink(g, b, boxes):
-    """(spans, share): the unlabelled ink of box b (the bounding box of its ink outside every label, as [[x0, y0, x1,
-    y1]], or [] when it is under the INK_* bars) and that ink's share of the box's ink."""
+    """(spans, share): the counted components of box b's unlabelled ink (their boxes [[x0, y0, x1, y1]] in frame px,
+    [] when none counts or their share is under INK_SHARE) and their share of the box's ink (module docstring)."""
+    import cv2
     H, W = g.shape
     c = clip(b, W, H)
     if c is None or c[2] - c[0] < 2 or c[3] - c[1] < 2:
@@ -161,17 +169,52 @@ def uncovered_ink(g, b, boxes):
     if not n:
         return [], 0.0
     u = ink & ~labelled_in(c, boxes)
-    share = float(u.sum()) / n
-    if share < INK_SHARE:
-        return [], share
-    rows, cols = np.flatnonzero(u.any(1)), np.flatnonzero(u.any(0))
+    if not u.any():
+        return [], 0.0
     vertical = (c[3] - c[1]) > 2.5 * (c[2] - c[0])
     across = (c[2] - c[0]) if vertical else (c[3] - c[1])
-    along_ext = (rows[-1] - rows[0] + 1) if vertical else (cols[-1] - cols[0] + 1)
-    across_ext = (cols[-1] - cols[0] + 1) if vertical else (rows[-1] - rows[0] + 1)
-    if along_ext < INK_ALONG * across or across_ext < INK_ACROSS * across:
+    ud = cv2.dilate(u.astype(np.uint8), np.ones((3, 3), np.uint8))
+    k, lab, st, _ = cv2.connectedComponentsWithStats(ud, connectivity=8)
+    keep, spans = [], []
+    for j in range(1, k):
+        x, y, w, h = (int(v) for v in st[j, :4])
+        along, acr = (h, w) if vertical else (w, h)
+        if along >= INK_ALONG * across and acr >= INK_ACROSS * across:
+            keep.append(j)
+    if not keep:
+        return [], 0.0
+    m = np.isin(lab, keep) & u
+    share = float(m.sum()) / n
+    if share < INK_SHARE:
         return [], share
-    return [[int(c[0] + cols[0]), int(c[1] + rows[0]), int(c[0] + cols[-1] + 1), int(c[1] + rows[-1] + 1)]], share
+    for j in keep:
+        mj = (lab == j) & u
+        rows, cols = np.flatnonzero(mj.any(1)), np.flatnonzero(mj.any(0))
+        if len(rows):
+            spans.append([int(c[0] + cols[0]), int(c[1] + rows[0]), int(c[0] + cols[-1] + 1), int(c[1] + rows[-1] + 1)])
+    return spans, share
+
+
+def where_of(spans, pos, cells):
+    """Where a box's unlabelled ink lies (module docstring): "cells", "row" or "apart". spans: its counted
+    components' boxes; pos: the sample's labelled rows (its horizontal positives' boxes and its ignore areas); cells:
+    the positive lines' cells' unions in the sample's px (the verified lines', in shard order; [] when unknown)."""
+    def area(q):
+        return max(0, q[2] - q[0]) * max(0, q[3] - q[1])
+
+    def inter(p, q):
+        return area([max(p[0], q[0]), max(p[1], q[1]), min(p[2], q[2]), min(p[3], q[3])])
+    tot = sum(area(q) for q in spans) or 1
+    if cells and sum(max((inter(q, cu) for cu in cells), default=0) for q in spans) >= 0.5 * tot:
+        return "cells"
+    for q in spans:
+        for p in pos:
+            hp = p[3] - p[1]
+            if hp <= 0 or min(q[3], p[3]) - max(q[1], p[1]) < 0.5 * min(hp, q[3] - q[1]):
+                continue
+            if q[2] > p[0] - WHERE_REACH * hp and q[0] < p[2] + WHERE_REACH * hp:
+                return "row"
+    return "apart"
 
 
 def weak_areas(smp, src):
@@ -240,11 +283,12 @@ def cmd_meiki(a):
 
 # ----------------------------------------------------------------------------- the coverage of one sample
 
-def sample_coverage(smp, meiki, src, cache=None, grey=None, measure="ink"):
+def sample_coverage(smp, meiki, src, cache=None, grey=None, measure="ink", cells=None):
     """(counts, rows) of one sample. meiki: [{"raw", "score", "box", ...}] MeikiOCR boxes in the sample's px (box: the
     raw box refined to ink; each may carry "native": its box on the native page); src: the trainer's source name
     (hook, desk_hook, desk_synth); cache: a target cache for hook / desk_hook; grey: the sample's grey frame (needed
-    by measure "ink", the default; "box": desktop-data 1b v3's geometric test)."""
+    by measure "ink", the default; "box": desktop-data 1b v3's geometric test); cells: the verified positive lines'
+    cells' unions in the sample's px (where_of's "cells"; None: unknown)."""
     import tsdesk_targets as TT
     c = Counter()
     rows = []
@@ -278,11 +322,14 @@ def sample_coverage(smp, meiki, src, cache=None, grey=None, measure="ink"):
                 "native": m.get("native") or [int(v) for v in b[:4]]}
         if sp_b:
             any_b = True
+            wh = where_of(sp_b, [ln[:4] for ln in smp["lines"] if not ln[4]] + [g[:4] for g in smp["ignore"]],
+                          cells or [])
+            c[f"strong_uncovered_where_{wh}"] += 1
             whole = sh_b >= 0.9 if measure == "ink" else sp_b == [clip(b, W, H)]
             c["strong_uncovered"] += 1
             c["strong_uncovered_whole"] += whole
             c[f"strong_uncovered_{band(sc)}"] += 1
-            rows.append(dict(base, kind="uncovered", spans=sp_b, frac=round(sh_b, 3), whole=bool(whole)))
+            rows.append(dict(base, kind="uncovered", spans=sp_b, frac=round(sh_b, 3), whole=bool(whole), where=wh))
         if sp_j:
             any_j = True
             c["strong_uncovered_junk"] += 1
@@ -343,12 +390,19 @@ def element_key(r, title):
 
 def _run_shard(job):
     import tsdesk_targets as TT
-    src, root, s, meiki, splits, measure = job
+    src, root, s, meiki, splits, measure, pool = job
     base = Path(root) / s.get("dir", "") / s["name"]
     samples = json.loads(base.with_suffix(".json").read_text(encoding="utf-8"))["samples"]
     data = np.load(base.with_suffix(".npy"), mmap_mode="r") if measure == "ink" else None
+    recs = {}
     if src in ("hook", "desk_hook"):
-        pm = _load_meiki(Path(meiki) / f"{s.get('title') or samples[0]['title']}.jsonl", "page")
+        title = s.get("title") or samples[0]["title"]
+        pm = _load_meiki(Path(meiki) / f"{title}.jsonl", "page")
+        if pool:
+            for line in (Path(pool) / f"{title}.jsonl").read_text(encoding="utf-8").splitlines():
+                r = json.loads(line)
+                if r["split"] != "test":
+                    recs[r["page"]] = r
     else:
         pm = _load_meiki(Path(meiki) / f"{s['name']}.jsonl", "i")
     tot = Counter()
@@ -358,6 +412,10 @@ def _run_shard(job):
     for i, smp in enumerate(samples):
         if splits and smp.get("split") and smp["split"] not in splits:
             continue
+        cells = None
+        rec = recs.get(smp.get("page")) if recs else None
+        if rec is not None:
+            cells = [TT.cells_union(ln) for ln in TT.positive_lines(rec) if not ln["vertical"]]
         if src == "hook":
             mk = pm.get(smp["page"])
         elif src == "desk_hook":
@@ -366,6 +424,8 @@ def _run_shard(job):
             if cap is None:
                 tot["no_capture" if native is not None else "no_meiki"] += 1
                 continue
+            if cells is not None:
+                cells = [q for q in (cap.box(cu) for cu in cells) if q is not None]
             mk = []
             for m in native:
                 raw, bx = cap.box(m["raw"]), cap.box(m["box"])
@@ -378,7 +438,7 @@ def _run_shard(job):
             continue
         g = (np.asarray(data[smp["off"]:smp["off"] + smp["h"] * smp["w"]]).reshape(smp["h"], smp["w"])
              if data is not None else None)
-        c, rs = sample_coverage(smp, mk, src, _RUN.get("cache"), g, measure)
+        c, rs = sample_coverage(smp, mk, src, _RUN.get("cache"), g, measure, cells)
         tot.update(c)
         t = smp.get("title") or "synth"
         by_title[t].update({k: c[k] for k in ("samples", "strong", "strong_uncovered", "weak_areas_junk")})
@@ -399,7 +459,7 @@ def cmd_run(a):
     if splits and "test" in splits:
         raise SystemExit("the test titles' pages are never read here")
     shards = [s for s in doc["shards"] if not (splits and s.get("split") and s["split"] not in splits)]
-    jobs = [(a.source, a.root, s, a.meiki, splits, a.measure) for s in shards]
+    jobs = [(a.source, a.root, s, a.meiki, splits, a.measure, a.pool) for s in shards]
     t0 = time.time()
     tot = Counter()
     by_title = defaultdict(Counter)
@@ -420,10 +480,11 @@ def cmd_run(a):
     distinct_titles = {k: len({x.split(":")[0] for x in v}) for k, v in sorted(keys.items())}
     rec = {"kind": "tsdesk-coverage", "source": a.source, "manifest": str(a.manifest),
            "manifest_sha256": sha256_file(a.manifest), "splits": list(splits) if splits else None,
-           "meiki": str(a.meiki), "targets": a.targets,
+           "meiki": str(a.meiki), "targets": a.targets, "pool": a.pool,
            "targets_sha256": sha256_file(Path(a.targets) / "targets.json") if a.targets else None,
            "rule": {"measure": a.measure, "strong": STRONG, "row_run": ROW_RUN, "min_span_px": MIN_SPAN,
-                    "grid_px": GRID, "ink": {"share": INK_SHARE, "along": INK_ALONG, "across": INK_ACROSS,
+                    "grid_px": GRID, "where_reach": WHERE_REACH,
+                    "ink": {"share": INK_SHARE, "along": INK_ALONG, "across": INK_ACROSS,
                                              "label_grow_px": 1, "rule": "ink_in: tsdesk_targets.ink_box's stroke "
                                                                          "rule on the stored grey, no ring-noise term"},
                     "box": "the MeikiOCR box refined to ink (the pools' box), raw where absent",
@@ -528,6 +589,7 @@ def main(argv=None):
     p.add_argument("--meiki", required=True)
     p.add_argument("--targets")
     p.add_argument("--measure", default="ink", choices=("ink", "box"))
+    p.add_argument("--pool", help="the page pool (hook, desk_hook): the positives' glyph cells for where_of")
     p.add_argument("--splits", default="train")
     p.add_argument("--out", required=True)
     p.add_argument("--rows", required=True)

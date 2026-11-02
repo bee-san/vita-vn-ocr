@@ -336,7 +336,11 @@ def add_ornaments(img, pos, ign, rng):
 
 MARKS = {"max": 2, "before_p": 0.7, "size": [0.45, 0.9], "gap": [0.15, 0.9], "between_gap": 1.5, "jitter": 0.08,
          "icon_p": 0.25, "blur_p": 0.5, "blur": [0.3, 0.8], "min_line": 6, "flat": 0.35, "flat_floor": 24.0,
-         "glyphs": ("nakaguro", "bullet", "diamond", "square", "triangle", "kome")}
+         "glyphs": ("bullet", "diamond", "square", "triangle")}
+# --marks-glyphs: v2 (the default) draws no ・ or ※: ・ is text the dense labels keep (a list line starts with it), so
+# marks-trained models learnt to drop it; v1 is the first set, for the runs made with it (bit for bit)
+MARK_GLYPHS = {"v1": ("nakaguro", "bullet", "diamond", "square", "triangle", "kome"),
+               "v2": ("bullet", "diamond", "square", "triangle")}
 
 
 def _mark_extent(kind, s):
@@ -381,7 +385,7 @@ def _draw_mark(img, kind, cx, cy, s, value, rng):
         T8M.draw_icon(img, kind, cx, cy, s, value, rng)
 
 
-def add_marks(img, pos, ign, rng, taken=()):
+def add_marks(img, pos, ign, rng, taken=(), glyphs=None):
     """1..MARKS["max"] single marks drawn as background on the window (in place): a glyph mark (・ ● ◆ ■ ▶ ※) or
     (p icon_p) a T8 icon, either before a horizontal positive's start (its right edge gap x the line's height before
     the start, on the line's row) or (p 1 - before_p, when the window has two positives side by side on one row at
@@ -410,7 +414,7 @@ def add_marks(img, pos, ign, rng, taken=()):
     drawn = []
     for _ in range(int(rng.integers(1, int(M["max"]) + 1))):
         icon = rng.random() < M["icon_p"]
-        kinds = T8M.ICON_KINDS if icon else M["glyphs"]
+        kinds = T8M.ICON_KINDS if icon else (glyphs or M["glyphs"])
         kind = kinds[int(rng.integers(len(kinds)))]
         if pairs and rng.random() >= M["before_p"]:
             a, b = pairs[int(rng.integers(len(pairs)))]
@@ -583,6 +587,7 @@ def make_batch(sources, rng, cfg):
     ign_clip = bool(cfg.get("ignore_clip"))
     orn_p = float(cfg.get("ornaments") or 0.0)
     marks_p = float(cfg.get("marks") or 0.0)
+    mark_glyphs = MARK_GLYPHS[cfg.get("marks_glyphs") or "v2"]
     for b in range(bsz):
         src, canvas, smp = sources.pick(rng)
         if cfg.get("recipe") == "junk":
@@ -602,7 +607,7 @@ def make_batch(sources, rng, cfg):
                 x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         if marks_p > 0 and cfg.get("aug", True) and rng.random() < marks_p:
             img = np.array(img, copy=True)
-            drawn = add_marks(img, pos, ign0, rng, [orn] if orn is not None else [])
+            drawn = add_marks(img, pos, ign0, rng, [orn] if orn is not None else [], mark_glyphs)
             if drawn:
                 x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
                 if bands:
@@ -737,6 +742,9 @@ def parse(argv=None):
                     help="the share of windows that get 1-2 single marks (a bullet glyph or a T8 icon) drawn as "
                          "background before a positive's start or between two side-by-side positives (add_marks); "
                          "the end bands of --end-ignore lose the marks' columns (trim_bands)")
+    ap.add_argument("--marks-glyphs", default="v2", choices=sorted(MARK_GLYPHS),
+                    help="the glyph marks --marks draws: v2 (the default: ● ◆ ■ ▶, no ・ or ※, which the dense labels "
+                         "keep as text) or v1 (・ ● ◆ ■ ▶ ※: the runs made before the option)")
     ap.add_argument("--ignore-clip", action="store_true",
                     help="cut every ignore area to the window before marking its cells (targets: without it, an area "
                          "s px or more above or left of the window marks most of the window as ignore)")
@@ -797,7 +805,7 @@ def main(argv=None):
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
            "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
            "end_ignore": a.end_ignore, "end_ignore_gap": a.end_ignore_gap, "ignore_clip": a.ignore_clip,
-           "ornaments": a.ornaments, "marks": a.marks, "label_edits": a.label_edits}
+           "ornaments": a.ornaments, "marks": a.marks, "marks_glyphs": a.marks_glyphs, "label_edits": a.label_edits}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -828,7 +836,9 @@ def main(argv=None):
                        "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore,
                        "end_ignore_gap": a.end_ignore_gap or None, "ignore_clip": a.ignore_clip,
                        "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None,
-                       "marks": {"p": a.marks, **MARKS, "icons": list(T8M.ICON_KINDS)} if a.marks else None},
+                       "marks": {"p": a.marks, **MARKS, "glyph_set": a.marks_glyphs,
+                                 "glyphs": list(MARK_GLYPHS[a.marks_glyphs]), "icons": list(T8M.ICON_KINDS)}
+                       if a.marks else None},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
            "manifests_sha256": {m: sha256_file(m) for m in [*a.manifest, *([a.hook_manifest] if a.hook_manifest

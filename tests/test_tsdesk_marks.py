@@ -142,3 +142,42 @@ def test_make_batch_with_marks_off_is_unchanged(monkeypatch):
     assert cell.any() and (K_on[cell] == 0).all() and v_on[cell].any()        # background, and some of it scored
     v_off = outs[0][8].numpy()
     assert v_on[cell].sum() > v_off[cell].sum()                               # the trimmed bands score the marks
+
+
+def test_glyph_sets(monkeypatch):
+    """v2 (the default) never draws ・ or ※; v1 is the first set; the trainer's cfg picks the set."""
+    assert TD.MARK_GLYPHS["v1"] == ("nakaguro", "bullet", "diamond", "square", "triangle", "kome")
+    assert TD.MARK_GLYPHS["v2"] == ("bullet", "diamond", "square", "triangle") == TD.MARKS["glyphs"]
+    seen = {}
+    real = TD._draw_mark
+
+    def spy(img, kind, cx, cy, s, value, rng):
+        seen[kind] = seen.get(kind, 0) + 1
+        return real(img, kind, cx, cy, s, value, rng)
+    monkeypatch.setattr(TD, "_draw_mark", spy)
+    monkeypatch.setitem(TD.MARKS, "icon_p", 0.0)
+    pos = [[100, 120, 400, 144, 0, 1.0, 1]]
+    for glyphs, want_absent in ((None, {"nakaguro", "kome"}), (TD.MARK_GLYPHS["v2"], {"nakaguro", "kome"})):
+        seen.clear()
+        rng = np.random.default_rng(0)
+        for _ in range(300):
+            TD.add_marks(_window([pos[0][:4]]), pos, [], rng, glyphs=glyphs)
+        assert seen and not (set(seen) & want_absent)
+    seen.clear()
+    rng = np.random.default_rng(0)
+    for _ in range(300):
+        TD.add_marks(_window([pos[0][:4]]), pos, [], rng, glyphs=TD.MARK_GLYPHS["v1"])
+    assert {"nakaguro", "kome"} <= set(seen)
+
+
+def test_make_batch_marks_glyph_set(monkeypatch):
+    import desktop_det as DD
+    monkeypatch.setattr(DD, "make_window_ms", _fake_window)
+    cfg = {"stride": 8, "batch": 4, "scale": (1.0, 1.0), "aug": True, "recipe": "base", "end_ignore": 1.0,
+           "ornaments": 0.0, "marks": 1.0}
+    src = _Sources()
+    default = TD.make_batch(src, np.random.default_rng(7), cfg)
+    v2 = TD.make_batch(src, np.random.default_rng(7), dict(cfg, marks_glyphs="v2"))
+    v1 = TD.make_batch(src, np.random.default_rng(7), dict(cfg, marks_glyphs="v1"))
+    assert all(np.array_equal(a.numpy(), b.numpy()) for a, b in zip(default, v2))
+    assert not np.array_equal(default[0].numpy(), v1[0].numpy())

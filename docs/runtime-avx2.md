@@ -107,6 +107,47 @@ These are two screenshots on one machine. The repo's own host timing, `eval/c_sp
 `-O2 -mavx2` and `-O3 -march=native -DVOCR_NO_AVX2` on x86, so the figures can be redone on the development lines and
 regions next to `docs/c-speed.md`'s.
 
+### Against the ONNX files
+
+v0.5.1-onnx.2's `VOCR6.2_L_exact.onnx`, `VOCR6.2_L_fast.onnx` and `textspot8_exact.onnx` (sha256 as in its
+SHA256SUMS), ONNX Runtime 1.31.1 (CPU, one intra-op thread) against the C runtime built by clang 21.1 (zig cc 0.16) as
+DLLs, Windows 11, the same machine. The method is `eval/onnx_timing.py`'s (its spotter shim, its shuffled passes, each
+call timed from Python): 15 passes after 3 warm-up ones, the median of each pass's mean, ms. The inputs are small: the
+4 horizontal dialogue lines textspot8 finds on the two screenshots (541 px wide on average) and the two whole frames.
+
+| | plain C `-O2` | plain C `-O3 -march=native` | AVX2 `-O2 -mavx2` | AVX2 `-O3 -march=native` | ONNX exact | ONNX fast |
+|---|---:|---:|---:|---:|---:|---:|
+| VOCR6.2-L, per line (Rubi's sections, top 8) | 17.5 | 23.6 | 5.0 | 5.1 | 13.1 | 3.9 |
+| textspot8, per whole frame | 20.6 | 21.8 | 4.8 | 4.8 | 15.0 | |
+
+- **Same bits as exact ONNX.** On all 4 lines every C build's logits equal the plain `-O2` build's bit for bit, and so
+  do exact ONNX's. Fast ONNX's logits differ (its W8F arithmetic) and its texts are the same. The C spotter gives the
+  same boxes in every build and as exact ONNX.
+- **Faster than exact ONNX, behind fast ONNX.** The kernels make the C recognizer 2.6 times faster than exact ONNX, the
+  only ONNX file with its bits, and leave it 1.3 times slower than fast ONNX. The spotter is 3.1 times faster than
+  exact ONNX.
+- **Noise.** Each backend's fastest pass was within 2% of its median, its slowest up to 21% above it.
+
+### `desktop/`'s page pipelines
+
+v0.5.2-desktop.1's `vocr_desktop_det.vdsk` and v0.5.3-textspot-desktop.1's `textspot_desktop.vtsd` (sha256 as in
+their SHA256SUMS), each reading lines with `VOCR6.2_L_w8_2l.vocr`, built by `desktop/Makefile` (gcc 13.3, `-O3
+-march=x86-64-v3`, WSL 2) with the recognizer's kernels and with `EXTRA=-DVOCR_NO_AVX2`. Only the recognizer differs:
+the detectors' own AVX2 + FMA kernels are in both. Median of 30 runs after an untimed one, 3 rounds, ms per screenshot.
+
+| pipeline | threads | without the kernels | with them | detector alone |
+|---|---:|---:|---:|---:|
+| desktop detector (`vocr_desk_cli`, the blob's long:640), mean of the two screenshots | 1 | 36.4-36.6 | 20.5-20.6 | 9.0-9.1 |
+| | 4 | 25.5-26.0 | 15.8-16.0 | 8.5-8.8 |
+| textspot-desktop (`vocr_tsd_page_run`, the blob's policy, refinement on), 960×544 | 1 | 29.6-29.7 | 13.8 | 1.9-2.0 |
+| | 4 | 17.9-18.1 | 8.1-8.2 | 0.8-0.9 |
+| textspot-desktop, 1200×680 | 1 | 30.2-30.3 | 14.1-14.2 | 2.3 |
+| | 4 | 18.1-18.2 | 8.3-8.4 | 0.9-1.0 |
+
+Each pipeline reads the same lines with and without the kernels, at 1 and 4 threads. Two lines a screenshot leave 4
+threads little to share. The textspot-desktop page was timed by a small driver of `vocr_tsd_page_run` (off-repo, as
+`ocr_page`).
+
 ## Memory
 
 No new allocations and no change to any arena: the kernels use registers and the existing buffers. Code size, gcc 13.3
@@ -130,10 +171,6 @@ not in this repo; the screenshots are copyrighted and not committed.
 - `tests/parity.py` and `tests/textspot6_parity.py` locally (no PyTorch on the measuring machine); CI runs both
   through the AVX2 builds.
 - The development lines and regions (`eval/c_speed_host_ms.py`, `vita/speed_parity.py`): not available to the author.
-- ONNX on this machine. In `docs/onnx.md` ("Speed", a different host) the exact ONNX files ran about as fast per line
-  as gcc `-O3 -march=native`, so these kernels should be ahead of them; that is an inference across two machines.
-  `docs/desktop.md` puts VOCR6.2-L at 6.5 ms per line in exact ONNX, 6.3 ms in C at `-O3 -march=native` and 1.8 ms in
-  fast ONNX (W8F arithmetic, not these bits); per-line times with these kernels were not taken.
-- `desktop/`'s page times with these kernels: its detector blobs are on releases not downloaded here. Its timings in
-  `docs/desktop.md` were taken before this change.
+- ONNX and `desktop/` on more than the two screenshots (4 lines), on Small and Normal, at more than one ONNX thread,
+  and under gcc for the ONNX comparison.
 - MSVC, AVX-512, and CPUs other than Zen 3.

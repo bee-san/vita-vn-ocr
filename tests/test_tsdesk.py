@@ -35,7 +35,7 @@ def test_shapes_run_and_count(name):
     assert y.shape == (1, N.OUT, 96 // hs, 160 // hs)
     mc = N.macs(sh, 960, 544)
     assert mc["total"] == sum(v for k, v in mc.items() if k != "total")
-    assert 10e6 < mc["total"] < 200e6
+    assert 10e6 < mc["total"] < (200e6 if name.startswith("p") else 1e9)   # round 2's q shapes: up to ~0.85 G
 
 
 def test_fold_bn_keeps_the_function():

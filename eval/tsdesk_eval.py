@@ -128,12 +128,8 @@ def install(Dm=D):
         return base_crop(b, pad, W, H)
 
     Dm.pad_of, Dm.crop_box = pad_of, crop_box
-    base_read = Dm._read_job
-
-    def read_job(job):
-        _CLIP["boxes"] = tuple(job[1])          # every box the pipeline returned for this frame (clip rules)
-        return base_read(job)
-    Dm._read_job = read_job
+    _CLIP["base_read"] = Dm._read_job
+    Dm._read_job = _clip_read_job
     try:
         import desktop_time as DT
     except ImportError:
@@ -367,7 +363,13 @@ def rel_rule(spec):
     return None
 
 
-_CLIP = {"boxes": ()}
+_CLIP = {"boxes": (), "base_read": None}
+
+
+def _clip_read_job(job):
+    """eval/desktop.py's read job with the frame's boxes kept for the clip rules (module level: the pool pickles it)."""
+    _CLIP["boxes"] = tuple(job[1])
+    return _CLIP["base_read"](job)
 
 
 def clip_sides(b, others, ph, pv):

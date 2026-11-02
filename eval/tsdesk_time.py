@@ -243,7 +243,7 @@ def split_spec(spec):
     return kind, path, size or None, rec, refine, {"decode": dec, "post": post, "drop": drop, "suffix": suffix}
 
 
-def c_options(opts, what):
+def c_options(opts, what, tier="L"):
     """The keyword arguments of tools/tsdesk_c's `what` (CModel.detect or CPage) for a pipeline's options: {} when
     there are none; ValueError when the binding has no C twin of an option (the C path cannot run them yet)."""
     import inspect
@@ -258,6 +258,10 @@ def c_options(opts, what):
     if missing:
         raise ValueError(f"tools/tsdesk_c.{'CModel.detect' if what == 'detect' else 'CPage'} has no {missing} options "
                          "(their C twins): the C path cannot run them")
+    if what != "detect" and (want.get("drop") or {}).get("cut_pct"):
+        if "charbox_cal" not in have:
+            raise ValueError("tools/tsdesk_c.CPage has no charbox_cal (the cut's C twin)")
+        want["charbox_cal"] = TC.charbox_cal(tier)          # the cut reads the recognizer's character positions
     return want
 
 
@@ -321,7 +325,7 @@ class Pipeline:
             self.copts = c_options(self.opts, "detect")
         elif self.kind == "cpage":
             self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad,
-                                 refine=self.refine, lib=lib, **c_options(self.opts, "page"))
+                                 refine=self.refine, lib=lib, **c_options(self.opts, "page", rec))
         elif self.kind == "hpage":
             # the hybrid page: the frame's luma and the detector in C (tools/tsdesk_c, its decode and post-pass
             # options through the C twins), the lines read by VOCR6.2_T_fast.onnx as the ONNX page reads them
@@ -421,41 +425,46 @@ class Pipeline:
         return self._read(g, self.m.detect(g, self.size, self.refine, **self.copts))
 
     def _read(self, g, boxes):
-        """Every horizontal box of the grey frame g in reading order, cut at the reading rule, its dark flag and its
-        reading; the reading filter on them: the kept lines' texts."""
+        """tools/tsdesk.read_frame's reading on the boxes of the grey frame g: every box in reading order cut at the
+        reading rule, a horizontal one read (its dark flag, VOCR6.2_T_fast.onnx), then read_frame's last steps
+        (tools/tsdesk.cut_and_filter: the reading-stage cut and the reading filter) when the options have them: the
+        kept horizontal lines' texts."""
+        T = self.T
         H, W = g.shape
-        order = self.T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
+        order = T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
         xyxy = [(b.x, b.y, b.x + b.w, b.y + b.h) for b in boxes]
-        jobs = []
+
+        def crop_fn(tb):                              # a box's (or a cut piece's) crop at the reading rule
+            bb = (tb[0], tb[1], tb[0] + tb[2], tb[1] + tb[3])
+            return crop_sides(bb, self.TC.rule_sides(self.rule, bb, H, xyxy), W, H)
+        jobs, res = [], []
         for i in order:
             b = boxes[i]
-            if b.vertical:
+            cb = crop_fn((b.x, b.y, b.w, b.h))
+            if cb is None:
                 continue
-            cb = crop_sides(xyxy[i], self.TC.rule_sides(self.rule, xyxy[i], H, xyxy), W, H)
-            if cb:
+            if b.vertical:                            # not read: a Line without text, as read_frame keeps it
+                res.append(T.Line("", (b.x, b.y, b.w, b.h), cb, b.tag, b.logit, 0, 1))
+            else:
                 jobs.append((g, cb, b))
+                res.append(len(jobs) - 1)
         if self.pool is not None and len(jobs) > 1:
             read = list(self.pool.map(self._line, jobs))
         else:
             read = [self._line(j) for j in jobs]
         if self.dropo is None:
             return [t for t, _, _ in read]
-        o = self.dropo
-        pieces = []                                   # ((x, y, w, h), text, conf_mean)
-        for (_, cb, b), (t, c, chars) in zip(jobs, read):
-            cut = None
-            if o["cut_pct"]:                          # eval/tsdesk_eval._cut_read_job's reading-stage cut
-                cut = self.T.cut_reading(g, [b.x, b.y, b.x + b.w, b.y + b.h], [(ch.text, cb[0] + ch.x) for ch in chars],
-                                         o["cut_pct"], o["cut_rel_pct"])
-                if cut is not None and b.tag == 0 and o["cut_dlg"] != 1:
-                    if o["cut_dlg"] == 0 or max(len(tt) for _, _, tt in cut) > o["cut_dlg"]:
-                        cut = None                    # a dialogue-tagged line stays whole
-            if cut is None:
-                pieces.append(((b.x, b.y, b.w, b.h), t, c))
-            else:
-                pieces += [((x0, b.y, x1 - x0, b.h), tt, c) for x0, x1, tt in cut]
-        gone = set(self.T.drop_set(pieces, o))
-        return [t for k, (_, t, _) in enumerate(pieces) if k not in gone]
+        full = []
+        for r in res:
+            if isinstance(r, T.Line):
+                full.append(r)
+                continue
+            _, cb, b = jobs[r]
+            t, c, chars = read[r]
+            full.append((T.Line(t, (b.x, b.y, b.w, b.h), cb, b.tag, b.logit, 0, 0), c,
+                         [(ch.text, cb[0] + ch.x) for ch in chars]))
+        kept = T.cut_and_filter(g, full, self.opts["drop"], crop_fn)
+        return [ln.text for ln in kept if not ln.vertical]
 
     def __call__(self, rgb, i=None):
         """Run on one frame (i: its index, for the networks' prepared inputs): the items it gives (module

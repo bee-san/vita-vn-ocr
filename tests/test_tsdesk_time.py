@@ -382,9 +382,10 @@ def test_onnx_page_reading_filter(TT):
     pp.V = type("V", (), {"line_dark": staticmethod(lambda g, cb: 0)})
     pp.rule = TC.rule_of("c0.45v0.1")
     frame = np.zeros((120, 400, 3), np.uint8)
-    pp.dropo = None
+    pp.dropo, pp.opts = None, {"drop": {}}
     assert pp._opage(frame) == ["こんにちは", "ABC", "ABC"]                    # the vertical box is not read
-    pp.dropo = T.drop_options({"nojp": 1})
+    pp.opts = {"drop": {"nojp": 1}}
+    pp.dropo = T.drop_options(pp.opts["drop"])
     assert pp._opage(frame) == ["こんにちは"]
 
 
@@ -433,10 +434,11 @@ def test_reader_cut(TT):
     pp.kind, pp.T, pp.TC, pp.det, pp.rec, pp.pool = "opage", T, TC, Det(), Rec(), None
     pp.V = type("V", (), {"line_dark": staticmethod(lambda g, cb: 0)})
     pp.rule = TC.rule_of(14)
-    pp.dropo = T.drop_options({"nojp": 1})
-    assert pp._read(g, Det().detect(g)) == ["ABこんに"]      # no cut: the whole reading has Japanese
-    pp.dropo = T.drop_options({"nojp": 1, "cut_pct": 25})
-    assert pp._read(g, Det().detect(g)) == ["こんに"]         # cut at the gap; the Latin item dropped
+    def run(drop):
+        pp.opts = {"drop": drop}
+        pp.dropo = T.drop_options(drop)
+        return pp._read(g, Det().detect(g))
+    assert run({"nojp": 1}) == ["ABこんに"]                  # no cut: the whole reading has Japanese
+    assert run({"nojp": 1, "cut_pct": 25}) == ["こんに"]     # cut at the gap; the Latin item dropped
     tag["v"] = 0
-    pp.dropo = T.drop_options({"nojp": 1, "cut_pct": 25, "cut_dlg": 0})
-    assert pp._read(g, Det().detect(g)) == ["ABこんに"]      # a dialogue-tagged line stays whole
+    assert run({"nojp": 1, "cut_pct": 25, "cut_dlg": 0}) == ["ABこんに"]   # a dialogue-tagged line stays whole

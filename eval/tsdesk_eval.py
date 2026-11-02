@@ -102,7 +102,7 @@ def detector_from_spec(spec, threads=1, so=None):
     bad = set(dec) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
     if bad:
         raise ValueError(f"{spec}: unknown decode options {sorted(bad)}")
-    dec = {k: int(v) if k in ("min_cells", "max_boxes", "saddle_pct") else v for k, v in dec.items()}
+    dec = {k: int(v) if k in ("min_cells", "max_boxes", "saddle_pct", "vote_pct") else v for k, v in dec.items()}
     if base.startswith("tsd:"):
         path, _, rest = base[4:].partition("@")
         size, _, mode = rest.partition("@")

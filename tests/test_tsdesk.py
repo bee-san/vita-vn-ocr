@@ -423,6 +423,12 @@ def test_drop_set_rules():
     assert T.drop_set(row, o2) == {2, 3}                     # "A" sits 8 px from a Japanese reading in its row
     far = items((10, 10, 40, 20, "行動力", 0.99), (75, 12, 40, 18, "Max", 0.9))     # 25 px on: 1.25 heights
     assert T.drop_set(far, o2) == {1} and T.drop_set(far, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
+    strip = items((10, 10, 120, 20, "「000OO000", 0.7), (140, 10, 60, 20, "0000", 0.7))
+    assert T.drop_set(strip, o2) == set()                    # 「 makes the ornament an anchor
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_anchor_pct": 50})) == {1}
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50})) == {1}
+    assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
+    assert T.japanese_share("「000") == 0.25 and T.japanese_share("") == 0.0
     assert T.drop_set(row, T.drop_options({})) == set()
     c = T.drop_options({"conf_milli": 600})
     assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
@@ -503,3 +509,27 @@ def test_decode_saddle_split():
     assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
     assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
     assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept
+
+
+def test_decode_vote_split_two_touching_lines():
+    s, hm, wm = 8, 12, 40
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    lines = {range(3, 5): (20.0, 44.0), range(5, 8): (46.0, 70.0)}       # kernel rows 3-7 touch: one component
+    for rows_, (y0, y1) in lines.items():
+        for r in rows_:
+            for q in range(5, 31):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y1 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - 40.0, 248.0 - cs[q]
+    one = T.decode(m, wm * s, hm * s, s)
+    assert len(one) == 1
+    two = sorted(T.decode(m, wm * s, hm * s, s, vote_pct=70), key=lambda b: b.y)
+    assert len(two) == 2
+    assert two[0].y == pytest.approx(20.0) and two[0].y + two[0].h == pytest.approx(44.0)
+    assert two[1].y == pytest.approx(46.0) and two[1].y + two[1].h == pytest.approx(70.0)
+    assert all(b.x == pytest.approx(40.0) and b.x + b.w == pytest.approx(248.0) for b in two)
+    m1 = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0]])                   # one line: its votes agree, no split
+    assert len(T.decode(m1, 320, 160, 8, vote_pct=70)) == 1

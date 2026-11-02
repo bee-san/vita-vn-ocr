@@ -146,7 +146,7 @@ def _drop_read_job(job):
     o = _DROP["opts"]
     if not o:
         return _DROP["base"](job)
-    if o.get("cut_pct"):
+    if o.get("cut_pct") or o.get("trim_milli"):
         return _cut_read_job(job, o)
     import tsdesk as T
     fr, boxes, pad = job
@@ -219,8 +219,13 @@ def _cut_read_job(job, o):
         if not cb:
             continue
         dark = V.line_dark(g, cb)
-        ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
-        cut = T.cut_pieces(g, b, b[6] if len(b) > 6 else 0, [(c.text, cb[0] + c.x) for c in ln.chars], o)
+        ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark),
+                              outputs=bool(o["trim_milli"]))
+        confs = None
+        if o["trim_milli"]:
+            cf = V.topk_conf(ln.outputs["topk_logits"])
+            confs = [float(cf[c.f0]) for c in ln.chars]
+        cut = T.cut_pieces(g, b, b[6] if len(b) > 6 else 0, [(c.text, cb[0] + c.x) for c in ln.chars], o, confs)
         if cut is None:
             pieces.append((list(b), ln.text, ln.conf_mean))
         else:

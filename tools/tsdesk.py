@@ -51,7 +51,7 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
-DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0}    # decode options without a C twin yet
+DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0}    # decode options, no C twin yet
 #                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
@@ -328,7 +328,7 @@ def rescue_components(k, lab, n, stats, t_low):
 
 
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
@@ -337,7 +337,10 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     cells' edge votes are bimodal (vote_split()); saddle_pct > 0, each component split along at the K saddles
     saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there);
     rescue_milli > 0, the components of K > -rescue_milli / 1000 with no K > 0 cell decoded too (rescue_components();
-    their mean logit is negative, so conf_min_logit does not apply to them)."""
+    their mean logit is negative, so conf_min_logit does not apply to them); clamp_ends, an end regressed past the
+    kernel never reaches into another component of the same orientation in its row (across overlap at least half the
+    smaller size across): it stops at that component's outermost cell edge (a label's end run on over the number
+    beside it)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -382,7 +385,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     start = np.bincount(L[s1], (ca - m_of(4))[s1], minlength=n) / n1
     end = np.bincount(L[s2], (ca + m_of(5))[s2], minlength=n) / n2
     tsum = [np.bincount(L, m_of(6 + i), minlength=n) for i in range(tags)]
-    out = []
+    out, kern = [], []
     for c in range(1, n):
         if stats[c, cv2.CC_STAT_AREA] < min_cells or (logit[c] < conf_min_logit and pos[c] > 0):
             continue
@@ -417,8 +420,41 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
         second = max((v for i, v in enumerate(sc) if i != tag), default=0.0) if tags else 0.0
         out.append(Box(x0, y0, x1 - x0, y1 - y0, int(vert[c]), float(logit[c]), tag, (sc[tag] - second) / cnt[c],
                        int(cnt[c])))
+        kern.append((lo, hi))
+    if clamp_ends:
+        out = _clamp_ends(out, kern, w, h)
     out.sort(key=lambda b: (-b.logit, b.y, b.x))
     return out[:max_boxes]
+
+
+def _clamp_ends(boxes, kern, w, h):
+    """decode()'s clamp_ends: each box's along ends kept off the other same-orientation components of its row (their
+    kernel cells' extent along, kern[i] = (lo, hi))."""
+    import dataclasses
+    out = []
+    for i, b in enumerate(boxes):
+        v = b.vertical
+        a0, a1 = (b.x, b.x + b.w) if v else (b.y, b.y + b.h)           # across
+        e0, e1 = (b.y, b.y + b.h) if v else (b.x, b.x + b.w)           # along
+        lo, hi = kern[i]
+        for j, o in enumerate(boxes):
+            if j == i or o.vertical != v:
+                continue
+            o0, o1 = (o.x, o.x + o.w) if v else (o.y, o.y + o.h)
+            if min(a1, o1) - max(a0, o0) < 0.5 * min(a1 - a0, o1 - o0):
+                continue
+            olo, ohi = kern[j]
+            if olo >= hi and e1 > olo:
+                e1 = olo
+            if ohi <= lo and e0 < ohi:
+                e0 = ohi
+        if e1 <= e0:
+            out.append(b)
+        elif v:
+            out.append(dataclasses.replace(b, y=e0, h=e1 - e0))
+        else:
+            out.append(dataclasses.replace(b, x=e0, w=e1 - e0))
+    return out
 
 
 # ----------------------------------------------------------------------------- the post-pass (#173 round 2)
@@ -937,7 +973,7 @@ class Detector:
         o = self.opts
         boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
                        o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
-                       int(o["rescue_milli"]))
+                       int(o["rescue_milli"]), int(o["clamp_ends"]))
         H, W = g.shape
         out = []
         for b in boxes:

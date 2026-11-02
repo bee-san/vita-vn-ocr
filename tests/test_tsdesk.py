@@ -570,3 +570,15 @@ def test_read_frame_reading_filter():
     assert texts({"nojp": 1}) == ["あいう", ""]                           # a vertical box is never read or dropped
     assert texts({"nojp": 2}) == ["あいう", "A", ""]
     assert texts({"rep_pct": 50}) == ["あいう", "A", ""]
+
+
+def test_decode_clamp_ends_at_a_neighbour():
+    m = _maps(80, 400, 8, [[40.0, 20.0, 160.0, 44.0], [200.0, 20.0, 240.0, 44.0]])     # a label and a number
+    on = m[0] > 0
+    m[5][on & (np.arange(m.shape[2])[None, :] < 20)] += 80.0               # the label's end regressed over the number
+    a = sorted(T.decode(m, 400, 80, 8), key=lambda b: b.x)
+    assert a[0].x + a[0].w > 200.0                                          # the label's box runs into the number
+    b = sorted(T.decode(m, 400, 80, 8, clamp_ends=1), key=lambda b: b.x)
+    assert b[0].x + b[0].w == pytest.approx(200.0) and b[1] == a[1]       # it stops at the number's first cell
+    one = _maps(80, 400, 8, [[40.0, 20.0, 160.0, 44.0]])
+    assert T.decode(one, 400, 80, 8, clamp_ends=1) == T.decode(one, 400, 80, 8)

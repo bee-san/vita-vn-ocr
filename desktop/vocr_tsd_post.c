@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#if defined(__AVX2__) && !defined(VOCR_TSDR_SCALAR)
+#if defined(__AVX2__) && !defined(VOCR_TSD_SCALAR) && !defined(VOCR_TSDR_SCALAR)
 #include <immintrin.h>
 #define TSDP_AVX2 1
 #else

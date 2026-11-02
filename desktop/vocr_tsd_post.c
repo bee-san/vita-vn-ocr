@@ -6,6 +6,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined(__AVX2__) && !defined(VOCR_TSDR_SCALAR)
+#include <immintrin.h>
+#define TSDP_AVX2 1
+#else
+#define TSDP_AVX2 0
+#endif
+
 void vocr_tsdp_defaults(vocr_tsdp_opts *o)
 {
     if (!o) return;
@@ -42,6 +49,7 @@ static double dmax(double a, double b) { return b > a ? b : a; }    /* Python's 
 
 typedef struct {
     unsigned char *d, *c3, *m0, *m;   /* window planes (at most the frame) */
+    unsigned char *vmax, *vmin;       /* one row each (W + 34) */
     int *rc, *cc;                     /* W + H ints each */
     unsigned char *vcol;              /* per window column: 1 when it has ink in the line's rows (W) */
     int *lims;                        /* 4 ints per box (cap) */
@@ -56,7 +64,7 @@ size_t vocr_tsdp_scratch_bytes(unsigned w, unsigned h, unsigned cap)
 {
     size_t P = (plane_bytes(w, h) + 15) & ~(size_t)15;
     return 4 * P + 2 * ((size_t)h + (size_t)w) * sizeof(int) + ((size_t)w + 16) + (size_t)cap * (4 * sizeof(int) + 3) +
-           (size_t)cap * sizeof(vocr_tsdp_box) + 64;
+           (size_t)cap * sizeof(vocr_tsdp_box) + 2 * ((size_t)w + 48) + 64;
 }
 
 static void scr_map(tsdp_scr *s, void *buf, unsigned w, unsigned h, unsigned cap)
@@ -84,6 +92,10 @@ static void scr_map(tsdp_scr *s, void *buf, unsigned w, unsigned h, unsigned cap
     s->alive = p;
     p += cap;
     s->reach = p;
+    p += 2 * (size_t)cap;
+    s->vmax = p;
+    p += (size_t)w + 48;
+    s->vmin = p;
 }
 
 /* ----------------------------------------------------------------------------- the ink (tools/tsdesk.ink_mask) */
@@ -134,90 +146,203 @@ static int ring_median(const unsigned char *g, unsigned stride, int wx0, int wy0
     return 255;
 }
 
-/* c3 (tools/tsdesk_refine._c3: the 3 x 3 max - min, the frame's edge pixels repeated) and d = |g - bg| over the window
- * [wx0, wx0 + mw) x [wy0, wy0 + mh), row-major mw wide */
-static void window_planes(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int wx0, int wy0, int mw,
-                          int mh, int bg, unsigned char *d, unsigned char *c3)
+/* c3 (tools/tsdesk_refine._c3: the 3 x 3 max - min, the frame's edge pixels repeated) of one row y over the columns
+ * [x0, x0 + mw): the refinement's row kernel (desktop/vocr_tsd_refine.c row_c3), AVX2 when built for it */
+static void row_c3(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int x0, int mw, int y,
+                   unsigned char *vmax, unsigned char *vmin, unsigned char *out)
 {
-    int x, y, i, j;
+    int ya = y > 0 ? y - 1 : 0, yc = y + 1 < (int)H ? y + 1 : (int)H - 1;
+    const unsigned char *a = g + (size_t)ya * stride, *b = g + (size_t)y * stride, *c = g + (size_t)yc * stride;
+    int i, n = mw + 2, lo = 0, hi = n;
+    if (x0 - 1 < 0) lo = 1;
+    if (x0 + mw > (int)W - 1) hi = n - 1;
+    i = lo;
+#if TSDP_AVX2
+    for (; i + 32 <= hi; i += 32) {
+        int x = x0 - 1 + i;
+        __m256i va = _mm256_loadu_si256((const __m256i *)(const void *)(a + x));
+        __m256i vb = _mm256_loadu_si256((const __m256i *)(const void *)(b + x));
+        __m256i vc = _mm256_loadu_si256((const __m256i *)(const void *)(c + x));
+        _mm256_storeu_si256((__m256i *)(void *)(vmax + i), _mm256_max_epu8(_mm256_max_epu8(va, vb), vc));
+        _mm256_storeu_si256((__m256i *)(void *)(vmin + i), _mm256_min_epu8(_mm256_min_epu8(va, vb), vc));
+    }
+#endif
+    for (; i < hi; i++) {
+        int x = x0 - 1 + i;
+        unsigned char p = a[x], q = b[x], r = c[x];
+        unsigned char mx = p > q ? p : q, mn = p < q ? p : q;
+        vmax[i] = mx > r ? mx : r;
+        vmin[i] = mn < r ? mn : r;
+    }
+    if (lo == 1) {
+        vmax[0] = vmax[1];
+        vmin[0] = vmin[1];
+    }
+    if (hi == n - 1) {
+        vmax[n - 1] = vmax[n - 2];
+        vmin[n - 1] = vmin[n - 2];
+    }
+    i = 0;
+#if TSDP_AVX2
+    for (; i + 32 <= mw; i += 32) {
+        __m256i m0 = _mm256_loadu_si256((const __m256i *)(const void *)(vmax + i));
+        __m256i m1 = _mm256_loadu_si256((const __m256i *)(const void *)(vmax + i + 1));
+        __m256i m2 = _mm256_loadu_si256((const __m256i *)(const void *)(vmax + i + 2));
+        __m256i n0 = _mm256_loadu_si256((const __m256i *)(const void *)(vmin + i));
+        __m256i n1 = _mm256_loadu_si256((const __m256i *)(const void *)(vmin + i + 1));
+        __m256i n2 = _mm256_loadu_si256((const __m256i *)(const void *)(vmin + i + 2));
+        __m256i mx = _mm256_max_epu8(_mm256_max_epu8(m0, m1), m2);
+        __m256i mn = _mm256_min_epu8(_mm256_min_epu8(n0, n1), n2);
+        _mm256_storeu_si256((__m256i *)(void *)(out + i), _mm256_subs_epu8(mx, mn));
+    }
+#endif
+    for (; i < mw; i++) {
+        unsigned char mx = vmax[i], mn = vmin[i];
+        if (vmax[i + 1] > mx) mx = vmax[i + 1];
+        if (vmax[i + 2] > mx) mx = vmax[i + 2];
+        if (vmin[i + 1] < mn) mn = vmin[i + 1];
+        if (vmin[i + 2] < mn) mn = vmin[i + 2];
+        out[i] = (unsigned char)(mx - mn);
+    }
+}
+
+/* d = |g - bg| of mw pixels */
+static void row_d(const unsigned char *src, int mw, int bg, unsigned char *out)
+{
+    int i = 0;
+#if TSDP_AVX2
+    __m256i vb = _mm256_set1_epi8((char)bg);
+    for (; i + 32 <= mw; i += 32) {
+        __m256i v = _mm256_loadu_si256((const __m256i *)(const void *)(src + i));
+        _mm256_storeu_si256((__m256i *)(void *)(out + i),
+                            _mm256_or_si256(_mm256_subs_epu8(v, vb), _mm256_subs_epu8(vb, v)));
+    }
+#endif
+    for (; i < mw; i++) {
+        int v = (int)src[i] - bg;
+        out[i] = (unsigned char)(v < 0 ? -v : v);
+    }
+}
+
+/* m0 = (d > t) & (c3 > tc) as 0 / 1 bytes of n pixels */
+static void plane_mask(const unsigned char *d, const unsigned char *c3, unsigned char *m0, size_t n, int t, int tc)
+{
+    size_t i = 0;
+#if TSDP_AVX2
+    if (t < 255 && tc < 255) {
+        __m256i vt = _mm256_set1_epi8((char)(t + 1)), vtc = _mm256_set1_epi8((char)(tc + 1));
+        __m256i one = _mm256_set1_epi8(1);
+        for (; i + 32 <= n; i += 32) {
+            __m256i a = _mm256_loadu_si256((const __m256i *)(const void *)(d + i));
+            __m256i b = _mm256_loadu_si256((const __m256i *)(const void *)(c3 + i));
+            __m256i ga = _mm256_cmpeq_epi8(_mm256_max_epu8(a, vt), a);
+            __m256i gb = _mm256_cmpeq_epi8(_mm256_max_epu8(b, vtc), b);
+            _mm256_storeu_si256((__m256i *)(void *)(m0 + i), _mm256_and_si256(_mm256_and_si256(ga, gb), one));
+        }
+    }
+#endif
+    for (; i < n; i++) m0[i] = (unsigned char)(d[i] > t && c3[i] > tc);
+}
+
+/* m = m0 & (a 4-neighbour of m0 inside the mw x mh plane) */
+static void plane_filter(const unsigned char *src, unsigned char *dst, int mw, int mh)
+{
+    int x, y;
     for (y = 0; y < mh; y++) {
-        const int gy = wy0 + y;
-        for (x = 0; x < mw; x++) {
-            const int gx = wx0 + x;
-            int mx = 0, mn = 255, v = (int)g[(size_t)gy * stride + (size_t)gx] - bg;
-            for (j = -1; j <= 1; j++) {
-                int yy = gy + j;
-                yy = yy < 0 ? 0 : (yy > (int)H - 1 ? (int)H - 1 : yy);
-                for (i = -1; i <= 1; i++) {
-                    int xx = gx + i, p;
-                    xx = xx < 0 ? 0 : (xx > (int)W - 1 ? (int)W - 1 : xx);
-                    p = g[(size_t)yy * stride + (size_t)xx];
-                    if (p > mx) mx = p;
-                    if (p < mn) mn = p;
-                }
+        const unsigned char *r = src + (size_t)y * mw;
+        const unsigned char *up = y > 0 ? r - mw : NULL, *dn = y + 1 < mh ? r + mw : NULL;
+        unsigned char *o = dst + (size_t)y * mw;
+        x = 0;
+#if TSDP_AVX2
+        if (mw >= 34) {
+            __m256i z = _mm256_setzero_si256();
+            o[0] = (unsigned char)(r[0] & ((up ? up[0] : 0) | (dn ? dn[0] : 0) | r[1]));
+            for (x = 1; x + 32 <= mw - 1; x += 32) {
+                __m256i c = _mm256_loadu_si256((const __m256i *)(const void *)(r + x));
+                __m256i l = _mm256_loadu_si256((const __m256i *)(const void *)(r + x - 1));
+                __m256i rr = _mm256_loadu_si256((const __m256i *)(const void *)(r + x + 1));
+                __m256i u = up ? _mm256_loadu_si256((const __m256i *)(const void *)(up + x)) : z;
+                __m256i dd = dn ? _mm256_loadu_si256((const __m256i *)(const void *)(dn + x)) : z;
+                __m256i nb = _mm256_or_si256(_mm256_or_si256(l, rr), _mm256_or_si256(u, dd));
+                _mm256_storeu_si256((__m256i *)(void *)(o + x), _mm256_and_si256(c, nb));
             }
-            c3[(size_t)y * mw + x] = (unsigned char)(mx - mn);
-            d[(size_t)y * mw + x] = (unsigned char)(v < 0 ? -v : v);
+        }
+#endif
+        for (; x < mw; x++) {
+            unsigned char nb = 0;
+            if (x > 0) nb |= r[x - 1];
+            if (x + 1 < mw) nb |= r[x + 1];
+            if (up) nb |= up[x];
+            if (dn) nb |= dn[x];
+            o[x] = (unsigned char)(r[x] & nb);
         }
     }
 }
 
-/* t and tc: max(floor, r(q99 over the region, k_pct)) of d and c3 over [rx0, rx1) x [ry0, ry1) of the window */
-static void thresholds(const unsigned char *d, const unsigned char *c3, int mw, int rx0, int ry0, int rx1, int ry1,
-                       int *t, int *tc)
+/* the histograms of the grey and of c3 over the pixel box [ix0, ix1) x [iy0, iy1) (c3: the frame's own, so these do
+ * not depend on any window) */
+static void box_hists(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int ix0, int iy0, int ix1,
+                      int iy1, tsdp_scr *s, unsigned *hg, unsigned *hc)
 {
-    unsigned hd[256], hc[256];
-    unsigned long n = 0;
+    const int w = ix1 - ix0;
     int x, y;
-    memset(hd, 0, sizeof hd);
-    memset(hc, 0, sizeof hc);
-    for (y = ry0; y < ry1; y++)
-        for (x = rx0; x < rx1; x++) {
-            hd[d[(size_t)y * mw + x]]++;
-            hc[c3[(size_t)y * mw + x]]++;
-            n++;
+    memset(hg, 0, 256 * sizeof *hg);
+    memset(hc, 0, 256 * sizeof *hc);
+    for (y = iy0; y < iy1; y++) {
+        const unsigned char *r = g + (size_t)y * stride + (size_t)ix0;
+        row_c3(g, W, H, stride, ix0, w, y, s->vmax, s->vmin, s->c3);
+        for (x = 0; x < w; x++) {
+            hg[r[x]]++;
+            hc[s->c3[x]]++;
         }
+    }
+}
+
+/* t and tc of a window whose background is bg: max(floor, r(q99, k_pct)) of d = |g - bg| (from the box's grey
+ * histogram) and of c3 over the box (n pixels) */
+static void thresholds(const unsigned *hg, const unsigned *hc, unsigned long n, int bg, int *t, int *tc)
+{
+    unsigned hd[256];
+    int v;
+    memset(hd, 0, sizeof hd);
+    for (v = 0; v < 256; v++) hd[v < bg ? bg - v : v - bg] += hg[v];
     *t = imax(28, r100(hist_quantile(hd, n, 99), 40));
     *tc = imax(28, r100(hist_quantile(hc, n, 99), 40));
 }
 
-/* m = (d > t) & (c3 > tc) & (a 4-neighbour of that inside the window), over the window */
-static void window_mask(const unsigned char *d, const unsigned char *c3, int mw, int mh, int t, int tc,
-                        unsigned char *m0, unsigned char *m)
+/* the mask m (m0 with a 4-neighbour, inside the plane) of the columns [px0, px0 + pw) and rows [py0, py0 + ph): the
+ * plane's own borders bound the neighbour rule, so a caller takes a plane one column (row) past what it reads where the
+ * window goes on */
+static void plane_ink(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int px0, int py0, int pw, int ph,
+                      int bg, int t, int tc, tsdp_scr *s)
 {
-    int x, y;
-    const size_t n = (size_t)mw * mh;
-    size_t i;
-    for (i = 0; i < n; i++) m0[i] = (unsigned char)(d[i] > t && c3[i] > tc);
-    for (y = 0; y < mh; y++)
-        for (x = 0; x < mw; x++) {
-            const size_t q = (size_t)y * mw + x;
-            unsigned char nb = 0;
-            if (y > 0) nb |= m0[q - mw];
-            if (y + 1 < mh) nb |= m0[q + mw];
-            if (x > 0) nb |= m0[q - 1];
-            if (x + 1 < mw) nb |= m0[q + 1];
-            m[q] = (unsigned char)(m0[q] & nb);
-        }
+    int y;
+    for (y = 0; y < ph; y++) {
+        row_c3(g, W, H, stride, px0, pw, py0 + y, s->vmax, s->vmin, s->c3 + (size_t)y * pw);
+        row_d(g + (size_t)(py0 + y) * stride + (size_t)px0, pw, bg, s->d + (size_t)y * pw);
+    }
+    plane_mask(s->d, s->c3, s->m0, (size_t)pw * ph, t, tc);
+    plane_filter(s->m0, s->m, pw, ph);
 }
 
-/* tools/tsdesk.ink_mask of the pixel box [ix0, ix1) x [iy0, iy1): the window (the box grown by max(2, r(h, 25))),
- * its mask in s->m (mw x mh), and the box's offset in it */
+/* tools/tsdesk.ink_mask of the pixel box [ix0, ix1) x [iy0, iy1): the window is the box grown by max(2, r(h, 25)), its
+ * background the lower median of the window's ring, the thresholds from the box; s->m holds the mask of the plane
+ * [*px0, *px0 + *pw) x [*py0, *py0 + *ph): the box grown by one pixel inside the window (enough for the neighbour rule) */
 static void ink_box(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int ix0, int iy0, int ix1,
-                    int iy1, tsdp_scr *s, int *mw_, int *mh_, int *bx0, int *by0)
+                    int iy1, tsdp_scr *s, int *pw_, int *bx0, int *by0)
 {
     const int h = iy1 - iy0, A = imax(2, r100(h, 25));
     const int wx0 = imax(0, ix0 - A), wy0 = imax(0, iy0 - A), wx1 = imin((int)W, ix1 + A), wy1 = imin((int)H, iy1 + A);
-    const int mw = wx1 - wx0, mh = wy1 - wy0;
+    const int px0 = imax(wx0, ix0 - 1), py0 = imax(wy0, iy0 - 1), px1 = imin(wx1, ix1 + 1), py1 = imin(wy1, iy1 + 1);
+    unsigned hg[256], hc[256];
     int t, tc, bg;
-    bg = ring_median(g, stride, wx0, wy0, mw, mh);
-    window_planes(g, W, H, stride, wx0, wy0, mw, mh, bg, s->d, s->c3);
-    thresholds(s->d, s->c3, mw, ix0 - wx0, iy0 - wy0, ix1 - wx0, iy1 - wy0, &t, &tc);
-    window_mask(s->d, s->c3, mw, mh, t, tc, s->m0, s->m);
-    *mw_ = mw;
-    *mh_ = mh;
-    *bx0 = ix0 - wx0;
-    *by0 = iy0 - wy0;
+    bg = ring_median(g, stride, wx0, wy0, wx1 - wx0, wy1 - wy0);
+    box_hists(g, W, H, stride, ix0, iy0, ix1, iy1, s, hg, hc);
+    thresholds(hg, hc, (unsigned long)(ix1 - ix0) * (unsigned long)(iy1 - iy0), bg, &t, &tc);
+    plane_ink(g, W, H, stride, px0, py0, px1 - px0, py1 - py0, bg, t, tc, s);
+    *pw_ = px1 - px0;
+    *bx0 = ix0 - px0;
+    *by0 = iy0 - py0;
 }
 
 /* tools/tsdesk._pixel_box: floor / ceil of the edges, clipped to the frame */
@@ -318,14 +443,14 @@ static void split_rows(const unsigned char *g, unsigned W, unsigned H, unsigned 
     const int ix0 = pix_floor(b->x, W), iy0 = pix_floor(b->y, H);
     const int ix1 = pix_ceil(b->x + b->w, W), iy1 = pix_ceil(b->y + b->h, H);
     const int h = iy1 - iy0, w = ix1 - ix0;
-    int mw, mh, bx0, by0, x, y, ninks = 0, med, low, lo = -1, hi = -1, min_band, min_len, found = 0, bv0 = 0, bv1 = 0;
+    int mw, bx0, by0, x, y, ninks = 0, med, low, lo = -1, hi = -1, min_band, min_len, found = 0, bv0 = 0, bv1 = 0;
     int best_mn = 0, best_mx = 1, best_len = 0;
     if (*k >= cap) return;
     if (b->vertical || h < 8 || w < 8 || depth >= 2) {
         out[(*k)++] = *b;
         return;
     }
-    ink_box(g, W, H, stride, ix0, iy0, ix1, iy1, s, &mw, &mh, &bx0, &by0);
+    ink_box(g, W, H, stride, ix0, iy0, ix1, iy1, s, &mw, &bx0, &by0);
     for (y = 0; y < h; y++) {
         const unsigned char *r = s->m + (size_t)(by0 + y) * mw + bx0;
         int c = 0;
@@ -479,24 +604,27 @@ static void neighbour_limits(const vocr_tsdp_box *bx, unsigned n, unsigned i, un
     out[3] = nb;
 }
 
-/* tools/tsdesk._ink_beyond: the mask of the union window [ux0, ux1) x [uy0, uy1) of the line's pixel box and the search
- * window, in s->m (uw wide), the background and thresholds from the line's box; *ry0 its first row in the window */
+/* tools/tsdesk._ink_beyond for a search window [wx0, wx1): the union window [ux0, ux1) x [uy0, uy1) of the line's
+ * pixel box and the search window gives the background (its ring's lower median), the line's box the thresholds (its
+ * histograms hg, hc, n pixels); the mask is the union window's, read over the search window's columns, so the plane
+ * is those columns and the one beside them on either side that lies in the union window (the neighbour rule) */
 static void ink_beyond(const unsigned char *g, unsigned W, unsigned H, unsigned stride, int iy0, int iy1, int bx0,
-                       int bx1, int wx0, int wx1, tsdp_scr *s, int *ux0_, int *uw_, int *nr_, int *ry0_)
+                       int bx1, int wx0, int wx1, const unsigned *hg, const unsigned *hc, unsigned long nbox,
+                       tsdp_scr *s, int *pw_, int *off_, int *nr_, int *ry0_)
 {
     const int h = iy1 - iy0, A = imax(2, r100(h, 25));
     const int ux0 = imax(0, imin(bx0, wx0) - 1), ux1 = imin((int)W, imax(bx1, wx1) + 1);
     const int uy0 = imax(0, iy0 - A), uy1 = imin((int)H, iy1 + A);
-    const int uw = ux1 - ux0, uh = uy1 - uy0, ry0 = iy0 - uy0;
+    const int px0 = imax(ux0, wx0 - 1), px1 = imin(ux1, wx1 + 1);
     int t, tc, bg;
-    bg = ring_median(g, stride, ux0, uy0, uw, uh);
-    window_planes(g, W, H, stride, ux0, uy0, uw, uh, bg, s->d, s->c3);
-    thresholds(s->d, s->c3, uw, bx0 - ux0, ry0, bx1 - ux0, ry0 + h, &t, &tc);
-    window_mask(s->d, s->c3, uw, uh, t, tc, s->m0, s->m);
-    *ux0_ = ux0;
-    *uw_ = uw;
-    *nr_ = uh;
-    *ry0_ = ry0;
+    (void)h;
+    bg = ring_median(g, stride, ux0, uy0, ux1 - ux0, uy1 - uy0);
+    thresholds(hg, hc, nbox, bg, &t, &tc);
+    plane_ink(g, W, H, stride, px0, uy0, px1 - px0, uy1 - uy0, bg, t, tc, s);
+    *pw_ = px1 - px0;
+    *off_ = wx0 - px0;
+    *nr_ = uy1 - uy0;
+    *ry0_ = iy0 - uy0;
 }
 
 /* the column at window column `wc` (an index into the search window [wx0, wx1)) of the line's rows: any ink / ink in
@@ -592,7 +720,8 @@ int vocr_tsdp_post(const unsigned char *grey, unsigned w, unsigned h, unsigned s
         const int ix1 = pix_ceil(b->x + b->w, w), iy1 = pix_ceil(b->y + b->h, h);
         const int bh = iy1 - iy0, *lim = s.lims + 4 * (size_t)i;
         double x0 = b->x, x1 = b->x + b->w;
-        int side, L, G, Gr, D, q;
+        int side, L, G, Gr, D, q, have_hists = 0;
+        unsigned hg[256], hc[256];
         s.reach[2 * i] = s.reach[2 * i + 1] = 0;
         if (b->vertical || bh < 6 || ix1 - ix0 < 4) continue;
         L = r100(bh, o->ext_pct);
@@ -601,7 +730,7 @@ int vocr_tsdp_post(const unsigned char *grey, unsigned w, unsigned h, unsigned s
         D = imax(2, r100(bh, o->ext_dash_pct));
         q = r100(bh, 25);
         for (side = -1; side <= 1; side += 2) {
-            int wx0, wx1, ux0, uw, nr, ry0, k, ran_out, c, nwc, limit, colbuf_ok = 1;
+            int wx0, wx1, pw, off, nr, ry0, k, ran_out, c, nwc, limit, colbuf_ok = 1;
             tsdp_cols cl;
             if (side < 0) {
                 wx0 = imax(imax(0, lim[0]), ix0 - L);
@@ -611,11 +740,16 @@ int vocr_tsdp_post(const unsigned char *grey, unsigned w, unsigned h, unsigned s
                 wx1 = imin(imin((int)w, lim[2]), ix1 + L);
             }
             if (wx1 - wx0 < D) continue;
-            ink_beyond(grey, w, h, stride, iy0, iy1, ix0, ix1, wx0, wx1, &s, &ux0, &uw, &nr, &ry0);
+            if (!have_hists) {      /* the line box's histograms: the same for both sides */
+                box_hists(grey, w, h, stride, ix0, iy0, ix1, iy1, &s, hg, hc);
+                have_hists = 1;
+            }
+            ink_beyond(grey, w, h, stride, iy0, iy1, ix0, ix1, wx0, wx1, hg, hc,
+                       (unsigned long)(ix1 - ix0) * (unsigned long)bh, &s, &pw, &off, &nr, &ry0);
             nwc = wx1 - wx0;
             cl.m = s.m;
-            cl.uw = uw;
-            cl.off = wx0 - ux0;
+            cl.uw = pw;
+            cl.off = off;
             cl.r0 = ry0;
             cl.h = bh;
             cl.cy0 = q;
@@ -636,8 +770,8 @@ int vocr_tsdp_post(const unsigned char *grey, unsigned w, unsigned h, unsigned s
                         if (outer_rows > 0) {
                             for (xx = a; xx <= z; xx++) {
                                 int ink = 0;
-                                for (yy = 0; yy < ry0 && !ink; yy++) ink = s.m[(size_t)yy * uw + cl.off + xx];
-                                for (yy = ry0 + bh; yy < nr && !ink; yy++) ink = s.m[(size_t)yy * uw + cl.off + xx];
+                                for (yy = 0; yy < ry0 && !ink; yy++) ink = s.m[(size_t)yy * pw + cl.off + xx];
+                                for (yy = ry0 + bh; yy < nr && !ink; yy++) ink = s.m[(size_t)yy * pw + cl.off + xx];
                                 cnt += ink;
                             }
                             if (cnt * 10 > span) colbuf_ok = 0;

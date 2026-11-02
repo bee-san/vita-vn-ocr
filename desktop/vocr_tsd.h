@@ -22,6 +22,7 @@
 #define VOCR_TSD_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "vocr_tsd_post.h"
 #include "vocr_tsd_refine.h"
@@ -236,6 +237,18 @@ void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts);
 void vocr_tsd_page_set_decode(vocr_tsd_page *p, const vocr_tsd_decode_opts *opts);
 void vocr_tsd_page_set_post(vocr_tsd_page *p, const vocr_tsdp_opts *opts);
 void vocr_tsd_page_set_drop(vocr_tsd_page *p, const vocr_tsdd_opts *opts);
+/* The reading stage's cut (the reading filter's cut_pct, cut_rel_pct, cut_dlg: tools/tsdesk.cut_and_filter): after
+ * every line is read and before the reading filter, each horizontal line is cut into items by its greedy
+ * characters' positions (runtime/vocr_charbox.c, flags 0) at its wide ink gaps (vocr_tsdc_cut), each piece a line in
+ * its place: the line's fields with its own tight box, the reading rule's crop of it and its characters' text; a
+ * line whose pieces would take the page past VOCR_TSD_MAX_BOXES lines stays whole. The positions need the
+ * recognizer's calibration: cal = shift, then groups 0..7 (tools/vocr_onnx.Recognizer.cal, eval/charboxes_cal.json),
+ * resized px x 16; NULL clears it (zeros). Setting it also keeps every read line's characters when the cut is off
+ * (vocr_tsd_page_line_chars). VOCR_TSD_E_ARG for a value outside int16 or no memory. */
+int vocr_tsd_page_set_charbox_cal(vocr_tsd_page *p, const int *cal);
+/* Line i's characters (a piece's own) after vocr_tsd_page_run, when they are kept: their centres in frame px x 16 and
+ * their byte offsets in the line's text, at most cap of them; returns their count (0: none kept, or a vertical line). */
+unsigned vocr_tsd_page_line_chars(const vocr_tsd_page *p, unsigned i, int32_t *c16, unsigned *off, unsigned cap);
 /* Read a frame (`channels` 1, 3 or 4; RGB(A) is taken to its integer luma first, timed as the page): lines in reading
  * order (rows top to bottom by vertical overlap, left to right in a row; tools/tsdesk.reading_order). */
 int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,

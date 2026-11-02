@@ -1171,6 +1171,116 @@ def test_c_page_with_c6(nets, libs, tmp_path):
         assert some > 0                                                   # random readings: some have no kana
 
 
+def _items_frame(rng, H, W):
+    """A grey frame with rows of glyph items (gaps of 0.1 to 1.5 glyphs between them, glyphs 1-3 px apart inside), a
+    box over each row, and characters for the boxes: (g, [(box [x0, y0, x1, y1], chars [(text, x)])])."""
+    import cv2
+    g = rng.integers(10, 60, (H, W), dtype=np.uint8)
+    rows = []
+    texts = ["自", "兵", "数", "1", "5", "、", "。", "！", "」", "「", "ー", "・", "A", "あ", "ッ", "…"]
+    for _ in range(int(rng.integers(1, 6))):
+        sz = int(rng.integers(8, 26))
+        y = int(rng.integers(0, max(1, H - sz - 2)))
+        x = int(rng.integers(0, max(1, W // 3)))
+        chars, x0 = [], x
+        for _it in range(int(rng.integers(1, 5))):
+            for _k in range(int(rng.integers(1, 5))):
+                if x + sz >= W:
+                    break
+                cv2.rectangle(g, (x, y), (x + sz - 1, y + sz - 1), 230, 2)
+                chars.append((str(rng.choice(texts)), x + sz / 2.0 + float(rng.uniform(-sz / 3, sz / 3))))
+                x += sz + int(rng.integers(1, 4))
+            x += int(sz * rng.uniform(0.1, 1.5))
+        if not chars:
+            continue
+        box = [x0 - float(rng.uniform(0, 3)), y - float(rng.uniform(0, 2)), min(W, x) + float(rng.uniform(-4, 3)),
+               y + sz + float(rng.uniform(-1, 2))]
+        if rng.random() < 0.2:                                            # ink at an end that reads as nothing
+            cv2.circle(g, (max(2, x0 - sz), y + sz // 2), max(2, sz // 3), 230, -1)
+            box[0] = max(0.0, x0 - 1.5 * sz)
+        rows.append((box, chars))
+    return g, rows
+
+
+def test_c_cut_reading_equals_python(nets, libs):
+    """vocr_tsdc_cut (desktop/vocr_tsd_post.c) gives tools/tsdesk.cut_reading's pieces bit for bit: generated item
+    rows with their characters (marks among them), centres past the box's ends, unread ink at an end, at several
+    gap and median settings; tools/tsdesk.CUT_MARKS is the C table (vocr_tsdc_is_mark)."""
+    rng = np.random.default_rng(41)
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for ch in T.CUT_MARKS | {"あ", "A", "自", "ab", ""}:
+            b = ch.encode("utf-8")
+            assert cm.L.vocr_tsdc_is_mark(b, len(b)) == (ch in T.CUT_MARKS), ch
+        n_cut = n_none = 0
+        for _ in range(150):
+            g, rows = _items_frame(rng, int(rng.integers(30, 200)), int(rng.integers(100, 700)))
+            for box, chars in rows:
+                for pct, rel in ((25, 200), (50, 200), (10, 100), (25, 0), (70, 300)):
+                    ref = T.cut_reading(g, box, chars, pct, rel)
+                    assert cm.cut_reading(g, box, chars, pct, rel) == ref, (pct, rel)
+                    n_cut += ref is not None
+                    n_none += ref is None
+        assert n_cut > 100 and n_none > 100
+
+
+def _items_rgb(w, h, seed):
+    """A frame of rows of glyph-like items: blocks 2 px apart inside an item, 8 to 30 px between items."""
+    rng = np.random.default_rng(seed)
+    g = rng.integers(40, 90, (h, w, 3), dtype=np.uint8)
+    for _ in range(14):
+        y, x = int(rng.integers(0, h - 24)), int(rng.integers(0, w // 2))
+        bh = int(rng.integers(10, 22))
+        for _it in range(int(rng.integers(2, 6))):
+            for _k in range(int(rng.integers(1, 5))):
+                bw = int(rng.integers(6, 12))
+                if x + bw >= w:
+                    break
+                g[y:y + bh, x:x + bw] = 230
+                x += bw + 2
+            x += int(rng.integers(8, 31))
+    return g
+
+
+def test_c_page_cut_is_python_cut_on_its_readings(nets, libs, tmp_path):
+    """The C page with the cut (C7's drop) gives tools/tsdesk.cut_and_filter's lines on its own readings: the page
+    without the reading filter, keeping its characters (charbox_cal), cut and filtered in Python, equals the page
+    with it, in the same order, at 1 and 2 threads (the random recognizer reads one character per line, so here the
+    cut trims ink that read as nothing; test_c_cut_reading_equals_python covers the cuts); the cut needs the
+    calibration."""
+    pytest.importorskip("torch")
+    _, rp = _mixed_recognizer(tmp_path)
+    _, blob, _ = nets["p8a"]
+    cal = TC.charbox_cal("L")
+    post = dict(C6_POST, vflip_pct=30)
+    frames = [_items_rgb(960, 544, 51), _items_rgb(480, 272, 52), _items_rgb(1280, 720, 53), _text_frame(960, 544, 54)]
+    for lib in libs.values():
+        some = 0
+        for drop in (dict(C6_DROP, cut_pct=25, cut_dlg=0), {"cut_pct": 25, "cut_dlg": 1},
+                     {"cut_pct": 10, "cut_dlg": 4, "cut_rel_pct": 100}, {"rep_pct": 50, "cut_pct": 10}):
+            cut = {k: v for k, v in drop.items() if k.startswith("cut")}
+            base = TC.CPage(blob, rp, threads=2, pad="k6v4", refine=True, decode=C6_DECODE, post=post, lib=lib,
+                            charbox_cal=cal)
+            for fr in frames:
+                g = T.grey_of(fr)
+                H, W = g.shape
+                lines, chars = base.page(fr, chars=True)
+                assert all(len(c) == 0 for ln, c in zip(lines, chars) if ln.vertical)
+                assert all("".join(t for t, _ in c) == ln.text for ln, c in zip(lines, chars) if not ln.vertical)
+                res = [ln if ln.vertical else (ln, 1.0, c) for ln, c in zip(lines, chars)]
+                p = T.pad_of("k6v4", H)
+                want = T.cut_and_filter(g, res, drop, lambda tb: T.crop_of(tb, p, W, H))
+                for th in (1, 2):
+                    got = TC.CPage(blob, rp, threads=th, pad="k6v4", refine=True, decode=C6_DECODE, post=post,
+                                   drop=drop, lib=lib, charbox_cal=cal).page(fr)
+                    assert got == want, (cut, th)
+                uncut = {k: v for k, v in drop.items() if not k.startswith("cut")}
+                some += want != T.cut_and_filter(g, res, uncut, lambda tb: T.crop_of(tb, p, W, H))
+        assert some > 0
+        with pytest.raises(ValueError, match="calibration"):
+            TC.CPage(blob, rp, pad="k6v4", drop=dict(C6_DROP, cut_pct=25), lib=lib)
+
+
 def test_ctsd_spec_with_options(nets, libs, tmp_path):
     """eval/tsdesk_eval.py's ctsd: spec carries +dec: and +post: to the C path (tools/tsdesk_c.CModel.detect)."""
     pytest.importorskip("cv2")

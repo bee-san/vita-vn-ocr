@@ -24,7 +24,7 @@ ARCH ?= -march=x86-64-v3
 WARN = -std=c99 -Wall -Wextra -Werror -Wpedantic -Wshadow -Wstrict-prototypes -Wmissing-prototypes
 RT = ../runtime
 SRC = vocr_desk.c vocr_desk_page.c vocr_tsd.c vocr_tsd_page.c vocr_tsd_resize.c vocr_tsd_refine.c vocr_tsd_post.c \
-      $(RT)/vocr.c $(RT)/vocr_lines.c
+      $(RT)/vocr.c $(RT)/vocr_lines.c $(RT)/vocr_charbox.c
 HDR = vocr_desk.h vocr_tsd.h vocr_tsd_resize.h vocr_tsd_refine.h vocr_tsd_post.h
 CFLAGS_ALL = $(WARN) -ffp-contract=off $(OPT) $(ARCH) -I$(RT) -I. $(EXTRA)
 

@@ -35,6 +35,8 @@ void vocr_tsdd_defaults(vocr_tsdd_opts *o)
     memset(o, 0, sizeof *o);
     o->nojp_gap_pct = 100;
     o->rep_len = 4;
+    o->cut_rel_pct = 200;
+    o->cut_dlg = 1;
 }
 
 int vocr_tsdp_nopts(void) { return VOCR_TSDP_NOPTS; }
@@ -1116,4 +1118,132 @@ int vocr_tsdd_drop(const double *xywh, const char *const *text, const float *con
     }
     for (i = 0; i < n; i++) dropped += drop[i];
     return dropped;
+}
+
+/* ----------------------------------------------------------------------------- the reading stage's cut */
+
+/* tools/tsdesk.CUT_MARKS, sorted */
+static const uint32_t cut_marks[] = {
+    0x0021, 0x0028, 0x0029, 0x002C, 0x002E, 0x003A, 0x003B, 0x003F, 0x005B, 0x005D, 0x007B, 0x007D,
+    0x2015, 0x2025, 0x2026, 0x3001, 0x3002, 0x3008, 0x3009, 0x300A, 0x300B, 0x300C, 0x300D, 0x300E,
+    0x300F, 0x3010, 0x3011, 0x3014, 0x3015, 0x301C, 0x30FB, 0x30FC, 0xFF01, 0xFF08, 0xFF09, 0xFF0C,
+    0xFF0E, 0xFF1A, 0xFF1B, 0xFF1F, 0xFF3B, 0xFF3D, 0xFF5B, 0xFF5D, 0xFF5E};
+
+int vocr_tsdc_is_mark(const char *text, unsigned len)
+{
+    const unsigned char *q = (const unsigned char *)text, *e = q + len;
+    long c;
+    unsigned i;
+    if (!text || !len) return 0;
+    c = utf8_next(&q);
+    if (c < 0 || q != e) return 0;
+    for (i = 0; i < sizeof cut_marks / sizeof cut_marks[0]; i++)
+        if ((long)cut_marks[i] == c) return 1;
+    return 0;
+}
+
+/* the longest empty run (r0, r1) of runs[0 .. nr) with r0 >= a and r1 <= e (the first of the longest), or -1 */
+static int widest_run(const int *runs, int nr, double a, double e)
+{
+    int k, best = -1;
+    for (k = 0; k < nr; k++) {
+        const int r0 = runs[2 * k], r1 = runs[2 * k + 1];
+        if ((double)r0 >= a && (double)r1 <= e && (best < 0 || r1 - r0 > runs[2 * best + 1] - runs[2 * best])) best = k;
+    }
+    return best;
+}
+
+/* Python's ceil(a / 100) (-(-a // 100)) and (v * pct + 50) // 100, floor division for any sign */
+static long ceil100(long a) { return a >= 0 ? (a + 99) / 100 : -((-a) / 100); }
+static long floor_div100(long a) { return a >= 0 ? a / 100 : -((-a + 99) / 100); }
+
+int vocr_tsdc_cut(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, const double *box,
+                  const double *cx, const unsigned char *mark, unsigned n, int pct, int rel_pct, void *scratch,
+                  size_t bytes, double *x0, double *x1, unsigned *first, unsigned *end, unsigned *np)
+{
+    tsdp_scr s;
+    int ix0, iy0, ix1, iy1, bw, bh, mw, bx0, by0, x, y, nr = 0, i0 = -1, i1 = -1, med, thr, lead, tail, nc = 0;
+    int *runs, gap[VOCR_TSDC_MAX], lens[VOCR_TSDC_MAX];
+    unsigned i, k;
+    if (!np || !box || (n && (!cx || !mark || !x0 || !x1 || !first || !end)) || n > VOCR_TSDC_MAX)
+        return VOCR_TSDP_E_ARG;
+    *np = 0;
+    if (!grey || !w || !h || stride < w || !scratch) return VOCR_TSDP_E_ARG;
+    if (bytes < vocr_tsdp_scratch_bytes(w, h, 1)) return VOCR_TSDP_E_SCRATCH;
+    if (!n) return 0;
+    scr_map(&s, scratch, w, h, 1);
+    ix0 = pix_floor(box[0], w);
+    iy0 = pix_floor(box[1], h);
+    ix1 = pix_ceil(box[2], w);
+    iy1 = pix_ceil(box[3], h);
+    bw = ix1 - ix0;
+    bh = iy1 - iy0;
+    if (bh < 4 || bw < 4) return 0;
+    ink_box(grey, w, h, stride, ix0, iy0, ix1, iy1, &s, &mw, &bx0, &by0);
+    /* the empty runs between ink columns, box px: (last ink + 1, next ink); in rc (W + H ints: at most bw / 2 runs) */
+    runs = s.rc;
+    for (x = 0; x < bw; x++) {
+        int any = 0;
+        for (y = 0; y < bh && !any; y++) any = s.m[(size_t)(by0 + y) * mw + bx0 + x];
+        if (!any) continue;
+        if (i1 >= 0 && x > i1 + 1) {
+            runs[2 * nr] = i1 + 1;
+            runs[2 * nr + 1] = x;
+            nr++;
+        }
+        if (i0 < 0) i0 = x;
+        i1 = x;
+    }
+    if (i0 < 0 || i0 == i1) return 0;                         /* fewer than two ink columns */
+    /* per pair of consecutive characters its widest run (gap[i], -1: none) and the sorted lengths */
+    for (i = 0; i + 1 < n; i++) {
+        const int r = widest_run(runs, nr, cx[i] - ix0, cx[i + 1] - ix0);
+        gap[i] = r;
+        lens[i] = r >= 0 ? runs[2 * r + 1] - runs[2 * r] : 0;
+    }
+    isort(lens, (int)n - 1);
+    med = n > 1 ? lens[(n - 2) / 2] : 0;
+    thr = imax(2, (int)floor_div100((long)bh * pct + 50));
+    thr = imax(thr, (int)ceil100((long)med * rel_pct));
+    lead = widest_run(runs, nr, (double)i0, cx[0] - ix0);
+    tail = widest_run(runs, nr, cx[n - 1] - ix0, (double)(i1 + 1));
+    if (lead >= 0 && runs[2 * lead + 1] - runs[2 * lead] < thr) lead = -1;
+    if (tail >= 0 && runs[2 * tail + 1] - runs[2 * tail] < thr) tail = -1;
+    for (i = 0; i + 1 < n; i++)
+        if (gap[i] >= 0 && runs[2 * gap[i] + 1] - runs[2 * gap[i]] >= thr && !mark[i] && !mark[i + 1]) nc++;
+    if (!nc && lead < 0 && tail < 0) return 0;
+    /* the pieces: [start, end) and their first characters */
+    {
+        double st = lead >= 0 ? (double)(ix0 + runs[2 * lead + 1]) : box[0];
+        unsigned f = 0;
+        k = 0;
+        for (i = 0; i + 1 < n; i++) {
+            const int r = gap[i];
+            if (!(r >= 0 && runs[2 * r + 1] - runs[2 * r] >= thr && !mark[i] && !mark[i + 1])) continue;
+            {
+                const double en = (double)(ix0 + runs[2 * r]);
+                if (en > st) {
+                    x0[k] = st;
+                    x1[k] = en;
+                    first[k] = f;
+                    end[k] = i + 1;
+                    k++;
+                }
+            }
+            st = (double)(ix0 + runs[2 * r + 1]);
+            f = i + 1;
+        }
+        {
+            const double en = tail >= 0 ? (double)(ix0 + runs[2 * tail]) : box[2];
+            if (en > st) {
+                x0[k] = st;
+                x1[k] = en;
+                first[k] = f;
+                end[k] = n;
+                k++;
+            }
+        }
+    }
+    *np = k;
+    return 1;
 }

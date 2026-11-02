@@ -275,12 +275,16 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
 #   gap_pct    a horizontal box split along at every run of at least max(2, r(h, gap_pct)) empty ink columns between
 #              its first and last ink column (h its height) that holds fewer than gap_weak pixels of weak ink (both
 #              thresholds halved: a faint 、 or 。): neighbouring buttons, labels and numbers in one box.
+# The post-refinement option runs on the refined boxes:
+#   ext_pct    a horizontal box's ends extended over the dash or ellipsis run beyond them (extend_ends).
 # The ink is the refinement's test (tools/tsdesk_refine.py steps 3-6, without its margins' noise term): on the box
 # grown by max(2, r(h, 25)) px, bg the lower median of that window's border ring, a pixel is ink when |g - bg| and
 # its 3 x 3 contrast both exceed max(28, 40 % of their 99th percentile over the box) and a 4-neighbour is ink too.
 
-POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3}
+POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
+                 "ext_pct": 0, "ext_gap_pct": 70, "ext_dash_pct": 80}
 POST_PRE = ("merge_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
+POST_POST = ("ext_pct",)                              # the options that run after it
 
 
 def post_options(opts=None):
@@ -451,6 +455,141 @@ def split_along(g, b, gap_pct, gap_weak=3):
     return [dataclasses.replace(b, x=s, w=e - s) for s, e in zip(starts, ends) if e > s]
 
 
+def _ink_beyond(g, iy0, iy1, bx0, bx1, wx0, wx1, floor=28, k_pct=40):
+    """The ink of columns [wx0, wx1) over rows [iy0 - A, iy1 + A) (A = max(2, r(h, 25))), with the background and
+    the thresholds of the line's own pixel box [bx0, bx1) x [iy0, iy1): bg the lower median of the border ring of the
+    union of the line's box and the window, t and tc from the line's box (ink_mask's test). (mask, A)."""
+    import tsdesk_refine as TR
+    H, W = g.shape
+    h = iy1 - iy0
+    A = max(2, _r100(h, 25))
+    ux0, ux1 = max(0, min(bx0, wx0) - 1), min(W, max(bx1, wx1) + 1)
+    uy0, uy1 = max(0, iy0 - A), min(H, iy1 + A)
+    win = g[uy0:uy1, ux0:ux1].astype(np.int16)
+    ring = np.concatenate([win[0], win[-1], win[1:-1, 0], win[1:-1, -1]])
+    bg = int(np.partition(ring, (ring.size - 1) // 2)[(ring.size - 1) // 2])
+    d = np.abs(win - bg)
+    c3 = TR._c3(g, ux0, uy0, ux1, uy1)
+    ry0, rx0, rx1 = iy0 - uy0, bx0 - ux0, bx1 - ux0
+    t = max(floor, _r100(TR.quantile(d[ry0:ry0 + h, rx0:rx1], 99), k_pct))
+    tc = max(floor, _r100(TR.quantile(c3[ry0:ry0 + h, rx0:rx1], 99), k_pct))
+    m0 = (d > t) & (c3 > tc)
+    nb = np.zeros_like(m0)
+    nb[1:] |= m0[:-1]
+    nb[:-1] |= m0[1:]
+    nb[:, 1:] |= m0[:, :-1]
+    nb[:, :-1] |= m0[:, 1:]
+    m = m0 & nb
+    return m[:, wx0 - ux0:wx1 - ux0], ry0, uy1 - uy0
+
+
+def _walk_dash(m, r0, r1, cy0, cy1, cols, G, small, low_small, D):
+    """The end extension's walk over window columns `cols` (outward order) of mask m (rows r0..r1 the line's): dash
+    columns (ink inside the middle rows [cy0, cy1) only), runs of at most G empty columns, before any dash a small
+    glyph (at most `low_small` columns, its ink in the lower half: 、 。) crossed, after at least D dash columns one
+    glyph of at most `small` columns (「 」 。) taken and the walk ended. (index into cols of the new edge or -1, ran
+    out: the walk reached the window's end on ink)."""
+    line = m[r0:r1]
+    mid = (r1 - r0) // 2
+    n = len(cols)
+    i, gap, dash, last = 0, 0, 0, -1
+
+    def is_dash(col):
+        return col[cy0:cy1].any() and not col[:cy0].any() and not col[cy1:].any()
+    while i < min(n, small) and line[:, cols[i]].any() and not is_dash(line[:, cols[i]]):
+        i += 1                                  # the edge glyph's own ink just outside the box (rounding)
+    while i < n:
+        col = line[:, cols[i]]
+        if not col.any():
+            gap += 1
+            if gap > G:
+                break
+            i += 1
+            continue
+        gap = 0
+        if is_dash(col):
+            dash += 1
+            last = i
+            i += 1
+            continue
+        j = i                                   # a glyph: its run of ink columns
+        while j < n and line[:, cols[j]].any():
+            j += 1
+        wg = j - i
+        if dash >= D:
+            if wg <= small:
+                last = j - 1
+            return (last if dash >= D else -1), False
+        rows = np.flatnonzero(line[:, cols[i:j]].any(1))
+        if wg <= low_small and len(rows) and rows[0] >= mid:
+            i = j
+            continue
+        break
+    else:
+        return (last if dash >= D else -1), dash > 0 and gap == 0
+    return (last if dash >= D else -1), False
+
+
+def extend_ends(g, boxes, o):
+    """ext_pct: each horizontal box's ends extended over the dash or ellipsis run (―― ……) beyond them on the frame's
+    ink, up to r(h, ext_pct) px, crossing gaps of at most max(2, r(h, ext_gap_pct)) px, with the 、 or 。 before the
+    run and the 「 」 or 。 after it; a run shorter than r(h, ext_dash_pct) px, one that reaches the search window's
+    end on ink, or one with ink in the rows just above or below it on more than a tenth of its columns (a frame's
+    border, a texture) is not taken. An end never grows into another box beside it (tools/tsdesk_refine's
+    neighbour_limits). The network gives long dashes background logits, so its boxes stop where they start."""
+    import dataclasses
+
+    import tsdesk_refine as TR
+    H, W = g.shape
+    rows = [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical] for b in boxes]
+    lims = TR.neighbour_limits(rows, W, H)
+    out = []
+    for b, lim in zip(boxes, lims):
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        h = iy1 - iy0
+        if b.vertical or h < 6 or ix1 - ix0 < 4:
+            out.append(b)
+            continue
+        L = _r100(h, o["ext_pct"])
+        G = max(2, _r100(h, o["ext_gap_pct"]))
+        D = max(2, _r100(h, o["ext_dash_pct"]))
+        q = _r100(h, 25)
+        x0, x1 = b.x, b.x + b.w
+        for side in (-1, 1):
+            if side < 0:
+                wx0, wx1 = max(0, int(lim[0]), ix0 - L), ix0
+            else:
+                wx0, wx1 = ix1, min(W, int(lim[2]), ix1 + L)
+            if wx1 - wx0 < D:
+                continue
+            m, r0, nr = _ink_beyond(g, iy0, iy1, ix0, ix1, wx0, wx1)
+            cols = list(range(wx1 - wx0 - 1, -1, -1)) if side < 0 else list(range(wx1 - wx0))
+            k, ran_out = _walk_dash(m, r0, r0 + h, q, h - q, cols, G, _r100(h, 80), _r100(h, 60), D)
+            limit = (wx0 > 0 and wx0 == ix0 - L) if side < 0 else (wx1 < W and wx1 == ix1 + L)
+            if k < 0 or (ran_out and limit):
+                continue
+            c = cols[k]
+            span = range(min(c, cols[0]), max(c, cols[0]) + 1)
+            outer = np.concatenate([m[:r0, span], m[r0 + h:nr, span]]) if nr > r0 + h or r0 > 0 else None
+            if outer is not None and outer.size and int(outer.any(0).sum()) * 10 > len(span):
+                continue
+            if side < 0:
+                x0 = float(wx0 + c)
+            else:
+                x1 = float(wx0 + c + 1)
+        out.append(b if (x0, x1) == (b.x, b.x + b.w) else dataclasses.replace(b, x=x0, w=x1 - x0))
+    return out
+
+
+def post_post(g, boxes, opts):
+    """The post-refinement options (above) on frame-px Box objects of grey frame g."""
+    o = post_options(opts)
+    out = list(boxes)
+    if o["ext_pct"]:
+        out = extend_ends(g, out, o)
+    return out
+
+
 def post_pre(g, boxes, opts):
     """The pre-refinement options (above) on frame-px Box objects of grey frame g."""
     o = post_options(opts)
@@ -468,7 +607,7 @@ def post_pre(g, boxes, opts):
 
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
-DROP_DEFAULTS = {"nojp": 0, "conf_milli": 0}
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "conf_milli": 0}
 _JP_RE = None
 
 
@@ -494,7 +633,8 @@ def drop_set(items, o):
     items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
       nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
       nojp 2: the same, unless a reading with one sits in the same row (vertical overlap >= half the smaller height)
-              within a gap of the larger height along it (a line's own Latin or digit part: "A" before スポーツ);
+              within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
+              before スポーツ);
       conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
     out = set()
     jp = [has_japanese(t) for _, t, _ in items]
@@ -514,7 +654,7 @@ def drop_set(items, o):
                 if min(y + h, y2 + h2) - max(y, y2) < 0.5 * min(h, h2):
                     continue
                 gap = max(x2 - (x + w), x - (x2 + w2))
-                if gap <= max(h, h2):
+                if gap * 100 <= o["nojp_gap_pct"] * max(h, h2):
                     keep = True
                     break
             if keep:
@@ -590,6 +730,8 @@ class Detector:
         if self.refine is not None:
             import tsdesk_refine
             out = tsdesk_refine.refine_det(g, out, self.refine)
+        if self.post is not None and any(self.post[k] for k in POST_POST):
+            out = post_post(g, out, self.post)
         return out
 
     def boxes(self, rgb):

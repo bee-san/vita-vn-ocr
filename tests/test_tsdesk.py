@@ -421,6 +421,8 @@ def test_drop_set_rules():
                 (30, 40, 30, 20, "Max", 0.9))
     assert T.drop_set(row, o1) == {0, 2, 3}
     assert T.drop_set(row, o2) == {2, 3}                     # "A" sits 8 px from a Japanese reading in its row
+    far = items((10, 10, 40, 20, "行動力", 0.99), (75, 12, 40, 18, "Max", 0.9))     # 25 px on: 1.25 heights
+    assert T.drop_set(far, o2) == {1} and T.drop_set(far, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
     assert T.drop_set(row, T.drop_options({})) == set()
     c = T.drop_options({"conf_milli": 600})
     assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
@@ -434,9 +436,45 @@ def test_spec_suffixes():
     assert E.spec_parts("tsd:/m/a.onnx@long:960+post:gap_pct=150,merge_pct=50+refine+drop:nojp=1") == (
         "tsd:/m/a.onnx@long:960", True, {"gap_pct": 150, "merge_pct": 50}, {"nojp": 1})
     assert E.spec_parts("tsd:/m/a.onnx") == ("tsd:/m/a.onnx", False, {}, {})
+    assert E.spec_parts("tsd:/m/a.onnx+dec:conf_min_logit=1.5", with_decode=True)[4] == {"conf_min_logit": 1.5}
     with pytest.raises(ValueError):
         E.spec_parts("tsd:/m/a.onnx+refined")
     assert E.drop_of_det("tsd:/m/a.onnx@long:960+refine") is None
     assert E.drop_of_det("meiki+drop:nojp=1")["nojp"] == 1
     assert E.strip_drop("meiki+drop:nojp=1") == "meiki"
     assert E.strip_drop("tsd:/m/a.onnx+refine+drop:nojp=1+post:gap_pct=1") == "tsd:/m/a.onnx+refine+post:gap_pct=1"
+
+
+def test_extend_ends_over_dash_runs():
+    o = T.post_options({"ext_pct": 1200})
+    g = np.full((60, 420), 20, np.uint8)
+    # 「 at x 10-16 (a corner in the upper half), a dash run x 20-105 at the line's middle, 、 at x 108-112 low, a
+    # gap of 11 px (0.6 line heights), two glyphs x 124-163 (the detector's box), ―― x 166-210 and 。 x 213-217 low
+    cv2.line(g, (16, 20), (10, 20), 230, 2)
+    cv2.line(g, (10, 20), (10, 30), 230, 2)
+    cv2.line(g, (20, 29), (105, 29), 230, 2)
+    cv2.rectangle(g, (108, 34), (112, 37), 230, -1)
+    end = _glyphs(g, 124, 20, 2, 18, 4)
+    cv2.line(g, (end + 2, 29), (end + 46, 29), 230, 2)
+    cv2.rectangle(g, (end + 50, 33), (end + 54, 37), 230, -1)
+    b = _box(124, 20, end, 38)
+    out = T.post_post(g, [b], o)[0]
+    assert out.y == b.y and out.h == b.h
+    ink = np.flatnonzero((g[20:38] > 100).any(0))
+    assert (out.x, out.x + out.w) == (ink[0], ink[-1] + 1) == (9, end + 55)
+    assert T.post_post(g, [b], {}) == [b]
+    # a frame's border just above the run: not taken
+    g2 = g.copy()
+    cv2.line(g2, (0, 16), (122, 16), 230, 1)
+    assert T.post_post(g2, [b], o)[0].x == 124
+    # another box beside it stops the extension at its edge
+    nb = _box(60, 20, 100, 38)
+    out3 = T.post_post(g, [b, nb], o)
+    assert out3[0].x >= 100 and out3[1] == nb
+    # a run under ext_dash_pct of the height is not a dash run; ordinary glyphs beyond the end are not taken
+    g3 = np.full((60, 420), 20, np.uint8)
+    end3 = _glyphs(g3, 130, 20, 2, 18, 4)
+    cv2.line(g3, (end3 + 3, 29), (end3 + 12, 29), 230, 2)
+    _glyphs(g3, end3 + 40, 20, 2, 18, 4)
+    b3 = _box(130, 20, end3, 38)
+    assert T.post_post(g3, [b3], o)[0] == b3

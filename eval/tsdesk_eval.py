@@ -71,12 +71,13 @@ def parse_kv(s):
     return out
 
 
-def spec_parts(spec):
-    """(base, refine, post, drop) of a detector spec: tsd:MODEL.onnx[@SIZE[@MODE]] or ctsd:BLOB.vtsd[@SIZE], then any
-    of the suffixes +refine (tools/tsdesk_refine on the boxes), +post:K=V,... (tools/tsdesk.POST_DEFAULTS options)
-    and +drop:K=V,... (tools/tsdesk.DROP_DEFAULTS: the reading filter, applied when the boxes are read)."""
+def spec_parts(spec, with_decode=False):
+    """(base, refine, post, drop[, decode]) of a detector spec: tsd:MODEL.onnx[@SIZE[@MODE]] or ctsd:BLOB.vtsd[@SIZE],
+    then any of the suffixes +refine (tools/tsdesk_refine on the boxes), +post:K=V,... (tools/tsdesk.POST_DEFAULTS
+    options), +drop:K=V,... (tools/tsdesk.DROP_DEFAULTS: the reading filter, applied when the boxes are read) and
+    +dec:K=V,... (tools/tsdesk.DEFAULTS: the decode's options, numbers)."""
     base, *toks = str(spec).split("+")
-    refine, post, drop = False, {}, {}
+    refine, post, drop, dec = False, {}, {}, {}
     for t in toks:
         if t == "refine":
             refine = True
@@ -84,24 +85,32 @@ def spec_parts(spec):
             post.update(parse_kv(t[5:]))
         elif t.startswith("drop:"):
             drop.update(parse_kv(t[5:]))
+        elif t.startswith("dec:"):
+            for part in filter(None, t[4:].split(",")):
+                k, _, v = part.partition("=")
+                dec[k] = float(v)
         else:
             raise ValueError(f"{spec}: unknown suffix +{t}")
-    return base, refine, post, drop
+    return (base, refine, post, drop, dec) if with_decode else (base, refine, post, drop)
 
 
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
-    base, refine, post, drop = spec_parts(spec)
+    base, refine, post, drop, dec = spec_parts(spec, with_decode=True)
     if drop:
         T.drop_options(drop)                    # checked here; applied when the boxes are read (install's read job)
+    bad = set(dec) - set(T.DEFAULTS)
+    if bad:
+        raise ValueError(f"{spec}: unknown decode options {sorted(bad)}")
+    dec = {k: int(v) if k in ("min_cells", "max_boxes") else v for k, v in dec.items()}
     if base.startswith("tsd:"):
         path, _, rest = base[4:].partition("@")
         size, _, mode = rest.partition("@")
         return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
-                          refine=True if refine else None, post=post or None)
+                          refine=True if refine else None, post=post or None, decode_opts=dec or None)
     if base.startswith("ctsd:"):
-        if post:
-            raise ValueError(f"{spec}: the post-pass has no C twin yet")
+        if post or dec:
+            raise ValueError(f"{spec}: the post-pass and decode options have no C path here")
         path, _, size = base[5:].partition("@")
         return CTsdDet(path, size or None, threads, refine=True if refine else None)
     if refine or post or drop:

@@ -276,6 +276,16 @@
      "question": "the same from B1"
     }
    }
+  },
+  {
+   "n": 8,
+   "time": "2026-11-02T15:30Z",
+   "before": "any read at these policies; D2, E1, E2, B4 unread",
+   "after": "B2 (q8c) and C1 (q4b + targets_v2, base recipe, dense source) read with C7: goal gap at k6v4 C1 0.471 (junk 3), B3 0.508 (junk 0), B2 0.533 (junk 0), B1 0.546 (junk 1); q8c reads little better than q8b and takes 19.5-20 ms at 1 thread (6.0x, 16-18% under G2's bar), so more width is not the lever",
+   "studies": {
+    "P_policy": "the finished arms B1, B2, B3, C1 read with C7 at k6v4 at the input policies long:1120 and long:1280 (every frame's long side scaled to that, up or down) on all four goal sets (the l544 frames too: the detector reads the same 960x544 pixels, scaled inside it) and hval + dense_screen; G2 is measured at the policy a candidate is declared with"
+   },
+   "rule": "a candidate's policy may be any registered policy; its G2 timing must use it"
   }
  ]
 }

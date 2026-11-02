@@ -544,7 +544,7 @@ def cmd_prof(a):
         raise SystemExit("the view's frames differ in size")
     bdir = Path(a.build_dir)
     b = build(bdir, a.arch, "-DVOCR_TSD_PROF " + (a.extra or ""))
-    scratch = D.PV / "textspot-desktop-c" / "scratch"
+    scratch = Path(a.scratch or MEM_SCRATCH)
     scratch.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(dir=scratch, suffix=".rgb") as f:     # private pixels: deleted on close
         for r in rgbs:
@@ -948,6 +948,7 @@ def main(argv=None):
     p.add_argument("--arch", default="-march=x86-64-v3")
     p.add_argument("--extra", default="")
     p.add_argument("--refine", action="store_true", help="the box refinement on (vocr_tsdr_defaults)")
+    p.add_argument("--scratch", help="a private directory for the frames' scratch file")
     p.add_argument("--build-dir", required=True)
     p.add_argument("--out", required=True)
     p = sub.add_parser("summary")

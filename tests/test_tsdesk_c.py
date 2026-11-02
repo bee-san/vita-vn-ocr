@@ -212,6 +212,35 @@ def test_avx2_equals_plain_and_threads_same_bits(nets, libs):
                 assert np.array_equal(mt.maps(x), m1) and mt.detect(frame, "native") == b1, (shape, threads)
 
 
+AVX512 = ("avx512f", "avx512bw", "avx512cd", "avx512dq", "avx512vl", "avx2", "fma")
+
+
+@pytest.fixture(scope="module")
+def lib512(tmp_path_factory, libs):
+    """The AVX-512 build (make ARCH=-march=x86-64-v4) when this CPU runs it."""
+    if "avx2" not in libs or not _cpu_has(*AVX512):
+        pytest.skip("no AVX-512 (F, BW, CD, DQ, VL) on this CPU")
+    return _build(tmp_path_factory.mktemp("tsdc512") / "avx512", "-march=x86-64-v4")
+
+
+def test_avx512_equals_avx2(nets, libs, lib512):
+    """The AVX-512 kernels keep every output's chain of fused multiply-adds: the maps, the boxes (refined or not, any
+    thread count) and the page's crops are the AVX2 build's bit for bit, for every shape."""
+    rng = np.random.default_rng(16)
+    assert TC.c_library(lib512).vocr_tsd_simd() == 2 and TC.c_library(libs["avx2"]).vocr_tsd_simd() == 1
+    for shape in sorted(_shapes()):
+        _, blob, _ = nets[shape]
+        a, z = TC.CModel(blob, lib=libs["avx2"]), TC.CModel(blob, lib=lib512)
+        for h, w in ((64, 96), (288, 512), (544, 960)):
+            x = rng.integers(0, 256, (h, w), dtype=np.uint8)
+            assert np.array_equal(a.maps(x), z.maps(x)), (shape, h, w)
+        frame = _text_frame(541, 300, int(rng.integers(0, 1000)))
+        for size, refine in (("native", None), ("long:960", True)):
+            want = a.detect(frame, size, refine)
+            assert z.detect(frame, size, refine) == want, (shape, size)
+            assert TC.CModel(blob, threads=3, lib=lib512).detect(frame, size, refine) == want, (shape, size)
+
+
 # ----------------------------------------------------------------------------- the decode
 
 def _line_maps(h, w, s, cells, a1=6.0, a2=6.0, e1=5.0, e2=5.0, vertical=False, tag=None, tags=4):

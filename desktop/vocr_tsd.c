@@ -17,6 +17,15 @@
 #else
 #define TSD_AVX2 0
 #endif
+/* AVX-512 kernels (-march=x86-64-v4, or -mavx512f -mavx512vl with AVX2 and FMA): the pointwise, depthwise and stem
+ * kernels on 16-channel vectors with 32 registers. Every output keeps the AVX2 kernels' chain of fused multiply-adds
+ * (the same operations in the same order), so the maps are the AVX2 build's bit for bit. -DVOCR_TSD_NO_AVX512 keeps
+ * the AVX2 kernels in such a build. */
+#if TSD_AVX2 && defined(__AVX512F__) && defined(__AVX512VL__) && !defined(VOCR_TSD_NO_AVX512)
+#define TSD_AVX512 1
+#else
+#define TSD_AVX512 0
+#endif
 
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
 #define CHUNK_FLOATS 6144u   /* a row chunk's scratch (floats): at most 48 px x 128 channels or 24 px x 256 */
@@ -244,7 +253,7 @@ size_t vocr_tsd_box_bytes(void)
 
 int vocr_tsd_simd(void)
 {
-    return TSD_AVX2;
+    return TSD_AVX512 ? 2 : TSD_AVX2;
 }
 
 /* ----------------------------------------------------------------------------- kernels */
@@ -407,6 +416,135 @@ static void k1(const float *x, unsigned Cin, const float *w, unsigned Cout, cons
 #undef F1
 #undef F2
 #undef F3
+#if TSD_AVX512
+/* the AVX-512 kernels: 16 channels a vector, 32 registers; each output the AVX2 kernels' chain (the bias, then one
+ * fused multiply-add per input channel in order, then the epilogue's operations in order) */
+static inline void epi_store16(__m512 u, const epi_t *e, unsigned p, unsigned co, unsigned Cout, float *out)
+{
+    const __m512 z = _mm512_setzero_ps();
+    if (e->kind == EPI_RES)
+        u = _mm512_max_ps(_mm512_add_ps(u, _mm512_loadu_ps(e->res + (size_t)p * Cout + co)), z);
+    else if (e->kind == EPI_UP)
+        u = _mm512_add_ps(_mm512_max_ps(u, z), _mm512_loadu_ps(e->up + (size_t)((e->x0 + p) >> 1) * Cout + co));
+    else if (e->kind == EPI_RELU)
+        u = _mm512_max_ps(u, z);
+    _mm512_storeu_ps(out + (size_t)p * Cout + co, u);
+}
+
+#define ZB(r) _mm512_set1_ps(x[(size_t)(r) * Cin + ci])
+#define Z2(r, a, b)                     \
+    do {                                \
+        const __m512 v_ = ZB(r);        \
+        a = _mm512_fmadd_ps(v_, w0, a); \
+        b = _mm512_fmadd_ps(v_, w1, b); \
+    } while (0)
+#define Z1(r, a) a = _mm512_fmadd_ps(ZB(r), w0, a)
+
+/* 12 pixels x 32 channels */
+static void z32x12(const float *x, unsigned Cin, const float *w, unsigned Cout, const float *b, unsigned co,
+                   const epi_t *e, unsigned p, float *out)
+{
+    const __m512 b0 = _mm512_loadu_ps(b + co), b1 = _mm512_loadu_ps(b + co + 16);
+    __m512 a00 = b0, a01 = b1, a10 = b0, a11 = b1, a20 = b0, a21 = b1, a30 = b0, a31 = b1;
+    __m512 a40 = b0, a41 = b1, a50 = b0, a51 = b1, a60 = b0, a61 = b1, a70 = b0, a71 = b1;
+    __m512 a80 = b0, a81 = b1, a90 = b0, a91 = b1, aa0 = b0, aa1 = b1, ab0 = b0, ab1 = b1;
+    const float *wc = w + co;
+    unsigned ci;
+    for (ci = 0; ci < Cin; ci++, wc += Cout) {
+        const __m512 w0 = _mm512_loadu_ps(wc), w1 = _mm512_loadu_ps(wc + 16);
+        Z2(0, a00, a01);
+        Z2(1, a10, a11);
+        Z2(2, a20, a21);
+        Z2(3, a30, a31);
+        Z2(4, a40, a41);
+        Z2(5, a50, a51);
+        Z2(6, a60, a61);
+        Z2(7, a70, a71);
+        Z2(8, a80, a81);
+        Z2(9, a90, a91);
+        Z2(10, aa0, aa1);
+        Z2(11, ab0, ab1);
+    }
+    epi_store16(a00, e, p, co, Cout, out);
+    epi_store16(a01, e, p, co + 16, Cout, out);
+    epi_store16(a10, e, p + 1, co, Cout, out);
+    epi_store16(a11, e, p + 1, co + 16, Cout, out);
+    epi_store16(a20, e, p + 2, co, Cout, out);
+    epi_store16(a21, e, p + 2, co + 16, Cout, out);
+    epi_store16(a30, e, p + 3, co, Cout, out);
+    epi_store16(a31, e, p + 3, co + 16, Cout, out);
+    epi_store16(a40, e, p + 4, co, Cout, out);
+    epi_store16(a41, e, p + 4, co + 16, Cout, out);
+    epi_store16(a50, e, p + 5, co, Cout, out);
+    epi_store16(a51, e, p + 5, co + 16, Cout, out);
+    epi_store16(a60, e, p + 6, co, Cout, out);
+    epi_store16(a61, e, p + 6, co + 16, Cout, out);
+    epi_store16(a70, e, p + 7, co, Cout, out);
+    epi_store16(a71, e, p + 7, co + 16, Cout, out);
+    epi_store16(a80, e, p + 8, co, Cout, out);
+    epi_store16(a81, e, p + 8, co + 16, Cout, out);
+    epi_store16(a90, e, p + 9, co, Cout, out);
+    epi_store16(a91, e, p + 9, co + 16, Cout, out);
+    epi_store16(aa0, e, p + 10, co, Cout, out);
+    epi_store16(aa1, e, p + 10, co + 16, Cout, out);
+    epi_store16(ab0, e, p + 11, co, Cout, out);
+    epi_store16(ab1, e, p + 11, co + 16, Cout, out);
+}
+
+/* 12 pixels x 16 channels */
+static void z16x12(const float *x, unsigned Cin, const float *w, unsigned Cout, const float *b, unsigned co,
+                   const epi_t *e, unsigned p, float *out)
+{
+    const __m512 b0 = _mm512_loadu_ps(b + co);
+    __m512 a0 = b0, a1 = b0, a2 = b0, a3 = b0, a4 = b0, a5 = b0, a6 = b0, a7 = b0, a8 = b0, a9 = b0, aa = b0, ab = b0;
+    const float *wc = w + co;
+    unsigned ci;
+    for (ci = 0; ci < Cin; ci++, wc += Cout) {
+        const __m512 w0 = _mm512_loadu_ps(wc);
+        Z1(0, a0);
+        Z1(1, a1);
+        Z1(2, a2);
+        Z1(3, a3);
+        Z1(4, a4);
+        Z1(5, a5);
+        Z1(6, a6);
+        Z1(7, a7);
+        Z1(8, a8);
+        Z1(9, a9);
+        Z1(10, aa);
+        Z1(11, ab);
+    }
+    epi_store16(a0, e, p, co, Cout, out);
+    epi_store16(a1, e, p + 1, co, Cout, out);
+    epi_store16(a2, e, p + 2, co, Cout, out);
+    epi_store16(a3, e, p + 3, co, Cout, out);
+    epi_store16(a4, e, p + 4, co, Cout, out);
+    epi_store16(a5, e, p + 5, co, Cout, out);
+    epi_store16(a6, e, p + 6, co, Cout, out);
+    epi_store16(a7, e, p + 7, co, Cout, out);
+    epi_store16(a8, e, p + 8, co, Cout, out);
+    epi_store16(a9, e, p + 9, co, Cout, out);
+    epi_store16(aa, e, p + 10, co, Cout, out);
+    epi_store16(ab, e, p + 11, co, Cout, out);
+}
+
+/* one pixel x nv vectors of 16 channels (the tails) */
+static void z1(const float *x, unsigned Cin, const float *w, unsigned Cout, const float *b, unsigned co, unsigned nv,
+               const epi_t *e, unsigned p, float *out)
+{
+    unsigned v;
+    for (v = 0; v < nv; v++) {
+        const float *wc = w + co + 16 * v;
+        __m512 a = _mm512_loadu_ps(b + co + 16 * v);
+        unsigned ci;
+        for (ci = 0; ci < Cin; ci++, wc += Cout) a = _mm512_fmadd_ps(_mm512_set1_ps(x[ci]), _mm512_loadu_ps(wc), a);
+        epi_store16(a, e, p, co + 16 * v, Cout, out);
+    }
+}
+#undef ZB
+#undef Z1
+#undef Z2
+#endif
 #else
 static inline float epi_scalar(float u, const epi_t *e, unsigned p, unsigned co, unsigned Cout)
 {
@@ -430,6 +568,19 @@ static void pw_chunk(const float *in, unsigned P, const vocr_tsd_layer *L, const
     const float *w = L->w, *b = L->b;
 #if TSD_AVX2
     unsigned co = 0, p;
+#if TSD_AVX512
+    if (Cout % 16 == 0) {
+        for (; co + 32 <= Cout; co += 32) {
+            for (p = 0; p + 12 <= P; p += 12) z32x12(in + (size_t)p * Cin, Cin, w, Cout, b, co, e, p, out);
+            for (; p < P; p++) z1(in + (size_t)p * Cin, Cin, w, Cout, b, co, 2, e, p, out);
+        }
+        if (co < Cout) {
+            for (p = 0; p + 12 <= P; p += 12) z16x12(in + (size_t)p * Cin, Cin, w, Cout, b, co, e, p, out);
+            for (; p < P; p++) z1(in + (size_t)p * Cin, Cin, w, Cout, b, co, 1, e, p, out);
+        }
+        return;
+    }
+#endif
     if (Cout % 24 == 0 && Cout % 16 != 0) {
         for (; co < Cout; co += 24) {
             for (p = 0; p + 4 <= P; p += 4) k24x4(in + (size_t)p * Cin, Cin, w, Cout, b, co, e, p, out);
@@ -461,6 +612,69 @@ static void pw_chunk(const float *in, unsigned P, const vocr_tsd_layer *L, const
 #endif
 }
 
+#if TSD_AVX512
+/* dw_chunk's 16 channels [c, c + 16) on zmm vectors: the same taps in the same order as its 8-channel AVX2 body */
+static void dw16(const float *const *rows, const unsigned *kys, unsigned nk, unsigned W, unsigned C, unsigned s,
+                 unsigned d, const float *wt, const float *bs, unsigned x0, unsigned x1, unsigned lo, unsigned hi,
+                 unsigned c, float *out)
+{
+    const __m512 z = _mm512_setzero_ps(), bias = _mm512_loadu_ps(bs + c);
+    unsigned t, side, ox;
+    for (side = 0; side < 2; side++) {
+        const unsigned a0 = side ? hi : x0, a1 = side ? x1 : lo;
+        for (ox = a0; ox < a1; ox++) {
+            __m512 a = bias;
+            for (t = 0; t < nk; t++) {
+                unsigned kx;
+                for (kx = 0; kx < 3; kx++) {
+                    int ix = (int)(ox * s + kx * d) - (int)d;
+                    if (ix < 0 || ix >= (int)W) continue;
+                    a = _mm512_fmadd_ps(_mm512_loadu_ps(rows[t] + (size_t)ix * C + c),
+                                        _mm512_loadu_ps(wt + (kys[t] * 3 + kx) * C + c), a);
+                }
+            }
+            _mm512_storeu_ps(out + (size_t)(ox - x0) * C + c, _mm512_max_ps(a, z));
+        }
+    }
+    if (nk == 3) {
+        const __m512 w00 = _mm512_loadu_ps(wt + c), w01 = _mm512_loadu_ps(wt + C + c);
+        const __m512 w02 = _mm512_loadu_ps(wt + 2 * C + c), w10 = _mm512_loadu_ps(wt + 3 * C + c);
+        const __m512 w11 = _mm512_loadu_ps(wt + 4 * C + c), w12 = _mm512_loadu_ps(wt + 5 * C + c);
+        const __m512 w20 = _mm512_loadu_ps(wt + 6 * C + c), w21 = _mm512_loadu_ps(wt + 7 * C + c);
+        const __m512 w22 = _mm512_loadu_ps(wt + 8 * C + c);
+        const size_t step = (size_t)d * C, xs = (size_t)s * C;
+        const float *r0 = rows[0] + (size_t)(lo * s - d) * C + c, *r1 = rows[1] + (size_t)(lo * s - d) * C + c;
+        const float *r2 = rows[2] + (size_t)(lo * s - d) * C + c;
+        float *o = out + (size_t)(lo - x0) * C + c;
+        for (ox = lo; ox < hi; ox++, r0 += xs, r1 += xs, r2 += xs, o += C) {
+            __m512 a = bias;
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r0), w00, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r0 + step), w01, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r0 + 2 * step), w02, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r1), w10, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r1 + step), w11, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r1 + 2 * step), w12, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r2), w20, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r2 + step), w21, a);
+            a = _mm512_fmadd_ps(_mm512_loadu_ps(r2 + 2 * step), w22, a);
+            _mm512_storeu_ps(o, _mm512_max_ps(a, z));
+        }
+    } else {
+        const size_t step = (size_t)d * C;
+        for (ox = lo; ox < hi; ox++) {
+            __m512 a = bias;
+            for (t = 0; t < nk; t++) {
+                const float *r = rows[t] + (size_t)(ox * s - d) * C + c, *wk = wt + kys[t] * 3 * C + c;
+                a = _mm512_fmadd_ps(_mm512_loadu_ps(r), _mm512_loadu_ps(wk), a);
+                a = _mm512_fmadd_ps(_mm512_loadu_ps(r + step), _mm512_loadu_ps(wk + C), a);
+                a = _mm512_fmadd_ps(_mm512_loadu_ps(r + 2 * step), _mm512_loadu_ps(wk + 2 * C), a);
+            }
+            _mm512_storeu_ps(out + (size_t)(ox - x0) * C + c, _mm512_max_ps(a, z));
+        }
+    }
+}
+#endif
+
 /* 3x3 depthwise with zero padding d, stride s, dilation d, ReLU, on an H x W x C map: output row oy, columns
  * [x0, x1), into out ([x1 - x0][C]). The taps run in (ky, kx) order, a tap outside the map skipped; the columns whose
  * three taps are inside the map take the unchecked path, the others the checked one (a column's path depends on its
@@ -486,6 +700,14 @@ static void dw_chunk(const float *in, unsigned H, unsigned W, const vocr_tsd_lay
     hi = ihi < x1 ? ihi : x1;
     if (hi < lo) lo = hi = x0;
     for (c = 0; c < C; c += 8) {
+#if TSD_AVX512
+        if (c + 16 <= C) {
+            dw16(rows, kys, nk, W, C, s, d, wt, bs, x0, x1, lo, hi, c, out);
+            c += 8;   /* and the loop's 8: the next 16 */
+            continue;
+        }
+#endif
+        {
 #if TSD_AVX2
         const __m256 z = _mm256_setzero_ps(), bias = _mm256_loadu_ps(bs + c);
         unsigned t, side;
@@ -562,6 +784,7 @@ static void dw_chunk(const float *in, unsigned H, unsigned W, const vocr_tsd_lay
             for (k = 0; k < 8; k++) out[(size_t)(ox - x0) * C + c + k] = a[k] > 0.0f ? a[k] : 0.0f;
         }
 #endif
+        }
     }
 }
 
@@ -691,6 +914,76 @@ static void stem_chunk(const float (*R)[4 * CHUNK_MAX], unsigned n, const vocr_t
     unsigned co = 0, p;
 #if TSD_AVX2
     const __m256 z = _mm256_setzero_ps();
+#if TSD_AVX512
+    {   /* 32 channels a step (12 columns), then 16: the taps in the AVX2 kernels' order */
+        const __m512 zz = _mm512_setzero_ps();
+#define SZ(r, kx) _mm512_set1_ps(rk[4 * (r) + (kx)])
+#define SZ2(kx)                                                                                    \
+    do {                                                                                           \
+        const __m512 w0 = _mm512_loadu_ps(wk + (kx) * C), w1 = _mm512_loadu_ps(wk + (kx) * C + 16); \
+        __m512 v;                                                                                  \
+        v = SZ(0, kx); c00 = _mm512_fmadd_ps(v, w0, c00); c01 = _mm512_fmadd_ps(v, w1, c01);       \
+        v = SZ(1, kx); c10 = _mm512_fmadd_ps(v, w0, c10); c11 = _mm512_fmadd_ps(v, w1, c11);       \
+        v = SZ(2, kx); c20 = _mm512_fmadd_ps(v, w0, c20); c21 = _mm512_fmadd_ps(v, w1, c21);       \
+        v = SZ(3, kx); c30 = _mm512_fmadd_ps(v, w0, c30); c31 = _mm512_fmadd_ps(v, w1, c31);       \
+        v = SZ(4, kx); c40 = _mm512_fmadd_ps(v, w0, c40); c41 = _mm512_fmadd_ps(v, w1, c41);       \
+        v = SZ(5, kx); c50 = _mm512_fmadd_ps(v, w0, c50); c51 = _mm512_fmadd_ps(v, w1, c51);       \
+        v = SZ(6, kx); c60 = _mm512_fmadd_ps(v, w0, c60); c61 = _mm512_fmadd_ps(v, w1, c61);       \
+        v = SZ(7, kx); c70 = _mm512_fmadd_ps(v, w0, c70); c71 = _mm512_fmadd_ps(v, w1, c71);       \
+        v = SZ(8, kx); c80 = _mm512_fmadd_ps(v, w0, c80); c81 = _mm512_fmadd_ps(v, w1, c81);       \
+        v = SZ(9, kx); c90 = _mm512_fmadd_ps(v, w0, c90); c91 = _mm512_fmadd_ps(v, w1, c91);       \
+        v = SZ(10, kx); ca0 = _mm512_fmadd_ps(v, w0, ca0); ca1 = _mm512_fmadd_ps(v, w1, ca1);      \
+        v = SZ(11, kx); cb0 = _mm512_fmadd_ps(v, w0, cb0); cb1 = _mm512_fmadd_ps(v, w1, cb1);      \
+    } while (0)
+#define SST(r, a0, a1)                                                                    \
+    do {                                                                                  \
+        _mm512_storeu_ps(out + (size_t)(p + (r)) * C + co, _mm512_max_ps(a0, zz));        \
+        _mm512_storeu_ps(out + (size_t)(p + (r)) * C + co + 16, _mm512_max_ps(a1, zz));   \
+    } while (0)
+        for (; co + 32 <= C; co += 32) {
+            const __m512 b0 = _mm512_loadu_ps(b + co), b1 = _mm512_loadu_ps(b + co + 16);
+            for (p = 0; p + 12 <= n; p += 12) {
+                __m512 c00 = b0, c01 = b1, c10 = b0, c11 = b1, c20 = b0, c21 = b1, c30 = b0, c31 = b1;
+                __m512 c40 = b0, c41 = b1, c50 = b0, c51 = b1, c60 = b0, c61 = b1, c70 = b0, c71 = b1;
+                __m512 c80 = b0, c81 = b1, c90 = b0, c91 = b1, ca0 = b0, ca1 = b1, cb0 = b0, cb1 = b1;
+                unsigned ky;
+                for (ky = 0; ky < 4; ky++) {
+                    const float *rk = R[ky] + 4 * p, *wk = w + (size_t)(4 * ky) * C + co;
+                    SZ2(0);
+                    SZ2(1);
+                    SZ2(2);
+                    SZ2(3);
+                }
+                SST(0, c00, c01);
+                SST(1, c10, c11);
+                SST(2, c20, c21);
+                SST(3, c30, c31);
+                SST(4, c40, c41);
+                SST(5, c50, c51);
+                SST(6, c60, c61);
+                SST(7, c70, c71);
+                SST(8, c80, c81);
+                SST(9, c90, c91);
+                SST(10, ca0, ca1);
+                SST(11, cb0, cb1);
+            }
+            for (; p < n; p++) {
+                __m512 a0 = b0, a1 = b1;
+                unsigned ci;
+                for (ci = 0; ci < 16; ci++) {
+                    const __m512 v = _mm512_set1_ps(R[ci >> 2][4 * p + (ci & 3)]);
+                    a0 = _mm512_fmadd_ps(v, _mm512_loadu_ps(w + (size_t)ci * C + co), a0);
+                    a1 = _mm512_fmadd_ps(v, _mm512_loadu_ps(w + (size_t)ci * C + co + 16), a1);
+                }
+                _mm512_storeu_ps(out + (size_t)p * C + co, _mm512_max_ps(a0, zz));
+                _mm512_storeu_ps(out + (size_t)p * C + co + 16, _mm512_max_ps(a1, zz));
+            }
+        }
+#undef SST
+#undef SZ2
+#undef SZ
+    }
+#endif
     /* the taps in ci = 4 ky + kx order: ky outermost (a source row pointer), kx unrolled (constant offsets) */
 #define ST6(kx)                                                                       \
     do {                                                                              \

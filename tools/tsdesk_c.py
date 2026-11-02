@@ -82,7 +82,8 @@ class COpts(C.Structure):
                 ("vote_pct", C.c_int)]
 
 
-NO_C_POST = ("ext_band_pct", "touch_pct", "vflip_pct", "vflip_join_pct")   # tools/tsdesk post options, no C twin
+NO_C_POST = ("ext_band_pct", "touch_pct", "vflip_pct", "vflip_join_pct", "vflip_min",
+             "vflip_h_pct")                                               # tools/tsdesk post options, no C twin
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
 DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts'
 

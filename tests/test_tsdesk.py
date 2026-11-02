@@ -622,3 +622,10 @@ def test_vflip_turns_a_gappy_column_into_rows():
     col = [_box(19, 9, 39, 150, vertical=1)]
     assert T.post_pre(t, col, {"vflip_pct": 30}) == col
     assert T.post_pre(g, cols, {}) == cols
+    two = [_box(19, 19, 39, 19 + 30 + 20, vertical=1)]                      # two bands only: left alone (vflip_min 3)
+    assert T.post_pre(g, two, {"vflip_pct": 30}) == two
+    thin = np.full((240, 60), 20, np.uint8)                                # bands 4 px tall in a 20 px box: no glyphs
+    for row in range(5):
+        thin[20 + 12 * row:24 + 12 * row, 20:38] = 230
+    tb = [_box(19, 19, 39, 19 + 12 * 4 + 6, vertical=1)]
+    assert T.post_pre(thin, tb, {"vflip_pct": 30}) == tb

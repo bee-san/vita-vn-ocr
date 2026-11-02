@@ -502,7 +502,8 @@ def _clamp_ends(boxes, kern, w, h):
 
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
                  "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
-                 "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100}
+                 "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100,
+                 "vflip_min": 3, "vflip_h_pct": 50}
 POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
@@ -633,11 +634,12 @@ def merge_touching(boxes, pct):
     return out
 
 
-def vflip(g, boxes, gap_pct, join_pct=100):
-    """vflip_pct: a vertical box whose ink is a stack of glyph bands (runs of ink rows, each at least max(2, 15 % of the
-    box's width) tall) with a median gap between them of at least gap_pct % of their median height is a stack of
-    horizontal items, not a column of vertical text (whose glyphs nearly touch): a kana grid, a menu, a list of short
-    labels. It becomes one horizontal box per band (the band's rows, its ink columns); then the pieces of the frame's
+def vflip(g, boxes, gap_pct, join_pct=100, min_bands=3, h_pct=50):
+    """vflip_pct: a vertical box whose ink is a stack of at least min_bands glyph bands (runs of ink rows, each at
+    least max(2, 15 % of the box's width) tall), their median height at least h_pct % of the box's width, with a
+    median gap between them of at least gap_pct % of their median height, is a stack of horizontal items, not a
+    column of vertical text (whose glyphs nearly touch): a kana grid, a menu, a list of short labels. It becomes one
+    horizontal box per band (the band's rows, its ink columns); then the pieces of the frame's
     converted boxes that sit in one row (vertical overlap at least half the smaller height) within a gap of
     join_pct % of the larger height join, pairs in order until none does (the larger piece's fields)."""
     import dataclasses
@@ -664,12 +666,13 @@ def vflip(g, boxes, gap_pct, join_pct=100):
                 y += 1
             if y - y0 >= max(2, _r100(w, 15)):
                 bands.append((y0, y))
-        if len(bands) < 2:
+        if len(bands) < max(2, min_bands):
             out.append(b)
             continue
         hs = sorted(e - a for a, e in bands)
         gaps = sorted(bands[i + 1][0] - bands[i][1] for i in range(len(bands) - 1))
-        if gaps[(len(gaps) - 1) // 2] * 100 < gap_pct * hs[(len(hs) - 1) // 2]:
+        hm = hs[(len(hs) - 1) // 2]
+        if gaps[(len(gaps) - 1) // 2] * 100 < gap_pct * hm or hm * 100 < h_pct * w:
             out.append(b)
             continue
         for a, e in bands:
@@ -955,7 +958,7 @@ def post_pre(g, boxes, opts):
     o = post_options(opts)
     out = list(boxes)
     if o["vflip_pct"]:
-        out = vflip(g, out, o["vflip_pct"], o["vflip_join_pct"])
+        out = vflip(g, out, o["vflip_pct"], o["vflip_join_pct"], o["vflip_min"], o["vflip_h_pct"])
     if o["merge_pct"]:
         out = merge_overlaps(out, o["merge_pct"])
     if o["touch_pct"]:

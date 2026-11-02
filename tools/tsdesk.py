@@ -427,7 +427,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
     the first max_boxes kept. Off by default: vote_pct > 0, each component split across where its cells' edge votes
-    are bimodal (vote_split(), vote_depth levels: 2, the C twin's; deeper, no C twin yet). No C twin yet:
+    are bimodal (vote_split(), vote_depth levels, 2 by default; C twins of both). No C twin yet:
     along_pct > 0, each component (after the vote split) split along where its cells' end and start votes part
     (along_split(), along_depth levels: two items of a row whose kernels touched);
     saddle_pct > 0, each component split along at the K saddles saddle_split() finds, the parts' ends at a split at

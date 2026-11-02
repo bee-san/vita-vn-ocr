@@ -5,6 +5,7 @@ tools/tsdesk.decode, the C detector against the ONNX path and against its own pi
 integer resize, the padding), and the page pipeline against the Python pipeline with the C recognizer. No private
 data: random networks, synthetic maps and generated frames only; the C library is built in a temporary directory (the
 tests skip without a C compiler)."""
+import dataclasses
 import os
 import shutil
 import struct
@@ -1200,6 +1201,40 @@ def _items_frame(rng, H, W):
             box[0] = max(0.0, x0 - 1.5 * sz)
         rows.append((box, chars))
     return g, rows
+
+
+def test_c_vote_depth_equals_python(nets, libs):
+    """vocr_tsd_decode_ex's vote split at vote_depth 1 to 5 gives tools/tsdesk.decode's boxes bit for bit: a five-line
+    kernel (depth 4 separates it, depth 2 does not) and random maps; vote_depth 2 is the plain C6 split."""
+    rng = np.random.default_rng(61)
+    s, hm, wm = 8, 20, 40
+    m = np.zeros((10, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for k in range(5):
+        y0 = 16.0 + 24.0 * k
+        for r in range(2 + 3 * k, 5 + 3 * k):
+            for q in range(5, 31):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y0 + 22.0 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - 40.0, 248.0 - cs[q]
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for depth in (1, 2, 3, 4, 5):
+            ref = T.decode(m, wm * s, hm * s, s, vote_pct=70, vote_depth=depth)
+            got = cm.decode(m, wm * s, hm * s, vote_pct=70, vote_depth=depth)
+            assert [dataclasses.astuple(b) for b in got] == [dataclasses.astuple(b) for b in ref], depth
+        assert len(T.decode(m, wm * s, hm * s, s, vote_pct=70, vote_depth=4)) == 5
+        for _ in range(60):
+            mh, mw = int(rng.integers(2, 40)), int(rng.integers(2, 60))
+            mp = rng.normal(0, 1.5, (10, mh, mw)).astype(np.float32)
+            mp[0] += 0.8
+            mp[2:6] = np.abs(mp[2:6]) * rng.uniform(1, 30)
+            for depth, pct in ((3, 30), (4, 70), (6, 50)):
+                ref = T.decode(mp, mw * 8, mh * 8, 8, vote_pct=pct, vote_depth=depth)
+                got = cm.decode(mp, mw * 8, mh * 8, vote_pct=pct, vote_depth=depth)
+                assert [dataclasses.astuple(b) for b in got] == [dataclasses.astuple(b) for b in ref]
 
 
 def test_c_cut_reading_equals_python(nets, libs):

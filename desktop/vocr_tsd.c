@@ -238,6 +238,7 @@ void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o)
     o->min_across = m->min_across;
     o->along_reach = m->along_reach;
     o->vote_pct = 0;
+    o->vote_depth = 2;
 }
 
 size_t vocr_tsd_model_bytes(void)
@@ -1783,7 +1784,7 @@ static void sort_boxes(const vocr_tsd_box *c, int *idx, int *tmp, unsigned n)
  * at or past cap. Every sum adds the cells in raster order, one term at a time (the Python's np.add.accumulate and
  * np.bincount), a mean before or after a split point the per-index sums in index order. */
 static void vote_split(const float *maps, unsigned mw, unsigned ch, unsigned hm, unsigned wm, unsigned s, int pct,
-                       int *lab, int *n_, int cap, int *bb, int *stack, double *sn, double *sf, double *kn,
+                       int depth, int *lab, int *n_, int cap, int *bb, int *stack, double *sn, double *sf, double *kn,
                        int *present)
 {
     const double half = (double)(s - 1) / 2.0;
@@ -1806,7 +1807,7 @@ static void vote_split(const float *maps, unsigned mw, unsigned ch, unsigned hm,
         }
     for (k = 1; k < n; k++) {      /* popped from the top: label n - 1 first, as tools/tsdesk's list.pop() */
         stack[2 * top] = k;
-        stack[2 * top + 1] = 2;
+        stack[2 * top + 1] = depth;
         top++;
     }
     while (top > 0) {
@@ -1919,7 +1920,7 @@ int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigne
     hm = (ih + s - 1) / s;
     wm = (iw + s - 1) / s;
     if (hm > mh || wm > mw) return VOCR_TSD_E_ARG;
-    if (o->vote_pct < 0) return VOCR_TSD_E_ARG;
+    if (o->vote_pct < 0 || o->vote_depth < 0) return VOCR_TSD_E_ARG;
     if (bytes < vocr_tsd_decode_bytes_ex(mw, mh, T, o)) return VOCR_TSD_E_ARENA;
     out->count = out->truncated = 0;
     out->in_w = iw;
@@ -1985,7 +1986,8 @@ int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigne
         const size_t side = (mw > mh ? mw : mh) + 1u;
         double *vsn = (double *)(void *)vb, *vsf = vsn + side, *vkn = vsf + side;
         int *bb = (int *)(void *)(vkn + side), *stack = bb + 5 * nl, *present = stack + 4 * nl;
-        vote_split(maps, mw, ch, hm, wm, s, o->vote_pct, lab, &n, (int)nl, bb, stack, vsn, vsf, vkn, present);
+        vote_split(maps, mw, ch, hm, wm, s, o->vote_pct, o->vote_depth ? o->vote_depth : 2, lab, &n, (int)nl, bb,
+                   stack, vsn, vsf, vkn, present);
     }
     for (k = 0; k < (unsigned)n; k++) {
         cnt[k] = sk[k] = so[k] = sn[k] = sf[k] = ss[k] = se[k] = n1[k] = n2[k] = 0.0;

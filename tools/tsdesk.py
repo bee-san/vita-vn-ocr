@@ -39,8 +39,8 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
-DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0}    # decode options without a C twin yet (helper textspot-desktop-
-#                                                     boxes), 0 = off
+DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0}    # decode options without a C twin yet
+#                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
 def _session(path, threads=1, providers=None, options=None):
@@ -295,15 +295,37 @@ def vote_split(maps, lab, n, stats, pct, s, depth=2):
     return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
 
 
+def rescue_components(k, lab, n, stats, t_low):
+    """The decode's rescue option: the 4-connected components of K > -t_low that hold no cell of K > 0 (a line the
+    network saw too weakly: no kernel cell, nothing found there) added with new labels. (n, lab, stats, first new
+    label)."""
+    import cv2
+    m, lab2, st2, _ = cv2.connectedComponentsWithStats((k > -t_low).astype(np.uint8), connectivity=4)
+    if m <= 1:
+        return n, lab, stats, n
+    has_pos = np.bincount(lab2.ravel(), weights=(k > 0).ravel().astype(np.float64), minlength=m) > 0
+    new = [c for c in range(1, m) if not has_pos[c]]
+    if not new:
+        return n, lab, stats, n
+    lab = lab.copy()
+    rows = [stats]
+    for i, c in enumerate(new):
+        lab[lab2 == c] = n + i
+        rows.append(st2[c:c + 1].astype(stats.dtype))
+    return n + len(new), lab, np.concatenate(rows, 0), n
+
+
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
     the first max_boxes kept. Off by default, no C twin yet: vote_pct > 0, each component split across where its
     cells' edge votes are bimodal (vote_split()); saddle_pct > 0, each component split along at the K saddles
-    saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there)."""
+    saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there);
+    rescue_milli > 0, the components of K > -rescue_milli / 1000 with no K > 0 cell decoded too (rescue_components();
+    their mean logit is negative, so conf_min_logit does not apply to them)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -312,6 +334,8 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if n <= 1:
         return []
     cut = None
+    if rescue_milli:
+        n, lab, stats, _ = rescue_components(k, lab, n, stats, rescue_milli / 1000.0)
     if vote_pct:
         n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s)
     if saddle_pct:
@@ -326,6 +350,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
 
     cnt = np.bincount(L, minlength=n).astype(np.float64)
     cnt[0] = 1.0
+    pos = np.bincount(L, (m_of(0) > 0).astype(np.float64), minlength=n) if rescue_milli else cnt
     logit = np.bincount(L, m_of(0), minlength=n) / cnt
     vert = np.bincount(L, m_of(1), minlength=n) / cnt > 0
     vL = vert[L]
@@ -347,7 +372,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     tsum = [np.bincount(L, m_of(6 + i), minlength=n) for i in range(tags)]
     out = []
     for c in range(1, n):
-        if stats[c, cv2.CC_STAT_AREA] < min_cells or logit[c] < conf_min_logit:
+        if stats[c, cv2.CC_STAT_AREA] < min_cells or (logit[c] < conf_min_logit and pos[c] > 0):
             continue
         size = float(far[c] - near[c])
         if size < min_across:
@@ -898,7 +923,8 @@ class Detector:
         x, (fx, fy, iw, ih) = self.preprocess(g)
         o = self.opts
         boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
-                       o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]))
+                       o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
+                       int(o["rescue_milli"]))
         H, W = g.shape
         out = []
         for b in boxes:

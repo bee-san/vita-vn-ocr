@@ -537,3 +537,15 @@ def test_decode_vote_split_two_touching_lines():
     assert all(b.x == pytest.approx(40.0) and b.x + b.w == pytest.approx(248.0) for b in two)
     m1 = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0]])                   # one line: its votes agree, no split
     assert len(T.decode(m1, 320, 160, 8, vote_pct=70)) == 1
+
+
+def test_decode_rescue_weak_lines():
+    m = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0], [37.0, 100.0, 221.0, 124.0]])
+    weak = m[0][12:16] > 0                                  # the second line's kernel rows: made weak (K -1)
+    m[0][12:16][weak] = -1.0
+    assert len(T.decode(m, 320, 160, 8)) == 1
+    two = sorted(T.decode(m, 320, 160, 8, rescue_milli=1500), key=lambda b: b.y)
+    assert len(two) == 2 and two[1].logit == pytest.approx(-1.0)
+    assert abs(two[1].y - 100.0) < 1e-9 and abs(two[1].x + two[1].w - 221.0) < 1e-9
+    assert len(T.decode(m, 320, 160, 8, rescue_milli=500)) == 1          # -1 is under -0.5
+    assert T.decode(m, 320, 160, 8, rescue_milli=1500)[0] == T.decode(m, 320, 160, 8)[0]   # the strong line as before

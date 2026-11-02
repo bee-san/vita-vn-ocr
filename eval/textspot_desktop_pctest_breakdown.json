@@ -1,0 +1,287 @@
+{
+ "kind": "textspot-desktop-pctest-breakdown",
+ "issue": 173,
+ "manifest_sha256": "20576c400b5e5fbb54cbacd019b735c3244d5f62d5fbfba15376fca5be2d46f1",
+ "flagged_vns": 27,
+ "widths": [
+  "<=800",
+  "801-1279",
+  "1280-1919",
+  ">=1920"
+ ],
+ "how": "CER = 100 x errors / reference characters over the units of each column; the units' counts are the stored reads' own (no detector run, no frame read)",
+ "pipelines": {
+  "this detector": {
+   "file": "pctest_cand_long960.json",
+   "file_sha256": "dfa29ef776ad488e269c8de2e3e5ad6eed41b7a7949cc246e40f81dd8b5efc6d",
+   "all": {
+    "cer": 2.936,
+    "errors": 463,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 3.387,
+    "errors": 431,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 4.977,
+    "errors": 207,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 0.672,
+    "errors": 10,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 1.748,
+    "errors": 72,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 2.898,
+    "errors": 174,
+    "chars": 6004,
+    "units": 186
+   },
+   "fit_960x544": {
+    "cer": 2.949,
+    "errors": 465,
+    "chars": 15770,
+    "units": 518,
+    "file": "pctest_l544_cand.json",
+    "file_sha256": "9d8f2c27c0a9c94eb0f09e6891a3b03d3c99564f9fc615270d7fffc15fe88012"
+   }
+  },
+  "textspot8": {
+   "file": "pctest_T8.json",
+   "file_sha256": "3a7943b6f428b4c8fcd23ba9c18fdbc238e4d0a3e71f23edb788ce32f76cbfa5",
+   "all": {
+    "cer": 3.881,
+    "errors": 612,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 4.495,
+    "errors": 572,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 5.434,
+    "errors": 226,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 1.008,
+    "errors": 15,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 2.525,
+    "errors": 104,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 4.447,
+    "errors": 267,
+    "chars": 6004,
+    "units": 186
+   },
+   "fit_960x544": {
+    "cer": 3.513,
+    "errors": 554,
+    "chars": 15770,
+    "units": 518,
+    "file": "pctest_l544_T8.json",
+    "file_sha256": "bf70dbc0ae53db229947496e6bf9ef77de04c3f36a77d5be96705dbbbfb6e2dc"
+   }
+  },
+  "R (MeikiOCR's detector + L)": {
+   "file": "pctest_R.json",
+   "file_sha256": "79a80c0d4b4194892528e0c98fa94e5997701d407ed73b46d1f9a6524b2417d6",
+   "all": {
+    "cer": 0.704,
+    "errors": 111,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 0.739,
+    "errors": 94,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 0.938,
+    "errors": 39,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 0.336,
+    "errors": 5,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 0.486,
+    "errors": 20,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 0.783,
+    "errors": 47,
+    "chars": 6004,
+    "units": 186
+   },
+   "fit_960x544": {
+    "cer": 0.767,
+    "errors": 121,
+    "chars": 15770,
+    "units": 518,
+    "file": "pctest_l544_R.json",
+    "file_sha256": "01afd196525411e272df8701b9df678b77447d91822f04e8ac8b98937335e7d7"
+   }
+  },
+  "exact boxes": {
+   "file": "pctest_exact.json",
+   "file_sha256": "45f2048c0020286f8ec555725741e45585245872e80d221d5f15ff0e24ab81cf",
+   "all": {
+    "cer": 1.122,
+    "errors": 177,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 1.328,
+    "errors": 169,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 2.885,
+    "errors": 120,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 0.336,
+    "errors": 5,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 0.534,
+    "errors": 22,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 0.5,
+    "errors": 30,
+    "chars": 6004,
+    "units": 186
+   }
+  },
+  "MeikiOCR 0.3.5 itself": {
+   "file": "pctest_meikiocr.json",
+   "file_sha256": "3714018d2942cc72c761fa008f19d775ba220fd2e3c6ef2aff41e5520be44756",
+   "all": {
+    "cer": 1.972,
+    "errors": 311,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 2.067,
+    "errors": 263,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 1.611,
+    "errors": 67,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 1.277,
+    "errors": 19,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 2.234,
+    "errors": 92,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 2.215,
+    "errors": 133,
+    "chars": 6004,
+    "units": 186
+   },
+   "fit_960x544": {
+    "cer": 2.651,
+    "errors": 418,
+    "chars": 15770,
+    "units": 518,
+    "file": "pctest_l544_meikiocr.json",
+    "file_sha256": "25ed58d0ba90803bff672fc712689b152c594e1104f70fb188808a3db32b3e39"
+   }
+  },
+  "mida + L": {
+   "file": "pctest_mida.json",
+   "file_sha256": "f291330f3602a68257f42d83b74137bd2ca6208f68a0798136a0bf644d152a03",
+   "all": {
+    "cer": 1.376,
+    "errors": 217,
+    "chars": 15770,
+    "units": 518
+   },
+   "without_flagged": {
+    "cer": 1.407,
+    "errors": 179,
+    "chars": 12726,
+    "units": 416
+   },
+   "<=800": {
+    "cer": 1.899,
+    "errors": 79,
+    "chars": 4159,
+    "units": 136
+   },
+   "801-1279": {
+    "cer": 0.739,
+    "errors": 11,
+    "chars": 1488,
+    "units": 37
+   },
+   "1280-1919": {
+    "cer": 1.044,
+    "errors": 43,
+    "chars": 4119,
+    "units": 159
+   },
+   ">=1920": {
+    "cer": 1.399,
+    "errors": 84,
+    "chars": 6004,
+    "units": 186
+   }
+  }
+ }
+}

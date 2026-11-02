@@ -510,6 +510,7 @@ def cmd_run(a):
 EDIT_ROW_OVERLAP = 0.5      # a box shares a verified line's row: vertical overlap >= this x the smaller height
 EDIT_RUBY_MIN_REL = 0.33    # ruby is about half its line's height: a ruby-like box under a third of it is other text
                             # (the star map's Latin labels above a line: 0.21-0.28; the furigana seen: 0.38-0.59)
+EDIT_CLIP = 0.3             # a box touching a positive above or below by at most this x its height is clipped there
 
 
 def edit_candidates(smp, rows, meiki):
@@ -519,9 +520,10 @@ def edit_candidates(smp, rows, meiki):
     ({"raw", "score", "box", "vertical"}). Left out: a box on a verified dialogue or name line's row (a page cursor or
     an icon far past the line's end: background, as the 'row' kind), a ruby-like box over a line (furigana the hook
     gives no ruby line for: desktop_det.ruby_like over that line, at least EDIT_RUBY_MIN_REL of its height; the
-    pools make ruby an ignore area, never a positive), a box that
-    overlaps a positive, and the lower-scored of two that overlap. The box is the pools' refined box, its weight the
-    pools' notdlg weight (synth/textspot6_pages.meiki_weight)."""
+    pools make ruby an ignore area, never a positive), a box that overlaps a positive (one that only touches a
+    positive above or below it, by at most EDIT_CLIP of its height, is clipped at the positive's edge instead), and
+    the lower-scored of two that overlap. The box is the pools' refined box, its weight the pools' notdlg weight
+    (synth/textspot6_pages.meiki_weight)."""
     import desktop_det as DD
     import textspot6_pages as TP
     by_raw = {tuple(m["raw"]): m for m in meiki}
@@ -546,9 +548,19 @@ def edit_candidates(smp, rows, meiki):
                                      0 in DD.ruby_like([[*b, 0], [*ln[:4], ln[4]]]) for ln in verified):
             why["ruby"] += 1
             continue
-        if any(ov(b, p) for p in pos):
+        clipped = False
+        for p in pos:
+            if not ov(b, p):
+                continue
+            iy = min(b[3], p[3]) - max(b[1], p[1])
+            if iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 < p[1]:
+                b[3], clipped = p[1], True              # the positive lies below: stop at its top
+            elif iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 > p[3]:
+                b[1], clipped = p[3], True              # above: start at its bottom
+        if any(ov(b, p) for p in pos) or b[3] - b[1] < (1 - EDIT_CLIP) * hb:
             why["overlap"] += 1
             continue
+        why["clipped"] += clipped
         if any(ov(b, a[:4]) for a in out):
             why["duplicate"] += 1
             continue
@@ -619,8 +631,10 @@ def cmd_edits(a):
                             "with unlabelled ink away from every labelled row)",
                     "add": "a notdlg positive: the pools' refined box and orientation, weight meiki_weight(score)",
                     "left_out": ["row: on a verified dialogue or name line's row", "ruby: desktop_det.ruby_like over "
-                                 "a verified line, at least ruby_min_rel of its height", "overlap: overlaps a positive",
-                                 "duplicate: overlaps a kept edit"],
+                                 "a verified line, at least ruby_min_rel of its height", "overlap: overlaps a positive "
+                                 "(clipped: kept, its edge moved to a positive it touched above or below by at most "
+                                 "clip of its height)", "duplicate: overlaps a kept edit"],
+                    "clip": EDIT_CLIP,
                     "row_overlap": EDIT_ROW_OVERLAP, "ruby_min_rel": EDIT_RUBY_MIN_REL,
                     "coords": "native page px; desk_hook maps them through its capture"},
            "rows_files": {str(p): sha256_file(p) for p in a.rows}, "targets": a.targets,

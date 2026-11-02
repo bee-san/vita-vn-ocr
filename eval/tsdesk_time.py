@@ -34,13 +34,31 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
         cnet:BLOB[@SIZE]           the C network alone (vocr_tsd_maps_mt) on the frame's padded network input
                                    (built outside the timing)
         onet:MODEL[@SIZE]          ONNX Runtime's session.run alone on the same input
-      Items counted: boxes (detectors), horizontal lines read (pages), maps (networks).
+        cbox:BLOB[@SIZE][+refine]  the C detector as an app calls it: tools/tsdesk_c.CModel.detect (its Box list built)
+        meikidet                   MeikiOCR 0.3.5's detector as eval/desktop.py's `meiki` detector runs it (MeikiDet)
+        rpage                      vocr-desktop's R page: eval/desktop_time.py's Pipeline("meiki+L", N, "par")
+      Items counted: boxes (detectors), horizontal lines read (pages), maps (networks). A "#dK" suffix on an opage,
+      rpage or meikidet spec runs its detector at K intra-op threads within the pipeline's N (the 4-thread budget of
+      eval/desktop_protocol.json amendments[0]). --pad is the pages' reading rule (tools/tsdesk_c.rule_of: auto, kN,
+      kAvB, kAvBfC, hXvY or N px).
       --random N adds N seeded random frames (smoothed noise) per size 960 x 544 and 1920 x 1080 (views rand544,
       rand1080). A C pipeline spec may end in ^NAME to run on the library --libs NAME=LIB.so[,...] names (e.g. a plain-C
       build beside the AVX2 one); else --lib
   tsdesk_time.py mem --pages PAGES.json --pipelines P,... --threads N --out M.json [--limit 60] [--view vita]
       peak resident memory (VmHWM): each pipeline in a fresh process that loads the frames of a view one at a time
       from disk and runs the pipeline on each: after the imports and one frame, after the models load, at the end
+  tsdesk_time.py goal --pages PAGES.pkl --cand NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]] [--cand ...] --lib LIB.so
+                      --out T.json [--policy long:960] [--rule k6v4] [--budget 1,2,4] [--onnx-resize exact]
+                      [--passes 3] [--warmup 1] [--mem-views vita,pc1080] [--mem-limit 60]
+      round 2's goal timing (eval/textspot_desktop_protocol_v2.json G2 and G3; the TIMING record eval/tsdesk_goal.py
+      reads), every pipeline interleaved per page in one run: MeikiOCR's detector at 1 thread (meikidet), R's page at
+      the 4-thread budget (rpage#d1, #d2, #d4: per view the fastest), and per candidate its C detector + refinement at
+      1 thread (cbox), its C page at 4 threads (cpage, VOCR6.2_L_w8_2l.vocr) and its ONNX page at 4 threads (opage,
+      VOCR6.2_L_fast.onnx, its detector at the same budget). Writes det_1t.{cand,meiki}.{vita,psp,pc1080,vita1080},
+      page_4t.{cand,R}.{vita,psp,pc,vita1080} (p50 ms; *_p95 beside them), interleaved, the host, the loads before
+      and after, the C build, the variants chosen and both page paths (page_4t.cand is the faster path by its worst
+      view's fraction of R's time), then the peak RSS of each pipeline in a fresh process on --mem-views. One
+      candidate: T.json is its TIMING record; several: T.NAME.json each, and T.json the whole run
   tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1] [--refine]
       the C network's per-step time on the view's frames from a -DVOCR_TSD_PROF build of vocr_tsd_bench (the frames
       written to a private scratch file and deleted)
@@ -207,7 +225,7 @@ def split_spec(spec):
     if refine:
         rest = rest[:-len("+refine")]
     path, _, size = rest.partition("@")
-    if kind not in ("cdet", "cpage", "odet", "opage", "cnet", "onet") or not path:
+    if kind not in ("cdet", "cbox", "cpage", "odet", "opage", "cnet", "onet") or not path:
         raise ValueError(f"unknown pipeline {spec!r}")
     return kind, path, size or None, rec, refine
 
@@ -237,11 +255,25 @@ class Pipeline:
         base, _, libname = spec.partition("^")
         if libname:
             lib = (libs or {})[libname]
-        self.kind, path, self.size, rec, refine = split_spec(base)
-        self.refine = True if refine else None
+        base, _, dt = base.partition("#d")
+        det_threads = int(dt) if dt else self.threads
+        if det_threads > self.threads:
+            raise ValueError(f"{spec}: the detector's threads are within the pipeline's budget ({self.threads})")
         self.pad = pad
         self.inputs = {}
-        if self.kind in ("cdet", "cnet"):
+        if base == "meikidet":             # MeikiOCR 0.3.5's detector as eval/desktop.py's `meiki` runs it
+            self.kind, self.det = "meikidet", D.detector("meiki", det_threads)
+            return
+        if base == "rpage":                # vocr-desktop's R page: eval/desktop_time.py's meiki+L, mode par
+            import desktop_time as DT
+            self.kind = "rpage"
+            self.rp = DT.Pipeline(f"meiki+L#d{det_threads}", self.threads, "par", onnx_dir)
+            return
+        self.kind, path, self.size, rec, refine = split_spec(base)
+        if dt and self.kind != "opage":
+            raise ValueError(f"{spec}: #dK is for opage, rpage and meikidet specs")
+        self.refine = True if refine else None
+        if self.kind in ("cdet", "cnet", "cbox"):
             self.m = TC.CModel(path, threads=self.threads, lib=lib)
             self.policy = TC.policy_of(self.size, self.m.default_policy)
         elif self.kind == "cpage":
@@ -252,14 +284,14 @@ class Pipeline:
             import vocr_onnx as V
             self.T, self.V = T, V
             osize, omode = size_mode(self.size)
-            self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
+            self.det = T.Detector(path, session_options=D.session_options(det_threads, spinning=spinning),
                                   size=osize, refine=self.refine, resize_mode=omode)
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",
                                         session_options=D.session_options(1))
                 self.pool = ThreadPoolExecutor(max_workers=self.threads) if self.threads > 1 else None
-                self.kh, self.kv, self.kpx = TC.pad_rule(pad)
+                self.rule = TC.rule_of(pad)
 
     def prepare(self, i, rgb):
         """The network input of frame i (cnet / onet), built once outside the timing."""
@@ -305,16 +337,13 @@ class Pipeline:
         g = self.T.grey_of(rgb)
         H, W = g.shape
         boxes = self.det.detect(g)
-        if self.kpx:
-            ph, pv = self.kh, self.kv
-        else:
-            ph, pv = (max(2, int(round(k * H / 544))) for k in (self.kh, self.kv))
         order = self.T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
         jobs = []
         for i in order:
             b = boxes[i]
             if b.vertical:
                 continue
+            ph, pv = self.TC.rule_hv(self.rule, (b.x, b.y, b.x + b.w, b.y + b.h), H)
             cb = crop_hv((b.x, b.y, b.w, b.h), ph, pv, W, H)
             if cb:
                 jobs.append((g, cb))
@@ -327,8 +356,14 @@ class Pipeline:
         docstring)."""
         if self.kind == "cdet":
             return self._cdet(rgb)
+        if self.kind == "cbox":
+            return len(self.m.detect(rgb, self.size, self.refine))
         if self.kind == "cpage":
             return sum(1 for ln in self.page.page(rgb) if not ln.vertical)
+        if self.kind == "meikidet":
+            return len(self.det.boxes(rgb))
+        if self.kind == "rpage":
+            return len(self.rp(rgb))
         if self.kind == "odet":
             return len(self.det.detect(rgb))
         if self.kind == "cnet":
@@ -337,6 +372,49 @@ class Pipeline:
             self.det.maps(self.inputs[i])
             return 1
         return len(self._opage(rgb))
+
+
+def interleave(n_pages, names, call, passes=3, warmup=1, seed=20261101, clock=time.perf_counter, log=None):
+    """Run call(name, i) for every pipeline name on every page i = 0 .. n_pages - 1, interleaved per page (round
+    robin): each pass (the warm-up passes first) visits the pages in a shuffled order and runs every pipeline on a page,
+    in a shuffled order, before it moves to the next page, so a load spike on the shared host meets every pipeline
+    alike. The shuffles come from random.Random(seed), the pages' order once per pass, then the pipelines' once per
+    page. Returns ({name: {i: [ms of each recorded pass]}}, {name: {i: the items of its last call}}, the schedule
+    [(pass, i, name)])."""
+    rng = random.Random(seed)
+    names = list(names)
+    times = {n: defaultdict(list) for n in names}
+    items = {n: {} for n in names}
+    sched = []
+    order = list(range(n_pages))
+    for p in range(warmup + passes):
+        rng.shuffle(order)
+        for i in order:
+            rng.shuffle(names)
+            for n in names:
+                ts = clock()
+                k = call(n, i)
+                ms = (clock() - ts) * 1e3
+                sched.append((p, i, n))
+                if p >= warmup:
+                    times[n][i].append(ms)
+                    items[n][i] = k
+        if log is not None:
+            log(p)
+    return times, items, sched
+
+
+def view_stats(times, items, views):
+    """{view: pstats of the pages' times + items_mean} of one pipeline: a page's time is the median of its passes.
+    views: each page's view, by index."""
+    per_page = {i: float(np.median(v)) for i, v in times.items()}
+    out = {}
+    for view in sorted(set(views)):
+        idx = [i for i, v in enumerate(views) if v == view and i in per_page]
+        if idx:
+            out[view] = pstats([per_page[i] for i in idx])
+            out[view]["items_mean"] = round(float(np.mean([items[i] for i in idx])), 2)
+    return out
 
 
 def cmd_run(a):
@@ -359,37 +437,20 @@ def cmd_run(a):
     res["libs"] = libs
     res["builds"] = {k: json.loads((Path(v).parent / "build.json").read_text()) for k, v in libs.items()
                      if (Path(v).parent / "build.json").exists()}
+    views = [p["view"] for p in pages]
     for threads in [int(t) for t in a.threads.split(",")]:
         pipes = {f"{s}|t{threads}": Pipeline(s, threads, a.pad, a.lib, a.onnx_dir, libs=libs) for s in specs}
         for pp in pipes.values():
             for i, rgb in enumerate(rgbs):
                 pp.prepare(i, rgb)
-        rng = random.Random(a.seed + threads)
-        names = list(pipes)
-        times = {n: defaultdict(list) for n in names}
-        counts = {n: {} for n in names}
-        order = list(range(len(pages)))
         t0 = time.time()
-        for p in range(a.warmup + a.passes):
-            rng.shuffle(order)
-            for i in order:                     # interleaved per page: a load spike meets every pipeline alike
-                rng.shuffle(names)
-                for n in names:
-                    ts = time.perf_counter()
-                    k = pipes[n](rgbs[i], i)
-                    ms = (time.perf_counter() - ts) * 1e3
-                    if p >= a.warmup:
-                        times[n][i].append(ms)
-                        counts[n][i] = k
-            print(f"threads {threads} pass {p + 1}/{a.warmup + a.passes} {time.time() - t0:.0f} s "
-                  f"load {os.getloadavg()[0]:.1f}", flush=True)
+        n_all = a.warmup + a.passes
+        times, counts, _ = interleave(
+            len(pages), list(pipes), lambda n, i, P=pipes: P[n](rgbs[i], i), a.passes, a.warmup, a.seed + threads,
+            log=lambda p: print(f"threads {threads} pass {p + 1}/{n_all} {time.time() - t0:.0f} s "
+                                f"load {os.getloadavg()[0]:.1f}", flush=True))
         for n in pipes:
-            per_page = {i: float(np.median(v)) for i, v in times[n].items()}
-            r = {}
-            for view in sorted({pg["view"] for pg in pages}):
-                idx = [i for i, pg in enumerate(pages) if pg["view"] == view]
-                r[view] = pstats([per_page[i] for i in idx])
-                r[view]["items_mean"] = round(float(np.mean([counts[n][i] for i in idx])), 2)
+            r = view_stats(times[n], counts[n], views)
             res["results"][n] = r
             print(n, json.dumps({k: (v["p50"], v["p95"]) for k, v in r.items()}), flush=True)
         del pipes
@@ -424,42 +485,51 @@ print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "f
 """
 
 
-def cmd_mem(a):
-    res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
-           "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
-           "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
+MEM_SCRATCH = D.PV / "textspot-desktop-c" / "scratch"
+
+
+def peak_rss(pages, jobs, lib=None, scratch=MEM_SCRATCH, log=print):
+    """{key: VmHWM record} of each job (key, spec, threads, pad) run in a fresh process (MEM_CHILD) on the pages'
+    frames, one frame in memory at a time: the frames are written one per .npy file to a private scratch directory
+    (deleted at the end) and read back one at a time."""
+    import shutil
     paths = [str(ROOT / "tools"), str(ROOT / "eval"), str(ROOT / "synth"), str(ROOT / "train"), str(ROOT / "teacher"),
              str(ROOT / "runtime"), str(ROOT)]
-    _, pages = load_pages(a.pages)
-    sel = [p for p in pages if p["view"] == a.view][:a.limit]
-    if not sel:
-        raise SystemExit(f"no {a.view} pages in {a.pages}")
-    import shutil
-
-    import numpy as np
-    scratch = D.PV / "textspot-desktop-c" / "scratch"
-    scratch.mkdir(parents=True, exist_ok=True)
-    # the view's frames one per file in a private scratch directory (deleted below): a child reads one at a time
+    Path(scratch).mkdir(parents=True, exist_ok=True)
     tmpdir = tempfile.mkdtemp(dir=scratch)
     files = []
-    for i, p in enumerate(sel):
-        files.append(str(Path(tmpdir) / f"{i:04d}.npy"))
-        np.save(files[-1], np.ascontiguousarray(load_rgb(p)))
+    out = {}
     try:
-        for spec in a.pipelines.split(","):
-            code = MEM_CHILD.format(paths=paths, frames=files, spec=spec, threads=int(a.threads), pad=a.pad,
-                                    lib=a.lib)
+        for i, p in enumerate(pages):
+            files.append(str(Path(tmpdir) / f"{i:04d}.npy"))
+            np.save(files[-1], np.ascontiguousarray(load_rgb(p)))
+        for key, spec, threads, pad in jobs:
+            code = MEM_CHILD.format(paths=paths, frames=files, spec=spec, threads=int(threads), pad=pad, lib=lib)
             r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
-                               env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
+                               env=dict(os.environ, OMP_NUM_THREADS=str(threads)))
             if r.returncode:
                 raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
             rec = json.loads(r.stdout.strip().splitlines()[-1])
             rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
-                       peak_mib=round(rec["peak_kib"] / 1024, 1))
-            res["results"][spec] = rec
-            print(spec, json.dumps(rec), flush=True)
+                       peak_mib=round(rec["peak_kib"] / 1024, 1), spec=spec, threads=int(threads), pad=pad)
+            out[key] = rec
+            if log:
+                log(key, json.dumps(rec))
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
+    return out
+
+
+def cmd_mem(a):
+    res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
+           "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
+           "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
+    _, pages = load_pages(a.pages)
+    sel = [p for p in pages if p["view"] == a.view][:a.limit]
+    if not sel:
+        raise SystemExit(f"no {a.view} pages in {a.pages}")
+    jobs = [(spec, spec, int(a.threads), a.pad) for spec in a.pipelines.split(",")]
+    res["results"] = peak_rss(sel, jobs, a.lib, a.scratch or MEM_SCRATCH, log=lambda k, s: print(k, s, flush=True))
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 
@@ -534,6 +604,229 @@ def cmd_summary(a):
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({"rows": len(rows), "mem": len(out["mem"]), "prof": len(out["prof"]),
                       "bytes": Path(a.out).stat().st_size}), flush=True)
+
+
+# ----------------------------------------------------------------------------- the round-2 goal timing
+
+GOAL_SCHEMA = "textspot-desktop-goal-timing/1"
+DET_VIEWS = ("vita", "psp", "pc1080", "vita1080")            # det_1t's keys: the timing pages' views
+PAGE_VIEWS = {"vita": "vita", "psp": "psp", "pc": "pc1080", "vita1080": "vita1080"}   # page_4t's keys -> views
+GOAL_PAGE_KEYS = ("vita", "psp", "pc")                       # the views G3 holds the page to (eval/tsdesk_goal)
+BUDGET = (1, 2, 4)                                           # the detectors' intra-op threads in the 4-thread budget
+
+
+def parse_cand(spec, policy, rule):
+    """{name, blob, onnx, policy, rule} of --cand NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]]."""
+    name, eq, rest = spec.partition("=")
+    parts = rest.split(",")
+    if not eq or not name or len(parts) < 2 or len(parts) > 4 or not all(parts[:2]):
+        raise ValueError(f"--cand {spec!r}: NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]]")
+    if not all(c.isalnum() or c in "-_." for c in name):
+        raise ValueError(f"--cand {spec!r}: a name of letters, digits, '-', '_' and '.'")
+    return {"name": name, "blob": parts[0], "onnx": parts[1],
+            "policy": parts[2] if len(parts) > 2 and parts[2] else policy,
+            "rule": parts[3] if len(parts) > 3 and parts[3] else rule}
+
+
+def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4):
+    """[(key, spec, threads, pad)] of one goal run: MeikiOCR's detector at 1 thread and R's page at each budget
+    variant (shared), and per candidate its C detector + refinement at 1 thread, its C page and its ONNX page at
+    `threads` (the ONNX page's detector at each budget variant)."""
+    out = [("det1:meiki", "meikidet", 1, "auto")]
+    out += [(f"page4:R#d{k}", f"rpage#d{k}", threads, "auto") for k in budget]
+    for c in cands:
+        n, pol, rule = c["name"], c["policy"], c["rule"]
+        out.append((f"det1:cand:{n}", f"cbox:{c['blob']}@{pol}+refine", 1, rule))
+        out.append((f"page4:c:{n}", f"cpage:{c['blob']}@{pol}+refine+c:L", threads, rule))
+        out += [(f"page4:onnx:{n}#d{k}", f"opage:{c['onnx']}@{pol}@{onnx_resize}+refine+L#d{k}", threads, rule)
+                for k in budget]
+    return out
+
+
+def _fastest(stats, keys, view):
+    """(key, its stats) of the key with the lowest p50 on the view (the first such key on a tie)."""
+    have = [(stats[k][view]["p50"], i, k) for i, k in enumerate(keys) if view in stats.get(k, {})]
+    if not have:
+        return None, None
+    _, _, k = min(have)
+    return k, stats[k][view]
+
+
+def goal_block(stats, name, budget=BUDGET):
+    """The TIMING record eval/tsdesk_goal.py reads for candidate `name` from one interleaved run's stats ({key:
+    {view: pstats}}): det_1t / page_4t p50s (and their p95s), the R and ONNX budget variants chosen per view, both
+    page paths and the one the goal takes."""
+    det = {"cand": {}, "meiki": {}}
+    det95 = {"cand": {}, "meiki": {}}
+    for who, key in (("cand", f"det1:cand:{name}"), ("meiki", "det1:meiki")):
+        for v in DET_VIEWS:
+            if v in stats.get(key, {}):
+                det[who][v] = stats[key][v]["p50"]
+                det95[who][v] = stats[key][v]["p95"]
+    r_keys = [f"page4:R#d{k}" for k in budget]
+    o_keys = [f"page4:onnx:{name}#d{k}" for k in budget]
+    c_key = f"page4:c:{name}"
+    R, R95, r_var = {}, {}, {}
+    paths = {"c": {}, "onnx": {}}
+    paths95 = {"c": {}, "onnx": {}}
+    o_var = {}
+    for gk, v in PAGE_VIEWS.items():
+        k, st = _fastest(stats, r_keys, v)
+        if k is not None:
+            R[gk], R95[gk], r_var[gk] = st["p50"], st["p95"], k.rpartition("#")[2]
+        if v in stats.get(c_key, {}):
+            paths["c"][gk], paths95["c"][gk] = stats[c_key][v]["p50"], stats[c_key][v]["p95"]
+        k, st = _fastest(stats, o_keys, v)
+        if k is not None:
+            paths["onnx"][gk], paths95["onnx"][gk], o_var[gk] = st["p50"], st["p95"], k.rpartition("#")[2]
+    worst = {}
+    for pth, d in paths.items():
+        if all(g in d and g in R and R[g] > 0 for g in GOAL_PAGE_KEYS):
+            worst[pth] = round(max(d[g] / R[g] for g in GOAL_PAGE_KEYS), 4)
+    chosen = min(worst, key=lambda p: (worst[p], p != "c")) if worst else None
+    page = {"cand": dict(paths[chosen]) if chosen else {}, "R": R}
+    page95 = {"cand": dict(paths95[chosen]) if chosen else {}, "R": R95}
+    ratios = {"det_1t_meiki_over_cand": {v: round(det["meiki"][v] / det["cand"][v], 3) for v in det["cand"]
+                                         if v in det["meiki"] and det["cand"][v] > 0},
+              "page_4t_cand_over_R": {g: round(page["cand"][g] / R[g], 4) for g in page["cand"] if g in R and R[g]}}
+    return {"det_1t": det, "det_1t_p95": det95, "page_4t": page, "page_4t_p95": page95,
+            "page_4t_path": chosen, "page_4t_paths": paths, "page_4t_paths_p95": paths95,
+            "page_4t_paths_worst_frac_of_R": worst, "page_4t_R_variant": r_var, "page_4t_onnx_variant": o_var,
+            "ratios": ratios, "interleaved": True}
+
+
+GOAL_WHAT = {
+    "det_1t.cand": "the candidate's C detector + refinement at 1 thread: tools/tsdesk_c.CModel.detect(frame, policy, "
+                   "refine=True) on the RGB frame in memory (luma, the policy's integer resize, padding, network, "
+                   "decode, refinement, its Box list), the C library --lib",
+    "det_1t.meiki": "MeikiOCR 0.3.5's detector at 1 thread as eval/desktop.py's `meiki` detector runs it "
+                    "(eval/desktop.MeikiDet: meikiocr's own _preprocess_for_detection and _run_detection_inference, "
+                    "ONNX Runtime ORT_ENABLE_ALL, threshold 0.5)",
+    "page_4t.R": "vocr-desktop's R page (eval/desktop_time.py Pipeline 'meiki+L#dK', mode par: MeikiOCR's detector at "
+                 "K intra-op threads, every horizontal box grown by pad auto, its dark flag and VOCR6.2_L_fast.onnx "
+                 "on 4 Python threads sharing one session at 1 intra-op thread) at the 4-thread budget of "
+                 "eval/desktop_protocol.json amendments[0] (docs/desktop.md 'The budget'): per view the fastest K "
+                 "in {1, 2, 4}",
+    "page_4t.cand": "the faster of the candidate's two pages at 4 threads, one path for every view: the path whose "
+                    "worst view (max over vita, psp, pc of p50 / R's p50) is lower (C on a tie). C page: "
+                    "tools/tsdesk_c.CPage(blob, VOCR6.2_L_w8_2l.vocr, threads=4, size=policy, pad=rule, refine=True) "
+                    "(runtime/vocr.c W8I, head sections on); ONNX page: tools/tsdesk.Detector (ONNX Runtime, the "
+                    "refinement) and VOCR6.2_L_fast.onnx on 4 Python threads (tools/tsdesk.read_frame's steps), its "
+                    "detector at the same budget as R's (per view the fastest K in {1, 2, 4})",
+    "views": "vita: 60 hval Vita frames 960x544; psp: 60 hval PSP frames 480x272; pc (pc1080): 30 1b v3 training "
+             "frames 1920x1080; vita1080: the Vita frames resampled to 1920x1080 (eval/tsdesk_eval.py pages)",
+    "schedule": "one process, every pipeline interleaved per page (eval/tsdesk_time.interleave): each pass visits "
+                "the pages in a shuffled order and runs every pipeline on a page in a shuffled order; a page's time is "
+                "the median of its recorded passes; p50 / p95 over the view's pages",
+}
+
+
+def _lib_record(lib):
+    import tsdesk_c as TC
+    rec = {"lib": str(lib), "lib_sha256": D.sha256_file(lib), "simd": int(TC.c_library(lib).vocr_tsd_simd())}
+    bj = Path(lib).parent / "build.json"
+    if bj.exists():
+        rec["build"] = json.loads(bj.read_text())
+    return rec
+
+
+def cmd_goal(a):
+    import tsdesk_c as TC
+    cands = [parse_cand(s, a.policy, a.rule) for s in a.cand]
+    if len({c["name"] for c in cands}) != len(cands):
+        raise SystemExit("--cand names repeat")
+    for c in cands:
+        TC.policy_of(c["policy"])
+        TC.rule_of(c["rule"])
+    budget = tuple(int(k) for k in a.budget.split(","))
+    doc, pages = load_pages(a.pages)
+    if a.views:
+        pages = [p for p in pages if p["view"] in a.views.split(",")]
+    if a.limit:                                   # the first N pages of each view (smoke runs)
+        pages = [p for i, p in enumerate(pages) if sum(q["view"] == p["view"] for q in pages[:i]) < a.limit]
+    rgbs = [load_rgb(p) for p in pages]
+    views = [p["view"] for p in pages]
+    start = host()
+    jobs = goal_pipelines(cands, budget, a.onnx_resize)
+    pipes = {k: Pipeline(spec, th, pad, a.lib, a.onnx_dir) for k, spec, th, pad in jobs}
+    t0 = time.time()
+    n_all = a.warmup + a.passes
+    times, items, sched = interleave(
+        len(pages), list(pipes), lambda n, i, P=pipes: P[n](rgbs[i], i), a.passes, a.warmup, a.seed,
+        log=lambda p: print(f"goal pass {p + 1}/{n_all} {time.time() - t0:.0f} s load {os.getloadavg()[0]:.1f}",
+                            flush=True))
+    stats = {k: view_stats(times[k], items[k], views) for k in pipes}
+    del pipes
+    end_load = round(os.getloadavg()[0], 1)
+    for k, r in stats.items():
+        print(k, json.dumps({v: (x["p50"], x["p95"], x["items_mean"]) for v, x in r.items()}), flush=True)
+    meta = {"schema": GOAL_SCHEMA, "kind": "textspot-desktop-goal-timing",
+            "protocol": "eval/textspot_desktop_protocol_v2.json (G2, G3)", "what": GOAL_WHAT,
+            "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "host": start,
+            "load_1min_before": start["load_1min_at_start"], "load_1min_after": end_load,
+            "run_s": round(time.time() - t0, 1), "passes": a.passes, "warmup": a.warmup, "seed": a.seed,
+            "budget": list(budget), "onnx_resize": a.onnx_resize, "limit": a.limit or None, "pages_file": str(a.pages),
+            "pages_sha256": D.sha256_file(a.pages), "pages_source": doc.get("source"),
+            "pages": {v: views.count(v) for v in sorted(set(views))}, "repo_head": D.git_head(),
+            "c": _lib_record(a.lib) if a.lib else None,
+            "recognizer": {"c": BLOBS["L"], "c_sha256": D.sha256_file(V05 / BLOBS["L"]), "onnx": "VOCR6.2_L_fast.onnx",
+                           "onnx_sha256": D.sha256_file(Path(a.onnx_dir) / "VOCR6.2_L_fast.onnx")},
+            "schedule": {"calls": len(sched), "pipelines": len(stats)}}
+    out = dict(meta, pipelines={k: {"spec": _short(spec), "threads": th, "pad": pad} for k, spec, th, pad in jobs},
+               results=stats, candidates={})
+    for c in cands:
+        blk = goal_block(stats, c["name"], budget)
+        blk.update(candidate=c["name"], policy=c["policy"], rule=c["rule"],
+                   blob=c["blob"], blob_sha256=D.sha256_file(c["blob"]),
+                   onnx=c["onnx"], onnx_sha256=D.sha256_file(c["onnx"]))
+        out["candidates"][c["name"]] = blk
+    if a.mem_views:
+        mem_views = a.mem_views.split(",")
+        out["mem"] = {}
+        for c in cands:
+            blk = out["candidates"][c["name"]]
+            mj = [("det1:meiki", "meikidet", 1, "auto"),
+                  ("det1:cand", f"cbox:{c['blob']}@{c['policy']}+refine", 1, c["rule"]),
+                  ("page4:c", f"cpage:{c['blob']}@{c['policy']}+refine+c:L", 4, c["rule"])]
+            for v in mem_views:
+                gk = next((g for g, vv in PAGE_VIEWS.items() if vv == v), v)
+                rv, ov = blk["page_4t_R_variant"].get(gk, "d4"), blk["page_4t_onnx_variant"].get(gk, "d4")
+                sel = [p for p in pages if p["view"] == v][:a.mem_limit]
+                if not sel:
+                    continue
+                vj = mj + [("page4:R", f"rpage#{rv}", 4, "auto"),
+                           ("page4:onnx", f"opage:{c['onnx']}@{c['policy']}@{a.onnx_resize}+refine+L#{ov}", 4,
+                            c["rule"])]
+                if c is not cands[0]:
+                    vj = [j for j in vj if j[0] not in ("det1:meiki", "page4:R")]
+                m = peak_rss(sel, vj, a.lib, a.scratch or MEM_SCRATCH,
+                             log=lambda k, s, n=c["name"], v=v: print("mem", n, v, k, s, flush=True))
+                for k, rec in m.items():
+                    who = k if k in ("det1:meiki", "page4:R") else f"{k}:{c['name']}"
+                    out["mem"].setdefault(who, {})[v] = {f: rec[f] for f in ("peak_mib", "model_and_run_mib", "frames",
+                                                                            "threads")}
+                    out["mem"][who][v]["spec"] = _short(rec["spec"])
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    files = {}
+    for c in cands:
+        blk = dict(meta, **out["candidates"][c["name"]])
+        if "mem" in out:
+            blk["mem"] = {k: v for k, v in out["mem"].items() if k in ("det1:meiki", "page4:R") or
+                          k.endswith(f":{c['name']}")}
+        if len(cands) == 1:
+            out.update({k: v for k, v in blk.items() if k not in out})
+            files[c["name"]] = str(a.out)
+        else:
+            p = Path(a.out).with_name(f"{Path(a.out).stem}.{c['name']}.json")
+            p.write_text(json.dumps(blk, indent=1) + "\n", encoding="utf-8")
+            files[c["name"]] = str(p)
+    out["timing_files"] = files
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    for c in cands:
+        b = out["candidates"][c["name"]]
+        print("goal", c["name"], json.dumps({"det_1t": {k: b["det_1t"][k].get("vita") for k in ("cand", "meiki")},
+                                             "page_4t": b["page_4t"], "path": b["page_4t_path"],
+                                             "file": files[c["name"]]}), flush=True)
 
 
 def random_net(shape, seed=1, kernel=0.05):
@@ -618,6 +911,29 @@ def main(argv=None):
     p.add_argument("--limit", type=int, default=60)
     p.add_argument("--pad", default="auto")
     p.add_argument("--lib")
+    p.add_argument("--scratch", help="a private directory for the frames' scratch files (default: "
+                   f"{MEM_SCRATCH})")
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("goal")
+    p.add_argument("--pages", required=True)
+    p.add_argument("--cand", required=True, action="append",
+                   help="NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]] (repeatable: one run for several candidates)")
+    p.add_argument("--policy", default="long:960", help="the candidates' input policy (default long:960)")
+    p.add_argument("--rule", default="k6v4", help="the candidates' reading rule (default k6v4, round 1's)")
+    p.add_argument("--lib", required=True, help="the C library (tsdesk_time.py build: AVX2 + FMA, -O3)")
+    p.add_argument("--budget", default=",".join(map(str, BUDGET)),
+                   help="the detectors' intra-op thread counts in the 4-thread budget (R's and the ONNX page's)")
+    p.add_argument("--onnx-resize", default="exact", choices=("exact", "cv2"),
+                   help="the ONNX page's resize (tools/tsdesk.Detector resize_mode; exact: the reference default)")
+    p.add_argument("--views", help="only these views (default: every view of the pages)")
+    p.add_argument("--limit", type=int, default=0, help="only the first N pages of each view (smoke runs)")
+    p.add_argument("--passes", type=int, default=3)
+    p.add_argument("--warmup", type=int, default=1)
+    p.add_argument("--seed", type=int, default=20261101)
+    p.add_argument("--mem-views", default="vita,pc1080", help="peak RSS on these views ('' for none)")
+    p.add_argument("--mem-limit", type=int, default=60)
+    p.add_argument("--scratch")
+    p.add_argument("--onnx-dir", default=str(D.ONNX_DIR))
     p.add_argument("--out", required=True)
     p = sub.add_parser("prof")
     p.add_argument("--pages", required=True)
@@ -647,7 +963,7 @@ def main(argv=None):
     p.add_argument("--kernel", type=float, default=0.05)
     a = ap.parse_args(argv)
     {"pages": cmd_pages, "build": cmd_build, "run": cmd_run, "mem": cmd_mem, "prof": cmd_prof,
-     "randblobs": cmd_randblobs, "summary": cmd_summary}[a.cmd](a)
+     "randblobs": cmd_randblobs, "summary": cmd_summary, "goal": cmd_goal}[a.cmd](a)
 
 
 if __name__ == "__main__":

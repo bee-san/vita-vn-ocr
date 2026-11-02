@@ -317,7 +317,8 @@ def test_c_detect_matches_onnx(nets, libs):
 
 def test_c_detect_is_its_pieces(nets, libs):
     """detect(frame) == the decode of maps(the padded input) mapped to frame px, the input built from the integer
-    luma, vocr-desktop's integer resize (vocr_desk_resize) and edge padding: every policy and frame kind."""
+    luma, the integer resize (vocr_tsd_resize: vocr_desk_resize's rule) and edge padding: every policy and frame
+    kind."""
     rng = np.random.default_rng(8)
     _, blob, _ = nets["p8a"]
     cases = [((544, 960), None), ((720, 1280), None), ((1080, 1920), None), ((272, 480), "long:960"),
@@ -384,17 +385,30 @@ def test_c_detect_refine_is_the_refinement_of_its_boxes(nets, libs):
 
 
 def test_c_resize_is_vocr_desktops(nets, libs):
-    """The detector's resize is vocr-desktop's (vocr_desk_resize in the same library: tools/vocr_desktop.CModel)."""
+    """The detector's resize and luma (vocr_tsd_resize, vocr_tsd_grey) give vocr-desktop's bits (vocr_desk_resize,
+    vocr_desk_grey in the same library, through tools/vocr_desktop.CModel), on every path of vocr_tsd_resize."""
+    import ctypes as C
+
     import vocr_desktop as VD
     rng = np.random.default_rng(9)
-    lib = next(iter(libs.values()))
-    cm = TC.CModel(nets["p8a"][1], lib=lib)
-    probe = VD.CModel.__new__(VD.CModel)
-    probe.L = VD.c_library(lib)
-    for (h, w), (dh, dw) in (((1080, 1920), (540, 960)), ((720, 1280), (540, 960)), ((272, 480), (544, 960)),
-                             ((333, 777), (123, 287))):
-        g = rng.integers(0, 256, (h, w), dtype=np.uint8)
-        assert np.array_equal(cm.resize(g, dw, dh), VD.CModel.resize(probe, g, dw, dh))
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        probe = VD.CModel.__new__(VD.CModel)
+        probe.L = VD.c_library(lib)
+        for (h, w), (dh, dw) in (((1080, 1920), (540, 960)), ((720, 1280), (540, 960)), ((272, 480), (544, 960)),
+                                 ((333, 777), (123, 287)), ((1440, 2560), (540, 960)), ((2160, 3840), (540, 960)),
+                                 ((768, 1366), (540, 960)), ((600, 800), (720, 960)), ((544, 960), (544, 960)),
+                                 ((40, 4000), (1, 30)), ((1, 7), (2, 14)), ((5, 3), (1, 1))):
+            g = rng.integers(0, 256, (h, w), dtype=np.uint8)
+            assert np.array_equal(cm.resize(g, dw, dh), VD.CModel.resize(probe, g, dw, dh)), ((h, w), (dh, dw))
+        cm.L.vocr_desk_grey.argtypes = [C.c_void_p, C.c_uint, C.c_uint, C.c_uint, C.c_uint, C.c_void_p]
+        for ch in (3, 4):
+            for h, w in ((37, 1921), (3, 17), (1, 1)):
+                rgb = rng.integers(0, 256, (h, w, ch), dtype=np.uint8)
+                a, b = np.zeros((h, w), np.uint8), np.zeros((h, w), np.uint8)
+                cm.L.vocr_tsd_grey(rgb.ctypes.data, w, h, w * ch, ch, a.ctypes.data)
+                cm.L.vocr_desk_grey(rgb.ctypes.data, w, h, w * ch, ch, b.ctypes.data)
+                assert np.array_equal(a, b), (ch, h, w)
 
 
 Q14 = 16384
@@ -432,7 +446,8 @@ def _axis_weights(n, m):
 
 
 def _resize_ref(g, dw, dh):
-    """vocr_desk_resize's rule in numpy integers (the horizontal pass, then the vertical, round half up, clamp)."""
+    """vocr_desk_resize's rule (vocr_tsd_resize's) in numpy integers (the horizontal pass, then the vertical, round
+    half up, clamp)."""
     h, w = g.shape
     ix, wx = _axis_weights(w, dw)
     iy, wy = _axis_weights(h, dh)
@@ -441,13 +456,18 @@ def _resize_ref(g, dw, dh):
     return np.clip((acc + (1 << 27)) >> 28, 0, 255).astype(np.uint8)
 
 
-def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
-    """vocr_desk_resize (SIMD paths: 2:1, identity, consecutive taps, the row ring) and vocr_desk_grey (SIMD RGB /
-    RGBA) give their integer rule's bits in every build: VDSK and VTSD inputs unchanged by the faster code."""
+def test_vocr_tsd_resize_and_grey_keep_their_rule(libs):
+    """vocr_tsd_resize (SIMD paths: 2:1, identity, polyphase, quarter weights, the 2x enlargement, the row ring, the
+    int32 vertical sums), vocr_tsd_resize_rgb, the banded form and vocr_tsd_grey (SIMD RGB / RGBA) give their integer
+    rules' bits in every build: the C detector's input is tools/tsdesk.resize's."""
     rng = np.random.default_rng(12)
     sizes = [((1080, 1920), (540, 960)), ((720, 1280), (540, 960)), ((272, 480), (544, 960)), ((544, 960), (544, 960)),
              ((1440, 2560), (540, 960)), ((2160, 3840), (540, 960)), ((768, 1366), (538, 960)), ((1, 1), (3, 5)),
-             ((5, 3), (1, 1)), ((300, 200), (3, 2)), ((130, 7), (2, 7)), ((17, 33), (17, 16)), ((40, 4000), (1, 30))]
+             ((5, 3), (1, 1)), ((300, 200), (3, 2)), ((130, 7), (2, 7)), ((17, 33), (17, 16)), ((40, 4000), (1, 30)),
+             ((272, 480), (544, 960)), ((1, 1), (2, 2)), ((1, 7), (2, 14)), ((5, 1), (10, 2)), ((17, 33), (34, 66)),
+             ((100, 333), (200, 666)),                                  # the exact 2x enlargement's 16-bit path
+             ((720, 1280), (540, 960)), ((2160, 3840), (540, 960)), ((8, 12), (6, 9)), ((40, 64), (10, 16)),
+             ((1, 16), (1, 4)), ((16, 50), (12, 50)), ((9, 100), (2, 25))]  # quarter weights (coarse_rows)
     sizes += [((int(rng.integers(1, 400)), int(rng.integers(1, 400))),
                (int(rng.integers(1, 500)), int(rng.integers(1, 500)))) for _ in range(25)]
     for lib in libs.values():
@@ -459,39 +479,39 @@ def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
             for h, w in ((37, 1921), (1, 1), (3, 17), (2, 33)):
                 rgb = rng.integers(0, 256, (h, w, ch), dtype=np.uint8)
                 out = np.zeros((h, w), np.uint8)
-                cm.L.vocr_desk_grey(rgb.ctypes.data, w, h, w * ch, ch, out.ctypes.data)
+                cm.L.vocr_tsd_grey(rgb.ctypes.data, w, h, w * ch, ch, out.ctypes.data)
                 assert np.array_equal(out, T.grey_of(rgb)), (ch, h, w)
-        # vocr_desk_resize_rgb (the luma row by row inside the resize) and the banded form (any split of the rows)
+        # vocr_tsd_resize_rgb (the luma row by row inside the resize) and the banded form (any split of the rows)
         import ctypes as C
         L = cm.L
-        L.vocr_desk_resize_rgb.argtypes = [C.c_void_p, C.c_uint, C.c_uint, C.c_uint, C.c_uint, C.c_void_p, C.c_uint,
+        L.vocr_tsd_resize_rgb.argtypes = [C.c_void_p, C.c_uint, C.c_uint, C.c_uint, C.c_uint, C.c_void_p, C.c_uint,
                                            C.c_uint, C.c_void_p]
-        L.vocr_desk_resize_rgb_scratch.argtypes = [C.c_uint] * 4
-        L.vocr_desk_resize_rgb_scratch.restype = C.c_size_t
-        for fn in ("vocr_desk_resize_plan_bytes", "vocr_desk_resize_band_bytes"):
+        L.vocr_tsd_resize_rgb_scratch.argtypes = [C.c_uint] * 4
+        L.vocr_tsd_resize_rgb_scratch.restype = C.c_size_t
+        for fn in ("vocr_tsd_resize_plan_bytes", "vocr_tsd_resize_band_bytes"):
             getattr(L, fn).argtypes = [C.c_uint] * 4
             getattr(L, fn).restype = C.c_size_t
-        L.vocr_desk_resize_plan.argtypes = [C.c_uint] * 4 + [C.c_void_p]
-        L.vocr_desk_resize_band.argtypes = [C.c_void_p, C.c_void_p, C.c_uint, C.c_uint, C.c_void_p, C.c_uint, C.c_uint,
+        L.vocr_tsd_resize_plan.argtypes = [C.c_uint] * 4 + [C.c_void_p]
+        L.vocr_tsd_resize_band.argtypes = [C.c_void_p, C.c_void_p, C.c_uint, C.c_uint, C.c_void_p, C.c_uint, C.c_uint,
                                             C.c_void_p]
-        for (h, w), (dh, dw) in sizes[:12]:
+        for (h, w), (dh, dw) in sizes[:12] + sizes[19:26]:
             for ch in (1, 3, 4):
                 img = rng.integers(0, 256, (h, w, ch), dtype=np.uint8) if ch > 1 else \
                     rng.integers(0, 256, (h, w), dtype=np.uint8)
                 ref = _resize_ref(T.grey_of(img), dw, dh)
                 if ch > 1:
                     out = np.zeros((dh, dw), np.uint8)
-                    sc = np.zeros(L.vocr_desk_resize_rgb_scratch(w, h, dw, dh) + 64, np.uint8)
-                    L.vocr_desk_resize_rgb(img.ctypes.data, w, h, w * ch, ch, out.ctypes.data, dw, dh, sc.ctypes.data)
+                    sc = np.zeros(L.vocr_tsd_resize_rgb_scratch(w, h, dw, dh) + 64, np.uint8)
+                    L.vocr_tsd_resize_rgb(img.ctypes.data, w, h, w * ch, ch, out.ctypes.data, dw, dh, sc.ctypes.data)
                     assert np.array_equal(out, ref), ("rgb", ch, (h, w), (dh, dw))
-                plan = np.zeros(L.vocr_desk_resize_plan_bytes(w, h, dw, dh) + 64, np.uint8)
-                if L.vocr_desk_resize_plan(w, h, dw, dh, plan.ctypes.data):
+                plan = np.zeros(L.vocr_tsd_resize_plan_bytes(w, h, dw, dh) + 64, np.uint8)
+                if L.vocr_tsd_resize_plan(w, h, dw, dh, plan.ctypes.data):
                     continue                                       # the whole-frame form only
-                work = np.zeros(L.vocr_desk_resize_band_bytes(w, h, dw, dh) + 64, np.uint8)
+                work = np.zeros(L.vocr_tsd_resize_band_bytes(w, h, dw, dh) + 64, np.uint8)
                 out = np.zeros((dh, dw), np.uint8)
                 cuts = sorted({0, dh, *(int(v) for v in rng.integers(0, dh + 1, 3))})
                 for y0, y1 in zip(cuts, cuts[1:]):
-                    L.vocr_desk_resize_band(plan.ctypes.data, img.ctypes.data, w * ch, ch, out.ctypes.data, y0, y1,
+                    L.vocr_tsd_resize_band(plan.ctypes.data, img.ctypes.data, w * ch, ch, out.ctypes.data, y0, y1,
                                             work.ctypes.data)
                 assert np.array_equal(out, ref), ("band", ch, (h, w), (dh, dw), cuts)
 

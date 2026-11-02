@@ -110,10 +110,10 @@ def c_library(path=None):
     L.vocr_tsd_pool_new.argtypes = [u]
     L.vocr_tsd_pool_new.restype = vp
     L.vocr_tsd_pool_free.argtypes = [vp]
-    L.vocr_desk_resize.argtypes = [vp, u, u, u, vp, u, u, vp]
-    L.vocr_desk_resize_scratch.argtypes = [u, u, u, u]
-    L.vocr_desk_resize_scratch.restype = sz
-    L.vocr_desk_grey.argtypes = [vp, u, u, u, u, vp]
+    L.vocr_tsd_resize.argtypes = [vp, u, u, u, vp, u, u, vp]
+    L.vocr_tsd_resize_scratch.argtypes = [u, u, u, u]
+    L.vocr_tsd_resize_scratch.restype = sz
+    L.vocr_tsd_grey.argtypes = [vp, u, u, u, u, vp]
     L.vocr_tsd_page_new.argtypes = [vp, sz, vp, sz, u, i, u, u, u, u, C.POINTER(i)]
     L.vocr_tsd_page_new.restype = vp
     L.vocr_tsd_page_set_tags.argtypes = [vp, u]
@@ -346,17 +346,18 @@ class CModel:
         return tuple(int(x.value) for x in v)
 
     def resize(self, grey, dw, dh):
-        """vocr_desk_resize (vocr-desktop's integer resize, the C detector's): a grey image to dw x dh."""
+        """vocr_tsd_resize (the C detector's integer resize: vocr-desktop's vocr_desk_resize rule): a grey image to dw x
+        dh."""
         g = np.ascontiguousarray(grey, np.uint8)
         h, w = g.shape
         out = np.zeros((dh, dw), np.uint8)
-        scratch = np.zeros(self.L.vocr_desk_resize_scratch(w, h, dw, dh) + 64, np.uint8)
-        self.L.vocr_desk_resize(g.ctypes.data, w, h, w, out.ctypes.data, dw, dh, scratch.ctypes.data)
+        scratch = np.zeros(self.L.vocr_tsd_resize_scratch(w, h, dw, dh) + 64, np.uint8)
+        self.L.vocr_tsd_resize(g.ctypes.data, w, h, w, out.ctypes.data, dw, dh, scratch.ctypes.data)
         return out
 
     def preprocess(self, img, size=None):
         """(network input [1, 1, ph, pw] uint8, (fx, fy, iw, ih)) as the C detector builds it: the integer luma, the
-        policy's integer resize (vocr_desk_resize), edge padding to multiples of 32 (tsdesk.Detector.preprocess with
+        policy's integer resize (vocr_tsd_resize), edge padding to multiples of 32 (tsdesk.Detector.preprocess with
         the C resize in place of OpenCV's)."""
         g = T.grey_of(img)
         h, w = g.shape

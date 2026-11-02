@@ -22,7 +22,9 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
                                    (the binding's Box objects are not built inside the timing)
       A detector or page spec's BLOB / MODEL part may end in +refine: the box refinement on (cdet / cpage: the C
       refinement inside the detector call; odet / opage: tools/tsdesk.Detector's refine, tools/tsdesk_refine.py),
-      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L
+      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L. An ONNX spec's SIZE may be followed by @MODE, the
+      resize of tools/tsdesk.Detector (exact: its numpy model of the C integer resize, the default; cv2: OpenCV's
+      INTER_AREA / INTER_LINEAR, an app's resize), e.g. odet:MODEL@fit:960@cv2+refine
         cpage:BLOB[@SIZE]+c:T      the C page: the detector and VOCR6.2-T's int8 blob read by runtime/vocr.c W8I with
                                    its head sections, every horizontal box grown by --pad, the lines on the same pool
         odet:MODEL[@SIZE]          tools/tsdesk.Detector.detect on the RGB frame (ONNX Runtime FP32, intra-op threads N)
@@ -39,9 +41,12 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
   tsdesk_time.py mem --pages PAGES.json --pipelines P,... --threads N --out M.json [--limit 60] [--view vita]
       peak resident memory (VmHWM): each pipeline in a fresh process that loads the frames of a view one at a time
       from disk and runs the pipeline on each: after the imports and one frame, after the models load, at the end
-  tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1]
+  tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1] [--refine]
       the C network's per-step time on the view's frames from a -DVOCR_TSD_PROF build of vocr_tsd_bench (the frames
       written to a private scratch file and deleted)
+  tsdesk_time.py summary --run T.json [--mem M.json ...] [--prof P.json ...] [--parity X.json] --out S.json
+      a small record for the repository: per pipeline, thread count and view the p50 / p95 / mean ms and items, the
+      peak RSS rows, the per-step profiles and the parity counts, with the blobs' sha256 and the hosts and loads
   tsdesk_time.py randblobs --out DIR [--shapes p8a,p8s,p8t,p8g,p4a] [--seed 1] [--kernel 0.05]
       random-weight networks of train/tsdesk_net.SHAPES as SHAPE.onnx + SHAPE.vtsd (the same folded weights), for
       timing before trained blobs exist: BatchNorm statistics drawn away from the identity, the K map's bias set so
@@ -207,6 +212,16 @@ def split_spec(spec):
     return kind, path, size or None, rec, refine
 
 
+def size_mode(size):
+    """(size, resize mode) of an ONNX spec's SIZE[@MODE] part."""
+    if not size:
+        return None, "exact"
+    sz, _, mode = size.partition("@")
+    if mode not in ("", "exact", "cv2"):
+        raise ValueError(f"resize mode {mode!r}: exact or cv2")
+    return sz or None, mode or "exact"
+
+
 def crop_hv(b, ph, pv, W, H):
     """(x, y, w, h) of a float box (x, y, w, h) grown by ph / pv px, rounded outward, clipped; None if empty."""
     import math
@@ -236,10 +251,9 @@ class Pipeline:
             import tsdesk as T
             import vocr_onnx as V
             self.T, self.V = T, V
-            size, _, mode = (self.size or "").partition("@")          # SIZE[@MODE]: @cv2 = an app's cv2 resize
-            self.size = size or None
+            osize, omode = size_mode(self.size)
             self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
-                                  size=self.size, refine=self.refine, resize_mode=mode or "exact")
+                                  size=osize, refine=self.refine, resize_mode=omode)
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",
@@ -395,23 +409,22 @@ def hwm():
             return int(ln.split()[1])
 import numpy as np
 import tsdesk_time as TT
-_, pages = TT.load_pages({pages!r})
-pages = [p for p in pages if p["view"] == {view!r}][:{limit}]
-TT.load_rgb(pages[0])
+frames = {frames!r}
+np.load(frames[0])
 base = hwm()
 p = TT.Pipeline({spec!r}, {threads}, {pad!r}, {lib!r})
 loaded = hwm()
 n = 0
-for pg in pages:
-    rgb = TT.load_rgb(pg)
+for f in frames:                      # one frame in memory at a time
+    rgb = np.load(f)
     p.prepare(0, rgb)
     n += p(rgb, 0)
-print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(pages), "items": n}}))
+    del rgb
+print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(frames), "items": n}}))
 """
 
 
 def cmd_mem(a):
-    import pickle
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
            "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
            "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
@@ -421,16 +434,21 @@ def cmd_mem(a):
     sel = [p for p in pages if p["view"] == a.view][:a.limit]
     if not sel:
         raise SystemExit(f"no {a.view} pages in {a.pages}")
+    import shutil
+
+    import numpy as np
     scratch = D.PV / "textspot-desktop-c" / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
-    # the view's frames alone in a private scratch file (deleted below): a child does not load the whole pages file
-    tmp = tempfile.NamedTemporaryFile(dir=scratch, suffix=".pkl", delete=False)
-    with tmp:
-        pickle.dump({"pages": [dict(p, rgb=load_rgb(p)) for p in sel], "source": str(a.pages)}, tmp)
+    # the view's frames one per file in a private scratch directory (deleted below): a child reads one at a time
+    tmpdir = tempfile.mkdtemp(dir=scratch)
+    files = []
+    for i, p in enumerate(sel):
+        files.append(str(Path(tmpdir) / f"{i:04d}.npy"))
+        np.save(files[-1], np.ascontiguousarray(load_rgb(p)))
     try:
         for spec in a.pipelines.split(","):
-            code = MEM_CHILD.format(paths=paths, pages=tmp.name, view=a.view, limit=int(a.limit), spec=spec,
-                                    threads=int(a.threads), pad=a.pad, lib=a.lib)
+            code = MEM_CHILD.format(paths=paths, frames=files, spec=spec, threads=int(a.threads), pad=a.pad,
+                                    lib=a.lib)
             r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
                                env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
             if r.returncode:
@@ -441,7 +459,7 @@ def cmd_mem(a):
             res["results"][spec] = rec
             print(spec, json.dumps(rec), flush=True)
     finally:
-        os.unlink(tmp.name)
+        shutil.rmtree(tmpdir, ignore_errors=True)
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 
@@ -463,12 +481,59 @@ def cmd_prof(a):
             f.write(np.ascontiguousarray(r).tobytes())
         f.flush()
         cmd = [b["bench"], a.blob, "--w", str(w), "--h", str(h), "--ch", "3", "--raw", f.name, "--runs", str(a.runs),
-               "--warmup", str(a.warmup), "--threads", str(a.threads)] + (["--size", a.size] if a.size else [])
+               "--warmup", str(a.warmup), "--threads", str(a.threads)] + (["--size", a.size] if a.size else []) + \
+              (["--refine"] if a.refine else [])
         out = json.loads(subprocess.run(cmd, capture_output=True, text=True, check=True).stdout)
     out.update(view=a.view, frames=len(rgbs), build=b, host=host(), repo_head=D.git_head(),
                load_1min_at_end=round(os.getloadavg()[0], 1))
     Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("view", "p50_us", "p95_us")}), json.dumps(out.get("prof_us")), flush=True)
+
+
+def _short(spec):
+    """A pipeline spec with its files' directories dropped (the files are named by their sha256 below)."""
+    import re
+    return re.sub(r"/[^,:@+^|]*/", "", spec)
+
+
+def cmd_summary(a):
+    run = json.loads(Path(a.run).read_text())
+    files = {}
+
+    def note(path):
+        p = Path(path)
+        if p.exists() and p.name not in files:
+            files[p.name] = D.sha256_file(p)
+
+    rows = {}
+    for k, v in run["results"].items():
+        spec = k.rpartition("|t")[0]
+        for part in spec.split(":", 1)[1].replace("+refine", "").split("+")[0].split("^")[0].split("@")[:1]:
+            note(part)
+        rows[_short(k)] = {view: {f: x[f] for f in ("p50", "p95", "mean", "n", "items_mean")} for view, x in v.items()}
+    out = {"schema": SCHEMA, "kind": "textspot-desktop-c-summary", "created": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                                                                           time.gmtime()),
+           "run": {"file": Path(a.run).name, "sha256": D.sha256_file(a.run), "host": run["host"],
+                   "load_1min_at_end": run.get("load_1min_at_end"), "passes": run["passes"], "warmup": run["warmup"],
+                   "pages": run["pages"], "pages_sha256": run.get("pages_sha256"), "pad": run.get("pad"),
+                   "repo_head": run.get("repo_head"), "build": run.get("build"), "builds": run.get("builds")},
+           "ms": rows, "files_sha256": files, "mem": {}, "prof": {}, "parity": None}
+    for m in a.mem or []:
+        dm = json.loads(Path(m).read_text())
+        out["mem"][f"t{dm['threads']}_{dm['view']}"] = {_short(k): {f: v[f] for f in ("peak_mib", "model_and_run_mib",
+                                                                                      "frames")}
+                                                         for k, v in dm["results"].items()}
+    for f in a.prof or []:
+        dp = json.loads(Path(f).read_text())
+        out["prof"][f"{dp['view']}@{dp.get('size')}"] = {"p50_us": dp["p50_us"], "p95_us": dp["p95_us"],
+                                                         "refine": dp.get("refine"), "threads": dp["threads"],
+                                                         "steps_us": {k: round(v, 1) for k, v in dp["prof_us"].items()}}
+    if a.parity:
+        dq = json.loads(Path(a.parity).read_text())
+        out["parity"] = {"pad": dq.get("pad"), "refine": dq.get("refine"), "sizes": dq["sizes"]}
+    Path(a.out).write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"rows": len(rows), "mem": len(out["mem"]), "prof": len(out["prof"]),
+                      "bytes": Path(a.out).stat().st_size}), flush=True)
 
 
 def random_net(shape, seed=1, kernel=0.05):
@@ -566,7 +631,14 @@ def main(argv=None):
     p.add_argument("--random", type=int, default=0)
     p.add_argument("--arch", default="-march=x86-64-v3")
     p.add_argument("--extra", default="")
+    p.add_argument("--refine", action="store_true", help="the box refinement on (vocr_tsdr_defaults)")
     p.add_argument("--build-dir", required=True)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("summary")
+    p.add_argument("--run", required=True)
+    p.add_argument("--mem", nargs="*")
+    p.add_argument("--prof", nargs="*")
+    p.add_argument("--parity")
     p.add_argument("--out", required=True)
     p = sub.add_parser("randblobs")
     p.add_argument("--out", required=True)
@@ -575,7 +647,7 @@ def main(argv=None):
     p.add_argument("--kernel", type=float, default=0.05)
     a = ap.parse_args(argv)
     {"pages": cmd_pages, "build": cmd_build, "run": cmd_run, "mem": cmd_mem, "prof": cmd_prof,
-     "randblobs": cmd_randblobs}[a.cmd](a)
+     "randblobs": cmd_randblobs, "summary": cmd_summary}[a.cmd](a)
 
 
 if __name__ == "__main__":

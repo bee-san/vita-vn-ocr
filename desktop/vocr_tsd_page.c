@@ -11,7 +11,7 @@
 #include <time.h>
 
 #include "vocr.h"
-#include "vocr_desk.h"
+#include "vocr_tsd_resize.h"
 #include "vocr_lines.h"
 
 #ifndef VOCR_DESK_NO_THREADS
@@ -322,7 +322,7 @@ void vocr_tsd_page_free(vocr_tsd_page *p)
     free(p);
 }
 
-/* the luma of an RGB(A) frame (vocr_desk_grey) into the page's buffer; a grey frame as it is */
+/* the luma of an RGB(A) frame (vocr_tsd_grey) into the page's buffer; a grey frame as it is */
 static int grey_of(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
                    unsigned channels)
 {
@@ -336,7 +336,7 @@ static int grey_of(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsig
             p->grey_cap = p->grey ? (size_t)w * h : 0;
             if (!p->grey) return VOCR_TSD_E_MEM;
         }
-        vocr_desk_grey(img, w, h, stride, channels, p->grey);
+        vocr_tsd_grey(img, w, h, stride, channels, p->grey);
         p->g = p->grey;
         p->stride = w;
     }

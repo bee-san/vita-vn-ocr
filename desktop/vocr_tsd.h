@@ -4,7 +4,8 @@
  * 4, separable stages at strides 8, 16 and 32 (optional global context at 32), a top-down pyramid of 1x1 laterals back
  * to the head's stride (8 or 4), optional separable smoothing and a 1x1 head with 6 + T maps (K and O logits, A1, A2,
  * E1, E2 in input px, T tag logits). This file runs it from a VTSD blob (train/tsdesk_blob.py) with no dependency but
- * libm and desktop/vocr_desk.c (its integer resize, luma and input policy): channel-innermost float32 activations,
+ * libm and desktop/vocr_tsd_resize.c (vocr-desktop's integer resize, luma and input policy, bit for bit, with SIMD paths
+ * and row bands): channel-innermost float32 activations,
  * AVX2 + FMA kernels when the compiler targets them (-mavx2 -mfma, or -march=x86-64-v3) and plain C otherwise
  * (-DVOCR_TSD_SCALAR forces the plain-C kernels). The ONNX file of the same weights (tools/tsdesk.py) computes the same
  * network in another order of float operations, so the two give maps equal within float rounding; given the same maps,
@@ -49,7 +50,8 @@ enum {
     VOCR_TSD_E_REC = -6       /* the recognizer refused its blob or a line */
 };
 
-/* input policies (vocr_desk_input_size's): native, fit:n (the longer side down to n px, never up), long:n */
+/* input policies (vocr_desk_input_size's, tools/tsdesk.input_size's): native, fit:n (the longer side down to n px, never
+ * up), long:n */
 enum { VOCR_TSD_SIZE_NATIVE = 0, VOCR_TSD_SIZE_FIT = 1, VOCR_TSD_SIZE_LONG = 2 };
 
 typedef struct {
@@ -97,7 +99,7 @@ typedef struct {               /* the decode's constants (the blob's: vocr_tsd_d
 int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes);
 void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o);
 
-/* The network input for a w x h frame under a policy (vocr_desk_input_size): the image part iw x ih and the padded
+/* The network input for a w x h frame under a policy (vocr_desk_input_size's rule): the image part iw x ih and the padded
  * input pw x ph (multiples of 32). */
 void vocr_tsd_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
                          unsigned *pw, unsigned *ph);
@@ -128,7 +130,8 @@ int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigne
 size_t vocr_tsd_arena_bytes(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
                             unsigned channels, unsigned ntasks);
 /* The whole detector on a frame in memory (w x h, `channels` bytes per pixel, row stride `stride` bytes): the integer
- * luma of an RGB(A) frame (vocr_desk_grey's), the policy's resize (vocr_desk_resize: Q14 area weights down, bilinear
+ * luma of an RGB(A) frame (vocr_tsd_grey: vocr_desk_grey's), the policy's resize (vocr_tsd_resize: vocr_desk_resize's
+ * rule, Q14 area weights down, bilinear
  * up), edge padding to multiples of 32, the network and the decode; boxes in frame px (tools/tsdesk.Detector.detect). */
 int vocr_tsd_detect(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
                     unsigned channels, unsigned kind, unsigned n, void *arena, size_t bytes, vocr_tsd_set *out);

@@ -1,4 +1,4 @@
-/* vocr_tsd.c - textspot-desktop's line detector in C (vocr_tsd.h). C99 + libm + desktop/vocr_desk.c (its resize,
+/* vocr_tsd.c - textspot-desktop's line detector in C (vocr_tsd.h). C99 + libm + desktop/vocr_tsd_resize.c (the resize,
  * luma and input policy); AVX2 + FMA kernels when the compiler targets them, plain C otherwise. */
 #ifdef VOCR_TSD_PROF
 #define _POSIX_C_SOURCE 200112L
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "vocr_desk.h"
+#include "vocr_tsd_resize.h"
 
 #if defined(__AVX2__) && defined(__FMA__) && !defined(VOCR_TSD_SCALAR)
 #include <immintrin.h>
@@ -27,7 +27,7 @@
 #define TSD_GREY_FIRST 1   /* an RGB(A) frame's luma over the whole frame first, the stem reading grey */
 #endif
 #ifndef TSD_FUSED_LUMA
-#define TSD_FUSED_LUMA 0   /* 1: an RGB(A) frame's luma row by row inside the resize (vocr_desk_resize_rgb) */
+#define TSD_FUSED_LUMA 0   /* 1: an RGB(A) frame's luma row by row inside the resize (vocr_tsd_resize_rgb) */
 #endif
 #define STEM_PF_ROWS 2u   /* the stem prefetches its source this many output rows ahead */
 
@@ -225,12 +225,6 @@ void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o)
     o->conf_min_logit = m->conf_min_logit;
     o->min_across = m->min_across;
     o->along_reach = m->along_reach;
-}
-
-void vocr_tsd_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
-                         unsigned *pw, unsigned *ph)
-{
-    vocr_desk_input_size(kind, n, w, h, iw, ih, pw, ph);
 }
 
 size_t vocr_tsd_model_bytes(void)
@@ -579,7 +573,7 @@ typedef struct {
 } tsd_src;
 
 /* n source pixels from (x, y) to normalised grey floats (g - 128) / 128, g the integer luma (77 R + 150 G + 29 B) >> 8
- * of an RGB(A) pixel (vocr_desk_grey's) or the grey byte; every pixel inside the source */
+ * of an RGB(A) pixel (vocr_tsd_grey's) or the grey byte; every pixel inside the source */
 static void src_floats(const tsd_src *S, unsigned x, unsigned y, unsigned n, float *o)
 {
     const unsigned char *r = S->px + (size_t)y * S->stride + (size_t)x * S->ch;
@@ -1481,15 +1475,15 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->resized = off;
     off += D->resize ? ALIGN_UP((size_t)D->iw * D->ih, 64) : 0;
     D->rscratch = off;
-    off += D->resize ? ALIGN_UP(channels == 1 || D->grey_frame ? vocr_desk_resize_scratch(w, h, D->iw, D->ih)
-                                                                : vocr_desk_resize_rgb_scratch(w, h, D->iw, D->ih), 64)
+    off += D->resize ? ALIGN_UP(channels == 1 || D->grey_frame ? vocr_tsd_resize_scratch(w, h, D->iw, D->ih)
+                                                                : vocr_tsd_resize_rgb_scratch(w, h, D->iw, D->ih), 64)
                      : 0;
     /* the banded resize for threads: its plan and a work area per task */
     D->ntasks = ntasks < 1 ? 1 : ntasks > RESIZE_MAX_TASKS ? RESIZE_MAX_TASKS : ntasks;
     D->rplan = off;
-    off += D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_desk_resize_plan_bytes(w, h, D->iw, D->ih), 64) : 0;
+    off += D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_tsd_resize_plan_bytes(w, h, D->iw, D->ih), 64) : 0;
     D->rwork = off;
-    D->rwork_bytes = D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_desk_resize_band_bytes(w, h, D->iw, D->ih), 64) : 0;
+    D->rwork_bytes = D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_tsd_resize_band_bytes(w, h, D->iw, D->ih), 64) : 0;
     off += D->rwork_bytes * D->ntasks;
     D->decode = off;
     off += ALIGN_UP(vocr_tsd_decode_bytes(D->pw / m->hs, D->ph / m->hs, m->tags), 64);
@@ -1528,7 +1522,7 @@ static void grey_task(void *arg, unsigned task, unsigned ntasks)
     const grey_job *j = (const grey_job *)arg;
     const unsigned y0 = (unsigned)((size_t)j->h * task / ntasks), y1 = (unsigned)((size_t)j->h * (task + 1) / ntasks);
     if (y1 > y0)
-        vocr_desk_grey(j->src + (size_t)y0 * j->stride, j->w, y1 - y0, j->stride, j->channels, j->dst + (size_t)y0 * j->w);
+        vocr_tsd_grey(j->src + (size_t)y0 * j->stride, j->w, y1 - y0, j->stride, j->channels, j->dst + (size_t)y0 * j->w);
 }
 
 typedef struct {               /* the banded resize on the runner */
@@ -1542,7 +1536,7 @@ typedef struct {               /* the banded resize on the runner */
 static void resize_task(void *arg, unsigned task, unsigned ntasks)
 {
     const resize_job *j = (const resize_job *)arg;
-    vocr_desk_resize_band(j->plan, j->src, j->stride, j->channels, j->dst, (unsigned)((size_t)j->dh * task / ntasks),
+    vocr_tsd_resize_band(j->plan, j->src, j->stride, j->channels, j->dst, (unsigned)((size_t)j->dh * task / ntasks),
                           (unsigned)((size_t)j->dh * (task + 1) / ntasks), j->work + j->work_bytes * task);
 }
 
@@ -1583,7 +1577,7 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
     base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
     PROF_START();
     if (D.grey_frame) {
-        /* the luma of an RGB(A) frame over the whole frame (vocr_desk_grey, in row bands on the runner: the same
+        /* the luma of an RGB(A) frame over the whole frame (vocr_tsd_grey, in row bands on the runner: the same
          * bits): what the resize and the refinement read (TSD_FUSED_LUMA without the refinement: the luma row by row
          * inside the resize instead, the same bits, no grey frame, but slower on a frame read from DRAM) */
         grey_job g;
@@ -1608,10 +1602,10 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
     N.src.stride = gstride;
     N.src.ch = gch;
     if (D.resize) {
-        /* the policy's resize of the frame's luma: vocr_desk_resize (in bands of output rows on the runner; every split
+        /* the policy's resize of the frame's luma: vocr_tsd_resize (in bands of output rows on the runner; every split
          * gives the same bits) */
-        if (D.ntasks > 1 && run && !vocr_desk_resize_plan(w, h, D.iw, D.ih, base + D.rplan)) {
-            resize_job j;   /* bands of output rows on the runner (vocr_desk_resize_band): the same bits */
+        if (D.ntasks > 1 && run && !vocr_tsd_resize_plan(w, h, D.iw, D.ih, base + D.rplan)) {
+            resize_job j;   /* bands of output rows on the runner (vocr_tsd_resize_band): the same bits */
             j.plan = base + D.rplan;
             j.src = gsrc;
             j.stride = gstride;
@@ -1622,9 +1616,9 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
             j.work_bytes = D.rwork_bytes;
             run(ctx, resize_task, &j, D.ntasks < D.ih ? D.ntasks : D.ih);
         } else if (gch == 1) {
-            vocr_desk_resize(gsrc, w, h, gstride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
+            vocr_tsd_resize(gsrc, w, h, gstride, base + D.resized, D.iw, D.ih, (int *)(void *)(base + D.rscratch));
         } else {
-            vocr_desk_resize_rgb(gsrc, w, h, gstride, gch, base + D.resized, D.iw, D.ih,
+            vocr_tsd_resize_rgb(gsrc, w, h, gstride, gch, base + D.resized, D.iw, D.ih,
                                  (int *)(void *)(base + D.rscratch));
         }
         PROF_MARK(1u, "resize");

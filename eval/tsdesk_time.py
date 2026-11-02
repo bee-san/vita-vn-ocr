@@ -240,6 +240,16 @@ def size_mode(size):
     return sz or None, mode or "exact"
 
 
+def crop_sides(b, sides, W, H):
+    """(x, y, w, h) of a box b = [x0, y0, x1, y1] grown by (left, top, right, bottom) px, rounded outward, clipped
+    (eval/tsdesk_eval.crop_sides); None if empty."""
+    import math
+    left, top, right, bottom = sides
+    x0, y0 = max(0, int(math.floor(b[0] - left))), max(0, int(math.floor(b[1] - top)))
+    x1, y1 = min(W, int(math.ceil(b[2] + right))), min(H, int(math.ceil(b[3] + bottom)))
+    return (x0, y0, x1 - x0, y1 - y0) if x1 > x0 and y1 > y0 else None
+
+
 def crop_hv(b, ph, pv, W, H):
     """(x, y, w, h) of a float box (x, y, w, h) grown by ph / pv px, rounded outward, clipped; None if empty."""
     import math
@@ -338,13 +348,13 @@ class Pipeline:
         H, W = g.shape
         boxes = self.det.detect(g)
         order = self.T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
+        xyxy = [(b.x, b.y, b.x + b.w, b.y + b.h) for b in boxes]
         jobs = []
         for i in order:
             b = boxes[i]
             if b.vertical:
                 continue
-            ph, pv = self.TC.rule_hv(self.rule, (b.x, b.y, b.x + b.w, b.y + b.h), H)
-            cb = crop_hv((b.x, b.y, b.w, b.h), ph, pv, W, H)
+            cb = crop_sides(xyxy[i], self.TC.rule_sides(self.rule, xyxy[i], H, xyxy), W, H)
             if cb:
                 jobs.append((g, cb))
         if self.pool is not None and len(jobs) > 1:

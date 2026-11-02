@@ -188,7 +188,7 @@ def pad_rule(pad):
     raise ValueError(f"reading pad {pad!r}: auto, kN, kNvM, (kh, kv) or N px")
 
 
-RULE_FRAME, RULE_LINE, RULE_PX = 0, 1, 2      # vocr_tsd.h VOCR_TSD_RULE_*
+RULE_FRAME, RULE_LINE, RULE_PX, RULE_CLIP = 0, 1, 2, 3      # vocr_tsd.h VOCR_TSD_RULE_*
 _NUM = r"(\d+(?:\.\d*)?|\.\d+)"
 
 
@@ -199,6 +199,8 @@ def rule_of(pad):
                            top and bottom for an H px tall frame; a (kh, kv) tuple likewise
       "kAvBfC"             (RULE_FRAME, A, B, C): the horizontal pad at least C px (protocol v2 amendment 2)
       "hXvY"               (RULE_LINE, X, Y, 0): X times the line's height along it and Y times it across (amendment 1)
+      "cXvY"               (RULE_CLIP, X, Y, 0): hXvY's margins, each side cut to half the gap to the nearest other box
+                           of the frame on that side (amendment 3; rule_sides)
       N (int, or digits)   (RULE_PX, N, N, 0): N px on every side"""
     if pad in (None, "auto"):
         return RULE_FRAME, 4.0, 4.0, 2.0
@@ -216,15 +218,16 @@ def rule_of(pad):
     mt = re.fullmatch(rf"k{_NUM}v{_NUM}f{_NUM}", s)
     if mt:
         return RULE_FRAME, float(mt.group(1)), float(mt.group(2)), float(mt.group(3))
-    mt = re.fullmatch(rf"h{_NUM}v{_NUM}", s)
+    mt = re.fullmatch(rf"([hc]){_NUM}v{_NUM}", s)
     if mt:
-        return RULE_LINE, float(mt.group(1)), float(mt.group(2)), 0.0
-    raise ValueError(f"reading rule {pad!r}: auto, kN, kAvB, kAvBfC, hXvY, (kh, kv) or N px")
+        return RULE_LINE if mt.group(1) == "h" else RULE_CLIP, float(mt.group(2)), float(mt.group(3)), 0.0
+    raise ValueError(f"reading rule {pad!r}: auto, kN, kAvB, kAvBfC, hXvY, cXvY, (kh, kv) or N px")
 
 
 def rule_hv(rule, b, H):
     """(horizontal, vertical) pad in frame px of a reading rule (rule_of's, or its spec) for the box b = [x0, y0, x1,
-    y1] in an H px tall frame: the C page's arithmetic (vocr_tsd_page_set_rule), eval/tsdesk_eval.margin_hv's values."""
+    y1] in an H px tall frame: the C page's arithmetic (vocr_tsd_page_set_rule), eval/tsdesk_eval.margin_hv's values
+    (a clip rule's margins before its clip: rule_sides)."""
     kind, a, bb, c = rule if isinstance(rule, tuple) and len(rule) == 4 else rule_of(rule)
     if kind == RULE_PX:
         return a, bb
@@ -234,6 +237,36 @@ def rule_hv(rule, b, H):
     if w >= h:
         return max(1.0, a * h), max(1.0, bb * h)
     return max(1.0, bb * w), max(1.0, a * w)
+
+
+def rule_sides(rule, b, H, others=()):
+    """(left, top, right, bottom) margins in frame px of a reading rule for the box b = [x0, y0, x1, y1] in an H px
+    tall frame, others: every box of the frame as [x0, y0, x1, y1, ...] (b itself among them; a clip rule's
+    neighbours): rule_hv's pads on both sides, a clip rule's cut to half the gap to the nearest other box on each side
+    (eval/tsdesk_eval.clip_sides; the C page's clip_sides)."""
+    r = rule if isinstance(rule, tuple) and len(rule) == 4 else rule_of(rule)
+    ph, pv = rule_hv(r, b, H)
+    if r[0] != RULE_CLIP:
+        return ph, pv, ph, pv
+    x0, y0, x1, y1 = (float(v) for v in b[:4])
+    left, right, top, bottom = ph, ph, pv, pv
+    for o in others:
+        ox0, oy0, ox1, oy1 = (float(v) for v in o[:4])
+        if (ox0, oy0, ox1, oy1) == (x0, y0, x1, y1):
+            continue
+        across = min(y1, oy1) - max(y0, oy0)
+        along = min(x1, ox1) - max(x0, ox0)
+        if across >= 0.5 * min(y1 - y0, oy1 - oy0) and along <= 0:
+            if ox0 >= x1:
+                right = min(right, (ox0 - x1) / 2.0)
+            elif ox1 <= x0:
+                left = min(left, (x0 - ox1) / 2.0)
+        elif along > 0 and across <= 0:
+            if oy0 >= y1:
+                bottom = min(bottom, (oy0 - y1) / 2.0)
+            elif oy1 <= y0:
+                top = min(top, (y0 - oy1) / 2.0)
+    return left, top, right, bottom
 
 
 def refine_opts(refine, lib):

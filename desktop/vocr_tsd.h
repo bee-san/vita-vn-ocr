@@ -195,9 +195,14 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
  *                        tall frame (kN and kAvB are c = 2: vocr_tsd_page_new's rule);
  *   VOCR_TSD_RULE_LINE   "hXvY": with bw = max(1, (x + w) - x) and bh = max(1, (y + h) - y), ph = max(1, a bh) and
  *                        pv = max(1, b bh) when bw >= bh, else ph = max(1, b bw) and pv = max(1, a bw);
- *   VOCR_TSD_RULE_PX     ph = a, pv = b.
+ *   VOCR_TSD_RULE_PX     ph = a, pv = b;
+ *   VOCR_TSD_RULE_CLIP   "cXvY" (amendment 3: eval/tsdesk_eval.clip_sides): the line rule's ph / pv, then each side cut
+ *                        to half the gap to the nearest other box of the frame (every box the detector returned, any
+ *                        tag or orientation, a box with the same corners skipped) on that side: for the left and right
+ *                        a box in the same row (overlapping the box across by at least half the smaller height, and
+ *                        not along it), for the top and bottom a box overlapping it along (and not across).
  * VOCR_TSD_E_ARG (the rule unchanged) for an unknown kind, or a value that is negative, NaN or above 4096. */
-enum { VOCR_TSD_RULE_FRAME = 0, VOCR_TSD_RULE_LINE = 1, VOCR_TSD_RULE_PX = 2 };
+enum { VOCR_TSD_RULE_FRAME = 0, VOCR_TSD_RULE_LINE = 1, VOCR_TSD_RULE_PX = 2, VOCR_TSD_RULE_CLIP = 3 };
 int vocr_tsd_page_set_rule(vocr_tsd_page *p, unsigned kind, double a, double b, double c);
 /* Only boxes whose tag bit is set in mask are read (bit t: tag t; the default ~0u: all). */
 void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask);
@@ -215,7 +220,7 @@ const vocr_tsd_line *vocr_tsd_page_line(const vocr_tsd_page *p, unsigned i);
 size_t vocr_tsd_line_bytes(void);
 const vocr_tsd_set *vocr_tsd_page_boxes(const vocr_tsd_page *p);
 /* The pad in frame px of the last run (horizontal, vertical), truncated to integers; (-1, -1) under a line rule
- * (VOCR_TSD_RULE_LINE: the pad is each line's own, its crop says it). */
+ * (VOCR_TSD_RULE_LINE, VOCR_TSD_RULE_CLIP: the pad is each line's own, its crop says it). */
 void vocr_tsd_page_pad(const vocr_tsd_page *p, int *ph, int *pv);
 /* The detector's last run alone, in us, and the whole page (detector + lines), in us. */
 double vocr_tsd_page_detect_us(const vocr_tsd_page *p);

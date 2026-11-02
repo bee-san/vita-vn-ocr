@@ -363,6 +363,57 @@
     }
    },
    "selection": "the candidate (model, policy, variant, rule) with the smallest gap among those passing G2-G4 is carried to round 3's seeds; reads at long:960 and long:1120, variants C7 and C8, rule k6v4 (the other rules reported where read)"
+  },
+  {
+   "n": 11,
+   "time": "2026-11-02T19:50Z",
+   "before": "any read of H1, H2",
+   "after": [
+    "on dense_dev, D2 + C8 reads long lines like R (references of 13+ characters: 24 errors against R's 23); the gap is short UI labels (1-6 characters: 76 errors against R's 32), mostly missed or merged with an icon; on dense_screen (textspot-desktop-boxes) the short-label misses are mostly large or stylised UI glyphs where K stays below 0, and the reading filter and cut are not the cause",
+    "textspot-desktop-targets' PC label-edit cache label_edits_pc_v1_text (872e5a0): MeikiOCR's native boxes at score >= 0.5 lying at least half inside an ignore area of a PC training frame, refined to ink, with ink, not overlapping a positive, become text positives weighted by MeikiOCR's score: desk_realplus 219,523 boxes on 38,688 frames, desk_dense 4,444, desk_hard 11,391; 69 of 72 sampled boxes are text; kernel share of windows 1.49 -> 2.37% (realplus), 9.58 -> 12.21% (dense). MeikiOCR's licence for its boxes as targets: amendment 4"
+   ],
+   "arms": {
+    "H1_q8b_from_D2_pc": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q8b",
+     "init": "runs/r2d_D2_q8b_fixes",
+     "steps": 80000,
+     "lr": 0.001,
+     "question": "G2 plus the PC label edits (G2 is the same without them)"
+    },
+    "H2_q4b_from_E1_pc": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q4b",
+     "init": "runs/r2e_E1_q4b_from_B3",
+     "steps": 80000,
+     "lr": 0.001,
+     "question": "G1 plus the PC label edits"
+    }
+   }
   }
  ]
 }

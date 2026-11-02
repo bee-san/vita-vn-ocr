@@ -764,3 +764,19 @@ def test_cut_reading_cuts_items_at_wide_gaps_only():
     out = T.cut_reading(icon, [7.0, 9.0, ei + 1.0, 27.0, 0, 1.0, 0], ic, 50)
     assert [t for _, _, t in out] == ["武器庫"] and abs(out[0][0] - 39) <= 1
     assert T.DROP_DEFAULTS["cut_pct"] == 0
+
+
+def test_init_from_loads_a_run_of_the_same_shape(tmp_path):
+    import tsdesk_det as TD
+    sh = N.SHAPES["p8t"]
+    torch.manual_seed(1)
+    a = N.TsdNet(sh)
+    torch.save({"kind": N.KIND, "shape": sh, "tags": N.TAGS, "seed": 1, "steps": 10, "state_dict": a.state_dict()},
+               tmp_path / "final.pt")
+    torch.manual_seed(2)
+    b = N.TsdNet(sh)
+    rec = TD.init_from(b, tmp_path, sh)
+    assert rec["steps"] == 10 and len(rec["pt_sha256"]) == 64
+    assert all(torch.equal(x, y) for x, y in zip(a.state_dict().values(), b.state_dict().values()))
+    with pytest.raises(SystemExit):
+        TD.init_from(N.TsdNet(N.SHAPES["p8a"]), tmp_path, N.SHAPES["p8a"])

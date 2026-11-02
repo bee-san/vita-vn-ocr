@@ -234,6 +234,48 @@
      "question": "the target fixes and data bundle against B1 (same shape); read with C7 (and C6, off) at the three rules"
     }
    }
+  },
+  {
+   "n": 7,
+   "time": "2026-11-02T14:00Z",
+   "note": "the 'time' fields of amendments 5 and 6 were estimates written a few minutes ahead; the commit times are the record",
+   "before": "any read of E1, E2; B2, C1, D2, B4 unread",
+   "after": "B3 (q4b) and B5 (q4b, PC-heavy mix) read, and B1 re-read with C7 (res/r2/goal_B*_C7_*): goal gap at k6v4 with C7: B3 0.508 (dev 1.222, dense_dev 0.837, dev_l544 1.169, dense_dev_l544 0.856; junk 0; G4 passes; the PSP views resolved worse than R), B1 0.546, B5 0.626. With C7 the whole units read like R's (B3 dev: 44 errors on clean PSP units against R's 46); the gap is the detection failures (dev 38 errors: lines broken along the row, faint coloured lines missed or cut, icons boxed at a line's start; dense_dev 88). Timing (textspot-desktop-speed): B3 13.0 ms at 1 thread (8.9x faster than MeikiOCR's detector), hybrid page 0.16-0.20 of R",
+   "trainer": "train/tsdesk_det.py --init RUN: start from a finished run's final.pt of the same shape (recorded in run.json with its sha256); the schedule, optimiser and EMA start afresh",
+   "arms": {
+    "E1_q4b_from_B3_fixes": {
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q4b",
+     "init": "runs/r2a_B3_q4b",
+     "steps": 40000,
+     "lr": 0.0015,
+     "question": "B3 trained 40k more steps with amendment 6's target fixes and data (more training + fixes, warm)"
+    },
+    "E2_q8b_from_B1_fixes": {
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q8b",
+     "init": "runs/r2a_B1_q8b",
+     "steps": 40000,
+     "lr": 0.0015,
+     "question": "the same from B1"
+    }
+   }
   }
  ]
 }

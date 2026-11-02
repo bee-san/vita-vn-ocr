@@ -662,6 +662,18 @@ def loss_all(y, batch):
 
 # ----------------------------------------------------------------------------- export
 
+def init_from(model, run_dir, shape):
+    """Load a finished run's final.pt into model (the same shape): its record (path, sha256, steps)."""
+    import hashlib
+    p = Path(run_dir) / "final.pt"
+    ck = torch.load(p, map_location="cpu", weights_only=False)
+    if ck.get("kind") != N.KIND or ck.get("shape") != shape:
+        raise SystemExit(f"{p}: not a textspot-desktop checkpoint of this shape")
+    model.load_state_dict(ck["state_dict"])
+    return {"run": str(run_dir), "pt_sha256": hashlib.sha256(p.read_bytes()).hexdigest(), "steps": ck.get("steps"),
+            "seed": ck.get("seed")}
+
+
 def load_run(run_dir):
     ck = torch.load(Path(run_dir) / "final.pt", map_location="cpu", weights_only=False)
     if ck.get("kind") != N.KIND:
@@ -735,6 +747,8 @@ def parse(argv=None):
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
+    ap.add_argument("--init", help="protocol v2 amendment 7: start from a finished run's final.pt (same shape); the "
+                                   "schedule, optimiser and EMA start afresh")
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--warmup", type=int, default=500)
     ap.add_argument("--batch", type=int, default=16)
@@ -799,13 +813,14 @@ def main(argv=None):
     torch.set_num_threads(a.threads)
     torch.manual_seed(a.seed)
     model = N.TsdNet(shape)
+    init_rec = init_from(model, a.init, shape) if a.init else None
     opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())), lr=a.lr)
     loader = torch.utils.data.DataLoader(Batches(cfg, a.seed), batch_size=None, num_workers=a.workers,
                                          persistent_workers=a.workers > 0,
                                          prefetch_factor=4 if a.workers > 0 else None)
     it = iter(loader)
     run = {"kind": "textspot-desktop-run", "name": a.name, "started": ST.utc(), "shape": shape,
-           "params": N.n_params(model), "macs_960x544": N.macs(shape, 960, 544),
+           "params": N.n_params(model), "macs_960x544": N.macs(shape, 960, 544), "init": init_rec,
            "args": {k: v for k, v in vars(a).items() if k not in ("mix_d", "scale_t")}, "mix": a.mix_d,
            "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch, "recipe": a.recipe,
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,

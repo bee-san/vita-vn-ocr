@@ -22,7 +22,9 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
                                    (the binding's Box objects are not built inside the timing)
       A detector or page spec's BLOB / MODEL part may end in +refine: the box refinement on (cdet / cpage: the C
       refinement inside the detector call; odet / opage: tools/tsdesk.Detector's refine, tools/tsdesk_refine.py),
-      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L
+      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L. An ONNX spec's SIZE may be followed by @MODE, the
+      resize of tools/tsdesk.Detector (exact: its numpy model of the C integer resize, the default; cv2: OpenCV's
+      INTER_AREA / INTER_LINEAR, an app's resize), e.g. odet:MODEL@fit:960@cv2+refine
         cpage:BLOB[@SIZE]+c:T      the C page: the detector and VOCR6.2-T's int8 blob read by runtime/vocr.c W8I with
                                    its head sections, every horizontal box grown by --pad, the lines on the same pool
         odet:MODEL[@SIZE]          tools/tsdesk.Detector.detect on the RGB frame (ONNX Runtime FP32, intra-op threads N)
@@ -207,6 +209,16 @@ def split_spec(spec):
     return kind, path, size or None, rec, refine
 
 
+def size_mode(size):
+    """(size, resize mode) of an ONNX spec's SIZE[@MODE] part."""
+    if not size:
+        return None, "exact"
+    sz, _, mode = size.partition("@")
+    if mode not in ("", "exact", "cv2"):
+        raise ValueError(f"resize mode {mode!r}: exact or cv2")
+    return sz or None, mode or "exact"
+
+
 def crop_hv(b, ph, pv, W, H):
     """(x, y, w, h) of a float box (x, y, w, h) grown by ph / pv px, rounded outward, clipped; None if empty."""
     import math
@@ -236,8 +248,9 @@ class Pipeline:
             import tsdesk as T
             import vocr_onnx as V
             self.T, self.V = T, V
+            osize, omode = size_mode(self.size)
             self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
-                                  size=self.size, refine=self.refine)
+                                  size=osize, refine=self.refine, resize_mode=omode)
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",

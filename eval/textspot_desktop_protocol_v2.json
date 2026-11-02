@@ -181,6 +181,26 @@
      "question": "the data bundle (targets_v2 + no junk recipe + dense hard examples) against B3 (q4b, round 1's data); read with C6"
     }
    }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-02T11:40Z",
+   "before": "any read of arm D1; B2-B5 and C1 unread",
+   "after": "B1 (q8b, 80k) read (res/r2/goal_B1_q8b_*): with C6 the goal gap is 0.874 (k6v4), 0.918 (h0.6v0.15), 0.924 (c0.45v0.1); at k6v4 dev 1.209 / dense_dev 1.153 / dev_l544 1.129 / dense_dev_l544 1.222% against R's 0.770 / 0.353 / 0.677 / 0.347; PCSG00854 junk 1 (R 0); G2 10.8x faster than MeikiOCR's detector, G3 hybrid page 0.15-0.17 of R (textspot-desktop-speed, goal_B1_q8b.*). On dense_dev the remaining errors are cut or missed lines (44 units, 77 errors) and whole lines read worse than R (56 units, +91), mostly items of one row boxed together and bullets; targets_v3 (the cell fix, 711 boxes) and label_edits_v1 (1,770 'apart' elements as notdlg positives) and --marks (single marks before line starts and between buttons as background) are built and tested by textspot-desktop-targets",
+   "arms": {
+    "D1_q8b_v3_edits_marks_base_dense": {
+     "shape": "q8b",
+     "steps": 80000,
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "marks": 0.5,
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.3,synth=0.15,real=0.25,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.05,desk_dense=0.05",
+     "question": "the data bundle against B1 (same shape, round 1's data); read with C6 at the three rules"
+    }
+   }
   }
  ]
 }

@@ -141,6 +141,16 @@
     "A2_harness": "the exact boxes read through the harness (eval/desktop.py read, unit scoring, as R is scored) at k6v4, h0.45v0.1, k6v4f6 and the best new rule of A2_rules on the four goal sets, hval and dense_screen; compared with R (the ceiling: whether exact boxes read at or below R)"
    },
    "reading_rule_choice": "the reading rule of round-2 candidates is chosen once, from the exact boxes' harness reads: the lowest mean CER over the four goal sets (dev, dense_dev, dev_l544, dense_dev_l544) among the rules whose hval + dense_screen mean is within 0.05 points of the best rule there; it may be revisited for a candidate's own boxes by a later amendment, disclosed"
+  },
+  {
+   "n": 3,
+   "time": "2026-11-02T06:55Z",
+   "before": "study A3's reads and any candidate read (round 2a's arms are training, none read)",
+   "after": "study A2 (amendment 2) read, exact boxes through the harness against R: dev 0.863 / 0.691 / 0.757 / 0.624% (k6v4 / h0.45v0.1 / k6v4f6 / h0.6v0.15) against R's 0.770%; dense_dev 0.347 / 0.322 / 0.335 / 0.366 against 0.353; dev_l544 0.797 / 0.704 / 0.797 / 0.611 against 0.677; dense_dev_l544 0.353 / 0.347 / 0.353 / 0.409 against 0.347. Amendment 2's choice procedure picks h0.6v0.15 (goal-set mean 0.503%), which reads dense_dev and dense_dev_l544 above R even with exact boxes; h0.45v0.1 reads dev_l544 above R. Wide margins pull neighbouring text into dense pages' crops",
+   "studies": {
+    "A3": "the neighbour-clipped rules cXvY (hXvY's margins, each side cut to half the gap to the nearest other box of the frame on that side: in the same row for left / right, overlapping along it for top / bottom; in the harness the other boxes are every box the pipeline returned for the frame) at c0.45v0.1, c0.6v0.1, c0.6v0.15, c0.8v0.15: per line and through the harness, on the same six sets as A2"
+   },
+   "reading_rule_choice": "replaces amendment 2's: among A2's and A3's rules read through the harness, the rule with the lowest mean CER over the four goal sets among those whose hval + dense_screen mean is within 0.05 points of the best there; if a rule has every goal set at or below R with exact boxes, the lowest-mean such rule is preferred"
   }
  ]
 }

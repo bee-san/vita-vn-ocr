@@ -118,6 +118,9 @@ def install(Dm=D):
         return base_pad(spec, H)
 
     def crop_box(b, pad, W, H):
+        if isinstance(pad, tuple) and pad and pad[0] == "clip":
+            ph, pv = rel_hv(pad, b)
+            return crop_sides(b, clip_sides(b, _CLIP["boxes"], ph, pv), W, H)
         if isinstance(pad, tuple) and pad and pad[0] == "rel":
             return crop_hv(b, rel_hv(pad, b), W, H)
         if isinstance(pad, tuple):
@@ -125,6 +128,12 @@ def install(Dm=D):
         return base_crop(b, pad, W, H)
 
     Dm.pad_of, Dm.crop_box = pad_of, crop_box
+    base_read = Dm._read_job
+
+    def read_job(job):
+        _CLIP["boxes"] = tuple(job[1])          # every box the pipeline returned for this frame (clip rules)
+        return base_read(job)
+    Dm._read_job = read_job
     try:
         import desktop_time as DT
     except ImportError:
@@ -346,15 +355,55 @@ def floor_hv(fl, H):
 
 
 def rel_rule(spec):
-    """("rel", X, Y) of a line-height reading rule "hXvY", else None."""
+    """("rel", X, Y) of a line-height reading rule "hXvY", ("clip", X, Y) of "cXvY" (the same margins, each side
+    clipped at half the gap to the nearest other box of the frame on that side; protocol v2 amendment 3), else None."""
     s = str(spec)
-    if s.startswith("h") and "v" in s:
+    if s[:1] in ("h", "c") and "v" in s:
         x, _, y = s[1:].partition("v")
         try:
-            return ("rel", float(x), float(y))
+            return ("rel" if s[0] == "h" else "clip", float(x), float(y))
         except ValueError:
             return None
     return None
+
+
+_CLIP = {"boxes": ()}
+
+
+def clip_sides(b, others, ph, pv):
+    """(left, top, right, bottom) margins of b = [x0, y0, x1, y1]: ph / pv, each cut to half the gap to the nearest
+    other box on that side (a box in the same row, overlapping b across by at least half the smaller height, for the
+    left and right; a box overlapping b along it, for the top and bottom), at least 1 px or the gap's half if
+    smaller."""
+    x0, y0, x1, y1 = (float(v) for v in b[:4])
+    left, right, top, bottom = ph, ph, pv, pv
+    for o in others:
+        ox0, oy0, ox1, oy1 = (float(v) for v in o[:4])
+        if (ox0, oy0, ox1, oy1) == (x0, y0, x1, y1):
+            continue
+        across = min(y1, oy1) - max(y0, oy0)
+        along = min(x1, ox1) - max(x0, ox0)
+        if across >= 0.5 * min(y1 - y0, oy1 - oy0) and along <= 0:
+            if ox0 >= x1:
+                right = min(right, (ox0 - x1) / 2.0)
+            elif ox1 <= x0:
+                left = min(left, (x0 - ox1) / 2.0)
+        elif along > 0 and across <= 0:
+            if oy0 >= y1:
+                bottom = min(bottom, (oy0 - y1) / 2.0)
+            elif oy1 <= y0:
+                top = min(top, (y0 - oy1) / 2.0)
+    return left, top, right, bottom
+
+
+def crop_sides(b, sides, W, H):
+    import math
+    left, top, right, bottom = sides
+    x0, y0 = max(0, int(math.floor(b[0] - left))), max(0, int(math.floor(b[1] - top)))
+    x1, y1 = min(W, int(math.ceil(b[2] + right))), min(H, int(math.ceil(b[3] + bottom)))
+    if x1 <= x0 or y1 <= y0:
+        return None
+    return (x0, y0, x1 - x0, y1 - y0)
 
 
 def rel_hv(rel, b):
@@ -388,15 +437,21 @@ def _pad_job(job):
     g = V.grey_of(rgb)
     H, W = g.shape
     rows = []
-    for ui, li, b, how in exact_boxes(fr, rgb):
+    ex = exact_boxes(fr, rgb)
+    others = [e[2] for e in ex]
+    for ui, li, b, how in ex:
         u = fr["units"][ui]
         ref = metrics.norm(u["lines"][li]["text"])
         r = {"uid": f"{u['uid']}|{li}", "cluster": u["cluster"], "view": fr["view"], "chars": len(ref), "how": how}
         for name in rules:
-            ph, pv = margin_hv(name, b, H)
-            x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
-            x1, y1 = min(W, int(math.ceil(b[2] + ph))), min(H, int(math.ceil(b[3] + pv)))
-            cb = (x0, y0, x1 - x0, y1 - y0)
+            rel = rel_rule(name)
+            if rel and rel[0] == "clip":
+                cb = crop_sides(b, clip_sides(b, others, *rel_hv(rel, b)), W, H)
+            else:
+                ph, pv = margin_hv(name, b, H)
+                x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
+                x1, y1 = min(W, int(math.ceil(b[2] + ph))), min(H, int(math.ceil(b[3] + pv)))
+                cb = (x0, y0, x1 - x0, y1 - y0)
             dark = V.line_dark(g, cb)
             t = _E["rec"].read(g[y0:y1, x0:x1], invert=bool(dark)).text
             r[name] = PP.lev(metrics.norm(t), ref)

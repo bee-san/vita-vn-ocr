@@ -223,6 +223,7 @@ def _keep(b):
 def _ign_read_job(job):
     fr, boxes, pad = job
     _CUR["ign"] = fr.get("ignore") or []
+    _CUR["all"] = (fr.get("key"), boxes)        # the unfiltered boxes, for a reading stage that cuts lines first
     return _BASE["read"]((fr, [b for b in boxes if _keep(b)], pad))
 
 

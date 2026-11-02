@@ -516,7 +516,7 @@ def test_decode_saddle_split():
     assert two[0].x == pytest.approx(40.0) and two[0].x + two[0].w == pytest.approx(8 * (col + 1))
     assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
     assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
-    assert all(v == (2 if k == "vote_depth" else 0) for k, v in T.DECODE_EXTRA.items())          # off ...
+    assert all(v == {"vote_depth": 2, "along_depth": 3}.get(k, 0) for k, v in T.DECODE_EXTRA.items())  # off
     assert "saddle_pct" not in T.DEFAULTS                                                       # C constants kept
 
 
@@ -670,3 +670,60 @@ def test_split_kgap_cuts_where_k_does_not_bridge_the_gap():
     narrow[12:24, e2 + 12:e2 + 15] = 230
     nb = [_box(8, 10, e2 + 15, 26)]
     assert T.split_kgap(narrow, nb, K, 1.0, 1.0, 8, 40) == nb
+
+
+def _row_maps(items, hm=8, wm=60, s=8, y0=20.0, y1=44.0):
+    """Maps of one kernel row (rows 3-4) over columns 4..; items: [(q0, q1, x0, x1)]: the columns whose cells vote
+    the along ends x0, x1 (one line's ends, or each item's own)."""
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for q0, q1, x0, x1 in items:
+        for r in (3, 4):
+            for q in range(q0, q1):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y1 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - x0, x1 - cs[q]
+    return m
+
+
+def test_decode_along_split_two_items_of_a_row():
+    two_items = _row_maps([(4, 14, 34.0, 112.0), (14, 30, 116.0, 244.0)])     # the kernel touches; the votes part
+    assert len(T.decode(two_items, 480, 64, 8)) == 1
+    out = sorted(T.decode(two_items, 480, 64, 8, along_pct=50), key=lambda b: b.x)
+    assert len(out) == 2
+    assert out[0].x == pytest.approx(34.0) and out[0].x + out[0].w == pytest.approx(112.0)
+    assert out[1].x == pytest.approx(116.0) and out[1].x + out[1].w == pytest.approx(244.0)
+    one_line = _row_maps([(4, 30, 34.0, 244.0)])                             # one line: every cell votes its ends
+    assert len(T.decode(one_line, 480, 64, 8, along_pct=50)) == 1
+    three = _row_maps([(4, 12, 34.0, 96.0), (12, 20, 100.0, 160.0), (20, 30, 164.0, 244.0)])
+    assert len(T.decode(three, 480, 64, 8, along_pct=50)) == 3
+    assert len(T.decode(three, 480, 64, 8, along_pct=50, along_depth=1)) == 2
+
+
+def test_cut_reading_cuts_items_at_wide_gaps_only():
+    g = np.full((40, 260), 20, np.uint8)
+    e1 = _glyphs(g, 8, 10, 3, 16, 2)                                     # 3 glyphs 2 px apart, then a 14 px gap
+    e2 = _glyphs(g, e1 + 14, 10, 2, 16, 2)
+    b = [7.0, 9.0, e2 + 1.0, 27.0, 0, 1.0, 0]
+    chars = [(t, 8 + 18 * k + 8.0) for k, t in enumerate("自兵数")] + [(t, e1 + 14 + 18 * k + 8.0) for k, t in
+                                                                       enumerate("93")]
+    out = T.cut_reading(g, b, chars, 50)
+    assert [t for _, _, t in out] == ["自兵数", "93"]
+    assert out[0][0] == b[0] and abs(out[0][1] - e1) <= 1 and abs(out[1][0] - (e1 + 14)) <= 1 and out[1][1] == b[2]
+    assert T.cut_reading(g, b, chars, 100) is None                        # 14 px < 100 % of the 18 px height
+    comma = [(t, x) for t, x in chars]
+    comma[2] = ("、", comma[2][1])                                        # a phrase's own gap: kept
+    assert T.cut_reading(g, b, comma, 50) is None
+    wide = np.full((40, 300), 20, np.uint8)                               # a wide-set font: every gap 12 px
+    ew = _glyphs(wide, 8, 10, 6, 16, 12)
+    wc = [(t, 8 + 28 * k + 8.0) for k, t in enumerate("こちらこそ！")]
+    assert T.cut_reading(wide, [7.0, 9.0, ew + 1.0, 27.0, 0, 1.0, 0], wc, 50) is None
+    icon = np.full((40, 260), 20, np.uint8)                               # ink that read as no character: trimmed
+    icon[12:26, 8:22] = 230
+    ei = _glyphs(icon, 40, 10, 3, 16, 2)
+    ic = [(t, 40 + 18 * k + 8.0) for k, t in enumerate("武器庫")]
+    out = T.cut_reading(icon, [7.0, 9.0, ei + 1.0, 27.0, 0, 1.0, 0], ic, 50)
+    assert [t for _, _, t in out] == ["武器庫"] and abs(out[0][0] - 39) <= 1
+    assert T.DROP_DEFAULTS["cut_pct"] == 0

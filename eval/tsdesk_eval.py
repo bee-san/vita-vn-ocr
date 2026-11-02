@@ -146,6 +146,8 @@ def _drop_read_job(job):
     o = _DROP["opts"]
     if not o:
         return _DROP["base"](job)
+    if o.get("cut_pct"):
+        return _cut_read_job(job, o)
     import tsdesk as T
     fr, boxes, pad = job
     V = D._W["V"]
@@ -180,6 +182,64 @@ def _drop_read_job(job):
         cb = D.crop_box(b, p, W, H)
         crops.append((*cb, len(texts)))
         texts.append("" if b[4] else read[k][0])
+    return D.score_frame_units(fr, g, crops, texts)
+
+
+def _cut_read_job(job, o):
+    """_drop_read_job with the reading stage's cut (tools/tsdesk.cut_reading, +drop:cut_pct=...): as a page runs it,
+    every horizontal box of the detector is read and its reading cut into items at its wide ink gaps; then the dense
+    sets' ignore filter (eval/tsdesk_dense.py: a box at least half inside an ignore area is not scored) applies to
+    the pieces, the reading filter (drop_set) to their readings, and the pieces whose crop centre lies in a unit's
+    region are scored with their own texts (no second read). Vertical boxes as in _drop_read_job."""
+    import tsdesk as T
+    import tsdesk_dense as TD
+    fr, boxes, pad = job
+    key, allb = TD._CUR.get("all") or (None, None)
+    allb = allb if key == fr.get("key") and allb is not None else boxes
+    V = D._W["V"]
+    rgb = D.load_rgb(fr)
+    g = V.grey_of(rgb)
+    H, W = g.shape
+    p = D.pad_of(pad, H) if pad is not None else 0
+
+    def in_unit(cb):
+        for u in fr["units"]:
+            x0, y0, x1, y1 = u["region"]
+            if cb and x0 <= cb[0] + cb[2] / 2.0 < x1 and y0 <= cb[1] + cb[3] / 2.0 < y1:
+                return True
+        return False
+
+    pieces = []                                   # (box, text, conf_mean)
+    for b in allb:
+        if b[4]:
+            continue
+        cb = D.crop_box(b, p, W, H)
+        if not cb:
+            continue
+        dark = V.line_dark(g, cb)
+        ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
+        cut = T.cut_reading(g, b, [(c.text, cb[0] + c.x) for c in ln.chars], o["cut_pct"], o["cut_rel_pct"])
+        if cut is None:
+            pieces.append((list(b), ln.text, ln.conf_mean))
+        else:
+            pieces += [([x0, b[1], x1, b[3]] + list(b[4:]), t, ln.conf_mean) for x0, x1, t in cut]
+    pieces = [pc for pc in pieces if TD._keep(pc[0])]
+    seen = [k for k, pc in enumerate(pieces) if o["nojp"] >= 2 or in_unit(D.crop_box(pc[0], p, W, H))]
+    items = [((pieces[k][0][0], pieces[k][0][1], pieces[k][0][2] - pieces[k][0][0], pieces[k][0][3] - pieces[k][0][1]),
+              pieces[k][1], pieces[k][2]) for k in seen]
+    gone = {seen[i] for i in T.drop_set(items, o)}
+    crops, texts = [], []
+    for k, pc in enumerate(pieces):
+        cb = D.crop_box(pc[0], p, W, H)
+        if k in gone or not cb or not in_unit(cb):
+            continue
+        crops.append((*cb, len(texts)))
+        texts.append(pc[1])
+    for b in boxes:
+        cb = D.crop_box(b, p, W, H)
+        if b[4] and cb and in_unit(cb):
+            crops.append((*cb, len(texts)))
+            texts.append("")
     return D.score_frame_units(fr, g, crops, texts)
 
 

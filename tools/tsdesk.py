@@ -52,7 +52,7 @@ CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
 DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0,
-                "vote_depth": 2}                                                 # decode options (vote_pct: C too)
+                "vote_depth": 2, "along_pct": 0, "along_depth": 3}               # decode options (vote_pct: C too)
 #                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
@@ -327,6 +327,78 @@ def vote_split(maps, lab, n, stats, pct, s, depth=2, cap=None):
     return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
 
 
+def along_split(maps, lab, n, stats, pct, s, depth=3, cap=None, w=2):
+    """The decode's along option: a component is split along its line (the orientation of its summed O) where its
+    cells' along votes part, two items of a row whose kernels touched (a label and its value, menu entries, a bullet
+    and its text): the network's end votes (centre + E2) of the cells before a split point stop where the start votes
+    (centre - E1) of the cells after it begin, while along one line every cell votes the line's own two ends. Over the
+    split points between consecutive along indices (columns; rows for a vertical line), the separation is the mean
+    start vote of the cells of the w indices after the point minus the mean end vote of the cells of the w indices
+    before it; the best point is kept when its separation is at least -pct % of the component's mean size across
+    (A1 + A2) and each part holds at least w indices; recursively, `depth` levels, while the labels stay under `cap`.
+    Sums as vote_split's: the cells in raster order, one term at a time; a window's mean adds its per-index sums in
+    index order. (n, lab, stats) with stats in cv2's layout."""
+    hm, wm = lab.shape
+    Om, A1, A2, E1, E2 = (np.ascontiguousarray(maps[i, :hm, :wm]).astype(np.float64) for i in (1, 2, 3, 4, 5))
+    lab = lab.copy()
+    st = [list(stats[c]) for c in range(n)]
+    half = (s - 1) / 2.0
+    todo = [(c, depth) for c in range(1, n)]
+    while todo:
+        c, dep = todo.pop()
+        if cap is not None and n >= cap:
+            break
+        x, y, cw, ch = (int(v) for v in st[c][:4])
+        sub = lab[y:y + ch, x:x + cw] == c
+        rr, qq = np.nonzero(sub)
+        m = len(rr)
+        if m < 2 * w:
+            continue
+        R, Q = rr + y, qq + x
+        vert = _seq(Om[R, Q]) / m > 0.0
+        size = _seq(A1[R, Q] + A2[R, Q]) / m
+        ai = R if vert else Q
+        cc = s * ai.astype(np.float64) + half
+        start = cc - E1[R, Q]
+        end = cc + E2[R, Q]
+        idx = np.unique(ai)
+        if len(idx) < 2 * w or size <= 0:
+            continue
+        pos = np.searchsorted(idx, ai)
+        k_n = np.bincount(pos, minlength=len(idx)).astype(np.float64)
+        s_s = np.bincount(pos, start, minlength=len(idx))
+        s_e = np.bincount(pos, end, minlength=len(idx))
+        best = None
+        for k in range(w - 1, len(idx) - w):
+            le = lc = hs = hc = 0.0
+            for q in range(k - w + 1, k + 1):
+                le, lc = le + s_e[q], lc + k_n[q]
+            for q in range(k + 1, k + w + 1):
+                hs, hc = hs + s_s[q], hc + k_n[q]
+            sep = hs / hc - le / lc
+            if best is None or sep > best[0]:
+                best = (sep, k)
+        if best is None or best[0] * 100.0 < -pct * size:
+            continue
+        hi = ai > idx[best[1]]
+        part = np.zeros_like(sub)
+        part[rr[hi], qq[hi]] = True
+        lab[y:y + ch, x:x + cw][part] = n
+        keep = sub & ~part
+        for msk, lbl in ((keep, c), (part, n)):
+            r2, q2 = np.nonzero(msk)
+            entry = [x + int(q2.min()), y + int(r2.min()), int(q2.max() - q2.min()) + 1, int(r2.max() - r2.min()) + 1,
+                     int(msk.sum())]
+            if lbl == c:
+                st[c] = entry
+            else:
+                st.append(entry)
+        n += 1
+        if dep > 1:
+            todo += [(c, dep - 1), (n - 1, dep - 1)]
+    return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
+
+
 def rescue_components(k, lab, n, stats, t_low):
     """The decode's rescue option: the 4-connected components of K > -t_low that hold no cell of K > 0 (a line the
     network saw too weakly: no kernel cell, nothing found there) added with new labels. (n, lab, stats, first new
@@ -348,13 +420,16 @@ def rescue_components(k, lab, n, stats, t_low):
 
 
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0, vote_depth=2):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0, vote_depth=2,
+           along_pct=0, along_depth=3):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
     the first max_boxes kept. Off by default: vote_pct > 0, each component split across where its cells' edge votes
     are bimodal (vote_split(), vote_depth levels: 2, the C twin's; deeper, no C twin yet). No C twin yet:
+    along_pct > 0, each component (after the vote split) split along where its cells' end and start votes part
+    (along_split(), along_depth levels: two items of a row whose kernels touched);
     saddle_pct > 0, each component split along at the K saddles saddle_split() finds, the parts' ends at a split at
     their outermost cells' edges (no E1 / E2 there); rescue_milli > 0, the components of K > -rescue_milli / 1000
     with no K > 0 cell decoded too (rescue_components(); their mean logit is negative, so conf_min_logit does not
@@ -374,6 +449,9 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if vote_pct:
         n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, depth=int(vote_depth),
                                    cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
+    if along_pct:
+        n, lab, stats = along_split(maps, lab, n, stats, along_pct, s, depth=int(along_depth),
+                                    cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
     if saddle_pct:
         n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
@@ -1030,8 +1108,67 @@ def post_pre(g, boxes, opts):
 
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
-DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4}
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
+                 "cut_pct": 0, "cut_rel_pct": 200}
+# cut_reading's characters: no cut after a mark that ends a phrase (its gap is the sentence's own) or before an
+# opening bracket
+CUT_KEEP_AFTER = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・")
+CUT_KEEP_BEFORE = set("「『（(【〈《〔［[｛{")
 _JP_RE = None
+
+
+def cut_reading(g, b, chars, pct, rel_pct=200):
+    """cut_pct (a reading-stage option): a read horizontal line cut into items at its wide ink gaps, by its characters'
+    positions: a label and its value, menu entries, an icon beside a label. b: the box [x0, y0, x1, y1, ...] in frame
+    px; chars: [(text, x)] the reading's characters in order with their centres in frame px. A gap is the longest run
+    of empty ink columns (ink_mask over the box) lying between two consecutive characters' centres; it cuts the line
+    when it is at least max(2, pct % of the height) and at least rel_pct % of the line's median such gap (a wide-set
+    font keeps its lines), unless the character before it ends a phrase (CUT_KEEP_AFTER) or the one after it opens a
+    bracket (CUT_KEEP_BEFORE). A run as long between the box's first (last) ink and the first (last) character's
+    centre trims ink that read as no character (an icon). None (no cut, no trim) or [(x0, x1, text)] in frame px: the
+    first piece keeps the box's start and the last its end unless trimmed; the edges at a cut lie on the ink either
+    side of the gap."""
+    H, W = g.shape
+    ix0 = min(max(int(math.floor(b[0])), 0), W)
+    iy0 = min(max(int(math.floor(b[1])), 0), H)
+    ix1 = min(max(int(math.ceil(b[2])), 0), W)
+    iy1 = min(max(int(math.ceil(b[3])), 0), H)
+    h = iy1 - iy0
+    if h < 4 or ix1 - ix0 < 4 or not chars:
+        return None
+    ink = np.flatnonzero(ink_mask(g, ix0, iy0, ix1, iy1).any(0))
+    if len(ink) < 2:
+        return None
+    runs = [(int(ink[j]) + 1, int(ink[j + 1])) for j in np.flatnonzero(np.diff(ink) > 1)]    # empty, box px
+
+    def widest(a, e):
+        best = None
+        for r in runs:
+            if r[0] >= a and r[1] <= e and (best is None or r[1] - r[0] > best[1] - best[0]):
+                best = r
+        return best
+
+    xs = [x - ix0 for _, x in chars]
+    gaps = [widest(xs[i], xs[i + 1]) for i in range(len(chars) - 1)]
+    lens = sorted((r[1] - r[0]) if r else 0 for r in gaps)
+    med = lens[(len(lens) - 1) // 2] if lens else 0
+    thr = max(2, _r100(h, pct), -(-int(med) * int(rel_pct) // 100))
+    cuts = [r for i, r in enumerate(gaps) if r and r[1] - r[0] >= thr
+            and chars[i][0] not in CUT_KEEP_AFTER and chars[i + 1][0] not in CUT_KEEP_BEFORE]
+    lead = widest(int(ink[0]), xs[0])
+    tail = widest(xs[-1], int(ink[-1]) + 1)
+    lead = lead if lead and lead[1] - lead[0] >= thr else None
+    tail = tail if tail and tail[1] - tail[0] >= thr else None
+    if not cuts and not lead and not tail:
+        return None
+    starts = [float(ix0 + lead[1]) if lead else float(b[0])] + [float(ix0 + r[1]) for r in cuts]
+    ends = [float(ix0 + r[0]) for r in cuts] + [float(ix0 + tail[0]) if tail else float(b[2])]
+    out = []
+    for s0, e0 in zip(starts, ends):
+        t = "".join(c for c, x in chars if s0 <= x < e0)
+        if t and e0 > s0:
+            out.append((s0, e0, t))
+    return out
 
 
 def drop_options(opts=None):
@@ -1166,7 +1303,8 @@ class Detector:
         maps = self.maps(x)
         boxes = decode(maps, iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
                        o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
-                       int(o["rescue_milli"]), int(o["clamp_ends"]), int(o["vote_depth"]))
+                       int(o["rescue_milli"]), int(o["clamp_ends"]), int(o["vote_depth"]), int(o["along_pct"]),
+                       int(o["along_depth"]))
         H, W = g.shape
         out = []
         for b in boxes:

@@ -85,7 +85,8 @@ class COpts(C.Structure):
 NO_C_POST = ("ext_band_pct", "touch_pct", "vflip_pct", "vflip_join_pct", "vflip_min", "vflip_h_pct",
              "ksplit_pct", "ksplit_k", "ksplit_min_pct")                  # tools/tsdesk post options, no C twin
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
-DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts'
+NO_C_DROP = ("cut_pct", "cut_rel_pct")      # tools/tsdesk reading-stage options with no C twin yet
+DROP_KEYS = tuple(k for k in T.DROP_DEFAULTS if k not in NO_C_DROP)   # vocr_tsdd_opts'
 
 
 class CPost(C.Structure):
@@ -106,7 +107,7 @@ class CPBox(C.Structure):                   # vocr_tsdp_box
                 ("cells", C.c_uint)]
 
 
-NO_C_TWIN = ("saddle_pct", "rescue_milli", "clamp_ends")     # tools/tsdesk.DECODE_EXTRA options the C decode lacks
+NO_C_TWIN = ("saddle_pct", "rescue_milli", "clamp_ends", "along_pct")   # DECODE_EXTRA options the C decode lacks
 
 
 _LIBS = {}
@@ -340,6 +341,9 @@ def drop_struct(drop):
     if drop in (None, False):
         return None
     o = T.drop_options(drop)
+    no = [k for k in ("cut_pct",) if o[k]]
+    if no:
+        raise ValueError(f"reading-filter options with no C twin yet: {no}")
     return CDrop(*[o[k] for k in DROP_KEYS])
 
 

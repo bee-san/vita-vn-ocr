@@ -26,8 +26,8 @@ spotter has run on a console.
   parameters, trained at many text sizes. It runs on ONNX Runtime, or in C with AVX2 kernels (`desktop/`), and reads
   its lines with VOCR6.2-L. The comparison is MeikiOCR's detector with VOCR6.2-L (R):
   - on the hooked test titles it reads 1.19% against R's 3.50%;
-  - a page takes about a quarter of R's time: 21 / 18 ms against 74 / 71 ms on Vita / PSP pages at a 4-thread
-    budget;
+  - a page takes 0.25-0.31 of R's time: 21 / 18 / 24 ms against 74 / 71 / 77 ms on Vita / PSP / PC pages at a
+    4-thread budget;
   - peak memory is 160 MiB against R's 245 MiB, and 83 MiB in C.
 
   It does not meet its pre-registered rule, which asks for at most 1.2 times R's CER. On unseen VNDB console

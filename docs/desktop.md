@@ -5,11 +5,13 @@ spotter) and MeikiOCR's detector with VOCR's recognizer, close to MeikiOCR's acc
 runs with VOCR6.2's recognizer on ONNX Runtime's CPU provider, or in plain C. The protocol is
 `eval/desktop_protocol.json`, with six amendments, each registered before the reads it governs. The records are
 `eval/desktop_dev_20261101.json` (the dev-v2 decision reads), `eval/desktop_final_20261101.json` (the decision and
-every final read) and `eval/desktop_timing_20261101.json` (every timing, memory figure, profile and MAC count).
+every final read), `eval/desktop_timing_20261101.json` (every timing, memory figure, profile and MAC count) and
+`eval/desktop_report_20261102.json` (the figures derived from them: width classes, error breakdowns, the C path's
+checks, mida's reads, the budget timings).
 
 **The result: a research pre-release, not adopted.** "R" below is MeikiOCR's detector with VOCR6.2-L, the reference
 the rule compares against. With VOCR6.2-L, the new detector (210 k parameters) reads the hooked test titles far
-better than R. Its page takes about a quarter of R's time and a fifth of MeikiOCR's. But it reads unseen VNDB console
+better than R. Its page takes 0.25-0.31 of R's time and under a fifth of MeikiOCR's. But it reads unseen VNDB console
 screenshots (dev-v2) 0.2-0.5 points worse than R, and real PC screenshots 1-2 points worse. So it fails the
 registered accuracy clause, which asks for a CER within 20% of R's on dev-v2 and on the PC test set. Every number is
 measured on the host.
@@ -27,6 +29,9 @@ measured on the host.
 | R | 74 / 71 / 77 | 245 MiB |
 | **this detector + VOCR6.2-L, ONNX** | **21 / 18 / 24** | 160 MiB |
 | **the same in C** (`desktop/`: both networks in C, called from Python) | 24 / 20 / 26 | 83 MiB (22-30 MiB as a C program) |
+
+The decision's own timing put the representative seed at 0.247 / 0.222 of R's time on the Vita / PSP pages, just
+under the rule's 1/4; the release model reads at 0.28 / 0.25 / 0.31 of R's in the report's timing above.
 
 ## Thanks
 
@@ -51,7 +56,9 @@ Pre-release **v0.5.2-desktop.1** (research, not adopted):
 | `VOCR6.2_L_w8_2l.vocr` | | VOCR6.2-L's int8 blob, byte for byte from v0.5.0 (what the C path reads) |
 | `DESKTOP-ATTRIBUTION.md`, `MODEL_CARD_DESKTOP.md`, `desktop-manifest.json`, `SHA256SUMS` | | terms, card, sizes and sha256 |
 
-The C source is `desktop/` (with `runtime/vocr.c`) at the release's commit.
+The C source is `desktop/` with `runtime/vocr.c`. Build it from the repository after #175's merge: the tag's commit
+(`1192fa8`) lacks the input bounds the audit asked for (a size policy or a model file could make the arena too small;
+"The C path" below).
 
 There is no int8 detector. A static QDQ export, per channel and calibrated on 64 hval pages, keeps the FP32 file's
 crops on only 63 of 313 dev-v2 frames. As a network it is only 1.25 times faster: 7.4 against 9.3 ms
@@ -65,8 +72,9 @@ crops on only 63 of 313 dev-v2 frames. As a network it is only 1.25 times faster
   at 960×544, PSP at 480×272, and PC screenshots scaled to fit 960×544 as #119 cut them. The 9 of #119's 93 VNs that
   pools v2.1 trains on are left out.
 - **The PC test set, a decision set since amendment 2.** desktop-data's set: 942 dialogue lines of 142 VNs that no
-  training pool holds, on 504 VNDB PC screenshots at their own size (640×390 to 2560×1440). The page path reads its
-  518 clean units: 886 lines of 139 VNs, with no other text inside their regions (`docs/desktop-data.md`).
+  training pool holds, on 504 VNDB PC screenshots at their own size. The page path reads its 518 clean units: 886
+  lines of 139 VNs, with no other text inside their regions, on 480 of the screenshots, 640-2560 px wide and
+  370-1440 px tall (`docs/desktop-data.md`).
 - **hval, screening only.** The held-out pages of the hooked pools v2.1 (#166): 2,836 units of 71 titles.
 - **confirm-v2, a guard.** textspot7's confirmation units without the 4 of its 41 VNs that pools v2.1 now trains on:
   155 units of 37 VNs.
@@ -101,8 +109,9 @@ Dialogue CER, in %. Δ is the arm minus R, in points, with its interval. "Repres
 | representative, long:960 | 0.98, Δ +0.21 [−0.10, +0.61] | 1.67, Δ +0.97 [+0.34, +1.77] | 1.13 | 1.30, Δ −1.05 [−2.10, −0.06] | |
 | **release model, long:640** | 1.26 (0.81 / 1.64), Δ +0.49 [+0.08, +1.01] | 2.75, Δ +2.04 [+0.82, +3.61] | 1.47 | (trained on it) | **1.19** (0.45 / 3.38), Δ **−2.31 [−2.96, −1.71]** |
 
-† mida-ocr-eval's reads, with this harness, in the registered configuration (input fit into 960×544;
-`reports/mida-ocr-eval.md`).
+† mida-ocr-eval's reads, with this harness, on the same frames, in the registered configuration (input fit into
+960×544). `eval/desktop_report_20261102.json` (`mida.reads`) holds them, paired with R: dev-v2 +0.65 [+0.13, +1.33],
+hval +1.90 [−2.00, +9.28].
 
 - **The hooked games' console screens** are the detector's own domain. On the test titles it makes a third of R's
   errors. In point it reads hval better than R at every policy but long:640 and fit:640. At those two, PCSG00854 costs
@@ -114,9 +123,10 @@ Dialogue CER, in %. Δ is the arm minus R, in points, with its interval. "Repres
 - **PC screenshots.** It is resolved worse than R at every policy.
   - Its line recall is 0.938-0.963 across the policies, against R's 1.000. On the PC test set the release model cuts
     37 lines and misses 7; R cuts none.
-  - Old 4:3 games are its weakest frames (up to 800 px wide: 640×480, 800×600). There the representative reads 4.91% at
-    long:640 and 3.15% at long:960, against R's 0.94%. On frames 1920 px wide or more it reads 2.60% at long:640 and
-    1.52% at long:960, against R's 0.78%.
+  - Old 4:3 games are its weakest frames: up to 800 px wide, 130 frames of 37 VNs, mostly 640×480 and 800×600 (these
+    width classes and the error breakdowns are in `eval/desktop_report_20261102.json`). There the representative reads
+    4.91% at long:640 and 3.15% at long:960, against R's 0.94%. On frames 1920 px wide or more it reads 2.60% at
+    long:640 and 1.52% at long:960, against R's 0.78%.
 - **Against MeikiOCR itself**, this pipeline makes fewer errors on every console set. On the PC test set it makes more
   at long:640 (2.75% against 1.97%) and fewer at long:960 (the representative: 1.67%). MeikiOCR's own recognizer reads
   console-size text poorly: 4.16% on dev-v2's PSP view and 16.16% on the PSP test title.
@@ -143,7 +153,8 @@ Against R on these frames:
 - hval: −1.02 [−2.07, −0.03] (the representative);
 - the test titles: −2.84 [−3.67, −2.11] (the release model).
 
-Page time at the 4-thread budget on these frames (p50 ms, Vita / PSP / PC timing pages):
+Page time on these frames at 4 threads (p50 ms, Vita / PSP / PC timing pages). Each detector ran at 4 intra-op
+threads only, not at the budget's fastest variant:
 
 | arm | ms |
 |---|---|
@@ -177,8 +188,8 @@ The policies, as `tools/vocr_desktop.py` and `desktop/` read them:
 - **long:N** scales the longer side to N px, up or down.
 - **native** keeps the frame as it is.
 
-**Per resolution.** dev-v2's frames resampled to each height, aspect kept. CER on all of dev-v2; page p50 at the
-4-thread budget on its Vita timing pages:
+**Per resolution.** dev-v2's frames resampled to each height, aspect kept. CER on all of dev-v2; page p50 on its Vita
+timing pages at 4 threads (each detector at 4 intra-op threads only):
 
 | height | CER: R | CER: release, long:640 | CER: release, fit:960 | ms: R | ms: ONNX, long:640 | ms: C, long:640 |
 |---|---:|---:|---:|---:|---:|---:|
@@ -187,9 +198,10 @@ The policies, as `tools/vocr_desktop.py` and `desktop/` read them:
 | 1440 | 0.68 | 1.21 | 1.04 | 84 | 33 | 27 |
 | 2160 | 0.66 | 1.16 | 1.00 | 147 | 131 | 37 |
 
-At 2160 px the Python page is mostly NumPy's integer luma of the 3840×2160 frame: about 35-55 ms per conversion on
-this host. The timing harness converts twice for this detector, once in the detector and once for the crops;
-`read_frame` converts once, and R's pipeline converts once. The C page converts in C and stays at 37 ms.
+At 2160 px most of the Python page is NumPy's integer luma of the 3840×2160 frame: 73 ms per conversion in a later
+check (the median of 50 calls at load 30; `luma_ms` in the report record). The timing harness converts twice for this
+detector, once in the detector and once for the crops; `read_frame` converts once, and R's pipeline converts once.
+The C page converts in C and stays at 37 ms.
 
 ### Speed and memory
 
@@ -199,25 +211,35 @@ is the whole pipeline:
 - every horizontal box cut, its dark flag set and the line read by VOCR6.2-L.
 
 Every arm is interleaved per page within a run, so a load spike on the shared host meets every arm alike. The loads
-were 35-52 on 64 vCPUs. p50 ms per page (Vita / PSP / PC):
+were 35-52 on 64 vCPUs: the 1-minute load as each run ended (the records' `load_1min_at_start` was read after the
+passes; `eval/desktop_time.py` now reads it before them). p50 ms per page (Vita / PSP / PC):
 
 | arm | 1 thread | 4-thread budget | 8 threads |
 |---|---|---|---|
 | MeikiOCR 0.3.5 itself | 224 / 193 / 222 | 120 / 106 / 122 | 105 / 90 / 105 |
 | R | 136 / 131 / 138 | 74 / 71 / 77 | 63 / 57 / 66 |
 | textspot8 + L | 27 / 22 / 27 | 19 / 17 / 20 | 29 / 25 / 30 |
-| mida + L | 50 / 46 / 54 | 40 / 39 / 44 | 39 / 36 / 41 |
+| mida + L | 50 / 46 / 54 | 40 / 38 / 42 | 39 / 36 / 41 |
 | **this detector, long:640 + L** | 30 / 24 / 31 | **21 / 18 / 24** | 22 / 19 / 25 |
-| this detector, fit:960 + L | 39 / 20 / 43 | 29 / 14 / 32 | 30 / 15 / 35 |
-| **C page, long:640** (C detector + `runtime/vocr.c` W8I) | 48 / 37 / 47 | 24 / 20 / 26 | 24 / 20 / 28 |
-| C textspot8 + C W8I | 49 / 43 / 48 | 32 / 31 / 34 | 33 / 31 / 34 |
+| this detector, fit:960 + L | 39 / 20 / 43 | 29 / 14 / 32 (4 intra-op threads) | 30 / 15 / 35 |
+| **C page, long:640** (C detector + `runtime/vocr.c` W8I) | 48 / 37 / 47 | 24 / 20 / 26 (4 C threads) | 24 / 20 / 28 |
+| C textspot8 + C W8I | 49 / 43 / 48 | 32 / 31 / 34 (4 C threads) | 33 / 31 / 34 |
 
-- **The budget (amendment 1).** Each detector runs at whichever of 1, 2 or 4 intra-op threads is fastest for it. The
-  lines are read on 4 Python threads sharing one recognizer session, or on 4 C threads.
+- **The budget (amendment 1).** Each detector runs at whichever of 1, 2 or 4 intra-op threads is fastest for it, per
+  view (`budget_t4` in the report record names the variant). The lines are read on 4 Python threads sharing one
+  recognizer session, or on 4 C threads. The fit:960 and C rows ran one variant only.
+- **MeikiOCR's sessions.** MeikiOCR and R run on the harness's ONNX Runtime sessions, with ONNX Runtime's default
+  intra-op spinning; meikiocr 0.3.5's own constructor turns spinning off. On the baselines' Vita pages that made
+  MeikiOCR 25% slower at 2 threads (158.7 against 126.8 ms with spinning off) and 8% faster at 4 (111.9 against
+  121.0 ms; `baselines.page_t2` and `page_t4` in the timing record). The 4-thread figures here are the faster
+  setting; at 8 threads only the default was measured. R's fastest budget variant is its detector at 4 threads, also
+  the faster setting there. R's detector at 2 threads without spinning was not measured: scaled as MeikiOCR's pipeline
+  scales (101.8 ms × 126.8 / 158.7 ≈ 81 ms), it would still be slower than 74.2 ms at 4.
 - **The decision's own timing** (`eval/desktop_timing_decide_20261101.json`, load 38) puts the representative at
   long:640 at 0.247 / 0.222 of R's time on the Vita / PSP pages, under the rule's 1/4.
 - **A cost against this detector in these timings.** The harness converts each frame to luma twice for the grey
-  detectors (this one and textspot8): about 2 ms per 960×544 frame.
+  detectors (this one and textspot8): 0.6 ms per 960×544 frame at load 30 (`luma_ms`; the auditor measured 2.9 ms at
+  load 44).
 - **Peak memory** per process (`desktop_time.py mem`: 60 dev-v2 frames, 4 threads, a fresh process per arm),
   including about 53 MiB of interpreter and libraries:
 
@@ -232,15 +254,16 @@ were 35-52 on 64 vCPUs. p50 ms per page (Vita / PSP / PC):
   | the C page | 83 |
   | C textspot8 + C L | 78 |
 
-- **As a C program.** `desktop/vocr_desk_cli` reads the same pages in these times at 1 / 4 threads, at 22-30 MiB peak:
+- **As a C program.** `desktop/vocr_desk_cli` reads the same pages at 1 / 4 threads, at 22-30 MiB peak. These are
+  means per page (the CLI's summary), not p50s:
 
-  | pages | ms |
+  | pages | mean ms |
   |---|---|
   | Vita | 48 / 25 |
   | PSP | 41 / 20 |
   | PC | 54 / 26 |
 
-  The detector takes 7-13 ms of that, resize and decode included.
+  The detector takes a mean 7-13 ms of that, resize and decode included.
 - **MACs:**
 
   | network | MACs |
@@ -296,13 +319,25 @@ The first four rows were measured on a quiet box (load 5-7), the last at load 36
 
 ## The rule and the decision
 
-The rule was pre-registered before any baseline was scored, in the experiment log and in #169's body (2026-11-01
-03:40Z). It has three clauses and a pick:
+The rule was registered in #169's body at 03:20Z on 2026-11-01, before any baseline was scored: the first baseline
+results were written at 03:33Z. It has three clauses and a pick:
 - **Accuracy on dev-v2:** the representative seed's CER ≤ 1.2 × R's, its paired interval not entirely above 0, and the
   Vita and PSP views each ≤ 1.5 × R's.
 - **Guards:** hval and confirm-v2 not resolved above 0.
 - **Speed:** at the 4-thread budget, p50 ≤ 1/4 of R's on the Vita and the PSP pages separately.
 - **Pick:** the cheapest qualifying input policy.
+
+**Where and when it was recorded.**
+- **The experiment log's protocol line** is stamped 03:40Z. That is after the dev-v2 and PC-sample baselines were
+  scored (03:33-03:34Z) and while the hval baselines ran. The issue body, which holds the whole rule, came first.
+- **An erratum.** `eval/desktop_protocol.json` (written at 04:04Z, before any candidate existed) says the rule was in
+  the log and the issue body at 03:40Z, before any baseline. That is wrong for the log line; the file is left as
+  registered.
+- **`rule.pick`.** Amendment 2 appended its policy list to the registered `rule.pick` text, which survives as an
+  unchanged prefix. The other changes are amendment entries.
+- **The per-run lines.** The experiment log's line for each training run (S1-S5, F1-F3 and the retrains) was
+  appended after the decision, at 22:10Z, not as each run ran. Each run's own `run.json`, `done.json` and the
+  heavy.log record its times.
 
 **Amendments** (all in `eval/desktop_protocol.json`):
 1. the thread budget: each detector at its fastest intra-op count;
@@ -450,7 +485,9 @@ for ln in lines:                                     # reading order: rows top t
     the page time.
   - fit:N never scales a frame up, so it reads PSP's 480×272 frames at their own size; long:N scales them up, which
     reads them better.
-- **Regions.** `read_frame(..., region=(x, y, w, h))` reads only a region, such as the dialogue box a user draws.
+- **Regions.** `read_frame(..., region=(x, y, w, h))` reads only a region, such as the dialogue box a user draws. The
+  region is read at the scale and with the box pad that the policy gives the whole frame, as a whole-frame read would
+  read it. No set here was read through a region.
 - **Threads.** The detector is fastest at 1-4 intra-op threads here; `workers` reads the lines in parallel. Measure on
   the target machine.
 - **The LM.** `read_frame(..., lm=vocr_onnx.CharLM(...))` adds Rubi's beam and character LM to each line
@@ -480,12 +517,37 @@ Build with `make -C desktop` (AVX2 + FMA, x86-64-v3), `make -C desktop ARCH=` (p
   blob's head sections as Rubi runs them). Its threads split the detector's steps into row bands, then share the
   lines. The output is the same bits at any thread count.
 - **Not console code.** It allocates its own memory, and none of it is in Rubi.
-- **Parity on dev-v2** (the release model at long:640):
-  - The C page's texts equal the ONNX path's (ONNX detector + VOCR6.2-L fast) on all 339 units: 1.262% CER both.
-  - The C detector's crops equal the ONNX detector's on 276 of 313 frames. The rest differ by a pixel, because a
-    scaled frame goes through the C path's own resampler, which lands within ±1 grey level of OpenCV's.
-  - Amendment 2 required identical crops on 99% of dev-v2's frames before a pick could ship. This release is not a
-    pick, and the C path does not meet that bar (88%).
+- **Parity on dev-v2** (the release model at long:640; `c_crop_differences` and `c_checks` in the report record):
+  - **Texts.** The C detector's boxes read by `runtime/vocr.c` (W8I, through the harness's crops) give the ONNX path's
+    texts on all 339 units: 1.262% CER both ways. The ONNX path is the ONNX detector with VOCR6.2-L fast.
+  - **The whole C page.** `vocr_desk_page_run_rgb` (its reading order, crop rounding, dark flags and `runtime/vocr.c`)
+    gives the same 1,893 lines as that harness composition, on all 313 frames.
+  - **Crops.** The C detector's crops equal the ONNX detector's on 276 of 313 frames. On each of the other 37, the
+    largest edge shift of a matched box is:
+
+    | largest edge shift | frames |
+    |---|---:|
+    | none (only the box count differs) | 2 |
+    | 1 px | 9 |
+    | 2 px | 1 |
+    | 3 px | 22 |
+    | 6 px | 1 |
+    | 18 px | 2 |
+
+    On 6 of them one path finds a box the other does not: 5 boxes only in ONNX, 1 only in C. 3 px is one map cell on
+    a PSP frame at long:640.
+  - **The cause is the resampler.** The ONNX network and the Python decode, run on the C path's own resize of each
+    frame instead of OpenCV's, give the C detector's crops on all 313 frames. The C resampler lands within ±1 grey level
+    of OpenCV's, and that is enough to move a decode near its threshold.
+  - **The ship bar.** Amendment 2 required identical crops on 99% of dev-v2's frames before a pick could ship. This
+    release is not a pick, and the C path does not meet that bar (88%).
+- **Bounds** (audit-vocr-desktop F5, fixed after the release's tag).
+  - A size policy is native, or fit:N or long:N with N of 1-8192; the library refuses any other with
+    `VOCR_DESK_E_ARG`, and refuses a model file whose default policy is outside that with `VOCR_DESK_E_BLOB`.
+  - Before the fix, a huge long:N, through the API or a crafted model file with a valid CRC, wrapped the arena's size
+    and overflowed the heap.
+  - The arena sizes saturate rather than wrap, and the resize and the decode check their own arguments.
+  - The release model's lines are unchanged on all 150 timing frames (plain and AVX2 builds, 1 and 4 threads).
 - **In CI** (`tests/test_desktop.py`, plain and AVX2 builds, random networks):
   - the C maps are within 1e-4 relative of ONNX Runtime's;
   - the C decode equals the Python decode bit for bit on the same maps;
@@ -516,14 +578,19 @@ Build with `make -C desktop` (AVX2 + FMA, x86-64-v3), `make -C desktop ARCH=` (p
 - **The final reads ran once.** The read script was edited while it ran, and bash stopped it between two arms on the
   PC test set and on confirm-v2. A copy was relaunched; it skipped every arm already read, so each arm read each set
   once.
+- **The test titles were read without the representative.** Amendment 6's read list names the representative's 7
+  policies on the PC test set, confirm-v2 and the test titles. The test titles' read was launched with `SKIP_F3=1`,
+  so only R, MeikiOCR, textspot8, mida and the release model read them. The deviation was not recorded at the time.
+  It means fewer protected reads than registered, so it cannot flatter a result, and the decision did not use the
+  test titles. The representative will not be read on them now.
 - **The release model trained before the decision**, beside its seed. The rule only chose which retrain to publish.
 
 ## Reproduce
 
-The scripts as they ran are in `eval/reproducibility/desktop-20261101/`. The records' `repo_head` commits (a19bede
-for the dev-v2 record, a614fd8 for the final reads) are the branch before its last rebase, kept by the tag
-`desktop-reads-20261101`; the protocol as registered is the tag `desktop-registered-20261101`. Run them through `heavy.sh` (one slot, 5
-threads, unless noted). They read the frames from the shared box and write counts only.
+The scripts as they ran are in `eval/reproducibility/desktop-20261101/`. Run them through `heavy.sh` (one slot, 5
+threads, unless noted). They read the frames from the shared box and write counts only. The records' `repo_head`
+commits (a19bede for the dev-v2 record, a614fd8 for the final reads) are the branch before its last rebase, kept by the
+tag `desktop-reads-20261101`; the protocol as registered is the tag `desktop-registered-20261101`.
 
 ```sh
 S=eval/reproducibility/desktop-20261101
@@ -539,10 +606,13 @@ bash $S/train3.sh final_d64_seed3 d64 3 train,guard,hval                        
 bash $S/post_seeds.sh                                                            # exports, dev-v2 reads, the representative
 bash $S/timing_decide.sh MODELS/F3 F3                                            # the decision's timing
 bash $S/final_reads.sh pctest; bash $S/final_reads.sh confirm                    # once each, after the dev-v2 record
-bash $S/final_reads.sh test                                                      # once, behind the protocol gate
+SKIP_F3=1 bash $S/final_reads.sh test                                            # once, behind the protocol gate
 bash $S/final3_reads.sh; bash $S/c_parity.sh                                     # the release model; the C path, INT8
 python3 eval/desktop_rule.py --res RES --timing T4.json --candidates C.json --out DECISION.json
 bash $S/timing_report.sh grid 4                                                  # also grid 1/2/8 (8: two slots), l544, res, mem
+python3 $S/checks_20261102.py --out CHECKS.json                                  # luma; the C resampler and page checks
+python3 eval/mida_det.py info MIDA.onnx --macs 960x544 > MIDA_INFO.json         # mida's size and MACs (measurement only)
+python3 $S/report_20261102.py --out eval/desktop_report_20261102.json --checks CHECKS.json --mida-info MIDA_INFO.json
 ```
 
 The tools: `eval/desktop.py` (sets, detectors, reads, scores), `eval/desktop_time.py` (timings, memory, profiles,

@@ -23,6 +23,9 @@
 #define CHUNK_MAX 48u
 #define MAX_STEPS 64u
 #define RESIZE_MAX_TASKS 64u
+#ifndef TSD_GREY_FIRST
+#define TSD_GREY_FIRST 1   /* an RGB(A) frame's luma over the whole frame first, the stem reading grey */
+#endif
 #ifndef TSD_FUSED_LUMA
 #define TSD_FUSED_LUMA 0   /* 1: an RGB(A) frame's luma row by row inside the resize (vocr_desk_resize_rgb) */
 #endif
@@ -1470,7 +1473,7 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->resize = D->iw != w || D->ih != h;
     /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it)
      * and for the refinement */
-    D->grey_frame = channels != 1 && ((D->resize && !TSD_FUSED_LUMA) || refine);
+    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine);
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
     D->grey = off;

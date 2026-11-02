@@ -563,6 +563,7 @@ def _clamp_ends(boxes, kern, w, h):
 # run in this order on the decode's boxes, before tools/tsdesk_refine.py (vflip_pct first, then merge_pct, touch_pct
 # (merge_touching), rows_pct and gap_pct; vflip, touch_pct and ext_band_pct have no C twin yet):
 #   vflip_pct  a vertical box whose ink is a stack of glyph bands with wide gaps becomes horizontal boxes (vflip);
+#   join_pct   two dialogue-tagged boxes on one row with a small gap along and similar heights join (join_row);
 #   ksplit_pct the last step, after the post-refinement options: a horizontal box is cut at an ink gap the detector's
 #              own K map does not bridge (split_kgap; Detector only, it needs the maps);
 #   merge_pct  two boxes of one orientation that overlap across by at least half the smaller one's size across and
@@ -585,8 +586,9 @@ def _clamp_ends(boxes, kern, w, h):
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
                  "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
                  "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100,
-                 "vflip_min": 3, "vflip_h_pct": 50, "ksplit_pct": 0, "ksplit_k": -2, "ksplit_min_pct": 50}
-POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options before the refinement
+                 "vflip_min": 3, "vflip_h_pct": 50, "ksplit_pct": 0, "ksplit_k": -2, "ksplit_min_pct": 50,
+                 "join_pct": 0, "join_h_pct": 70}
+POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "join_pct", "rows_pct", "gap_pct")   # before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
 
@@ -703,6 +705,42 @@ def merge_touching(boxes, pct):
                     size = min(a.h, b.h)
                     gap = max(b.x - (a.x + a.w), a.x - (b.x + b.w))
                 if gap > 0 or across * 100 < pct * size:
+                    continue
+                big = a if a.w * a.h >= b.w * b.h else b
+                x0, y0 = min(a.x, b.x), min(a.y, b.y)
+                x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
+                out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
+                del out[j]
+                changed = True
+                break
+            if changed:
+                break
+    return out
+
+
+def join_row(boxes, pct, h_pct=70):
+    """join_pct: two horizontal boxes the detector tags as dialogue (tag 0) on one row (vertical overlap at least
+    half the smaller height), the smaller height at least h_pct % of the larger, whose gap along is at most pct % of
+    the larger height (an overlap is a gap below 0) become their union (the larger box's fields, cells summed, the
+    place of the earlier), pairs in order until none qualifies: a dialogue line the decode broke into pieces along
+    its row (a stride-4 head's kernel gaps). Boxes with another tag stay apart (the reading stage's cut's items)."""
+    import dataclasses
+    out = list(boxes)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(out)):
+            a = out[i]
+            if a.vertical or a.tag != 0:
+                continue
+            for j in range(i + 1, len(out)):
+                b = out[j]
+                if b.vertical or b.tag != 0:
+                    continue
+                lo, hi = min(a.h, b.h), max(a.h, b.h)
+                if min(a.y + a.h, b.y + b.h) - max(a.y, b.y) < 0.5 * lo or lo * 100 < h_pct * hi:
+                    continue
+                if max(b.x - (a.x + a.w), a.x - (b.x + b.w)) * 100 > pct * hi:
                     continue
                 big = a if a.w * a.h >= b.w * b.h else b
                 x0, y0 = min(a.x, b.x), min(a.y, b.y)
@@ -1099,6 +1137,8 @@ def post_pre(g, boxes, opts):
         out = merge_overlaps(out, o["merge_pct"])
     if o["touch_pct"]:
         out = merge_touching(out, o["touch_pct"])
+    if o["join_pct"]:
+        out = join_row(out, o["join_pct"], o["join_h_pct"])
     if o["rows_pct"]:
         out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:

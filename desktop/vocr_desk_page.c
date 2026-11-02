@@ -166,7 +166,9 @@ static void *thread_main(void *arg)
 static void pool_run(vocr_desk_page *p, void (*fn)(void *, unsigned, unsigned), void *arg, unsigned ntasks)
 {
     unsigned t;
-#ifndef VOCR_DESK_NO_THREADS
+#ifdef VOCR_DESK_NO_THREADS
+    (void)p;
+#else
     if (p->threads > 1 && ntasks > 1) {
         pthread_mutex_lock(&p->mu);
         p->fn = fn;

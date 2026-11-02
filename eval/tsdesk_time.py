@@ -18,8 +18,11 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
       passes; p50 / p95 / mean per view. Pipelines (BLOB: a .vtsd, MODEL: its .onnx, SIZE: an input policy, default
       the file's; T: VOCR6.2's tier S, N or L):
         cdet:BLOB[@SIZE]           the C detector alone: the RGB frame in memory to its final boxes (the luma, the
-                                   policy's resize, the padding, the network, the decode), one vocr_tsd_detect_mt call
+                                   policy's resize, the padding, the network, the decode), one vocr_tsd_detect_ex call
                                    (the binding's Box objects are not built inside the timing)
+      A detector or page spec's BLOB / MODEL part may end in +refine: the box refinement on (cdet / cpage: the C
+      refinement inside the detector call; odet / opage: tools/tsdesk.Detector's refine, tools/tsdesk_refine.py),
+      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L
         cpage:BLOB[@SIZE]+c:T      the C page: the detector and VOCR6.2-T's int8 blob read by runtime/vocr.c W8I with
                                    its head sections, every horizontal box grown by --pad, the lines on the same pool
         odet:MODEL[@SIZE]          tools/tsdesk.Detector.detect on the RGB frame (ONNX Runtime FP32, intra-op threads N)
@@ -186,7 +189,7 @@ def build(out, arch="-march=x86-64-v3", extra="", cc="gcc"):
 # ----------------------------------------------------------------------------- pipelines
 
 def split_spec(spec):
-    """(kind, path, size, rec) of a pipeline spec."""
+    """(kind, path, size, rec, refine) of a pipeline spec."""
     kind, _, rest = spec.partition(":")
     rec = None
     if kind in ("cpage", "opage"):
@@ -195,10 +198,13 @@ def split_spec(spec):
             if not rec.startswith("c:"):
                 raise ValueError(f"{spec}: cpage:BLOB[@SIZE]+c:T")
             rec = rec[2:]
+    refine = rest.endswith("+refine")
+    if refine:
+        rest = rest[:-len("+refine")]
     path, _, size = rest.partition("@")
     if kind not in ("cdet", "cpage", "odet", "opage", "cnet", "onet") or not path:
         raise ValueError(f"unknown pipeline {spec!r}")
-    return kind, path, size or None, rec
+    return kind, path, size or None, rec, refine
 
 
 def crop_hv(b, ph, pv, W, H):
@@ -216,20 +222,22 @@ class Pipeline:
         base, _, libname = spec.partition("^")
         if libname:
             lib = (libs or {})[libname]
-        self.kind, path, self.size, rec = split_spec(base)
+        self.kind, path, self.size, rec, refine = split_spec(base)
+        self.refine = True if refine else None
         self.pad = pad
         self.inputs = {}
         if self.kind in ("cdet", "cnet"):
             self.m = TC.CModel(path, threads=self.threads, lib=lib)
             self.policy = TC.policy_of(self.size, self.m.default_policy)
         elif self.kind == "cpage":
-            self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad, lib=lib)
+            self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad,
+                                 refine=self.refine, lib=lib)
         else:
             import tsdesk as T
             import vocr_onnx as V
             self.T, self.V = T, V
             self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
-                                  size=self.size)
+                                  size=self.size, refine=self.refine)
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",
@@ -257,15 +265,17 @@ class Pipeline:
         return 1
 
     def _cdet(self, rgb):
-        """One vocr_tsd_detect_mt call on the frame: the number of boxes."""
+        """One vocr_tsd_detect_ex call on the frame: the number of boxes."""
         m, L, C = self.m, self.m.L, self.TC.C
         h, w, ch = rgb.shape
         kind, n = self.policy
         run, pool, nt = m._run()
-        need = L.vocr_tsd_arena_bytes(m.m.ctypes.data, kind, n, w, h, ch, nt)
+        ro = m._refine_opts(self.refine)
+        need = L.vocr_tsd_arena_bytes_ex(m.m.ctypes.data, kind, n, w, h, ch, nt, int(ro is not None))
         arena = m.arena(need)
-        rc = L.vocr_tsd_detect_mt(m.m.ctypes.data, rgb.ctypes.data, w, h, rgb.strides[0], ch, kind, n,
-                                  arena.ctypes.data, arena.size, C.byref(m._set), run, pool, nt)
+        rc = L.vocr_tsd_detect_ex(m.m.ctypes.data, rgb.ctypes.data, w, h, rgb.strides[0], ch, kind, n,
+                                  C.cast(ro, C.c_void_p) if ro is not None else None, arena.ctypes.data, arena.size,
+                                  C.byref(m._set), run, pool, nt)
         if rc:
             raise ValueError(f"vocr_tsd_detect: {rc}")
         return int(m._set.count)
@@ -322,7 +332,8 @@ def cmd_run(a):
     t_load = time.time() - t_load
     specs = a.pipelines.split(",")
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-timing", "host": host(), "passes": a.passes,
-           "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_frames_sha256": doc["frames_sha256"],
+           "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
+           "pages_frames_sha256": doc.get("frames_sha256"),
            "pages": {v: sum(p["view"] == v for p in pages) for v in sorted({p["view"] for p in pages})},
            "pad": a.pad, "lib": a.lib, "build": None, "repo_head": D.git_head(), "results": {},
            "frames_load_s": round(t_load, 1)}
@@ -398,23 +409,37 @@ print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "f
 
 
 def cmd_mem(a):
+    import pickle
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
-           "view": a.view, "threads": int(a.threads), "limit": a.limit, "pad": a.pad, "lib": a.lib,
-           "repo_head": D.git_head(), "results": {}}
+           "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
+           "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
     paths = [str(ROOT / "tools"), str(ROOT / "eval"), str(ROOT / "synth"), str(ROOT / "train"), str(ROOT / "teacher"),
              str(ROOT / "runtime"), str(ROOT)]
-    for spec in a.pipelines.split(","):
-        code = MEM_CHILD.format(paths=paths, pages=str(a.pages), view=a.view, limit=int(a.limit), spec=spec,
-                                threads=int(a.threads), pad=a.pad, lib=a.lib)
-        r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
-                           env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
-        if r.returncode:
-            raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
-        rec = json.loads(r.stdout.strip().splitlines()[-1])
-        rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
-                   peak_mib=round(rec["peak_kib"] / 1024, 1))
-        res["results"][spec] = rec
-        print(spec, json.dumps(rec), flush=True)
+    _, pages = load_pages(a.pages)
+    sel = [p for p in pages if p["view"] == a.view][:a.limit]
+    if not sel:
+        raise SystemExit(f"no {a.view} pages in {a.pages}")
+    scratch = D.PV / "textspot-desktop-c" / "scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+    # the view's frames alone in a private scratch file (deleted below): a child does not load the whole pages file
+    tmp = tempfile.NamedTemporaryFile(dir=scratch, suffix=".pkl", delete=False)
+    with tmp:
+        pickle.dump({"pages": [dict(p, rgb=load_rgb(p)) for p in sel], "source": str(a.pages)}, tmp)
+    try:
+        for spec in a.pipelines.split(","):
+            code = MEM_CHILD.format(paths=paths, pages=tmp.name, view=a.view, limit=int(a.limit), spec=spec,
+                                    threads=int(a.threads), pad=a.pad, lib=a.lib)
+            r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
+                               env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
+            if r.returncode:
+                raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
+            rec = json.loads(r.stdout.strip().splitlines()[-1])
+            rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
+                       peak_mib=round(rec["peak_kib"] / 1024, 1))
+            res["results"][spec] = rec
+            print(spec, json.dumps(rec), flush=True)
+    finally:
+        os.unlink(tmp.name)
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 

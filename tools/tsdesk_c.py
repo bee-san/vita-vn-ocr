@@ -102,6 +102,11 @@ def c_library(path=None):
     L.vocr_tsd_arena_bytes.argtypes = [vp, u, u, u, u, u, u]
     L.vocr_tsd_arena_bytes.restype = sz
     L.vocr_tsd_detect_mt.argtypes = [vp, vp, u, u, u, u, u, u, vp, sz, C.POINTER(CSet), vp, vp, u]
+    L.vocr_tsd_detect_ex.argtypes = [vp, vp, u, u, u, u, u, u, vp, vp, sz, C.POINTER(CSet), vp, vp, u]
+    L.vocr_tsd_arena_bytes_ex.argtypes = [vp, u, u, u, u, u, u, i]
+    L.vocr_tsd_arena_bytes_ex.restype = sz
+    L.vocr_tsd_page_set_refine.argtypes = [vp, vp]
+    L.vocr_tsdr_nopts.restype = i
     L.vocr_tsd_pool_new.argtypes = [u]
     L.vocr_tsd_pool_new.restype = vp
     L.vocr_tsd_pool_free.argtypes = [vp]
@@ -177,6 +182,21 @@ def pad_rule(pad):
     if str(pad).isdigit():
         return int(pad), int(pad), 1
     raise ValueError(f"reading pad {pad!r}: auto, kN, kNvM, (kh, kv) or N px")
+
+
+def refine_opts(refine, lib):
+    """The C refinement's options (a vocr_tsdr_opts as ints in tools/tsdesk_refine.KEYS order) for refine: None / False
+    (off: None), True (tools/tsdesk_refine.DEFAULTS) or a dict of its options."""
+    if refine in (None, False):
+        return None
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import tsdesk_refine as TR
+    o = TR.options({} if refine is True else refine)
+    if lib.vocr_tsdr_nopts() != len(TR.KEYS):
+        raise RuntimeError("the C refinement's options differ from tools/tsdesk_refine.KEYS")
+    return (C.c_int * len(TR.KEYS))(*[o[k] for k in TR.KEYS])
 
 
 def _image(img):
@@ -282,27 +302,41 @@ class CModel:
         self.truncated = int(st.truncated)
         return _boxes(st)
 
-    def detect(self, img, size=None):
-        """vocr_tsd_detect on a grey or RGB(A) frame in memory: [Box] in frame px (tsdesk.Detector.detect's), at the
-        input policy `size` (None: the blob's)."""
+    def detect(self, img, size=None, refine=None):
+        """vocr_tsd_detect_ex on a grey or RGB(A) frame in memory: [Box] in frame px (tsdesk.Detector.detect's), at
+        the input policy `size` (None: the blob's); refine: None (off), True or a dict of tools/tsdesk_refine's options
+        (tsdesk.Detector's refine: every horizontal box snapped to its line's ink on the full-resolution luma)."""
         a, w, h, stride, ch = _image(img)
         kind, n = policy_of(size, self.default_policy)
-        need = self.L.vocr_tsd_arena_bytes(self.m.ctypes.data, kind, n, w, h, ch, self._run()[2])
+        run, pool, nt = self._run()
+        ro = self._refine_opts(refine)
+        need = self.L.vocr_tsd_arena_bytes_ex(self.m.ctypes.data, kind, n, w, h, ch, nt, int(ro is not None))
         if not need:
             raise ValueError(f"a {w} x {h} frame")
         arena = self.arena(need)
-        run, pool, nt = self._run()
         st = self._set
-        rc = self.L.vocr_tsd_detect_mt(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n, arena.ctypes.data,
+        rc = self.L.vocr_tsd_detect_ex(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n,
+                                       C.cast(ro, C.c_void_p) if ro is not None else None, arena.ctypes.data,
                                        arena.size, C.byref(st), run, pool, nt)
         if rc:
             raise ValueError(f"vocr_tsd_detect: {rc}")
         self.truncated = int(st.truncated)
         return _boxes(st)
 
-    def boxes(self, rgb, size=None):
+    def _refine_opts(self, refine):
+        """refine_opts(refine), kept per setting (the options are parsed once)."""
+        if refine in (None, False):
+            return None
+        key = repr(sorted(refine.items())) if isinstance(refine, dict) else "defaults"
+        cache = self.__dict__.setdefault("_ropts", {})
+        if key not in cache:
+            cache[key] = refine_opts(refine, self.L)
+        return cache[key]
+
+    def boxes(self, rgb, size=None, refine=None):
         """eval/desktop.py's detector interface: [[x0, y0, x1, y1, vertical, logit, tag]] in frame px."""
-        return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in self.detect(rgb, size)]
+        return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag]
+                for b in self.detect(rgb, size, refine)]
 
     def input_size(self, w, h, size=None):
         """(iw, ih, pw, ph): the network input's image part and its padded size for a w x h frame."""
@@ -335,9 +369,10 @@ class CModel:
 
 class CPage:
     """The C page pipeline: the VTSD detector and a VOCR6 recognizer blob (.vocr, runtime/vocr.c W8I with its head
-    sections), every horizontal box grown by the reading pad (pad_rule) and read on `threads` threads in C."""
+    sections), every horizontal box (refined when refine is set, as CModel.detect refines) grown by the reading pad
+    (pad_rule) and read on `threads` threads in C."""
 
-    def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, lib=None):
+    def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, lib=None):
         self.L = c_library(lib)
         self.det = aligned(_blob_bytes(det))
         self.rec = aligned(_blob_bytes(rec))
@@ -350,6 +385,9 @@ class CPage:
             raise ValueError(f"vocr_tsd_page_new: {err.value}")
         if tags is not None:
             self.L.vocr_tsd_page_set_tags(self.p, sum(1 << int(t) for t in tags))
+        self._ropts = refine_opts(refine, self.L)       # the page copies the options
+        if self._ropts is not None:
+            self.L.vocr_tsd_page_set_refine(self.p, C.cast(self._ropts, C.c_void_p))
 
     def __del__(self):
         if getattr(self, "p", None):

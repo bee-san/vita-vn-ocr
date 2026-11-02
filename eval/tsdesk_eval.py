@@ -49,18 +49,19 @@ class CTsdDet:
 
     name = "ctsd"
 
-    def __init__(self, blob, size=None, threads=1):
+    def __init__(self, blob, size=None, threads=1, refine=None):
         import tsdesk_c as TC
-        self.m, self.size = TC.CModel(blob, threads=threads), size
+        self.m, self.size, self.refine = TC.CModel(blob, threads=threads), size, refine
 
     def boxes(self, rgb):
         return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in
-                self.m.detect(rgb, self.size)]
+                self.m.detect(rgb, self.size, self.refine)]
 
 
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
     refine = spec.endswith("+refine")           # tsd:MODEL.onnx[@SIZE[@MODE]]+refine: tools/tsdesk_refine on the boxes
+    #                                             ctsd:BLOB.vtsd[@SIZE]+refine: the C path's (desktop/vocr_tsd_refine.c)
     if refine:
         spec = spec[:-len("+refine")]
     if spec.startswith("tsd:"):
@@ -68,11 +69,11 @@ def detector_from_spec(spec, threads=1, so=None):
         size, _, mode = rest.partition("@")
         return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
                           refine=True if refine else None)
-    if refine:
-        raise ValueError(f"{spec}+refine: the refinement suffix is for tsd: specs")
     if spec.startswith("ctsd:"):
         path, _, size = spec[5:].partition("@")
-        return CTsdDet(path, size or None, threads)
+        return CTsdDet(path, size or None, threads, refine=True if refine else None)
+    if refine:
+        raise ValueError(f"{spec}+refine: the refinement suffix is for tsd: and ctsd: specs")
     raise ValueError(spec)
 
 

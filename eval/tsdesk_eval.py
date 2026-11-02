@@ -187,8 +187,9 @@ def _drop_read_job(job):
 
 def _cut_read_job(job, o):
     """_drop_read_job with the reading stage's cut (tools/tsdesk.cut_reading, +drop:cut_pct=...): as a page runs it,
-    every horizontal box of the detector is read and its reading cut into items at its wide ink gaps (with cut_dlg 0
-    not the boxes the detector tags as dialogue, tag 0); then the dense
+    every horizontal box of the detector is read and its reading cut into items at its wide ink gaps (a box the
+    detector tags as dialogue, tag 0: always with cut_dlg 1, never with 0, and with N >= 2 only when every item holds
+    at most N characters, a row of short items); then the dense
     sets' ignore filter (eval/tsdesk_dense.py: a box at least half inside an ignore area is not scored) applies to
     the pieces, the reading filter (drop_set) to their readings, and the pieces whose crop centre lies in a unit's
     region are scored with their own texts (no second read). Vertical boxes as in _drop_read_job."""
@@ -219,9 +220,10 @@ def _cut_read_job(job, o):
             continue
         dark = V.line_dark(g, cb)
         ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
-        cut = None
-        if o["cut_dlg"] or (b[6] if len(b) > 6 else 0) != 0:          # cut_dlg 0: a dialogue-tagged line stays whole
-            cut = T.cut_reading(g, b, [(c.text, cb[0] + c.x) for c in ln.chars], o["cut_pct"], o["cut_rel_pct"])
+        cut = T.cut_reading(g, b, [(c.text, cb[0] + c.x) for c in ln.chars], o["cut_pct"], o["cut_rel_pct"])
+        if cut is not None and (b[6] if len(b) > 6 else 0) == 0 and o["cut_dlg"] != 1:
+            if o["cut_dlg"] == 0 or max(len(t) for _, _, t in cut) > o["cut_dlg"]:
+                cut = None            # a dialogue-tagged line: whole (cut_dlg 0), or unless all its items are short
         if cut is None:
             pieces.append((list(b), ln.text, ln.conf_mean))
         else:

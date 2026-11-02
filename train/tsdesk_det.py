@@ -461,18 +461,49 @@ def trim_bands(bands, marks):
     return out
 
 
-def end_bands(pos, f):
+def end_bands(pos, f, gap=0.0):
     """Ignore areas just beyond both ends of every positive (window px): f x the line's size across past each end,
     the line's own extent across (a source whose ends come from teacher/geometry.refine may stop before a thin end
-    glyph: there, the cells past its end are neither kernel nor background). Kernel cells keep their targets."""
+    glyph: there, the cells past its end are neither kernel nor background). Kernel cells keep their targets.
+    gap (--end-ignore-gap G; 0 = off, the bands as they were): a band never covers more than G of the gap to the
+    nearest other positive past that end on the same row (vertical overlap >= half the smaller height; for a vertical
+    line, the same column), so the rest of the gap between two items on a row is background; a neighbour that touches
+    or overlaps that end leaves no band there."""
+    if not gap or gap <= 0:
+        out = []
+        for x0, y0, x1, y1, vertical, *_ in pos:
+            if vertical:
+                d = f * (x1 - x0)
+                out += [[x0, int(y0 - d), x1, y0], [x0, y1, x1, int(y1 + d + 0.999)]]
+            else:
+                d = f * (y1 - y0)
+                out += [[int(x0 - d), y0, x0, y1], [x1, y0, int(x1 + d + 0.999), y1]]
+        return out
     out = []
-    for x0, y0, x1, y1, vertical, *_ in pos:
+    for i, p in enumerate(pos):
+        x0, y0, x1, y1, vertical = p[:5]
+        # along (a0, a1) and across (c0, c1) extents of p and of the others, in p's own orientation
+        a0, a1, c0, c1 = (y0, y1, x0, x1) if vertical else (x0, x1, y0, y1)
+        d = f * (c1 - c0)
+        before, after = d, d
+        for j, q in enumerate(pos):
+            if j == i:
+                continue
+            b0, b1, e0, e1 = (q[1], q[3], q[0], q[2]) if vertical else (q[0], q[2], q[1], q[3])
+            if min(c1, e1) - max(c0, e0) < 0.5 * min(c1 - c0, e1 - e0):
+                continue                            # not on p's row (column)
+            if b0 > a0 and b1 > a1:                 # past p's end
+                after = min(after, max(0.0, gap * (b0 - a1)))
+            elif b1 < a1 and b0 < a0:               # before p's start
+                before = min(before, max(0.0, gap * (a0 - b1)))
+        # a band the cap does not shorten is rounded as before; a capped one inward, so it stays within G of the gap
+        s0 = int(a0 - d) if before >= d else int(math.ceil(a0 - before))
+        s1 = int(a1 + d + 0.999) if after >= d else int(math.floor(a1 + after))
         if vertical:
-            d = f * (x1 - x0)
-            out += [[x0, int(y0 - d), x1, y0], [x0, y1, x1, int(y1 + d + 0.999)]]
+            bands = ([x0, s0, x1, y0], [x0, y1, x1, s1])
         else:
-            d = f * (y1 - y0)
-            out += [[int(x0 - d), y0, x0, y1], [x1, y0, int(x1 + d + 0.999), y1]]
+            bands = ([s0, y0, x0, y1], [x1, y0, s1, y1])
+        out += [b for b in bands if b[2] > b[0] and b[3] > b[1]]
     return out
 
 
@@ -544,6 +575,7 @@ def make_batch(sources, rng, cfg):
     mk = np.zeros((bsz, ho, wo), np.int64)
     e_src = cfg.get("e_sources")
     end_ig = float(cfg.get("end_ignore") or 0.0)
+    end_gap = float(cfg.get("end_ignore_gap") or 0.0)
     orn_p = float(cfg.get("ornaments") or 0.0)
     marks_p = float(cfg.get("marks") or 0.0)
     for b in range(bsz):
@@ -555,7 +587,7 @@ def make_batch(sources, rng, cfg):
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         ign0, bands = ign, []
         if end_ig > 0 and not exact_source(src):
-            bands = end_bands(pos, end_ig)
+            bands = end_bands(pos, end_ig, end_gap)
             ign = list(ign) + bands
         orn = None
         if orn_p > 0 and cfg.get("aug", True) and rng.random() < orn_p:
@@ -688,6 +720,9 @@ def parse(argv=None):
                     help="the share of windows that get 1-2 single marks (a bullet glyph or a T8 icon) drawn as "
                          "background before a positive's start or between two side-by-side positives (add_marks); "
                          "the end bands of --end-ignore lose the marks' columns (trim_bands)")
+    ap.add_argument("--end-ignore-gap", type=float, default=0.0,
+                    help="with --end-ignore: an end band never covers more than G of the gap to the next positive on "
+                         "the same row, so the rest of the gap is background (end_bands; 0 = off)")
     ap.add_argument("--end-ignore", type=float, default=0.0,
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
@@ -739,7 +774,8 @@ def main(argv=None):
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
            "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
-           "end_ignore": a.end_ignore, "ornaments": a.ornaments, "marks": a.marks, "label_edits": a.label_edits}
+           "end_ignore": a.end_ignore, "end_ignore_gap": a.end_ignore_gap, "ornaments": a.ornaments, "marks": a.marks,
+           "label_edits": a.label_edits}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -767,6 +803,7 @@ def main(argv=None):
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
                        "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
                        "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore,
+                       "end_ignore_gap": a.end_ignore_gap or None,
                        "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None,
                        "marks": {"p": a.marks, **MARKS, "icons": list(T8M.ICON_KINDS)} if a.marks else None},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},

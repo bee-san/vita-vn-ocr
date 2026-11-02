@@ -119,6 +119,8 @@ def c_library(path=None):
     L.vocr_tsd_page_new.argtypes = [vp, sz, vp, sz, u, i, u, u, u, u, C.POINTER(i)]
     L.vocr_tsd_page_new.restype = vp
     L.vocr_tsd_page_set_tags.argtypes = [vp, u]
+    L.vocr_tsd_page_set_rule.argtypes = [vp, u, d, d, d]
+    L.vocr_tsd_page_set_rule.restype = i
     L.vocr_tsd_page_run.argtypes = [vp, vp, u, u, u, u]
     L.vocr_tsd_page_detect.argtypes = [vp, vp, u, u, u, u]
     L.vocr_tsd_page_count.argtypes = [vp]
@@ -184,6 +186,54 @@ def pad_rule(pad):
     if str(pad).isdigit():
         return int(pad), int(pad), 1
     raise ValueError(f"reading pad {pad!r}: auto, kN, kNvM, (kh, kv) or N px")
+
+
+RULE_FRAME, RULE_LINE, RULE_PX = 0, 1, 2      # vocr_tsd.h VOCR_TSD_RULE_*
+_NUM = r"(\d+(?:\.\d*)?|\.\d+)"
+
+
+def rule_of(pad):
+    """(kind, a, b, c) of a reading rule (eval/tsdesk_eval.margin_hv's rules; vocr_tsd_page_set_rule's arguments):
+      "auto" / None        the frame rule k4 (eval's pad "auto")
+      "kN", "kAvB"         (RULE_FRAME, A, B, 2): max(2, round(A H / 544)) px left and right, max(2, round(B H / 544))
+                           top and bottom for an H px tall frame; a (kh, kv) tuple likewise
+      "kAvBfC"             (RULE_FRAME, A, B, C): the horizontal pad at least C px (protocol v2 amendment 2)
+      "hXvY"               (RULE_LINE, X, Y, 0): X times the line's height along it and Y times it across (amendment 1)
+      N (int, or digits)   (RULE_PX, N, N, 0): N px on every side"""
+    if pad in (None, "auto"):
+        return RULE_FRAME, 4.0, 4.0, 2.0
+    if isinstance(pad, (tuple, list)):
+        return RULE_FRAME, float(pad[0]), float(pad[1]), 2.0
+    if isinstance(pad, (int, np.integer)):
+        return RULE_PX, float(pad), float(pad), 0.0
+    s = str(pad)
+    if s.isdigit():
+        return RULE_PX, float(s), float(s), 0.0
+    mt = re.fullmatch(rf"k{_NUM}(?:v{_NUM})?", s)
+    if mt:
+        a = float(mt.group(1))
+        return RULE_FRAME, a, float(mt.group(2) or a), 2.0
+    mt = re.fullmatch(rf"k{_NUM}v{_NUM}f{_NUM}", s)
+    if mt:
+        return RULE_FRAME, float(mt.group(1)), float(mt.group(2)), float(mt.group(3))
+    mt = re.fullmatch(rf"h{_NUM}v{_NUM}", s)
+    if mt:
+        return RULE_LINE, float(mt.group(1)), float(mt.group(2)), 0.0
+    raise ValueError(f"reading rule {pad!r}: auto, kN, kAvB, kAvBfC, hXvY, (kh, kv) or N px")
+
+
+def rule_hv(rule, b, H):
+    """(horizontal, vertical) pad in frame px of a reading rule (rule_of's, or its spec) for the box b = [x0, y0, x1,
+    y1] in an H px tall frame: the C page's arithmetic (vocr_tsd_page_set_rule), eval/tsdesk_eval.margin_hv's values."""
+    kind, a, bb, c = rule if isinstance(rule, tuple) and len(rule) == 4 else rule_of(rule)
+    if kind == RULE_PX:
+        return a, bb
+    if kind == RULE_FRAME:
+        return max(c, float(round(a * H / 544))), max(2.0, float(round(bb * H / 544)))
+    w, h = max(1.0, float(b[2]) - float(b[0])), max(1.0, float(b[3]) - float(b[1]))
+    if w >= h:
+        return max(1.0, a * h), max(1.0, bb * h)
+    return max(1.0, bb * w), max(1.0, a * w)
 
 
 def refine_opts(refine, lib):
@@ -373,21 +423,25 @@ class CModel:
 
 class CPage:
     """The C page pipeline: the VTSD detector and a VOCR6 recognizer blob (.vocr, runtime/vocr.c W8I with its head
-    sections), every horizontal box (refined when refine is set, as CModel.detect refines) grown by the reading pad
-    (pad_rule) and read on `threads` threads in C. The defaults (pad "auto", no refinement) are the page's plain
-    setting; the measured one is pad="k6v4", refine=True (docs/textspot-desktop.md)."""
+    sections), every horizontal box (refined when refine is set, as CModel.detect refines) grown by the reading rule
+    `pad` (rule_of: auto, kN, kAvB, kAvBfC, hXvY or N px) and read on `threads` threads in C. The defaults (pad
+    "auto", no refinement) are the page's plain setting; round 1's measured one is pad="k6v4", refine=True
+    (docs/textspot-desktop.md)."""
 
     def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, lib=None):
         self.L = c_library(lib)
         self.det = aligned(_blob_bytes(det))
         self.rec = aligned(_blob_bytes(rec))
         kind, n = policy_of(size, (-1, 0))
-        ph, pv, px = pad_rule(pad)
+        self.rule = rule_of(pad)
         err = C.c_int(0)
         self.p = self.L.vocr_tsd_page_new(self.det.ctypes.data, len(self.det), self.rec.ctypes.data, len(self.rec),
-                                          int(threads), kind, n, ph, pv, px, C.byref(err))
+                                          int(threads), kind, n, 4, 4, 0, C.byref(err))
         if not self.p:
             raise ValueError(f"vocr_tsd_page_new: {err.value}")
+        rc = self.L.vocr_tsd_page_set_rule(self.p, *self.rule)
+        if rc:
+            raise ValueError(f"vocr_tsd_page_set_rule{self.rule}: {rc}")
         if tags is not None:
             self.L.vocr_tsd_page_set_tags(self.p, sum(1 << int(t) for t in tags))
         self._ropts = refine_opts(refine, self.L)       # the page copies the options
@@ -421,7 +475,8 @@ class CPage:
         return out
 
     def pad(self):
-        """The reading pad of the last run, frame px (horizontal, vertical)."""
+        """The reading pad of the last run, frame px (horizontal, vertical); (-1, -1) under a line rule (hXvY: each
+        line's own pad, its crop)."""
         a, b = C.c_int(), C.c_int()
         self.L.vocr_tsd_page_pad(self.p, C.byref(a), C.byref(b))
         return a.value, b.value

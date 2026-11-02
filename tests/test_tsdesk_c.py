@@ -721,3 +721,85 @@ def test_pad_rule_and_policy():
     assert TC.policy_of(None, (1, 960)) == (1, 960) and TC.policy_of("native") == (0, 0)
     assert TC.policy_of("long:1280") == (2, 1280) and TC.policy_of("640") == (1, 640)
     assert struct.calcsize("<I") == 4
+
+
+def _tsdesk_eval():
+    import importlib.util
+    sys.path.insert(1, str(ROOT / "eval"))
+    try:
+        spec = importlib.util.spec_from_file_location("tsdesk_eval", ROOT / "eval" / "tsdesk_eval.py")
+        E = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(E)
+    except ImportError as e:
+        pytest.skip(f"eval/tsdesk_eval.py: {e}")
+    finally:
+        sys.path.remove(str(ROOT / "eval"))
+    return E
+
+
+RULES = ["k3", "k4", "k5", "k6", "k8", "k4v6", "k6v4", "k6v4f6", "k6v4f8", "k8v4f6", "k6v4f6.5", "h0.45v0.1",
+         "h0.6v0.15", "h0.2v0.05", "h0.1v0.2", "h.3v1"]
+
+
+def test_reading_rules_are_evals():
+    """tools/tsdesk_c.rule_of and rule_hv (the C page's arithmetic) give eval/tsdesk_eval.margin_hv's pads for the
+    protocol's rules (kN / kAvB, kAvBfC, hXvY) on wide, tall and tiny boxes and frame heights."""
+    E = _tsdesk_eval()
+    rng = np.random.default_rng(14)
+    assert TC.rule_of("auto") == (TC.RULE_FRAME, 4.0, 4.0, 2.0) and TC.rule_of(7) == (TC.RULE_PX, 7.0, 7.0, 0.0)
+    assert TC.rule_of("k6v4f6") == (TC.RULE_FRAME, 6.0, 4.0, 6.0) and TC.rule_of("h0.45v0.1")[0] == TC.RULE_LINE
+    assert TC.rule_of((5, 3)) == (TC.RULE_FRAME, 5.0, 3.0, 2.0) and TC.rule_of("12") == (TC.RULE_PX, 12, 12, 0)
+    for bad in ("wide", "k", "kv4", "h0.4", "k6f6", "k6v4f", "hxvy", "-3"):
+        with pytest.raises(ValueError):
+            TC.rule_of(bad)
+    boxes = [[10.0, 20.0, 410.5, 52.25], [3.3, 7.7, 5.1, 60.0], [0.0, 0.0, 0.4, 0.3], [100.0, 5.0, 120.0, 25.0]]
+    for _ in range(30):                                   # wide and tall boxes, some under a pixel
+        x0, y0 = float(rng.uniform(0, 800)), float(rng.uniform(0, 500))
+        boxes.append([x0, y0, x0 + float(rng.uniform(0.2, 300)), y0 + float(rng.uniform(0.2, 80))])
+    for rule in RULES:
+        for H in (272, 500, 544, 777, 1080, 1440):
+            for b in boxes:
+                want = tuple(float(x) for x in E.margin_hv(rule, b, H))
+                assert TC.rule_hv(rule, b, H) == want, (rule, H, b)
+
+
+def test_c_page_reading_rules(nets, libs, tmp_path):
+    """The C page under every kind of reading rule (vocr_tsd_page_set_rule): each line's crop is its box grown by
+    rule_hv's pad and rounded outward (eval/tsdesk_eval.crop_hv), in tools/tsdesk.reading_order, refined or not; the
+    frame rules report their pad, a line rule (-1, -1); a bad rule is refused."""
+    pytest.importorskip("torch")
+    import ctypes as C
+    _, rp = _random_recognizer(tmp_path)
+    _, blob, _ = nets["p8a"]
+    rng = np.random.default_rng(15)
+    frames = [_text_frame(480, 272, 3), _text_frame(960, 544, 4), rng.integers(0, 256, (500, 300, 3), dtype=np.uint8)]
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        for rule in ("k6v4", "k6v4f8", "h0.45v0.1", "h0.2v0.6", 3):
+            for refine in (None, True):
+                page = TC.CPage(blob, rp, threads=2, pad=rule, refine=refine, lib=lib)
+                for fr in frames:
+                    H, W = fr.shape[:2]
+                    lines = page.page(fr)
+                    boxes = cm.detect(fr, refine=refine)
+                    order = T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
+                    want = []
+                    for i in order:
+                        b = boxes[i]
+                        ph, pv = TC.rule_hv(rule, (b.x, b.y, b.x + b.w, b.y + b.h), H)
+                        cb = TC_crop(b, ph, pv, W, H)
+                        if cb is not None:
+                            want.append(cb)
+                    assert [ln.crop for ln in lines] == want, (rule, refine, fr.shape)
+                    kind = TC.rule_of(rule)[0]
+                    if kind == TC.RULE_LINE:
+                        assert page.pad() == (-1, -1)
+                    else:
+                        assert page.pad() == tuple(int(v) for v in TC.rule_hv(rule, (0, 0, 1, 1), H))
+        p = TC.CPage(blob, rp, lib=lib)
+        L = p.L
+        for args in ((3, 1.0, 1.0, 1.0), (0, -1.0, 4.0, 2.0), (1, float("nan"), 0.1, 0.0), (0, 6.0, 4.0, 5000.0)):
+            assert L.vocr_tsd_page_set_rule(p.p, *args) == -1, args
+        assert L.vocr_tsd_page_set_rule(C.c_void_p(0), 0, 4.0, 4.0, 2.0) == -1
+        with pytest.raises(ValueError):
+            TC.CPage(blob, rp, pad="h0.4", lib=lib)

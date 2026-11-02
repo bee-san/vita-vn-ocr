@@ -8,13 +8,13 @@
                                  (eval/tsdesk_dense.install_ignore: a box at least half inside a 1b ignore area is
                                  dropped before reading)
   tsdesk.py edges --frames HVAL.pkl --boxes BOXES.jsonl --out E.json [--rec L_fast.onnx] [--workers 5]
-      the protocol's edge error and tightness cost on hooked pages: every reference line of the units, its box
-      (box_main for a line with furigana) refined to ink by synth/textspot6_pages.refined_line on the page's colour
-      frame (a line the refinement leaves at its quad is counted and left out); the detector's horizontal boxes as they
-      are (no pad) matched one to one (vertical overlap >= half the smaller height, horizontal overlap >= half the
-      smaller width, largest overlap first); per edge e = detector - reference (x0, y0, x1, y1) in frame px; then every
-      matched line read twice by the recognizer (greedy), from its detector box + pad auto and from its exact box + pad
-      auto: the CER of each over those lines and the paired title-cluster interval of the difference
+      the protocol's edge error and tightness cost on hooked pages: every reference line of the units, its exact ink
+      box (amendment 1: train/tsdesk_targets.ink_box on the line's glyph cells; the protocol's first reference,
+      synth/textspot6_pages.refined_line, cut end glyphs); the detector's horizontal boxes as they are (no pad) matched
+      one to one (vertical overlap >= half the smaller height, horizontal overlap >= half the smaller width, largest
+      overlap first); per edge e = detector - reference (x0, y0, x1, y1) in frame px; then every matched line read twice
+      by the recognizer (greedy), from its detector box and from its exact box, each grown by the reading pad (--pad;
+      the protocol's k6v4): the CER of each over those lines and the paired title-cluster interval of the difference
   tsdesk.py screen --runs DIR [--arms A,B,...] [--out S.json]
       the screening table: each arm's four reads (hval and dense_screen at fit:960 and long:960), their mean (the
       protocol's score), PCSG00854's junk boxes, and the shape rule's network time and MACs
@@ -38,7 +38,9 @@ for _p in (ROOT / "eval", ROOT / "tools", ROOT / "synth", ROOT / "train", ROOT /
 import desktop as D  # noqa: E402
 
 PROTOCOL = ROOT / "eval" / "textspot_desktop_protocol.json"
-READ_PAD = os.environ.get("TSDESK_PAD", "auto")      # the reading pad of the tsd: / ctsd: timing pipelines
+# the reading pad of the tsd: / ctsd: timing pipelines when no --pad is given (eval/desktop.py's "auto" = k4); every
+# protocol read and timing passes the protocol's k6v4 (eval/reproducibility/textspot-desktop-20261101/)
+READ_PAD = os.environ.get("TSDESK_PAD", "auto")
 SCHEMA = "textspot-desktop/1"
 
 

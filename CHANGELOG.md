@@ -28,8 +28,8 @@ spotter has run on a console.
   960×544 frame and 2.9 ms per 1920×1080 frame on one thread. With VOCR6.2-L it reads #171's PC test set at 2.94%
   (textspot8 3.88%, MeikiOCR's detector 0.70%), dev-v2 at 1.82% (1.35%, 0.77%) and dense PC pages at 2.39% (7.53%,
   0.35%). It fails its pre-registered rule: dev-v2's PSP frames, dense pages, the edges' p90 and an ornament strip.
-  The hooked pages' training targets now hold every end glyph (`train/tsdesk_targets.py`): the repository's ink
-  refinement had cut thin end punctuation on some titles.
+  The hooked pages' training targets now hold most of the end glyphs that the repository's ink refinement cut on some
+  titles (`train/tsdesk_targets.py`); on tight-spaced titles they reach into the neighbouring line (#177).
 
 - **A desktop line detector, research pre-release v0.5.2-desktop.1, not adopted** (#169,
   [`docs/desktop.md`](docs/desktop.md); thanks to MeikiOCR's author, who suggested it). A float32 detector with 210 k

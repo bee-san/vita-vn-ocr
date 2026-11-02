@@ -25,9 +25,9 @@ The decode gives each line's ink box with no margin: the 4-connected components 
 cells and a mean K logit of at least `conf_min_logit`; across, the mean over the component's cells of centre - A1 and
 centre + A2; along, the mean of centre - E1 over the cells of its first column (row, for a vertical line) and of
 centre + E2 over its last, each kept within the component's cells' reach (`along_reach` x its size across beyond
-them, and never inside the first or last cell's far edge). The recognizer reads a box grown by `pad` (default "auto":
-max(2, round(4 H / 544)) frame px for an H px tall frame, the pad VOCR's eval crops and MeikiOCR's reference pipeline
-use).
+them, and never inside the first or last cell's far edge). The recognizer reads a box grown by `pad` (default
+READ_PAD = "k6v4", the protocol's: max(2, round(6 H / 544)) frame px left and right and max(2, round(4 H / 544)) top
+and bottom for an H px tall frame; "auto" is k4, the pad VOCR's eval crops and MeikiOCR's reference pipeline use).
 """
 import json
 import math

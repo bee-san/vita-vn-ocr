@@ -374,7 +374,8 @@ class CModel:
 class CPage:
     """The C page pipeline: the VTSD detector and a VOCR6 recognizer blob (.vocr, runtime/vocr.c W8I with its head
     sections), every horizontal box (refined when refine is set, as CModel.detect refines) grown by the reading pad
-    (pad_rule) and read on `threads` threads in C."""
+    (pad_rule) and read on `threads` threads in C. The defaults (pad "auto", no refinement) are the page's plain
+    setting; the measured one is pad="k6v4", refine=True (docs/textspot-desktop.md)."""
 
     def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, lib=None):
         self.L = c_library(lib)

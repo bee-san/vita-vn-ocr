@@ -15,14 +15,15 @@ time.
   - In C (AVX2 + FMA) the whole detector, from an RGB frame in memory to its refined boxes, takes **2.4 ms at
     960×544 and 2.9 ms at 1920×1080 on one thread** (0.9 and 1.2 ms on four).
   - That is a third of textspot8's ONNX network time and a fortieth of MeikiOCR's detector.
-  - The C detector adds about 10 MiB to its process.
+  - The C detector adds 10-12 MiB to its process.
   - The C path's crops equal the ONNX path's on every dev-v2 frame.
-- **Its boxes are tight where it finds a line:** after the refinement, the median edge error against the hooked pages'
-  exact ink boxes is 0-1 px on every edge.
+- **Its boxes are close to the ink where it finds a line:** after the refinement, the median edge error against the
+  hooked pages' exact ink boxes is 0 px on the left and right and about 1 px on the top and bottom (1.02 and 0.99 px at
+  long:960). The p90 errors are 2.1-9.8 px.
 - **It does not read well enough.** Its pre-registered rule asked for:
   - unseen console screenshots no worse than textspot8;
   - dense PC pages at 2% or less;
-  - every edge's p90 error at 2 px or less;
+  - every edge's median error at 1 px or less and p90 at 2 px or less;
   - at most 5 junk boxes on the ornament-strip title.
 
   It fails all four. It passes the speed and C-parity clauses.
@@ -107,6 +108,21 @@ the native pages and in #171's desktop captures (the box is mapped through each 
 its seed) (amendment 1). The along-line maps E1 and E2 learn only from sources whose boxes come from renderer or
 rendering geometry: the hooked pages, their captures and the synthetic frames.
 
+**Its limits** (measured by the independent audit of #176):
+- **Neighbouring lines.** On titles whose line pitch is smaller than a glyph's em box, the cells' union reaches into
+  the next line, and that line's glyph tops or bottoms count as ink.
+  - On hval, 172 of 4,720 lines (3.6%, in 9 of 71 titles) have an ink box whose top or bottom lies inside a
+    neighbouring line's box. Most are on four titles: PCSG00918 (68 of 107 lines), PCSG00917 (39 of 95), PCSG00916 (38
+    of 69) and PCSG00510 (17 of 29). On the five most affected titles that edge lies 5 px beyond `refined_line`'s
+    (median; at most 6).
+  - In the training targets, 5,323 of 143,595 hooked positives (3.7%, 17 titles) overlap a neighbouring positive.
+  - It touches R3's top and bottom reference, the exact-box reads (the tightness cost, the pad study's hval half) and
+    those lines' A1 / A2 targets. R3 fails on the left and right p90 regardless, so the decision stands.
+  - The fix (clip the cells' union across at half the gap to the neighbouring line, as `eval/tsdesk_dense.regions`
+    does) changes the registered reference, so it is a follow-up: #177.
+- **Lines at the frame's edge.** When the ring around the cells holds the line's own ink, as for a line touching the
+  frame's edge, it falls back to the cells (1 of 1,519 sampled hval lines).
+
 ### The decode (`tools/tsdesk.py`) and the refinement (`tools/tsdesk_refine.py`)
 
 The decode gives each line's **ink box, with no margin**:
@@ -119,7 +135,8 @@ Each end may lie up to 3 line heights beyond the kernel, but never inside the fi
 **The refinement** then snaps each horizontal box's edges to its line's ink on the full-resolution grey frame (helper
 textspot-desktop-refine). It never grows into another of the frame's boxes, and it lets the start cross gaps of at most
 35% of the line height (a 「 sits next to the glyph after it; a frame ornament does not). It never shrinks across.
-It costs 0.05 ms per page in C.
+In C it costs about 0.06 ms per 960×544 frame and 0.17 ms per 1920×1080 frame (the C helper's profile of seed 1's
+blob; the refinement helper measured 0.05 and 0.16 ms on Sd's boxes).
 
 The C path (`desktop/vocr_tsd.c`, helper textspot-desktop-c) gives the Python decode's and refinement's boxes bit for
 bit from the same maps.
@@ -145,8 +162,9 @@ VOCR6.2-L at seven pad rules (kH = max(2, round(k H / 544)) px horizontally, lik
 ## The protocol
 
 `eval/textspot_desktop_protocol.json` was registered before any candidate was trained or any decision set read. Each
-amendment came before the reads it governs; the experiment log has a line for each, and the disclosures below say what
-had been read.
+amendment came before the reads it governs, with one exception: amendment 3 says it came before arm Sd was read, but
+Sd's screening reads had finished 44 s to 2 min earlier (disclosures). The experiment log has a line for each
+amendment, and the disclosures below say what had been read.
 
 - **Screening:** seed 1 per arm, scored on hval and a held-out dense PC screening set (dense_screen). The score is the
   mean of the four dialogue CERs: hval and dense_screen, at fit:960 and long:960.
@@ -165,6 +183,7 @@ had been read.
 
 **The dense sets** (`eval/tsdesk_dense.py`, `data/manifests/tsdesk_dense_v1.json`) are 1b v3 frames with at least 8
 labelled lines, from 200 VNs held out of training: every frame of those VNs is left out of 1b and of the real half.
+Five of them have screenshots among the synthetic frames' backgrounds (disclosures).
 - dense_screen: 100 VNs, 120 frames, 1,220 lines.
 - dense_dev: 100 other VNs, 120 frames, 1,203 lines.
 
@@ -201,15 +220,19 @@ The recipe options:
   ignore areas.
 - **ornaments:** a quarter of the windows get a row of repeated small ornaments drawn as background.
 
-- **The pick is Si** (the rule's lowest score). The refinement is adopted by rule 3:
+- **The pick is Si** (the rule's lowest score). The refinement is adopted by rule 3, which asks for a lower hval half
+  and a lower mean median edge error:
   - hval half 2.165% → 2.122%;
   - the mean median edge error 1.31 px → 0.49 px.
+
+  Its CER gain on Si is not resolved: hval −0.048 points [−0.118, +0.031] at fit:960, −0.037 [−0.101, +0.038] at
+  long:960. Its last change was made on hval (disclosures).
 - **Steps matter most:** Si and Sh share every setting but the steps.
 - **One seed per arm adds noise:** Sh scores below Sd although it only adds two recipe options.
 - **The ornament rows** cut PCSG00854's junk boxes to 14 (Sk). Sk's score is 0.07 above Si's at the same cost, so the
   rule keeps Si.
-- **PSP frames at their own 480×272** read poorly at fit:960 (hval PSP 3.6-10.5%). long:960 doubles them to 960×544
-  (0.4-2.8%).
+- **PSP frames at their own 480×272** read poorly at fit:960: hval PSP 3.2-10.5%, and 13.4% for Sc. long:960 doubles
+  them to 960×544: 0.4-2.8%, and 10.0% for Sc.
 
 ## The decision (dev-v2, dense_dev; `eval/textspot_desktop_decision.json`)
 
@@ -237,7 +260,7 @@ The chosen arm's three seeds (80k steps each, the refinement on; CER in %):
 | R1 Vita view minus textspot8 | −0.15 [−0.86, +0.58] | −0.20 [−0.90, +0.50] | not resolved above 0 |
 | R1 PSP view minus textspot8 | +15.70 [+8.49, +23.55] | +3.96 [+0.50, +8.14] | not resolved above 0 |
 | R2 dense_dev | 4.01% | 3.34% | ≤ 2.00% |
-| R3 hval edges, median / p90 (L/T/R/B) | 0/1.0/0/1.0 / 4/2.6/11/2.2 px | 0/1.0/0/1.0 / 3/2.5/9.8/2.1 px | ≤ 1 / ≤ 2 px each |
+| R3 hval edges, median / p90 (L/T/R/B) | 0/1.05/0/0.96 / 4/2.6/11/2.2 px | 0/1.02/0/0.99 / 3/2.5/9.8/2.1 px | ≤ 1 / ≤ 2 px each |
 | R3 tightness cost | +0.97 [+0.47, +1.50] | +0.81 [+0.34, +1.32] | not resolved above 0 |
 | R4 PCSG00854 junk boxes | 56 | 56 | ≤ 5 |
 | R5 C detector + refinement, 1 thread | 2.20 / 2.75 ms | 2.18 / 2.71 ms | ≤ 3.0 / ≤ 8.0 ms (960×544 / 1920×1080) |
@@ -246,8 +269,9 @@ The chosen arm's three seeds (80k steps each, the refinement on; CER in %):
 **No candidate qualifies.**
 - **It fails on PSP:** on dev-v2's Vita view the detector is level with textspot8, but at 480×272, and even doubled to
   960×544, it cuts and misses small console text.
-- **The seeds differ by up to 1.9 points on dev-v2,** with each seed's errors in a few VNs. The screening chose the
-  arm through its best seed: one seed per arm gives the lowest screening score a winner's curse.
+- **The seeds differ by up to 2.8 points on dev-v2 at fit:960 (8.17-10.97%) and 1.9 at long:960 (1.49-3.41%),** with
+  each seed's errors in a few VNs. The screening chose the arm through its best seed: one seed per arm gives the lowest
+  screening score a winner's curse.
 
 ### The research candidate (amendment 6)
 
@@ -309,6 +333,8 @@ protocol. vocr-desktop read it under its own protocol, and the two reads are ind
 - **vocr-desktop's d64** reads this set at 1.67% at long:960 and 2.75% for its release at long:640 (#175, its own
   read).
 - The "flagged" VNs are the set's family and release-partner VNs (`docs/desktop-data.md`).
+- The columns other than "all" are re-scored from the stored reads' unit counts by `eval/tsdesk_pctest_breakdown.py`
+  (`eval/textspot_desktop_pctest_breakdown.json`); it reads no frame.
 - **The exact boxes read small PC screens poorly at k6v4** (2.89% at widths ≤ 800 px, against R's 0.94%). The pad was
   chosen on frames of about 960 px; the set's reference boxes come from MeikiOCR's proposals refined to ink.
 
@@ -320,7 +346,7 @@ p50 ms per frame on 60 hval Vita frames (960×544), the same frames resampled to
 | pipeline | 1 thread: 960×544 / 1920×1080 | 4 threads: 960×544 / 1920×1080 |
 |---|---|---|
 | **C detector + refinement (AVX2 + FMA, `-O3 -march=x86-64-v3`)** | **2.36 / 2.88** | **0.89 / 1.15** |
-| C detector, the plain-C build (`-DVOCR_TSD_SCALAR`) | 16.1 / 21.4 | 4.7 / 6.3 |
+| C detector, the plain-C build (`make ARCH=`: no `-march`, so the scalar kernels) | 16.1 / 21.4 | 4.7 / 6.3 |
 | C network alone | 2.27 / 2.27 | 0.74 / 0.74 |
 | ONNX Runtime network alone | 2.75 / 2.77 | 4.28 / 4.29 |
 | ONNX detector (cv2 resize, the numpy refinement) | 5.2 / 21.0 | 6.4 / 10.9 |
@@ -337,16 +363,26 @@ pages at load 31-36, so not the same session):
 | mida | 25.9 |
 | MeikiOCR's detector | 109.5 |
 
-- **Peak memory:** a fresh process running the C detector on the Vita pages peaks at 44.6 MiB (51.2 MiB at
-  1920×1080), against 95.7 / 116.1 MiB for the ONNX detector. Both figures include Python and numpy, about 35 MiB.
-  The detector itself adds 9-11 MiB in C and 45-64 MiB in ONNX Runtime.
-- **The numpy refinement** costs about 18 ms at 1080p in the ONNX path. Its C twin costs about 0.1 ms.
+**Memory** of the release model (`eval/tsdesk_time.py mem`: a fresh process per pipeline, one frame in memory at a
+time, 1 thread; `res/timing/mem_release_e35bf00_*.json`), 960×544 / 1920×1080:
+
+| pipeline | peak | added by the pipeline |
+|---|---:|---:|
+| C detector + refinement | 46.0 / 51.3 MiB | 10.0 / 11.6 MiB |
+| ONNX detector | 96.8 / 116.6 MiB | 61.7 / 76.9 MiB |
+| C page with VOCR6.2-L | 47.4 / 55.9 MiB | 12.5 / 16.4 MiB |
+| ONNX page | 126.3 / 158.9 MiB | 91.3 / 119.4 MiB |
+
+- The peaks include Python, numpy and the frame, 35-40 MiB.
+- At 4 threads every figure is within 1.1 MiB of these, except the ONNX page, which peaks at 145.2 / 177.3 MiB.
+- **The numpy refinement** costs about 18 ms at 1080p in the ONNX path. Its C twin costs about 0.17 ms.
 
 ## Does it help on the Vita?
 
 **Not as it stands.**
 - **Cost:** at 95 M multiply-adds per 960×544 frame it costs about as much as textspot8 (86.8 M, which halves the frame
-  first). An int8 NEON port would land near textspot8's estimated 264 ms per frame at 333 MHz.
+  first). Scaled from textspot8's estimated 264 ms per frame at 333 MHz by multiply-adds, an int8 NEON port would
+  take about 290 ms (95 / 86.8 × 264). That is an extrapolation, not an A9 cycle estimate.
 - **Accuracy:** it reads console screens no better (dev-v2's Vita view level with textspot8, its PSP view worse).
 
 **What could transfer to a smaller Vita variant (a follow-up, not this work):**
@@ -362,8 +398,8 @@ pages at load 31-36, so not the same session):
   more PSP-scale data or more capacity before one seed predicts another.
 - **Capacity within the time budget.** In C the detector uses 2.4 of R5's 3.0 ms at 960×544, about 25% headroom.
 - **PSP text.** Even doubled to 960×544, PSP frames read at about 2.1% against textspot8's 1.5%.
-- **Ornament strips.** The ornament rows cut PCSG00854's junk boxes from 53-111 to 14 (arm Sk), but scored 0.07 above
-  the chosen arm.
+- **Ornament strips.** The ornament rows cut PCSG00854's junk boxes from 87 to 54 at 40k steps (Sh → Sj) and from 66
+  to 14 at 80k (Si → Sk). Sk scored 0.07 above the chosen arm.
 - **Line ends** (R3's right-edge p90 of 8-10 px):
   - page cursors and icons next to a line's last glyph are boxed with the line;
   - some lines split at full-width spaces.
@@ -401,14 +437,31 @@ $H $S/report_res.sh blobs/final_Si_s2/textspot_desktop_final_s2.onnx; $H $S/time
 ## Disclosures
 
 - **Amendments 3-5 added screening arms after some arms had been read** on hval and dense_screen. Each amendment
-  records which.
+  records which, with one error:
+  - Amendment 3 (21:53:04Z) replaced the screening rule's two steps with one rule. It says it came before arm Sd was
+    read, but Sd's four screening reads had finished 44 s to 2 min before it (21:51:07-21:52:20Z, the result files'
+    `created` fields). Amendment 4 lists Sd as read.
+  - The pick does not depend on it: the original two-step rule, with the later arms read as shape arms, also picks Si.
+    Its recipe step keeps junk (Se 3.755 < Sa 4.455), and the lowest shape score is Si's 2.511, on the junk recipe.
+  - The protocol file stays as registered: its sha256 is in the PC test's attempt record.
 - **Speculative runs were stopped unread.** Seeds and retrains of arm Sj were launched before Si and Sk were read,
   then stopped once Si's score excluded Sj. Two arms (Sg; and the first Sa, Se, Sb on the old targets) were stopped
-  before any score.
-- **The refinement's design looked at hval.** The helper's design read hval boxes and contact sheets before its later
-  choices moved to train pages (its notes). Rule 3 adopted it on hval.
+  before any score. Amendment 4 says Sg stopped at about step 3,000; its log reached step 8,800 (729 s).
+- **The refinement was designed, and last changed, on hval.**
+  - The helper's design read hval boxes and contact sheets; its later choices moved to train pages.
+  - Its last change was made on hval. Version 5 failed rule 3 on Sd, Sf, Se and Sb through PCSG00854's junk boxes
+    (experiment log, 23:22Z). Version 6, the adopted one, changes only the bound on shrinking across. That change was
+    first seen on hval, then checked on train pages.
+  - Rule 3 adopted version 6 on Si's hval reads (00:09-00:11Z), where its CER gain is not resolved (screening, above).
 - **The exact reference of the edge error is an algorithm** (`ink_box`). On textured or dithered boxes it can still
-  miss a faint 。 or 」, which counts against a detector that boxes it.
+  miss a faint 。 or 」, which counts against a detector that boxes it. On tight-spaced titles it reaches into the
+  neighbouring line: 3.6% of hval lines and 3.7% of the hooked training targets ("Its limits", above; #177).
+- **The synthetic frames' backgrounds** include screenshots of 5 of the 200 held-out dense VNs (the audit's count):
+  - textspot's scene pool holds 16 screenshots of v1001, v1120, v14922 and v2836 (dense_screen) and v6682 (dense_dev);
+  - 165 of textspot's 80,000 synthetic frames and 38 of desk_synth's 10,000 are drawn over them;
+  - none of them is a dense-set screenshot;
+  - dense_dev without v6682 reads 2.401% against 2.394% (the release model) and 3.346% against 3.342% (the
+    representative).
 - **The dense sets' boxes come from 1b's labels** (MeikiOCR proposals refined to ink, Claude-reviewed). The PC test
   set's lines are MeikiOCR's proposals (`docs/desktop-data.md`).
 - **mida's licence is not stated.** It was used for measurement only, through `eval/mida_det.py`: not redistributed,

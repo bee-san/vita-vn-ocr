@@ -430,6 +430,10 @@ def test_drop_set_rules():
     assert T.drop_set(strip, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
     assert T.japanese_share("「000") == 0.25 and T.japanese_share("") == 0.0
     assert T.drop_set(row, T.drop_options({})) == set()
+    r = T.drop_options({"rep_pct": 50})
+    reps = items((0, 0, 99, 20, "イf0u000u00000000000c", 0.9), (0, 30, 99, 20, "【AccessingtheWorld】", 0.9),
+                 (0, 60, 99, 20, "……………………", 0.9), (0, 90, 99, 20, "000", 0.9), (0, 120, 99, 20, "所持金100000円", 0.9))
+    assert T.drop_set(reps, r) == {0, 4} and T.drop_set(reps, T.drop_options({"rep_pct": 80})) == set()
     c = T.drop_options({"conf_milli": 600})
     assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
     with pytest.raises(KeyError):

@@ -765,7 +765,7 @@ def post_pre(g, boxes, opts):
 
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
-DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "conf_milli": 0}
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0}
 _JP_RE = None
 
 
@@ -803,7 +803,11 @@ def drop_set(items, o):
               within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
               before スポーツ), and at least nojp_anchor_pct % of that reading's characters are Japanese (an
               ornament misread as 「000OO0 does not anchor its neighbours);
+      rep_pct: a reading of at least 4 characters whose most frequent character is not Japanese and makes up at least
+              rep_pct % of it (an ornament strip read as イf0u000u0000000c; no reference line of hval, the dense sets
+              or dev-v2 is one);
       conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
+    from collections import Counter
     out = set()
     jp = [has_japanese(t) for _, t, _ in items]
     anchor = [j and japanese_share(t) * 100.0 >= o["nojp_anchor_pct"] for j, (_, t, _) in zip(jp, items)]
@@ -811,6 +815,11 @@ def drop_set(items, o):
         if o["conf_milli"] and c * 1000.0 < o["conf_milli"]:
             out.add(i)
             continue
+        if o["rep_pct"] and len(t) >= 4:
+            ch, k = Counter(t).most_common(1)[0]
+            if not has_japanese(ch) and k * 100 >= o["rep_pct"] * len(t):
+                out.add(i)
+                continue
         if not o["nojp"] or jp[i]:
             continue
         if o["nojp"] >= 2:

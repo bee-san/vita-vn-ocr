@@ -374,13 +374,14 @@ class Pipeline:
         return len(self._opage(rgb))
 
 
-def interleave(n_pages, names, call, passes=3, warmup=1, seed=20261101, clock=time.perf_counter, log=None):
+def interleave(n_pages, names, call, passes=3, warmup=1, seed=20261101, clock=time.perf_counter, log=None,
+               before=None):
     """Run call(name, i) for every pipeline name on every page i = 0 .. n_pages - 1, interleaved per page (round
     robin): each pass (the warm-up passes first) visits the pages in a shuffled order and runs every pipeline on a page,
     in a shuffled order, before it moves to the next page, so a load spike on the shared host meets every pipeline
     alike. The shuffles come from random.Random(seed), the pages' order once per pass, then the pipelines' once per
-    page. Returns ({name: {i: [ms of each recorded pass]}}, {name: {i: the items of its last call}}, the schedule
-    [(pass, i, name)])."""
+    page. before(p), when given, runs before pass p (outside the timing). Returns ({name: {i: [ms of each recorded
+    pass]}}, {name: {i: the items of its last call}}, the schedule [(pass, i, name)])."""
     rng = random.Random(seed)
     names = list(names)
     times = {n: defaultdict(list) for n in names}
@@ -388,6 +389,8 @@ def interleave(n_pages, names, call, passes=3, warmup=1, seed=20261101, clock=ti
     sched = []
     order = list(range(n_pages))
     for p in range(warmup + passes):
+        if before is not None:
+            before(p)
         rng.shuffle(order)
         for i in order:
             rng.shuffle(names)
@@ -438,17 +441,29 @@ def cmd_run(a):
     res["builds"] = {k: json.loads((Path(v).parent / "build.json").read_text()) for k, v in libs.items()
                      if (Path(v).parent / "build.json").exists()}
     views = [p["view"] for p in pages]
+    res["rebuild"] = bool(a.rebuild)
     for threads in [int(t) for t in a.threads.split(",")]:
-        pipes = {f"{s}|t{threads}": Pipeline(s, threads, a.pad, a.lib, a.onnx_dir, libs=libs) for s in specs}
-        for pp in pipes.values():
-            for i, rgb in enumerate(rgbs):
-                pp.prepare(i, rgb)
+        pipes = {}
+
+        def make(p=None, threads=threads, pipes=pipes):
+            """(Re)build every pipeline (--rebuild: before every pass, so a C pipeline's pool threads land on other
+            cores each pass instead of keeping one placement, good or bad, for the whole run)."""
+            if p is not None and (not a.rebuild or p == 0):
+                return
+            pipes.clear()
+            for s in specs:
+                pipes[f"{s}|t{threads}"] = pp = Pipeline(s, threads, a.pad, a.lib, a.onnx_dir, libs=libs)
+                for i, rgb in enumerate(rgbs):
+                    pp.prepare(i, rgb)
+                if p is not None:
+                    pp(rgbs[0], 0)              # its arena and pool warm before the pass (outside the timing)
+        make()
         t0 = time.time()
         n_all = a.warmup + a.passes
         times, counts, _ = interleave(
             len(pages), list(pipes), lambda n, i, P=pipes: P[n](rgbs[i], i), a.passes, a.warmup, a.seed + threads,
             log=lambda p: print(f"threads {threads} pass {p + 1}/{n_all} {time.time() - t0:.0f} s "
-                                f"load {os.getloadavg()[0]:.1f}", flush=True))
+                                f"load {os.getloadavg()[0]:.1f}", flush=True), before=make)
         for n in pipes:
             r = view_stats(times[n], counts[n], views)
             res["results"][n] = r
@@ -901,6 +916,8 @@ def main(argv=None):
     p.add_argument("--lib")
     p.add_argument("--libs", help="NAME=LIB.so[,...]: libraries for pipeline specs ending in ^NAME")
     p.add_argument("--random", type=int, default=0)
+    p.add_argument("--rebuild", action="store_true",
+                   help="re-create every pipeline (its thread pool, its sessions) before every pass")
     p.add_argument("--onnx-dir", default=str(D.ONNX_DIR))
     p.add_argument("--out", required=True)
     p = sub.add_parser("mem")

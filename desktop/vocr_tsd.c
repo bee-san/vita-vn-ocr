@@ -26,6 +26,9 @@
 #else
 #define TSD_AVX512 0
 #endif
+#ifndef TSD_PW512
+#define TSD_PW512 1        /* the AVX-512 build's pointwise kernels (0: the AVX2 ones) */
+#endif
 
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
 #define CHUNK_FLOATS 6144u   /* a row chunk's scratch (floats): at most 48 px x 128 channels or 24 px x 256 */
@@ -416,7 +419,7 @@ static void k1(const float *x, unsigned Cin, const float *w, unsigned Cout, cons
 #undef F1
 #undef F2
 #undef F3
-#if TSD_AVX512
+#if TSD_AVX512 && TSD_PW512
 /* the AVX-512 kernels: 16 channels a vector, 32 registers; each output the AVX2 kernels' chain (the bias, then one
  * fused multiply-add per input channel in order, then the epilogue's operations in order) */
 static inline void epi_store16(__m512 u, const epi_t *e, unsigned p, unsigned co, unsigned Cout, float *out)
@@ -568,7 +571,7 @@ static void pw_chunk(const float *in, unsigned P, const vocr_tsd_layer *L, const
     const float *w = L->w, *b = L->b;
 #if TSD_AVX2
     unsigned co = 0, p;
-#if TSD_AVX512
+#if TSD_AVX512 && TSD_PW512
     if (Cout % 16 == 0) {
         for (; co + 32 <= Cout; co += 32) {
             for (p = 0; p + 12 <= P; p += 12) z32x12(in + (size_t)p * Cin, Cin, w, Cout, b, co, e, p, out);
@@ -678,22 +681,14 @@ static void dw16(const float *const *rows, const unsigned *kys, unsigned nk, uns
 /* 3x3 depthwise with zero padding d, stride s, dilation d, ReLU, on an H x W x C map: output row oy, columns
  * [x0, x1), into out ([x1 - x0][C]). The taps run in (ky, kx) order, a tap outside the map skipped; the columns whose
  * three taps are inside the map take the unchecked path, the others the checked one (a column's path depends on its
- * position only, so any split of the rows gives the same bits). */
-static void dw_chunk(const float *in, unsigned H, unsigned W, const vocr_tsd_layer *L, unsigned oy, unsigned x0,
-                     unsigned x1, float *out)
+ * position only, so any split of the rows gives the same bits). dw_core takes the output row's input rows: rows[t] is
+ * the W x C row of tap row kys[t] (t < nk, the rows inside the map, in ky order). */
+static void dw_core(const float *const *rows, const unsigned *kys, unsigned nk, unsigned W, const vocr_tsd_layer *L,
+                    unsigned x0, unsigned x1, float *out)
 {
     const unsigned C = L->cin, s = L->stride, d = L->dil;
     const float *wt = L->w, *bs = L->b;
-    const float *rows[3];
-    unsigned kys[3], nk = 0, ky, lo, hi, ilo, ihi, ox, c;
-    for (ky = 0; ky < 3; ky++) {
-        int iy = (int)(oy * s + ky * d) - (int)d;
-        if (iy >= 0 && iy < (int)H) {
-            rows[nk] = in + (size_t)iy * W * C;
-            kys[nk++] = ky;
-        }
-    }
-    /* the interior output columns [ilo, ihi): ox s - d >= 0 and ox s + d <= W - 1; then within [x0, x1) */
+    unsigned lo, hi, ilo, ihi, ox, c;
     ilo = (d + s - 1) / s;
     ihi = W > d ? (W - 1 - d) / s + 1 : 0;
     lo = ilo > x0 ? ilo : x0;
@@ -786,6 +781,22 @@ static void dw_chunk(const float *in, unsigned H, unsigned W, const vocr_tsd_lay
 #endif
         }
     }
+}
+
+static void dw_chunk(const float *in, unsigned H, unsigned W, const vocr_tsd_layer *L, unsigned oy, unsigned x0,
+                     unsigned x1, float *out)
+{
+    const unsigned C = L->cin, s = L->stride, d = L->dil;
+    const float *rows[3];
+    unsigned kys[3], nk = 0, ky;
+    for (ky = 0; ky < 3; ky++) {
+        int iy = (int)(oy * s + ky * d) - (int)d;
+        if (iy >= 0 && iy < (int)H) {
+            rows[nk] = in + (size_t)iy * W * C;
+            kys[nk++] = ky;
+        }
+    }
+    dw_core(rows, kys, nk, W, L, x0, x1, out);
 }
 
 /* ----------------------------------------------------------------------------- the stem's input */
@@ -1109,43 +1120,181 @@ typedef struct {
     size_t X[4][2];            /* each stage's maps (floats from the aligned arena start) */
     size_t P[4];               /* the pyramid's levels (those that are kept) */
     size_t Q;                  /* the smoothing blocks' second map (smooth >= 2) */
+    size_t ring, ring_floats;  /* the fused step's rings of three lateral rows, one per task (ring_floats each) */
+    int fuse;                  /* the finest lateral and smoothing block 0 run as one ST_LATSEP step */
     size_t maps, end;
 } tsd_plan;
 
-static void plan(const vocr_tsd_model *m, unsigned pw, unsigned ph, tsd_plan *P)
+#ifndef TSD_ALIAS
+#define TSD_ALIAS 1   /* one task: the maps placed by liveness (0: every map its own region, the round-1 layout) */
+#endif
+#ifndef TSD_FUSE
+#define TSD_FUSE 1    /* the finest lateral and the first smoothing block in one step (ST_LATSEP) */
+#endif
+#ifndef TSD_FUSE_ROWS
+#define TSD_FUSE_ROWS 24   /* ... when every task's band has this many rows (each band recomputes 2 lateral rows) */
+#endif
+
+/* whether the network runs its finest lateral and first smoothing block as one ST_LATSEP step on an hh-row map with
+ * ntasks tasks */
+static int fuse_latsep(const vocr_tsd_model *m, unsigned hh, unsigned ntasks)
+{
+    return TSD_FUSE && m->smooth > 0 && m->sdw[0].stride == 1 && m->sdw[0].dil == 1 &&
+           (ntasks <= 1 || hh / ntasks >= TSD_FUSE_ROWS);
+}
+
+/* the network's buffers, in build()'s order of steps: B_X + 2 s + k is stage s's map k, B_P + s the pyramid's level
+ * s, then Q and the maps */
+enum { B_X = 0, B_P = 8, B_Q = 12, B_MAPS = 13, B_RING = 14, NBUF = 15 };
+
+typedef struct {
+    size_t size, off;          /* floats */
+    int first, last;           /* the steps that first and last touch it (-1: unused) */
+} tsd_buf;
+
+static void buf_use(tsd_buf *b, int step)
+{
+    if (b->first < 0) b->first = step;
+    b->last = step;
+}
+
+/* the steps of build() (the stem, the stages, gc, the laterals, the smoothing) as buffer uses; fuse: ST_LATSEP */
+static void plan_uses(const vocr_tsd_model *m, int fuse, tsd_buf *B)
+{
+    const unsigned h = m->hs == 4 ? 0u : 1u;
+    unsigned s, i, fin[4], cur;
+    int step = 0, coarse = -1;
+    buf_use(&B[B_X], step);                        /* the stem writes stage 0's map 0 */
+    for (s = 0; s < 4; s++) {
+        cur = 0;
+        if (s > 0) {                               /* the down block: stage s - 1's last map -> stage s's map 0 */
+            step++;
+            buf_use(&B[fin[s - 1]], step);
+            buf_use(&B[B_X + 2 * s], step);
+        }
+        for (i = 0; i < m->n[s]; i++) {            /* the residual blocks: ping-pong */
+            step++;
+            buf_use(&B[B_X + 2 * s + cur], step);
+            cur ^= 1u;
+            buf_use(&B[B_X + 2 * s + cur], step);
+        }
+        fin[s] = B_X + 2 * s + cur;
+    }
+    if (m->gc) buf_use(&B[fin[3]], ++step);
+    for (s = 3; s + 1 > h; s--) {                  /* the laterals, coarse to fine */
+        step++;
+        buf_use(&B[fin[s]], step);
+        if (coarse >= 0) buf_use(&B[coarse], step);
+        if (s == h && fuse) {                      /* ST_LATSEP: the ring, then smoothing block 0's output */
+            buf_use(&B[B_RING], step);
+            buf_use(&B[m->smooth == 1 ? B_MAPS : B_Q], step);
+        } else if (s == h && !m->smooth) {
+            buf_use(&B[B_MAPS], step);
+        } else {
+            buf_use(&B[B_P + s], step);
+            coarse = (int)(B_P + s);
+        }
+        if (s == 0) break;
+    }
+    for (i = fuse ? 1u : 0u; i < m->smooth; i++) {   /* smoothing: P[h] -> Q -> P[h] ..., the last to maps */
+        step++;
+        buf_use(&B[i % 2 == 0 ? B_P + h : B_Q], step);
+        buf_use(&B[i + 1 == m->smooth ? B_MAPS : (i % 2 == 0 ? B_Q : B_P + h)], step);
+    }
+}
+
+static void plan(const vocr_tsd_model *m, unsigned pw, unsigned ph, unsigned ntasks, tsd_plan *P)
 {
     const size_t A = 16;   /* floats: 64 bytes */
-    unsigned s, h = m->hs == 4 ? 0u : 1u;
+    unsigned s, h = m->hs == 4 ? 0u : 1u, i, j, k;
+    tsd_buf B[NBUF];
     size_t off = 0;
     memset(P, 0, sizeof *P);
     for (s = 0; s < 4; s++) {
         P->H[s] = ph >> (2 + s);
         P->W[s] = pw >> (2 + s);
     }
+    memset(B, 0, sizeof B);
+    for (i = 0; i < NBUF; i++) B[i].first = B[i].last = -1;
+    for (s = 0; s < 4; s++) B[B_X + 2 * s].size = B[B_X + 2 * s + 1].size =
+        ALIGN_UP((size_t)P->H[s] * P->W[s] * m->c[s], A);
+    for (s = h; s < 4; s++) B[B_P + s].size = ALIGN_UP((size_t)P->H[s] * P->W[s] * m->F, A);
+    B[B_Q].size = B[B_MAPS].size = 0;
+    B[B_Q].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->F, A);
+    B[B_MAPS].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out, A);
+    P->fuse = fuse_latsep(m, P->H[h], ntasks);
+    plan_uses(m, P->fuse, B);
+    B[B_RING].first = B[B_RING].last = -1;       /* the rings go after the maps (below): the maps' layout does not
+                                                    depend on the task count */
+    if (!TSD_ALIAS || ntasks > 1) {
+        /* every map its own region: with threads, a reused region's lines would sit in the caches of the threads that
+         * wrote its last occupant's rows, not of those that write the new map's (measured slower at 4 threads) */
+        for (i = 0; i < NBUF; i++)
+            if (B[i].first >= 0) {
+                B[i].off = off;
+                off += B[i].size;
+            }
+    } else {
+        /* in order of first use: a buffer takes the region of the buffer freed last (the warmest in the caches) that
+         * holds it, a free region of the same buffers' space, else new space; a region is free for a buffer when its
+         * last occupant's last use came before the buffer's first */
+        typedef struct {
+            size_t off, size;
+            int freed;
+        } region;
+        region R[2 * NBUF];
+        unsigned nr = 0, done[NBUF];
+        int step, maxstep = 0;
+        memset(done, 0, sizeof done);
+        for (i = 0; i < NBUF; i++)
+            if (B[i].last > maxstep) maxstep = B[i].last;
+        for (step = 0; step <= maxstep; step++) {
+            for (i = 0; i < NBUF; i++) {         /* the buffers whose last use was the step before: freed */
+                if (B[i].first < 0 || done[i] || B[i].last != step - 1) continue;
+                R[nr].off = B[i].off;
+                R[nr].size = B[i].size;
+                R[nr].freed = step - 1;
+                nr++;
+                done[i] = 1;
+            }
+            for (i = 0; i < NBUF; i++) {         /* the buffers first used at this step */
+                int best = -1;
+                if (B[i].first != step) continue;
+                for (j = 0; j < nr; j++)
+                    if (R[j].size >= B[i].size && (best < 0 || R[j].freed > R[best].freed)) best = (int)j;
+                if (best < 0) {
+                    B[i].off = off;
+                    off += B[i].size;
+                } else {
+                    B[i].off = R[best].off;
+                    R[best].off += B[i].size;  /* what is left of the region stays free */
+                    R[best].size -= B[i].size;
+                    if (!R[best].size) {
+                        for (k = (unsigned)best; k + 1 < nr; k++) R[k] = R[k + 1];
+                        nr--;
+                    }
+                }
+            }
+        }
+    }
     for (s = 0; s < 4; s++) {
-        const size_t n = (size_t)P->H[s] * P->W[s] * m->c[s];
-        P->X[s][0] = off;
-        off += ALIGN_UP(n, A);
-        P->X[s][1] = off;
-        if (m->n[s]) off += ALIGN_UP(n, A);
+        P->X[s][0] = B[B_X + 2 * s].off;
+        P->X[s][1] = B[B_X + 2 * s + 1].off;
     }
-    for (s = h; s < 4; s++) {
-        P->P[s] = off;
-        if (s > h || m->smooth) off += ALIGN_UP((size_t)P->H[s] * P->W[s] * m->F, A);
-    }
-    P->Q = off;
-    if (m->smooth >= 2) off += ALIGN_UP((size_t)P->H[h] * P->W[h] * m->F, A);
-    P->maps = off;
-    off += ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out, A);
+    for (s = h; s < 4; s++) P->P[s] = B[B_P + s].off;
+    P->Q = B[B_Q].off;
+    P->maps = B[B_MAPS].off;
+    P->ring_floats = P->fuse ? ALIGN_UP(3u * (size_t)P->W[h] * m->F, A) : 0;
+    P->ring = off;
+    off += P->ring_floats * (ntasks < 1 ? 1u : ntasks);
     P->end = off;
 }
 
 size_t vocr_tsd_maps_bytes(const vocr_tsd_model *m, unsigned pw, unsigned ph, unsigned ntasks)
 {
     tsd_plan P;
-    (void)ntasks;
     if (!m || !pw || !ph) return 0;
-    plan(m, pw, ph, &P);
+    plan(m, pw, ph, ntasks, &P);
     return P.end * sizeof(float) + 64;
 }
 
@@ -1155,15 +1304,19 @@ static float *aligned_floats(void *arena)
     return (float *)(void *)a;
 }
 
-enum { ST_STEM, ST_SEP, ST_LAT, ST_GC };
+/* ST_LATSEP: the finest lateral and the first smoothing block in one step (TSD_FUSE): each task computes the lateral's
+ * rows into a ring of three rows (its band's rows and one row each side) and runs the smoothing block on them, so the
+ * finest pyramid level never goes to memory as a whole map; every value is computed by the same operations */
+enum { ST_STEM, ST_SEP, ST_LAT, ST_GC, ST_LATSEP };
 
 typedef struct {
     int kind, res, head;          /* res: a residual block; head: the head fused after this step (into maps) */
-    const vocr_tsd_layer *a, *b;  /* SEP: depthwise, pointwise; LAT: the lateral; STEM: the stem */
-    const float *in;              /* SEP / LAT: the input map, H x W */
+    const vocr_tsd_layer *a, *b;  /* SEP: depthwise, pointwise; LAT: the lateral; STEM: the stem; LATSEP: the lateral */
+    const vocr_tsd_layer *c, *d;  /* LATSEP: the smoothing block's depthwise and pointwise */
+    const float *in;              /* SEP / LAT / LATSEP: the input map, H x W */
     unsigned H, W, Ho, Wo;        /* input and output sides */
     float *out;                   /* the output map (NULL when the head is fused) */
-    const float *up;              /* LAT: the coarser level (Ho / 2 x Wo / 2 x F), or NULL */
+    const float *up;              /* LAT / LATSEP: the coarser level (Ho / 2 x Wo / 2 x F), or NULL */
     const char *name;
 } tsd_step;
 
@@ -1171,6 +1324,8 @@ typedef struct {
     const vocr_tsd_model *m;
     tsd_src src;
     float *maps;
+    float *ring;               /* LATSEP: the tasks' row rings (ring_floats each) */
+    size_t ring_floats;
     unsigned lazy;             /* the head's maps past K only on kernel cells (K > 0): what the decode reads */
     tsd_step st[MAX_STEPS];
     unsigned n, cur;
@@ -1276,7 +1431,23 @@ static void head_chunk(const vocr_tsd_model *m, const float *in, unsigned P, flo
     for (p = 0; p < P; p++) memcpy(maps + (size_t)p * m->out, tmp + (size_t)p * m->outp, m->out * sizeof(float));
 }
 
-static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned y1)
+/* the lateral's row y (LAT and LATSEP: relu(x W + b), plus the coarser level's row y / 2 up-sampled) into o ([Wo][F]) */
+static void lat_row(const tsd_net *N, const tsd_step *t, unsigned y, float *o)
+{
+    const unsigned Ci = t->a->cin, F = N->m->F, ch = chunk_of(Ci > F ? Ci : F);
+    unsigned x0;
+    epi_t e;
+    memset(&e, 0, sizeof e);
+    for (x0 = 0; x0 < t->Wo; x0 += ch) {
+        const unsigned x1 = x0 + ch < t->Wo ? x0 + ch : t->Wo;
+        e.kind = t->up ? EPI_UP : EPI_RELU;
+        e.up = t->up ? t->up + (size_t)(y >> 1) * (t->Wo >> 1) * F : NULL;
+        e.x0 = x0;
+        pw_chunk(t->in + ((size_t)y * t->W + x0) * Ci, x1 - x0, t->a, &e, o + (size_t)x0 * F);
+    }
+}
+
+static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned y1, unsigned task)
 {
     const vocr_tsd_model *m = N->m;
     float T[CHUNK_FLOATS], U[CHUNK_FLOATS];
@@ -1307,6 +1478,37 @@ static void run_rows(const tsd_net *N, const tsd_step *t, unsigned y0, unsigned 
                 pw_chunk(T, x1 - x0, t->b, &e, o);
                 if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * t->Wo + x0) * m->out, N->lazy);
             }
+        return;
+    }
+    if (t->kind == ST_LATSEP) {
+        /* the band's smoothing rows [y0, y1) from the lateral's rows [y0 - 1, y1] (inside the map) in a ring of three:
+         * lateral row r in slot r % 3; a row is computed before the first output row that reads it */
+        const unsigned F = m->F, H = t->H, W = t->Wo, ch = chunk_of(F);
+        float *ring = N->ring + N->ring_floats * task;
+        const size_t rowf = (size_t)W * F;
+        unsigned next = y0 > 0 ? y0 - 1 : 0;
+        for (y = y0; y < y1; y++) {
+            const unsigned need = y + 1 < H ? y + 1 : H - 1;
+            const float *rows[3];
+            unsigned kys[3], nk = 0, ky;
+            for (; next <= need; next++) lat_row(N, t, next, ring + (size_t)(next % 3) * rowf);
+            for (ky = 0; ky < 3; ky++) {
+                const int iy = (int)y + (int)ky - 1;
+                if (iy >= 0 && iy < (int)H) {
+                    rows[nk] = ring + (size_t)((unsigned)iy % 3) * rowf;
+                    kys[nk++] = ky;
+                }
+            }
+            for (x0 = 0; x0 < W; x0 += ch) {
+                const unsigned x1 = x0 + ch < W ? x0 + ch : W;
+                float *o = t->head ? U : t->out + ((size_t)y * W + x0) * F;
+                dw_core(rows, kys, nk, W, t->c, x0, x1, T);
+                e.kind = EPI_RES;
+                e.res = ring + (size_t)(y % 3) * rowf + (size_t)x0 * F;
+                pw_chunk(T, x1 - x0, t->d, &e, o);
+                if (t->head) head_chunk(m, U, x1 - x0, N->maps + ((size_t)y * W + x0) * m->out, N->lazy);
+            }
+        }
         return;
     }
     if (t->kind == ST_LAT) {
@@ -1351,7 +1553,7 @@ static void step_task(void *arg, unsigned task, unsigned ntasks)
     const tsd_net *N = (const tsd_net *)arg;
     const tsd_step *t = &N->st[N->cur];
     const unsigned rows = t->Ho;
-    run_rows(N, t, (unsigned)((size_t)rows * task / ntasks), (unsigned)((size_t)rows * (task + 1) / ntasks));
+    run_rows(N, t, (unsigned)((size_t)rows * task / ntasks), (unsigned)((size_t)rows * (task + 1) / ntasks), task);
 }
 
 static tsd_step *add_step(tsd_net *N, int kind, const char *name)
@@ -1369,6 +1571,7 @@ static const char *const STAGE_NAMES[4][1 + VOCR_TSD_MAX_BLOCKS] = {
     {"s16.down", "s16.b0", "s16.b1", "s16.b2", "s16.b3", "s16.b4", "s16.b5", "s16.b6", "s16.b7"},
     {"s32.down", "s32.b0", "s32.b1", "s32.b2", "s32.b3", "s32.b4", "s32.b5", "s32.b6", "s32.b7"}};
 static const char *const LAT_NAMES[4] = {"lat4", "lat8", "lat16", "lat32"};
+static const char *const LATSEP_NAMES[4] = {"lat4+smooth0", "lat8+smooth0", "lat16+smooth0", "lat32+smooth0"};
 static const char *const SMOOTH_NAMES[VOCR_TSD_MAX_SMOOTH] = {"smooth0", "smooth1", "smooth2", "smooth3"};
 
 /* build the steps of the network on a source (the stem reads it with the edge padding to pw x ph) */
@@ -1421,14 +1624,25 @@ static void build(tsd_net *N, const vocr_tsd_model *m, float *A, const tsd_plan 
         t->Ho = 1;
     }
     coarse = NULL;
+    N->ring = A + P->ring;
+    N->ring_floats = P->ring_floats;
     for (s = 3; s + 1 > h; s--) {
-        t = add_step(N, ST_LAT, LAT_NAMES[s]);
+        const int fused = s == h && P->fuse;
+        t = add_step(N, fused ? ST_LATSEP : ST_LAT, fused ? LATSEP_NAMES[s] : LAT_NAMES[s]);
         t->a = &m->lat[s];
         t->in = fin[s];
         t->H = t->Ho = P->H[s];
         t->W = t->Wo = P->W[s];
         t->up = coarse;
-        if (s == h && !m->smooth) {
+        if (fused) {                       /* the lateral's rows into the rings, then smoothing block 0 on them */
+            t->c = &m->sdw[0];
+            t->d = &m->spw[0];
+            t->res = 1;
+            if (m->smooth == 1)
+                t->head = 1;
+            else
+                t->out = A + P->Q;
+        } else if (s == h && !m->smooth) {
             t->head = 1;
         } else {
             t->out = A + P->P[s];
@@ -1436,7 +1650,7 @@ static void build(tsd_net *N, const vocr_tsd_model *m, float *A, const tsd_plan 
         }
         if (s == 0) break;
     }
-    for (i = 0; i < m->smooth; i++) {
+    for (i = P->fuse ? 1u : 0u; i < m->smooth; i++) {
         const float *src = (i % 2 == 0) ? A + P->P[h] : A + P->Q;
         t = add_step(N, ST_SEP, SMOOTH_NAMES[i]);
         t->a = &m->sdw[i];
@@ -1478,9 +1692,9 @@ int vocr_tsd_maps_mt(const vocr_tsd_model *m, const unsigned char *in, unsigned 
     if (!m || !in || !arena || !maps || !pw || !ph || pw % VOCR_TSD_ALIGN || ph % VOCR_TSD_ALIGN ||
         pw > VOCR_TSD_MAX_SIDE + VOCR_TSD_ALIGN || ph > VOCR_TSD_MAX_SIDE + VOCR_TSD_ALIGN)
         return VOCR_TSD_E_ARG;
-    if (bytes < vocr_tsd_maps_bytes(m, pw, ph, ntasks)) return VOCR_TSD_E_ARENA;
     if (!run || ntasks < 1) ntasks = 1;
-    plan(m, pw, ph, &P);
+    if (bytes < vocr_tsd_maps_bytes(m, pw, ph, ntasks)) return VOCR_TSD_E_ARENA;
+    plan(m, pw, ph, ntasks, &P);
     A = aligned_floats(arena);
     N.src.px = in;
     N.src.w = pw;
@@ -1922,7 +2136,7 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
         N.src.stride = D.iw;
         N.src.ch = 1;
     }
-    plan(m, D.pw, D.ph, &P);
+    plan(m, D.pw, D.ph, ntasks, &P);
     A = aligned_floats(base + D.net);
     N.lazy = 1;   /* the maps the decode reads: K, and the rest on kernel cells */
     build(&N, m, A, &P);

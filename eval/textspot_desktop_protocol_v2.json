@@ -317,6 +317,52 @@
      "question": "E2 trained 80k more steps (200k in total) with the same fixes"
     }
    }
+  },
+  {
+   "n": 10,
+   "time": "2026-11-02T18:35Z",
+   "before": "any read of G1, G2",
+   "after": [
+    "E1 (q4b, B3 + 40k with the fixes) at long:1120 C7 k6v4: gap 0.360 (dev 0.797, dense_dev 0.713, dev_l544 0.783, dense_dev_l544 0.695; junk 1); D2 (q8b, the fixes from scratch, 80k): 0.397 at long:1120; with C8 at long:1120: D2 0.353, E2 0.366, E1 0.508 (the narrow join helps the q8b arms and not E1 here)",
+    "the marks augmentation drew ・ as a background mark, and the marks-trained models drop leading ・ that 13 dense_dev references keep (E1 7 errors, D2 6, against C1 0): --marks-glyphs v2 (the default from 604fecf: ● ◆ ■ ▶ and icons, no ・ and no ※); D2, E1, E2, F1 trained with v1"
+   ],
+   "arms": {
+    "G1_q4b_from_E1": {
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2 (no ・, no ※)",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q4b",
+     "init": "runs/r2e_E1_q4b_from_B3",
+     "steps": 80000,
+     "lr": 0.001,
+     "question": "E1 + 80k steps with marks v2"
+    },
+    "G2_q8b_from_D2": {
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2 (no ・, no ※)",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "shape": "q8b",
+     "init": "runs/r2d_D2_q8b_fixes",
+     "steps": 80000,
+     "lr": 0.001,
+     "question": "D2 + 80k steps with marks v2"
+    }
+   },
+   "selection": "the candidate (model, policy, variant, rule) with the smallest gap among those passing G2-G4 is carried to round 3's seeds; reads at long:960 and long:1120, variants C7 and C8, rule k6v4 (the other rules reported where read)"
   }
  ]
 }

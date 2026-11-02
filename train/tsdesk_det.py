@@ -176,9 +176,26 @@ def targets(lines, ignore, w, h, s):
 
 # ----------------------------------------------------------------------------- recipes and pools
 
+EXACT_SOURCES_DEFAULT = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
+
+def hooked_as(src):
+    """The hooked source a source name reads as: "hook", "desk_hook" (also an extra source named desk_hook_*: a
+    subset of 1a's pages, such as train/tsdesk_hard_source.py's desk_hook_hard, which gets 1a's target patch, label
+    edits, junk recipe and exact ends), or None."""
+    if src in ("hook", "desk_hook"):
+        return src
+    return "desk_hook" if str(src).startswith("desk_hook_") else None
+
+
+def exact_source(src, sources=EXACT_SOURCES_DEFAULT):
+    """True when a source's boxes are exact ink boxes (a name in sources, or a desk_hook_* source when desk_hook is)."""
+    return src in sources or hooked_as(src) in sources
+
+
 def strip_weak(smp, src):
     """The junk recipe: a hooked page's weak MeikiOCR ignore areas dropped (they become background)."""
-    if src not in ("hook", "desk_hook"):
+    src = hooked_as(src)
+    if src is None:
         return smp
     meta = smp.get("meta") or {}
     c = meta.get("counts") or {}
@@ -240,7 +257,7 @@ def make_sources(c):
     return sources, hook, frames, extra
 
 
-EXACT_SOURCES = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
+EXACT_SOURCES = EXACT_SOURCES_DEFAULT
 
 
 ORN = {"near_p": 0.7, "above_p": 0.6, "size": [0.6, 1.1], "gap": [0.15, 1.0], "pitch": [1.15, 2.4],
@@ -476,8 +493,9 @@ def patch_pools(sources, hook, targets_dir):
                     lst[i] = (d, ps)
                     n_ok += 1
         rec["hook"] = {"patched": n_ok, "kept": n_bad}
-    pool = getattr(sources, "extra_pools", {}).get("desk_hook")
-    if pool is not None:
+    for name, pool in sorted(getattr(sources, "extra_pools", {}).items()):
+        if hooked_as(name) != "desk_hook":
+            continue
         n_ok = n_bad = 0
         for i, (d, smp) in enumerate(pool.items):
             ps = TT.patch_sample(smp, cache, "desk_hook")
@@ -486,7 +504,7 @@ def patch_pools(sources, hook, targets_dir):
             else:
                 pool.items[i] = (d, ps)
                 n_ok += 1
-        rec["desk_hook"] = {"patched": n_ok, "kept": n_bad}
+        rec[name] = {"patched": n_ok, "kept": n_bad}
     return rec
 
 
@@ -497,11 +515,11 @@ def edit_pools(sources, hook, edits_dir):
     import tsdesk_coverage as TC
     edits, doc = TC.load_edits(edits_dir)
     rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json")}
-    pools = [("hook", [lst for lst in hook.by_title.values()] if hook is not None else [])]
-    pool = getattr(sources, "extra_pools", {}).get("desk_hook")
-    if pool is not None:
-        pools.append(("desk_hook", [pool.items]))
-    for src, lists in pools:
+    pools = [("hook", "hook", [lst for lst in hook.by_title.values()] if hook is not None else [])]
+    for name, pool in sorted(getattr(sources, "extra_pools", {}).items()):
+        if hooked_as(name) == "desk_hook":
+            pools.append((name, "desk_hook", [pool.items]))
+    for name, src, lists in pools:
         n_s = n_l = 0
         for lst in lists:
             for i, (d, smp) in enumerate(lst):
@@ -510,7 +528,7 @@ def edit_pools(sources, hook, edits_dir):
                     n_s += 1
                     n_l += len(es["lines"]) - len(smp["lines"])
                     lst[i] = (d, es)
-        rec[src] = {"samples_edited": n_s, "lines_added": n_l}
+        rec[name] = {"samples_edited": n_s, "lines_added": n_l}
     return rec
 
 
@@ -536,7 +554,7 @@ def make_batch(sources, rng, cfg):
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         ign0, bands = ign, []
-        if end_ig > 0 and src not in EXACT_SOURCES:
+        if end_ig > 0 and not exact_source(src):
             bands = end_bands(pos, end_ig)
             ign = list(ign) + bands
         orn = None
@@ -553,7 +571,7 @@ def make_batch(sources, rng, cfg):
                 if bands:
                     ign = list(ign0) + trim_bands(bands, drawn)
         K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
-        if e_src is not None and src not in e_src:
+        if e_src is not None and not exact_source(src, e_src):
             m1[:] = False
             m2[:] = False
         for t, a in zip(tg, (K, O, A1, A2, E1, E2, Wt)):

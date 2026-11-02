@@ -318,6 +318,43 @@ def test_c_detect_is_its_pieces(nets, libs):
                 assert TC.CModel(blob, threads=threads, lib=lib).detect(rgb, size) == got
 
 
+def _text_frame(w, h, seed):
+    """A frame with some bright text-like bars on smoothed noise (the refinement finds ink edges on it)."""
+    rng = np.random.default_rng(seed)
+    g = rng.integers(40, 90, (h, w, 3), dtype=np.uint8)
+    for _ in range(10):
+        y, x = int(rng.integers(0, h - 24)), int(rng.integers(0, w - 160))
+        bh, bw = int(rng.integers(8, 20)), int(rng.integers(40, 160))
+        for k in range(0, bw, 9):                                     # glyph-like blocks with gaps
+            g[y:y + bh, x + k:x + k + 6] = 230
+    return g
+
+
+def test_c_detect_refine_is_the_refinement_of_its_boxes(nets, libs):
+    """detect(refine) == tools/tsdesk_refine.refine_det(the frame's luma, detect(), options), the boxes in the decode's
+    order (tools/tsdesk.Detector's refine): RGB / RGBA / grey frames, resized or not, any thread count."""
+    import tsdesk_refine as TR
+    _, blob, _ = nets["p8a"]
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        n_moved = 0
+        for (h, w), size in (((544, 960), None), ((1080, 1920), None), ((272, 480), "long:960"), ((300, 517), None)):
+            rgb = _text_frame(w, h, w + h)
+            g = T.grey_of(rgb)
+            plain = cm.detect(rgb, size)
+            for opts in (True, {"neighbours": 0, "shrink_l_pct": 50}):
+                ref = TR.refine_det(g, plain, {} if opts is True else opts)
+                got = cm.detect(rgb, size, refine=opts)
+                assert got == ref, ((h, w), size, opts)
+                n_moved += sum(1 for a, b in zip(plain, got) if (a.x, a.y, a.w, a.h) != (b.x, b.y, b.w, b.h))
+                assert cm.detect(g, size, refine=opts) == got
+                rgba = np.concatenate([rgb, np.full((h, w, 1), 255, np.uint8)], 2)
+                assert cm.detect(rgba, size, refine=opts) == got
+                assert TC.CModel(blob, threads=3, lib=lib).detect(rgb, size, refine=opts) == got
+            assert cm.detect(rgb, size) == plain                          # the setting is per call
+        assert n_moved > 0
+
+
 def test_c_resize_is_vocr_desktops(nets, libs):
     """The detector's resize is vocr-desktop's (vocr_desk_resize in the same library: tools/vocr_desktop.CModel)."""
     import vocr_desktop as VD
@@ -533,6 +570,14 @@ def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
             assert page.detect(frame) == boxes
         tagged = TC.CPage(blob, rp, threads=1, tags=(0,), lib=lib).page(frame)
         assert all(ln.tag == 0 for ln in tagged)
+        # the refinement: the page grows and reads the refined boxes (CModel.detect(refine=True)'s)
+        refined = TC.CPage(blob, rp, threads=2, refine=True, lib=lib)
+        rlines = refined.page(frame)
+        rboxes = TC.CModel(blob, lib=lib).detect(frame, refine=True)
+        assert refined.detect(frame) == rboxes
+        order = T.reading_order([(b.x, b.y, b.w, b.h) for b in rboxes])
+        want = [TC_crop(rboxes[i], 2, 2, W, H) for i in order]
+        assert [ln.crop for ln in rlines] == [c for c in want if c is not None]
 
 
 def TC_crop(b, ph, pv, W, H):

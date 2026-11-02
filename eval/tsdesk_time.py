@@ -18,8 +18,11 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
       passes; p50 / p95 / mean per view. Pipelines (BLOB: a .vtsd, MODEL: its .onnx, SIZE: an input policy, default
       the file's; T: VOCR6.2's tier S, N or L):
         cdet:BLOB[@SIZE]           the C detector alone: the RGB frame in memory to its final boxes (the luma, the
-                                   policy's resize, the padding, the network, the decode), one vocr_tsd_detect_mt call
+                                   policy's resize, the padding, the network, the decode), one vocr_tsd_detect_ex call
                                    (the binding's Box objects are not built inside the timing)
+      A detector or page spec's BLOB / MODEL part may end in +refine: the box refinement on (cdet / cpage: the C
+      refinement inside the detector call; odet / opage: tools/tsdesk.Detector's refine, tools/tsdesk_refine.py),
+      e.g. cdet:BLOB@fit:960+refine, cpage:BLOB+refine+c:L
         cpage:BLOB[@SIZE]+c:T      the C page: the detector and VOCR6.2-T's int8 blob read by runtime/vocr.c W8I with
                                    its head sections, every horizontal box grown by --pad, the lines on the same pool
         odet:MODEL[@SIZE]          tools/tsdesk.Detector.detect on the RGB frame (ONNX Runtime FP32, intra-op threads N)
@@ -186,7 +189,7 @@ def build(out, arch="-march=x86-64-v3", extra="", cc="gcc"):
 # ----------------------------------------------------------------------------- pipelines
 
 def split_spec(spec):
-    """(kind, path, size, rec) of a pipeline spec."""
+    """(kind, path, size, rec, refine) of a pipeline spec."""
     kind, _, rest = spec.partition(":")
     rec = None
     if kind in ("cpage", "opage"):
@@ -195,10 +198,13 @@ def split_spec(spec):
             if not rec.startswith("c:"):
                 raise ValueError(f"{spec}: cpage:BLOB[@SIZE]+c:T")
             rec = rec[2:]
+    refine = rest.endswith("+refine")
+    if refine:
+        rest = rest[:-len("+refine")]
     path, _, size = rest.partition("@")
     if kind not in ("cdet", "cpage", "odet", "opage", "cnet", "onet") or not path:
         raise ValueError(f"unknown pipeline {spec!r}")
-    return kind, path, size or None, rec
+    return kind, path, size or None, rec, refine
 
 
 def crop_hv(b, ph, pv, W, H):
@@ -216,20 +222,22 @@ class Pipeline:
         base, _, libname = spec.partition("^")
         if libname:
             lib = (libs or {})[libname]
-        self.kind, path, self.size, rec = split_spec(base)
+        self.kind, path, self.size, rec, refine = split_spec(base)
+        self.refine = True if refine else None
         self.pad = pad
         self.inputs = {}
         if self.kind in ("cdet", "cnet"):
             self.m = TC.CModel(path, threads=self.threads, lib=lib)
             self.policy = TC.policy_of(self.size, self.m.default_policy)
         elif self.kind == "cpage":
-            self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad, lib=lib)
+            self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad,
+                                 refine=self.refine, lib=lib)
         else:
             import tsdesk as T
             import vocr_onnx as V
             self.T, self.V = T, V
             self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
-                                  size=self.size)
+                                  size=self.size, refine=self.refine)
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",
@@ -257,15 +265,17 @@ class Pipeline:
         return 1
 
     def _cdet(self, rgb):
-        """One vocr_tsd_detect_mt call on the frame: the number of boxes."""
+        """One vocr_tsd_detect_ex call on the frame: the number of boxes."""
         m, L, C = self.m, self.m.L, self.TC.C
         h, w, ch = rgb.shape
         kind, n = self.policy
         run, pool, nt = m._run()
-        need = L.vocr_tsd_arena_bytes(m.m.ctypes.data, kind, n, w, h, ch, nt)
+        ro = m._refine_opts(self.refine)
+        need = L.vocr_tsd_arena_bytes_ex(m.m.ctypes.data, kind, n, w, h, ch, nt, int(ro is not None))
         arena = m.arena(need)
-        rc = L.vocr_tsd_detect_mt(m.m.ctypes.data, rgb.ctypes.data, w, h, rgb.strides[0], ch, kind, n,
-                                  arena.ctypes.data, arena.size, C.byref(m._set), run, pool, nt)
+        rc = L.vocr_tsd_detect_ex(m.m.ctypes.data, rgb.ctypes.data, w, h, rgb.strides[0], ch, kind, n,
+                                  C.cast(ro, C.c_void_p) if ro is not None else None, arena.ctypes.data, arena.size,
+                                  C.byref(m._set), run, pool, nt)
         if rc:
             raise ValueError(f"vocr_tsd_detect: {rc}")
         return int(m._set.count)

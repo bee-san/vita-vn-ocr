@@ -1458,25 +1458,29 @@ int vocr_tsd_decode(const vocr_tsd_model *m, const float *maps, unsigned mw, uns
 /* ----------------------------------------------------------------------------- the detector */
 
 typedef struct {
-    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, end;   /* byte offsets (aligned arena) */
-    unsigned iw, ih, pw, ph, resize, ntasks;
+    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, refine, refine_bytes, rboxes, end;
+    unsigned iw, ih, pw, ph, resize, ntasks, grey_frame;
 } detect_plan;
 
 static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h, unsigned channels,
-                  unsigned ntasks, detect_plan *D)
+                  unsigned ntasks, int refine, detect_plan *D)
 {
     size_t off = 0;
     vocr_tsd_input_size(kind, n, w, h, &D->iw, &D->ih, &D->pw, &D->ph);
     D->resize = D->iw != w || D->ih != h;
+    /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it)
+     * and for the refinement */
+    D->grey_frame = channels != 1 && ((D->resize && !TSD_FUSED_LUMA) || refine);
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
-    D->grey = off;   /* an RGB(A) frame's luma before the resize (TSD_FUSED_LUMA: row by row inside it instead) */
-    off += D->resize && channels != 1 && !TSD_FUSED_LUMA ? ALIGN_UP((size_t)w * h, 64) : 0;
+    D->grey = off;
+    off += D->grey_frame ? ALIGN_UP((size_t)w * h, 64) : 0;
     D->resized = off;
     off += D->resize ? ALIGN_UP((size_t)D->iw * D->ih, 64) : 0;
     D->rscratch = off;
-    off += D->resize ? ALIGN_UP(channels == 1 ? vocr_desk_resize_scratch(w, h, D->iw, D->ih)
-                                              : vocr_desk_resize_rgb_scratch(w, h, D->iw, D->ih), 64) : 0;
+    off += D->resize ? ALIGN_UP(channels == 1 || D->grey_frame ? vocr_desk_resize_scratch(w, h, D->iw, D->ih)
+                                                                : vocr_desk_resize_rgb_scratch(w, h, D->iw, D->ih), 64)
+                     : 0;
     /* the banded resize for threads: its plan and a work area per task */
     D->ntasks = ntasks < 1 ? 1 : ntasks > RESIZE_MAX_TASKS ? RESIZE_MAX_TASKS : ntasks;
     D->rplan = off;
@@ -1486,16 +1490,28 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     off += D->rwork_bytes * D->ntasks;
     D->decode = off;
     off += ALIGN_UP(vocr_tsd_decode_bytes(D->pw / m->hs, D->ph / m->hs, m->tags), 64);
+    /* the refinement: its scratch, then the boxes as [x0, y0, x1, y1] doubles, their vertical flags and status */
+    D->refine = off;
+    D->refine_bytes = refine ? ALIGN_UP(vocr_tsdr_scratch_bytes(w, h, VOCR_TSD_MAX_BOXES), 64) : 0;
+    off += D->refine_bytes;
+    D->rboxes = off;
+    off += refine ? ALIGN_UP(VOCR_TSD_MAX_BOXES * (4 * sizeof(double) + 1 + sizeof(unsigned)), 64) : 0;
     D->end = off + 64;
+}
+
+size_t vocr_tsd_arena_bytes_ex(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
+                               unsigned channels, unsigned ntasks, int refine)
+{
+    detect_plan D;
+    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE) return 0;
+    dplan(m, kind, n, w, h, channels, ntasks, refine, &D);
+    return D.end;
 }
 
 size_t vocr_tsd_arena_bytes(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
                             unsigned channels, unsigned ntasks)
 {
-    detect_plan D;
-    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE) return 0;
-    dplan(m, kind, n, w, h, channels, ntasks, &D);
-    return D.end;
+    return vocr_tsd_arena_bytes_ex(m, kind, n, w, h, channels, ntasks, 0);
 }
 
 typedef struct {               /* an RGB(A) frame's luma in row bands on the runner */
@@ -1537,10 +1553,19 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
                        unsigned channels, unsigned kind, unsigned n, void *arena, size_t bytes, vocr_tsd_set *out,
                        vocr_tsd_runner run, void *ctx, unsigned ntasks)
 {
+    return vocr_tsd_detect_ex(m, img, w, h, stride, channels, kind, n, NULL, arena, bytes, out, run, ctx, ntasks);
+}
+
+int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
+                       unsigned channels, unsigned kind, unsigned n, const vocr_tsdr_opts *refine, void *arena,
+                       size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks)
+{
     detect_plan D;
     tsd_plan P;
     tsd_net N;
     unsigned char *base;
+    const unsigned char *gsrc = img;
+    unsigned gstride = stride, gch = channels;
     float *A;
     double fx, fy;
     unsigned k, keep = 0;
@@ -1550,39 +1575,38 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
         kind > VOCR_TSD_SIZE_LONG)
         return VOCR_TSD_E_ARG;
     if (!run || ntasks < 1) ntasks = 1;
-    dplan(m, kind, n, w, h, channels, ntasks, &D);
+    dplan(m, kind, n, w, h, channels, ntasks, refine != NULL, &D);
     if (bytes < D.end) return VOCR_TSD_E_ARENA;
     base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
     PROF_START();
-    N.src.px = img;
+    if (D.grey_frame) {
+        /* the luma of an RGB(A) frame over the whole frame (vocr_desk_grey, in row bands on the runner: the same
+         * bits): what the resize and the refinement read (TSD_FUSED_LUMA without the refinement: the luma row by row
+         * inside the resize instead, the same bits, no grey frame, but slower on a frame read from DRAM) */
+        grey_job g;
+        g.src = img;
+        g.w = w;
+        g.h = h;
+        g.stride = stride;
+        g.channels = channels;
+        g.dst = base + D.grey;
+        if (D.ntasks > 1 && run)
+            run(ctx, grey_task, &g, D.ntasks < h ? D.ntasks : h);
+        else
+            grey_task(&g, 0, 1);
+        gsrc = base + D.grey;
+        gstride = w;
+        gch = 1;
+        PROF_MARK(0u, "luma");
+    }
+    N.src.px = gsrc;
     N.src.w = w;
     N.src.h = h;
-    N.src.stride = stride;
-    N.src.ch = channels;
+    N.src.stride = gstride;
+    N.src.ch = gch;
     if (D.resize) {
-        /* the policy's resize of the frame's luma: the luma of an RGB(A) frame first (vocr_desk_grey, in row bands on
-         * the runner), then vocr_desk_resize (in bands of output rows on the runner); every split gives the same bits.
-         * TSD_FUSED_LUMA: the luma row by row inside the resize instead (vocr_desk_resize_rgb: the same bits, no grey
-         * frame, but slower on a frame read from DRAM) */
-        const unsigned char *gsrc = img;
-        unsigned gstride = stride, gch = channels;
-        if (channels != 1 && !TSD_FUSED_LUMA) {
-            grey_job g;
-            g.src = img;
-            g.w = w;
-            g.h = h;
-            g.stride = stride;
-            g.channels = channels;
-            g.dst = base + D.grey;
-            if (D.ntasks > 1 && run)
-                run(ctx, grey_task, &g, D.ntasks < h ? D.ntasks : h);
-            else
-                grey_task(&g, 0, 1);
-            gsrc = base + D.grey;
-            gstride = w;
-            gch = 1;
-            PROF_MARK(0u, "luma");
-        }
+        /* the policy's resize of the frame's luma: vocr_desk_resize (in bands of output rows on the runner; every split
+         * gives the same bits) */
         if (D.ntasks > 1 && run && !vocr_desk_resize_plan(w, h, D.iw, D.ih, base + D.rplan)) {
             resize_job j;   /* bands of output rows on the runner (vocr_desk_resize_band): the same bits */
             j.plan = base + D.rplan;
@@ -1636,6 +1660,31 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
     }
     out->count = keep;
     PROF_MARK(3u, "boxes");
+    if (refine && keep) {
+        /* the refinement (tools/tsdesk.Detector's refine: tools/tsdesk_refine.refine_det on the boxes in frame px, in
+         * the decode's order) on the full-resolution luma; the boxes as [x, y, x + w, y + h] */
+        double *xyxy = (double *)(void *)(base + D.rboxes);
+        unsigned char *vert = (unsigned char *)(xyxy + 4 * VOCR_TSD_MAX_BOXES);
+        unsigned *st = (unsigned *)(void *)(((uintptr_t)(vert + VOCR_TSD_MAX_BOXES) + 7u) & ~(uintptr_t)7u);
+        for (k = 0; k < keep; k++) {
+            const vocr_tsd_box *b = &out->boxes[k];
+            xyxy[4 * k] = b->x;
+            xyxy[4 * k + 1] = b->y;
+            xyxy[4 * k + 2] = b->x + b->w;
+            xyxy[4 * k + 3] = b->y + b->h;
+            vert[k] = (unsigned char)(b->vertical != 0);
+        }
+        rc = vocr_tsdr_refine(gsrc, w, h, gstride, xyxy, vert, keep, refine, st, base + D.refine, D.refine_bytes);
+        if (rc) return VOCR_TSD_E_ARG;
+        for (k = 0; k < keep; k++) {
+            vocr_tsd_box *b = &out->boxes[k];
+            b->x = xyxy[4 * k];
+            b->y = xyxy[4 * k + 1];
+            b->w = xyxy[4 * k + 2] - xyxy[4 * k];
+            b->h = xyxy[4 * k + 3] - xyxy[4 * k + 1];
+        }
+        PROF_MARK(4u, "refine");
+    }
 #ifdef VOCR_TSD_PROF
     vocr_tsd_prof_runs++;
 #endif

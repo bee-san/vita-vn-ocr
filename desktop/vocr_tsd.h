@@ -22,6 +22,8 @@
 
 #include <stddef.h>
 
+#include "vocr_tsd_refine.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -134,6 +136,16 @@ int vocr_tsd_detect_mt(const vocr_tsd_model *m, const unsigned char *img, unsign
                        unsigned channels, unsigned kind, unsigned n, void *arena, size_t bytes, vocr_tsd_set *out,
                        vocr_tsd_runner run, void *ctx, unsigned ntasks);
 
+/* The same with the box refinement (vocr_tsd_refine.h; tools/tsdesk.Detector's refine) when refine is not NULL: after
+ * the boxes are mapped to frame px, every horizontal box's edges are snapped to its line's ink on the frame's
+ * full-resolution luma (vocr_tsdr_refine, the boxes in the decode's order). The arena for it:
+ * vocr_tsd_arena_bytes_ex(..., refine = 1). With refine NULL these are vocr_tsd_arena_bytes / vocr_tsd_detect_mt. */
+size_t vocr_tsd_arena_bytes_ex(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
+                               unsigned channels, unsigned ntasks, int refine);
+int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
+                       unsigned channels, unsigned kind, unsigned n, const vocr_tsdr_opts *refine, void *arena,
+                       size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks);
+
 /* sizeof(vocr_tsd_model), sizeof(vocr_tsd_set), sizeof(vocr_tsd_box), for callers that allocate them (ctypes). */
 size_t vocr_tsd_model_bytes(void);
 size_t vocr_tsd_set_bytes(void);
@@ -171,6 +183,8 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
                                  unsigned pad_px, int *err);
 /* Only boxes whose tag bit is set in mask are read (bit t: tag t; the default ~0u: all). */
 void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask);
+/* The box refinement on the detector's boxes before they are grown and read (opts copied; NULL: off, the default). */
+void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts);
 /* Read a frame (`channels` 1, 3 or 4; RGB(A) is taken to its integer luma first, timed as the page): lines in reading
  * order (rows top to bottom by vertical overlap, left to right in a row; tools/tsdesk.reading_order). */
 int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,

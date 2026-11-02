@@ -226,7 +226,8 @@ struct vocr_tsd_page {
     vocr_model rec;
     vocr_opts opts;
     vocr_tsd_pool *pool;
-    unsigned threads, kind, n, pad_h, pad_v, pad_px, tags;
+    unsigned threads, kind, n, pad_h, pad_v, pad_px, tags, refine_on;
+    vocr_tsdr_opts refine;     /* the box refinement's options (refine_on) */
     rec_worker work[MAX_THREADS];
     void *arena;               /* the detector's arena (grown as frames need) */
     size_t arena_bytes;
@@ -300,6 +301,13 @@ void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask)
     if (p) p->tags = mask;
 }
 
+void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts)
+{
+    if (!p) return;
+    p->refine_on = opts != NULL;
+    if (opts) p->refine = *opts;
+}
+
 void vocr_tsd_page_free(vocr_tsd_page *p)
 {
     unsigned i;
@@ -344,7 +352,7 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
         return VOCR_TSD_E_ARG;
     rc = grey_of(p, img, w, h, stride, channels);
     if (rc) return rc;
-    need = vocr_tsd_arena_bytes(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads));
+    need = vocr_tsd_arena_bytes_ex(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), (int)p->refine_on);
     if (!need) return VOCR_TSD_E_ARG;
     if (need > p->arena_bytes) {
         free(p->arena);
@@ -353,8 +361,8 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
         if (!p->arena) return VOCR_TSD_E_MEM;
     }
     p->count = 0;
-    return vocr_tsd_detect_mt(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, p->arena, p->arena_bytes, &p->set,
-                              vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
+    return vocr_tsd_detect_ex(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, p->refine_on ? &p->refine : NULL,
+                              p->arena, p->arena_bytes, &p->set, vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
 }
 
 int vocr_tsd_page_detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,

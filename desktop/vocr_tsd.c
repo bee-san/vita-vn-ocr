@@ -26,6 +26,9 @@
 #else
 #define TSD_AVX512 0
 #endif
+#ifndef TSD_PW512
+#define TSD_PW512 1        /* the AVX-512 build's pointwise kernels (0: the AVX2 ones) */
+#endif
 
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
 #define CHUNK_FLOATS 6144u   /* a row chunk's scratch (floats): at most 48 px x 128 channels or 24 px x 256 */
@@ -416,7 +419,7 @@ static void k1(const float *x, unsigned Cin, const float *w, unsigned Cout, cons
 #undef F1
 #undef F2
 #undef F3
-#if TSD_AVX512
+#if TSD_AVX512 && TSD_PW512
 /* the AVX-512 kernels: 16 channels a vector, 32 registers; each output the AVX2 kernels' chain (the bias, then one
  * fused multiply-add per input channel in order, then the epilogue's operations in order) */
 static inline void epi_store16(__m512 u, const epi_t *e, unsigned p, unsigned co, unsigned Cout, float *out)
@@ -568,7 +571,7 @@ static void pw_chunk(const float *in, unsigned P, const vocr_tsd_layer *L, const
     const float *w = L->w, *b = L->b;
 #if TSD_AVX2
     unsigned co = 0, p;
-#if TSD_AVX512
+#if TSD_AVX512 && TSD_PW512
     if (Cout % 16 == 0) {
         for (; co + 32 <= Cout; co += 32) {
             for (p = 0; p + 12 <= P; p += 12) z32x12(in + (size_t)p * Cin, Cin, w, Cout, b, co, e, p, out);
@@ -1112,31 +1115,143 @@ typedef struct {
     size_t maps, end;
 } tsd_plan;
 
+#ifndef TSD_ALIAS
+#define TSD_ALIAS 1   /* the maps placed by liveness (0: every map its own region, the round-1 layout) */
+#endif
+
+/* the network's buffers, in build()'s order of steps: B_X + 2 s + k is stage s's map k, B_P + s the pyramid's level
+ * s, then Q and the maps */
+enum { B_X = 0, B_P = 8, B_Q = 12, B_MAPS = 13, NBUF = 14 };
+
+typedef struct {
+    size_t size, off;          /* floats */
+    int first, last;           /* the steps that first and last touch it (-1: unused) */
+} tsd_buf;
+
+static void buf_use(tsd_buf *b, int step)
+{
+    if (b->first < 0) b->first = step;
+    b->last = step;
+}
+
+/* the steps of build() (the stem, the stages, gc, the laterals, the smoothing) as buffer uses */
+static void plan_uses(const vocr_tsd_model *m, tsd_buf *B)
+{
+    const unsigned h = m->hs == 4 ? 0u : 1u;
+    unsigned s, i, fin[4], cur;
+    int step = 0, coarse = -1;
+    buf_use(&B[B_X], step);                        /* the stem writes stage 0's map 0 */
+    for (s = 0; s < 4; s++) {
+        cur = 0;
+        if (s > 0) {                               /* the down block: stage s - 1's last map -> stage s's map 0 */
+            step++;
+            buf_use(&B[fin[s - 1]], step);
+            buf_use(&B[B_X + 2 * s], step);
+        }
+        for (i = 0; i < m->n[s]; i++) {            /* the residual blocks: ping-pong */
+            step++;
+            buf_use(&B[B_X + 2 * s + cur], step);
+            cur ^= 1u;
+            buf_use(&B[B_X + 2 * s + cur], step);
+        }
+        fin[s] = B_X + 2 * s + cur;
+    }
+    if (m->gc) buf_use(&B[fin[3]], ++step);
+    for (s = 3; s + 1 > h; s--) {                  /* the laterals, coarse to fine */
+        step++;
+        buf_use(&B[fin[s]], step);
+        if (coarse >= 0) buf_use(&B[coarse], step);
+        if (s == h && !m->smooth) {
+            buf_use(&B[B_MAPS], step);
+        } else {
+            buf_use(&B[B_P + s], step);
+            coarse = (int)(B_P + s);
+        }
+        if (s == 0) break;
+    }
+    for (i = 0; i < m->smooth; i++) {              /* the smoothing blocks: P[h] -> Q -> P[h] ..., the last to maps */
+        step++;
+        buf_use(&B[i % 2 == 0 ? B_P + h : B_Q], step);
+        buf_use(&B[i + 1 == m->smooth ? B_MAPS : (i % 2 == 0 ? B_Q : B_P + h)], step);
+    }
+}
+
 static void plan(const vocr_tsd_model *m, unsigned pw, unsigned ph, tsd_plan *P)
 {
     const size_t A = 16;   /* floats: 64 bytes */
-    unsigned s, h = m->hs == 4 ? 0u : 1u;
+    unsigned s, h = m->hs == 4 ? 0u : 1u, i, j, k;
+    tsd_buf B[NBUF];
     size_t off = 0;
     memset(P, 0, sizeof *P);
     for (s = 0; s < 4; s++) {
         P->H[s] = ph >> (2 + s);
         P->W[s] = pw >> (2 + s);
     }
+    memset(B, 0, sizeof B);
+    for (i = 0; i < NBUF; i++) B[i].first = B[i].last = -1;
+    for (s = 0; s < 4; s++) B[B_X + 2 * s].size = B[B_X + 2 * s + 1].size =
+        ALIGN_UP((size_t)P->H[s] * P->W[s] * m->c[s], A);
+    for (s = h; s < 4; s++) B[B_P + s].size = ALIGN_UP((size_t)P->H[s] * P->W[s] * m->F, A);
+    B[B_Q].size = B[B_MAPS].size = 0;
+    B[B_Q].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->F, A);
+    B[B_MAPS].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out, A);
+    plan_uses(m, B);
+    if (!TSD_ALIAS) {
+        for (i = 0; i < NBUF; i++)
+            if (B[i].first >= 0) {
+                B[i].off = off;
+                off += B[i].size;
+            }
+    } else {
+        /* in order of first use: a buffer takes the region of the buffer freed last (the warmest in the caches) that
+         * holds it, a free region of the same buffers' space, else new space; a region is free for a buffer when its
+         * last occupant's last use came before the buffer's first */
+        typedef struct {
+            size_t off, size;
+            int freed;
+        } region;
+        region R[2 * NBUF];
+        unsigned nr = 0, done[NBUF];
+        int step, maxstep = 0;
+        memset(done, 0, sizeof done);
+        for (i = 0; i < NBUF; i++)
+            if (B[i].last > maxstep) maxstep = B[i].last;
+        for (step = 0; step <= maxstep; step++) {
+            for (i = 0; i < NBUF; i++) {         /* the buffers whose last use was the step before: freed */
+                if (B[i].first < 0 || done[i] || B[i].last != step - 1) continue;
+                R[nr].off = B[i].off;
+                R[nr].size = B[i].size;
+                R[nr].freed = step - 1;
+                nr++;
+                done[i] = 1;
+            }
+            for (i = 0; i < NBUF; i++) {         /* the buffers first used at this step */
+                int best = -1;
+                if (B[i].first != step) continue;
+                for (j = 0; j < nr; j++)
+                    if (R[j].size >= B[i].size && (best < 0 || R[j].freed > R[best].freed)) best = (int)j;
+                if (best < 0) {
+                    B[i].off = off;
+                    off += B[i].size;
+                } else {
+                    B[i].off = R[best].off;
+                    R[best].off += B[i].size;  /* what is left of the region stays free */
+                    R[best].size -= B[i].size;
+                    if (!R[best].size) {
+                        for (k = (unsigned)best; k + 1 < nr; k++) R[k] = R[k + 1];
+                        nr--;
+                    }
+                }
+            }
+        }
+    }
     for (s = 0; s < 4; s++) {
-        const size_t n = (size_t)P->H[s] * P->W[s] * m->c[s];
-        P->X[s][0] = off;
-        off += ALIGN_UP(n, A);
-        P->X[s][1] = off;
-        if (m->n[s]) off += ALIGN_UP(n, A);
+        P->X[s][0] = B[B_X + 2 * s].off;
+        P->X[s][1] = B[B_X + 2 * s + 1].off;
     }
-    for (s = h; s < 4; s++) {
-        P->P[s] = off;
-        if (s > h || m->smooth) off += ALIGN_UP((size_t)P->H[s] * P->W[s] * m->F, A);
-    }
-    P->Q = off;
-    if (m->smooth >= 2) off += ALIGN_UP((size_t)P->H[h] * P->W[h] * m->F, A);
-    P->maps = off;
-    off += ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out, A);
+    for (s = h; s < 4; s++) P->P[s] = B[B_P + s].off;
+    P->Q = B[B_Q].off;
+    P->maps = B[B_MAPS].off;
     P->end = off;
 }
 

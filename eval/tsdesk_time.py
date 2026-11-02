@@ -236,8 +236,10 @@ class Pipeline:
             import tsdesk as T
             import vocr_onnx as V
             self.T, self.V = T, V
+            size, _, mode = (self.size or "").partition("@")          # SIZE[@MODE]: @cv2 = an app's cv2 resize
+            self.size = size or None
             self.det = T.Detector(path, session_options=D.session_options(self.threads, spinning=spinning),
-                                  size=self.size, refine=self.refine)
+                                  size=self.size, refine=self.refine, resize_mode=mode or "exact")
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",

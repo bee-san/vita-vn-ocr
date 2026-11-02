@@ -84,8 +84,7 @@ class COpts(C.Structure):
 
 NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct")   # post options, no C twin
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
-NO_C_DROP = ("cut_pct", "cut_rel_pct", "cut_dlg")    # tools/tsdesk reading-stage options with no C twin yet
-DROP_KEYS = tuple(k for k in T.DROP_DEFAULTS if k not in NO_C_DROP)   # vocr_tsdd_opts'
+DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts' (the cut's three: the C page runs it)
 
 
 class CPost(C.Structure):
@@ -194,6 +193,15 @@ def c_library(path=None):
     L.vocr_tsdd_drop.argtypes = [C.POINTER(d), C.POINTER(C.c_char_p), C.POINTER(C.c_float), u, C.POINTER(CDrop),
                                  C.POINTER(C.c_ubyte)]
     L.vocr_tsdd_drop.restype = i
+    L.vocr_tsdc_cut.argtypes = [vp, u, u, u, C.POINTER(d), C.POINTER(d), C.POINTER(C.c_ubyte), u, i, i, vp, sz,
+                                C.POINTER(d), C.POINTER(d), C.POINTER(u), C.POINTER(u), C.POINTER(u)]
+    L.vocr_tsdc_cut.restype = i
+    L.vocr_tsdc_is_mark.argtypes = [C.c_char_p, u]
+    L.vocr_tsdc_is_mark.restype = i
+    L.vocr_tsd_page_set_charbox_cal.argtypes = [vp, C.POINTER(i)]
+    L.vocr_tsd_page_set_charbox_cal.restype = i
+    L.vocr_tsd_page_line_chars.argtypes = [vp, u, C.POINTER(C.c_int32), C.POINTER(u), u]
+    L.vocr_tsd_page_line_chars.restype = u
     L.vocr_tsdd_has_japanese.argtypes = [C.c_char_p]
     L.vocr_tsdd_has_japanese.restype = i
     L.vocr_tsdd_japanese_share.argtypes = [C.c_char_p]
@@ -373,10 +381,24 @@ def drop_struct(drop):
     if drop in (None, False):
         return None
     o = T.drop_options(drop)
-    no = [k for k in ("cut_pct",) if o[k]]
-    if no:
-        raise ValueError(f"reading-filter options with no C twin yet: {no}")
     return CDrop(*[o[k] for k in DROP_KEYS])
+
+
+def charbox_cal(tier="L"):
+    """The recognizer's charbox calibration for the C page's cut ([shift, group 0..7], 1/16 resized px): eval/
+    charboxes_cal.json's for a tier (S, N, L; tools/export_onnx.charbox_cals, the ONNX files' vocr.charbox_cal), or
+    a vocr_onnx recognizer file's own (a path ending in .onnx)."""
+    if str(tier).endswith(".onnx"):
+        import vocr_onnx as V
+        cal = V.Recognizer(str(tier)).cal
+        if cal is None:
+            raise ValueError(f"{tier}: no vocr.charbox_cal")
+        return [int(v) for v in cal]
+    import export_onnx
+    cals = export_onnx.charbox_cals()
+    if tier not in cals:
+        raise KeyError(f"no charbox calibration for tier {tier!r}: {sorted(cals)}")
+    return [int(v) for v in cals[tier]]
 
 
 def decode_struct(decode, base, hs, tags):
@@ -598,6 +620,28 @@ class CModel:
         return [T.Box(b.x, b.y, b.w, b.h, int(b.vertical), b.logit, int(b.tag), b.tconf, int(b.cells))
                 for b in arr[:n.value]]
 
+    def cut_reading(self, grey, b, chars, pct, rel_pct=200):
+        """vocr_tsdc_cut on a grey frame, a tight box [x0, y0, x1, y1] and [(text, x)] characters: tools/tsdesk.
+        cut_reading's None or [(x0, x1, text)] (tests)."""
+        g = np.ascontiguousarray(grey, np.uint8)
+        H, W = g.shape
+        n = len(chars)
+        box = (C.c_double * 4)(*[float(v) for v in b[:4]])
+        cx = (C.c_double * max(1, n))(*[float(x) for _, x in chars])
+        mk = (C.c_ubyte * max(1, n))(*[self.L.vocr_tsdc_is_mark(t.encode("utf-8"), len(t.encode("utf-8")))
+                                       for t, _ in chars])
+        x0, x1 = (C.c_double * max(1, n))(), (C.c_double * max(1, n))()
+        first, end, np_ = (C.c_uint * max(1, n))(), (C.c_uint * max(1, n))(), C.c_uint()
+        nb = self.L.vocr_tsdp_scratch_bytes(W, H, 1)
+        scr = np.zeros(nb + 64, np.uint8)
+        rc = self.L.vocr_tsdc_cut(g.ctypes.data, W, H, W, box, cx, mk, n, int(pct), int(rel_pct), scr.ctypes.data,
+                                  nb + 64, x0, x1, first, end, C.byref(np_))
+        if rc < 0:
+            raise ValueError(f"vocr_tsdc_cut: {rc}")
+        if rc == 0:
+            return None
+        return [(x0[k], x1[k], "".join(t for t, _ in chars[first[k]:end[k]])) for k in range(np_.value)]
+
     def drop_set(self, items, drop):
         """vocr_tsdd_drop on [(box (x, y, w, h), text, conf_mean)]: tools/tsdesk.drop_set's indices (tests)."""
         n = len(items)
@@ -649,7 +693,7 @@ class CPage:
     (docs/textspot-desktop.md)."""
 
     def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, decode=None, post=None,
-                 drop=None, lib=None):
+                 drop=None, lib=None, charbox_cal=None):
         self.L = c_library(lib)
         self.det = aligned(_blob_bytes(det))
         self.rec = aligned(_blob_bytes(rec))
@@ -681,6 +725,13 @@ class CPage:
         if post:
             self._popts = post_struct(post)
             self.L.vocr_tsd_page_set_post(self.p, C.byref(self._popts))
+        if charbox_cal is not None:      # the cut's character positions (charbox_cal(); also keeps them: page())
+            cal = (C.c_int * 9)(*[int(v) for v in charbox_cal])
+            rc = self.L.vocr_tsd_page_set_charbox_cal(self.p, cal)
+            if rc:
+                raise ValueError(f"vocr_tsd_page_set_charbox_cal: {rc}")
+        elif drop and T.drop_options(drop)["cut_pct"]:
+            raise ValueError("the cut (cut_pct) needs the recognizer's charbox calibration: charbox_cal=")
         if drop:
             self._xopts = drop_struct(drop)
             self.L.vocr_tsd_page_set_drop(self.p, C.byref(self._xopts))
@@ -697,19 +748,26 @@ class CPage:
             raise ValueError(f"vocr_tsd_page_detect: {rc}")
         return _boxes(self.L.vocr_tsd_page_boxes(self.p).contents)
 
-    def page(self, img):
+    def page(self, img, chars=False):
         """Every line of a frame in reading order: [tsdesk.Line] (text, tight box, crop read, tag, logit, dark,
-        vertical); vertical boxes come back without text."""
+        vertical); vertical boxes come back without text. chars (with charbox_cal set): also each line's kept
+        characters [(text, x frame px)] (tools/tsdesk.cut_read_lines' input): (lines, chars)."""
         a, w, h, stride, ch = _image(img)
         rc = self.L.vocr_tsd_page_run(self.p, a.ctypes.data, w, h, stride, ch)
         if rc:
             raise ValueError(f"vocr_tsd_page_run: {rc}")
-        out = []
+        out, cs = [], []
+        c16, off = (C.c_int32 * 160)(), (C.c_uint * 160)()
         for i in range(self.L.vocr_tsd_page_count(self.p)):
             ln = self.L.vocr_tsd_page_line(self.p, i).contents
             out.append(T.Line(ln.text.decode("utf-8", "replace"), (ln.bx, ln.by, ln.bw, ln.bh),
                               (ln.x, ln.y, ln.w, ln.h), int(ln.tag), ln.logit, int(ln.dark), int(ln.vertical)))
-        return out
+            if chars:
+                n = self.L.vocr_tsd_page_line_chars(self.p, i, c16, off, 160)
+                raw = bytes(ln.text)
+                ends = [off[k] for k in range(1, n)] + [len(raw.split(b"\0", 1)[0])]
+                cs.append([(raw[off[k]:ends[k]].decode("utf-8", "replace"), c16[k] / 16.0) for k in range(n)])
+        return (out, cs) if chars else out
 
     def pad(self):
         """The reading pad of the last run, frame px (horizontal, vertical); (-1, -1) under a line rule (hXvY: each

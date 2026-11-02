@@ -11,6 +11,7 @@
 #include <time.h>
 
 #include "vocr.h"
+#include "vocr_charbox.h"
 #include "vocr_tsd_resize.h"
 #include "vocr_lines.h"
 
@@ -19,6 +20,21 @@
 #endif
 
 #define MAX_THREADS 64
+#define TSD_CHARS 130  /* greedy characters kept per line (a line has at most 129 CTC frames) */
+
+/* the greedy characters of a read line (the reading stage's cut: textspot-desktop-boxes): their classes and their
+ * centres in the crop's px x VOCR_CHARBOX_Q (runtime/vocr_charbox.c, flags 0, the page's calibration) */
+typedef struct {
+    unsigned n;
+    uint16_t cls[TSD_CHARS];
+    int32_t c[TSD_CHARS];
+} tsd_chars;
+
+/* an output line's characters: those of read line src in [first, end), centres from that line's crop x */
+typedef struct {
+    unsigned src, first, end;
+    int cx;
+} tsd_lchars;
 /* tasks per detector step for a pool of n threads: one row band per thread (the split never changes the bits) */
 #define TASKS_OF(n) (n)
 #define SPIN 4000u   /* pause iterations a pool thread spins on before it sleeps (about 0.1 ms) */
@@ -245,6 +261,13 @@ struct vocr_tsd_page {
     vocr_tsd_set set;
     unsigned count;
     vocr_tsd_line lines[VOCR_TSD_MAX_BOXES];
+    int16_t cal[1 + VOCR_CHARBOX_GROUPS];   /* the recognizer's charbox calibration (vocr_tsd_page_set_charbox_cal) */
+    unsigned cal_set;
+    tsd_chars *chars;          /* per read line: its greedy characters (the cut on or the calibration set), else NULL */
+    vocr_tsd_line *cut_out;    /* the cut's output lines (VOCR_TSD_MAX_BOXES) */
+    tsd_lchars lch[VOCR_TSD_MAX_BOXES], lch_tmp[VOCR_TSD_MAX_BOXES];
+    void *cut_scr;             /* the cut's scratch (vocr_tsdp_scratch_bytes(w, h, 1)), grown as frames need */
+    size_t cut_scr_bytes;
     const unsigned char *g;    /* the grey frame being read */
     unsigned w, h, stride;
     double ph, pv;             /* the frame's pad of the last run (a frame or px rule) */
@@ -350,11 +373,47 @@ void vocr_tsd_page_set_post(vocr_tsd_page *p, const vocr_tsdp_opts *opts)
     if (opts) p->post = *opts;
 }
 
+static int chars_alloc(vocr_tsd_page *p);
+
 void vocr_tsd_page_set_drop(vocr_tsd_page *p, const vocr_tsdd_opts *opts)
 {
     if (!p) return;
     p->drop_on = opts != NULL;
     if (opts) p->drop = *opts;
+    if (opts && opts->cut_pct) chars_alloc(p);    /* vocr_tsd_page_run refuses the cut if this failed */
+}
+
+/* the kept characters' buffers, when the cut is on or the calibration set (allocated once) */
+static int chars_alloc(vocr_tsd_page *p)
+{
+    if (p->chars) return 0;
+    p->chars = (tsd_chars *)amalloc(VOCR_TSD_MAX_BOXES * sizeof *p->chars);
+    p->cut_out = (vocr_tsd_line *)amalloc(VOCR_TSD_MAX_BOXES * sizeof *p->cut_out);
+    if (!p->chars || !p->cut_out) {
+        free(p->chars);
+        free(p->cut_out);
+        p->chars = NULL;
+        p->cut_out = NULL;
+        return VOCR_TSD_E_ARG;
+    }
+    memset(p->chars, 0, VOCR_TSD_MAX_BOXES * sizeof *p->chars);
+    return 0;
+}
+
+int vocr_tsd_page_set_charbox_cal(vocr_tsd_page *p, const int *cal)
+{
+    unsigned k;
+    if (!p) return VOCR_TSD_E_ARG;
+    if (!cal) {
+        memset(p->cal, 0, sizeof p->cal);
+        p->cal_set = 0;
+        return 0;
+    }
+    for (k = 0; k <= VOCR_CHARBOX_GROUPS; k++)
+        if (cal[k] < -32768 || cal[k] > 32767) return VOCR_TSD_E_ARG;
+    for (k = 0; k <= VOCR_CHARBOX_GROUPS; k++) p->cal[k] = (int16_t)cal[k];
+    p->cal_set = 1;
+    return chars_alloc(p);
 }
 
 void vocr_tsd_page_free(vocr_tsd_page *p)
@@ -365,6 +424,9 @@ void vocr_tsd_page_free(vocr_tsd_page *p)
     for (i = 0; i < MAX_THREADS; i++) free(p->work[i].arena);
     free(p->arena);
     free(p->grey);
+    free(p->chars);
+    free(p->cut_out);
+    free(p->cut_scr);
     free(p);
 }
 
@@ -540,6 +602,29 @@ static void line_pad(const vocr_tsd_page *p, const vocr_tsd_box *b, double *ph, 
     *pv = v > 1.0 ? v : 1.0;
 }
 
+/* the reading stage's cut (textspot-desktop-boxes): the greedy characters of read line i from its frames' top-1
+ * classes (vocr_charbox_find, flags 0, the page's calibration), in the crop's px x 16 */
+static void keep_chars(vocr_tsd_page *p, unsigned i, const vocr_extra *ex, const uint16_t *topc,
+                       const vocr_image *vi)
+{
+    tsd_chars *ch = &p->chars[i];
+    vocr_charbox cb[TSD_CHARS];
+    vocr_charbox_cal cal;
+    unsigned n = 0, k;
+    ch->n = 0;
+    if (!ex->topk || !ex->frames) return;
+    cal.shift = p->cal[0];
+    for (k = 0; k < VOCR_CHARBOX_GROUPS; k++) cal.group[k] = p->cal[1 + k];
+    if (vocr_charbox_find(&p->rec, topc, ex->topk, ex->frames, vi->width, vi->height, 0, &cal, NULL, NULL, cb,
+                          TSD_CHARS, &n))
+        return;
+    for (k = 0; k < n; k++) {
+        ch->cls[k] = cb[k].cls;
+        ch->c[k] = cb[k].c;
+    }
+    ch->n = n;
+}
+
 static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
 {
     vocr_tsd_line *ln = &p->lines[i];
@@ -554,6 +639,7 @@ static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
     ln->conf_min = 1.0f;
     ln->conf_mean = 1.0f;
     ln->dark = 0;
+    if (p->chars) p->chars[i].n = 0;
     if (ln->vertical) return 0;
     im.pixels = p->g;
     im.width = p->w;
@@ -581,6 +667,7 @@ static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
         ln->conf_min = ex.conf_min;
         ln->conf_mean = ex.conf_mean;
     }
+    if (p->chars) keep_chars(p, i, &ex, topc, &vi);   /* the cut's characters (only when it is on) */
     return 0;
 }
 
@@ -613,10 +700,170 @@ static int drop_lines(vocr_tsd_page *p)
     for (i = 0; i < p->count; i++)
         if (p->lines[i].h >= 0) {
             if (k != i) p->lines[k] = p->lines[i];
+            if (k != i) p->lch[k] = p->lch[i];
             k++;
         }
     p->count = k;
     return VOCR_TSD_OK;
+}
+
+/* the reading rule's crop of an output piece's tight box: vocr_tsd_page_run's arithmetic for a box (the frame or px
+ * pad of the run, the line rule's own pad, the clip rule's sides against the frame's boxes) */
+static int piece_crop(const vocr_tsd_page *p, vocr_tsd_line *o)
+{
+    vocr_tsd_box b;
+    double ph = p->ph, pv = p->pv, sd[4], x0, y0, x1, y1;
+    memset(&b, 0, sizeof b);
+    b.x = o->bx;
+    b.y = o->by;
+    b.w = o->bw;
+    b.h = o->bh;
+    if (p->rule == VOCR_TSD_RULE_LINE || p->rule == VOCR_TSD_RULE_CLIP) line_pad(p, &b, &ph, &pv);
+    sd[0] = sd[2] = ph;
+    sd[1] = sd[3] = pv;
+    if (p->rule == VOCR_TSD_RULE_CLIP) clip_sides(&p->set, &b, ph, pv, sd);
+    x0 = floor(b.x - sd[0]);
+    y0 = floor(b.y - sd[1]);
+    x1 = ceil(b.x + b.w + sd[2]);
+    y1 = ceil(b.y + b.h + sd[3]);
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > (double)p->w) x1 = (double)p->w;
+    if (y1 > (double)p->h) y1 = (double)p->h;
+    if (!(x1 > x0 && y1 > y0)) return 0;
+    o->x = (int)x0;
+    o->y = (int)y0;
+    o->w = (int)(x1 - x0);
+    o->h = (int)(y1 - y0);
+    return 1;
+}
+
+/* the UTF-8 code points of a string (tools/tsdesk's len of a piece's text) */
+static unsigned cps(const char *t)
+{
+    unsigned n = 0;
+    for (; *t; t++) n += ((unsigned char)*t & 0xC0u) != 0x80u;
+    return n;
+}
+
+/* the reading stage's cut (tools/tsdesk.cut_and_filter's cut_read_lines; vocr_tsdc_cut): each read horizontal line
+ * cut into items in its place, a piece keeping the line's fields but its tight box (x0, y, x1 - x0, h), the rule's
+ * crop of it and its characters' text; a line whose pieces would take the page past VOCR_TSD_MAX_BOXES lines stays
+ * whole. With the cut off (only the calibration set) the lines stay as they are and keep their characters. */
+static int cut_lines(vocr_tsd_page *p)
+{
+    unsigned i, k = 0;
+    const int on = p->drop_on && p->drop.cut_pct;
+    size_t need;
+    if (on) {
+        if (p->drop.cut_pct < 0 || p->drop.cut_rel_pct < 0) return VOCR_TSD_E_ARG;
+        need = vocr_tsdp_scratch_bytes(p->w, p->h, 1);
+        if (need > p->cut_scr_bytes) {
+            free(p->cut_scr);
+            p->cut_scr = amalloc(need);
+            p->cut_scr_bytes = p->cut_scr ? need : 0;
+            if (!p->cut_scr) return VOCR_TSD_E_ARG;
+        }
+    }
+    for (i = 0; i < p->count; i++) {
+        const vocr_tsd_line *ln = &p->lines[i];
+        const tsd_chars *ch = &p->chars[i];
+        const unsigned left = p->count - i - 1, n = ln->vertical ? 0 : ch->n;
+        double cx[TSD_CHARS], x0[TSD_CHARS], x1[TSD_CHARS], box[4];
+        unsigned char mark[TSD_CHARS];
+        unsigned first[TSD_CHARS], end[TSD_CHARS], np = 0, j, q;
+        int rc = 0;
+        if (on && n) {
+            for (j = 0; j < n; j++) {
+                unsigned len = 0;
+                const char *t = vocr_class_text(&p->rec, ch->cls[j], &len);
+                cx[j] = (double)ln->x + (double)ch->c[j] / (double)VOCR_CHARBOX_Q;
+                mark[j] = (unsigned char)(t ? vocr_tsdc_is_mark(t, len) : 0);
+            }
+            box[0] = ln->bx;
+            box[1] = ln->by;
+            box[2] = ln->bx + ln->bw;
+            box[3] = ln->by + ln->bh;
+            rc = vocr_tsdc_cut(p->g, p->w, p->h, p->stride, box, cx, mark, n, p->drop.cut_pct, p->drop.cut_rel_pct,
+                               p->cut_scr, p->cut_scr_bytes, x0, x1, first, end, &np);
+            if (rc < 0) return VOCR_TSD_E_ARG;
+        }
+        /* the pieces' texts (their characters' classes, whole characters within VOCR_TSD_TEXT) */
+        if (rc == 1) {
+            for (q = 0; q < np; q++) {
+                vocr_tsd_line *o = &p->cut_out[k + q < VOCR_TSD_MAX_BOXES ? k + q : VOCR_TSD_MAX_BOXES - 1];
+                size_t used = 0;
+                if (k + np + left > VOCR_TSD_MAX_BOXES) break;
+                for (j = first[q]; j < end[q]; j++) {
+                    unsigned len = 0;
+                    const char *t = vocr_class_text(&p->rec, ch->cls[j], &len);
+                    if (!t || used + len >= sizeof o->text) break;
+                    memcpy(o->text + used, t, len);
+                    used += len;
+                }
+                o->text[used] = '\0';
+            }
+            if (k + np + left > VOCR_TSD_MAX_BOXES) rc = 0;
+        }
+        if (rc == 1 && ln->tag == 0 && p->drop.cut_dlg != 1) {   /* a dialogue-tagged line (cut_dlg) */
+            if (p->drop.cut_dlg == 0) rc = 0;
+            else
+                for (q = 0; q < np; q++)
+                    if (cps(p->cut_out[k + q].text) > (unsigned)p->drop.cut_dlg) {
+                        rc = 0;
+                        break;
+                    }
+        }
+        if (rc != 1) {
+            p->cut_out[k] = *ln;
+            p->lch_tmp[k].src = i;
+            p->lch_tmp[k].first = 0;
+            p->lch_tmp[k].end = n;
+            p->lch_tmp[k].cx = ln->x;
+            k++;
+            continue;
+        }
+        for (q = 0; q < np; q++) {
+            vocr_tsd_line *o = &p->cut_out[k];
+            char text[VOCR_TSD_TEXT];
+            memcpy(text, o->text, sizeof text);
+            *o = *ln;
+            memcpy(o->text, text, sizeof text);
+            o->bx = x0[q];
+            o->bw = x1[q] - x0[q];
+            if (!piece_crop(p, o)) {
+                o->x = ln->x;
+                o->w = 0;
+            }
+            p->lch_tmp[k].src = i;
+            p->lch_tmp[k].first = first[q];
+            p->lch_tmp[k].end = end[q];
+            p->lch_tmp[k].cx = ln->x;
+            k++;
+        }
+    }
+    memcpy(p->lines, p->cut_out, k * sizeof *p->lines);
+    memcpy(p->lch, p->lch_tmp, k * sizeof *p->lch);
+    p->count = k;
+    return 0;
+}
+
+unsigned vocr_tsd_page_line_chars(const vocr_tsd_page *p, unsigned i, int32_t *c16, unsigned *off, unsigned cap)
+{
+    unsigned j, n = 0, used = 0;
+    const tsd_chars *ch;
+    const tsd_lchars *lc;
+    if (!p || !p->chars || i >= p->count || p->lines[i].vertical) return 0;
+    lc = &p->lch[i];
+    ch = &p->chars[lc->src];
+    for (j = lc->first; j < lc->end && n < cap; j++, n++) {
+        unsigned len = 0;
+        if (c16) c16[n] = (int32_t)lc->cx * VOCR_CHARBOX_Q + ch->c[j];
+        if (off) off[n] = used;
+        (void)vocr_class_text(&p->rec, ch->cls[j], &len);
+        used += len;
+    }
+    return n;
 }
 
 static void line_task(void *arg, unsigned task, unsigned worker)
@@ -683,6 +930,8 @@ int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, un
     pool_run_w(p->pool, line_task, p, k, 0);
     for (i = 0; i < p->threads; i++)
         if (p->work[i].rc) return p->work[i].rc;
+    if (p->drop_on && p->drop.cut_pct && !p->chars) return VOCR_TSD_E_ARG;
+    if (p->chars && (rc = cut_lines(p)) != 0) return rc;
     if (p->drop_on && (rc = drop_lines(p)) != 0) return rc;
     p->total_us = now_us() - t0;
     return VOCR_TSD_OK;

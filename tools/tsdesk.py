@@ -1173,6 +1173,21 @@ def cut_reading(g, b, chars, pct, rel_pct=200):
     return out
 
 
+def cut_pieces(g, b, tag, chars, o):
+    """The reading stage's cut of one read horizontal line under reading-filter options o (drop_options(): cut_pct,
+    cut_rel_pct, cut_dlg): cut_reading's pieces [(x0, x1, text)], or None (the line stays whole: the cut off, no cut
+    found, or a line the detector tags as dialogue (tag 0) with cut_dlg 0, or with cut_dlg N >= 2 unless every
+    piece holds at most N characters). b: the tight box [x0, y0, x1, y1] in frame px; chars: [(text, x)] the
+    reading's characters with their centres in frame px."""
+    if not o["cut_pct"]:
+        return None
+    cut = cut_reading(g, b, chars, o["cut_pct"], o["cut_rel_pct"])
+    if cut is not None and tag == 0 and o["cut_dlg"] != 1:
+        if o["cut_dlg"] == 0 or max(len(t) for _, _, t in cut) > o["cut_dlg"]:
+            return None
+    return cut
+
+
 def drop_options(opts=None):
     o = dict(DROP_DEFAULTS)
     for k, v in (opts or {}).items():
@@ -1378,7 +1393,11 @@ def reading_order(boxes):
 def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, executor=None, drop=None):
     """Every line of a frame, top to bottom: [Line] in frame px. det: a Detector; rec: a vocr_onnx.Recognizer;
     lm: a vocr_onnx.CharLM; tags: the tag classes to read (None: all); workers: lines read on that many threads;
-    drop: None (off) or DROP_DEFAULTS options: the horizontal lines whose readings drop_set() rejects are left out."""
+    drop: None (off) or DROP_DEFAULTS options: with cut_pct, each read horizontal line is first cut into items
+    (cut_pieces: by its characters' positions, the greedy ones, or the LM text's placed on them), each piece a line
+    in its place with its own text, tight box (x0, y, x1 - x0, h) and the pad's crop of it, while the frame keeps
+    at most MAX_BOXES lines (a line whose pieces would pass that stays whole: the C page's room); then the
+    horizontal lines whose readings drop_set() rejects are left out."""
     import vocr_onnx as V
     g = grey_of(frame)
     H, W = g.shape
@@ -1402,7 +1421,8 @@ def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, exe
             return Line("", tight, (cx, cy, cw, ch), b.tag, b.logit, 0, 1)
         dark = V.line_dark(g, (cx, cy, cw, ch))
         r = rec.read(g[cy:cy + ch, cx:cx + cw], invert=bool(dark), lm=lm)
-        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0), r.conf_mean
+        chars = [(c.text, cx + c.x) for c in (r.text_chars if lm is not None else r.chars)]
+        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0), r.conf_mean, chars
 
     if executor is not None and len(jobs) > 1:
         res = list(executor.map(one, jobs))
@@ -1414,8 +1434,46 @@ def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, exe
         res = [one(j) for j in jobs]
     if dropo is None:
         return [r if isinstance(r, Line) else r[0] for r in res]
+    return cut_and_filter(g, res, dropo, lambda tb: crop_of(tb, p, W, H))
+
+
+def cut_read_lines(g, res, drop, crop_fn):
+    """The reading stage's cut over a frame's read lines (read_frame's step; the C page's twin: desktop/
+    vocr_tsd_page.c cut_lines). res: in reading order, a vertical box as its Line, a read horizontal line as
+    (Line, conf_mean, chars) with chars [(text, x)] its reading's characters and their centres in frame px (from a
+    vocr_onnx read result r of the crop at crop x cx: [(c.text, cx + c.x) for c in r.chars], or r.text_chars with an
+    LM); chars None keeps the line whole. drop: DROP_DEFAULTS options (cut_pct, cut_rel_pct, cut_dlg: cut_pieces);
+    crop_fn(tight box (x, y, w, h)) -> a piece's crop under the reading rule. Each cut line is replaced in its place
+    by its pieces (Line(text, (x0, y, x1 - x0, h), crop_fn(that box), tag, logit, dark, 0), conf_mean, None), while
+    the frame keeps at most MAX_BOXES lines (a line whose pieces would pass that stays whole)."""
+    o = drop_options(drop)
+    if not o["cut_pct"]:
+        return list(res)
+    out, left = [], len(res)
+    for r in res:
+        left -= 1
+        if isinstance(r, Line) or len(r) < 3 or r[2] is None:
+            out.append(r)
+            continue
+        ln, conf, chars = r[0], r[1], r[2]
+        bx, by, bw, bh = ln.box
+        cut = cut_pieces(g, [bx, by, bx + bw, by + bh], ln.tag, chars, o)
+        if cut is None or len(out) + len(cut) + left > MAX_BOXES:
+            out.append(r)
+            continue
+        for x0, x1, t in cut:
+            tb = (x0, by, x1 - x0, bh)
+            out.append((Line(t, tb, crop_fn(tb), ln.tag, ln.logit, ln.dark, 0), conf, None))
+    return out
+
+
+def cut_and_filter(g, res, drop, crop_fn):
+    """read_frame's last steps on a frame's read lines (res and crop_fn as cut_read_lines): the cut (with cut_pct),
+    then the reading filter (drop_set over the horizontal lines' (box, text, conf_mean)). [Line] kept, in order."""
+    o = drop_options(drop)
+    res = cut_read_lines(g, res, o, crop_fn)
     hz = [k for k, r in enumerate(res) if not isinstance(r, Line)]
-    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1]) for k in hz], dropo)}
+    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1]) for k in hz], o)}
     return [r if isinstance(r, Line) else r[0] for k, r in enumerate(res) if k not in gone]
 
 

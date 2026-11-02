@@ -220,10 +220,7 @@ def _cut_read_job(job, o):
             continue
         dark = V.line_dark(g, cb)
         ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
-        cut = T.cut_reading(g, b, [(c.text, cb[0] + c.x) for c in ln.chars], o["cut_pct"], o["cut_rel_pct"])
-        if cut is not None and (b[6] if len(b) > 6 else 0) == 0 and o["cut_dlg"] != 1:
-            if o["cut_dlg"] == 0 or max(len(t) for _, _, t in cut) > o["cut_dlg"]:
-                cut = None            # a dialogue-tagged line: whole (cut_dlg 0), or unless all its items are short
+        cut = T.cut_pieces(g, b, b[6] if len(b) > 6 else 0, [(c.text, cb[0] + c.x) for c in ln.chars], o)
         if cut is None:
             pieces.append((list(b), ln.text, ln.conf_mean))
         else:

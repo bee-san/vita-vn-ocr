@@ -597,6 +597,38 @@ def test_read_frame_reading_filter():
     assert texts({"rep_pct": 50}) == ["あいう", "A", ""]
 
 
+def test_read_frame_cut():
+    import vocr_onnx as V
+    g = np.full((60, 300), 20, np.uint8)
+    e1 = _glyphs(g, 10, 20, 3, 16, 2)                                    # 自兵数, a 20 px gap, 93
+    e2 = _glyphs(g, e1 + 20, 20, 2, 16, 2)
+
+    class Det:
+        def __init__(self, tag):
+            self.tag = tag
+
+        def detect(self, g):
+            b = _box(9, 19, e2 + 1, 37)
+            return [T.Box(b.x, b.y, b.w, b.h, 0, 1.0, self.tag, 0.0, 4)]
+
+    class Rec:
+        def read(self, img, invert=False, lm=None):
+            cx = 9 - 2                                                   # the crop's x (pad 2 px)
+            xs = [10 + 18 * k + 8 for k in range(3)] + [e1 + 20 + 18 * k + 8 for k in range(2)]
+            chars = [V.Char(t, 1, k, k, float(x - cx), 0.0, 0.0) for k, (t, x) in enumerate(zip("自兵数93", xs))]
+            return V.Line("自兵数93", "自兵数93", chars=chars, conf_mean=0.99)
+
+    lines = T.read_frame(g, Det(3), Rec(), pad=2, drop={"cut_pct": 25, "cut_dlg": 0})
+    assert [ln.text for ln in lines] == ["自兵数", "93"]
+    assert lines[0].box[0] == 9.0 and abs(lines[1].box[0] - (e1 + 20)) <= 1
+    assert lines[1].crop == T.crop_of(lines[1].box, 2, 300, 60)
+    assert [ln.text for ln in T.read_frame(g, Det(0), Rec(), pad=2, drop={"cut_pct": 25, "cut_dlg": 0})] == ["自兵数93"]
+    assert [ln.text for ln in T.read_frame(g, Det(0), Rec(), pad=2, drop={"cut_pct": 25})] == ["自兵数", "93"]
+    assert [ln.text for ln in T.read_frame(g, Det(3), Rec(), pad=2, drop={"nojp": 2})] == ["自兵数93"]
+    assert [ln.text for ln in T.read_frame(g, Det(3), Rec(), pad=2,
+                                           drop={"cut_pct": 25, "nojp": 1})] == ["自兵数"]      # then the filter
+
+
 def test_decode_clamp_ends_at_a_neighbour():
     m = _maps(80, 400, 8, [[40.0, 20.0, 160.0, 44.0], [200.0, 20.0, 240.0, 44.0]])     # a label and a number
     on = m[0] > 0

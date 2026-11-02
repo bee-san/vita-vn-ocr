@@ -26,6 +26,7 @@
  *                 ext_gap_pct, ext_run_pct, ext_dash_pct, ext_join).
  * At most `cap` boxes come out of vocr_tsdp_pre (tools/tsdesk.post_pre keeps the first MAX_BOXES).
  *
+ * The reading stage's cut (vocr_tsdc_cut: tools/tsdesk.cut_reading) cuts a read line into items; the page runs it.
  * The reading filter (vocr_tsdd_drop: tools/tsdesk.drop_set) decides which of a page's read horizontal lines are left
  * out, from their tight boxes and UTF-8 readings: nojp (no Japanese character; 2: unless a mostly Japanese reading
  * sits in the row within nojp_gap_pct % of the larger height, nojp_anchor_pct), rep_pct (a reading dominated by one
@@ -53,9 +54,10 @@ typedef struct {
 /* The reading filter's options, in tools/tsdesk.DROP_DEFAULTS order. */
 typedef struct {
     int nojp, nojp_gap_pct, nojp_anchor_pct, rep_pct, conf_milli, rep_len;
+    int cut_pct, cut_rel_pct, cut_dlg;      /* the reading stage's cut (vocr_tsdc_cut; the page runs it) */
 } vocr_tsdd_opts;
 
-#define VOCR_TSDD_NOPTS 6
+#define VOCR_TSDD_NOPTS 9
 
 enum { VOCR_TSDP_OK = 0, VOCR_TSDP_E_ARG = -1, VOCR_TSDP_E_SCRATCH = -2 };
 
@@ -95,6 +97,23 @@ int vocr_tsdd_drop(const double *xywh, const char *const *text, const float *con
 /* tools/tsdesk.has_japanese / japanese_share of one UTF-8 reading (tests): the share in [0, 1], -1 for bad UTF-8. */
 int vocr_tsdd_has_japanese(const char *text);
 double vocr_tsdd_japanese_share(const char *text);
+
+/* The reading stage's cut (tools/tsdesk.cut_reading; the C page runs it on each read horizontal line before the
+ * reading filter, tools/tsdesk.read_frame): a line cut into items at its wide ink gaps by its characters' positions.
+ * box: the tight box x0, y0, x1, y1 (frame px); cx: the n characters' centres in frame px, in order; mark: 1 for a
+ * character that is a punctuation mark (vocr_tsdc_is_mark). A gap is the longest run of empty ink columns (the
+ * post-pass's ink over the box) between two consecutive centres; it cuts when it is at least max(2, pct % of the
+ * box's pixel height) and at least rel_pct % of the line's median such gap (rounded up), unless either character is
+ * a mark; a run as long between the box's first (last) ink and the first (last) centre trims ink that read as no
+ * character. Returns 0: no cut (tools/tsdesk's None); 1: *np pieces in x0 / x1 (frame px), each holding the
+ * characters [first, end), at most n of them; VOCR_TSDP_E_ARG (also for n above VOCR_TSDC_MAX) or
+ * VOCR_TSDP_E_SCRATCH. scratch: vocr_tsdp_scratch_bytes(w, h, 1) bytes or more. */
+#define VOCR_TSDC_MAX 256
+int vocr_tsdc_cut(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, const double *box,
+                  const double *cx, const unsigned char *mark, unsigned n, int pct, int rel_pct, void *scratch,
+                  size_t bytes, double *x0, double *x1, unsigned *first, unsigned *end, unsigned *np);
+/* 1 when the UTF-8 text of len bytes is exactly one code point of tools/tsdesk.CUT_MARKS. */
+int vocr_tsdc_is_mark(const char *text, unsigned len);
 
 #ifdef __cplusplus
 }

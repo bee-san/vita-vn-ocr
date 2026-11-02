@@ -544,7 +544,7 @@ def cmd_run(a):
     t_load = time.time()
     rgbs = [load_rgb(p) for p in pages]
     t_load = time.time() - t_load
-    specs = a.pipelines.split(",")
+    specs = [sp for sp in a.pipelines.split(a.sep) if sp]
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-timing", "host": host(), "passes": a.passes,
            "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
            "pages_frames_sha256": doc.get("frames_sha256"),
@@ -1079,6 +1079,8 @@ def main(argv=None):
     p = sub.add_parser("run")
     p.add_argument("--pages", required=True)
     p.add_argument("--pipelines", required=True)
+    p.add_argument("--sep", default=",", help="the separator of --pipelines (e.g. ';' for specs with option suffixes, "
+                   "whose K=V lists hold commas)")
     p.add_argument("--threads", default="1,4")
     p.add_argument("--views")
     p.add_argument("--passes", type=int, default=3)

@@ -69,7 +69,7 @@ def sha256_file(p):
 
 # ----------------------------------------------------------------------------- targets
 
-def targets(lines, ignore, w, h, s):
+def targets(lines, ignore, w, h, s, clip=False):
     """(K, O, A1, A2, E1, E2, valid, kernel, e1_mask, e2_mask, W, M) at stride s on the WIN_H x WIN_W window (lines
     [[x0, y0, x1, y1, vertical, weight, mask]] in window px, the valid region w x h at the top left); the module
     docstring has the rule."""
@@ -94,8 +94,12 @@ def targets(lines, ignore, w, h, s):
 
     def block_mark(m, b):
         x0, y0, x1, y1 = b
+        if clip:        # --ignore-clip: a box is cut to the window first; one outside it marks nothing
+            x0, y0, x1, y1 = max(0, x0), max(0, y0), min(w, x1), min(h, y1)
         if x1 <= x0 or y1 <= y0:
             return
+        # without the clip, a box ending s px or more above or left of the window gives a negative slice end, which
+        # numpy reads from the far side: most of the window's rows or columns become ignore (--ignore-clip fixes it)
         m[max(0, y0 // s):min(ho, (y1 - 1) // s + 1), max(0, x0 // s):min(wo, (x1 - 1) // s + 1)] = True
 
     for b in ignore:
@@ -576,6 +580,7 @@ def make_batch(sources, rng, cfg):
     e_src = cfg.get("e_sources")
     end_ig = float(cfg.get("end_ignore") or 0.0)
     end_gap = float(cfg.get("end_ignore_gap") or 0.0)
+    ign_clip = bool(cfg.get("ignore_clip"))
     orn_p = float(cfg.get("ornaments") or 0.0)
     marks_p = float(cfg.get("marks") or 0.0)
     for b in range(bsz):
@@ -602,7 +607,7 @@ def make_batch(sources, rng, cfg):
                 x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
                 if bands:
                     ign = list(ign0) + trim_bands(bands, drawn)
-        K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
+        K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s, ign_clip)  # noqa: E741
         if e_src is not None and not exact_source(src, e_src):
             m1[:] = False
             m2[:] = False
@@ -720,6 +725,9 @@ def parse(argv=None):
                     help="the share of windows that get 1-2 single marks (a bullet glyph or a T8 icon) drawn as "
                          "background before a positive's start or between two side-by-side positives (add_marks); "
                          "the end bands of --end-ignore lose the marks' columns (trim_bands)")
+    ap.add_argument("--ignore-clip", action="store_true",
+                    help="cut every ignore area to the window before marking its cells (targets: without it, an area "
+                         "s px or more above or left of the window marks most of the window as ignore)")
     ap.add_argument("--end-ignore-gap", type=float, default=0.0,
                     help="with --end-ignore: an end band never covers more than G of the gap to the next positive on "
                          "the same row, so the rest of the gap is background (end_bands; 0 = off)")
@@ -774,8 +782,8 @@ def main(argv=None):
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
            "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
-           "end_ignore": a.end_ignore, "end_ignore_gap": a.end_ignore_gap, "ornaments": a.ornaments, "marks": a.marks,
-           "label_edits": a.label_edits}
+           "end_ignore": a.end_ignore, "end_ignore_gap": a.end_ignore_gap, "ignore_clip": a.ignore_clip,
+           "ornaments": a.ornaments, "marks": a.marks, "label_edits": a.label_edits}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -803,7 +811,7 @@ def main(argv=None):
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
                        "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
                        "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore,
-                       "end_ignore_gap": a.end_ignore_gap or None,
+                       "end_ignore_gap": a.end_ignore_gap or None, "ignore_clip": a.ignore_clip,
                        "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None,
                        "marks": {"p": a.marks, **MARKS, "icons": list(T8M.ICON_KINDS)} if a.marks else None},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},

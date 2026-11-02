@@ -119,3 +119,39 @@ def test_make_batch_gap_off_is_unchanged_and_on_frees_the_gap(monkeypatch):
     assert xs.min() * 8 >= 160 and (xs.max() + 1) * 8 <= 200   # inside the gap between them
     for a, b in zip(outs[0][:8], outs[2][:8]):              # the image and the other targets are the same
         assert np.array_equal(a.numpy(), b.numpy())
+
+
+# ----------------------------------------------------------------------------- --ignore-clip
+
+def test_an_ignore_box_outside_the_window_wraps_without_the_clip():
+    pos = [[100, 100, 300, 124, 0, 1.0, 1]]
+    out = [[-22, -46, -14, -28], [100, -40, 140, -12], [-40, 100, -12, 140], [600, 300, 700, 340]]
+    v_none = TD.targets(pos, [], 512, 256, 8)[6]
+    for b in out:
+        v_bug = TD.targets(pos, [b], 512, 256, 8)[6]
+        v_fix = TD.targets(pos, [b], 512, 256, 8, clip=True)[6]
+        assert np.array_equal(v_fix, v_none), b                       # with the clip: nothing outside is marked
+        if b[0] < 600:
+            assert (v_none & ~v_bug).sum() > 100, b                   # without it: a large part of the window
+    inside = [[10, 10, 60, 40], [-5, -5, 30, 20], [500, 200, 530, 270]]
+    for b in inside:                                                  # a box inside or across the edge: the same
+        assert np.array_equal(TD.targets(pos, [b], 512, 256, 8)[6], TD.targets(pos, [b], 512, 256, 8, clip=True)[6])
+
+
+def test_make_batch_clip_off_is_unchanged(monkeypatch):
+    import desktop_det as DD
+
+    def win(canvas, smp, src, rng, sources, scale, aug=True, ruby_filter=False):
+        rng.random()
+        pos = [[*ln[:4], 0, 1.0, 1] for ln in smp["lines"]]
+        return np.array(canvas, copy=True), pos, [[-30, -60, -12, -20]]          # an ignore area above-left
+    monkeypatch.setattr(DD, "make_window_ms", win)
+    cfg = {"stride": 8, "batch": 2, "scale": (1.0, 1.0), "aug": True, "recipe": "base", "end_ignore": 1.0,
+           "ornaments": 0.0}
+    src = _Sources()
+    a = TD.make_batch(src, np.random.default_rng(5), cfg)
+    b = TD.make_batch(src, np.random.default_rng(5), dict(cfg, ignore_clip=False))
+    c = TD.make_batch(src, np.random.default_rng(5), dict(cfg, ignore_clip=True))
+    assert all(np.array_equal(x.numpy(), y.numpy()) for x, y in zip(a, b))
+    assert c[8].numpy().sum() > a[8].numpy().sum() + 500                      # the wrapped block is scored again
+    assert np.array_equal(a[1].numpy(), c[1].numpy())                         # the kernel is the same

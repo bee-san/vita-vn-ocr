@@ -108,6 +108,9 @@ def install(Dm=D):
         rel = rel_rule(s)
         if rel:
             return rel
+        fl = floor_rule(s)
+        if fl:
+            return floor_hv(fl, H)
         if s.startswith("k"):
             kh, _, kv = s[1:].partition("v")
             ph, pv = pad_px(float(kh), H), pad_px(float(kv or kh), H)
@@ -313,10 +316,33 @@ def margin_hv(rule, b, H):
     if rule in PAD_RULES:
         kh, kv = PAD_RULES[rule]
         return pad_px(kh, H), pad_px(kv, H)
+    fl = floor_rule(rule)
+    if fl:
+        return floor_hv(fl, H)
     rel = rel_rule(rule)
     if rel:
         return rel_hv(rel, b)
     raise ValueError(f"reading rule {rule!r}")
+
+
+def floor_rule(spec):
+    """(A, B, C) of a frame rule with a horizontal floor "kAvBfC" (protocol v2 amendment 2), else None."""
+    s = str(spec)
+    if s.startswith("k") and "v" in s and "f" in s:
+        try:
+            a, _, rest = s[1:].partition("v")
+            b, _, c = rest.partition("f")
+            return (float(a), float(b), float(c))
+        except ValueError:
+            return None
+    return None
+
+
+def floor_hv(fl, H):
+    """(horizontal, vertical) px of "kAvBfC" in an H px tall frame: max(C, round(A H / 544)) and max(2, round(B H /
+    544))."""
+    a, b, c = fl
+    return max(c, float(int(round(a * H / 544)))), float(pad_px(b, H))
 
 
 def rel_rule(spec):

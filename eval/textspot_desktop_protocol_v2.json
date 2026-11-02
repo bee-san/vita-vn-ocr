@@ -130,6 +130,17 @@
    "recipe": "round 1's chosen recipe plus its ornament rows: train/tsdesk_det.py --recipe junk --end-ignore 1.0 --ornaments 0.25 --targets targets_v1 --e-exact, the round-1 mix (hook 0.3375, synth 0.15, real 0.2625, desk_hook 0.1, desk_realplus 0.1, desk_synth 0.05), scale 0.42-1.9, batch 16 windows of 256x512, AdamW 3e-3, EMA, the dense VNs skipped (skip_vns.txt), the train split, seed 1",
    "reads": "each finished arm's EMA model exported (ONNX), its boxes at long:960 with the refinement on hval, dense_screen, dev, dense_dev, and at fit:960 on the l544 frames, read with k6v4 (round 1's rule), scored by eval/tsdesk_goal.py with R / T8 on the same frames; C timing of the exported blob at 1 / 4 threads on the timing pages",
    "next": "the arms are ranked by the goal's gap (max over the four G1 sets of CER - R) with G4's junk count reported; round 2b (an amendment before its reads) takes the closest arms on: more steps, seeds, the reading rule from study A, and fixes for the failure modes the reads show"
+  },
+  {
+   "n": 2,
+   "time": "2026-11-02T06:45Z",
+   "before": "study A2's reads and any candidate read; round 2a's arms are training (none read)",
+   "after": "study A (amendment 1) read: per line, exact boxes read best at k6v4 on hval + dense_screen (mean 0.296%) but at h0.45v0.1 on dev (0.452% against k6v4's 0.624%), driven by PSP frames (dev PSP 0.929% -> 0.611%; hval PSP 0.486% -> 0.337%), while Vita frames prefer k6v4 (hval Vita 0.399% against 0.490%). Correction found before it: the first l544 dense frames kept the ignore areas unscaled (set aside; rebuilt with eval/tsdesk_dense.py resample); R reads dense_dev_l544 at 0.347% and dense_screen_l544 at 0.387% when correct",
+   "studies": {
+    "A2_rules": "the per-line pad study (as A) at more rules: frame rules with a horizontal floor kAvBfC (max(C, round(A H / 544)) px left and right, max(2, round(B H / 544)) top and bottom): k6v4f6, k6v4f8, k8v4f6; wider line-height rules h0.6v0.1, h0.8v0.1, h0.6v0.15; on the same six sets",
+    "A2_harness": "the exact boxes read through the harness (eval/desktop.py read, unit scoring, as R is scored) at k6v4, h0.45v0.1, k6v4f6 and the best new rule of A2_rules on the four goal sets, hval and dense_screen; compared with R (the ceiling: whether exact boxes read at or below R)"
+   },
+   "reading_rule_choice": "the reading rule of round-2 candidates is chosen once, from the exact boxes' harness reads: the lowest mean CER over the four goal sets (dev, dense_dev, dev_l544, dense_dev_l544) among the rules whose hval + dense_screen mean is within 0.05 points of the best rule there; it may be revisited for a candidate's own boxes by a later amendment, disclosed"
   }
  ]
 }

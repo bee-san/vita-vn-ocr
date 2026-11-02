@@ -803,3 +803,15 @@ def test_join_row_joins_dialogue_pieces_only():
     assert T.post_pre(g, sizes, {"join_pct": 50}) == sizes
     assert len(T.post_pre(g, sizes, {"join_pct": 50, "join_h_pct": 50})) == 1
     assert T.post_pre(g, pieces, {}) == pieces and T.POST_DEFAULTS["join_pct"] == 0
+
+
+def test_nojp_num_keeps_a_far_value():
+    label = ((10.0, 10.0, 60.0, 20.0), "機動力：", 0.99)
+    value = ((200.0, 10.0, 24.0, 20.0), "33", 0.99)                     # 130 px away: 6.5 heights
+    junk = ((200.0, 60.0, 24.0, 20.0), "iI", 0.99)
+    o = T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50})
+    assert T.drop_set([label, value, junk], o) == {1, 2}
+    on = T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "nojp_num_pct": 1000})
+    assert T.drop_set([label, value, junk], on) == {2}
+    assert T.is_numeric("100/100") and T.is_numeric("１５") and not T.is_numeric("HP") and not T.is_numeric("A1B")
+    assert T.DROP_DEFAULTS["nojp_num_pct"] == 0

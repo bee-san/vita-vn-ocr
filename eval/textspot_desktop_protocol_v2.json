@@ -201,6 +201,39 @@
      "question": "the data bundle against B1 (same shape, round 1's data); read with C6 at the three rules"
     }
    }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-02T13:15Z",
+   "before": "any read of D2; B2-B5, C1 unread",
+   "found": [
+    "a bug in the training targets (textspot-desktop-targets, 49fbad8): tsdesk_det.targets' block_mark turns an ignore area or end band that ends above or left of the window into a negative slice end, which numpy reads from the far side; on D1's configuration 6.4% of all window cells (24% of windows; desk_dense 32%) become ignore in full-width and full-height strips, hiding the background between items on a row. --ignore-clip (off by default) cuts every area to the window first. The same code is in textspot6_train / textspot2_train (Rubi's textspot8 spotter trained with it): an issue is opened",
+    "--end-ignore-gap G: an end band covers at most G of the gap to the next positive on the same row",
+    "hard-example sources desk_hard (2,000 training-side 1b frames, 1,625 VNs, where round 1's Si_s2 + C6 misses, cuts or merges labelled lines) and desk_hook_hard (459 1a pages); the same exclusion checks as desk_dense",
+    "textspot-desktop-boxes' reading-stage options, chosen on hval + dense_screen and read once per family on the goal sets with B1 (report only): +post vflip_pct=30 (a vertical box over a kana grid becomes horizontal rows) and +drop cut_pct=25,cut_dlg=0 (a non-dialogue line cut into items at ink gaps by the recognizer's character positions): B1's goal gap 0.874 -> 0.800 -> 0.546 (dev 1.142, dense_dev 0.800, dev_l544 1.049, dense_dev_l544 0.893); junk 1"
+   ],
+   "pipeline": {
+    "options": "C7 = +refine+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200,vflip_pct=30+drop:nojp=2,nojp_gap_pct=200,nojp_anchor_pct=50,rep_pct=50,cut_pct=25,cut_dlg=0 replaces C6 for round-2 candidates from this amendment on (C6 and off still reported); the cut runs where the lines are read (the hybrid and ONNX pages in Python; a C twin is needed for the C page)"
+   },
+   "stops": {
+    "D1_q8b_v3_edits_marks_base_dense": "stopped unread: it trains with the ignore wrap; D2 replaces it"
+   },
+   "arms": {
+    "D2_q8b_fixes": {
+     "shape": "q8b",
+     "steps": 80000,
+     "targets": "targets_v3",
+     "label_edits": "label_edits_v1",
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.27,synth=0.13,real=0.23,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03",
+     "question": "the target fixes and data bundle against B1 (same shape); read with C7 (and C6, off) at the three rules"
+    }
+   }
   }
  ]
 }

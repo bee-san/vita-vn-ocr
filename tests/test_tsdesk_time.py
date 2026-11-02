@@ -112,7 +112,7 @@ def _st(p50, p95=None):
     return {"p50": p50, "p95": p50 * 1.1 if p95 is None else p95, "mean": p50, "n": 60, "items_mean": 3.0}
 
 
-def _stats(name="q8b", c=(18.0, 15.0, 21.0), o=(16.0, 14.0, 40.0)):
+def _stats(name="q8b", c=(18.0, 15.0, 21.0), o=(16.0, 14.0, 40.0), hy=(30.0, 30.0, 30.0)):
     views = ("vita", "psp", "pc1080", "vita1080")
     s = {"det1:meiki": {v: _st(105.0) for v in views},
          f"det1:cand:{name}": {v: _st(14.0 + k) for k, v in enumerate(views)}}
@@ -122,6 +122,7 @@ def _stats(name="q8b", c=(18.0, 15.0, 21.0), o=(16.0, 14.0, 40.0)):
     for k, extra in ((1, 3.0), (2, 0.0), (4, 1.0)):
         s[f"page4:onnx:{name}#d{k}"] = {"vita": _st(o[0] + extra), "psp": _st(o[1] + extra),
                                         "pc1080": _st(o[2] + extra), "vita1080": _st(o[2] + extra)}
+    s[f"page4:hybrid:{name}"] = {"vita": _st(hy[0]), "psp": _st(hy[1]), "pc1080": _st(hy[2]), "vita1080": _st(hy[2])}
     return s
 
 
@@ -140,9 +141,16 @@ def test_goal_block_keys_variants_and_path(TT, G, tmp_path):
     assert blk["page_4t_path"] == "c" and blk["page_4t"]["cand"] == blk["page_4t_paths"]["c"]
     assert blk["page_4t_paths_worst_frac_of_R"]["c"] == pytest.approx(21 / 74, abs=1e-4)
     assert blk["interleaved"] is True and blk["ratios"]["det_1t_meiki_over_cand"]["vita"] == 7.5
-    # the ONNX page when it is the faster path everywhere
+    # the ONNX page when it is the faster path everywhere; the hybrid page when it is
     o = TT.goal_block(_stats(c=(30.0, 30.0, 30.0), o=(12.0, 12.0, 12.0)), "q8b")
     assert o["page_4t_path"] == "onnx" and o["page_4t"]["cand"]["pc"] == 12.0
+    hb = TT.goal_block(_stats(hy=(10.0, 9.0, 11.0)), "q8b")
+    assert hb["page_4t_path"] == "hybrid" and hb["page_4t"]["cand"] == {"vita": 10.0, "psp": 9.0, "pc": 11.0,
+                                                                         "vita1080": 11.0}
+    assert set(hb["page_4t_paths"]) == {"c", "onnx", "hybrid"} and set(hb["page_4t_paths_worst_frac_of_R"]) == \
+        {"c", "onnx", "hybrid"}
+    tie = TT.goal_block(_stats(c=(18.0, 15.0, 21.0), hy=(18.0, 15.0, 21.0)), "q8b")
+    assert tie["page_4t_path"] == "c"                    # a tie: C first
     # the rule as code reads the block: G2 (14 <= 105 / 5) and G3 (every view <= R / 3) pass
     p = tmp_path / "t.json"
     p.write_text(json.dumps(blk))
@@ -176,6 +184,7 @@ def test_parse_cand_and_pipelines(TT):
     assert d["det1:cand:x"] == ("cbox:/b/x.vtsd@fit:960+refine", 1, "h0.45v0.1")
     assert d["page4:c:q8b"] == ("cpage:/b/q8b.vtsd@long:960+refine+c:L", 4, "k6v4")
     assert d["page4:onnx:q8b#d4"] == ("opage:/b/q8b.onnx@long:960@exact+refine+L#d4", 4, "k6v4")
+    assert d["page4:hybrid:x"] == ("hpage:/b/x.vtsd@fit:960+refine+L", 4, "h0.45v0.1")
     for spec, _, _ in d.values():                          # every spec parses
         base = spec.partition("#d")[0]
         if base not in ("meikidet", "rpage"):
@@ -198,7 +207,7 @@ class StubPipe:
         kind = self.spec.split(":")[0].split("#")[0]
         k = int(self.spec.rpartition("#d")[2]) if "#d" in self.spec else 4
         base = {"meikidet": 105.0, "rpage": {1: 140.0, 2: 100.0, 4: 74.0}[k], "cbox": 14.0, "cpage": 20.0,
-                "opage": 25.0 + k}[kind]
+                "opage": 25.0 + k, "hpage": 22.0}[kind]
         StubPipe.clock.take(base * (1.3 if view == "pc1080" else 1.0))
         return 2
 
@@ -244,7 +253,8 @@ def test_goal_json_one_candidate(TT, G, stubbed, tmp_path):
     assert t["page_4t_onnx_variant"]["vita"] == "d1" and t["page_4t_paths"]["onnx"]["vita"] == 26.0
     assert t["pages"] == {"pc1080": 2, "psp": 3, "vita": 4} and t["passes"] == 3 and t["warmup"] == 1
     assert t["c"]["simd"] == 1 and t["policy"] == "long:960" and t["rule"] == "k6v4"
-    assert t["schedule"]["calls"] == 4 * 9 * 9           # 4 passes x 9 pages x 9 pipelines
+    assert t["schedule"]["calls"] == 4 * 9 * 10          # 4 passes x 9 pages x 10 pipelines
+    assert t["page_4t_paths"]["hybrid"]["vita"] == 22.0
     assert t["timing_files"] == {"q4b": str(out)}
     g2, g3 = G.speed(str(out))
     assert g2["pass"] and g3["pass"] and g2["interleaved"] and g3["interleaved"]
@@ -257,7 +267,7 @@ def test_goal_json_several_candidates(TT, G, stubbed, tmp_path):
              "--passes", "2", "--warmup", "1", "--out", str(out)])
     run = json.loads(out.read_text())
     assert "det_1t" not in run and set(run["candidates"]) == {"a", "b"}
-    assert run["schedule"]["calls"] == 3 * 9 * 14          # 4 shared + 5 per candidate pipelines
+    assert run["schedule"]["calls"] == 3 * 9 * 16          # 4 shared + 6 per candidate pipelines
     for name in ("a", "b"):
         f = Path(run["timing_files"][name])
         assert f == tmp_path / f"run.{name}.json"
@@ -288,8 +298,13 @@ def test_options_in_the_specs(TT):
     assert d["det1:cand:q"] == "cbox:/b/q.vtsd@long:960+refine" + det          # the detector: no reading filter
     assert d["page4:c:q"] == "cpage:/b/q.vtsd@long:960+refine" + C6 + "+c:L"
     assert d["page4:onnx:q#d2"] == "opage:/b/q.onnx@long:960@exact+refine" + C6 + "+L#d2"
+    assert d["page4:hybrid:q"] == "hpage:/b/q.vtsd@long:960+refine" + det + "+drop:nojp=2,nojp_gap_pct=200+L"
     off = {k: spec for k, spec, *_ in TT.goal_pipelines([c], c_opts=False)}
     assert off["det1:cand:q"] == "cbox:/b/q.vtsd@long:960+refine" and off["page4:onnx:q#d2"] == d["page4:onnx:q#d2"]
+    assert off["page4:hybrid:q"] == "hpage:/b/q.vtsd@long:960+refine+drop:nojp=2,nojp_gap_pct=200+L"
+    assert TT.opts_parts("+drop:nojp=1+dec:vote_pct=70", filter_too=True) == ("+dec:vote_pct=70",
+                                                                              "+drop:nojp=1+dec:vote_pct=70",
+                                                                              "+drop:nojp=1")
     kind, path, size, rec, refine, o = TT.split_spec(d["page4:c:q"])
     assert (kind, path, size, rec, refine) == ("cpage", "/b/q.vtsd", "long:960", "L", True)
     assert o["decode"] == {"vote_pct": 70.0} and o["post"]["ext_pct"] == 1200 and o["drop"] == {"nojp": 2,

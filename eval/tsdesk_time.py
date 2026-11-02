@@ -746,7 +746,7 @@ def cmd_goal(a):
         pages = [p for i, p in enumerate(pages) if sum(q["view"] == p["view"] for q in pages[:i]) < a.limit]
     rgbs = [load_rgb(p) for p in pages]
     views = [p["view"] for p in pages]
-    start = host()
+    start, head = host(), D.git_head()            # the code that runs: read before the passes
     jobs = goal_pipelines(cands, budget, a.onnx_resize)
     pipes = {k: Pipeline(spec, th, pad, a.lib, a.onnx_dir) for k, spec, th, pad in jobs}
     t0 = time.time()
@@ -767,7 +767,7 @@ def cmd_goal(a):
             "run_s": round(time.time() - t0, 1), "passes": a.passes, "warmup": a.warmup, "seed": a.seed,
             "budget": list(budget), "onnx_resize": a.onnx_resize, "limit": a.limit or None, "pages_file": str(a.pages),
             "pages_sha256": D.sha256_file(a.pages), "pages_source": doc.get("source"),
-            "pages": {v: views.count(v) for v in sorted(set(views))}, "repo_head": D.git_head(),
+            "pages": {v: views.count(v) for v in sorted(set(views))}, "repo_head": head,
             "c": _lib_record(a.lib) if a.lib else None,
             "recognizer": {"c": BLOBS["L"], "c_sha256": D.sha256_file(V05 / BLOBS["L"]), "onnx": "VOCR6.2_L_fast.onnx",
                            "onnx_sha256": D.sha256_file(Path(a.onnx_dir) / "VOCR6.2_L_fast.onnx")},

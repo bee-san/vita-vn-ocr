@@ -347,6 +347,57 @@ def test_c_detect_is_its_pieces(nets, libs):
                 assert TC.CModel(blob, threads=threads, lib=lib).detect(rgb, size) == got
 
 
+def test_c_refuses_a_policy_past_the_side_limit(nets, libs):
+    """fit:N / long:N outside 1 <= N <= 8192 (vocr_desk_policy_ok's rule) are refused by the input size (all 0), the
+    arena size (0), the detector (VOCR_TSD_E_ARG, before any resize), the page and the blob loader. Without the
+    check, long:N near 2^32 wrapped the size arithmetic: an arena smaller than the resize it was asked to hold."""
+    import ctypes as C
+    _, blob, _ = nets["p8g"]
+    u = C.c_uint
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        L, m = cm.L, cm.m.ctypes.data
+
+        def isz(kind, n, w, h):
+            v = [u() for _ in range(4)]
+            L.vocr_tsd_input_size(kind, n, w, h, *[C.byref(x) for x in v])
+            return [x.value for x in v]
+
+        for kind in (1, 2):
+            for n in (0, 8193, 9000, 1 << 20, 3037000500, (1 << 32) - 4000, (1 << 32) - 1):
+                assert L.vocr_tsd_policy_ok(kind, n) == 0, (kind, n)
+                for w, h in ((1, 1), (2, 2), (960, 544), (8192, 1), (3, 8192), (8192, 8192)):
+                    assert isz(kind, n, w, h) == [0, 0, 0, 0], (kind, n, w, h)
+                    for refine in (0, 1):
+                        assert L.vocr_tsd_arena_bytes_ex(m, kind, n, w, h, 3, 1, refine) == 0, (kind, n, w, h)
+        assert L.vocr_tsd_policy_ok(3, 960) == 0 and L.vocr_tsd_policy_ok(0, (1 << 32) - 1) == 1
+        # the edges of the range still work
+        assert isz(2, 8192, 64, 32) == [8192, 4096, 8192, 4096]
+        assert isz(1, 1, 960, 544) == [1, 1, 32, 32]
+        assert L.vocr_tsd_arena_bytes_ex(m, 2, 8192, 64, 32, 1, 1, 0) > 0
+        # the detector itself refuses, whatever arena it is given
+        img = np.zeros((4, 4), np.uint8)
+        arena = np.zeros(1 << 20, np.uint8)
+        st = TC.CSet()
+        for n in (0, 8193, (1 << 32) - 1):
+            rc = L.vocr_tsd_detect_ex(m, img.ctypes.data, 4, 4, 4, 1, 2, n, None, arena.ctypes.data, arena.size,
+                                      C.byref(st), None, None, 1)
+            assert rc == -1, n
+        with pytest.raises(ValueError, match="refused"):
+            cm.detect(np.zeros((8, 8, 3), np.uint8), size="long:9000")
+        # a blob whose own default policy is out of range (a valid CRC) is refused at load; at 8192 it loads
+        import zlib
+        for n, ok in ((9000, False), (8192, True)):
+            b = bytearray(blob)
+            b[92:96] = struct.pack("<I", n)
+            b[-4:] = struct.pack("<I", zlib.crc32(bytes(b[:-4])) & 0xFFFFFFFF)
+            if ok:
+                assert TC.CModel(bytes(b), lib=lib).size == "fit:8192"
+            else:
+                with pytest.raises(ValueError, match="vocr_tsd_load"):
+                    TC.CModel(bytes(b), lib=lib)
+
+
 def _text_frame(w, h, seed):
     """A frame with some bright text-like bars on smoothed noise (the refinement finds ink edges on it)."""
     rng = np.random.default_rng(seed)
@@ -591,6 +642,9 @@ def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
     g = T.grey_of(frame)
     H, W = g.shape
     for lib in libs.values():
+        for size in ("long:9000", "fit:0"):   # a policy vocr_tsd_policy_ok refuses
+            with pytest.raises(ValueError, match="vocr_tsd_page_new: -1"):
+                TC.CPage(blob, rp, size=size, lib=lib)
         for pad, (ph, pv) in (("auto", (2, 2)), ("k4v6", (2, 3)), (5, (5, 5))):
             page = TC.CPage(blob, rp, threads=2, pad=pad, lib=lib)
             lines = page.page(frame)

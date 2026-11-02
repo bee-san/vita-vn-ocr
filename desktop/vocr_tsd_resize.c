@@ -27,29 +27,42 @@
 #define Q14 16384
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
 
+int vocr_tsd_policy_ok(unsigned kind, unsigned n)
+{
+    if (kind == VOCR_TSD_SIZE_NATIVE) return 1;
+    if (kind != VOCR_TSD_SIZE_FIT && kind != VOCR_TSD_SIZE_LONG) return 0;
+    return n >= 1 && n <= VOCR_TSD_MAX_SIDE;
+}
+
 void vocr_tsd_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
                           unsigned *pw, unsigned *ph)
 {
     double f = 1.0, lng = (double)(w > h ? w : h);
-    unsigned a, c;
-    if (kind == VOCR_TSD_SIZE_FIT && n && lng > 0) {
-        f = (double)n / lng;
-        if (f > 1.0) f = 1.0;
-    } else if (kind == VOCR_TSD_SIZE_LONG && n && lng > 0) {
-        f = (double)n / lng;
-    }
-    if (f == 1.0) {
-        a = w;
-        c = h;
-    } else {
-        double x = nearbyint((double)w * f), y = nearbyint((double)h * f);
-        a = x < 1.0 ? 1u : (unsigned)x;
-        c = y < 1.0 ? 1u : (unsigned)y;
+    unsigned a = 0, c = 0, pa = 0, pc = 0;
+    if (vocr_tsd_policy_ok(kind, n) && w && h && w <= VOCR_TSD_MAX_SIDE && h <= VOCR_TSD_MAX_SIDE) {
+        /* each side ends up at most max(n, the frame's side) <= 8192, a multiple of 32: the padding cannot wrap and
+         * the arena's sizes stay far from SIZE_MAX (vocr_desk_input_size's guard) */
+        if (kind == VOCR_TSD_SIZE_FIT) {
+            f = (double)n / lng;
+            if (f > 1.0) f = 1.0;
+        } else if (kind == VOCR_TSD_SIZE_LONG) {
+            f = (double)n / lng;
+        }
+        if (f == 1.0) {
+            a = w;
+            c = h;
+        } else {
+            double x = nearbyint((double)w * f), y = nearbyint((double)h * f);
+            a = x < 1.0 ? 1u : (unsigned)x;
+            c = y < 1.0 ? 1u : (unsigned)y;
+        }
+        pa = (a + VOCR_TSD_ALIGN - 1) / VOCR_TSD_ALIGN * VOCR_TSD_ALIGN;
+        pc = (c + VOCR_TSD_ALIGN - 1) / VOCR_TSD_ALIGN * VOCR_TSD_ALIGN;
     }
     if (iw) *iw = a;
     if (ih) *ih = c;
-    if (pw) *pw = (a + VOCR_TSD_ALIGN - 1) / VOCR_TSD_ALIGN * VOCR_TSD_ALIGN;
-    if (ph) *ph = (c + VOCR_TSD_ALIGN - 1) / VOCR_TSD_ALIGN * VOCR_TSD_ALIGN;
+    if (pw) *pw = pa;
+    if (ph) *ph = pc;
 }
 
 void vocr_tsd_grey(const unsigned char *rgb, unsigned w, unsigned h, unsigned stride, unsigned channels,

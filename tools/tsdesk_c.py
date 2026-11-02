@@ -92,6 +92,8 @@ def c_library(path=None):
         getattr(L, name).argtypes = []
     L.vocr_tsd_simd.restype = i
     L.vocr_tsd_load.argtypes = [vp, vp, sz]
+    L.vocr_tsd_policy_ok.argtypes = [u, u]
+    L.vocr_tsd_policy_ok.restype = i
     L.vocr_tsd_input_size.argtypes = [u, u, u, u] + [C.POINTER(u)] * 4
     L.vocr_tsd_maps_bytes.argtypes = [vp, u, u, u]
     L.vocr_tsd_maps_bytes.restype = sz
@@ -312,7 +314,8 @@ class CModel:
         ro = self._refine_opts(refine)
         need = self.L.vocr_tsd_arena_bytes_ex(self.m.ctypes.data, kind, n, w, h, ch, nt, int(ro is not None))
         if not need:
-            raise ValueError(f"a {w} x {h} frame")
+            raise ValueError(f"a {w} x {h} frame under the policy {size or 'default'}: refused (a side of 0 or past "
+                             "8192 px, or fit:N / long:N outside 1 <= N <= 8192)")
         arena = self.arena(need)
         st = self._set
         rc = self.L.vocr_tsd_detect_ex(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n,

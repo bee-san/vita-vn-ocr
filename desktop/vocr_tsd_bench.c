@@ -136,6 +136,11 @@ int main(int argc, char **argv)
     ntasks = threads > 1 ? tasks_per * threads : 1;
     vocr_tsdr_defaults(&ropts);
     arena_n = vocr_tsd_arena_bytes_ex(&m, kind, n, w, h, ch, ntasks, (int)refine);
+    if (!arena_n) {
+        fprintf(stderr, "size %s on a %u x %u frame: refused (fit:N / long:N need 1 <= N <= %u)\n", size, w, h,
+                VOCR_TSD_MAX_SIDE);
+        return 2;
+    }
     arena = malloc(arena_n);
     set = (vocr_tsd_set *)malloc(sizeof *set);
     t = (double *)malloc(sizeof(double) * runs);

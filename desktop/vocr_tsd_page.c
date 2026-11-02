@@ -254,7 +254,8 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
     size_t need;
     int rc = VOCR_TSD_OK;
     if (err) *err = VOCR_TSD_OK;
-    if (!det || !rec || threads < 1 || threads > MAX_THREADS || kind > VOCR_TSD_SIZE_LONG) {
+    if (!det || !rec || threads < 1 || threads > MAX_THREADS ||
+        (kind >= 0 && !vocr_tsd_policy_ok((unsigned)kind, n))) {
         if (err) *err = VOCR_TSD_E_ARG;
         return NULL;
     }

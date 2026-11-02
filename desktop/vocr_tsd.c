@@ -174,8 +174,8 @@ int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes)
     if (m->patch != 4 || (m->hs != 4 && m->hs != 8) || !chan_ok(m->F) || m->smooth > VOCR_TSD_MAX_SMOOTH ||
         m->gc > 1 || m->tags > VOCR_TSD_MAX_TAGS || m->out != 6 + m->tags || m->outp != (m->out + 7) / 8 * 8 ||
         m->min_cells < 1 || m->max_boxes < 1 || m->max_boxes > VOCR_TSD_MAX_BOXES ||
-        m->size_kind > VOCR_TSD_SIZE_LONG || rd32(b + 152) != VOCR_TSD_ALIGN || m->conf_min_logit != m->conf_min_logit ||
-        m->min_across != m->min_across || m->along_reach != m->along_reach)
+        !vocr_tsd_policy_ok(m->size_kind, m->size_n) || rd32(b + 152) != VOCR_TSD_ALIGN ||
+        m->conf_min_logit != m->conf_min_logit || m->min_across != m->min_across || m->along_reach != m->along_reach)
         return VOCR_TSD_E_BLOB;
     for (s = 0; s < 4; s++) {
         if (!chan_ok(m->c[s]) || m->n[s] > VOCR_TSD_MAX_BLOCKS) return VOCR_TSD_E_BLOB;
@@ -1500,7 +1500,8 @@ size_t vocr_tsd_arena_bytes_ex(const vocr_tsd_model *m, unsigned kind, unsigned 
                                unsigned channels, unsigned ntasks, int refine)
 {
     detect_plan D;
-    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE) return 0;
+    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE || !vocr_tsd_policy_ok(kind, n))
+        return 0;
     dplan(m, kind, n, w, h, channels, ntasks, refine, &D);
     return D.end;
 }
@@ -1569,7 +1570,7 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
     int rc;
     if (!m || !img || !arena || !out || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE ||
         (channels != 1 && channels != 3 && channels != 4) || stride < (size_t)w * channels ||
-        kind > VOCR_TSD_SIZE_LONG)
+        !vocr_tsd_policy_ok(kind, n))
         return VOCR_TSD_E_ARG;
     if (!run || ntasks < 1) ntasks = 1;
     dplan(m, kind, n, w, h, channels, ntasks, refine != NULL, &D);

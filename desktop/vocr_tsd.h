@@ -42,7 +42,8 @@ extern "C" {
 
 enum {
     VOCR_TSD_OK = 0,
-    VOCR_TSD_E_ARG = -1,      /* a bad argument: a NULL pointer, a frame of 0 or more than 8192 px a side */
+    VOCR_TSD_E_ARG = -1,      /* a bad argument: a NULL pointer, a frame of 0 or more than 8192 px a side, a policy
+                                 vocr_tsd_policy_ok refuses */
     VOCR_TSD_E_BLOB = -2,     /* not a VTSD version-1 blob, or one this build cannot read */
     VOCR_TSD_E_CRC = -3,      /* the blob's CRC-32 does not match */
     VOCR_TSD_E_ARENA = -4,    /* the arena is too small */
@@ -99,8 +100,12 @@ typedef struct {               /* the decode's constants (the blob's: vocr_tsd_d
 int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes);
 void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o);
 
+/* 1 when (kind, n) is a policy the detector takes (vocr_desk_policy_ok's rule): native (n ignored), or fit:N / long:N
+ * with 1 <= N <= VOCR_TSD_MAX_SIDE. */
+int vocr_tsd_policy_ok(unsigned kind, unsigned n);
 /* The network input for a w x h frame under a policy (vocr_desk_input_size's rule): the image part iw x ih and the padded
- * input pw x ph (multiples of 32). */
+ * input pw x ph (multiples of 32). All four are 0 for a policy vocr_tsd_policy_ok refuses or a frame of 0 or more than
+ * VOCR_TSD_MAX_SIDE px a side; otherwise every side is at most VOCR_TSD_MAX_SIDE. */
 void vocr_tsd_input_size(unsigned kind, unsigned n, unsigned w, unsigned h, unsigned *iw, unsigned *ih,
                          unsigned *pw, unsigned *ph);
 

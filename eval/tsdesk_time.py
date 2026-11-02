@@ -332,7 +332,8 @@ def cmd_run(a):
     t_load = time.time() - t_load
     specs = a.pipelines.split(",")
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-timing", "host": host(), "passes": a.passes,
-           "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_frames_sha256": doc["frames_sha256"],
+           "warmup": a.warmup, "seed": a.seed, "pages_file": str(a.pages), "pages_sha256": D.sha256_file(a.pages),
+           "pages_frames_sha256": doc.get("frames_sha256"),
            "pages": {v: sum(p["view"] == v for p in pages) for v in sorted({p["view"] for p in pages})},
            "pad": a.pad, "lib": a.lib, "build": None, "repo_head": D.git_head(), "results": {},
            "frames_load_s": round(t_load, 1)}
@@ -408,23 +409,37 @@ print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "f
 
 
 def cmd_mem(a):
+    import pickle
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
-           "view": a.view, "threads": int(a.threads), "limit": a.limit, "pad": a.pad, "lib": a.lib,
-           "repo_head": D.git_head(), "results": {}}
+           "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
+           "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
     paths = [str(ROOT / "tools"), str(ROOT / "eval"), str(ROOT / "synth"), str(ROOT / "train"), str(ROOT / "teacher"),
              str(ROOT / "runtime"), str(ROOT)]
-    for spec in a.pipelines.split(","):
-        code = MEM_CHILD.format(paths=paths, pages=str(a.pages), view=a.view, limit=int(a.limit), spec=spec,
-                                threads=int(a.threads), pad=a.pad, lib=a.lib)
-        r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
-                           env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
-        if r.returncode:
-            raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
-        rec = json.loads(r.stdout.strip().splitlines()[-1])
-        rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
-                   peak_mib=round(rec["peak_kib"] / 1024, 1))
-        res["results"][spec] = rec
-        print(spec, json.dumps(rec), flush=True)
+    _, pages = load_pages(a.pages)
+    sel = [p for p in pages if p["view"] == a.view][:a.limit]
+    if not sel:
+        raise SystemExit(f"no {a.view} pages in {a.pages}")
+    scratch = D.PV / "textspot-desktop-c" / "scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+    # the view's frames alone in a private scratch file (deleted below): a child does not load the whole pages file
+    tmp = tempfile.NamedTemporaryFile(dir=scratch, suffix=".pkl", delete=False)
+    with tmp:
+        pickle.dump({"pages": [dict(p, rgb=load_rgb(p)) for p in sel], "source": str(a.pages)}, tmp)
+    try:
+        for spec in a.pipelines.split(","):
+            code = MEM_CHILD.format(paths=paths, pages=tmp.name, view=a.view, limit=int(a.limit), spec=spec,
+                                    threads=int(a.threads), pad=a.pad, lib=a.lib)
+            r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
+                               env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
+            if r.returncode:
+                raise SystemExit(f"{spec}: {r.stderr[-2000:]}")
+            rec = json.loads(r.stdout.strip().splitlines()[-1])
+            rec.update(model_and_run_mib=round((rec["peak_kib"] - rec["base_kib"]) / 1024, 1),
+                       peak_mib=round(rec["peak_kib"] / 1024, 1))
+            res["results"][spec] = rec
+            print(spec, json.dumps(rec), flush=True)
+    finally:
+        os.unlink(tmp.name)
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 

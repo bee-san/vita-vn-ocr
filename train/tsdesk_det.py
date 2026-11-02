@@ -241,6 +241,91 @@ def make_sources(c):
 EXACT_SOURCES = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
 
 
+ORN = {"near_p": 0.7, "above_p": 0.6, "size": [0.6, 1.1], "gap": [0.15, 1.0], "pitch": [1.15, 2.4],
+       "length": [0.5, 1.3], "alt_p": 0.3, "kinds": ("star4", "diamond", "ring", "spinner_dots", "hourglass",
+                                                      "cursor_down_outline", "flower", "cross")}
+
+
+def _draw_motif(img, kind, cx, cy, size, value, rng):
+    import cv2
+
+    import textspot8_train as T8M
+    r = max(2.0, size / 2.0)
+    if kind == "flower":
+        for k in range(5):
+            a = 2 * math.pi * k / 5
+            cv2.circle(img, (int(round(cx + 0.55 * r * math.cos(a))), int(round(cy + 0.55 * r * math.sin(a)))),
+                       max(1, int(round(0.35 * r))), value, -1, lineType=cv2.LINE_AA)
+    elif kind == "cross":
+        t = max(1, int(round(size / 8)))
+        cv2.line(img, (int(cx - 0.7 * r), int(cy)), (int(cx + 0.7 * r), int(cy)), value, t, lineType=cv2.LINE_AA)
+        cv2.line(img, (int(cx), int(cy - 0.7 * r)), (int(cx), int(cy + 0.7 * r)), value, t, lineType=cv2.LINE_AA)
+    else:
+        T8M.draw_icon(img, kind, cx, cy, size, value, rng)
+
+
+def add_ornaments(img, pos, ign, rng):
+    """One row of repeated identical (or two alternating) small ornaments drawn as background on the window (in
+    place): above or below a horizontal positive, about as long as it (p near_p), or on free background; never over a
+    positive or an ignore area. Text boxes framed by strips of repeated ornaments (PCSG00854's) are not text lines.
+    Returns the row's box or None."""
+    h, w = img.shape
+    taken = [b[:4] for b in pos] + [b[:4] for b in ign]
+    hz = [b for b in pos if not b[4]]
+    if hz and rng.random() < ORN["near_p"]:
+        b = hz[int(rng.integers(len(hz)))]
+        lh = max(6, b[3] - b[1])
+        size = lh * rng.uniform(*ORN["size"])
+        gap = lh * rng.uniform(*ORN["gap"])
+        cy = b[1] - gap - size / 2 if rng.random() < ORN["above_p"] else b[3] + gap + size / 2
+        x0 = b[0] + lh * rng.uniform(-0.6, 0.6)
+        length = (b[2] - b[0]) * rng.uniform(*ORN["length"])
+    else:
+        size = rng.uniform(8, 28)
+        cy = rng.uniform(size, max(size + 1, h - size))
+        x0 = rng.uniform(0, w / 2)
+        length = size * rng.uniform(6, 40)
+    pitch = size * rng.uniform(*ORN["pitch"])
+    n = int(length // pitch)
+    if n < 4:
+        return None
+    box = [int(x0 - size / 2) - 1, int(cy - size / 2) - 1, int(x0 + (n - 1) * pitch + size / 2) + 2,
+           int(cy + size / 2) + 2]
+    box = [max(0, box[0]), max(0, box[1]), min(w, box[2]), min(h, box[3])]
+    if box[2] - box[0] < 2 * size or box[3] - box[1] < 4:
+        return None
+    import textspot8_train as T8M
+    if not T8M._free(box, taken):
+        return None
+    kinds = ORN["kinds"]
+    k1 = kinds[int(rng.integers(len(kinds)))]
+    k2 = kinds[int(rng.integers(len(kinds)))] if rng.random() < ORN["alt_p"] else k1
+    patch = img[box[1]:box[3], box[0]:box[2]]
+    bg = float(np.median(patch)) if patch.size else 128.0
+    value = (235 if bg < 128 else 20) if rng.random() < 0.7 else int(rng.integers(0, 256))
+    for i in range(n):
+        cx = x0 + i * pitch
+        if cx + size / 2 > w:
+            break
+        _draw_motif(img, k1 if i % 2 == 0 else k2, cx, cy, size, value, rng)
+    return box
+
+
+def end_bands(pos, f):
+    """Ignore areas just beyond both ends of every positive (window px): f x the line's size across past each end,
+    the line's own extent across (a source whose ends come from teacher/geometry.refine may stop before a thin end
+    glyph: there, the cells past its end are neither kernel nor background). Kernel cells keep their targets."""
+    out = []
+    for x0, y0, x1, y1, vertical, *_ in pos:
+        if vertical:
+            d = f * (x1 - x0)
+            out += [[x0, int(y0 - d), x1, y0], [x0, y1, x1, int(y1 + d + 0.999)]]
+        else:
+            d = f * (y1 - y0)
+            out += [[int(x0 - d), y0, x0, y1], [x1, y0, int(x1 + d + 0.999), y1]]
+    return out
+
+
 def patch_pools(sources, hook, targets_dir):
     """Amendment 1: the hooked sources' verified positives get the target cache's ink boxes (train/tsdesk_targets.py;
     a sample whose stored boxes do not match the cache's refined_line boxes keeps its own)."""
@@ -283,6 +368,8 @@ def make_batch(sources, rng, cfg):
     bm = [np.zeros((bsz, ho, wo), bool) for _ in range(4)]
     mk = np.zeros((bsz, ho, wo), np.int64)
     e_src = cfg.get("e_sources")
+    end_ig = float(cfg.get("end_ignore") or 0.0)
+    orn_p = float(cfg.get("ornaments") or 0.0)
     for b in range(bsz):
         src, canvas, smp = sources.pick(rng)
         if cfg.get("recipe") == "junk":
@@ -290,6 +377,12 @@ def make_batch(sources, rng, cfg):
         img, pos, ign = DD.make_window_ms(canvas, smp, src, rng, sources, cfg["scale"], cfg.get("aug", True))
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
+        if end_ig > 0 and src not in EXACT_SOURCES:
+            ign = list(ign) + end_bands(pos, end_ig)
+        if orn_p > 0 and cfg.get("aug", True) and rng.random() < orn_p:
+            img = np.array(img, copy=True)
+            if add_ornaments(img, pos, ign, rng) is not None:
+                x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
         K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
         if e_src is not None and src not in e_src:
             m1[:] = False
@@ -399,6 +492,12 @@ def parse(argv=None):
                                       "hooked sources' verified positives")
     ap.add_argument("--e-exact", action="store_true", help="amendment 1: the along-end (E) loss only on the sources "
                                                             "with exact ink boxes (EXACT_SOURCES)")
+    ap.add_argument("--ornaments", type=float, default=0.0,
+                    help="the share of windows that get one row of repeated small ornaments as background "
+                         "(add_ornaments)")
+    ap.add_argument("--end-ignore", type=float, default=0.0,
+                    help="the cells within F x a line's size across past each end of a positive of a source not in "
+                         "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--warmup", type=int, default=500)
@@ -446,7 +545,8 @@ def main(argv=None):
            "skip": (skip_shots, frozenset(base_skip_vns) | skip_vns), "skip_vns": sorted(skip_vns),
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
-           "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None}
+           "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
+           "end_ignore": a.end_ignore, "ornaments": a.ornaments}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -473,7 +573,8 @@ def main(argv=None):
            "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch, "recipe": a.recipe,
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
                        "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
-                       "ink_cache": a.targets, "e_sources": cfg["e_sources"]},
+                       "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore,
+                       "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
            "manifests_sha256": {m: sha256_file(m) for m in [*a.manifest, *([a.hook_manifest] if a.hook_manifest

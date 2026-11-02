@@ -136,9 +136,50 @@ def cmd_decide(a):
                                      for c in cands}}), flush=True)
 
 
+def cmd_screen(a):
+    """The screening rule (protocol amendment 3): among every arm whose network takes <= 2.5 ms at 960x544 in ONNX
+    Runtime at 1 thread, the lowest score (the mean of hval and dense_screen at fit:960 and long:960) wins; an
+    eligible arm within 0.10 points that costs less (MACs at 960x544, then training steps) replaces it."""
+    import tsdesk_net as N
+    res, runs = Path(a.res), Path(a.runs)
+    arms = {}
+    for arm in a.arms.split(","):
+        run = load(runs / arm / "run.json")
+        nt = load(res / f"net_time_{arm}.json")
+        vals = {}
+        for st in ("hval", "dense_screen"):
+            for pol in ("fit960", "long960"):
+                vals[f"{st}_{pol}"] = round(cer(load(res / f"{st}_{arm}_{pol}_L_fast.json")), 4)
+        hv = load(res / f"hval_{arm}_fit960_L_fast.json")
+        arms[arm] = {"shape": run["shape"], "recipe": run["recipe"], "steps": run["args"]["steps"],
+                     "end_ignore": run["args"].get("end_ignore", 0.0), "ornaments": run["args"].get("ornaments", 0.0),
+                     "params": run["params"], "macs_960x544": N.macs(run["shape"], 960, 544)["total"],
+                     "ort_ms_960x544": nt["960x544"]["median_ms"], "eligible": nt["960x544"]["median_ms"] <= 2.5,
+                     "reads": vals, "score": round(sum(vals.values()) / 4, 4),
+                     "hval_fit960_without_PCSG00854": round(cer(hv, "PCSG00854"), 4),
+                     "junk_PCSG00854_fit960": junk(hv, "PCSG00854")}
+    elig = [k for k, v in arms.items() if v["eligible"]]
+    best = min(elig, key=lambda k: (arms[k]["score"], k))
+    pick = best
+    near = [k for k in elig if arms[k]["score"] <= arms[best]["score"] + 0.10 and
+            (arms[k]["macs_960x544"], arms[k]["steps"]) < (arms[best]["macs_960x544"], arms[best]["steps"])]
+    if near:
+        pick = min(near, key=lambda k: (arms[k]["macs_960x544"], arms[k]["steps"], arms[k]["score"]))
+    doc = {"kind": "textspot-desktop-screening", "protocol": "eval/textspot_desktop_protocol.json (amendment 3's rule)",
+           "arms": arms, "lowest": best, "chosen": pick,
+           "created": __import__("time").strftime("%Y-%m-%dT%H:%M:%SZ", __import__("time").gmtime())}
+    Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"lowest": best, "chosen": pick, "scores": {k: v["score"] for k, v in arms.items()}}), flush=True)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("screen")
+    p.add_argument("--res", required=True)
+    p.add_argument("--runs", required=True)
+    p.add_argument("--arms", required=True)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("decide")
     p.add_argument("--res", required=True)
     p.add_argument("--arm", required=True)
@@ -148,7 +189,7 @@ def main(argv=None):
     p.add_argument("--parity")
     p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
-    {"decide": cmd_decide}[a.cmd](a)
+    {"decide": cmd_decide, "screen": cmd_screen}[a.cmd](a)
 
 
 if __name__ == "__main__":

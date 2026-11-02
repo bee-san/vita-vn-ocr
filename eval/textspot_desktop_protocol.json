@@ -149,6 +149,91 @@
     "resize": "every read of a tsd: detector resizes the frame with the C path's integer resize (tools/tsdesk.resize, the numpy twin of desktop/vocr_desk.c's vocr_desk_resize, equal bit for bit on every size tested), so the ONNX and C paths see the same network input (R6); ONNX Runtime timings use cv2 (INTER_AREA down, INTER_LINEAR up, the tsd: spec's @cv2 suffix), as an app would",
     "pick_cost": "the pick's cost is the C 1-thread p50 summed over the Vita, PSP and pc1080 timing pages (the PSP pages added: fit:960 and long:960 cost the same on the Vita and pc1080 pages and differ on small frames)"
    }
+  },
+  {
+   "n": 3,
+   "time": "2026-11-01T21:53:04Z",
+   "before": "Sc_p4a and Sd_p8g are read on any set; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sa_p8a, Se_p8a_junk and Sb_p8s were read on hval and dense_screen (scores 4.455, 3.755, 4.916): disclosed",
+   "found": "on hval the arms cut thin end glyphs (a trailing ―― or ……, a 。 after them) and split lines at full-width spaces; the hooked targets hold those glyphs (amendment 1), but the real half and 1b, whose boxes come from teacher/geometry.refine, teach the kernel to stop before them; the training loss still falls at 40,000 steps",
+   "what": {
+    "arms": {
+     "Sf_p8a_junk_endig": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000,
+      "question": "the cells within one line height past each end of a positive of a source whose boxes are not exact (the real half, 1b) are ignore areas (tsdesk_det.py --end-ignore 1.0): no source teaches the kernel to stop before a thin end glyph"
+     },
+     "Sg_p8a_junk_endig_80k": {
+      "shape": "p8a",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000,
+      "question": "the same with twice the steps"
+     }
+    },
+    "rule": "screening.rule's steps 1 and 2 are replaced by one: among every screening arm whose network takes <= 2.5 ms at 960x544 in ONNX Runtime at 1 thread, the lowest score wins; an eligible arm within 0.10 points of it that costs less (MACs at 960x544, then training steps) replaces it (the cheapest such). Step 3 (the refinement) is unchanged. The chosen arm's seeds 2 and 3 and its train + guard + hval retrains train with its recipe and steps"
+   }
+  },
+  {
+   "n": 4,
+   "time": "2026-11-01T22:06:14Z",
+   "before": "Sf_p8a_junk_endig is read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "after": "Sd_p8g (score 3.122, the lowest) and Sc_p4a (11.455) were read on hval and dense_screen: disclosed",
+   "what": {
+    "stopped": "Sg_p8a_junk_endig_80k (step ~3,000), never scored: amendment 3's twice-the-steps question moves to the shape with global context, which screened best",
+    "arms": {
+     "Sh_p8g_junk_endig": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 40000
+     },
+     "Si_p8g_junk_endig_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm (Sa-Sf, Sh, Si)"
+   }
+  },
+  {
+   "n": 5,
+   "time": "2026-11-01T22:15:35Z",
+   "before": "Sf, Sh and Si are read; dev-v2, dense_dev and the PC test set are unread by any candidate",
+   "found": "every screened arm boxes PCSG00854's ornament strip as lines (39-114 junk boxes in its 40 hval units; R4 allows 5); the junk recipe (its weak MeikiOCR boxes as background) did not remove them",
+   "what": {
+    "arms": {
+     "Sj_p8g_junk_endig_orn": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 40000,
+      "question": "a quarter of the windows get one row of repeated small ornaments (stars, diamonds, rings, flowers, crosses, dot rings, hourglasses, cursors; one motif or two alternating) drawn as background above or below a line or on free background (tsdesk_det.py --ornaments 0.25)"
+     },
+     "Sk_p8g_junk_endig_orn_80k": {
+      "shape": "p8g",
+      "recipe": "junk",
+      "end_ignore": 1.0,
+      "ornaments": 0.25,
+      "steps": 80000
+     }
+    },
+    "rule": "amendment 3's single rule, over every screening arm"
+   }
+  },
+  {
+   "n": 6,
+   "time": "2026-11-01T23:45:14Z",
+   "before": "the screening decision (Si, Sk unread) and any read of dev-v2, dense_dev or the PC test set by a candidate",
+   "what": {
+    "no_qualifier_path": "if no candidate qualifies, the research candidate is the representative seed's train + guard + hval retrain at the representative's policy with the lower dev-v2 CER (fit:960 on a tie), with the refinement if screening rule 3 adopts it; it is read once on the PC test set after the decision record is committed, with the rows rule.pctest_guard lists, for the report; no recommendation is made from it, and the files may be released as a research pre-release",
+    "refinement_in_decision_reads": "when screening rule 3 adopts the refinement, every decision read of the chosen arm (dev-v2, dense_dev, hval, the PC test set) uses it (tsd:MODEL@SIZE+refine), and R5 and R6 time and compare the C path with it"
+   }
   }
  ]
 }

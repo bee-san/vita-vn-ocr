@@ -189,7 +189,56 @@ void vocr_desk_grey(const unsigned char *rgb, unsigned w, unsigned h, unsigned s
     for (y = 0; y < h; y++) {
         const unsigned char *r = rgb + (size_t)y * stride;
         unsigned char *o = out + (size_t)y * w;
-        for (x = 0; x < w; x++, r += channels)
+        x = 0;
+#if DESK_AVX2
+        /* 16 pixels a step, the same integer formula: 77 R + 150 G + 29 B <= 65280 is exact in 16-bit lanes */
+        if (channels == 3) {
+            const __m128i ra = _mm_setr_epi8(0, 3, 6, 9, 12, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            const __m128i rb = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, 2, 5, 8, 11, 14, -1, -1, -1, -1, -1);
+            const __m128i rc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 4, 7, 10, 13);
+            const __m128i ga = _mm_setr_epi8(1, 4, 7, 10, 13, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            const __m128i gb = _mm_setr_epi8(-1, -1, -1, -1, -1, 0, 3, 6, 9, 12, 15, -1, -1, -1, -1, -1);
+            const __m128i gc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, 5, 8, 11, 14);
+            const __m128i ba = _mm_setr_epi8(2, 5, 8, 11, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+            const __m128i bb = _mm_setr_epi8(-1, -1, -1, -1, -1, 1, 4, 7, 10, 13, -1, -1, -1, -1, -1, -1);
+            const __m128i bc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3, 6, 9, 12, 15);
+            const __m256i w77 = _mm256_set1_epi16(77), w150 = _mm256_set1_epi16(150), w29 = _mm256_set1_epi16(29);
+            for (; x + 16 <= w; x += 16) {
+                const unsigned char *p = r + 3 * (size_t)x;
+                const __m128i a = _mm_loadu_si128((const __m128i *)(const void *)p);
+                const __m128i b = _mm_loadu_si128((const __m128i *)(const void *)(p + 16));
+                const __m128i c = _mm_loadu_si128((const __m128i *)(const void *)(p + 32));
+                const __m128i R = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ra), _mm_shuffle_epi8(b, rb)),
+                                               _mm_shuffle_epi8(c, rc));
+                const __m128i G = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ga), _mm_shuffle_epi8(b, gb)),
+                                               _mm_shuffle_epi8(c, gc));
+                const __m128i B = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ba), _mm_shuffle_epi8(b, bb)),
+                                               _mm_shuffle_epi8(c, bc));
+                __m256i v = _mm256_add_epi16(_mm256_mullo_epi16(_mm256_cvtepu8_epi16(R), w77),
+                                             _mm256_mullo_epi16(_mm256_cvtepu8_epi16(G), w150));
+                v = _mm256_srli_epi16(_mm256_add_epi16(v, _mm256_mullo_epi16(_mm256_cvtepu8_epi16(B), w29)), 8);
+                _mm_storeu_si128((__m128i *)(void *)(o + x),
+                                 _mm_packus_epi16(_mm256_castsi256_si128(v), _mm256_extracti128_si256(v, 1)));
+            }
+        } else if (channels == 4) {
+            const __m256i lo8 = _mm256_set1_epi32(0x00FF00FF), wrb = _mm256_set1_epi32(29 << 16 | 77);
+            const __m256i wg = _mm256_set1_epi32(150);
+            for (; x + 16 <= w; x += 16) {
+                const unsigned char *p = r + 4 * (size_t)x;
+                const __m256i v0 = _mm256_loadu_si256((const __m256i *)(const void *)p);
+                const __m256i v1 = _mm256_loadu_si256((const __m256i *)(const void *)(p + 32));
+                __m256i g0 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_and_si256(v0, lo8), wrb),
+                                              _mm256_madd_epi16(_mm256_and_si256(_mm256_srli_epi16(v0, 8), lo8), wg));
+                __m256i g1 = _mm256_add_epi32(_mm256_madd_epi16(_mm256_and_si256(v1, lo8), wrb),
+                                              _mm256_madd_epi16(_mm256_and_si256(_mm256_srli_epi16(v1, 8), lo8), wg));
+                __m256i s = _mm256_permute4x64_epi64(_mm256_packus_epi32(_mm256_srli_epi32(g0, 8),
+                                                                         _mm256_srli_epi32(g1, 8)), 0xD8);
+                _mm_storeu_si128((__m128i *)(void *)(o + x),
+                                 _mm_packus_epi16(_mm256_castsi256_si128(s), _mm256_extracti128_si256(s, 1)));
+            }
+        }
+#endif
+        for (r += (size_t)x * channels; x < w; x++, r += channels)
             o[x] = (unsigned char)((77u * r[0] + 150u * r[1] + 29u * r[2]) >> 8);
     }
 }
@@ -259,34 +308,299 @@ size_t vocr_desk_resize_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh
     return sizeof(int) * (2 * kx * dw + 2 * ky * dh + (size_t)h * dw);
 }
 
+/* one source row through the horizontal taps: t[x] = sum_k r[ix[x][k]] wx[x][k] (exact int32: at most 255 x 16384).
+ * mode (resize_hmode): 0 the table (scalar), 1 the identity, 2 the 2:1 pairs, 3 consecutive taps (kx <= 8). An
+ * output's taps are consecutive source pixels from its first (axis_weights: area runs of j, bilinear x0, x0 + 1; a
+ * padded or clamped tap repeats an index with weight 0), which resize_hmode checks, so the SIMD paths read
+ * r[s0 + k]: the same exact sums. */
+static void resize_row_h(const unsigned char *r, unsigned w, unsigned dw, unsigned kx, const int *ixx, const int *wx,
+                         int *t, int mode)
+{
+    unsigned x = 0, k;
+#if DESK_AVX2
+    if (mode == 1) {                                /* identity: r[x] x 16384 */
+        for (; x + 8 <= dw; x += 8) {
+            const __m256i v = _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)(const void *)(r + x)));
+            _mm256_storeu_si256((__m256i *)(void *)(t + x), _mm256_slli_epi32(v, 14));
+        }
+    } else if (mode == 2) {                         /* 2:1 area: taps 2x, 2x + 1 at 8192 each */
+        const __m256i one = _mm256_set1_epi8(1);
+        for (; x + 16 <= dw && 2 * x + 32 <= w; x += 16) {
+            const __m256i v = _mm256_loadu_si256((const __m256i *)(const void *)(r + 2 * x));
+            const __m256i s = _mm256_maddubs_epi16(v, one);           /* r[2x] + r[2x + 1], 16-bit */
+            const __m256i lo = _mm256_cvtepi16_epi32(_mm256_castsi256_si128(s));
+            const __m256i hi = _mm256_cvtepi16_epi32(_mm256_extracti128_si256(s, 1));
+            _mm256_storeu_si256((__m256i *)(void *)(t + x), _mm256_slli_epi32(lo, 13));
+            _mm256_storeu_si256((__m256i *)(void *)(t + x + 8), _mm256_slli_epi32(hi, 13));
+        }
+    } else if (mode == 3) {                         /* 8 source bytes x 8 int16 weights per output */
+        static const int lanes[16] = {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0};
+        const __m256i mask = _mm256_loadu_si256((const __m256i *)(const void *)(lanes + 8 - kx));
+        for (; x < dw; x++) {
+            const int *ww = wx + (size_t)x * kx;
+            const unsigned s0 = (unsigned)ixx[(size_t)x * kx];
+            __m256i w32;
+            __m128i w16, p16, m;
+            if (s0 + 8 > w) break;                  /* the right edge: the scalar loop below */
+            w32 = _mm256_maskload_epi32(ww, mask);
+            w16 = _mm_packs_epi32(_mm256_castsi256_si128(w32), _mm256_extracti128_si256(w32, 1));
+            p16 = _mm_cvtepu8_epi16(_mm_loadl_epi64((const __m128i *)(const void *)(r + s0)));
+            m = _mm_madd_epi16(p16, w16);
+            m = _mm_add_epi32(m, _mm_shuffle_epi32(m, 0x4E));
+            m = _mm_add_epi32(m, _mm_shuffle_epi32(m, 0xB1));
+            t[x] = _mm_cvtsi128_si32(m);
+        }
+    }
+#else
+    (void)w;
+    (void)mode;
+#endif
+    for (; x < dw; x++) {
+        const int *ii = ixx + (size_t)x * kx, *ww = wx + (size_t)x * kx;
+        int acc = 0;
+        for (k = 0; k < kx; k++) acc += r[ii[k]] * ww[k];
+        t[x] = acc;
+    }
+}
+
+/* the horizontal path for an axis's taps (resize_row_h), each SIMD path's assumption checked on the tables */
+static int resize_hmode(unsigned w, unsigned dw, unsigned kx, const int *idx, const int *wt)
+{
+    unsigned i, k;
+    if (kx == 1 && w == dw) return 1;
+    if (w == 2 * dw && kx == 4) {
+        for (i = 0; i < dw; i++) {
+            const int *ii = idx + (size_t)i * 4, *ww = wt + (size_t)i * 4;
+            if (ii[0] != (int)(2 * i) || ii[1] != (int)(2 * i + 1) || ww[0] != Q14 / 2 || ww[1] != Q14 / 2 ||
+                ww[2] || ww[3])
+                return 0;
+        }
+        return 2;
+    }
+    if (kx > 8) return 0;
+    for (i = 0; i < dw; i++)
+        for (k = 0; k < kx; k++)
+            if (wt[(size_t)i * kx + k] < 0 || wt[(size_t)i * kx + k] > Q14 ||
+                (k && wt[(size_t)i * kx + k] && idx[(size_t)i * kx + k] != idx[(size_t)i * kx] + (int)k))
+                return 0;
+    return 3;
+}
+
+/* output row y from the ring of horizontally resized rows: (sum_k t_k[x] wy_k + 2^27) >> 28, clamped (int64 exact;
+ * the SIMD forms are the same integer: one tap of 16384 gives (t + 2^13) >> 14, two of 8192 (t0 + t1 + 2^14) >> 15,
+ * and the general sum is exact in double, every term below 2^36 and the sum below 2^40) */
+static void resize_row_v(const int *const *rows, const int *wy, unsigned ky, unsigned dw, unsigned char *o)
+{
+    const int *rr[64];
+    int ww[64];
+    unsigned n = 0, k, x = 0;
+    for (k = 0; k < ky && n < 64; k++)
+        if (wy[k]) {
+            rr[n] = rows[k];
+            ww[n++] = wy[k];
+        }
+#if DESK_AVX2
+    if (n == 1 && ww[0] == Q14) {
+        const __m256i h = _mm256_set1_epi32(1 << 13);
+        for (; x + 16 <= dw; x += 16) {
+            __m256i a = _mm256_srai_epi32(_mm256_add_epi32(_mm256_loadu_si256((const __m256i *)(const void *)(rr[0] + x)), h), 14);
+            __m256i b = _mm256_srai_epi32(_mm256_add_epi32(_mm256_loadu_si256((const __m256i *)(const void *)(rr[0] + x + 8)), h), 14);
+            __m256i s = _mm256_permute4x64_epi64(_mm256_packs_epi32(a, b), 0xD8);
+            _mm_storeu_si128((__m128i *)(void *)(o + x), _mm_packus_epi16(_mm256_castsi256_si128(s), _mm256_extracti128_si256(s, 1)));
+        }
+    } else if (n == 2 && ww[0] == Q14 / 2 && ww[1] == Q14 / 2) {
+        const __m256i h = _mm256_set1_epi32(1 << 14);
+        for (; x + 16 <= dw; x += 16) {
+            __m256i a = _mm256_add_epi32(_mm256_loadu_si256((const __m256i *)(const void *)(rr[0] + x)),
+                                         _mm256_loadu_si256((const __m256i *)(const void *)(rr[1] + x)));
+            __m256i b = _mm256_add_epi32(_mm256_loadu_si256((const __m256i *)(const void *)(rr[0] + x + 8)),
+                                         _mm256_loadu_si256((const __m256i *)(const void *)(rr[1] + x + 8)));
+            __m256i s;
+            a = _mm256_srai_epi32(_mm256_add_epi32(a, h), 15);
+            b = _mm256_srai_epi32(_mm256_add_epi32(b, h), 15);
+            s = _mm256_permute4x64_epi64(_mm256_packs_epi32(a, b), 0xD8);
+            _mm_storeu_si128((__m128i *)(void *)(o + x), _mm_packus_epi16(_mm256_castsi256_si128(s), _mm256_extracti128_si256(s, 1)));
+        }
+    } else if (n >= 1 && n <= 16) {
+        const __m256d half = _mm256_set1_pd(134217728.0), scale = _mm256_set1_pd(1.0 / 268435456.0);
+        const __m256d hi = _mm256_set1_pd(255.0), zero = _mm256_setzero_pd();
+        for (; x + 4 <= dw; x += 4) {
+            __m256d acc = half;
+            __m128i q;
+            for (k = 0; k < n; k++)
+                acc = _mm256_fmadd_pd(_mm256_cvtepi32_pd(_mm_loadu_si128((const __m128i *)(const void *)(rr[k] + x))),
+                                      _mm256_set1_pd((double)ww[k]), acc);
+            acc = _mm256_min_pd(_mm256_max_pd(_mm256_floor_pd(_mm256_mul_pd(acc, scale)), zero), hi);
+            q = _mm256_cvttpd_epi32(acc);
+            q = _mm_packus_epi16(_mm_packs_epi32(q, q), q);
+            o[x] = (unsigned char)_mm_extract_epi8(q, 0);
+            o[x + 1] = (unsigned char)_mm_extract_epi8(q, 1);
+            o[x + 2] = (unsigned char)_mm_extract_epi8(q, 2);
+            o[x + 3] = (unsigned char)_mm_extract_epi8(q, 3);
+        }
+    }
+#endif
+    for (; x < dw; x++) {
+        int64_t acc = 0;
+        for (k = 0; k < n; k++) acc += (int64_t)rr[k][x] * ww[k];
+        acc = (acc + ((int64_t)1 << 27)) >> 28;
+        o[x] = (unsigned char)(acc > 255 ? 255 : acc < 0 ? 0 : acc);
+    }
+}
+
+/* source row j of the resize: the grey row itself, or (channels 3 / 4) its integer luma (vocr_desk_grey) in rowbuf */
+static const unsigned char *src_row(const unsigned char *src, unsigned w, unsigned stride, unsigned channels, unsigned j,
+                                    unsigned char *rowbuf)
+{
+    if (channels == 1) return src + (size_t)j * stride;
+    vocr_desk_grey(src + (size_t)j * stride, w, 1, stride, channels, rowbuf);
+    return rowbuf;
+}
+
+/* output rows [y0, y1) through a ring of R horizontally resized source rows: output row y reads the source rows
+ * iyy[y][0 ..] (consecutive, at most ky), so each source row of the band is resized once and the ring holds every row
+ * an output needs. Each output row is the same integer sums whatever the band (the ring is only a cache). */
+static void resize_rows(const unsigned char *src, unsigned w, unsigned stride, unsigned channels, unsigned char *dst,
+                        unsigned dw, unsigned kx, unsigned ky, unsigned R, int mode, const int *ixx, const int *wx,
+                        const int *iyy, const int *wy, unsigned y0, unsigned y1, int *ring, unsigned char *rowbuf)
+{
+    int slot_row[64];
+    const int *rows[64];
+    unsigned y, k;
+    for (k = 0; k < R; k++) slot_row[k] = -1;
+    for (y = y0; y < y1; y++) {
+        const int *ii = iyy + (size_t)y * ky;
+        for (k = 0; k < ky; k++) {
+            const int j = ii[k];
+            const unsigned s = (unsigned)j % R;
+            if (slot_row[s] != j) {
+                resize_row_h(src_row(src, w, stride, channels, (unsigned)j, rowbuf), w, dw, kx, ixx, wx,
+                             ring + (size_t)s * dw, mode);
+                slot_row[s] = j;
+            }
+            rows[k] = ring + (size_t)s * dw;
+        }
+        resize_row_v(rows, wy + (size_t)y * ky, ky, dw, dst + (size_t)y * dw);
+    }
+}
+
+/* 1 if the ring applies: ky <= 64 and each output's source rows span fewer than R = min(ky, h) rows */
+static int ring_fits(const int *iyy, unsigned ky, unsigned h, unsigned dh)
+{
+    const unsigned R = ky < h ? ky : h;
+    unsigned y, k;
+    if (ky > 64) return 0;
+    for (y = 0; y < dh; y++) {
+        int lo = iyy[(size_t)y * ky], hi = lo;
+        for (k = 1; k < ky; k++) {
+            const int j = iyy[(size_t)y * ky + k];
+            lo = j < lo ? j : lo;
+            hi = j > hi ? j : hi;
+        }
+        if ((unsigned)(hi - lo) >= R) return 0;
+    }
+    return 1;
+}
+
+static void resize_core(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                        unsigned char *dst, unsigned dw, unsigned dh, int *scratch, unsigned char *rowbuf)
+{
+    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), y, k;
+    int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
+    int *ring = wy + (size_t)ky * dh, mode;
+    axis_weights(w, dw, kx, ixx, wx);
+    axis_weights(h, dh, ky, iyy, wy);
+    mode = resize_hmode(w, dw, kx, ixx, wx);
+    if (!ring_fits(iyy, ky, h, dh)) {               /* a shrink by more than 62: the whole-frame intermediate */
+        int *tmp = ring;
+        for (y = 0; y < h; y++)
+            resize_row_h(src_row(src, w, stride, channels, y, rowbuf), w, dw, kx, ixx, wx, tmp + (size_t)y * dw, mode);
+        for (y = 0; y < dh; y++) {
+            const int *ii = iyy + (size_t)y * ky, *ww = wy + (size_t)y * ky;
+            unsigned char *o = dst + (size_t)y * dw;
+            unsigned x;
+            for (x = 0; x < dw; x++) {
+                int64_t acc = 0;
+                for (k = 0; k < ky; k++) acc += (int64_t)tmp[(size_t)ii[k] * dw + x] * ww[k];
+                acc = (acc + ((int64_t)1 << 27)) >> 28;
+                o[x] = (unsigned char)(acc > 255 ? 255 : acc < 0 ? 0 : acc);
+            }
+        }
+        return;
+    }
+    resize_rows(src, w, stride, channels, dst, dw, kx, ky, ky < h ? ky : h, mode, ixx, wx, iyy, wy, 0, dh, ring, rowbuf);
+}
+
+/* the banded resize's tables: a header, then the four axis tables */
+typedef struct {
+    unsigned w, h, dw, dh, kx, ky, R;
+    int mode, ring;
+} resize_plan_hdr;
+
+#define PLAN_HDR ALIGN_UP(sizeof(resize_plan_hdr), 64)
+
+size_t vocr_desk_resize_plan_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    size_t kx = axis_taps(w, dw), ky = axis_taps(h, dh);
+    return PLAN_HDR + sizeof(int) * (2 * kx * dw + 2 * ky * dh);
+}
+
+int vocr_desk_resize_plan(unsigned w, unsigned h, unsigned dw, unsigned dh, void *plan)
+{
+    resize_plan_hdr *P = (resize_plan_hdr *)plan;
+    int *ixx = (int *)(void *)((unsigned char *)plan + PLAN_HDR);
+    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh);
+    int *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
+    axis_weights(w, dw, kx, ixx, wx);
+    axis_weights(h, dh, ky, iyy, wy);
+    P->w = w;
+    P->h = h;
+    P->dw = dw;
+    P->dh = dh;
+    P->kx = kx;
+    P->ky = ky;
+    P->R = ky < h ? ky : h;
+    P->mode = resize_hmode(w, dw, kx, ixx, wx);
+    P->ring = ring_fits(iyy, ky, h, dh);
+    return P->ring ? 0 : -1;
+}
+
+size_t vocr_desk_resize_band_bytes(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    size_t ky = axis_taps(h, dh), R = ky < h ? ky : h;
+    return ALIGN_UP(sizeof(int) * R * dw, 64) + ALIGN_UP((size_t)w + 64, 64);
+}
+
+void vocr_desk_resize_band(const void *plan, const unsigned char *src, unsigned stride, unsigned channels,
+                           unsigned char *dst, unsigned y0, unsigned y1, void *work)
+{
+    const resize_plan_hdr *P = (const resize_plan_hdr *)plan;
+    const int *ixx = (const int *)(const void *)((const unsigned char *)plan + PLAN_HDR);
+    const int *wx = ixx + (size_t)P->kx * P->dw, *iyy = wx + (size_t)P->kx * P->dw, *wy = iyy + (size_t)P->ky * P->dh;
+    int *ring = (int *)work;
+    unsigned char *rowbuf = (unsigned char *)work + ALIGN_UP(sizeof(int) * P->R * P->dw, 64);
+    if (y1 > P->dh) y1 = P->dh;
+    if (y0 >= y1 || !P->ring) return;
+    resize_rows(src, P->w, stride, channels, dst, P->dw, P->kx, P->ky, P->R, P->mode, ixx, wx, iyy, wy, y0, y1, ring,
+                rowbuf);
+}
+
 void vocr_desk_resize(const unsigned char *src, unsigned w, unsigned h, unsigned stride, unsigned char *dst,
                       unsigned dw, unsigned dh, int *scratch)
 {
-    unsigned kx = axis_taps(w, dw), ky = axis_taps(h, dh), x, y, k;
-    int *ixx = scratch, *wx = ixx + (size_t)kx * dw, *iyy = wx + (size_t)kx * dw, *wy = iyy + (size_t)ky * dh;
-    int *tmp = wy + (size_t)ky * dh;
-    axis_weights(w, dw, kx, ixx, wx);
-    axis_weights(h, dh, ky, iyy, wy);
-    for (y = 0; y < h; y++) {
-        const unsigned char *r = src + (size_t)y * stride;
-        int *t = tmp + (size_t)y * dw;
-        for (x = 0; x < dw; x++) {
-            const int *ii = ixx + (size_t)x * kx, *ww = wx + (size_t)x * kx;
-            int acc = 0;
-            for (k = 0; k < kx; k++) acc += r[ii[k]] * ww[k];
-            t[x] = acc;
-        }
-    }
-    for (y = 0; y < dh; y++) {
-        const int *ii = iyy + (size_t)y * ky, *ww = wy + (size_t)y * ky;
-        unsigned char *o = dst + (size_t)y * dw;
-        for (x = 0; x < dw; x++) {
-            int64_t acc = 0;
-            for (k = 0; k < ky; k++) acc += (int64_t)tmp[(size_t)ii[k] * dw + x] * ww[k];
-            acc = (acc + ((int64_t)1 << 27)) >> 28;
-            o[x] = (unsigned char)(acc > 255 ? 255 : acc < 0 ? 0 : acc);
-        }
-    }
+    resize_core(src, w, h, stride, 1, dst, dw, dh, scratch, NULL);
+}
+
+size_t vocr_desk_resize_rgb_scratch(unsigned w, unsigned h, unsigned dw, unsigned dh)
+{
+    return vocr_desk_resize_scratch(w, h, dw, dh) + ((size_t)w + 64) / 64 * 64;
+}
+
+void vocr_desk_resize_rgb(const unsigned char *rgb, unsigned w, unsigned h, unsigned stride, unsigned channels,
+                          unsigned char *dst, unsigned dw, unsigned dh, int *scratch)
+{
+    unsigned char *rowbuf = (unsigned char *)(void *)((char *)(void *)scratch + vocr_desk_resize_scratch(w, h, dw, dh));
+    resize_core(rgb, w, h, stride, channels, dst, dw, dh, scratch, rowbuf);
 }
 
 /* ----------------------------------------------------------------------------- kernels */

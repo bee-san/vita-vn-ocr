@@ -39,7 +39,7 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
   tsdesk_time.py mem --pages PAGES.json --pipelines P,... --threads N --out M.json [--limit 60] [--view vita]
       peak resident memory (VmHWM): each pipeline in a fresh process that loads the frames of a view one at a time
       from disk and runs the pipeline on each: after the imports and one frame, after the models load, at the end
-  tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1]
+  tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1] [--refine]
       the C network's per-step time on the view's frames from a -DVOCR_TSD_PROF build of vocr_tsd_bench (the frames
       written to a private scratch file and deleted)
   tsdesk_time.py randblobs --out DIR [--shapes p8a,p8s,p8t,p8g,p4a] [--seed 1] [--kernel 0.05]
@@ -461,7 +461,8 @@ def cmd_prof(a):
             f.write(np.ascontiguousarray(r).tobytes())
         f.flush()
         cmd = [b["bench"], a.blob, "--w", str(w), "--h", str(h), "--ch", "3", "--raw", f.name, "--runs", str(a.runs),
-               "--warmup", str(a.warmup), "--threads", str(a.threads)] + (["--size", a.size] if a.size else [])
+               "--warmup", str(a.warmup), "--threads", str(a.threads)] + (["--size", a.size] if a.size else []) + \
+              (["--refine"] if a.refine else [])
         out = json.loads(subprocess.run(cmd, capture_output=True, text=True, check=True).stdout)
     out.update(view=a.view, frames=len(rgbs), build=b, host=host(), repo_head=D.git_head(),
                load_1min_at_end=round(os.getloadavg()[0], 1))
@@ -564,6 +565,7 @@ def main(argv=None):
     p.add_argument("--random", type=int, default=0)
     p.add_argument("--arch", default="-march=x86-64-v3")
     p.add_argument("--extra", default="")
+    p.add_argument("--refine", action="store_true", help="the box refinement on (vocr_tsdr_defaults)")
     p.add_argument("--build-dir", required=True)
     p.add_argument("--out", required=True)
     p = sub.add_parser("randblobs")

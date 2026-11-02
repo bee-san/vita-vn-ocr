@@ -435,6 +435,9 @@ def test_drop_set_rules():
     reps = items((0, 0, 99, 20, "イf0u000u00000000000c", 0.9), (0, 30, 99, 20, "【AccessingtheWorld】", 0.9),
                  (0, 60, 99, 20, "……………………", 0.9), (0, 90, 99, 20, "000", 0.9), (0, 120, 99, 20, "所持金100000円", 0.9))
     assert T.drop_set(reps, r) == {0, 4} and T.drop_set(reps, T.drop_options({"rep_pct": 80})) == set()
+    short = items((0, 0, 40, 20, "イ00", 0.9), (0, 30, 40, 20, "6億", 0.9))
+    assert T.drop_set(short, r) == set() and T.drop_set(short, T.drop_options({"rep_pct": 50, "rep_len": 3})) == {0}
+    assert T.drop_set(short, T.drop_options({"rep_pct": 50, "rep_len": 2})) == {0, 1}
     c = T.drop_options({"conf_milli": 600})
     assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
     with pytest.raises(KeyError):

@@ -1057,7 +1057,8 @@ def test_c_reading_filter_equals_python(nets, libs):
     japanese_share."""
     rng = np.random.default_rng(24)
     texts = ["0000O00", "", "あいう", "A", "Max", "「000OO0000", "イf0u000u00000000000c", "【AccessingtheWorld】",
-             "……", "14日目", "ＡＢＣ", "所持金100000円", "れして0O", "イU", "ok", "—", "ー", "♪", "漢字", "a・b"]
+             "……", "14日目", "ＡＢＣ", "所持金100000円", "れして0O", "イU", "ok", "—", "ー", "♪", "漢字", "a・b",
+             "イ00", "6億", "00"]
     for lib in libs.values():
         cm = TC.CModel(nets["p8a"][1], lib=lib)
         for t in texts:
@@ -1069,7 +1070,8 @@ def test_c_reading_filter_equals_python(nets, libs):
                        float(rng.uniform(8, 30))), str(rng.choice(texts)), float(rng.uniform(0.3, 1.0)))
                      for _ in range(n)]
             for o in ({"nojp": 1}, {"nojp": 2}, C6_DROP, {"rep_pct": 50}, {"conf_milli": 600},
-                      {"nojp": 2, "nojp_gap_pct": 50, "rep_pct": 80}, {}):
+                      {"nojp": 2, "nojp_gap_pct": 50, "rep_pct": 80}, {"rep_pct": 50, "rep_len": 3},
+                      {"rep_pct": 40, "rep_len": 1}, {}):
                 assert cm.drop_set(items, o) == T.drop_set(items, T.drop_options(o)), o
 
 

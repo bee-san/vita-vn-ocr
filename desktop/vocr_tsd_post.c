@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#if defined(__AVX2__) && !defined(VOCR_TSDR_SCALAR)
+#if defined(__AVX2__) && !defined(VOCR_TSD_SCALAR) && !defined(VOCR_TSDR_SCALAR)
 #include <immintrin.h>
 #define TSDP_AVX2 1
 #else
@@ -31,6 +31,7 @@ void vocr_tsdd_defaults(vocr_tsdd_opts *o)
     if (!o) return;
     memset(o, 0, sizeof *o);
     o->nojp_gap_pct = 100;
+    o->rep_len = 4;
 }
 
 int vocr_tsdp_nopts(void) { return VOCR_TSDP_NOPTS; }
@@ -945,7 +946,8 @@ int vocr_tsdd_drop(const double *xywh, const char *const *text, const float *con
             drop[i] = 1;
             continue;
         }
-        if (o->rep_pct && r.n >= 4 && !is_jp(r.top_cp) && r.top_n * 100 >= (long)o->rep_pct * r.n) {
+        if (o->rep_pct && r.n >= (o->rep_len > 1 ? o->rep_len : 1) && !is_jp(r.top_cp) &&
+            r.top_n * 100 >= (long)o->rep_pct * r.n) {
             drop[i] = 1;
             continue;
         }

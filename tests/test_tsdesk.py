@@ -716,6 +716,11 @@ def test_cut_reading_cuts_items_at_wide_gaps_only():
     comma = [(t, x) for t, x in chars]
     comma[2] = ("、", comma[2][1])                                        # a phrase's own gap: kept
     assert T.cut_reading(g, b, comma, 50) is None
+    bang = [(t, x) for t, x in chars]
+    bang[3] = ("！", bang[3][1])                                          # nor the gap before a closing mark
+    assert T.cut_reading(g, b, bang, 50) is None
+    past = chars[:-1] + [("3", b[2] + 6.0)]                               # a centre past the box's end: kept
+    assert [t for _, _, t in T.cut_reading(g, b, past, 50)] == ["自兵数", "93"]
     wide = np.full((40, 300), 20, np.uint8)                               # a wide-set font: every gap 12 px
     ew = _glyphs(wide, 8, 10, 6, 16, 12)
     wc = [(t, 8 + 28 * k + 8.0) for k, t in enumerate("こちらこそ！")]

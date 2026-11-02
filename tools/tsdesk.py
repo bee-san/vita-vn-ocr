@@ -1110,10 +1110,9 @@ def post_pre(g, boxes, opts):
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
 DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
                  "cut_pct": 0, "cut_rel_pct": 200}
-# cut_reading's characters: no cut after a mark that ends a phrase (its gap is the sentence's own) or before an
-# opening bracket
-CUT_KEEP_AFTER = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・")
-CUT_KEEP_BEFORE = set("「『（(【〈《〔［[｛{")
+# cut_reading's marks: no cut on either side of a punctuation mark (a phrase's end, a bracket, a dash, a dot: the
+# gap beside it is the sentence's own, and the mark belongs to the text it closes or opens)
+CUT_MARKS = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・「『（(【〈《〔［[｛{")
 _JP_RE = None
 
 
@@ -1123,11 +1122,11 @@ def cut_reading(g, b, chars, pct, rel_pct=200):
     px; chars: [(text, x)] the reading's characters in order with their centres in frame px. A gap is the longest run
     of empty ink columns (ink_mask over the box) lying between two consecutive characters' centres; it cuts the line
     when it is at least max(2, pct % of the height) and at least rel_pct % of the line's median such gap (a wide-set
-    font keeps its lines), unless the character before it ends a phrase (CUT_KEEP_AFTER) or the one after it opens a
-    bracket (CUT_KEEP_BEFORE). A run as long between the box's first (last) ink and the first (last) character's
-    centre trims ink that read as no character (an icon). None (no cut, no trim) or [(x0, x1, text)] in frame px: the
-    first piece keeps the box's start and the last its end unless trimmed; the edges at a cut lie on the ink either
-    side of the gap."""
+    font keeps its lines), unless either character is a punctuation mark (CUT_MARKS). A run as long between the box's
+    first (last) ink and the first (last) character's centre trims ink that read as no character (an icon). None (no
+    cut, no trim) or [(x0, x1, text)] in frame px: every character in the piece between its neighbouring cuts (the
+    first and last pieces take every character before and after them); the first piece keeps the box's start and the
+    last its end unless trimmed; the edges at a cut lie on the ink either side of the gap."""
     H, W = g.shape
     ix0 = min(max(int(math.floor(b[0])), 0), W)
     iy0 = min(max(int(math.floor(b[1])), 0), H)
@@ -1153,19 +1152,20 @@ def cut_reading(g, b, chars, pct, rel_pct=200):
     lens = sorted((r[1] - r[0]) if r else 0 for r in gaps)
     med = lens[(len(lens) - 1) // 2] if lens else 0
     thr = max(2, _r100(h, pct), -(-int(med) * int(rel_pct) // 100))
-    cuts = [r for i, r in enumerate(gaps) if r and r[1] - r[0] >= thr
-            and chars[i][0] not in CUT_KEEP_AFTER and chars[i + 1][0] not in CUT_KEEP_BEFORE]
+    cuts = [(i, r) for i, r in enumerate(gaps) if r and r[1] - r[0] >= thr
+            and chars[i][0] not in CUT_MARKS and chars[i + 1][0] not in CUT_MARKS]
     lead = widest(int(ink[0]), xs[0])
     tail = widest(xs[-1], int(ink[-1]) + 1)
     lead = lead if lead and lead[1] - lead[0] >= thr else None
     tail = tail if tail and tail[1] - tail[0] >= thr else None
     if not cuts and not lead and not tail:
         return None
-    starts = [float(ix0 + lead[1]) if lead else float(b[0])] + [float(ix0 + r[1]) for r in cuts]
-    ends = [float(ix0 + r[0]) for r in cuts] + [float(ix0 + tail[0]) if tail else float(b[2])]
+    starts = [float(ix0 + lead[1]) if lead else float(b[0])] + [float(ix0 + r[1]) for _, r in cuts]
+    ends = [float(ix0 + r[0]) for _, r in cuts] + [float(ix0 + tail[0]) if tail else float(b[2])]
+    bounds = [0] + [i + 1 for i, _ in cuts] + [len(chars)]                # the characters of each piece
     out = []
-    for s0, e0 in zip(starts, ends):
-        t = "".join(c for c, x in chars if s0 <= x < e0)
+    for k, (s0, e0) in enumerate(zip(starts, ends)):
+        t = "".join(c for c, _ in chars[bounds[k]:bounds[k + 1]])
         if t and e0 > s0:
             out.append((s0, e0, t))
     return out

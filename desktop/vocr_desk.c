@@ -193,32 +193,28 @@ void vocr_desk_grey(const unsigned char *rgb, unsigned w, unsigned h, unsigned s
 #if DESK_AVX2
         /* 16 pixels a step, the same integer formula: 77 R + 150 G + 29 B <= 65280 is exact in 16-bit lanes */
         if (channels == 3) {
-            const __m128i ra = _mm_setr_epi8(0, 3, 6, 9, 12, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-            const __m128i rb = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, 2, 5, 8, 11, 14, -1, -1, -1, -1, -1);
-            const __m128i rc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 4, 7, 10, 13);
-            const __m128i ga = _mm_setr_epi8(1, 4, 7, 10, 13, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-            const __m128i gb = _mm_setr_epi8(-1, -1, -1, -1, -1, 0, 3, 6, 9, 12, 15, -1, -1, -1, -1, -1);
-            const __m128i gc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, 5, 8, 11, 14);
-            const __m128i ba = _mm_setr_epi8(2, 5, 8, 11, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-            const __m128i bb = _mm_setr_epi8(-1, -1, -1, -1, -1, 1, 4, 7, 10, 13, -1, -1, -1, -1, -1, -1);
-            const __m128i bc = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3, 6, 9, 12, 15);
-            const __m256i w77 = _mm256_set1_epi16(77), w150 = _mm256_set1_epi16(150), w29 = _mm256_set1_epi16(29);
-            for (; x + 16 <= w; x += 16) {
+            /* 16 pixels a step: four 4-pixel groups (12 bytes) into the 128-bit lanes, one byte shuffle to [R B] x 4
+             * [G 0] x 4 per lane, pmaddubsw by [77 29] / [75 0] (77 R + 29 B <= 26520, 75 G <= 19125: no saturation),
+             * then (77 R + 29 B) + 2 (75 G) <= 64770 as unsigned 16 bits, >> 8: the formula's bits (all 2^24 colours
+             * checked) */
+            const __m256i sh = _mm256_setr_epi8(0, 2, 3, 5, 6, 8, 9, 11, 1, -1, 4, -1, 7, -1, 10, -1,
+                                                0, 2, 3, 5, 6, 8, 9, 11, 1, -1, 4, -1, 7, -1, 10, -1);
+            const __m256i wt = _mm256_setr_epi8(77, 29, 77, 29, 77, 29, 77, 29, 75, 0, 75, 0, 75, 0, 75, 0,
+                                                77, 29, 77, 29, 77, 29, 77, 29, 75, 0, 75, 0, 75, 0, 75, 0);
+            for (; x + 16 <= w && 3 * (size_t)x + 52 <= 3 * (size_t)w; x += 16) {   /* reads 52 bytes */
                 const unsigned char *p = r + 3 * (size_t)x;
-                const __m128i a = _mm_loadu_si128((const __m128i *)(const void *)p);
-                const __m128i b = _mm_loadu_si128((const __m128i *)(const void *)(p + 16));
-                const __m128i c = _mm_loadu_si128((const __m128i *)(const void *)(p + 32));
-                const __m128i R = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ra), _mm_shuffle_epi8(b, rb)),
-                                               _mm_shuffle_epi8(c, rc));
-                const __m128i G = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ga), _mm_shuffle_epi8(b, gb)),
-                                               _mm_shuffle_epi8(c, gc));
-                const __m128i B = _mm_or_si128(_mm_or_si128(_mm_shuffle_epi8(a, ba), _mm_shuffle_epi8(b, bb)),
-                                               _mm_shuffle_epi8(c, bc));
-                __m256i v = _mm256_add_epi16(_mm256_mullo_epi16(_mm256_cvtepu8_epi16(R), w77),
-                                             _mm256_mullo_epi16(_mm256_cvtepu8_epi16(G), w150));
-                v = _mm256_srli_epi16(_mm256_add_epi16(v, _mm256_mullo_epi16(_mm256_cvtepu8_epi16(B), w29)), 8);
+                const __m256i u = _mm256_loadu2_m128i((const __m128i *)(const void *)(p + 12),
+                                                      (const __m128i *)(const void *)p);
+                const __m256i v = _mm256_loadu2_m128i((const __m128i *)(const void *)(p + 36),
+                                                      (const __m128i *)(const void *)(p + 24));
+                __m256i tu = _mm256_maddubs_epi16(_mm256_shuffle_epi8(u, sh), wt);   /* [rb0..3 g0..3 | rb4..7 g4..7] */
+                __m256i tv = _mm256_maddubs_epi16(_mm256_shuffle_epi8(v, sh), wt);
+                __m256i q;
+                tu = _mm256_srli_epi16(_mm256_add_epi16(tu, _mm256_bsrli_epi128(_mm256_slli_epi16(tu, 1), 8)), 8);
+                tv = _mm256_srli_epi16(_mm256_add_epi16(tv, _mm256_bsrli_epi128(_mm256_slli_epi16(tv, 1), 8)), 8);
+                q = _mm256_permute4x64_epi64(_mm256_unpacklo_epi64(tu, tv), 0xD8);   /* y0 .. y15 as 16-bit */
                 _mm_storeu_si128((__m128i *)(void *)(o + x),
-                                 _mm_packus_epi16(_mm256_castsi256_si128(v), _mm256_extracti128_si256(v, 1)));
+                                 _mm_packus_epi16(_mm256_castsi256_si128(q), _mm256_extracti128_si256(q, 1)));
             }
         } else if (channels == 4) {
             const __m256i lo8 = _mm256_set1_epi32(0x00FF00FF), wrb = _mm256_set1_epi32(29 << 16 | 77);

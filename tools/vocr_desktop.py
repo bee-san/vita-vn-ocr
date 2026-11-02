@@ -163,8 +163,9 @@ class Detector:
 
     def detect(self, img, frame=None):
         """[Box] in the image's px, in the decode's order (by confidence). frame=(W, H): the image is a region of a
-        W x H frame, read at the scale the size policy gives the whole frame and with the whole frame's pad, as a
-        read of the whole frame would read it (read_frame's region)."""
+        W x H frame (read_frame's region): it is scaled by the factor the size policy gives the whole frame and its
+        boxes get the whole frame's pad, so its text reaches the network at a whole-frame read's size (the region's
+        edges are padded by replication, so boxes near them can differ from a whole-frame read's)."""
         g = grey_of(img)
         H, W = g.shape
         f = None
@@ -286,8 +287,8 @@ def read_frame(frame, det, rec, lm=None, sections=True, tags=None, region=None, 
     """Every line of a frame (or of a region (x, y, w, h) of it), top to bottom: [Line], boxes and character cells
     in frame px. det: a Detector; rec: a vocr_onnx.Recognizer; lm: a vocr_onnx.CharLM; tags: the tag classes to read
     (None: all); workers: lines read in parallel on that many threads (or pass a concurrent.futures executor). A region
-    is read at the scale and with the box pad the detector's policy gives the whole frame (Detector.detect's frame);
-    no benchmark set read a region (docs/desktop.md)."""
+    is scaled by the factor the detector's policy gives the whole frame, with the whole frame's box pad
+    (Detector.detect's frame); no benchmark set read a region (docs/desktop.md)."""
     import vocr_onnx as V
     g = grey_of(frame)
     H, W = g.shape

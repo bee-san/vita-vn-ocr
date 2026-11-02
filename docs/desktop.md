@@ -233,8 +233,8 @@ passes; `eval/desktop_time.py` now reads it before them). p50 ms per page (Vita 
   MeikiOCR 25% slower at 2 threads (158.7 against 126.8 ms with spinning off) and 8% faster at 4 (111.9 against
   121.0 ms; `baselines.page_t2` and `page_t4` in the timing record). The 4-thread figures here are the faster
   setting; at 8 threads only the default was measured. R's fastest budget variant is its detector at 4 threads, also
-  the faster setting there. R's detector at 2 threads without spinning was not measured: scaled as MeikiOCR's pipeline
-  scales (101.8 ms × 126.8 / 158.7 ≈ 81 ms), it would still be slower than 74.2 ms at 4.
+  the faster setting there. R's detector at 2 threads without spinning was not measured. An estimate, scaled as
+  MeikiOCR's pipeline scales (101.8 ms × 126.8 / 158.7 ≈ 81 ms), would still be slower than 74.2 ms at 4.
 - **The decision's own timing** (`eval/desktop_timing_decide_20261101.json`, load 38) puts the representative at
   long:640 at 0.247 / 0.222 of R's time on the Vita / PSP pages, under the rule's 1/4.
 - **A cost against this detector in these timings.** The harness converts each frame to luma twice for the grey
@@ -486,8 +486,10 @@ for ln in lines:                                     # reading order: rows top t
   - fit:N never scales a frame up, so it reads PSP's 480×272 frames at their own size; long:N scales them up, which
     reads them better.
 - **Regions.** `read_frame(..., region=(x, y, w, h))` reads only a region, such as the dialogue box a user draws. The
-  region is read at the scale and with the box pad that the policy gives the whole frame, as a whole-frame read would
-  read it. No set here was read through a region.
+  region is scaled by the factor the policy gives the whole frame, and its boxes get the whole frame's pad, so its
+  text reaches the network at the size a whole-frame read gives it. Near the region's edges the network sees edge
+  padding instead of the frame around it, and the resampling grid starts at the region's corner, so boxes there can
+  differ from a whole-frame read. No set here was read through a region.
 - **Threads.** The detector is fastest at 1-4 intra-op threads here; `workers` reads the lines in parallel. Measure on
   the target machine.
 - **The LM.** `read_frame(..., lm=vocr_onnx.CharLM(...))` adds Rubi's beam and character LM to each line
@@ -538,7 +540,7 @@ Build with `make -C desktop` (AVX2 + FMA, x86-64-v3), `make -C desktop ARCH=` (p
     a PSP frame at long:640.
   - **The cause is the resampler.** The ONNX network and the Python decode, run on the C path's own resize of each
     frame instead of OpenCV's, give the C detector's crops on all 313 frames. The C resampler lands within ±1 grey level
-    of OpenCV's, and that is enough to move a decode near its threshold.
+    of OpenCV's in the CI tests, and that is enough to move a decode near its threshold.
   - **The ship bar.** Amendment 2 required identical crops on 99% of dev-v2's frames before a pick could ship. This
     release is not a pick, and the C path does not meet that bar (88%).
 - **Bounds** (audit-vocr-desktop F5, fixed after the release's tag).

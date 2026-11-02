@@ -180,7 +180,8 @@ def targets(lines, ignore, w, h, s, clip=False):
 
 # ----------------------------------------------------------------------------- recipes and pools
 
-EXACT_SOURCES_DEFAULT = ("hook", "desk_hook", "synth", "desk_synth")     # ink boxes from renderer geometry or rendering
+EXACT_SOURCES_DEFAULT = ("hook", "desk_hook", "synth", "desk_synth", "desk_ui")   # ink boxes from renderer geometry
+#                                                                                  or rendering (desk_ui: ui_synth)
 
 def hooked_as(src):
     """The hooked source a source name reads as: "hook", "desk_hook" (also an extra source named desk_hook_*: a

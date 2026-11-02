@@ -20,6 +20,11 @@ Intel Haswell, AMD Excavator / Zen and later; MSVC: `/arch:AVX2`, not tested), n
 are. There is no runtime CPU dispatch: a binary built with `-mavx2` needs an AVX2 CPU, and one built without it never
 runs the kernels.
 
+`desktop/` (#175, #176) builds `runtime/vocr.c` with `-march=x86-64-v3` by default, so its page pipeline reads lines
+with these kernels; `make -C desktop ARCH=` or `EXTRA=-DVOCR_NO_AVX2` builds it without them. The kernels keep no
+state, so its one arena per thread is still enough. `desktop/` does not link `vocr_textspot6.c`, and its detectors'
+own AVX2 + FMA kernels are not touched here.
+
 ## What changed
 
 ### `runtime/vocr.c` (AVX2 builds only)
@@ -60,7 +65,9 @@ These are what the bit identity rests on. A change to the kernels has to keep ea
   passes it): `check-vocr` runs the unit tests and every fixture parity (default, stride 16 and 12, attention)
   through AVX2 builds, and `check-textspot6` compiles `vocr_textspot6.c` strictly with it and runs
   `tests/textspot6_parity.py` through an AVX2 driver. `ci/runtime.sh` also compiles the sources with AVX2 kernels with
-  `-mavx2`, warning-free.
+  `-mavx2`, warning-free. `vocr.c` also has to build under `desktop/`'s stricter `WARN` (`-Werror -Wshadow
+  -Wmissing-prototypes`, `-O3 -march=x86-64-v3`), and `tests/test_desktop.py` reads its page lines through an
+  `x86-64-v3` build and checks them against pyvocr's.
 
 ## Bit identity
 
@@ -73,6 +80,8 @@ These are what the bit identity rests on. A change to the kernels has to keep ea
   RGBA, at the default and the forced 1× scale. The AVX2 and scalar builds print the same hashes.
 - **Texts.** Every build timed below read the same text on both screenshots, in every run.
 - **Unit tests.** `test_vocr` passes built with AVX2, without it, and with AVX2 and `-DVOCR_NO_ATTN`.
+- **`desktop/`.** `make -C desktop` builds warning-free (gcc 13.3) with the kernels, with `EXTRA=-DVOCR_NO_AVX2`, and
+  plain at `OPT=-O2 ARCH=`.
 
 ## Host speed
 
@@ -120,4 +129,8 @@ not in this repo; the screenshots are copyrighted and not committed.
 - The development lines and regions (`eval/c_speed_host_ms.py`, `vita/speed_parity.py`): not available to the author.
 - ONNX on this machine. In `docs/onnx.md` ("Speed", a different host) the exact ONNX files ran about as fast per line
   as gcc `-O3 -march=native`, so these kernels should be ahead of them; that is an inference across two machines.
+  `docs/desktop.md` puts VOCR6.2-L at 6.5 ms per line in exact ONNX, 6.3 ms in C at `-O3 -march=native` and 1.8 ms in
+  fast ONNX (W8F arithmetic, not these bits); per-line times with these kernels were not taken.
+- `desktop/`'s page times with these kernels: its detector blobs are on releases not downloaded here. Its timings in
+  `docs/desktop.md` were taken before this change.
 - MSVC, AVX-512, and CPUs other than Zen 3.

@@ -98,6 +98,7 @@ typedef struct {               /* the decode's constants (the blob's: vocr_tsd_d
     double conf_min_logit, min_across, along_reach;
     int vote_pct;              /* tools/tsdesk.DECODE_EXTRA's vote_pct (0: off, the blob's default): each component
                                   split across where its cells' A1 / A2 edge votes are bimodal (vote_split) */
+    int vote_depth;            /* tools/tsdesk.DECODE_EXTRA's vote_depth: the split's levels (0: 2, the default) */
 } vocr_tsd_decode_opts;
 
 /* Parse and check a blob (magic, version, sizes, CRC-32); the blob must be 4-byte aligned. */

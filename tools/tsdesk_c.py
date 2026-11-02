@@ -79,7 +79,7 @@ class CLine(C.Structure):
 class COpts(C.Structure):
     _fields_ = [("stride", C.c_uint), ("tags", C.c_uint), ("min_cells", C.c_uint), ("max_boxes", C.c_uint),
                 ("conf_min_logit", C.c_double), ("min_across", C.c_double), ("along_reach", C.c_double),
-                ("vote_pct", C.c_int)]
+                ("vote_pct", C.c_int), ("vote_depth", C.c_int)]
 
 
 NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct")   # post options, no C twin
@@ -409,13 +409,14 @@ def decode_struct(decode, base, hs, tags):
     bad = set(decode) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
     if bad:
         raise KeyError(f"unknown decode options {sorted(bad)}")
-    no = [k for k in NO_C_TWIN if decode.get(k)] + (["vote_depth"] if int(decode.get("vote_depth", 2)) != 2 else [])
+    no = [k for k in NO_C_TWIN if decode.get(k)]
     if no:
         raise ValueError(f"decode {no}: no C twin")
     o = dict(base)
     o.update({k: v for k, v in decode.items() if k in T.DEFAULTS})
     return COpts(hs, tags, int(o["min_cells"]), int(o["max_boxes"]), float(o["conf_min_logit"]),
-                 float(o["min_across"]), float(o["along_reach"]), int(decode.get("vote_pct", 0)))
+                 float(o["min_across"]), float(o["along_reach"]), int(decode.get("vote_pct", 0)),
+                 max(1, int(decode.get("vote_depth", 2))))       # Python's depth 0 or less splits once, as depth 1
 
 
 def _image(img):
@@ -504,14 +505,16 @@ class CModel:
 
     def decode(self, maps, iw, ih, **opts):
         """vocr_tsd_decode on [6 + T, mh, mw] float32 maps: [Box] in input px (tsdesk.decode's); opts override the
-        blob's decode constants (min_cells, conf_min_logit, min_across, along_reach, max_boxes) and set vote_pct."""
+        blob's decode constants (min_cells, conf_min_logit, min_across, along_reach, max_boxes) and set vote_pct and
+        vote_depth."""
         o = dict(self.decode_opts)
         o.update(opts)
         hwc = np.ascontiguousarray(np.asarray(maps, np.float32).transpose(1, 2, 0))
         mh, mw, ch = hwc.shape
         tags = ch - 6
         co = COpts(self.hs, tags, int(o["min_cells"]), int(o["max_boxes"]), float(o["conf_min_logit"]),
-                   float(o["min_across"]), float(o["along_reach"]), int(o.get("vote_pct", 0)))
+                   float(o["min_across"]), float(o["along_reach"]), int(o.get("vote_pct", 0)),
+                   max(1, int(o.get("vote_depth", 2))))
         scratch = np.zeros(self.L.vocr_tsd_decode_bytes_ex(mw, mh, tags, C.byref(co)) + 64, np.uint8)
         st = CSet()
         rc = self.L.vocr_tsd_decode_ex(C.byref(co), hwc.ctypes.data, mw, mh, int(iw), int(ih), scratch.ctypes.data,

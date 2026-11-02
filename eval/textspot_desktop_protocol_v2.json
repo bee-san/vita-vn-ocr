@@ -414,6 +414,37 @@
      "question": "G1 plus the PC label edits"
     }
    }
+  },
+  {
+   "n": 12,
+   "time": "2026-11-02T22:45Z",
+   "before": "any read of I1",
+   "after": [
+    "F1 (E2 + 80k, 200k steps in all) read: C8 k6v4 gap 0.316 at long:1120 (dev 0.983, dense_dev 0.645, dev_l544 0.930, dense_dev_l544 0.663; junk 1) and 0.335 at long:960 (dev 0.943, dense_dev 0.645, dev_l544 0.876, dense_dev_l544 0.682; junk 0, G4 passes): the dense sets improve with the steps, dev-v2 moves by +/- 0.2 points between neighbouring models (16 errors)",
+    "textspot-desktop-targets' synthetic UI source desk_ui v1 (e9f4074, merged at 02d3599): 10,000 frames on 1c's renderer with open-licence fonts, 100,781 exact text items (stat panels, config rows, save slots, buttons, ・ lists, menus with large display glyphs, label + value pairs, headers), marks and icons as background, scenes filtered against every protected set; an exact source"
+   ],
+   "arms": {
+    "I1_q8b_from_F1_pc_ui": {
+     "shape": "q8b",
+     "init": "runs/r2f_F1_q8b_from_E2",
+     "steps": 80000,
+     "lr": 0.001,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.26,synth=0.12,real=0.20,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.04,desk_dense=0.05,desk_hard=0.05,desk_hook_hard=0.03,desk_ui=0.05",
+     "question": "F1 + 80k with the PC label edits and desk_ui"
+    }
+   }
   }
  ]
 }

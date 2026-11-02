@@ -406,23 +406,22 @@ def hwm():
             return int(ln.split()[1])
 import numpy as np
 import tsdesk_time as TT
-_, pages = TT.load_pages({pages!r})
-pages = [p for p in pages if p["view"] == {view!r}][:{limit}]
-TT.load_rgb(pages[0])
+frames = {frames!r}
+np.load(frames[0])
 base = hwm()
 p = TT.Pipeline({spec!r}, {threads}, {pad!r}, {lib!r})
 loaded = hwm()
 n = 0
-for pg in pages:
-    rgb = TT.load_rgb(pg)
+for f in frames:                      # one frame in memory at a time
+    rgb = np.load(f)
     p.prepare(0, rgb)
     n += p(rgb, 0)
-print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(pages), "items": n}}))
+    del rgb
+print(json.dumps({{"base_kib": base, "loaded_kib": loaded, "peak_kib": hwm(), "frames": len(frames), "items": n}}))
 """
 
 
 def cmd_mem(a):
-    import pickle
     res = {"schema": SCHEMA, "kind": "textspot-desktop-c-mem", "host": host(), "pages_file": str(a.pages),
            "pages_sha256": D.sha256_file(a.pages), "view": a.view, "threads": int(a.threads), "limit": a.limit,
            "pad": a.pad, "lib": a.lib, "repo_head": D.git_head(), "results": {}}
@@ -432,16 +431,21 @@ def cmd_mem(a):
     sel = [p for p in pages if p["view"] == a.view][:a.limit]
     if not sel:
         raise SystemExit(f"no {a.view} pages in {a.pages}")
+    import shutil
+
+    import numpy as np
     scratch = D.PV / "textspot-desktop-c" / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
-    # the view's frames alone in a private scratch file (deleted below): a child does not load the whole pages file
-    tmp = tempfile.NamedTemporaryFile(dir=scratch, suffix=".pkl", delete=False)
-    with tmp:
-        pickle.dump({"pages": [dict(p, rgb=load_rgb(p)) for p in sel], "source": str(a.pages)}, tmp)
+    # the view's frames one per file in a private scratch directory (deleted below): a child reads one at a time
+    tmpdir = tempfile.mkdtemp(dir=scratch)
+    files = []
+    for i, p in enumerate(sel):
+        files.append(str(Path(tmpdir) / f"{i:04d}.npy"))
+        np.save(files[-1], np.ascontiguousarray(load_rgb(p)))
     try:
         for spec in a.pipelines.split(","):
-            code = MEM_CHILD.format(paths=paths, pages=tmp.name, view=a.view, limit=int(a.limit), spec=spec,
-                                    threads=int(a.threads), pad=a.pad, lib=a.lib)
+            code = MEM_CHILD.format(paths=paths, frames=files, spec=spec, threads=int(a.threads), pad=a.pad,
+                                    lib=a.lib)
             r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=3600,
                                env=dict(os.environ, OMP_NUM_THREADS=str(a.threads)))
             if r.returncode:
@@ -452,7 +456,7 @@ def cmd_mem(a):
             res["results"][spec] = rec
             print(spec, json.dumps(rec), flush=True)
     finally:
-        os.unlink(tmp.name)
+        shutil.rmtree(tmpdir, ignore_errors=True)
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
 
 

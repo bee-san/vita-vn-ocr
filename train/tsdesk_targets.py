@@ -21,6 +21,14 @@ punctuation or a coloured word is fainter than the other glyphs it drops a leadi
   6. the box: the first and last columns and rows holding ink, as an integer half-open [x0, y0, x1, y1] in frame px.
 A line with no ink keeps c ("cells"). The along-line ends are each within a cell of c's (the first and last
 characters' cells), the across extent within c's rows grown by `spill`.
+
+The gap clip (#177; `build --gap-clip`, targets_v2; off by default, so targets_v1 rebuilds as it was): on titles whose
+line pitch is smaller than a glyph's em box, c reaches into the next line and that line's glyph tops or bottoms count
+as ink. With the clip, the rows searched for ink (step 5) and the "cells" box stop at half the gap to the nearest row
+above and below on the same page that overlaps the line horizontally (gap_bounds, as eval/tsdesk_dense.regions bounds
+a region; the rows: every other horizontal line of any kind and drop, ruby included, and every uncovered renderer
+box), in the middle of the overlap where the cells overlap. Steps 2-4 (the background and the thresholds) are
+unchanged, so a line no bound cuts keeps targets_v1's box exactly.
 """
 import numpy as np
 
@@ -30,6 +38,8 @@ K = 0.4
 FLOOR = 28.0
 NOISE_MARGIN = 12.0
 MIN_BLOB = 3
+GAP_MIN_OFFSET = 0.5     # a row is above / below a line when the centres lie this x the smaller height apart or more
+GAP_MIN_KEEP = 0.5       # bounds that would keep less of the cells' height than this are not applied
 
 
 def cells_union(line):
@@ -52,15 +62,75 @@ def _drop_small(m, min_blob):
     return keep[lab]
 
 
-def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE_MARGIN, min_blob=MIN_BLOB):
+def row_unions(rec):
+    """[(line id or None, [x0, y0, x1, y1])] of a pool record's text rows, the candidates for gap_bounds: the cells'
+    union of every horizontal line of every kind and drop (lines, names, ruby, dropped lines), and every uncovered
+    renderer box (a box no verified line holds; its quad, id None)."""
+    out = [(ln["id"], cells_union(ln)) for ln in rec["lines"] if not ln["vertical"]]
+    unc = set(rec.get("uncovered") or [])
+    for b in rec.get("boxes") or []:
+        if b["index"] in unc:
+            out.append((None, [float(v) for v in b["xyxy"][:4]]))
+    return out
+
+
+def gap_bounds(c, others, min_offset=GAP_MIN_OFFSET, min_keep=GAP_MIN_KEEP):
+    """(top, bottom, how): the across bounds of a horizontal line's cells' union c = [x0, y0, x1, y1] on its page,
+    in frame px (floats; -inf / +inf where there is none), from the page's other rows (others: boxes of the same
+    form) that overlap c horizontally, as eval/tsdesk_dense.regions bounds a region: half the gap to the nearest row
+    above and to the nearest row below. A row is above c when it starts above c's start, ends above c's end and its
+    centre lies at least min_offset x the smaller of the two heights above c's centre (a nearer row shares c's row,
+    and a row that spans c's is no row above or below); below likewise. When the two overlap (cells taller than the
+    line pitch), the gap is negative and the bound lies in the middle of the overlap: for two lines of one em size,
+    halfway between their centres. how: "none" (no bound inside c's rows), "clip", or "guard" when the bounds would
+    keep less than min_keep of c's height (then no bound is applied)."""
+    import math
+    top, bot = -math.inf, math.inf
+    cy, ch = (c[1] + c[3]) / 2.0, c[3] - c[1]
+    for o in others:
+        if min(c[2], o[2]) - max(c[0], o[0]) <= 0:
+            continue
+        oy = (o[1] + o[3]) / 2.0
+        sep = min_offset * min(ch, o[3] - o[1])
+        if o[1] < c[1] and o[3] < c[3] and cy - oy >= sep:
+            top = max(top, (c[1] + o[3]) / 2.0)
+        elif o[1] > c[1] and o[3] > c[3] and oy - cy >= sep:
+            bot = min(bot, (c[3] + o[1]) / 2.0)
+    if top <= c[1] and bot >= c[3]:
+        return top, bot, "none"
+    if min(bot, c[3]) - max(top, c[1]) < min_keep * ch:
+        return -math.inf, math.inf, "guard"
+    return top, bot, "clip"
+
+
+def across_rows(across, H):
+    """The pixel rows [lo, hi) between the across bounds (top, bottom): the rows whose centre lies at or below top
+    and above bottom, so two lines that share a bound never share a row."""
+    import math
+    lo, hi = 0, H
+    if across is not None:
+        if math.isfinite(across[0]):
+            lo = max(lo, int(math.ceil(across[0] - 0.5)))
+        if math.isfinite(across[1]):
+            hi = min(hi, int(math.ceil(across[1] - 0.5)))
+    return lo, hi
+
+
+def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE_MARGIN, min_blob=MIN_BLOB,
+            across=None):
     """(box, how): the ink box of a line inside c = [x0, y0, x1, y1] (its cells' union, module docstring); how is
-    "ink" or "cells"."""
+    "ink" or "cells". across: None (targets_v1's rule), or the line's across bounds (top, bottom) in frame px
+    (gap_bounds: #177's gap clip): the ink is searched, and the "cells" box kept, only on the rows between them
+    (across_rows); the background and the thresholds are the unclipped window's, so a line no bound cuts gets
+    exactly targets_v1's box."""
     import math
     H, W = rgb.shape[:2]
     x0, y0 = max(0, int(math.floor(c[0]))), max(0, int(math.floor(c[1])))
     x1, y1 = min(W, int(math.ceil(c[2]))), min(H, int(math.ceil(c[3])))
-    if x1 - x0 < 2 or y1 - y0 < 2:
-        return [x0, y0, x1, y1], "cells"
+    lo, hi = across_rows(across, H)
+    cells = [x0, max(y0, lo), x1, min(y1, hi)]
+    if x1 - x0 < 2 or y1 - y0 < 2 or cells[3] - cells[1] < 2:
+        return cells, "cells"
     wx0, wy0, wx1, wy1 = max(0, x0 - grow), max(0, y0 - grow), min(W, x1 + grow), min(H, y1 + grow)
     win = np.asarray(rgb[wy0:wy1, wx0:wx1]).astype(np.int16)
     if win.ndim == 2:
@@ -79,8 +149,10 @@ def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE
     c3 = np.max(sh, 0) - np.min(sh, 0)
     c3i = c3[y0 - wy0:y1 - wy0, x0 - wx0:x1 - wx0]
     tc = max(float(floor), float(k) * float(np.percentile(c3i, 99)))
-    sx0, sy0 = max(wx0, x0 - spill), max(wy0, y0 - spill)
-    sx1, sy1 = min(wx1, x1 + spill), min(wy1, y1 + spill)
+    sx0, sy0 = max(wx0, x0 - spill), max(wy0, y0 - spill, lo)
+    sx1, sy1 = min(wx1, x1 + spill), min(wy1, y1 + spill, hi)
+    if sy1 <= sy0:
+        return cells, "cells"
     sl = (slice(sy0 - wy0, sy1 - wy0), slice(sx0 - wx0, sx1 - wx0))
     # a pixel is ink when it differs from the background; it counts toward the extent when it also lies within one
     # pixel of a stroke edge (local contrast above tc), so a gradient alone never makes ink
@@ -89,13 +161,13 @@ def ink_box(rgb, c, grow=GROW, spill=SPILL, k=K, floor=FLOOR, noise_margin=NOISE
     cols = np.flatnonzero(m.any(0))
     rows = np.flatnonzero(m.any(1))
     if not len(cols) or not len(rows):
-        return [x0, y0, x1, y1], "cells"
+        return cells, "cells"
     return [int(sx0 + cols[0]), int(sy0 + rows[0]), int(sx0 + cols[-1] + 1), int(sy0 + rows[-1] + 1)], "ink"
 
 
-def line_ink(rgb, line):
-    """(box, how) of a pool line: ink_box on its cells' union."""
-    return ink_box(rgb, cells_union(line))
+def line_ink(rgb, line, across=None):
+    """(box, how) of a pool line: ink_box on its cells' union (across: its gap bounds, or None)."""
+    return ink_box(rgb, cells_union(line), across=across)
 
 
 # ----------------------------------------------------------------------------- the training targets (amendment 1)
@@ -118,32 +190,40 @@ def _page_targets(job):
     import cv2
 
     import textspot6_pages as TP
-    tid, rec, path = job
+    tid, rec, path, gap = job
     bgr = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr is None:
-        return tid, rec["page"], None
+        return tid, rec["page"], None, None
     rgb = np.ascontiguousarray(bgr[:, :, ::-1])
     H, W = rgb.shape[:2]
-    old, new = [], []
+    rows = row_unions(rec) if gap else None
+    old, new, hows = [], [], []
     for ln in positive_lines(rec):
         b = TP.xyxy(ln["box_main"] if ln.get("furigana") and ln.get("box_main") else ln["box"])
         ob, _ = TP.refined_line(rgb, b, bool(ln["vertical"]))
         ob = [max(0, ob[0]), max(0, ob[1]), min(W, ob[2]), min(H, ob[3])]
+        gh = None
         if ln["vertical"]:
             nb = ob                                  # vertical lines keep their targets (horizontal reading only)
+        elif gap:
+            top, bot, gh = gap_bounds(cells_union(ln), [u for i, u in rows if i != ln["id"]])
+            nb, _ = line_ink(rgb, ln, across=(top, bot))
         else:
             nb, _ = line_ink(rgb, ln)
         old.append([int(v) for v in ob])
         new.append([int(v) for v in nb])
-    return tid, rec["page"], {"old": old, "new": new}
+        hows.append(gh)
+    return tid, rec["page"], {"old": old, "new": new}, hows
 
 
 def cmd_build(a):
     """The target cache: per title, {page: {"old": refined_line boxes, "new": ink boxes}} of the positives of every
-    page of the given splits, in build_labels order (the trainer checks "old" against the page shards' boxes)."""
+    page of the given splits, in build_labels order (the trainer checks "old" against the page shards' boxes).
+    --gap-clip: the new boxes with #177's gap clip (targets_v2); without it, targets_v1's rule."""
     import json
     import multiprocessing as mp
     import time
+    from collections import Counter
     from pathlib import Path
     pool = Path(a.pool)
     out = Path(a.out)
@@ -156,23 +236,30 @@ def cmd_build(a):
         for line in f.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
             if r["split"] in splits:
-                jobs.append((f.stem, r, str(Path(a.pages) / r["image"])))
+                jobs.append((f.stem, r, str(Path(a.pages) / r["image"]), bool(a.gap_clip)))
     t0 = time.time()
     res = {}
+    gap_how = Counter()
     with mp.get_context("fork").Pool(a.workers) as p:
-        for tid, page, v in p.imap(_page_targets, jobs, chunksize=16):
+        for tid, page, v, hows in p.imap(_page_targets, jobs, chunksize=16):
             if v is not None:
                 res.setdefault(tid, {})[page] = v
+                gap_how.update(h for h in hows if h is not None)
     n_lines = n_changed = 0
     for tid, pages in sorted(res.items()):
         for v in pages.values():
             n_lines += len(v["new"])
             n_changed += sum(1 for o, nw in zip(v["old"], v["new"]) if o != nw)
         (out / f"{tid}.json").write_text(json.dumps(pages, separators=(",", ":")) + "\n", encoding="utf-8")
+    rule = {"grow": GROW, "spill": SPILL, "k": K, "floor": FLOOR, "noise_margin": NOISE_MARGIN, "min_blob": MIN_BLOB}
+    if a.gap_clip:
+        rule["gap_clip"] = {"issue": 177, "min_offset": GAP_MIN_OFFSET, "min_keep": GAP_MIN_KEEP,
+                            "rows": "every other horizontal line's cells' union (any kind and drop) and every "
+                                    "uncovered renderer box",
+                            "horizontal_lines": dict(sorted(gap_how.items()))}
     rec = {"kind": "textspot-desktop-targets", "pool_manifest_sha256": _sha(pool / "manifest.json"),
            "splits": sorted(splits), "titles": len(res), "pages": sum(len(v) for v in res.values()),
-           "lines": n_lines, "changed": n_changed, "rule": {"grow": GROW, "spill": SPILL, "k": K, "floor": FLOOR,
-                                                            "noise_margin": NOISE_MARGIN, "min_blob": MIN_BLOB},
+           "lines": n_lines, "changed": n_changed, "rule": rule,
            "code_sha256": _sha(Path(__file__)), "seconds": round(time.time() - t0, 1),
            "files": {f"{t}.json": _sha(out / f"{t}.json") for t in sorted(res)}}
     (out / "targets.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
@@ -252,6 +339,87 @@ def patch_sample(smp, cache, src):
     return dict(smp, lines=out)
 
 
+def _overlapping(boxes):
+    """[bool]: the boxes [x0, y0, x1, y1] that overlap another of the list (positive area)."""
+    hit = [False] * len(boxes)
+    for i, a in enumerate(boxes):
+        for j in range(i + 1, len(boxes)):
+            b = boxes[j]
+            if min(a[2], b[2]) - max(a[0], b[0]) > 0 and min(a[3], b[3]) - max(a[1], b[1]) > 0:
+                hit[i] = hit[j] = True
+    return hit
+
+
+def compare(cache_a, cache_b, splits_of=None, titles=()):
+    """Counts of how cache_b's ink boxes differ from cache_a's (two target caches of the same pages; no pixels):
+    lines changed, the edges' moves (b - a, px), and the positives that overlap another positive of their page
+    (refined_line's boxes, a's and b's ink boxes), overall, per split (splits_of: {(title, page): split}) and for the
+    given titles."""
+    from collections import Counter, defaultdict
+    groups = defaultdict(Counter)
+    moves = defaultdict(lambda: defaultdict(list))
+    for t in sorted(cache_a):
+        pa, pb = cache_a[t], cache_b.get(t, {})
+        for page in sorted(pa):
+            va, vb = pa[page], pb.get(page)
+            if vb is None or vb["old"] != va["old"]:
+                raise SystemExit(f"{t}:{page}: the two caches do not hold the same positives")
+            keys = ["all"] + ([f"split:{splits_of[(t, page)]}"] if splits_of else []) + (
+                [f"title:{t}"] if t in titles else [])
+            ho, ha, hb = _overlapping(va["old"]), _overlapping(va["new"]), _overlapping(vb["new"])
+            for i, (a, b) in enumerate(zip(va["new"], vb["new"])):
+                for k in keys:
+                    g = groups[k]
+                    g["lines"] += 1
+                    g["overlap_refined_line"] += ho[i]
+                    g["overlap_a"] += ha[i]
+                    g["overlap_b"] += hb[i]
+                    g["overlap_a_not_refined_line"] += ha[i] and not ho[i]
+                    g["overlap_b_not_refined_line"] += hb[i] and not ho[i]
+                    if a != b:
+                        g["changed"] += 1
+                        g["changed_x"] += a[0] != b[0] or a[2] != b[2]
+                        g["top_down"] += b[1] > a[1]
+                        g["bottom_up"] += b[3] < a[3]
+                        g["grew"] += b[1] < a[1] or b[3] > a[3] or b[0] < a[0] or b[2] > a[2]
+                        for e, n in enumerate(("left", "top", "right", "bottom")):
+                            if b[e] != a[e]:
+                                moves[k][n].append(b[e] - a[e])
+                        moves[k]["height"].append((b[3] - b[1]) - (a[3] - a[1]))
+    out = {}
+    for k, g in groups.items():
+        rec = dict(g)
+        for n, v in moves[k].items():
+            a = np.abs(np.asarray(v, np.float64))
+            rec[f"move_{n}"] = {"n": len(v), "median_abs": float(np.median(a)), "p90_abs": float(np.percentile(a, 90)),
+                                "max_abs": float(a.max()), "hist": dict(sorted(Counter(int(x) for x in v).items()))}
+        out[k] = rec
+    return out
+
+
+def cmd_compare(a):
+    import json
+    from pathlib import Path
+    ca, da = load_cache(a.a)
+    cb, db = load_cache(a.b)
+    splits_of = None
+    if a.pool:
+        splits_of = {}
+        for f in sorted(Path(a.pool).glob("*.jsonl")):
+            for line in f.read_text(encoding="utf-8").splitlines():
+                r = json.loads(line)
+                splits_of[(f.stem, r["page"])] = r["split"]
+    res = compare(ca, cb, splits_of, tuple(a.titles.split(",")) if a.titles else ())
+    rec = {"kind": "textspot-desktop-targets-compare", "a": str(a.a), "b": str(a.b),
+           "a_targets_sha256": _sha(Path(a.a) / "targets.json"), "b_targets_sha256": _sha(Path(a.b) / "targets.json"),
+           "a_rule": da["rule"], "b_rule": db["rule"], "groups": res}
+    txt = json.dumps(rec, indent=1) + "\n"
+    if a.out:
+        Path(a.out).write_text(txt, encoding="utf-8")
+    print(json.dumps({k: {n: res[k].get(n, 0) for n in ("lines", "changed", "overlap_a", "overlap_b")}
+                      for k in sorted(res)}), flush=True)
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -262,8 +430,16 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--splits", default="train,guard,hval")
     p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--gap-clip", action="store_true", help="#177: clip each horizontal line's ink search across at "
+                                                           "half the gap to its neighbouring rows (targets_v2)")
+    p = sub.add_parser("compare", help="counts of how cache B's ink boxes differ from cache A's (no pixels)")
+    p.add_argument("--a", required=True)
+    p.add_argument("--b", required=True)
+    p.add_argument("--pool", help="the page pool (for the per-split counts)")
+    p.add_argument("--titles", default="", help="titles to count apart (comma-separated)")
+    p.add_argument("--out")
     a = ap.parse_args(argv)
-    {"build": cmd_build}[a.cmd](a)
+    {"build": cmd_build, "compare": cmd_compare}[a.cmd](a)
 
 
 if __name__ == "__main__":

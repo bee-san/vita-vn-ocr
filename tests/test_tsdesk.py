@@ -780,3 +780,26 @@ def test_init_from_loads_a_run_of_the_same_shape(tmp_path):
     assert all(torch.equal(x, y) for x, y in zip(a.state_dict().values(), b.state_dict().values()))
     with pytest.raises(SystemExit):
         TD.init_from(N.TsdNet(N.SHAPES["p8a"]), tmp_path, N.SHAPES["p8a"])
+
+
+def test_join_row_joins_dialogue_pieces_only():
+    def bx(x0, y0, x1, y1, tag=0):
+        return T.Box(float(x0), float(y0), float(x1 - x0), float(y1 - y0), 0, 1.0, tag, 0.0, 3)
+    g = np.full((80, 400), 20, np.uint8)
+    pieces = [bx(10, 20, 60, 40), bx(66, 21, 120, 40), bx(125, 20, 200, 41)]      # gaps 6 and 5 px, h 19-21
+    out = T.post_pre(g, pieces, {"join_pct": 50})
+    assert len(out) == 1 and out[0].x == 10.0 and out[0].x + out[0].w == 200.0 and out[0].cells == 9
+    assert T.post_pre(g, pieces, {"join_pct": 20}) == pieces                     # gaps over 20 % of the height
+    items = [bx(10, 20, 60, 40, tag=3), bx(66, 21, 120, 40, tag=3)]               # non-dialogue items stay apart
+    assert T.post_pre(g, items, {"join_pct": 50}) == items
+    mixed = [bx(10, 20, 60, 40), bx(66, 21, 120, 40, tag=1)]
+    assert T.post_pre(g, mixed, {"join_pct": 50}) == mixed
+    rows = [bx(10, 20, 60, 40), bx(66, 44, 120, 64)]                              # another row
+    assert T.post_pre(g, rows, {"join_pct": 50}) == rows
+    between = [bx(10, 20, 60, 40), bx(40, 27, 90, 48)]                            # a piece between two lines
+    assert T.post_pre(g, between, {"join_pct": 50}) == between
+    assert len(T.post_pre(g, between, {"join_pct": 50, "join_ov_pct": 50})) == 1
+    sizes = [bx(10, 20, 60, 40), bx(66, 16, 120, 50)]                             # heights 20 and 34: not alike
+    assert T.post_pre(g, sizes, {"join_pct": 50}) == sizes
+    assert len(T.post_pre(g, sizes, {"join_pct": 50, "join_h_pct": 50})) == 1
+    assert T.post_pre(g, pieces, {}) == pieces and T.POST_DEFAULTS["join_pct"] == 0

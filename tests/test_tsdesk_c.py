@@ -1203,6 +1203,34 @@ def _items_frame(rng, H, W):
     return g, rows
 
 
+def test_c_join_equals_python(nets, libs):
+    """vocr_tsdp_pre's join (desktop/vocr_tsd_post.c) gives tools/tsdesk.post_pre's boxes bit for bit: generated rows
+    of pieces (gaps from overlaps to wide, heights alike or not, tags mixed, a piece between two lines), alone, at
+    other settings and with C7's set."""
+    rng = np.random.default_rng(71)
+    n_joined = 0
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for _ in range(120):
+            g, boxes = _glyph_frame(rng, int(rng.integers(60, 300)), int(rng.integers(200, 700)))
+            pieces = []
+            for _r in range(int(rng.integers(1, 5))):
+                y, h = float(rng.uniform(0, 250)), float(rng.uniform(8, 30))
+                x = float(rng.uniform(0, 100))
+                for _k in range(int(rng.integers(1, 6))):
+                    w = float(rng.uniform(10, 120))
+                    pieces.append(T.Box(x, y + float(rng.uniform(-3, 3)), w, h * float(rng.uniform(0.6, 1.3)),
+                                        int(rng.random() < 0.1), 1.0, int(rng.choice([0, 0, 0, 1, 3])), 0.0, 3))
+                    x += w + float(rng.uniform(-10, 1.5 * h))
+            allb = boxes + pieces
+            for opts in ({"join_pct": 60}, {"join_pct": 100}, {"join_pct": 150, "join_h_pct": 50, "join_ov_pct": 50},
+                         dict(C6_POST, vflip_pct=30, join_pct=100)):
+                ref = T.post_pre(g, allb, opts)
+                assert cm.post_pre(g, allb, opts) == ref, opts
+                n_joined += len(ref) < len(allb)
+    assert n_joined > 100
+
+
 def test_c_vote_depth_equals_python(nets, libs):
     """vocr_tsd_decode_ex's vote split at vote_depth 1 to 5 gives tools/tsdesk.decode's boxes bit for bit: a five-line
     kernel (depth 4 separates it, depth 2 does not) and random maps; vote_depth 2 is the plain C6 split."""

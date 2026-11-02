@@ -421,6 +421,7 @@ def test_drop_set_rules():
                 (30, 40, 30, 20, "Max", 0.9))
     assert T.drop_set(row, o1) == {0, 2, 3}
     assert T.drop_set(row, o2) == {2, 3}                     # "A" sits 8 px from a Japanese reading in its row
+    assert T.drop_set(items((10, 10, 12, 20, "", 0.9), (30, 10, 150, 20, "スポーツ", 0.99)), o2) == {0}   # empty
     far = items((10, 10, 40, 20, "行動力", 0.99), (75, 12, 40, 18, "Max", 0.9))     # 25 px on: 1.25 heights
     assert T.drop_set(far, o2) == {1} and T.drop_set(far, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
     strip = items((10, 10, 120, 20, "「000OO000", 0.7), (140, 10, 60, 20, "0000", 0.7))

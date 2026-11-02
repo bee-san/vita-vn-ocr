@@ -836,7 +836,8 @@ def drop_set(items, o):
     """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
     items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
       nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
-      nojp 2: the same, unless a reading with one sits in the same row (vertical overlap >= half the smaller height)
+      nojp 2: the same, unless the reading is not empty and a reading with one sits in the same row (vertical
+              overlap >= half the smaller height)
               within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
               before スポーツ), and at least nojp_anchor_pct % of that reading's characters are Japanese (an
               ornament misread as 「000OO0 does not anchor its neighbours);
@@ -859,7 +860,7 @@ def drop_set(items, o):
                 continue
         if not o["nojp"] or jp[i]:
             continue
-        if o["nojp"] >= 2:
+        if o["nojp"] >= 2 and t:
             x, y, w, h = b
             keep = False
             for j, (b2, _, _) in enumerate(items):

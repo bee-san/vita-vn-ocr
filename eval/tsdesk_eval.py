@@ -60,29 +60,133 @@ class CTsdDet:
                 self.m.detect(rgb, self.size, self.refine)]
 
 
+def parse_kv(s):
+    """{key: int} of "k=v,k=v" (the post-pass's and the reading filter's integer options)."""
+    out = {}
+    for part in filter(None, s.split(",")):
+        k, eq, v = part.partition("=")
+        if not eq:
+            raise ValueError(f"{part!r}: key=value")
+        out[k] = int(v)
+    return out
+
+
+def spec_parts(spec, with_decode=False):
+    """(base, refine, post, drop[, decode]) of a detector spec: tsd:MODEL.onnx[@SIZE[@MODE]] or ctsd:BLOB.vtsd[@SIZE],
+    then any of the suffixes +refine (tools/tsdesk_refine on the boxes), +post:K=V,... (tools/tsdesk.POST_DEFAULTS
+    options), +drop:K=V,... (tools/tsdesk.DROP_DEFAULTS: the reading filter, applied when the boxes are read) and
+    +dec:K=V,... (tools/tsdesk.DEFAULTS: the decode's options, numbers)."""
+    base, *toks = str(spec).split("+")
+    refine, post, drop, dec = False, {}, {}, {}
+    for t in toks:
+        if t == "refine":
+            refine = True
+        elif t.startswith("post:"):
+            post.update(parse_kv(t[5:]))
+        elif t.startswith("drop:"):
+            drop.update(parse_kv(t[5:]))
+        elif t.startswith("dec:"):
+            for part in filter(None, t[4:].split(",")):
+                k, _, v = part.partition("=")
+                dec[k] = float(v)
+        else:
+            raise ValueError(f"{spec}: unknown suffix +{t}")
+    return (base, refine, post, drop, dec) if with_decode else (base, refine, post, drop)
+
+
 def detector_from_spec(spec, threads=1, so=None):
     import tsdesk as T
-    refine = spec.endswith("+refine")           # tsd:MODEL.onnx[@SIZE[@MODE]]+refine: tools/tsdesk_refine on the boxes
-    #                                             ctsd:BLOB.vtsd[@SIZE]+refine: the C path's (desktop/vocr_tsd_refine.c)
-    if refine:
-        spec = spec[:-len("+refine")]
-    if spec.startswith("tsd:"):
-        path, _, rest = spec[4:].partition("@")
+    base, refine, post, drop, dec = spec_parts(spec, with_decode=True)
+    if drop:
+        T.drop_options(drop)                    # checked here; applied when the boxes are read (install's read job)
+    bad = set(dec) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
+    if bad:
+        raise ValueError(f"{spec}: unknown decode options {sorted(bad)}")
+    dec = {k: int(v) if k in ("min_cells", "max_boxes", "saddle_pct") else v for k, v in dec.items()}
+    if base.startswith("tsd:"):
+        path, _, rest = base[4:].partition("@")
         size, _, mode = rest.partition("@")
         return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
-                          refine=True if refine else None)
-    if spec.startswith("ctsd:"):
-        path, _, size = spec[5:].partition("@")
+                          refine=True if refine else None, post=post or None, decode_opts=dec or None)
+    if base.startswith("ctsd:"):
+        if post or dec:
+            raise ValueError(f"{spec}: the post-pass and decode options have no C path here")
+        path, _, size = base[5:].partition("@")
         return CTsdDet(path, size or None, threads, refine=True if refine else None)
-    if refine:
-        raise ValueError(f"{spec}+refine: the refinement suffix is for tsd: and ctsd: specs")
+    if refine or post or drop:
+        raise ValueError(f"{spec}: the suffixes are for tsd: and ctsd: specs")
     raise ValueError(spec)
+
+
+_DROP = {"opts": None, "base": None}
+
+
+def drop_of_det(det):
+    """The reading filter's options (tools/tsdesk.drop_options) of a boxes file's detector spec, or None."""
+    import tsdesk as T
+    drop = {}
+    for t in str(det).split("+")[1:]:
+        if t.startswith("drop:"):
+            drop.update(parse_kv(t[5:]))
+    return T.drop_options(drop) if drop else None
+
+
+def strip_drop(spec):
+    """A detector spec without its +drop: suffixes (the detectors never see the reading filter)."""
+    base, *toks = str(spec).split("+")
+    return "+".join([base] + [t for t in toks if not t.startswith("drop:")])
+
+
+def _drop_read_job(job):
+    """eval/desktop.py's _read_job with the reading filter of the boxes' detector spec (+drop:...): the horizontal
+    boxes whose readings tools/tsdesk.drop_set rejects are not scored, neither their text nor their boxes. The filter
+    sees the readings of every box read (with nojp 2 also the horizontal boxes outside the units, as a page reads them
+    all). With no filter it is _read_job itself."""
+    o = _DROP["opts"]
+    if not o:
+        return _DROP["base"](job)
+    import tsdesk as T
+    fr, boxes, pad = job
+    V = D._W["V"]
+    rgb = D.load_rgb(fr)
+    g = V.grey_of(rgb)
+    H, W = g.shape
+    p = D.pad_of(pad, H) if pad is not None else 0
+    want = set()
+    for u in fr["units"]:
+        x0, y0, x1, y1 = u["region"]
+        for k, b in enumerate(boxes):
+            cb = D.crop_box(b, p, W, H)
+            if cb and x0 <= cb[0] + cb[2] / 2.0 < x1 and y0 <= cb[1] + cb[3] / 2.0 < y1:
+                want.add(k)
+    read = {}
+    for k, b in enumerate(boxes):
+        if b[4] or not (k in want or o["nojp"] >= 2):
+            continue
+        cb = D.crop_box(b, p, W, H)
+        if not cb:
+            continue
+        dark = V.line_dark(g, cb)
+        ln = D._W["rec"].read(g[cb[1]:cb[1] + cb[3], cb[0]:cb[0] + cb[2]], invert=bool(dark))
+        read[k] = (ln.text, ln.conf_mean)
+    ks = sorted(read)
+    items = [((boxes[k][0], boxes[k][1], boxes[k][2] - boxes[k][0], boxes[k][3] - boxes[k][1]), *read[k]) for k in ks]
+    gone = {ks[i] for i in T.drop_set(items, o)}
+    crops, texts = [], []
+    for k, b in enumerate(boxes):
+        if k not in want or k in gone:
+            continue
+        cb = D.crop_box(b, p, W, H)
+        crops.append((*cb, len(texts)))
+        texts.append("" if b[4] else read[k][0])
+    return D.score_frame_units(fr, g, crops, texts)
 
 
 def install(Dm=D):
     """Register the tsd: / ctsd: detector specs in eval/desktop.py's detector() (which desktop.py detect and
-    desktop_time.py's pipelines call), give them R's reading pad in desktop_time.py's pipelines, and install the dense
-    sets' ignore filter. desktop.py itself is not changed."""
+    desktop_time.py's pipelines call), give them R's reading pad in desktop_time.py's pipelines, install the reading
+    filter of a boxes file's +drop: suffix in desktop.py read, and install the dense sets' ignore filter. desktop.py
+    itself is not changed."""
     if getattr(Dm, "_tsdesk_installed", False):
         return
     import tsdesk_dense
@@ -91,9 +195,18 @@ def install(Dm=D):
     def detector(spec, threads=1, opt="all", spinning=None):
         if spec.startswith(("tsd:", "ctsd:")):
             return detector_from_spec(spec, threads, Dm.session_options(threads, opt, spinning))
-        return base(spec, threads, opt, spinning)
+        return base(strip_drop(spec), threads, opt, spinning)
 
     Dm.detector, Dm._tsdesk_installed = detector, True
+    base_load = Dm.load_boxes
+
+    def load_boxes(path):
+        boxes, meta = base_load(path)
+        _DROP["opts"] = drop_of_det(meta.get("det", ""))
+        return boxes, meta
+
+    _DROP["base"] = Dm._read_job
+    Dm.load_boxes, Dm._read_job = load_boxes, _drop_read_job
     tsdesk_dense.install_ignore(Dm)
     if os.environ.get("MIDA_MODEL"):          # MeikiOCR's author's detector, a report-only arm (eval/mida_det.py)
         import mida_det

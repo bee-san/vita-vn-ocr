@@ -39,6 +39,7 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
+DECODE_EXTRA = {"saddle_pct": 0}    # decode options without a C twin yet (helper textspot-desktop-boxes), 0 = off
 
 
 def _session(path, threads=1, providers=None, options=None):
@@ -181,13 +182,68 @@ class Line:
     vertical: int = 0
 
 
+def saddle_split(K, Om, lab, n, stats, pct):
+    """The decode's saddle option: each component of >= 3 cells along its line (the orientation of its mean O) split
+    at every interior along index whose K profile (the component's largest K across, at that index) is a local
+    minimum at most pct % of the profile's median: the cells up to that index stay, the cells after it get a new
+    label. (n, lab, stats, cut) with stats in cv2's layout and cut[label] = (its start is a split, its end is one)."""
+    lab = lab.copy()
+    st = [list(stats[c]) for c in range(n)]
+    cut = [(False, False)] * n
+    out_n = n
+    for c in range(1, n):
+        x, y, cw, ch, area = (int(v) for v in stats[c][:5])
+        if area < 3:
+            continue
+        sub = lab[y:y + ch, x:x + cw] == c
+        vert = float(Om[y:y + ch, x:x + cw][sub].mean()) > 0
+        ks = np.where(sub, K[y:y + ch, x:x + cw], -np.inf)
+        prof = ks.max(axis=1) if vert else ks.max(axis=0)
+        if len(prof) < 3:
+            continue
+        med = float(np.median(prof))
+        if med <= 0:
+            continue
+        thr = pct / 100.0 * med
+        cuts = [i for i in range(1, len(prof) - 1)
+                if prof[i] <= thr and prof[i] <= prof[i - 1] and prof[i] < prof[i + 1]]
+        if not cuts:
+            continue
+        bounds = [0] + [i + 1 for i in cuts] + [len(prof)]
+        labels = [c] + list(range(out_n, out_n + len(cuts)))
+        out_n += len(cuts)
+        for k_, (a0, a1) in enumerate(zip(bounds[:-1], bounds[1:])):
+            part = np.zeros_like(sub)
+            if vert:
+                part[a0:a1, :] = sub[a0:a1, :]
+            else:
+                part[:, a0:a1] = sub[:, a0:a1]
+            lab[y:y + ch, x:x + cw][part] = labels[k_]
+            rr, qq = np.nonzero(part)
+            entry = [x + int(qq.min()), y + int(rr.min()), int(qq.max() - qq.min()) + 1, int(rr.max() - rr.min()) + 1,
+                     int(part.sum())]
+            if labels[k_] == c:
+                st[c] = entry
+            else:
+                st.append(entry)
+            flags = (k_ > 0, k_ < len(cuts))
+            if labels[k_] == c:
+                cut[c] = flags
+            else:
+                cut.append(flags)
+    if out_n == n:
+        return n, lab, stats, cut
+    return out_n, lab, np.array(st, dtype=stats.dtype).reshape(out_n, stats.shape[1]), cut
+
+
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES):
+           max_boxes=MAX_BOXES, saddle_pct=0):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
-    the first max_boxes kept."""
+    the first max_boxes kept. saddle_pct > 0 (off by default, no C twin yet): each component split along at the K
+    saddles saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -195,6 +251,9 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     n, lab, stats, _ = cv2.connectedComponentsWithStats((k > 0).astype(np.uint8), connectivity=4)
     if n <= 1:
         return []
+    cut = None
+    if saddle_pct:
+        n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
     on = np.flatnonzero(flat)
     L = flat[on]
@@ -233,6 +292,10 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
             continue
         lo, hi = float(s * int(first[c])), float(s * (int(last[c]) + 1))
         b0, b1 = float(start[c]), float(end[c])
+        if cut is not None and cut[c][0]:
+            b0 = lo
+        if cut is not None and cut[c][1]:
+            b1 = hi
         if b0 > lo + s:
             b0 = lo + s
         if b0 < lo - along_reach * size:
@@ -259,17 +322,456 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     return out[:max_boxes]
 
 
+# ----------------------------------------------------------------------------- the post-pass (#173 round 2)
+#
+# Options on the decode's frame-px boxes (helper textspot-desktop-boxes). Every option is an integer and 0 turns it
+# off, so with POST_DEFAULTS the boxes are the decode's and the refinement's bit for bit. The pre-refinement options
+# run in this order on the decode's boxes, before tools/tsdesk_refine.py:
+#   merge_pct  two boxes of one orientation that overlap across by at least half the smaller one's size across and
+#              whose intersection is at least merge_pct % of the smaller one's area become their union (the larger
+#              box's fields): a fragment the decode found inside or beside its line (a 「, a ―。 at the end);
+#   rows_pct   a horizontal box split across at an ink valley (rows with at most valley_pct % of the median ink row's
+#              count) between two ink bands whose heights are within rows_pct % of each other, each at least
+#              max(4, 20 % of the box's height) rows tall and at least rows_len % of the box's height long in ink:
+#              two tightly spaced rows boxed as one (a band of ruby, about half a line's height, is not split off,
+#              nor a short label whose glyphs have a gap across); at most two levels;
+#   gap_pct    a horizontal box split along at every run of at least max(2, r(h, gap_pct)) empty ink columns between
+#              its first and last ink column (h its height) that holds fewer than gap_weak pixels of weak ink (both
+#              thresholds halved: a faint 、 or 。): neighbouring buttons, labels and numbers in one box.
+# The post-refinement option runs on the refined boxes:
+#   ext_pct    a horizontal box's ends extended over the dash or ellipsis run beyond them (extend_ends).
+# The ink is the refinement's test (tools/tsdesk_refine.py steps 3-6, without its margins' noise term): on the box
+# grown by max(2, r(h, 25)) px, bg the lower median of that window's border ring, a pixel is ink when |g - bg| and
+# its 3 x 3 contrast both exceed max(28, 40 % of their 99th percentile over the box) and a 4-neighbour is ink too.
+
+POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
+                 "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1}
+POST_PRE = ("merge_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
+POST_POST = ("ext_pct",)                              # the options that run after it
+
+
+def post_options(opts=None):
+    o = dict(POST_DEFAULTS)
+    for k, v in (opts or {}).items():
+        if k not in POST_DEFAULTS:
+            raise KeyError(f"unknown post-pass option {k!r}")
+        o[k] = int(v)
+    return o
+
+
+def _r100(v, pct):
+    return (int(v) * int(pct) + 50) // 100
+
+
+def _pixel_box(b, W, H):
+    """(ix0, iy0, ix1, iy1) of a Box: floor / ceil of its edges, clipped to the frame."""
+    ix0 = min(max(int(math.floor(b.x)), 0), W)
+    iy0 = min(max(int(math.floor(b.y)), 0), H)
+    ix1 = min(max(int(math.ceil(b.x + b.w)), 0), W)
+    iy1 = min(max(int(math.ceil(b.y + b.h)), 0), H)
+    return ix0, iy0, ix1, iy1
+
+
+def ink_mask(g, ix0, iy0, ix1, iy1, floor=28, k_pct=40, weak=False):
+    """The ink of the pixel box [ix0, ix1) x [iy0, iy1) of grey g (the post-pass's test, above): a bool array of the
+    box's shape. weak: also the weak ink, (mask, weak mask), where both thresholds are halved (a faint 、 or 。 that
+    the strong test misses), without the 4-neighbour rule."""
+    import tsdesk_refine as TR
+    H, W = g.shape
+    h, w = iy1 - iy0, ix1 - ix0
+    A = max(2, _r100(h, 25))
+    wx0, wy0, wx1, wy1 = max(0, ix0 - A), max(0, iy0 - A), min(W, ix1 + A), min(H, iy1 + A)
+    win = g[wy0:wy1, wx0:wx1].astype(np.int16)
+    ring = np.concatenate([win[0], win[-1], win[1:-1, 0], win[1:-1, -1]])
+    bg = int(np.partition(ring, (ring.size - 1) // 2)[(ring.size - 1) // 2])
+    d = np.abs(win - bg)
+    c3 = TR._c3(g, wx0, wy0, wx1, wy1)
+    by0, bx0 = iy0 - wy0, ix0 - wx0
+    t = max(floor, _r100(TR.quantile(d[by0:by0 + h, bx0:bx0 + w], 99), k_pct))
+    tc = max(floor, _r100(TR.quantile(c3[by0:by0 + h, bx0:bx0 + w], 99), k_pct))
+    m0 = (d > t) & (c3 > tc)
+    nb = np.zeros_like(m0)
+    nb[1:] |= m0[:-1]
+    nb[:-1] |= m0[1:]
+    nb[:, 1:] |= m0[:, :-1]
+    nb[:, :-1] |= m0[:, 1:]
+    m = (m0 & nb)[by0:by0 + h, bx0:bx0 + w]
+    if not weak:
+        return m
+    wk = ((d > t // 2) & (c3 > tc // 2))[by0:by0 + h, bx0:bx0 + w]
+    return m, wk
+
+
+def merge_overlaps(boxes, pct):
+    """merge_pct: the pair with the largest intersection (as a share of the smaller box's area) merged first, until no
+    pair qualifies. The order of the boxes is kept (a merged box takes the place of the earlier of the two)."""
+    import dataclasses
+    out = list(boxes)
+    while True:
+        best = None
+        for i in range(len(out)):
+            a = out[i]
+            for j in range(i + 1, len(out)):
+                b = out[j]
+                if a.vertical != b.vertical:
+                    continue
+                dx = min(a.x + a.w, b.x + b.w) - max(a.x, b.x)
+                dy = min(a.y + a.h, b.y + b.h) - max(a.y, b.y)
+                if dx <= 0 or dy <= 0:
+                    continue
+                across, size = (dx, min(a.w, b.w)) if a.vertical else (dy, min(a.h, b.h))
+                if across < 0.5 * size:
+                    continue
+                small = min(a.w * a.h, b.w * b.h)
+                if small <= 0 or dx * dy * 100 < pct * small:
+                    continue
+                share = dx * dy / small
+                if best is None or share > best[0]:
+                    best = (share, i, j)
+        if best is None:
+            return out
+        _, i, j = best
+        a, b = out[i], out[j]
+        big = a if a.w * a.h >= b.w * b.h else b
+        x0, y0 = min(a.x, b.x), min(a.y, b.y)
+        x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
+        out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
+        del out[j]
+
+
+def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
+    """rows_pct: [Box] of a horizontal box split across at an ink valley (above), recursively to two levels; each
+    band's ink must run at least rows_len % of the box's height along (two rows of a page, not a short label whose
+    glyphs have a gap across)."""
+    import dataclasses
+    H, W = g.shape
+    ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+    h, w = iy1 - iy0, ix1 - ix0
+    if b.vertical or h < 8 or w < 8 or depth >= 2:
+        return [b]
+    m = ink_mask(g, ix0, iy0, ix1, iy1)
+    rc = m.sum(1)
+    ink = np.flatnonzero(rc)
+    if len(ink) < 2:
+        return [b]
+    vals = rc[ink]
+    med = int(np.partition(vals, (vals.size - 1) // 2)[(vals.size - 1) // 2])
+    low = _r100(med, valley_pct)
+    dense = np.flatnonzero(rc > low)
+    if len(dense) < 2:
+        return [b]
+    lo, hi = int(dense[0]), int(dense[-1]) + 1
+    min_band = max(4, _r100(h, 20))
+    min_len = _r100(h, rows_len)
+    best = None
+    y = lo
+    while y < hi:
+        if rc[y] > low:
+            y += 1
+            continue
+        v0 = y
+        while y < hi and rc[y] <= low:
+            y += 1
+        v1 = y                                   # the valley's rows [v0, v1), dense rows on both sides
+        ha, hb = v0 - lo, hi - v1
+        if min(ha, hb) < min_band or min(ha, hb) * 100 < rows_pct * max(ha, hb):
+            continue
+        ca = np.flatnonzero(m[lo:v0].any(0))
+        cb = np.flatnonzero(m[v1:hi].any(0))
+        if not len(ca) or not len(cb) or ca[-1] - ca[0] + 1 < min_len or cb[-1] - cb[0] + 1 < min_len:
+            continue
+        key = (min(ha, hb) / max(ha, hb), v1 - v0)
+        if best is None or key > best[0]:
+            best = (key, v0, v1)
+    if best is None:
+        return [b]
+    _, v0, v1 = best
+    top = dataclasses.replace(b, h=float(iy0 + v0) - b.y)
+    bot = dataclasses.replace(b, y=float(iy0 + v1), h=b.y + b.h - float(iy0 + v1))
+    return (split_rows(g, top, rows_pct, valley_pct, rows_len, depth + 1)
+            + split_rows(g, bot, rows_pct, valley_pct, rows_len, depth + 1))
+
+
+def split_along(g, b, gap_pct, gap_weak=3):
+    """gap_pct: [Box] of a horizontal box split along at its long runs of empty ink columns (above); a run that holds
+    at least gap_weak pixels of weak ink (ink_mask(weak=True): a faint 、 or 。) is not a gap. The first part keeps
+    the box's start and the last its end; the edges at a split lie on the ink either side of the gap."""
+    import dataclasses
+    H, W = g.shape
+    ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+    h, w = iy1 - iy0, ix1 - ix0
+    if b.vertical or h < 4 or w < 4:
+        return [b]
+    m, wk = ink_mask(g, ix0, iy0, ix1, iy1, weak=True)
+    cc = m.sum(0)
+    ink = np.flatnonzero(cc)
+    if len(ink) < 2:
+        return [b]
+    G = max(2, _r100(h, gap_pct))
+    wc = wk.sum(0)
+    cut = [int(c) for c in np.flatnonzero(np.diff(ink) - 1 >= G)
+           if gap_weak <= 0 or int(wc[ink[c] + 1:ink[c + 1]].sum()) < gap_weak]
+    if not cut:
+        return [b]
+    starts = [b.x] + [float(ix0 + int(ink[c + 1])) for c in cut]
+    ends = [float(ix0 + int(ink[c]) + 1) for c in cut] + [b.x + b.w]
+    return [dataclasses.replace(b, x=s, w=e - s) for s, e in zip(starts, ends) if e > s]
+
+
+def _ink_beyond(g, iy0, iy1, bx0, bx1, wx0, wx1, floor=28, k_pct=40):
+    """The ink of columns [wx0, wx1) over rows [iy0 - A, iy1 + A) (A = max(2, r(h, 25))), with the background and
+    the thresholds of the line's own pixel box [bx0, bx1) x [iy0, iy1): bg the lower median of the border ring of the
+    union of the line's box and the window, t and tc from the line's box (ink_mask's test). (mask, A)."""
+    import tsdesk_refine as TR
+    H, W = g.shape
+    h = iy1 - iy0
+    A = max(2, _r100(h, 25))
+    ux0, ux1 = max(0, min(bx0, wx0) - 1), min(W, max(bx1, wx1) + 1)
+    uy0, uy1 = max(0, iy0 - A), min(H, iy1 + A)
+    win = g[uy0:uy1, ux0:ux1].astype(np.int16)
+    ring = np.concatenate([win[0], win[-1], win[1:-1, 0], win[1:-1, -1]])
+    bg = int(np.partition(ring, (ring.size - 1) // 2)[(ring.size - 1) // 2])
+    d = np.abs(win - bg)
+    c3 = TR._c3(g, ux0, uy0, ux1, uy1)
+    ry0, rx0, rx1 = iy0 - uy0, bx0 - ux0, bx1 - ux0
+    t = max(floor, _r100(TR.quantile(d[ry0:ry0 + h, rx0:rx1], 99), k_pct))
+    tc = max(floor, _r100(TR.quantile(c3[ry0:ry0 + h, rx0:rx1], 99), k_pct))
+    m0 = (d > t) & (c3 > tc)
+    nb = np.zeros_like(m0)
+    nb[1:] |= m0[:-1]
+    nb[:-1] |= m0[1:]
+    nb[:, 1:] |= m0[:, :-1]
+    nb[:, :-1] |= m0[:, 1:]
+    m = m0 & nb
+    return m[:, wx0 - ux0:wx1 - ux0], ry0, uy1 - uy0
+
+
+def _walk_dash(m, r0, r1, cy0, cy1, cols, G, Gr, small, low_small, D):
+    """The end extension's walk over window columns `cols` (outward order) of mask m (rows [r0, r1) the line's).
+    Dash columns hold ink inside the middle rows [cy0, cy1) only. From the box's edge the walk crosses at most G empty
+    columns to the run and, before it, one small glyph (at most low_small columns, its ink in the lower half: 、 。);
+    inside the run it crosses at most Gr empty columns (a solid ―― run, not the dots of …… or an ornament row); after
+    at least D dash columns it takes one glyph of at most `small` columns (「 」 。) and ends. (the index into cols of
+    the new edge or -1, ran out: the walk reached the window's end on the run)."""
+    line = m[r0:r1]
+    mid = (r1 - r0) // 2
+    n = len(cols)
+
+    def is_dash(col):
+        return col[cy0:cy1].any() and not col[:cy0].any() and not col[cy1:].any()
+    i = 0
+    while i < min(n, small) and line[:, cols[i]].any() and not is_dash(line[:, cols[i]]):
+        i += 1                                  # the edge glyph's own ink just outside the box (rounding)
+    gap, dash, last = 0, 0, -1
+    while i < n:
+        col = line[:, cols[i]]
+        if not col.any():
+            gap += 1
+            if gap > (Gr if dash else G):
+                break
+            i += 1
+            continue
+        gap = 0
+        if is_dash(col):
+            dash += 1
+            last = i
+            i += 1
+            continue
+        j = i                                   # a glyph: its run of ink columns
+        while j < n and line[:, cols[j]].any():
+            j += 1
+        if dash >= D:
+            if j - i <= small:
+                last = j - 1
+            return last, False
+        rows = np.flatnonzero(line[:, cols[i:j]].any(1))
+        if not dash and j - i <= low_small and len(rows) and rows[0] >= mid:
+            i = j
+            continue
+        break
+    else:
+        return (last if dash >= D else -1), dash >= D and gap == 0
+    return (last if dash >= D else -1), False
+
+
+def extend_ends(g, boxes, o):
+    """ext_pct: each horizontal box's ends extended over the solid dash run (――) beyond them on the frame's ink, up to
+    r(h, ext_pct) px: from the end at most max(2, r(h, ext_gap_pct)) empty columns to the run (past a 、 or 。 before
+    it), inside the run at most max(2, r(h, ext_run_pct)), and the 「 」 or 。 after it; a run shorter than
+    r(h, ext_dash_pct) px, one that reaches the search window's end on ink, or one with ink in the rows just above or
+    below it on more than a tenth of its columns (a frame's border, a texture) is not taken. An end never grows into
+    another box beside it (tools/tsdesk_refine's neighbour_limits); with ext_join an end that reaches that box (within
+    2 px) joins the two (a line the decode found in two pieces either side of its dashes). The network gives long
+    dashes background logits, so its boxes stop where the dashes start."""
+    import dataclasses
+
+    import tsdesk_refine as TR
+    H, W = g.shape
+    rows = [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical] for b in boxes]
+    lims = TR.neighbour_limits(rows, W, H)
+    out, reach = [], []
+    for b, lim in zip(boxes, lims):
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        h = iy1 - iy0
+        reach.append((False, False))
+        if b.vertical or h < 6 or ix1 - ix0 < 4:
+            out.append(b)
+            continue
+        L = _r100(h, o["ext_pct"])
+        G = max(2, _r100(h, o["ext_gap_pct"]))
+        Gr = max(2, _r100(h, o["ext_run_pct"]))
+        D = max(2, _r100(h, o["ext_dash_pct"]))
+        q = _r100(h, 25)
+        x0, x1 = b.x, b.x + b.w
+        hit = [False, False]
+        for side in (-1, 1):
+            if side < 0:
+                wx0, wx1 = max(0, int(lim[0]), ix0 - L), ix0
+            else:
+                wx0, wx1 = ix1, min(W, int(lim[2]), ix1 + L)
+            if wx1 - wx0 < D:
+                continue
+            m, r0, nr = _ink_beyond(g, iy0, iy1, ix0, ix1, wx0, wx1)
+            cols = list(range(wx1 - wx0 - 1, -1, -1)) if side < 0 else list(range(wx1 - wx0))
+            k, ran_out = _walk_dash(m, r0, r0 + h, q, h - q, cols, G, Gr, _r100(h, 80), _r100(h, 60), D)
+            limit = (wx0 > 0 and wx0 == ix0 - L) if side < 0 else (wx1 < W and wx1 == ix1 + L)
+            if k < 0 or (ran_out and limit):
+                continue
+            c = cols[k]
+            span = range(min(c, cols[0]), max(c, cols[0]) + 1)
+            outer = np.concatenate([m[:r0, span], m[r0 + h:nr, span]]) if nr > r0 + h or r0 > 0 else None
+            if outer is not None and outer.size and int(outer.any(0).sum()) * 10 > len(span):
+                continue
+            if side < 0:
+                x0 = float(wx0 + c)
+                hit[0] = wx0 > 0 and wx0 == int(lim[0]) and c <= 2
+            else:
+                x1 = float(wx0 + c + 1)
+                hit[1] = wx1 < W and wx1 == int(lim[2]) and c >= wx1 - wx0 - 3
+        reach[-1] = tuple(hit)
+        out.append(b if (x0, x1) == (b.x, b.x + b.w) else dataclasses.replace(b, x=x0, w=x1 - x0))
+    if not o["ext_join"] or not any(a or z for a, z in reach):
+        return out
+    joined = list(out)
+    alive = [True] * len(out)
+    for i, (a, z) in enumerate(reach):
+        if not (a or z) or not alive[i]:
+            continue
+        bi = joined[i]
+        for j in range(len(joined)):
+            if j == i or not alive[j] or joined[j].vertical:
+                continue
+            bj = joined[j]
+            dy = min(bi.y + bi.h, bj.y + bj.h) - max(bi.y, bj.y)
+            if dy < 0.5 * min(bi.h, bj.h):
+                continue
+            touch_r = z and bj.x >= bi.x and bj.x - (bi.x + bi.w) <= 2         # touching or overlapping
+            touch_l = a and bj.x + bj.w <= bi.x + bi.w and bi.x - (bj.x + bj.w) <= 2
+            if touch_r or touch_l:
+                x0, y0 = min(bi.x, bj.x), min(bi.y, bj.y)
+                x1, y1 = max(bi.x + bi.w, bj.x + bj.w), max(bi.y + bi.h, bj.y + bj.h)
+                big = bi if bi.w >= bj.w else bj
+                bi = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=bi.cells + bj.cells)
+                joined[i] = bi
+                alive[j] = False
+    return [b for b, keep in zip(joined, alive) if keep]
+
+
+def post_post(g, boxes, opts):
+    """The post-refinement options (above) on frame-px Box objects of grey frame g."""
+    o = post_options(opts)
+    out = list(boxes)
+    if o["ext_pct"]:
+        out = extend_ends(g, out, o)
+    return out
+
+
+def post_pre(g, boxes, opts):
+    """The pre-refinement options (above) on frame-px Box objects of grey frame g."""
+    o = post_options(opts)
+    out = list(boxes)
+    if o["merge_pct"]:
+        out = merge_overlaps(out, o["merge_pct"])
+    if o["rows_pct"]:
+        out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
+    if o["gap_pct"]:
+        out = [p for b in out for p in split_along(g, b, o["gap_pct"], o["gap_weak"])]
+    return out
+
+
+# ----------------------------------------------------------------------------- the recognizer as a junk filter
+
+# a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
+JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "conf_milli": 0}
+_JP_RE = None
+
+
+def drop_options(opts=None):
+    o = dict(DROP_DEFAULTS)
+    for k, v in (opts or {}).items():
+        if k not in DROP_DEFAULTS:
+            raise KeyError(f"unknown reading-filter option {k!r}")
+        o[k] = int(v)
+    return o
+
+
+def has_japanese(text):
+    global _JP_RE
+    if _JP_RE is None:
+        import re
+        _JP_RE = re.compile(f"[{JAPANESE}]")
+    return bool(_JP_RE.search(text))
+
+
+def drop_set(items, o):
+    """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
+    items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
+      nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
+      nojp 2: the same, unless a reading with one sits in the same row (vertical overlap >= half the smaller height)
+              within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
+              before スポーツ);
+      conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
+    out = set()
+    jp = [has_japanese(t) for _, t, _ in items]
+    for i, (b, t, c) in enumerate(items):
+        if o["conf_milli"] and c * 1000.0 < o["conf_milli"]:
+            out.add(i)
+            continue
+        if not o["nojp"] or jp[i]:
+            continue
+        if o["nojp"] >= 2:
+            x, y, w, h = b
+            keep = False
+            for j, (b2, _, _) in enumerate(items):
+                if j == i or not jp[j]:
+                    continue
+                x2, y2, w2, h2 = b2
+                if min(y + h, y2 + h2) - max(y, y2) < 0.5 * min(h, h2):
+                    continue
+                gap = max(x2 - (x + w), x - (x2 + w2))
+                if gap * 100 <= o["nojp_gap_pct"] * max(h, h2):
+                    keep = True
+                    break
+            if keep:
+                continue
+        out.add(i)
+    return out
+
+
 class Detector:
     """textspot-desktop's detector (an ONNX file train/tsdesk_det.py exports)."""
 
     def __init__(self, path, threads=1, providers=None, session_options=None, size=None, decode_opts=None,
-                 resize_mode="exact", refine=None):
+                 resize_mode="exact", refine=None, post=None):
         if resize_mode not in ("exact", "cv2"):
             raise ValueError(f"resize_mode {resize_mode!r}: exact (the C path's integer resize) or cv2")
         self.resize_mode = resize_mode
         # refine: None (off), True (tools/tsdesk_refine.DEFAULTS) or a dict of its options: every horizontal box's
         # edges snapped to its line's ink on the full-resolution grey frame after the decode
         self.refine = None if refine in (None, False) else ({} if refine is True else dict(refine))
+        # post: None (off) or a dict of POST_DEFAULTS options (the post-pass; every option 0 = off)
+        self.post = post_options(post) if post else None
         self.sess = _session(path, threads, providers, session_options)
         meta = {k: json.loads(v) for k, v in self.sess.get_modelmeta().custom_metadata_map.items()
                 if k.startswith("vocr.")}
@@ -279,8 +781,11 @@ class Detector:
         self.size = size or meta.get("vocr.size", "fit:960")
         self.stride = int(meta["vocr.stride"])
         self.tags = int(meta.get("vocr.tags", 4))
-        d = dict(DEFAULTS)
+        d = dict(DEFAULTS, **DECODE_EXTRA)
         d.update({k: v for k, v in (meta.get("vocr.decode") or {}).items() if k in DEFAULTS})
+        bad = set(decode_opts or {}) - set(d)
+        if bad:
+            raise KeyError(f"unknown decode options {sorted(bad)}")
         d.update(decode_opts or {})
         self.opts = d
         self.input_name = self.sess.get_inputs()[0].name
@@ -311,7 +816,7 @@ class Detector:
         x, (fx, fy, iw, ih) = self.preprocess(g)
         o = self.opts
         boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
-                       o["along_reach"], self.tags, o["max_boxes"])
+                       o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]))
         H, W = g.shape
         out = []
         for b in boxes:
@@ -319,9 +824,13 @@ class Detector:
             x1, y1 = min(float(W), (b.x + b.w) / fx), min(float(H), (b.y + b.h) / fy)
             if x1 > x0 and y1 > y0:
                 out.append(Box(x0, y0, x1 - x0, y1 - y0, b.vertical, b.logit, b.tag, b.tconf, b.cells))
+        if self.post is not None and any(self.post[k] for k in POST_PRE):
+            out = post_pre(g, out, self.post)
         if self.refine is not None:
             import tsdesk_refine
             out = tsdesk_refine.refine_det(g, out, self.refine)
+        if self.post is not None and any(self.post[k] for k in POST_POST):
+            out = post_post(g, out, self.post)
         return out
 
     def boxes(self, rgb):
@@ -373,12 +882,14 @@ def reading_order(boxes):
     return [i for r in rows for i in sorted(r, key=lambda j: boxes[j][0])]
 
 
-def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, executor=None):
+def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, executor=None, drop=None):
     """Every line of a frame, top to bottom: [Line] in frame px. det: a Detector; rec: a vocr_onnx.Recognizer;
-    lm: a vocr_onnx.CharLM; tags: the tag classes to read (None: all); workers: lines read on that many threads."""
+    lm: a vocr_onnx.CharLM; tags: the tag classes to read (None: all); workers: lines read on that many threads;
+    drop: None (off) or DROP_DEFAULTS options: the horizontal lines whose readings drop_set() rejects are left out."""
     import vocr_onnx as V
     g = grey_of(frame)
     H, W = g.shape
+    dropo = drop_options(drop) if drop else None
     boxes = det.detect(g)
     if tags is not None:
         boxes = [b for b in boxes if b.tag in tags]
@@ -398,15 +909,21 @@ def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, exe
             return Line("", tight, (cx, cy, cw, ch), b.tag, b.logit, 0, 1)
         dark = V.line_dark(g, (cx, cy, cw, ch))
         r = rec.read(g[cy:cy + ch, cx:cx + cw], invert=bool(dark), lm=lm)
-        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0)
+        return Line(r.text, tight, (cx, cy, cw, ch), b.tag, b.logit, int(dark), 0), r.conf_mean
 
     if executor is not None and len(jobs) > 1:
-        return list(executor.map(one, jobs))
-    if workers > 1 and len(jobs) > 1:
+        res = list(executor.map(one, jobs))
+    elif workers > 1 and len(jobs) > 1:
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            return list(ex.map(one, jobs))
-    return [one(j) for j in jobs]
+            res = list(ex.map(one, jobs))
+    else:
+        res = [one(j) for j in jobs]
+    if dropo is None:
+        return [r if isinstance(r, Line) else r[0] for r in res]
+    hz = [k for k, r in enumerate(res) if not isinstance(r, Line)]
+    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1]) for k in hz], dropo)}
+    return [r if isinstance(r, Line) else r[0] for k, r in enumerate(res) if k not in gone]
 
 
 def _load_image(path):

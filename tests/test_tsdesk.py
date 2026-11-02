@@ -320,3 +320,186 @@ def test_reference_pipeline_pad_rules():
     assert T.pad_of(None, 544) == (6, 4) and T.pad_of("k6v4", 1080) == (12, 8) and T.pad_of("k6v4", 272) == (3, 2)
     assert T.pad_of("k5", 544) == 5 and T.pad_of(3, 544) == 3
     assert T.crop_of((10.0, 10.0, 40.0, 10.0), (6, 4), 100, 100) == (4, 6, 52, 18)
+
+
+# ----------------------------------------------------------------------------- the post-pass (round 2, boxes helper)
+
+def _glyphs(img, x0, y0, n, size, gap, val=230):
+    """n glyph-like marks (a frame and a cross of 2 px strokes) of size x size px from (x0, y0), gap px apart."""
+    for k in range(n):
+        x = x0 + k * (size + gap)
+        cv2.rectangle(img, (x, y0), (x + size - 1, y0 + size - 1), int(val), 2)
+        cv2.line(img, (x + size // 2, y0), (x + size // 2, y0 + size - 1), int(val), 2)
+        cv2.line(img, (x, y0 + size // 2), (x + size - 1, y0 + size // 2), int(val), 2)
+    return x0 + n * (size + gap) - gap
+
+
+def _box(x0, y0, x1, y1, vertical=0, logit=1.0):
+    return T.Box(float(x0), float(y0), float(x1 - x0), float(y1 - y0), vertical, logit, 0, 0.0, 4)
+
+
+def test_post_off_is_identity():
+    g = np.full((60, 200), 20, np.uint8)
+    _glyphs(g, 10, 20, 5, 16, 4)
+    bs = [_box(8, 18, 110, 38), _box(9, 19, 30, 37)]
+    assert T.post_pre(g, bs, {}) == bs
+    assert T.post_options({}) == T.POST_DEFAULTS and not any(T.POST_DEFAULTS[k] for k in T.POST_PRE)
+    with pytest.raises(KeyError):
+        T.post_options({"nope": 1})
+
+
+def test_merge_overlaps_takes_the_union():
+    a, b = _box(10, 10, 200, 34), _box(180, 11, 220, 33, logit=0.5)       # an end fragment overlapping its line
+    out = T.merge_overlaps([a, b], 30)
+    assert len(out) == 1 and (out[0].x, out[0].y, out[0].x + out[0].w, out[0].y + out[0].h) == (10, 10, 220, 34)
+    assert out[0].logit == 1.0 and out[0].cells == 8
+    assert len(T.merge_overlaps([a, b], 60)) == 2                           # 20 / 40 of the fragment: under 60 %
+    assert len(T.merge_overlaps([a, _box(10, 30, 200, 54)], 10)) == 2       # the next row: overlaps across by 4 px
+    assert len(T.merge_overlaps([a, _box(150, 10, 174, 60, vertical=1)], 10)) == 2    # orientations differ
+    assert len(T.merge_overlaps([a, _box(201, 10, 260, 34)], 1)) == 2       # side by side, no overlap
+
+
+def test_split_rows_splits_two_tight_rows_not_ruby():
+    g = np.full((80, 260), 30, np.uint8)
+    _glyphs(g, 10, 10, 10, 18, 4)                                           # row 1: y 10-27
+    _glyphs(g, 10, 31, 10, 18, 4)                                           # row 2: y 31-48, a 3 px gap
+    out = T.split_rows(g, _box(8, 8, 230, 51), 65)
+    assert len(out) == 2
+    top, bot = sorted(out, key=lambda b: b.y)
+    assert top.y == 8 and 27 <= top.y + top.h <= 29 and 29 <= bot.y <= 31 and bot.y + bot.h == 51
+    assert len(T.split_rows(g, _box(8, 8, 230, 28), 65)) == 1                 # one row: no valley
+    assert len(T.split_rows(g, _box(8, 8, 230, 51), 65, rows_len=1300)) == 1   # rows under 13 x the box height
+    s2 = np.full((80, 120), 30, np.uint8)
+    _glyphs(s2, 10, 10, 2, 18, 4)
+    _glyphs(s2, 10, 31, 2, 18, 4)                                           # a two-glyph label over another
+    assert len(T.split_rows(s2, _box(8, 8, 52, 51), 65)) == 1                 # 40 px of ink < 3 x 43 px
+    r = np.full((80, 260), 30, np.uint8)
+    _glyphs(r, 10, 6, 12, 8, 2)                                             # ruby: 8 px marks over the line
+    _glyphs(r, 10, 18, 10, 18, 4)                                           # the line: 18 px
+    assert len(T.split_rows(r, _box(8, 4, 230, 38), 65)) == 1
+
+
+def test_split_along_at_wide_gaps_only():
+    g = np.full((60, 400), 25, np.uint8)
+    e1 = _glyphs(g, 10, 20, 4, 16, 3)                                       # a label
+    e2 = _glyphs(g, e1 + 40, 20, 3, 16, 3)                                  # 40 px (2.2 line heights) on: a number
+    b = _box(8, 18, e2 + 2, 38)
+    out = T.split_along(g, b, 150)
+    assert len(out) == 2
+    assert out[0].x == b.x and abs(out[0].x + out[0].w - e1) <= 1
+    assert abs(out[1].x - (e1 + 40)) <= 1 and out[1].x + out[1].w == b.x + b.w
+    assert out[0].y == b.y and out[1].h == b.h
+    assert len(T.split_along(g, b, 250)) == 1                              # 40 px < 2.5 x 20 px
+    assert T.split_along(g, _box(8, 18, e2 + 2, 38, vertical=1), 150) == [_box(8, 18, e2 + 2, 38, vertical=1)]
+    one = _box(8, 18, e1 + 2, 38)
+    assert T.split_along(g, one, 100) == [one]                              # 3 px gaps between glyphs
+    g[34:37, e1 + 18:e1 + 21] = 70                                          # a faint 、 in the gap: weak ink only
+    assert len(T.split_along(g, b, 150)) == 1 and len(T.split_along(g, b, 150, gap_weak=0)) == 2
+
+
+def test_post_pre_runs_in_order():
+    g = np.full((90, 400), 25, np.uint8)
+    e1 = _glyphs(g, 10, 10, 4, 18, 3)
+    _glyphs(g, e1 + 50, 10, 3, 18, 3)
+    _glyphs(g, 10, 31, 9, 18, 3)
+    boxes = [_box(8, 8, 300, 51), _box(20, 9, 40, 29, logit=0.2)]
+    out = T.post_pre(g, boxes, {"merge_pct": 50, "rows_pct": 65, "gap_pct": 150})
+    rows = sorted(out, key=lambda b: (b.y, b.x))
+    assert len(rows) == 3 and rows[0].y < rows[2].y and rows[0].y == rows[1].y
+
+
+def test_drop_set_rules():
+    o1, o2 = T.drop_options({"nojp": 1}), T.drop_options({"nojp": 2})
+
+    def items(*rows):
+        return [((x, y, w, h), t, c) for x, y, w, h, t, c in rows]
+    for t in ("0000O00", "", "ME AGE", "10000"):
+        assert T.drop_set(items((0, 0, 50, 20, t, 0.99)), o1) == {0}, t
+    for t in ("「…………」", "――", "Aスポーツ", "14日目", "（！？）", "ＡＢＣ", "【ok】"):
+        assert T.drop_set(items((0, 0, 50, 20, t, 0.99)), o1) == set(), t
+    row = items((10, 10, 12, 20, "A", 0.9), (30, 10, 150, 20, "スポーツドリンク", 0.99), (300, 10, 40, 20, "0000", 0.8),
+                (30, 40, 30, 20, "Max", 0.9))
+    assert T.drop_set(row, o1) == {0, 2, 3}
+    assert T.drop_set(row, o2) == {2, 3}                     # "A" sits 8 px from a Japanese reading in its row
+    far = items((10, 10, 40, 20, "行動力", 0.99), (75, 12, 40, 18, "Max", 0.9))     # 25 px on: 1.25 heights
+    assert T.drop_set(far, o2) == {1} and T.drop_set(far, T.drop_options({"nojp": 2, "nojp_gap_pct": 200})) == set()
+    assert T.drop_set(row, T.drop_options({})) == set()
+    c = T.drop_options({"conf_milli": 600})
+    assert T.drop_set(items((0, 0, 9, 9, "あ", 0.59), (0, 20, 9, 9, "あ", 0.61)), c) == {0}
+    with pytest.raises(KeyError):
+        T.drop_options({"conf": 1})
+
+
+def test_spec_suffixes():
+    import tsdesk_eval as E
+    assert E.spec_parts("tsd:/m/a.onnx@long:960+refine") == ("tsd:/m/a.onnx@long:960", True, {}, {})
+    assert E.spec_parts("tsd:/m/a.onnx@long:960+post:gap_pct=150,merge_pct=50+refine+drop:nojp=1") == (
+        "tsd:/m/a.onnx@long:960", True, {"gap_pct": 150, "merge_pct": 50}, {"nojp": 1})
+    assert E.spec_parts("tsd:/m/a.onnx") == ("tsd:/m/a.onnx", False, {}, {})
+    assert E.spec_parts("tsd:/m/a.onnx+dec:conf_min_logit=1.5", with_decode=True)[4] == {"conf_min_logit": 1.5}
+    with pytest.raises(ValueError):
+        E.spec_parts("tsd:/m/a.onnx+refined")
+    assert E.drop_of_det("tsd:/m/a.onnx@long:960+refine") is None
+    assert E.drop_of_det("meiki+drop:nojp=1")["nojp"] == 1
+    assert E.strip_drop("meiki+drop:nojp=1") == "meiki"
+    assert E.strip_drop("tsd:/m/a.onnx+refine+drop:nojp=1+post:gap_pct=1") == "tsd:/m/a.onnx+refine+post:gap_pct=1"
+
+
+def test_extend_ends_over_dash_runs():
+    o = T.post_options({"ext_pct": 1200})
+    g = np.full((60, 420), 20, np.uint8)
+    # 「 at x 10-16 (a corner in the upper half), a dash run x 20-105 at the line's middle, 、 at x 108-112 low, a
+    # gap of 11 px (0.6 line heights), two glyphs x 124-163 (the detector's box), ―― x 166-210 and 。 x 213-217 low
+    cv2.line(g, (16, 20), (10, 20), 230, 2)
+    cv2.line(g, (10, 20), (10, 30), 230, 2)
+    cv2.line(g, (20, 29), (105, 29), 230, 2)
+    cv2.rectangle(g, (108, 34), (112, 37), 230, -1)
+    end = _glyphs(g, 124, 20, 2, 18, 4)
+    cv2.line(g, (end + 2, 29), (end + 46, 29), 230, 2)
+    cv2.rectangle(g, (end + 50, 33), (end + 54, 37), 230, -1)
+    b = _box(124, 20, end, 38)
+    out = T.post_post(g, [b], o)[0]
+    assert out.y == b.y and out.h == b.h
+    ink = np.flatnonzero((g[20:38] > 100).any(0))
+    assert (out.x, out.x + out.w) == (ink[0], ink[-1] + 1) == (9, end + 55)
+    assert T.post_post(g, [b], {}) == [b]
+    # a frame's border just above the run: not taken
+    g2 = g.copy()
+    cv2.line(g2, (0, 16), (122, 16), 230, 1)
+    assert T.post_post(g2, [b], o)[0].x == 124
+    # another box beside it stops the extension at its edge; with ext_join the two become one when it reaches it
+    nb = _box(10, 20, 60, 38)
+    out3 = T.post_post(g, [b, nb], dict(o, ext_join=0))
+    assert out3[0].x == 60 and out3[1].x == 10 and out3[1].x + out3[1].w == 113    # nb runs on over the dashes and 、
+    out4 = T.post_post(g, [b, nb], o)
+    assert len(out4) == 1 and (out4[0].x, out4[0].x + out4[0].w) == (10, end + 55)
+    # the dots of an ellipsis (gaps inside the run) are not a dash run
+    g4 = np.full((60, 420), 20, np.uint8)
+    end4 = _glyphs(g4, 130, 20, 2, 18, 4)
+    for k in range(8):
+        cv2.rectangle(g4, (end4 + 3 + 7 * k, 28), (end4 + 4 + 7 * k, 29), 230, -1)
+    b4 = _box(130, 20, end4, 38)
+    assert T.post_post(g4, [b4], o)[0] == b4
+    # a run under ext_dash_pct of the height is not a dash run; ordinary glyphs beyond the end are not taken
+    g3 = np.full((60, 420), 20, np.uint8)
+    end3 = _glyphs(g3, 130, 20, 2, 18, 4)
+    cv2.line(g3, (end3 + 3, 29), (end3 + 12, 29), 230, 2)
+    _glyphs(g3, end3 + 40, 20, 2, 18, 4)
+    b3 = _box(130, 20, end3, 38)
+    assert T.post_post(g3, [b3], o)[0] == b3
+
+
+def test_decode_saddle_split():
+    m = _maps(80, 400, 8, [[40.0, 20.0, 360.0, 44.0]])
+    on = m[0] > 0
+    m[0][on] = 6.0
+    col = 24                                                # a weak column inside the kernel: a K saddle
+    m[0][:, col][on[:, col]] = 0.5
+    one = T.decode(m, 400, 80, 8)
+    assert len(one) == 1 and T.decode(m, 400, 80, 8, saddle_pct=5) == one       # 0.5 > 5 % of 6
+    two = sorted(T.decode(m, 400, 80, 8, saddle_pct=20), key=lambda b: b.x)
+    assert len(two) == 2
+    assert two[0].x == pytest.approx(40.0) and two[0].x + two[0].w == pytest.approx(8 * (col + 1))
+    assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
+    assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
+    assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept

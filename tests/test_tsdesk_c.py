@@ -449,7 +449,9 @@ def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
              ((1440, 2560), (540, 960)), ((2160, 3840), (540, 960)), ((768, 1366), (538, 960)), ((1, 1), (3, 5)),
              ((5, 3), (1, 1)), ((300, 200), (3, 2)), ((130, 7), (2, 7)), ((17, 33), (17, 16)), ((40, 4000), (1, 30)),
              ((272, 480), (544, 960)), ((1, 1), (2, 2)), ((1, 7), (2, 14)), ((5, 1), (10, 2)), ((17, 33), (34, 66)),
-             ((100, 333), (200, 666))]                                  # the exact 2x enlargement's 16-bit path
+             ((100, 333), (200, 666)),                                  # the exact 2x enlargement's 16-bit path
+             ((720, 1280), (540, 960)), ((2160, 3840), (540, 960)), ((8, 12), (6, 9)), ((40, 64), (10, 16)),
+             ((1, 16), (1, 4)), ((16, 50), (12, 50)), ((9, 100), (2, 25))]  # quarter weights (coarse_rows)
     sizes += [((int(rng.integers(1, 400)), int(rng.integers(1, 400))),
                (int(rng.integers(1, 500)), int(rng.integers(1, 500)))) for _ in range(25)]
     for lib in libs.values():
@@ -476,7 +478,7 @@ def test_vocr_desk_resize_and_grey_keep_their_rule(libs):
         L.vocr_desk_resize_plan.argtypes = [C.c_uint] * 4 + [C.c_void_p]
         L.vocr_desk_resize_band.argtypes = [C.c_void_p, C.c_void_p, C.c_uint, C.c_uint, C.c_void_p, C.c_uint, C.c_uint,
                                             C.c_void_p]
-        for (h, w), (dh, dw) in sizes[:12]:
+        for (h, w), (dh, dw) in sizes[:12] + sizes[19:26]:
             for ch in (1, 3, 4):
                 img = rng.integers(0, 256, (h, w, ch), dtype=np.uint8) if ch > 1 else \
                     rng.integers(0, 256, (h, w), dtype=np.uint8)

@@ -51,7 +51,8 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
-DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0}    # decode options, no C twin yet
+DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0,
+                "vote_depth": 2, "along_pct": 0, "along_depth": 3}               # decode options (vote_pct: C too)
 #                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
@@ -326,6 +327,78 @@ def vote_split(maps, lab, n, stats, pct, s, depth=2, cap=None):
     return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
 
 
+def along_split(maps, lab, n, stats, pct, s, depth=3, cap=None, w=2):
+    """The decode's along option: a component is split along its line (the orientation of its summed O) where its
+    cells' along votes part, two items of a row whose kernels touched (a label and its value, menu entries, a bullet
+    and its text): the network's end votes (centre + E2) of the cells before a split point stop where the start votes
+    (centre - E1) of the cells after it begin, while along one line every cell votes the line's own two ends. Over the
+    split points between consecutive along indices (columns; rows for a vertical line), the separation is the mean
+    start vote of the cells of the w indices after the point minus the mean end vote of the cells of the w indices
+    before it; the best point is kept when its separation is at least -pct % of the component's mean size across
+    (A1 + A2) and each part holds at least w indices; recursively, `depth` levels, while the labels stay under `cap`.
+    Sums as vote_split's: the cells in raster order, one term at a time; a window's mean adds its per-index sums in
+    index order. (n, lab, stats) with stats in cv2's layout."""
+    hm, wm = lab.shape
+    Om, A1, A2, E1, E2 = (np.ascontiguousarray(maps[i, :hm, :wm]).astype(np.float64) for i in (1, 2, 3, 4, 5))
+    lab = lab.copy()
+    st = [list(stats[c]) for c in range(n)]
+    half = (s - 1) / 2.0
+    todo = [(c, depth) for c in range(1, n)]
+    while todo:
+        c, dep = todo.pop()
+        if cap is not None and n >= cap:
+            break
+        x, y, cw, ch = (int(v) for v in st[c][:4])
+        sub = lab[y:y + ch, x:x + cw] == c
+        rr, qq = np.nonzero(sub)
+        m = len(rr)
+        if m < 2 * w:
+            continue
+        R, Q = rr + y, qq + x
+        vert = _seq(Om[R, Q]) / m > 0.0
+        size = _seq(A1[R, Q] + A2[R, Q]) / m
+        ai = R if vert else Q
+        cc = s * ai.astype(np.float64) + half
+        start = cc - E1[R, Q]
+        end = cc + E2[R, Q]
+        idx = np.unique(ai)
+        if len(idx) < 2 * w or size <= 0:
+            continue
+        pos = np.searchsorted(idx, ai)
+        k_n = np.bincount(pos, minlength=len(idx)).astype(np.float64)
+        s_s = np.bincount(pos, start, minlength=len(idx))
+        s_e = np.bincount(pos, end, minlength=len(idx))
+        best = None
+        for k in range(w - 1, len(idx) - w):
+            le = lc = hs = hc = 0.0
+            for q in range(k - w + 1, k + 1):
+                le, lc = le + s_e[q], lc + k_n[q]
+            for q in range(k + 1, k + w + 1):
+                hs, hc = hs + s_s[q], hc + k_n[q]
+            sep = hs / hc - le / lc
+            if best is None or sep > best[0]:
+                best = (sep, k)
+        if best is None or best[0] * 100.0 < -pct * size:
+            continue
+        hi = ai > idx[best[1]]
+        part = np.zeros_like(sub)
+        part[rr[hi], qq[hi]] = True
+        lab[y:y + ch, x:x + cw][part] = n
+        keep = sub & ~part
+        for msk, lbl in ((keep, c), (part, n)):
+            r2, q2 = np.nonzero(msk)
+            entry = [x + int(q2.min()), y + int(r2.min()), int(q2.max() - q2.min()) + 1, int(r2.max() - r2.min()) + 1,
+                     int(msk.sum())]
+            if lbl == c:
+                st[c] = entry
+            else:
+                st.append(entry)
+        n += 1
+        if dep > 1:
+            todo += [(c, dep - 1), (n - 1, dep - 1)]
+    return n, lab, np.array(st, dtype=stats.dtype).reshape(n, stats.shape[1])
+
+
 def rescue_components(k, lab, n, stats, t_low):
     """The decode's rescue option: the 4-connected components of K > -t_low that hold no cell of K > 0 (a line the
     network saw too weakly: no kernel cell, nothing found there) added with new labels. (n, lab, stats, first new
@@ -347,19 +420,22 @@ def rescue_components(k, lab, n, stats, t_low):
 
 
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0, vote_depth=2,
+           along_pct=0, along_depth=3):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
-    the first max_boxes kept. Off by default, no C twin yet: vote_pct > 0, each component split across where its
-    cells' edge votes are bimodal (vote_split()); saddle_pct > 0, each component split along at the K saddles
-    saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there);
-    rescue_milli > 0, the components of K > -rescue_milli / 1000 with no K > 0 cell decoded too (rescue_components();
-    their mean logit is negative, so conf_min_logit does not apply to them); clamp_ends, an end regressed past the
-    kernel never reaches into another component of the same orientation in its row (across overlap at least half the
-    smaller size across): it stops at that component's outermost cell edge (a label's end run on over the number
-    beside it)."""
+    the first max_boxes kept. Off by default: vote_pct > 0, each component split across where its cells' edge votes
+    are bimodal (vote_split(), vote_depth levels: 2, the C twin's; deeper, no C twin yet). No C twin yet:
+    along_pct > 0, each component (after the vote split) split along where its cells' end and start votes part
+    (along_split(), along_depth levels: two items of a row whose kernels touched);
+    saddle_pct > 0, each component split along at the K saddles saddle_split() finds, the parts' ends at a split at
+    their outermost cells' edges (no E1 / E2 there); rescue_milli > 0, the components of K > -rescue_milli / 1000
+    with no K > 0 cell decoded too (rescue_components(); their mean logit is negative, so conf_min_logit does not
+    apply to them); clamp_ends, an end regressed past the kernel never reaches into another component of the same
+    orientation in its row (across overlap at least half the smaller size across): it stops at that component's
+    outermost cell edge (a label's end run on over the number beside it)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -371,7 +447,11 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if rescue_milli:
         n, lab, stats, _ = rescue_components(k, lab, n, stats, rescue_milli / 1000.0)
     if vote_pct:
-        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
+        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, depth=int(vote_depth),
+                                   cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
+    if along_pct:
+        n, lab, stats = along_split(maps, lab, n, stats, along_pct, s, depth=int(along_depth),
+                                    cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
     if saddle_pct:
         n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
@@ -480,7 +560,11 @@ def _clamp_ends(boxes, kern, w, h):
 #
 # Options on the decode's frame-px boxes (helper textspot-desktop-boxes). Every option is an integer and 0 turns it
 # off, so with POST_DEFAULTS the boxes are the decode's and the refinement's bit for bit. The pre-refinement options
-# run in this order on the decode's boxes, before tools/tsdesk_refine.py:
+# run in this order on the decode's boxes, before tools/tsdesk_refine.py (vflip_pct first, then merge_pct, touch_pct
+# (merge_touching), rows_pct and gap_pct; vflip, touch_pct and ext_band_pct have no C twin yet):
+#   vflip_pct  a vertical box whose ink is a stack of glyph bands with wide gaps becomes horizontal boxes (vflip);
+#   ksplit_pct the last step, after the post-refinement options: a horizontal box is cut at an ink gap the detector's
+#              own K map does not bridge (split_kgap; Detector only, it needs the maps);
 #   merge_pct  two boxes of one orientation that overlap across by at least half the smaller one's size across and
 #              whose intersection is at least merge_pct % of the smaller one's area become their union (the larger
 #              box's fields): a fragment the decode found inside or beside its line (a 「, a ―。 at the end);
@@ -499,8 +583,10 @@ def _clamp_ends(boxes, kern, w, h):
 # its 3 x 3 contrast both exceed max(28, 40 % of their 99th percentile over the box) and a 4-neighbour is ink too.
 
 POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 300, "gap_pct": 0, "gap_weak": 3,
-                 "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1}
-POST_PRE = ("merge_pct", "rows_pct", "gap_pct")      # the options that run before the refinement
+                 "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
+                 "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100,
+                 "vflip_min": 3, "vflip_h_pct": 50, "ksplit_pct": 0, "ksplit_k": -2, "ksplit_min_pct": 50}
+POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "rows_pct", "gap_pct")      # the options before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
 
@@ -591,6 +677,166 @@ def merge_overlaps(boxes, pct):
         x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
         out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
         del out[j]
+
+
+def merge_touching(boxes, pct):
+    """touch_pct: two boxes of one orientation that overlap across by at least pct % of the smaller size across and
+    touch or overlap along (no gap between them) become their union (the larger box's fields, the place of the
+    earlier), pairs in order until none qualifies: a line the decode cut in two where its kernel dips (at a ――)."""
+    import dataclasses
+    out = list(boxes)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(out)):
+            a = out[i]
+            for j in range(i + 1, len(out)):
+                b = out[j]
+                if a.vertical != b.vertical:
+                    continue
+                if a.vertical:
+                    across = min(a.x + a.w, b.x + b.w) - max(a.x, b.x)
+                    size = min(a.w, b.w)
+                    gap = max(b.y - (a.y + a.h), a.y - (b.y + b.h))
+                else:
+                    across = min(a.y + a.h, b.y + b.h) - max(a.y, b.y)
+                    size = min(a.h, b.h)
+                    gap = max(b.x - (a.x + a.w), a.x - (b.x + b.w))
+                if gap > 0 or across * 100 < pct * size:
+                    continue
+                big = a if a.w * a.h >= b.w * b.h else b
+                x0, y0 = min(a.x, b.x), min(a.y, b.y)
+                x1, y1 = max(a.x + a.w, b.x + b.w), max(a.y + a.h, b.y + b.h)
+                out[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + b.cells)
+                del out[j]
+                changed = True
+                break
+            if changed:
+                break
+    return out
+
+
+def vflip(g, boxes, gap_pct, join_pct=100, min_bands=3, h_pct=50):
+    """vflip_pct: a vertical box whose ink is a stack of at least min_bands glyph bands (runs of ink rows, each at
+    least max(2, 15 % of the box's width) tall), their median height at least h_pct % of the box's width, with a
+    median gap between them of at least gap_pct % of their median height, is a stack of horizontal items, not a
+    column of vertical text (whose glyphs nearly touch): a kana grid, a menu, a list of short labels. It becomes one
+    horizontal box per band (the band's rows, its ink columns; at most MAX_BOXES with the boxes kept, the C twin's
+    room: desktop/vocr_tsd_post.c); then the pieces of the frame's
+    converted boxes that sit in one row (vertical overlap at least half the smaller height) within a gap of
+    join_pct % of the larger height join, pairs in order until none does (the larger piece's fields)."""
+    import dataclasses
+    H, W = g.shape
+    out, pieces = [], []
+    for b in boxes:
+        if not b.vertical:
+            out.append(b)
+            continue
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        w, h = ix1 - ix0, iy1 - iy0
+        if w < 4 or h < 8:
+            out.append(b)
+            continue
+        m = ink_mask(g, ix0, iy0, ix1, iy1)
+        rc = m.sum(1)
+        bands, y = [], 0
+        while y < h:
+            if not rc[y]:
+                y += 1
+                continue
+            y0 = y
+            while y < h and rc[y]:
+                y += 1
+            if y - y0 >= max(2, _r100(w, 15)):
+                bands.append((y0, y))
+        if len(bands) < max(2, min_bands):
+            out.append(b)
+            continue
+        hs = sorted(e - a for a, e in bands)
+        gaps = sorted(bands[i + 1][0] - bands[i][1] for i in range(len(bands) - 1))
+        hm = hs[(len(hs) - 1) // 2]
+        if gaps[(len(gaps) - 1) // 2] * 100 < gap_pct * hm or hm * 100 < h_pct * w:
+            out.append(b)
+            continue
+        for a, e in bands:
+            cols = np.flatnonzero(m[a:e].any(0))
+            pieces.append(dataclasses.replace(b, x=float(ix0 + int(cols[0])), y=float(iy0 + a),
+                                              w=float(int(cols[-1]) - int(cols[0]) + 1), h=float(e - a), vertical=0,
+                                              cells=1))
+    pieces = pieces[:max(0, MAX_BOXES - len(out))]                      # the C twin's room (cap = MAX_BOXES)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(pieces)):
+            a = pieces[i]
+            for j in range(i + 1, len(pieces)):
+                c = pieces[j]
+                if min(a.y + a.h, c.y + c.h) - max(a.y, c.y) < 0.5 * min(a.h, c.h):
+                    continue
+                if max(c.x - (a.x + a.w), a.x - (c.x + c.w)) * 100 > join_pct * max(a.h, c.h):
+                    continue
+                big = a if a.w * a.h >= c.w * c.h else c
+                x0, y0 = min(a.x, c.x), min(a.y, c.y)
+                x1, y1 = max(a.x + a.w, c.x + c.w), max(a.y + a.h, c.y + c.h)
+                pieces[i] = dataclasses.replace(big, x=x0, y=y0, w=x1 - x0, h=y1 - y0, cells=a.cells + c.cells)
+                del pieces[j]
+                changed = True
+                break
+            if changed:
+                break
+    return out + pieces
+
+
+def split_kgap(g, boxes, K, fx, fy, stride, gap_pct, k_max=-2, min_pct=50):
+    """ksplit_pct: [Box] with each horizontal box cut at its runs of empty ink columns (ink_mask) at least
+    max(2, gap_pct % of its height) long where the detector's K map does not bridge the gap: the lowest, over the K
+    columns the run covers, of the column's maximum over the box's K rows is below k_max (a logit). Such a box was
+    joined after the decode (the refinement's or the extension's reach, or the merge): a line and an icon beside it,
+    two items of a row. A cut is kept only when the ink on either side, to the next kept cut, is at least min_pct % of
+    the height wide (an end mark like the 」 after a ？ stays). The first part keeps the box's start and the last its
+    end; the edges at a cut lie on the ink either side of the gap."""
+    import dataclasses
+    H, W = g.shape
+    KH, KW = K.shape
+    out = []
+    for b in boxes:
+        ix0, iy0, ix1, iy1 = _pixel_box(b, W, H)
+        h, w = iy1 - iy0, ix1 - ix0
+        if b.vertical or h < 4 or w < 4:
+            out.append(b)
+            continue
+        cc = ink_mask(g, ix0, iy0, ix1, iy1).any(0)
+        ink = np.flatnonzero(cc)
+        if len(ink) < 2:
+            out.append(b)
+            continue
+        G = max(2, _r100(h, gap_pct))
+        r0 = min(max(int(iy0 * fy) // stride, 0), KH - 1)
+        r1 = min(max(int(math.ceil(iy1 * fy / stride)), r0 + 1), KH)
+        cuts = []                                                        # (last ink col + 1, next ink col), box px
+        for i in np.flatnonzero(np.diff(ink) - 1 >= G):
+            a, e = int(ink[i]) + 1, int(ink[i + 1])
+            c0 = min(max(int((ix0 + a) * fx) // stride, 0), KW - 1)
+            c1 = min(max(int(math.ceil((ix0 + e) * fx / stride)), c0 + 1), KW)
+            if float(K[r0:r1, c0:c1].max(0).min()) < k_max:
+                cuts.append((a, e))
+        if not cuts:
+            out.append(b)
+            continue
+        mw = _r100(h, min_pct)
+        keep, start = [], int(ink[0])
+        for k, (a, e) in enumerate(cuts):
+            nxt = cuts[k + 1][0] if k + 1 < len(cuts) else int(ink[-1]) + 1
+            if a - start >= mw and nxt - e >= mw:
+                keep.append((a, e))
+                start = e
+        if not keep:
+            out.append(b)
+            continue
+        xs = [b.x] + [float(ix0 + e) for _, e in keep]
+        xe = [float(ix0 + a) for a, _ in keep] + [b.x + b.w]
+        out.extend(dataclasses.replace(b, x=s0, w=e0 - s0) for s0, e0 in zip(xs, xe) if e0 > s0)
+    return out[:MAX_BOXES]
 
 
 def split_rows(g, b, rows_pct, valley_pct=10, rows_len=300, depth=0):
@@ -753,7 +999,8 @@ def extend_ends(g, boxes, o):
     r(h, ext_pct) px: from the end at most max(2, r(h, ext_gap_pct)) empty columns to the run (past a 、 or 。 before
     it), inside the run at most max(2, r(h, ext_run_pct)), and the 「 」 or 。 after it; a run shorter than
     r(h, ext_dash_pct) px, one that reaches the search window's end on ink, or one with ink in the rows just above or
-    below it on more than a tenth of its columns (a frame's border, a texture) is not taken. An end never grows into
+    below it on more than a tenth of its columns (a frame's border, a texture: the window's max(2, r(h, 25)) rows, or
+    max(1, r(h, ext_band_pct)) of them) is not taken. An end never grows into
     another box beside it (tools/tsdesk_refine's neighbour_limits); with ext_join an end that reaches that box (within
     2 px) joins the two (a line the decode found in two pieces either side of its dashes). The network gives long
     dashes background logits, so its boxes stop where the dashes start."""
@@ -793,7 +1040,9 @@ def extend_ends(g, boxes, o):
                 continue
             c = cols[k]
             span = range(min(c, cols[0]), max(c, cols[0]) + 1)
-            outer = np.concatenate([m[:r0, span], m[r0 + h:nr, span]]) if nr > r0 + h or r0 > 0 else None
+            band = max(1, _r100(h, o["ext_band_pct"])) if o["ext_band_pct"] else nr     # the guard's rows
+            bt, bb = max(0, r0 - band), min(nr, r0 + h + band)
+            outer = np.concatenate([m[bt:r0, span], m[r0 + h:bb, span]]) if bb > r0 + h or r0 > bt else None
             if outer is not None and outer.size and int(outer.any(0).sum()) * 10 > len(span):
                 continue
             if side < 0:
@@ -844,8 +1093,12 @@ def post_pre(g, boxes, opts):
     """The pre-refinement options (above) on frame-px Box objects of grey frame g."""
     o = post_options(opts)
     out = list(boxes)
+    if o["vflip_pct"]:
+        out = vflip(g, out, o["vflip_pct"], o["vflip_join_pct"], o["vflip_min"], o["vflip_h_pct"])
     if o["merge_pct"]:
         out = merge_overlaps(out, o["merge_pct"])
+    if o["touch_pct"]:
+        out = merge_touching(out, o["touch_pct"])
     if o["rows_pct"]:
         out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:
@@ -857,8 +1110,67 @@ def post_pre(g, boxes, opts):
 
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
-DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4}
+DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
+                 "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1}
+# cut_reading's marks: no cut on either side of a punctuation mark (a phrase's end, a bracket, a dash, a dot: the
+# gap beside it is the sentence's own, and the mark belongs to the text it closes or opens)
+CUT_MARKS = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・「『（(【〈《〔［[｛{")
 _JP_RE = None
+
+
+def cut_reading(g, b, chars, pct, rel_pct=200):
+    """cut_pct (a reading-stage option): a read horizontal line cut into items at its wide ink gaps, by its characters'
+    positions: a label and its value, menu entries, an icon beside a label. b: the box [x0, y0, x1, y1, ...] in frame
+    px; chars: [(text, x)] the reading's characters in order with their centres in frame px. A gap is the longest run
+    of empty ink columns (ink_mask over the box) lying between two consecutive characters' centres; it cuts the line
+    when it is at least max(2, pct % of the height) and at least rel_pct % of the line's median such gap (a wide-set
+    font keeps its lines), unless either character is a punctuation mark (CUT_MARKS). A run as long between the box's
+    first (last) ink and the first (last) character's centre trims ink that read as no character (an icon). None (no
+    cut, no trim) or [(x0, x1, text)] in frame px: every character in the piece between its neighbouring cuts (the
+    first and last pieces take every character before and after them); the first piece keeps the box's start and the
+    last its end unless trimmed; the edges at a cut lie on the ink either side of the gap."""
+    H, W = g.shape
+    ix0 = min(max(int(math.floor(b[0])), 0), W)
+    iy0 = min(max(int(math.floor(b[1])), 0), H)
+    ix1 = min(max(int(math.ceil(b[2])), 0), W)
+    iy1 = min(max(int(math.ceil(b[3])), 0), H)
+    h = iy1 - iy0
+    if h < 4 or ix1 - ix0 < 4 or not chars:
+        return None
+    ink = np.flatnonzero(ink_mask(g, ix0, iy0, ix1, iy1).any(0))
+    if len(ink) < 2:
+        return None
+    runs = [(int(ink[j]) + 1, int(ink[j + 1])) for j in np.flatnonzero(np.diff(ink) > 1)]    # empty, box px
+
+    def widest(a, e):
+        best = None
+        for r in runs:
+            if r[0] >= a and r[1] <= e and (best is None or r[1] - r[0] > best[1] - best[0]):
+                best = r
+        return best
+
+    xs = [x - ix0 for _, x in chars]
+    gaps = [widest(xs[i], xs[i + 1]) for i in range(len(chars) - 1)]
+    lens = sorted((r[1] - r[0]) if r else 0 for r in gaps)
+    med = lens[(len(lens) - 1) // 2] if lens else 0
+    thr = max(2, _r100(h, pct), -(-int(med) * int(rel_pct) // 100))
+    cuts = [(i, r) for i, r in enumerate(gaps) if r and r[1] - r[0] >= thr
+            and chars[i][0] not in CUT_MARKS and chars[i + 1][0] not in CUT_MARKS]
+    lead = widest(int(ink[0]), xs[0])
+    tail = widest(xs[-1], int(ink[-1]) + 1)
+    lead = lead if lead and lead[1] - lead[0] >= thr else None
+    tail = tail if tail and tail[1] - tail[0] >= thr else None
+    if not cuts and not lead and not tail:
+        return None
+    starts = [float(ix0 + lead[1]) if lead else float(b[0])] + [float(ix0 + r[1]) for _, r in cuts]
+    ends = [float(ix0 + r[0]) for _, r in cuts] + [float(ix0 + tail[0]) if tail else float(b[2])]
+    bounds = [0] + [i + 1 for i, _ in cuts] + [len(chars)]                # the characters of each piece
+    out = []
+    for k, (s0, e0) in enumerate(zip(starts, ends)):
+        t = "".join(c for c, _ in chars[bounds[k]:bounds[k + 1]])
+        if t and e0 > s0:
+            out.append((s0, e0, t))
+    return out
 
 
 def drop_options(opts=None):
@@ -990,9 +1302,11 @@ class Detector:
         g = grey_of(img)
         x, (fx, fy, iw, ih) = self.preprocess(g)
         o = self.opts
-        boxes = decode(self.maps(x), iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
+        maps = self.maps(x)
+        boxes = decode(maps, iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
                        o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
-                       int(o["rescue_milli"]), int(o["clamp_ends"]))
+                       int(o["rescue_milli"]), int(o["clamp_ends"]), int(o["vote_depth"]), int(o["along_pct"]),
+                       int(o["along_depth"]))
         H, W = g.shape
         out = []
         for b in boxes:
@@ -1007,6 +1321,9 @@ class Detector:
             out = tsdesk_refine.refine_det(g, out, self.refine)
         if self.post is not None and any(self.post[k] for k in POST_POST):
             out = post_post(g, out, self.post)
+        if self.post is not None and self.post["ksplit_pct"]:
+            p = self.post
+            out = split_kgap(g, out, maps[0], fx, fy, self.stride, p["ksplit_pct"], p["ksplit_k"], p["ksplit_min_pct"])
         return out
 
     def boxes(self, rgb):

@@ -516,7 +516,8 @@ def test_decode_saddle_split():
     assert two[0].x == pytest.approx(40.0) and two[0].x + two[0].w == pytest.approx(8 * (col + 1))
     assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
     assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
-    assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept
+    assert all(v == {"vote_depth": 2, "along_depth": 3}.get(k, 0) for k, v in T.DECODE_EXTRA.items())  # off
+    assert "saddle_pct" not in T.DEFAULTS                                                       # C constants kept
 
 
 def test_decode_vote_split_two_touching_lines():
@@ -541,6 +542,27 @@ def test_decode_vote_split_two_touching_lines():
     assert all(b.x == pytest.approx(40.0) and b.x + b.w == pytest.approx(248.0) for b in two)
     m1 = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0]])                   # one line: its votes agree, no split
     assert len(T.decode(m1, 320, 160, 8, vote_pct=70)) == 1
+
+
+def test_decode_vote_depth_splits_a_five_line_kernel():
+    s, hm, wm = 8, 20, 40
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for k in range(5):                                                   # 5 lines of 3 kernel rows, touching
+        y0 = 16.0 + 24.0 * k
+        for r in range(2 + 3 * k, 5 + 3 * k):
+            for q in range(5, 31):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y0 + 22.0 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - 40.0, 248.0 - cs[q]
+    two = T.decode(m, wm * s, hm * s, s, vote_pct=70)
+    deep = sorted(T.decode(m, wm * s, hm * s, s, vote_pct=70, vote_depth=4), key=lambda b: b.y)
+    assert len(two) < 5 and len(deep) == 5
+    for k, b in enumerate(deep):
+        assert b.y == pytest.approx(16.0 + 24.0 * k) and b.h == pytest.approx(22.0)
+    assert T.DECODE_EXTRA["vote_depth"] == 2
 
 
 def test_decode_rescue_weak_lines():
@@ -585,3 +607,128 @@ def test_decode_clamp_ends_at_a_neighbour():
     assert b[0].x + b[0].w == pytest.approx(200.0) and b[1] == a[1]       # it stops at the number's first cell
     one = _maps(80, 400, 8, [[40.0, 20.0, 160.0, 44.0]])
     assert T.decode(one, 400, 80, 8, clamp_ends=1) == T.decode(one, 400, 80, 8)
+
+
+def test_merge_touching_and_the_guard_band():
+    a, b = _box(10, 10, 200, 34), _box(196, 11, 300, 33)              # one line in two boxes, 4 px of overlap
+    assert len(T.merge_overlaps([a, b], 70)) == 2
+    out = T.post_pre(np.zeros((60, 400), np.uint8), [a, b], {"touch_pct": 70})
+    assert len(out) == 1 and (out[0].x, out[0].x + out[0].w, out[0].y, out[0].y + out[0].h) == (10, 300, 10, 34)
+    assert len(T.merge_touching([a, _box(201, 10, 300, 34)], 70)) == 2                 # a 1 px gap: apart
+    assert len(T.merge_touching([a, _box(196, 30, 300, 54)], 70)) == 2                 # 4 px across: another row
+    # the guard: ink 6 px above the run (beyond a 10 % band of an 18 px line) rejects it only with the full margin
+    o = T.post_options({"ext_pct": 1200})
+    g = np.full((60, 420), 20, np.uint8)
+    end = _glyphs(g, 124, 20, 2, 18, 4)
+    cv2.line(g, (end + 2, 29), (end + 46, 29), 230, 2)
+    cv2.line(g, (end + 2, 15), (end + 46, 15), 230, 1)                 # a rule 5 px above the line's top
+    b2 = _box(124, 20, end, 38)
+    assert T.post_post(g, [b2], o)[0] == b2
+    got = T.post_post(g, [b2], dict(o, ext_band_pct=10))[0]
+    assert got.x == b2.x and got.x + got.w > end + 40
+
+
+def test_vflip_turns_a_gappy_column_into_rows():
+    g = np.full((240, 300), 20, np.uint8)
+    for col in range(3):                                                 # a 3 x 4 kana grid: 18 px glyphs, 12 px gaps
+        for row in range(4):
+            _glyphs(g, 20 + 30 * col, 20 + 30 * row, 1, 18, 0)
+    cols = [_box(20 + 30 * c - 1, 19, 20 + 30 * c + 19, 19 + 30 * 3 + 20, vertical=1) for c in range(3)]
+    out = T.post_pre(g, cols, {"vflip_pct": 30})
+    assert all(not b.vertical for b in out) and len(out) == 4               # one horizontal box per grid row
+    for k, b in enumerate(sorted(out, key=lambda b: b.y)):
+        assert b.x < 21 and b.x + b.w > 97 and abs(b.y - (20 + 30 * k)) <= 2 and b.h <= 22
+    t = np.full((240, 60), 20, np.uint8)                                   # vertical text: glyphs 2 px apart
+    for row in range(7):
+        _glyphs(t, 20, 10 + 20 * row, 1, 18, 0)
+    col = [_box(19, 9, 39, 150, vertical=1)]
+    assert T.post_pre(t, col, {"vflip_pct": 30}) == col
+    assert T.post_pre(g, cols, {}) == cols
+    two = [_box(19, 19, 39, 19 + 30 + 20, vertical=1)]                      # two bands only: left alone (vflip_min 3)
+    assert T.post_pre(g, two, {"vflip_pct": 30}) == two
+    thin = np.full((240, 60), 20, np.uint8)                                # bands 4 px tall in a 20 px box: no glyphs
+    for row in range(5):
+        thin[20 + 12 * row:24 + 12 * row, 20:38] = 230
+    tb = [_box(19, 19, 39, 19 + 12 * 4 + 6, vertical=1)]
+    assert T.post_pre(thin, tb, {"vflip_pct": 30}) == tb
+
+
+def test_split_kgap_cuts_where_k_does_not_bridge_the_gap():
+    g = np.full((40, 220), 20, np.uint8)
+    e1 = _glyphs(g, 8, 10, 4, 16, 2)                                      # a label: 4 glyphs, 2 px apart
+    _glyphs(g, e1 + 12, 10, 3, 16, 2)                                     # a second item 12 px (0.6 h) to its right
+    b = [_box(8, 10, e1 + 12 + 3 * 18 - 2, 26)]
+    K = np.full((5, 28), 6.0, np.float32)                                 # stride 8, scale 1: the K map bridges ...
+    assert T.split_kgap(g, b, K, 1.0, 1.0, 8, 40) == b
+    K[:, (e1 + 2) // 8:(e1 + 10) // 8 + 1] = -5.0                         # ... until it does not
+    out = T.split_kgap(g, b, K, 1.0, 1.0, 8, 40)
+    assert len(out) == 2 and out[0].x == b[0].x and abs(out[0].x + out[0].w - e1) <= 1    # 2 px strokes: +-1 px
+    assert abs(out[1].x - (e1 + 12)) <= 1 and out[1].x + out[1].w == b[0].x + b[0].w
+    assert T.split_kgap(g, b, K, 1.0, 1.0, 8, 80) == b                    # the gap is shorter than 80 % of h
+    narrow = np.full((40, 220), 20, np.uint8)                             # a 3 px mark after the gap: kept whole
+    e2 = _glyphs(narrow, 8, 10, 4, 16, 2)
+    narrow[12:24, e2 + 12:e2 + 15] = 230
+    nb = [_box(8, 10, e2 + 15, 26)]
+    assert T.split_kgap(narrow, nb, K, 1.0, 1.0, 8, 40) == nb
+
+
+def _row_maps(items, hm=8, wm=60, s=8, y0=20.0, y1=44.0):
+    """Maps of one kernel row (rows 3-4) over columns 4..; items: [(q0, q1, x0, x1)]: the columns whose cells vote
+    the along ends x0, x1 (one line's ends, or each item's own)."""
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for q0, q1, x0, x1 in items:
+        for r in (3, 4):
+            for q in range(q0, q1):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y1 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - x0, x1 - cs[q]
+    return m
+
+
+def test_decode_along_split_two_items_of_a_row():
+    two_items = _row_maps([(4, 14, 34.0, 112.0), (14, 30, 116.0, 244.0)])     # the kernel touches; the votes part
+    assert len(T.decode(two_items, 480, 64, 8)) == 1
+    out = sorted(T.decode(two_items, 480, 64, 8, along_pct=50), key=lambda b: b.x)
+    assert len(out) == 2
+    assert out[0].x == pytest.approx(34.0) and out[0].x + out[0].w == pytest.approx(112.0)
+    assert out[1].x == pytest.approx(116.0) and out[1].x + out[1].w == pytest.approx(244.0)
+    one_line = _row_maps([(4, 30, 34.0, 244.0)])                             # one line: every cell votes its ends
+    assert len(T.decode(one_line, 480, 64, 8, along_pct=50)) == 1
+    three = _row_maps([(4, 12, 34.0, 96.0), (12, 20, 100.0, 160.0), (20, 30, 164.0, 244.0)])
+    assert len(T.decode(three, 480, 64, 8, along_pct=50)) == 3
+    assert len(T.decode(three, 480, 64, 8, along_pct=50, along_depth=1)) == 2
+
+
+def test_cut_reading_cuts_items_at_wide_gaps_only():
+    g = np.full((40, 260), 20, np.uint8)
+    e1 = _glyphs(g, 8, 10, 3, 16, 2)                                     # 3 glyphs 2 px apart, then a 14 px gap
+    e2 = _glyphs(g, e1 + 14, 10, 2, 16, 2)
+    b = [7.0, 9.0, e2 + 1.0, 27.0, 0, 1.0, 0]
+    chars = [(t, 8 + 18 * k + 8.0) for k, t in enumerate("自兵数")] + [(t, e1 + 14 + 18 * k + 8.0) for k, t in
+                                                                       enumerate("93")]
+    out = T.cut_reading(g, b, chars, 50)
+    assert [t for _, _, t in out] == ["自兵数", "93"]
+    assert out[0][0] == b[0] and abs(out[0][1] - e1) <= 1 and abs(out[1][0] - (e1 + 14)) <= 1 and out[1][1] == b[2]
+    assert T.cut_reading(g, b, chars, 100) is None                        # 14 px < 100 % of the 18 px height
+    comma = [(t, x) for t, x in chars]
+    comma[2] = ("、", comma[2][1])                                        # a phrase's own gap: kept
+    assert T.cut_reading(g, b, comma, 50) is None
+    bang = [(t, x) for t, x in chars]
+    bang[3] = ("！", bang[3][1])                                          # nor the gap before a closing mark
+    assert T.cut_reading(g, b, bang, 50) is None
+    past = chars[:-1] + [("3", b[2] + 6.0)]                               # a centre past the box's end: kept
+    assert [t for _, _, t in T.cut_reading(g, b, past, 50)] == ["自兵数", "93"]
+    wide = np.full((40, 300), 20, np.uint8)                               # a wide-set font: every gap 12 px
+    ew = _glyphs(wide, 8, 10, 6, 16, 12)
+    wc = [(t, 8 + 28 * k + 8.0) for k, t in enumerate("こちらこそ！")]
+    assert T.cut_reading(wide, [7.0, 9.0, ew + 1.0, 27.0, 0, 1.0, 0], wc, 50) is None
+    icon = np.full((40, 260), 20, np.uint8)                               # ink that read as no character: trimmed
+    icon[12:26, 8:22] = 230
+    ei = _glyphs(icon, 40, 10, 3, 16, 2)
+    ic = [(t, 40 + 18 * k + 8.0) for k, t in enumerate("武器庫")]
+    out = T.cut_reading(icon, [7.0, 9.0, ei + 1.0, 27.0, 0, 1.0, 0], ic, 50)
+    assert [t for _, _, t in out] == ["武器庫"] and abs(out[0][0] - 39) <= 1
+    assert T.DROP_DEFAULTS["cut_pct"] == 0

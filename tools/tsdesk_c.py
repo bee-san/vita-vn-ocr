@@ -82,8 +82,10 @@ class COpts(C.Structure):
                 ("vote_pct", C.c_int)]
 
 
-POST_KEYS = tuple(T.POST_DEFAULTS)          # vocr_tsd_post.h vocr_tsdp_opts' field order
-DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts'
+NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct")   # post options, no C twin
+POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
+NO_C_DROP = ("cut_pct", "cut_rel_pct", "cut_dlg")    # tools/tsdesk reading-stage options with no C twin yet
+DROP_KEYS = tuple(k for k in T.DROP_DEFAULTS if k not in NO_C_DROP)   # vocr_tsdd_opts'
 
 
 class CPost(C.Structure):
@@ -104,7 +106,7 @@ class CPBox(C.Structure):                   # vocr_tsdp_box
                 ("cells", C.c_uint)]
 
 
-NO_C_TWIN = ("saddle_pct", "rescue_milli", "clamp_ends")     # tools/tsdesk.DECODE_EXTRA options the C decode lacks
+NO_C_TWIN = ("saddle_pct", "rescue_milli", "clamp_ends", "along_pct")   # DECODE_EXTRA options the C decode lacks
 
 
 _LIBS = {}
@@ -359,8 +361,10 @@ def post_struct(post):
     if post in (None, False):
         return None
     o = T.post_options(post)
-    if o["gap_pct"]:
-        raise ValueError("post gap_pct: the along split has no C twin")
+    no = [k for k in ("gap_pct", "touch_pct", "ext_band_pct", "ksplit_pct") if o[k]]
+    if no:
+        raise ValueError(f"post {no}: no C twin")
+    o = {k: o[k] for k in POST_KEYS}
     return CPost(*[o[k] for k in POST_KEYS])
 
 
@@ -369,6 +373,9 @@ def drop_struct(drop):
     if drop in (None, False):
         return None
     o = T.drop_options(drop)
+    no = [k for k in ("cut_pct",) if o[k]]
+    if no:
+        raise ValueError(f"reading-filter options with no C twin yet: {no}")
     return CDrop(*[o[k] for k in DROP_KEYS])
 
 
@@ -380,7 +387,7 @@ def decode_struct(decode, base, hs, tags):
     bad = set(decode) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
     if bad:
         raise KeyError(f"unknown decode options {sorted(bad)}")
-    no = [k for k in NO_C_TWIN if decode.get(k)]
+    no = [k for k in NO_C_TWIN if decode.get(k)] + (["vote_depth"] if int(decode.get("vote_depth", 2)) != 2 else [])
     if no:
         raise ValueError(f"decode {no}: no C twin")
     o = dict(base)

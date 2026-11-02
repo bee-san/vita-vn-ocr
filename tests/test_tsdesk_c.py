@@ -1011,6 +1011,52 @@ def test_c_post_pass_equals_python(nets, libs):
     assert n_changed > 50
 
 
+def _grid_frame(rng, H, W):
+    """A grey frame with glyph grids boxed as vertical columns (a kana grid, a menu: gaps between the glyph rows),
+    columns of tight vertical text, and small vertical junk boxes, as a detector gives them."""
+    import cv2
+    g = rng.integers(10, 60, (H, W), dtype=np.uint8)
+    boxes = []
+    for _ in range(int(rng.integers(1, 4))):
+        sz = int(rng.integers(10, 26))
+        gap = int(rng.integers(0, sz))                                     # 0 .. sz: from vertical text to a grid
+        cols, rows = int(rng.integers(1, 6)), int(rng.integers(2, 9))
+        x0, y0 = int(rng.integers(0, max(1, W - cols * (sz + 6)))), int(rng.integers(0, max(1, H - rows * (sz + gap))))
+        for c in range(cols):
+            x = x0 + c * (sz + int(rng.integers(3, 9)))
+            for r in range(rows):
+                y = y0 + r * (sz + gap)
+                if y + sz >= H or x + sz >= W:
+                    continue
+                cv2.rectangle(g, (x, y), (x + sz - 1, y + sz - 1), 230, 2)
+                cv2.line(g, (x, y + sz // 2), (x + sz - 1, y + sz // 2), 230, 2)
+            boxes.append(T.Box(x - rng.uniform(0, 3), y0 - rng.uniform(0, 3), sz + rng.uniform(0, 5),
+                               rows * (sz + gap) - gap + rng.uniform(-3, 4), 1, 1.0, 0, 0.0, 5))
+    for _ in range(int(rng.integers(0, 3))):                               # small vertical junk
+        x, y = int(rng.integers(0, W - 20)), int(rng.integers(0, H - 30))
+        g[y:y + 5, x:x + 8] = 230
+        g[y + 9:y + 14, x:x + 8] = 230
+        boxes.append(T.Box(float(x), float(y), 9.0, 15.0, 1, 1.0, 0, 0.0, 2))
+    return g, boxes
+
+
+def test_c_vflip_equals_python(nets, libs):
+    """vocr_tsdp_pre's vflip (desktop/vocr_tsd_post.c) gives tools/tsdesk.post_pre's boxes bit for bit on generated
+    grids, vertical text columns and junk, alone, with other gap and band settings, and with C6's set."""
+    rng = np.random.default_rng(23)
+    n_turned = 0
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for _ in range(80):
+            g, boxes = _grid_frame(rng, int(rng.integers(120, 400)), int(rng.integers(200, 600)))
+            for opts in ({"vflip_pct": 30}, {"vflip_pct": 50, "vflip_join_pct": 40}, {"vflip_pct": 20, "vflip_min": 2,
+                         "vflip_h_pct": 30}, dict(C6_POST, vflip_pct=30)):
+                ref = T.post_pre(g, boxes, opts)
+                assert cm.post_pre(g, boxes, opts) == ref, opts
+                n_turned += sum(b.vertical for b in boxes) != sum(b.vertical for b in ref)
+    assert n_turned > 40
+
+
 def test_c_detect_with_c6_is_its_pieces(nets, libs):
     """detect(refine, decode, post) == tools/tsdesk's steps on the C maps: the decode with vote_pct, frame px,
     post_pre, the refinement (tools/tsdesk_refine.refine_det), post_post (tools/tsdesk.Detector.detect's order), on

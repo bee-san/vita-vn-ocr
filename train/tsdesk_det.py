@@ -547,28 +547,53 @@ def patch_pools(sources, hook, targets_dir):
     return rec
 
 
-def edit_pools(sources, hook, edits_dir):
-    """--label-edits: the hooked sources' samples get the edit cache's notdlg positives appended (train/
-    tsdesk_coverage.py edits: MeikiOCR's 'apart' text boxes, native px; desk_hook's mapped through its capture), after
-    the target patch; their other lines and ignore areas are untouched."""
+def edit_pools(sources, hook, edits_dirs):
+    """--label-edits: label-edit caches (train/tsdesk_coverage.py), applied after the target patch; the samples' other
+    lines and ignore areas are untouched. A hooked cache (edits) appends its notdlg positives (MeikiOCR's 'apart' text
+    boxes, native px) to the hook and desk_hook (desk_hook_*) samples, desk_hook's mapped through each capture; a PC
+    cache (pcedits, scope "pc") appends its positives to the samples of every other extra source by screenshot
+    (desk_realplus, desk_dense, desk_hard: 1b's frames at their own size), when the sample's size is the cache's."""
     import tsdesk_coverage as TC
-    edits, doc = TC.load_edits(edits_dir)
-    rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json")}
-    pools = [("hook", "hook", [lst for lst in hook.by_title.values()] if hook is not None else [])]
-    for name, pool in sorted(getattr(sources, "extra_pools", {}).items()):
-        if hooked_as(name) == "desk_hook":
-            pools.append((name, "desk_hook", [pool.items]))
-    for name, src, lists in pools:
-        n_s = n_l = 0
-        for lst in lists:
-            for i, (d, smp) in enumerate(lst):
-                es = TC.apply_edits(smp, edits, src)
-                if es is not None:
-                    n_s += 1
-                    n_l += len(es["lines"]) - len(smp["lines"])
-                    lst[i] = (d, es)
-        rec[name] = {"samples_edited": n_s, "lines_added": n_l}
-    return rec
+    if isinstance(edits_dirs, (str, Path)):
+        edits_dirs = [edits_dirs]
+    recs = []
+    for edits_dir in edits_dirs:
+        doc = json.loads((Path(edits_dir) / "edits.json").read_text(encoding="utf-8"))
+        rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json"),
+               "scope": doc.get("scope", "hooked")}
+        extra = sorted(getattr(sources, "extra_pools", {}).items())
+        if doc.get("scope") == "pc":
+            edits, _ = TC.load_pc_edits(edits_dir)
+            for name, pool in extra:
+                if hooked_as(name) is not None:
+                    continue
+                n_s = n_l = 0
+                for i, (d, smp) in enumerate(pool.items):
+                    es = TC.apply_pc_edits(smp, edits)
+                    if es is not None:
+                        n_s += 1
+                        n_l += len(es["lines"]) - len(smp["lines"])
+                        pool.items[i] = (d, es)
+                rec[name] = {"samples_edited": n_s, "lines_added": n_l}
+            recs.append(rec)
+            continue
+        edits, _ = TC.load_edits(edits_dir)
+        pools = [("hook", "hook", [lst for lst in hook.by_title.values()] if hook is not None else [])]
+        for name, pool in extra:
+            if hooked_as(name) == "desk_hook":
+                pools.append((name, "desk_hook", [pool.items]))
+        for name, src, lists in pools:
+            n_s = n_l = 0
+            for lst in lists:
+                for i, (d, smp) in enumerate(lst):
+                    es = TC.apply_edits(smp, edits, src)
+                    if es is not None:
+                        n_s += 1
+                        n_l += len(es["lines"]) - len(smp["lines"])
+                        lst[i] = (d, es)
+            rec[name] = {"samples_edited": n_s, "lines_added": n_l}
+        recs.append(rec)
+    return recs[0] if len(recs) == 1 else recs
 
 
 def make_batch(sources, rng, cfg):
@@ -731,8 +756,9 @@ def parse(argv=None):
     ap.add_argument("--skip-vns", help="a file of VNs (one per line) left out of the real half and the extra pools")
     ap.add_argument("--targets", help="amendment 1: the ink-box target cache (train/tsdesk_targets.py build) for the "
                                       "hooked sources' verified positives")
-    ap.add_argument("--label-edits", help="the label-edit cache (train/tsdesk_coverage.py edits): notdlg positives "
-                                          "appended to the hooked sources' samples, after --targets")
+    ap.add_argument("--label-edits", nargs="+", help="label-edit caches (train/tsdesk_coverage.py edits: notdlg "
+                                                       "positives for the hooked sources; pcedits: for the PC "
+                                                       "sources), applied after --targets")
     ap.add_argument("--e-exact", action="store_true", help="amendment 1: the along-end (E) loss only on the sources "
                                                             "with exact ink boxes (EXACT_SOURCES)")
     ap.add_argument("--ornaments", type=float, default=0.0,

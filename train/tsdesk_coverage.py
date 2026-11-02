@@ -38,6 +38,11 @@ PSP boxes), so it overcounts.
       the label-edit cache: each hook page's 'apart' boxes as notdlg positives (edit_candidates: not on a verified
       line's row, not ruby-like, not over a positive), per title {page: [lines]} in native px, and EDITS/edits.json
       (counts, sha256); train/tsdesk_det.py --label-edits EDITS appends them to the hook and desk_hook samples
+  tsdesk_coverage.py pcedits --manifest 1B.json --root DIR --meiki MEIKI02 --dense-manifest M --hard-manifest M
+                     --out EDITS [--cls notdlg|text]
+      the PC label-edit cache: MeikiOCR's native boxes (score >= 0.5) of 1b v3's training-side frames that the labels
+      leave as ignore areas and that hold ink, refined to ink, as positives (pc_edit_candidates); OUT/edits.json
+      scope "pc"; train/tsdesk_det.py --label-edits takes it beside the hooked cache
   tsdesk_coverage.py sheet --rows ROWS.jsonl --root DIR --out DIR --name NAME [--kind uncovered|weak] [--n 24]
                      [--seed 0] [--min-score S] [--max-score S] [--source S] [--exclude-titles T,...] [--distinct]
                      [--min-frac F] [--max-frac F]
@@ -689,6 +694,173 @@ def apply_edits(smp, edits, src):
     return dict(smp, lines=[list(x) for x in smp["lines"]] + [list(b) for b in adds])
 
 
+# ----------------------------------------------------------------------------- label edits on the PC sources
+
+PC_SCORE = 0.5              # MeikiOCR boxes at least this sure (textspot6_pages' notdlg rule)
+PC_IGNORE_SHARE = 0.5       # the refined box lies at least this much inside the frame's ignore areas
+PC_INK = 0.03               # and at least this share of its pixels are strokes (ink_in): it holds ink
+
+
+def pc_edit_candidates(smp, g, boxes, cls="notdlg"):
+    """(adds, reasons) of one 1b frame: the positives [x0, y0, x1, y1, vertical, cls, weight] it gets from MeikiOCR's
+    native boxes (boxes [[x0, y0, x1, y1, score]], score >= PC_SCORE) that the frame's labels leave as ignore areas:
+    each box refined to ink as the pools refine theirs (textspot2_labels.refine_h / refine_t, refined_of P1, on the
+    stored grey), kept when the refined box lies at least PC_IGNORE_SHARE inside the ignore areas and holds ink
+    (PC_INK of its pixels are strokes), and not when it overlaps a positive (one that only touches a positive above
+    or below by at most EDIT_CLIP of its height is clipped there), is ruby-like over a positive (at least
+    EDIT_RUBY_MIN_REL of its height) or overlaps a kept edit (the surer box first). Weight: the pools' notdlg
+    weight (textspot6_pages.meiki_weight)."""
+    import desktop_det as DD
+    import textspot2_labels as L2
+    import textspot6_pages as TP
+    H, W = g.shape
+    rgb = np.repeat(g[:, :, None], 3, axis=2)
+    pos = [ln[:4] for ln in smp["lines"]]
+    horiz = [ln for ln in smp["lines"] if not int(ln[4])]
+    ign = [b[:4] for b in smp["ignore"]]
+    out, why = [], Counter()
+
+    def ov(a, b):
+        return min(a[2], b[2]) - max(a[0], b[0]) > 0 and min(a[3], b[3]) - max(a[1], b[1]) > 0
+    for raw in sorted((b for b in boxes if b[4] >= PC_SCORE), key=lambda b: -b[4]):
+        r = [int(v) for v in raw[:4]]
+        if clip(r, W, H) is None:
+            why["outside"] += 1
+            continue
+        ref = {"raw": r, "score": raw[4], "ref_h": L2.refine_h(rgb, r), "ref_t": L2.refine_t(rgb, r)}
+        bx, vertical = L2.refined_of(ref, "P1")
+        b = clip([int(v) for v in bx], W, H)
+        if b is None or b[2] - b[0] < 2 or b[3] - b[1] < 2:
+            why["degenerate"] += 1
+            continue
+        if not ign or labelled_in(b, ign, 0).mean() < PC_IGNORE_SHARE:
+            why["not_ignore"] += 1
+            continue
+        hb = b[3] - b[1]
+        clipped = False
+        for p in pos:
+            if not ov(b, p):
+                continue
+            iy = min(b[3], p[3]) - max(b[1], p[1])
+            if not vertical and iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 < p[1]:
+                b[3], clipped = p[1], True
+            elif not vertical and iy <= EDIT_CLIP * hb and (b[1] + b[3]) / 2 > p[3]:
+                b[1], clipped = p[3], True
+        if any(ov(b, p) for p in pos) or b[3] - b[1] < (1 - EDIT_CLIP) * hb:
+            why["overlap"] += 1
+            continue
+        if not vertical and any(b[3] - b[1] >= EDIT_RUBY_MIN_REL * (ln[3] - ln[1]) and
+                                0 in DD.ruby_like([[*b, 0], [*ln[:4], 0]]) for ln in horiz):
+            why["ruby"] += 1
+            continue
+        if float(ink_in(g, b).mean()) < PC_INK:
+            why["no_ink"] += 1
+            continue
+        if any(ov(b, a[:4]) for a in out):
+            why["duplicate"] += 1
+            continue
+        why["clipped"] += clipped
+        out.append([*b, int(bool(vertical)), cls, round(TP.meiki_weight(raw[4]), 4)])
+    return out, why
+
+
+def _pcedits_shard(job):
+    import tsdesk_dense_source as DS
+    from desktopdata import shards as SH
+    root, s, meiki, cls, ex = job
+    data, samples = SH.read_shard(Path(root) / s["dir"] / s["name"])
+    out, why, skipped = {}, Counter(), Counter()
+    for smp in samples:
+        meta = smp.get("meta") or {}
+        hits = DS.hits({"vn": smp.get("vn"), "sha256": meta.get("sha256"), "shot": smp.get("shot")}, ex)
+        if hits:
+            skipped["frames"] += 1
+            continue
+        boxes = meiki.get(smp["shot"])
+        if not boxes:
+            why["no_meiki"] += 1
+            continue
+        adds, w = pc_edit_candidates(smp, SH.canvas(data, smp), boxes, cls)
+        why.update(w)
+        why["frames"] += 1
+        if adds:
+            out[smp["shot"]] = {"w": int(smp["w"]), "h": int(smp["h"]), "lines": adds}
+    return s["name"], out, why, skipped
+
+
+_PC = {}
+
+
+def cmd_pcedits(a):
+    """The PC label-edit cache (pc_edit_candidates) of 1b v3's training-side frames: OUT/pc_<shard>.json
+    {shot: {"w", "h", "lines"}} and OUT/edits.json (scope "pc"; counts; sha256); train/tsdesk_det.py --label-edits
+    appends them to the samples of every non-hooked extra source by screenshot (desk_realplus, desk_dense,
+    desk_hard), when the sample's size is the cache's."""
+    import tsdesk_dense_source as DS
+    man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
+    meiki = {}
+    for f in sorted(Path(a.meiki).glob("*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            meiki[r["shot"]] = r["boxes"]
+    ex = DS.exclusion_sets()
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+    jobs = [(a.root, s, meiki, a.cls, ex) for s in man["shards"]]
+    why, skipped, files, edits = Counter(), Counter(), {}, {}
+    with mp.get_context("fork").Pool(a.workers) as p:
+        for name, res, w, sk in p.imap_unordered(_pcedits_shard, jobs):
+            why.update(w)
+            skipped.update(sk)
+            if res:
+                path = out / f"pc_{name}.json"
+                path.write_text(json.dumps(res, separators=(",", ":")) + "\n", encoding="utf-8")
+                files[path.name] = sha256_file(path)
+                edits.update(res)
+    by_source = {}
+    for src, mpath in (("desk_realplus", None), ("desk_dense", a.dense_manifest), ("desk_hard", a.hard_manifest)):
+        shots = None if mpath is None else {f["shot"] for f in json.loads(Path(mpath).read_text())["frames"]}
+        sel = {k: v for k, v in edits.items() if shots is None or k in shots}
+        by_source[src] = {"frames": len(shots) if shots is not None else why["frames"] + why["no_meiki"],
+                          "frames_edited": len(sel), "lines_added": sum(len(v["lines"]) for v in sel.values())}
+    rec = {"kind": "textspot-desktop-label-edits", "scope": "pc", "issue": 173,
+           "rule": {"boxes": "MeikiOCR's native boxes of 1b v3's frames (desktop-data realplus meiki02), score >= "
+                             f"{PC_SCORE}", "refine": "textspot2_labels refine_h / refine_t, refined_of P1, on the "
+                                                       "stored grey",
+                    "ignore_share": PC_IGNORE_SHARE, "ink": PC_INK, "clip": EDIT_CLIP,
+                    "ruby_min_rel": EDIT_RUBY_MIN_REL,
+                    "class": a.cls, "weight": "textspot6_pages.meiki_weight(score)",
+                    "frames": "training-side 1b v3 frames (tsdesk_dense_source.exclusion_sets skipped)"},
+           "manifest": str(a.manifest), "manifest_sha256": sha256_file(a.manifest), "meiki": str(a.meiki),
+           "counts": dict(sorted(why.items())), "skipped": dict(skipped), "by_source": by_source,
+           "frames_edited": len(edits), "added": sum(len(v["lines"]) for v in edits.values()),
+           "code_sha256": sha256_file(Path(__file__)), "seconds": round(time.time() - t0, 1), "files": files}
+    (out / "edits.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({k: rec[k] for k in ("frames_edited", "added", "counts", "skipped", "by_source", "seconds")}),
+          flush=True)
+
+
+def load_pc_edits(d):
+    """({shot: {"w", "h", "lines"}}, the edits.json record) of a PC label-edit cache; every file's sha256 checked."""
+    d = Path(d)
+    doc = json.loads((d / "edits.json").read_text(encoding="utf-8"))
+    out = {}
+    for name, sha in doc["files"].items():
+        if sha256_file(d / name) != sha:
+            raise SystemExit(f"{d / name}: sha256 differs from edits.json's")
+        out.update(json.loads((d / name).read_text(encoding="utf-8")))
+    return out, doc
+
+
+def apply_pc_edits(smp, edits):
+    """A PC sample with its label edits appended (by screenshot, when its size is the cache's), or None."""
+    e = edits.get(smp.get("shot"))
+    if not e or int(smp.get("w", -1)) != e["w"] or int(smp.get("h", -1)) != e["h"]:
+        return None
+    return dict(smp, lines=[list(x) for x in smp["lines"]] + [list(b) for b in e["lines"]])
+
+
 # ----------------------------------------------------------------------------- sheets
 
 def _frame(root, r, cache):
@@ -807,8 +979,17 @@ def main(argv=None):
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--skip-titles", default=",".join(EDIT_SKIP_TITLES),
                    help="titles left out of the edits (default: the ornament-strip guard title)")
+    p = sub.add_parser("pcedits", help="the PC label-edit cache: MeikiOCR boxes in 1b's ignore areas as positives")
+    p.add_argument("--manifest", required=True, help="1b v3's manifest (realplus_native_v3.json)")
+    p.add_argument("--root", required=True, help="1b v3's shard root")
+    p.add_argument("--meiki", required=True, help="the native MeikiOCR pass (desktop-data realplus meiki02)")
+    p.add_argument("--dense-manifest", required=True, help="desk_dense's manifest (for the per-source counts)")
+    p.add_argument("--hard-manifest", required=True, help="desk_hard's manifest (for the per-source counts)")
+    p.add_argument("--cls", default="notdlg", choices=("notdlg", "text"))
+    p.add_argument("--out", required=True)
+    p.add_argument("--workers", type=int, default=5)
     a = ap.parse_args(argv)
-    {"meiki": cmd_meiki, "run": cmd_run, "sheet": cmd_sheet, "edits": cmd_edits}[a.cmd](a)
+    {"meiki": cmd_meiki, "run": cmd_run, "sheet": cmd_sheet, "edits": cmd_edits, "pcedits": cmd_pcedits}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -136,7 +136,7 @@ def test_page_targets_gap_clip(tmp_path):
     _, _, v1, h1 = TT._page_targets(("T", rec, str(path), False))
     _, _, v2, h2 = TT._page_targets(("T", rec, str(path), True))
     assert v1["old"] == v2["old"]                                       # the trainer's alignment key is unchanged
-    assert h1 == [None, None] and h2 == ["clip", "clip"]
+    assert h1["gap"] == [None, None] and h2["gap"] == ["clip", "clip"] and h2["fix"] == [None, None]
     assert _overlap(*v1["new"]) and not _overlap(*v2["new"])
     assert v2["new"] == [[60, 11, 200, 30], [60, 33, 200, 52]]
 
@@ -150,8 +150,8 @@ def test_build_and_compare(tmp_path):
     (pool / "manifest.json").write_text("{}\n")
     (pool / "T.jsonl").write_text(json.dumps(rec) + "\n")
     args = dict(pool=str(pool), pages=str(tmp_path / "pages"), splits="train,guard,hval", workers=1)
-    TT.cmd_build(argparse.Namespace(out=str(tmp_path / "v1"), gap_clip=False, **args))
-    TT.cmd_build(argparse.Namespace(out=str(tmp_path / "v2"), gap_clip=True, **args))
+    TT.cmd_build(argparse.Namespace(out=str(tmp_path / "v1"), gap_clip=False, cells_fix=False, **args))
+    TT.cmd_build(argparse.Namespace(out=str(tmp_path / "v2"), gap_clip=True, cells_fix=False, **args))
     d1 = json.loads((tmp_path / "v1" / "targets.json").read_text())
     d2 = json.loads((tmp_path / "v2" / "targets.json").read_text())
     assert "gap_clip" not in d1["rule"] and d2["rule"]["gap_clip"]["horizontal_lines"] == {"clip": 2}
@@ -165,4 +165,94 @@ def test_build_and_compare(tmp_path):
         assert g["top_down"] == 1 and g["bottom_up"] == 1 and g.get("grew", 0) == 0
         assert g["move_bottom"]["hist"] == {-5: 1} and g["move_top"]["hist"] == {4: 1}
     with pytest.raises(SystemExit):                                     # the test split is never read
-        TT.cmd_build(argparse.Namespace(out=str(tmp_path / "x"), gap_clip=True, **dict(args, splits="train,test")))
+        TT.cmd_build(argparse.Namespace(out=str(tmp_path / "x"), gap_clip=True, cells_fix=False,
+                                        **dict(args, splits="train,test")))
+
+
+# ----------------------------------------------------------------------------- targets_v3's cells fix
+
+def test_ring_noise_fix_leaves_sparse_ink_out():
+    rng = np.random.default_rng(0)
+    clean = rng.normal(0, 3, 400).clip(0, None)
+    inky = np.concatenate([clean, np.full(100, 150.0)])                   # 20% of the ring through ink
+    assert TT.ring_noise(inky, 60.0) == pytest.approx(np.percentile(inky, 90))
+    assert TT.ring_noise(inky, 60.0, fix=True) == pytest.approx(np.percentile(clean, 90))
+    dither = np.full(400, 20.0)                                          # a dither as strong as the body term
+    assert TT.ring_noise(dither, 16.0, fix=True) == TT.ring_noise(dither, 16.0) == 20.0
+
+
+def _ring_through_ink():
+    """A line (strokes 230 on 40, rows 12-28, x 60-200) with a fainter word (grey 160: above the body term, x 210-250),
+    and the window's bottom ring row (cells y 8-31, grow 2: row 32) running through a neighbour's ink (grey 180) on
+    110 px, a fifth of the ring: the plain noise term (its 90th percentile, 140, + 12) drops the fainter word."""
+    img = np.full((40, 320, 3), 40, np.uint8)
+    img[12:28, 60:200:3] = 230
+    img[20, 60:200] = 230
+    img[14:26, 210:250:3] = 160
+    img[18, 210:250] = 160
+    img[32, 60:170] = 180
+    return img
+
+
+def test_noise_fix_keeps_a_faint_word_the_ring_noise_dropped():
+    img = _ring_through_ink()
+    c = [50.0, 8.0, 260.0, 31.0]
+    v2, _ = TT.ink_box(img, c)
+    v3, _ = TT.ink_box(img, c, noise_fix=True)
+    assert v2[2] == 200 and v3[2] == 250                                 # the faint word drops, then is kept
+    assert v3[:2] == v2[:2] and v3[3] == v2[3]
+
+
+def test_colour_edges_keep_a_coloured_word():
+    img = np.full((40, 320, 3), 100, np.uint8)
+    img[12:28, 60:200:3] = 230
+    img[20, 60:200] = 230
+    img[14:26, 210:250:3] = (220, 40, 40)                                # luma ~ the background's: no grey edge
+    img[18, 210:250] = (220, 40, 40)
+    c = [50.0, 8.0, 260.0, 32.0]
+    assert TT.ink_box(img, c)[0][2] == 200
+    assert TT.ink_box(img, c, colour_edges=True)[0][2] == 250
+    grey = np.repeat(img.mean(axis=2, keepdims=True).astype(np.uint8), 3, axis=2)
+    assert TT.ink_box(grey, c, colour_edges=True) == TT.ink_box(grey, c)    # grey frames: unchanged
+
+
+def test_glyph_cells_keep_a_small_glyph_the_speck_filter_breaks():
+    img = np.full((40, 320, 3), 64, np.uint8)
+    img[12:28, 60:200:3] = 255
+    img[20, 60:200] = 255
+    for y, x in ((22, 210), (22, 214), (24, 209), (24, 215), (26, 212)):  # a small 。 in 2 px pieces
+        img[y, x:x + 2] = 255
+    c = [50.0, 8.0, 228.0, 32.0]
+    v2, _ = TT.ink_box(img, c)
+    assert v2[2] == 200
+    v3, _ = TT.ink_box(img, c, glyph_cells=[[60.0, 8.0, 200.0, 32.0], [208.0, 8.0, 226.0, 32.0]])
+    assert v3[2] == 217 and v3[0] == v2[0]
+    # a cell that already holds ink, or a cell with fewer than min_blob raw pixels, is left as it is
+    assert TT.ink_box(img, c, glyph_cells=[[60.0, 8.0, 200.0, 32.0]]) == TT.ink_box(img, c)
+
+
+def test_page_targets_cells_fix_only_touches_cut_lines(tmp_path):
+    img = _ring_through_ink()
+    path = tmp_path / "pages" / "T" / "000002.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(path), img[:, :, ::-1])
+
+    def line(i, c, text, n):
+        xs = np.linspace(c[0], c[2], n + 1)
+        x0, y0, x1, y1 = (int(v) for v in c)
+        return {"id": f"T:000002:line{i}", "kind": "line", "vertical": False, "box": [x0, y0, x1 - x0, y1 - y0],
+                "box_main": None, "furigana": False, "tall_band": False, "box_index": [i], "pad": 0, "text": text,
+                "source": "glyph_cells", "host_line": None, "drop": None,
+                "cell_boxes": [[float(xs[k]), c[1], float(xs[k + 1]), c[3]] for k in range(n)]}
+    # the line's 7 cells of 30 px: the last two (x 200-260) hold the fainter word
+    rec = {"title_id": "T", "page": "000002", "image": "T/000002.png", "dims": [320, 40], "split": "train",
+           "uncovered": [], "boxes": [], "lines": [line(1, [50.0, 8.0, 260.0, 31.0], "あいうえおかき", 7)]}
+    _, _, v2, i2 = TT._page_targets(("T", rec, str(path), True, False))
+    _, _, v3, i3 = TT._page_targets(("T", rec, str(path), True, True))
+    assert v2["old"] == v3["old"] and i2["fix"] == [None] and i3["fix"] == ["fixed"]
+    ln = rec["lines"][0]
+    assert TT.missed_cells(ln, v2["new"][0]) == [5, 6] and TT.missed_cells(ln, v3["new"][0]) == []
+    rec2 = dict(rec, lines=[line(1, [50.0, 8.0, 200.0, 31.0], "あいうえお", 5)])  # nothing cut: v2's box exactly
+    _, _, w2, _ = TT._page_targets(("T", rec2, str(path), True, False))
+    _, _, w3, j3 = TT._page_targets(("T", rec2, str(path), True, True))
+    assert w2 == w3 and j3["fix"] == [None]

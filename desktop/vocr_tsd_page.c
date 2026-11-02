@@ -315,7 +315,7 @@ static int rule_value_ok(double v)
 
 int vocr_tsd_page_set_rule(vocr_tsd_page *p, unsigned kind, double a, double b, double c)
 {
-    if (!p || kind > VOCR_TSD_RULE_PX || !rule_value_ok(a) || !rule_value_ok(b) ||
+    if (!p || kind > VOCR_TSD_RULE_CLIP || !rule_value_ok(a) || !rule_value_ok(b) ||
         (kind == VOCR_TSD_RULE_FRAME && !rule_value_ok(c)))
         return VOCR_TSD_E_ARG;
     p->rule = kind;
@@ -459,6 +459,45 @@ static double frame_pad(double k, double lo, unsigned H)
     return v < lo ? lo : v;
 }
 
+/* the clip rule's sides of box b (eval/tsdesk_eval.clip_sides on [x, y, x + w, y + h] against every box of the set):
+ * s[0..3] = left, top, right, bottom, from ph / pv */
+static void clip_sides(const vocr_tsd_set *set, const vocr_tsd_box *b, double ph, double pv, double *s)
+{
+    const double x0 = b->x, y0 = b->y, x1 = b->x + b->w, y1 = b->y + b->h;
+    double left = ph, top = pv, right = ph, bottom = pv;
+    unsigned k;
+    for (k = 0; k < set->count; k++) {
+        const vocr_tsd_box *o = &set->boxes[k];
+        const double ox0 = o->x, oy0 = o->y, ox1 = o->x + o->w, oy1 = o->y + o->h;
+        const double across = (y1 < oy1 ? y1 : oy1) - (y0 > oy0 ? y0 : oy0);
+        const double along = (x1 < ox1 ? x1 : ox1) - (x0 > ox0 ? x0 : ox0);
+        const double ha = y1 - y0, hb = oy1 - oy0;
+        double g;
+        if (ox0 == x0 && oy0 == y0 && ox1 == x1 && oy1 == y1) continue;
+        if (across >= 0.5 * (hb < ha ? hb : ha) && along <= 0.0) {
+            if (ox0 >= x1) {
+                g = (ox0 - x1) / 2.0;
+                if (g < right) right = g;
+            } else if (ox1 <= x0) {
+                g = (x0 - ox1) / 2.0;
+                if (g < left) left = g;
+            }
+        } else if (along > 0.0 && across <= 0.0) {
+            if (oy0 >= y1) {
+                g = (oy0 - y1) / 2.0;
+                if (g < bottom) bottom = g;
+            } else if (oy1 <= y0) {
+                g = (y0 - oy1) / 2.0;
+                if (g < top) top = g;
+            }
+        }
+    }
+    s[0] = left;
+    s[1] = top;
+    s[2] = right;
+    s[3] = bottom;
+}
+
 /* the line rule's pad of a box (eval/tsdesk_eval.rel_hv on [x, y, x + w, y + h]) */
 static void line_pad(const vocr_tsd_page *p, const vocr_tsd_box *b, double *ph, double *pv)
 {
@@ -543,13 +582,16 @@ int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, un
     reading_order(p->set.boxes, ids, n, order);
     for (i = 0; i < n; i++) {
         const vocr_tsd_box *b = &p->set.boxes[order[i]];
-        double ph = p->ph, pv = p->pv, x0, y0, x1, y1;
+        double ph = p->ph, pv = p->pv, sd[4], x0, y0, x1, y1;
         vocr_tsd_line *ln = &p->lines[k];
-        if (p->rule == VOCR_TSD_RULE_LINE) line_pad(p, b, &ph, &pv);
-        x0 = floor(b->x - ph);
-        y0 = floor(b->y - pv);
-        x1 = ceil(b->x + b->w + ph);
-        y1 = ceil(b->y + b->h + pv);
+        if (p->rule == VOCR_TSD_RULE_LINE || p->rule == VOCR_TSD_RULE_CLIP) line_pad(p, b, &ph, &pv);
+        sd[0] = sd[2] = ph;
+        sd[1] = sd[3] = pv;
+        if (p->rule == VOCR_TSD_RULE_CLIP) clip_sides(&p->set, b, ph, pv, sd);
+        x0 = floor(b->x - sd[0]);
+        y0 = floor(b->y - sd[1]);
+        x1 = ceil(b->x + b->w + sd[2]);
+        y1 = ceil(b->y + b->h + sd[3]);
         if (x0 < 0) x0 = 0;
         if (y0 < 0) y0 = 0;
         if (x1 > (double)w) x1 = (double)w;

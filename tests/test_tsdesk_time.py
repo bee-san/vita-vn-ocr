@@ -268,3 +268,106 @@ def test_goal_json_several_candidates(TT, G, stubbed, tmp_path):
     with pytest.raises(SystemExit):
         TT.main(["goal", "--pages", "p", "--cand", "a=x,y", "--cand", "a=z,w", "--lib", "l", "--out",
                  str(tmp_path / "x.json")])
+
+
+# ----------------------------------------------------------------------------- the options (protocol v2 amendment 4)
+
+C6 = "+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200+drop:nojp=2,nojp_gap_pct=200"
+
+
+def test_options_in_the_specs(TT):
+    det, all_ = TT.opts_parts(C6)
+    assert det == "+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200" and all_ == C6
+    assert TT.opts_parts("") == ("", "") and TT.opts_parts(None) == ("", "")
+    for bad in ("dec:vote_pct=70", "+refine", "+zap:x=1", "+post:merge_pct"):
+        with pytest.raises(ValueError):
+            TT.opts_parts(bad)
+    c = TT.parse_cand("q=/b/q.vtsd,/b/q.onnx", "long:960", "c0.45v0.1")
+    c["opts"] = C6
+    d = {k: spec for k, spec, *_ in TT.goal_pipelines([c])}
+    assert d["det1:cand:q"] == "cbox:/b/q.vtsd@long:960+refine" + det          # the detector: no reading filter
+    assert d["page4:c:q"] == "cpage:/b/q.vtsd@long:960+refine" + C6 + "+c:L"
+    assert d["page4:onnx:q#d2"] == "opage:/b/q.onnx@long:960@exact+refine" + C6 + "+L#d2"
+    off = {k: spec for k, spec, *_ in TT.goal_pipelines([c], c_opts=False)}
+    assert off["det1:cand:q"] == "cbox:/b/q.vtsd@long:960+refine" and off["page4:onnx:q#d2"] == d["page4:onnx:q#d2"]
+    kind, path, size, rec, refine, o = TT.split_spec(d["page4:c:q"])
+    assert (kind, path, size, rec, refine) == ("cpage", "/b/q.vtsd", "long:960", "L", True)
+    assert o["decode"] == {"vote_pct": 70.0} and o["post"]["ext_pct"] == 1200 and o["drop"] == {"nojp": 2,
+                                                                                                 "nojp_gap_pct": 200}
+    with pytest.raises(ValueError):
+        TT.split_spec("cbox:/b/q.vtsd@long:960+refine+drop:nojp=1")              # a detector has no reading filter
+    with pytest.raises(ValueError):
+        TT.split_spec("cdet:/b/q.vtsd+dec:vote_pct=70")
+
+
+def test_c_options_need_their_twins(TT, monkeypatch):
+    import tsdesk_c as TC
+
+    assert TT.c_options({"decode": {}, "post": {}, "drop": {}}, "detect") == {}
+    if "decode" not in __import__("inspect").signature(TC.CModel.detect).parameters:
+        with pytest.raises(ValueError, match="C twins"):
+            TT.c_options({"decode": {"vote_pct": 70}, "post": {}, "drop": {}}, "detect")
+
+    class Twin:                                    # a binding with the twins: the options pass through
+        def detect(self, img, size=None, refine=None, decode=None, post=None):
+            pass
+
+        def __init__(self, det=None, rec=None, decode=None, post=None, drop=None):
+            pass
+    monkeypatch.setattr(TC, "CModel", Twin)
+    monkeypatch.setattr(TC, "CPage", Twin)
+    o = {"decode": {"vote_pct": 70}, "post": {"merge_pct": 70}, "drop": {"nojp": 2}}
+    assert TT.c_options(o, "detect") == {"decode": o["decode"], "post": o["post"]} and TT.c_options(o, "page") == o
+
+
+def test_goal_refuses_c_options_without_twins(TT, G, stubbed, tmp_path, monkeypatch):
+    """With options the C path needs their C twins: the goal stops, unless --c-without-options (recorded)."""
+    seen = []
+
+    class Strict(StubPipe):
+        def __init__(self, spec, threads, pad="auto", lib=None, onnx_dir=None, **kw):
+            super().__init__(spec, threads, pad, lib, onnx_dir)
+            seen.append(spec)
+            if spec.startswith(("cbox", "cpage")) and "+dec:" in spec:
+                raise ValueError("tools/tsdesk_c has no ['decode'] options (their C twins)")
+    monkeypatch.setattr(TT, "Pipeline", Strict)
+    args = ["goal", "--pages", "p", "--cand", "q=/x/q.vtsd,/x/q.onnx", "--lib", "/x/lib.so", "--mem-views", "",
+            "--opts", C6, "--out", str(tmp_path / "t.json")]
+    with pytest.raises(SystemExit, match="c-without-options"):
+        TT.main(args)
+    TT.main(args + ["--c-without-options"])
+    t = json.loads((tmp_path / "t.json").read_text())
+    assert t["options"] == C6 and t["c_options"].startswith("off")
+    assert any(s.startswith("opage") and "+drop:nojp=2" in s for s in seen)
+
+
+def test_onnx_page_reading_filter(TT):
+    """The ONNX page drops the readings tools/tsdesk.drop_set rejects (nojp 1: no Japanese character), after reading
+    every horizontal line, and reads at the clip rule's crops."""
+    import tsdesk as T
+    import tsdesk_c as TC
+
+    boxes = [T.Box(10.0, 10.0, 200.0, 20.0, 0, 3.0, 0, 1.0, 9), T.Box(10.0, 50.0, 80.0, 20.0, 0, 3.0, 0, 1.0, 4),
+             T.Box(100.0, 50.0, 60.0, 20.0, 0, 2.0, 0, 1.0, 3), T.Box(300.0, 10.0, 20.0, 90.0, 1, 2.0, 0, 1.0, 5)]
+
+    class Det:
+        def detect(self, g):
+            return list(boxes)
+
+    class Rec:
+        def read(self, crop, invert=False):
+            class R:
+                pass
+            r = R()
+            r.text, r.conf_mean = ("こんにちは" if crop.shape[1] > 150 else "ABC"), 0.9
+            return r
+
+    pp = TT.Pipeline.__new__(TT.Pipeline)
+    pp.kind, pp.T, pp.TC, pp.det, pp.rec, pp.pool = "opage", T, TC, Det(), Rec(), None
+    pp.V = type("V", (), {"line_dark": staticmethod(lambda g, cb: 0)})
+    pp.rule = TC.rule_of("c0.45v0.1")
+    frame = np.zeros((120, 400, 3), np.uint8)
+    pp.dropo = None
+    assert pp._opage(frame) == ["こんにちは", "ABC", "ABC"]                    # the vertical box is not read
+    pp.dropo = T.drop_options({"nojp": 1})
+    assert pp._opage(frame) == ["こんにちは"]

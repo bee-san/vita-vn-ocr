@@ -48,7 +48,8 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
       peak resident memory (VmHWM): each pipeline in a fresh process that loads the frames of a view one at a time
       from disk and runs the pipeline on each: after the imports and one frame, after the models load, at the end
   tsdesk_time.py goal --pages PAGES.pkl --cand NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]] [--cand ...] --lib LIB.so
-                      --out T.json [--policy long:960] [--rule k6v4] [--budget 1,2,4] [--onnx-resize exact]
+                      --out T.json [--policy long:960] [--rule k6v4] [--opts +dec:...+post:...+drop:...]
+                      [--cand-opts NAME=OPTS] [--c-without-options] [--budget 1,2,4] [--onnx-resize exact]
                       [--passes 3] [--warmup 1] [--mem-views vita,pc1080] [--mem-limit 60]
       round 2's goal timing (eval/textspot_desktop_protocol_v2.json G2 and G3; the TIMING record eval/tsdesk_goal.py
       reads), every pipeline interleaved per page in one run: MeikiOCR's detector at 1 thread (meikidet), R's page at
@@ -58,7 +59,11 @@ eval/desktop.load_rgb) or random frames: never dev-v2, the dense sets, confirm-v
       page_4t.{cand,R}.{vita,psp,pc,vita1080} (p50 ms; *_p95 beside them), interleaved, the host, the loads before
       and after, the C build, the variants chosen and both page paths (page_4t.cand is the faster path by its worst
       view's fraction of R's time), then the peak RSS of each pipeline in a fresh process on --mem-views. One
-      candidate: T.json is its TIMING record; several: T.NAME.json each, and T.json the whole run
+      candidate: T.json is its TIMING record; several: T.NAME.json each, and T.json the whole run. --rule: any of
+      tools/tsdesk_c.rule_of's (kN, kAvB, kAvBfC, hXvY, cXvY). --opts: the decode, post-pass and reading-filter
+      options in eval/tsdesk_eval's spec syntax (protocol v2 amendment 4's C6), on the ONNX page through the eval
+      adapter's own parsing and on the C path through tools/tsdesk_c's keyword arguments (the C twins); without the
+      twins the run stops, or with --c-without-options times the C path without them and records that
   tsdesk_time.py prof --pages PAGES.json --blob BLOB --out P.json [--view vita] [--runs 300] [--threads 1] [--refine]
       the C network's per-step time on the view's frames from a -DVOCR_TSD_PROF build of vocr_tsd_bench (the frames
       written to a private scratch file and deleted)
@@ -212,7 +217,11 @@ def build(out, arch="-march=x86-64-v3", extra="", cc="gcc"):
 # ----------------------------------------------------------------------------- pipelines
 
 def split_spec(spec):
-    """(kind, path, size, rec, refine) of a pipeline spec."""
+    """(kind, path, size, rec, refine, opts) of a pipeline spec. Between the file part and a page's recognizer
+    suffix: +refine and the options of eval/tsdesk_eval.spec_parts' syntax, +dec:K=V,... (the decode), +post:K=V,...
+    (the post-pass), +drop:K=V,... (the reading filter, pages only); opts = {"decode": {}, "post": {}, "drop": {}}
+    and "suffix", the option tokens as written."""
+    import tsdesk_eval as E
     kind, _, rest = spec.partition(":")
     rec = None
     if kind in ("cpage", "opage"):
@@ -221,13 +230,35 @@ def split_spec(spec):
             if not rec.startswith("c:"):
                 raise ValueError(f"{spec}: cpage:BLOB[@SIZE]+c:T")
             rec = rec[2:]
-    refine = rest.endswith("+refine")
-    if refine:
-        rest = rest[:-len("+refine")]
-    path, _, size = rest.partition("@")
+    head, *toks = rest.split("+")
+    _, refine, post, drop, dec = E.spec_parts("x+" + "+".join(toks) if toks else "x", with_decode=True)
+    path, _, size = head.partition("@")
     if kind not in ("cdet", "cbox", "cpage", "odet", "opage", "cnet", "onet") or not path:
         raise ValueError(f"unknown pipeline {spec!r}")
-    return kind, path, size or None, rec, refine
+    if drop and kind not in ("cpage", "opage"):
+        raise ValueError(f"{spec}: +drop: is a page's reading filter")
+    if (dec or post) and kind not in ("cbox", "cpage", "opage"):
+        raise ValueError(f"{spec}: the options are for cbox, cpage and opage specs")
+    suffix = "".join("+" + t for t in toks if t != "refine")
+    return kind, path, size or None, rec, refine, {"decode": dec, "post": post, "drop": drop, "suffix": suffix}
+
+
+def c_options(opts, what):
+    """The keyword arguments of tools/tsdesk_c's `what` (CModel.detect or CPage) for a pipeline's options: {} when
+    there are none; ValueError when the binding has no C twin of an option (the C path cannot run them yet)."""
+    import inspect
+
+    import tsdesk_c as TC
+    want = {k: opts[k] for k in (("decode", "post") if what == "detect" else ("decode", "post", "drop")) if opts.get(k)}
+    if not want:
+        return {}
+    fn = TC.CModel.detect if what == "detect" else TC.CPage.__init__
+    have = inspect.signature(fn).parameters
+    missing = [k for k in want if k not in have]
+    if missing:
+        raise ValueError(f"tools/tsdesk_c.{'CModel.detect' if what == 'detect' else 'CPage'} has no {missing} options "
+                         "(their C twins): the C path cannot run them")
+    return want
 
 
 def size_mode(size):
@@ -238,6 +269,16 @@ def size_mode(size):
     if mode not in ("", "exact", "cv2"):
         raise ValueError(f"resize mode {mode!r}: exact or cv2")
     return sz or None, mode or "exact"
+
+
+def crop_sides(b, sides, W, H):
+    """(x, y, w, h) of a box b = [x0, y0, x1, y1] grown by (left, top, right, bottom) px, rounded outward, clipped
+    (eval/tsdesk_eval.crop_sides); None if empty."""
+    import math
+    left, top, right, bottom = sides
+    x0, y0 = max(0, int(math.floor(b[0] - left))), max(0, int(math.floor(b[1] - top)))
+    x1, y1 = min(W, int(math.ceil(b[2] + right))), min(H, int(math.ceil(b[3] + bottom)))
+    return (x0, y0, x1 - x0, y1 - y0) if x1 > x0 and y1 > y0 else None
 
 
 def crop_hv(b, ph, pv, W, H):
@@ -269,23 +310,31 @@ class Pipeline:
             self.kind = "rpage"
             self.rp = DT.Pipeline(f"meiki+L#d{det_threads}", self.threads, "par", onnx_dir)
             return
-        self.kind, path, self.size, rec, refine = split_spec(base)
+        self.kind, path, self.size, rec, refine, self.opts = split_spec(base)
         if dt and self.kind != "opage":
             raise ValueError(f"{spec}: #dK is for opage, rpage and meikidet specs")
         self.refine = True if refine else None
+        self.dropo = None
         if self.kind in ("cdet", "cnet", "cbox"):
             self.m = TC.CModel(path, threads=self.threads, lib=lib)
             self.policy = TC.policy_of(self.size, self.m.default_policy)
+            self.copts = c_options(self.opts, "detect")
         elif self.kind == "cpage":
             self.page = TC.CPage(path, V05 / BLOBS[rec], threads=self.threads, size=self.size, pad=pad,
-                                 refine=self.refine, lib=lib)
+                                 refine=self.refine, lib=lib, **c_options(self.opts, "page"))
         else:
             import tsdesk as T
+            import tsdesk_eval as E
             import vocr_onnx as V
             self.T, self.V = T, V
             osize, omode = size_mode(self.size)
-            self.det = T.Detector(path, session_options=D.session_options(det_threads, spinning=spinning),
-                                  size=osize, refine=self.refine, resize_mode=omode)
+            # the eval adapter's detector spec (tsdesk_eval.detector_from_spec: the decode and post-pass options as
+            # the reads apply them), its sessions at det_threads intra-op threads
+            espec = E.strip_drop(f"tsd:{path}@{osize or ''}@{omode}" + ("+refine" if refine else "") +
+                                 self.opts["suffix"])
+            self.det = E.detector_from_spec(espec, det_threads, D.session_options(det_threads, spinning=spinning))
+            if self.opts["drop"]:
+                self.dropo = T.drop_options(self.opts["drop"])
             if self.kind == "opage":
                 from concurrent.futures import ThreadPoolExecutor
                 self.rec = V.Recognizer(Path(onnx_dir) / f"VOCR6.2_{rec}_fast.onnx",
@@ -329,27 +378,36 @@ class Pipeline:
         return int(m._set.count)
 
     def _line(self, job):
-        g, cb = job
+        g, cb = job[:2]
         x, y, w, h = cb
-        return self.rec.read(g[y:y + h, x:x + w], invert=bool(self.V.line_dark(g, cb))).text
+        r = self.rec.read(g[y:y + h, x:x + w], invert=bool(self.V.line_dark(g, cb)))
+        return r.text, r.conf_mean
 
     def _opage(self, rgb):
+        """tools/tsdesk.read_frame's steps with every reading rule (rule_sides) and the reading filter: the
+        horizontal lines' texts."""
         g = self.T.grey_of(rgb)
         H, W = g.shape
         boxes = self.det.detect(g)
         order = self.T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
+        xyxy = [(b.x, b.y, b.x + b.w, b.y + b.h) for b in boxes]
         jobs = []
         for i in order:
             b = boxes[i]
             if b.vertical:
                 continue
-            ph, pv = self.TC.rule_hv(self.rule, (b.x, b.y, b.x + b.w, b.y + b.h), H)
-            cb = crop_hv((b.x, b.y, b.w, b.h), ph, pv, W, H)
+            cb = crop_sides(xyxy[i], self.TC.rule_sides(self.rule, xyxy[i], H, xyxy), W, H)
             if cb:
-                jobs.append((g, cb))
+                jobs.append((g, cb, b))
         if self.pool is not None and len(jobs) > 1:
-            return list(self.pool.map(self._line, jobs))
-        return [self._line(j) for j in jobs]
+            read = list(self.pool.map(self._line, jobs))
+        else:
+            read = [self._line(j) for j in jobs]
+        if self.dropo is None:
+            return [t for t, _ in read]
+        gone = set(self.T.drop_set([((j[2].x, j[2].y, j[2].w, j[2].h), t, c) for j, (t, c) in zip(jobs, read)],
+                                   self.dropo))
+        return [t for k, (t, _) in enumerate(read) if k not in gone]
 
     def __call__(self, rgb, i=None):
         """Run on one frame (i: its index, for the networks' prepared inputs): the items it gives (module
@@ -357,7 +415,7 @@ class Pipeline:
         if self.kind == "cdet":
             return self._cdet(rgb)
         if self.kind == "cbox":
-            return len(self.m.detect(rgb, self.size, self.refine))
+            return len(self.m.detect(rgb, self.size, self.refine, **self.copts))
         if self.kind == "cpage":
             return sum(1 for ln in self.page.page(rgb) if not ln.vertical)
         if self.kind == "meikidet":
@@ -643,17 +701,34 @@ def parse_cand(spec, policy, rule):
             "rule": parts[3] if len(parts) > 3 and parts[3] else rule}
 
 
-def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4):
+def opts_parts(opts):
+    """(detector options, all options) suffixes of an option string in eval/tsdesk_eval.spec_parts' syntax
+    ("+dec:K=V,...+post:K=V,...+drop:K=V,..."; +refine is always on in the goal): the detector's without +drop:."""
+    import tsdesk_eval as E
+    opts = (opts or "").strip()
+    if opts and not opts.startswith("+"):
+        raise ValueError(f"options {opts!r}: +dec:...+post:...+drop:...")
+    toks = [t for t in opts.split("+")[1:] if t]
+    if any(t == "refine" for t in toks):
+        raise ValueError(f"options {opts!r}: +refine is always on")
+    E.spec_parts("x" + "".join("+" + t for t in toks), with_decode=True)      # checked
+    return "".join("+" + t for t in toks if not t.startswith("drop:")), "".join("+" + t for t in toks)
+
+
+def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4, c_opts=True):
     """[(key, spec, threads, pad)] of one goal run: MeikiOCR's detector at 1 thread and R's page at each budget
     variant (shared), and per candidate its C detector + refinement at 1 thread, its C page and its ONNX page at
-    `threads` (the ONNX page's detector at each budget variant)."""
+    `threads` (the ONNX page's detector at each budget variant), each with the candidate's options (c["opts"]; the C
+    pipelines without them when c_opts is False)."""
     out = [("det1:meiki", "meikidet", 1, "auto")]
     out += [(f"page4:R#d{k}", f"rpage#d{k}", threads, "auto") for k in budget]
     for c in cands:
         n, pol, rule = c["name"], c["policy"], c["rule"]
-        out.append((f"det1:cand:{n}", f"cbox:{c['blob']}@{pol}+refine", 1, rule))
-        out.append((f"page4:c:{n}", f"cpage:{c['blob']}@{pol}+refine+c:L", threads, rule))
-        out += [(f"page4:onnx:{n}#d{k}", f"opage:{c['onnx']}@{pol}@{onnx_resize}+refine+L#d{k}", threads, rule)
+        dopt, aopt = opts_parts(c.get("opts"))
+        cd, ca = (dopt, aopt) if c_opts else ("", "")
+        out.append((f"det1:cand:{n}", f"cbox:{c['blob']}@{pol}+refine{cd}", 1, rule))
+        out.append((f"page4:c:{n}", f"cpage:{c['blob']}@{pol}+refine{ca}+c:L", threads, rule))
+        out += [(f"page4:onnx:{n}#d{k}", f"opage:{c['onnx']}@{pol}@{onnx_resize}+refine{aopt}+L#d{k}", threads, rule)
                 for k in budget]
     return out
 
@@ -750,9 +825,14 @@ def cmd_goal(a):
     cands = [parse_cand(s, a.policy, a.rule) for s in a.cand]
     if len({c["name"] for c in cands}) != len(cands):
         raise SystemExit("--cand names repeat")
+    per = dict(kv.split("=", 1) for kv in (a.cand_opts or []))
+    if set(per) - {c["name"] for c in cands}:
+        raise SystemExit(f"--cand-opts for no --cand: {sorted(set(per) - {c['name'] for c in cands})}")
     for c in cands:
         TC.policy_of(c["policy"])
         TC.rule_of(c["rule"])
+        c["opts"] = per.get(c["name"], a.opts) or ""
+        opts_parts(c["opts"])
     budget = tuple(int(k) for k in a.budget.split(","))
     doc, pages = load_pages(a.pages)
     if a.views:
@@ -762,8 +842,13 @@ def cmd_goal(a):
     rgbs = [load_rgb(p) for p in pages]
     views = [p["view"] for p in pages]
     start, head = host(), D.git_head()            # the code that runs: read before the passes
-    jobs = goal_pipelines(cands, budget, a.onnx_resize)
-    pipes = {k: Pipeline(spec, th, pad, a.lib, a.onnx_dir) for k, spec, th, pad in jobs}
+    jobs = goal_pipelines(cands, budget, a.onnx_resize, c_opts=not a.c_without_options)
+    try:
+        pipes = {k: Pipeline(spec, th, pad, a.lib, a.onnx_dir) for k, spec, th, pad in jobs}
+    except ValueError as e:
+        if "C twins" in str(e):
+            raise SystemExit(f"{e} (--c-without-options times the C path without the options, recorded as such)")
+        raise
     t0 = time.time()
     n_all = a.warmup + a.passes
     times, items, sched = interleave(
@@ -791,7 +876,9 @@ def cmd_goal(a):
                results=stats, candidates={})
     for c in cands:
         blk = goal_block(stats, c["name"], budget)
-        blk.update(candidate=c["name"], policy=c["policy"], rule=c["rule"],
+        blk.update(candidate=c["name"], policy=c["policy"], rule=c["rule"], options=c["opts"] or None,
+                   c_options=(None if not c["opts"] else "off (--c-without-options: no C twin; the C path ran without"
+                              " the options)" if a.c_without_options else "on"),
                    blob=c["blob"], blob_sha256=D.sha256_file(c["blob"]),
                    onnx=c["onnx"], onnx_sha256=D.sha256_file(c["onnx"]))
         out["candidates"][c["name"]] = blk
@@ -800,9 +887,11 @@ def cmd_goal(a):
         out["mem"] = {}
         for c in cands:
             blk = out["candidates"][c["name"]]
+            spec_of = {k.split(":")[0] + ":" + k.split(":")[1]: sp for k, sp, _, _ in jobs
+                       if k.endswith(f":{c['name']}") or f":{c['name']}#" in k}
             mj = [("det1:meiki", "meikidet", 1, "auto"),
-                  ("det1:cand", f"cbox:{c['blob']}@{c['policy']}+refine", 1, c["rule"]),
-                  ("page4:c", f"cpage:{c['blob']}@{c['policy']}+refine+c:L", 4, c["rule"])]
+                  ("det1:cand", spec_of["det1:cand"], 1, c["rule"]),
+                  ("page4:c", spec_of["page4:c"], 4, c["rule"])]
             for v in mem_views:
                 gk = next((g for g, vv in PAGE_VIEWS.items() if vv == v), v)
                 rv, ov = blk["page_4t_R_variant"].get(gk, "d4"), blk["page_4t_onnx_variant"].get(gk, "d4")
@@ -810,8 +899,7 @@ def cmd_goal(a):
                 if not sel:
                     continue
                 vj = mj + [("page4:R", f"rpage#{rv}", 4, "auto"),
-                           ("page4:onnx", f"opage:{c['onnx']}@{c['policy']}@{a.onnx_resize}+refine+L#{ov}", 4,
-                            c["rule"])]
+                           ("page4:onnx", spec_of["page4:onnx"].rpartition("#")[0] + f"#{ov}", 4, c["rule"])]
                 if c is not cands[0]:
                     vj = [j for j in vj if j[0] not in ("det1:meiki", "page4:R")]
                 m = peak_rss(sel, vj, a.lib, a.scratch or MEM_SCRATCH,
@@ -937,6 +1025,11 @@ def main(argv=None):
                    help="NAME=BLOB.vtsd,MODEL.onnx[,POLICY[,RULE]] (repeatable: one run for several candidates)")
     p.add_argument("--policy", default="long:960", help="the candidates' input policy (default long:960)")
     p.add_argument("--rule", default="k6v4", help="the candidates' reading rule (default k6v4, round 1's)")
+    p.add_argument("--opts", default="", help="the candidates' decode / post-pass / reading-filter options in "
+                   "eval/tsdesk_eval's spec syntax, e.g. '+dec:vote_pct=70+post:merge_pct=70,...+drop:nojp=2,...'")
+    p.add_argument("--cand-opts", action="append", help="NAME=OPTS: one candidate's options instead of --opts")
+    p.add_argument("--c-without-options", action="store_true",
+                   help="time the C path without the options when tools/tsdesk_c has no C twin of them (recorded)")
     p.add_argument("--lib", required=True, help="the C library (tsdesk_time.py build: AVX2 + FMA, -O3)")
     p.add_argument("--budget", default=",".join(map(str, BUDGET)),
                    help="the detectors' intra-op thread counts in the 4-thread budget (R's and the ONNX page's)")

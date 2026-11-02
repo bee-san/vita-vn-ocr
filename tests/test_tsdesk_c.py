@@ -734,6 +734,15 @@ def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
         assert [ln.crop for ln in rlines] == [c for c in want if c is not None]
 
 
+def TC_crop_sides(b, sides, W, H):
+    """eval/tsdesk_eval.crop_sides: b = [x0, y0, x1, y1] grown by (left, top, right, bottom), rounded outward."""
+    import math
+    left, top, right, bottom = sides
+    x0, y0 = max(0, int(math.floor(b[0] - left))), max(0, int(math.floor(b[1] - top)))
+    x1, y1 = min(W, int(math.ceil(b[2] + right))), min(H, int(math.ceil(b[3] + bottom)))
+    return (x0, y0, x1 - x0, y1 - y0) if x1 > x0 and y1 > y0 else None
+
+
 def TC_crop(b, ph, pv, W, H):
     """tools/tsdesk.crop_of with a horizontal and a vertical pad (eval/tsdesk_eval.crop_hv's rounding), or None."""
     import math
@@ -767,7 +776,7 @@ def _tsdesk_eval():
 
 
 RULES = ["k3", "k4", "k5", "k6", "k8", "k4v6", "k6v4", "k6v4f6", "k6v4f8", "k8v4f6", "k6v4f6.5", "h0.45v0.1",
-         "h0.6v0.15", "h0.2v0.05", "h0.1v0.2", "h.3v1"]
+         "h0.6v0.15", "h0.2v0.05", "h0.1v0.2", "h.3v1", "c0.45v0.1", "c0.6v0.15", "c0.8v0.15"]
 
 
 def test_reading_rules_are_evals():
@@ -778,7 +787,8 @@ def test_reading_rules_are_evals():
     assert TC.rule_of("auto") == (TC.RULE_FRAME, 4.0, 4.0, 2.0) and TC.rule_of(7) == (TC.RULE_PX, 7.0, 7.0, 0.0)
     assert TC.rule_of("k6v4f6") == (TC.RULE_FRAME, 6.0, 4.0, 6.0) and TC.rule_of("h0.45v0.1")[0] == TC.RULE_LINE
     assert TC.rule_of((5, 3)) == (TC.RULE_FRAME, 5.0, 3.0, 2.0) and TC.rule_of("12") == (TC.RULE_PX, 12, 12, 0)
-    for bad in ("wide", "k", "kv4", "h0.4", "k6f6", "k6v4f", "hxvy", "-3"):
+    assert TC.rule_of("c0.45v0.1") == (TC.RULE_CLIP, 0.45, 0.1, 0.0)
+    for bad in ("wide", "k", "kv4", "h0.4", "k6f6", "k6v4f", "hxvy", "-3", "c0.4", "x0.4v0.1"):
         with pytest.raises(ValueError):
             TC.rule_of(bad)
     boxes = [[10.0, 20.0, 410.5, 52.25], [3.3, 7.7, 5.1, 60.0], [0.0, 0.0, 0.4, 0.3], [100.0, 5.0, 120.0, 25.0]]
@@ -792,6 +802,50 @@ def test_reading_rules_are_evals():
                 assert TC.rule_hv(rule, b, H) == want, (rule, H, b)
 
 
+def _clip_scene(rng, n):
+    """n boxes [x0, y0, x1, y1] with lines in rows, neighbours touching, overlapping, stacked and duplicated (the
+    clip rule's cases)."""
+    out = []
+    for r in range(n // 4):
+        y, h = float(rng.uniform(0, 500)), float(rng.uniform(6, 40))
+        x = float(rng.uniform(0, 300))
+        for _ in range(4):
+            w = float(rng.uniform(5, 200))
+            gap = float(rng.choice([0.0, rng.uniform(0, 30), -rng.uniform(0, 10)]))
+            dy = float(rng.uniform(-h, h)) * float(rng.choice([0.0, 0.3, 1.2]))
+            out.append([x, y + dy, x + w, y + dy + h * float(rng.uniform(0.5, 1.5))])
+            x += w + gap
+    out.append(list(out[0]))                       # a duplicate of the first box
+    return out
+
+
+def test_clip_rule_sides_are_evals():
+    """tools/tsdesk_c.rule_sides (the C page's clip_sides) gives eval/tsdesk_eval.clip_sides of the line rule's
+    margins against the frame's boxes, and crop_sides' crops."""
+    import importlib.util
+    E = _tsdesk_eval()
+    spec = importlib.util.spec_from_file_location("tsdesk_time_t", ROOT / "eval" / "tsdesk_time.py")
+    TTm = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(TTm)
+    rng = np.random.default_rng(17)
+    n_cut = 0
+    for k in range(60):
+        boxes = _clip_scene(rng, 16)
+        for rule in ("c0.45v0.1", "c0.6v0.15", "c0.8v0.15", "c2v1"):
+            for b in boxes:
+                ph, pv = E.rel_hv(E.rel_rule(rule), b)
+                want = E.clip_sides(b, boxes, ph, pv)
+                got = TC.rule_sides(rule, b, 544, boxes)
+                assert got == tuple(float(v) for v in want), (rule, b)
+                assert TTm.crop_sides(b, got, 960, 544) == E.crop_sides(b, want, 960, 544)
+                n_cut += got != (ph, pv, ph, pv)
+        for rule in ("k6v4", "h0.45v0.1"):                  # the other rules: no clip, both sides alike
+            b = boxes[0]
+            ph, pv = TC.rule_hv(rule, b, 544)
+            assert TC.rule_sides(rule, b, 544, boxes) == (ph, pv, ph, pv)
+    assert n_cut > 100
+
+
 def test_c_page_reading_rules(nets, libs, tmp_path):
     """The C page under every kind of reading rule (vocr_tsd_page_set_rule): each line's crop is its box grown by
     rule_hv's pad and rounded outward (eval/tsdesk_eval.crop_hv), in tools/tsdesk.reading_order, refined or not; the
@@ -802,33 +856,38 @@ def test_c_page_reading_rules(nets, libs, tmp_path):
     _, blob, _ = nets["p8a"]
     rng = np.random.default_rng(15)
     frames = [_text_frame(480, 272, 3), _text_frame(960, 544, 4), rng.integers(0, 256, (500, 300, 3), dtype=np.uint8)]
+    n_clipped = 0
     for lib in libs.values():
         cm = TC.CModel(blob, lib=lib)
-        for rule in ("k6v4", "k6v4f8", "h0.45v0.1", "h0.2v0.6", 3):
+        for rule in ("k6v4", "k6v4f8", "h0.45v0.1", "h0.2v0.6", 3, "c0.45v0.1", "c0.8v0.15", "c3v2"):
             for refine in (None, True):
                 page = TC.CPage(blob, rp, threads=2, pad=rule, refine=refine, lib=lib)
                 for fr in frames:
                     H, W = fr.shape[:2]
                     lines = page.page(fr)
                     boxes = cm.detect(fr, refine=refine)
+                    xyxy = [(b.x, b.y, b.x + b.w, b.y + b.h) for b in boxes]
                     order = T.reading_order([(b.x, b.y, b.w, b.h) for b in boxes])
                     want = []
                     for i in order:
-                        b = boxes[i]
-                        ph, pv = TC.rule_hv(rule, (b.x, b.y, b.x + b.w, b.y + b.h), H)
-                        cb = TC_crop(b, ph, pv, W, H)
+                        sd = TC.rule_sides(rule, xyxy[i], H, xyxy)
+                        cb = TC_crop_sides(xyxy[i], sd, W, H)
                         if cb is not None:
                             want.append(cb)
                     assert [ln.crop for ln in lines] == want, (rule, refine, fr.shape)
+                    if rule == "c3v2" and refine:
+                        n_clipped += sum(TC.rule_sides(rule, b, H, xyxy) != TC.rule_hv(rule, b, H) * 2 for b in xyxy)
                     kind = TC.rule_of(rule)[0]
-                    if kind == TC.RULE_LINE:
+                    if kind in (TC.RULE_LINE, TC.RULE_CLIP):
                         assert page.pad() == (-1, -1)
                     else:
                         assert page.pad() == tuple(int(v) for v in TC.rule_hv(rule, (0, 0, 1, 1), H))
         p = TC.CPage(blob, rp, lib=lib)
         L = p.L
-        for args in ((3, 1.0, 1.0, 1.0), (0, -1.0, 4.0, 2.0), (1, float("nan"), 0.1, 0.0), (0, 6.0, 4.0, 5000.0)):
+        for args in ((4, 1.0, 1.0, 1.0), (0, -1.0, 4.0, 2.0), (1, float("nan"), 0.1, 0.0), (0, 6.0, 4.0, 5000.0),
+                     (3, 0.4, -0.1, 0.0)):
             assert L.vocr_tsd_page_set_rule(p.p, *args) == -1, args
         assert L.vocr_tsd_page_set_rule(C.c_void_p(0), 0, 4.0, 4.0, 2.0) == -1
         with pytest.raises(ValueError):
             TC.CPage(blob, rp, pad="h0.4", lib=lib)
+    assert n_clipped > 0                                   # the clip rule cut some side

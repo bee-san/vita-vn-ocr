@@ -283,13 +283,18 @@ def test_cmd_edits_builds_a_checked_cache(tmp_path):
     _edit_tree(tmp_path)
     C.cmd_edits(argparse.Namespace(rows=[str(tmp_path / "rows.jsonl")], shards=str(tmp_path / "shards"),
                                    meiki=str(tmp_path / "meiki"), targets=None, pool=str(tmp_path / "pool"),
-                                   out=str(tmp_path / "edits"), workers=1))
+                                   out=str(tmp_path / "edits"), workers=1, skip_titles="PCSG00854"))
     edits, doc = C.load_edits(tmp_path / "edits")
     assert edits == {"T": {"000001": [[52, 42, 148, 55, 0, "notdlg", 1.0]]}}
     assert doc["added"] == 1 and doc["left_out"] == {"row": 1, "clipped": 0} and doc["by_split"] == {"train": 1}
     (tmp_path / "edits" / "T.json").write_text("{}\n")
     with pytest.raises(SystemExit):                                     # a changed file is refused
         C.load_edits(tmp_path / "edits")
+    C.cmd_edits(argparse.Namespace(rows=[str(tmp_path / "rows.jsonl")], shards=str(tmp_path / "shards"),
+                                   meiki=str(tmp_path / "meiki"), targets=None, pool=str(tmp_path / "pool"),
+                                   out=str(tmp_path / "edits2"), workers=1, skip_titles="T"))
+    edits2, doc2 = C.load_edits(tmp_path / "edits2")
+    assert edits2 == {} and doc2["skipped_by_title"] == {"T": 2} and doc2["added"] == 0
 
 
 def test_trainer_edit_pools(tmp_path, monkeypatch):
@@ -300,7 +305,7 @@ def test_trainer_edit_pools(tmp_path, monkeypatch):
     smp = _edit_tree(tmp_path)
     C.cmd_edits(argparse.Namespace(rows=[str(tmp_path / "rows.jsonl")], shards=str(tmp_path / "shards"),
                                    meiki=str(tmp_path / "meiki"), targets=None, pool=str(tmp_path / "pool"),
-                                   out=str(tmp_path / "edits"), workers=1))
+                                   out=str(tmp_path / "edits"), workers=1, skip_titles=""))
 
     class Hook:
         by_title = {"T": [(0, smp), (0, dict(smp, page="000002"))]}

@@ -511,6 +511,8 @@ EDIT_ROW_OVERLAP = 0.5      # a box shares a verified line's row: vertical overl
 EDIT_RUBY_MIN_REL = 0.33    # ruby is about half its line's height: a ruby-like box under a third of it is other text
                             # (the star map's Latin labels above a line: 0.21-0.28; the furigana seen: 0.38-0.59)
 EDIT_CLIP = 0.3             # a box touching a positive above or below by at most this x its height is clipped there
+EDIT_SKIP_TITLES = ("PCSG00854",)   # the ornament-strip guard title (protocol v2 G4): its strong 'apart' boxes are
+                                    # its frame strip above the text, junk the detector must not learn as text
 
 
 def edit_candidates(smp, rows, meiki):
@@ -597,10 +599,15 @@ def cmd_edits(a):
     """The label-edit cache: per title {page: [notdlg positives]} in native page px (edit_candidates), from the
     hook coverage rows' 'apart' boxes; train/tsdesk_det.py --label-edits appends them to hook and desk_hook samples."""
     rows = defaultdict(list)
+    skip = set(t for t in (a.skip_titles or "").split(",") if t)
+    skipped = Counter()
     for p in a.rows:
         for line in Path(p).read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
             if r["kind"] == "uncovered" and r.get("where") == "apart" and r["source"] == "hook":
+                if r["title"] in skip:
+                    skipped[r["title"]] += 1
+                    continue
                 rows[r["title"]].append(r)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -639,6 +646,7 @@ def cmd_edits(a):
                     "coords": "native page px; desk_hook maps them through its capture"},
            "rows_files": {str(p): sha256_file(p) for p in a.rows}, "targets": a.targets,
            "targets_sha256": sha256_file(Path(a.targets) / "targets.json") if a.targets else None,
+           "skip_titles": sorted(skip), "skipped_by_title": dict(skipped),
            "candidates": sum(len(v) for v in rows.values()), "left_out": dict(sorted(why.items())),
            "added": sum(by_title.values()), "pages": sum(len(v) for v in res.values()), "titles": len(res),
            "distinct_elements": len(elements), "by_split": dict(sorted(by_split.items())),
@@ -797,6 +805,8 @@ def main(argv=None):
     p.add_argument("--pool", required=True, help="the page pool (for the per-split counts)")
     p.add_argument("--out", required=True)
     p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--skip-titles", default=",".join(EDIT_SKIP_TITLES),
+                   help="titles left out of the edits (default: the ornament-strip guard title)")
     a = ap.parse_args(argv)
     {"meiki": cmd_meiki, "run": cmd_run, "sheet": cmd_sheet, "edits": cmd_edits}[a.cmd](a)
 

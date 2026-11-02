@@ -556,11 +556,11 @@ def test_read_frame_reading_filter():
 
     class Det:
         def detect(self, g):
-            return [_box(10, 10, 90, 30), _box(110, 10, 200, 30), _box(204, 10, 220, 30), _box(10, 60, 30, 90, 1)]
+            return [_box(10, 10, 60, 30), _box(110, 10, 200, 30), _box(204, 10, 220, 30), _box(10, 60, 30, 90, 1)]
 
     class Rec:
         def read(self, img, invert=False, lm=None):
-            t = {84: "0000000", 94: "あいう", 20: "A"}.get(img.shape[1], "?")       # crop widths (pad 2 px)
+            t = {54: "0000000", 94: "あいう", 20: "A"}.get(img.shape[1], "?")       # crop widths (pad 2 px)
             return V.Line(t, t, conf_mean=0.99)
 
     g = np.full((100, 300), 30, np.uint8)

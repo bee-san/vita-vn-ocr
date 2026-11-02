@@ -1,0 +1,50 @@
+{
+ "kind": "textspot-desktop-protocol-v2",
+ "issue": 173,
+ "registered": "2026-11-02T06:30Z",
+ "before": "any round-2 read: no round-2 study, arm or baseline has been read on any set; round 1 (protocol v1, eval/textspot_desktop_protocol.json, sha256 bb446c4c...) is finished and merged (#176, main d408fe3)",
+ "owner_goal": {
+  "time": "2026-11-02T05:37Z",
+  "words": "okay for textspot, continue working on it. set a goal. do not stop until it is better than meiki's but much faster.",
+  "as_set": "better than MeikiOCR's detector like for like, at least 5x faster than it at 1 thread, the full page at 4 threads in at most a third of R's page time; work in rounds until met and confirmed"
+ },
+ "v1_records": "protocol v1 and its records (screening, decision, final, pctest breakdown) stay as registered; v2 governs round 2 and later",
+ "harness": {
+  "scoring": "eval/desktop.py (vocr-desktop's harness, pagepath.score_unit) with eval/tsdesk_eval.install(): dialogue CER, greedy VOCR6.2_L_fast.onnx (vocr-onnx release, sha256 3084fb3b...), no LM, each box cut from the frame it was found on, grown by the pipeline's reading pad; dark lines inverted (vocr_line_dark)",
+  "intervals": "eval/desktop.compare_docs: the paired cluster bootstrap (clusters = VNs / titles, as the sets define them), 95%",
+  "R": "MeikiOCR 0.3.5's detector (meikiocr wheel sha256 5d1ede4b..., its own fit-into-960x544 input) + VOCR6.2-L fast, pad 'auto' (k4: max(2, round(4 H / 544)) frame px), eval/desktop.py's 'meiki' detector; the reads vocr-desktop and round 1 made are reused where they exist (same harness, same frames files)",
+  "T8": "textspot8 + VOCR6.2-L fast (eval/desktop.py 'ts8', its own pad)",
+  "exact": "every reference line's exact box (eval/tsdesk_eval.exact_ref) at the candidate's reading rule: report only"
+ },
+ "sets": {
+  "dev": {"what": "dev-v2: 84 unseen VNs, 339 units, VNDB console screenshots at their own size (vocr-desktop frames/dev.pkl, sha256 8613d244...)", "views": ["vita", "psp"], "role": "goal set (dev data: may be iterated on)"},
+  "dev_l544": {"what": "dev-v2 with every frame fit into 960x544 first (desktop.py resample --fit 960x544; frames/dev_l544.pkl, sha256 ef1b3264...)", "role": "goal set, like for like"},
+  "dense_dev": {"what": "round 1's frozen dense PC dev split: 1b v3 frames with >= 8 labelled lines from 100 VNs held out of every round-1 and round-2 training run by VN (data/manifests/tsdesk_dense_v1.json; frames/dense_dev.pkl, sha256 aa4d5a85...); 120 frames, 1,203 units", "role": "goal set (dev data)", "note": "the owner's 'R ~0.68%' is mida-ocr-eval's figure on the 709 training-side dense pages; on this held-out split R reads 0.353% (round 1), and that is the bar"},
+  "dense_dev_l544": {"what": "dense_dev fit into 960x544 first (desktop.py resample --fit 960x544, built at the first round-2 baseline read; its sha256 is recorded with it)", "role": "goal set, like for like"},
+  "hval": {"what": "the hooked training titles' held-out pages (frames/hval.pkl, sha256 c79dbbb9...); PCSG00854 carries the ornament-strip guard", "role": "screening, guard"},
+  "dense_screen": {"what": "round 1's dense PC screening split (100 other held-out VNs)", "role": "screening"},
+  "confirmation": {
+   "pc_test": {"what": "#171's PC test set (frames_pctest_v1.pkl, sha256 aa3785d2...; and its l544 frames, sha256 66287a12...)", "reads_so_far": ["vocr-desktop's final read (#169, eval/desktop_final_20261101.json)", "textspot-desktop round 1, once (2026-11-02T02:16:22Z, attempt record $PV/textspot-desktop/pctest/ATTEMPT.json)"]},
+   "confirm_v2": {"what": "the fresh confirmation set of 41 unseen VNs (vocr-desktop frames/confirm.pkl, sha256 96ab5e4b...; confirm_l544.pkl a9fabc1b...)", "reads_so_far": ["textspot7's confirmation (vocr6-spotter3, eval/textspot7_confirm_20261027.json)", "textspot8's confirmation (#149)", "vocr-desktop's final read (#169)"]},
+   "rule": "read once each, for one candidate only, after it passes G1-G4 on dev; each read is counted in an attempt record and disclosed with the earlier reads above"
+  },
+  "never": "vita-test, psp-test, CLANNAD, the hooked test titles (PCSG00807, NPJH50882) are not read; no training run reads dev-v2, dense_dev, dense_screen, the PC test set, confirm-v2 or their VNs (the dense VNs through skip_vns.txt, sha256 67d431b8...)"
+ },
+ "rule": {
+  "code": "eval/tsdesk_goal.py (this commit), applied to stored results only",
+  "G1_accuracy": "for each of dev, dense_dev (the candidate at one input policy of its own, the same for both) and dev_l544, dense_dev_l544 (the same candidate at fit:960 on the resized frames): CER <= R's CER on the same frames (point), and the paired interval (candidate - R) not entirely above 0; on dev and dev_l544 the vita and psp views' intervals each not entirely above 0",
+  "G2_detector_speed": "the candidate's detector + refinement in the C AVX2 build (-O3 -march=x86-64-v3), 1 thread, p50 on the 960x544 timing pages <= MeikiOCR's detector (ONNX Runtime, 1 thread, graph optimisations on, its own preprocessing) p50 on the same pages / 5, both measured in one interleaved run",
+  "G3_page_speed": "the candidate's full page (detector + VOCR6.2-L on every line, C or ONNX path, its best) at 4 threads, p50 <= R's page at a 4-thread budget / 3, on each of the Vita, PSP and PC timing pages, in one interleaved run",
+  "G4_guards": "junk boxes on hval's PCSG00854 <= R's (R: 0 in round 1's read); on dev and dev_l544 the vita and psp views each not resolved worse than T8 (interval of candidate - T8 not entirely above 0)",
+  "report": "peak RAM (C and ONNX), p95 times, per-view CERs, exact boxes, MeikiOCR itself, d64 where read",
+  "met_on_dev": "G1-G4 all pass for one candidate; then the confirmation reads (above) decide the claim",
+  "confirmation_rule": "the claim stands when on the PC test set (own size and l544) and confirm-v2 (own size and l544) the candidate's CER is <= R's (point) and no interval of candidate - R is entirely above 0; if a confirmation fails: no tuning on it, work continues on dev, and fresh test data is asked of desktop-data's importer (the owner's captures through desktopdata/owner.py, or a new held-out carve) before the next claim, recorded here as an amendment"
+ },
+ "rounds": {
+  "procedure": "each round registers its studies and arms as an amendment (what, which sets, how the next step is chosen) before reading them; reads are logged in vocr6/experiments.jsonl; the round ends with a summary on #173 (numbers against R and T8, what was learned, the next round); status lines start with ROUND<n>",
+  "selection": "within a round, arms are compared on the goal's quantities on dev data (hval and dense_screen first; dev, dense_dev and their l544 versions for arms that look close); the gap to the goal is max over the four G1 sets of (candidate CER - R CER)",
+  "seeds": "a candidate for confirmation is one trained model; before its confirmation reads, its recipe is trained with at least 3 seeds and all seeds' dev reads are reported (the candidate may be any of them; the choice is disclosed)",
+  "data": "training on hooked pools v2.1 (train split; guard + hval only for retrains whose screening is done), desktop-data's 1a / 1b v3 / 1c pages, the real half and the synthetic frames, with the dense VNs, the dev-v2 / PC test / confirm-v2 VNs, the test titles and CLANNAD excluded as in round 1; MeikiOCR's outputs may be used as training targets (its licence is checked and stated before the first such run)"
+ },
+ "amendments": []
+}

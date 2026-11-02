@@ -10,6 +10,15 @@ with VOCR's recognizer in C (runtime/vocr.c, W8I, the blob's head sections on).
     for ln in page.page(frame):                                 # [tsdesk.Line] in reading order
         ln.text, ln.box, ln.crop, ln.tag
 
+The round-2 options (protocol v2 amendment 4's C6) are tools/tsdesk's, as dicts in its option names, None = off =
+the plain boxes bit for bit: decode (DEFAULTS and DECODE_EXTRA: vote_pct in C; saddle_pct, rescue_milli and
+clamp_ends have no C twin and are refused), post (POST_DEFAULTS; gap_pct refused) and, for the page, drop
+(DROP_DEFAULTS):
+    det.detect(frame, refine=True, decode={"vote_pct": 70},
+               post={"merge_pct": 70, "rows_pct": 65, "valley_pct": 0, "ext_pct": 1200})
+    CPage(det_blob, rec_blob, pad="k6v4", refine=True, decode={...}, post={...},
+          drop={"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "rep_pct": 50})
+
 frame: H x W grey or H x W x 3 / 4 RGB(A) uint8 (rows may be strided). The library is desktop/build/libvocrdesk.so,
 $VOCR_DESK_LIB or `lib` (make -C desktop). CModel.maps / .decode run the network and the decode alone (parity
 tests); given the same maps, the C decode gives tools/tsdesk.decode's boxes bit for bit.
@@ -64,12 +73,38 @@ class CLine(C.Structure):
     _fields_ = [("x", C.c_int), ("y", C.c_int), ("w", C.c_int), ("h", C.c_int), ("bx", C.c_double),
                 ("by", C.c_double), ("bw", C.c_double), ("bh", C.c_double), ("logit", C.c_double),
                 ("tag", C.c_uint), ("dark", C.c_uint), ("vertical", C.c_uint), ("conf_min", C.c_float),
-                ("text", C.c_char * TEXT)]
+                ("conf_mean", C.c_float), ("text", C.c_char * TEXT)]
 
 
 class COpts(C.Structure):
     _fields_ = [("stride", C.c_uint), ("tags", C.c_uint), ("min_cells", C.c_uint), ("max_boxes", C.c_uint),
-                ("conf_min_logit", C.c_double), ("min_across", C.c_double), ("along_reach", C.c_double)]
+                ("conf_min_logit", C.c_double), ("min_across", C.c_double), ("along_reach", C.c_double),
+                ("vote_pct", C.c_int)]
+
+
+POST_KEYS = tuple(T.POST_DEFAULTS)          # vocr_tsd_post.h vocr_tsdp_opts' field order
+DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts'
+
+
+class CPost(C.Structure):
+    _fields_ = [(k, C.c_int) for k in POST_KEYS]
+
+
+class CDrop(C.Structure):
+    _fields_ = [(k, C.c_int) for k in DROP_KEYS]
+
+
+class CDetOpts(C.Structure):                # vocr_tsd_opts
+    _fields_ = [("decode", C.POINTER(COpts)), ("refine", C.c_void_p), ("post", C.POINTER(CPost))]
+
+
+class CPBox(C.Structure):                   # vocr_tsdp_box
+    _fields_ = [("x", C.c_double), ("y", C.c_double), ("w", C.c_double), ("h", C.c_double),
+                ("logit", C.c_double), ("tconf", C.c_double), ("vertical", C.c_uint), ("tag", C.c_uint),
+                ("cells", C.c_uint)]
+
+
+NO_C_TWIN = ("saddle_pct", "rescue_milli", "clamp_ends")     # tools/tsdesk.DECODE_EXTRA options the C decode lacks
 
 
 _LIBS = {}
@@ -135,9 +170,43 @@ def c_library(path=None):
     L.vocr_tsd_page_total_us.argtypes = [vp]
     L.vocr_tsd_page_total_us.restype = d
     L.vocr_tsd_page_free.argtypes = [vp]
+    L.vocr_tsd_decode_bytes_ex.argtypes = [u, u, u, C.POINTER(COpts)]
+    L.vocr_tsd_decode_bytes_ex.restype = sz
+    L.vocr_tsd_arena_bytes_opt.argtypes = [vp, u, u, u, u, u, u, C.POINTER(CDetOpts)]
+    L.vocr_tsd_arena_bytes_opt.restype = sz
+    L.vocr_tsd_detect_opt.argtypes = [vp, vp, u, u, u, u, u, u, C.POINTER(CDetOpts), vp, sz, C.POINTER(CSet), vp,
+                                      vp, u]
+    L.vocr_tsd_page_set_decode.argtypes = [vp, C.POINTER(COpts)]
+    L.vocr_tsd_page_set_post.argtypes = [vp, C.POINTER(CPost)]
+    L.vocr_tsd_page_set_drop.argtypes = [vp, C.POINTER(CDrop)]
+    L.vocr_tsdp_nopts.restype = i
+    L.vocr_tsdd_nopts.restype = i
+    L.vocr_tsdp_defaults.argtypes = [C.POINTER(CPost)]
+    L.vocr_tsdd_defaults.argtypes = [C.POINTER(CDrop)]
+    L.vocr_tsdp_scratch_bytes.argtypes = [u, u, u]
+    L.vocr_tsdp_scratch_bytes.restype = sz
+    L.vocr_tsdp_pre.argtypes = [vp, u, u, u, C.POINTER(CPBox), C.POINTER(u), u, C.POINTER(CPost), vp, sz]
+    L.vocr_tsdp_pre.restype = i
+    L.vocr_tsdp_post.argtypes = [vp, u, u, u, C.POINTER(CPBox), C.POINTER(u), C.POINTER(CPost), vp, sz]
+    L.vocr_tsdp_post.restype = i
+    L.vocr_tsdd_drop.argtypes = [C.POINTER(d), C.POINTER(C.c_char_p), C.POINTER(C.c_float), u, C.POINTER(CDrop),
+                                 C.POINTER(C.c_ubyte)]
+    L.vocr_tsdd_drop.restype = i
+    L.vocr_tsdd_has_japanese.argtypes = [C.c_char_p]
+    L.vocr_tsdd_has_japanese.restype = i
+    L.vocr_tsdd_japanese_share.argtypes = [C.c_char_p]
+    L.vocr_tsdd_japanese_share.restype = d
     for name, cls in (("vocr_tsd_set_bytes", CSet), ("vocr_tsd_box_bytes", CBox), ("vocr_tsd_line_bytes", CLine)):
         if getattr(L, name)() != C.sizeof(cls):
             raise RuntimeError(f"{path}: {name} {getattr(L, name)()} B, ctypes says {C.sizeof(cls)}")
+    if L.vocr_tsdp_nopts() != len(POST_KEYS) or L.vocr_tsdd_nopts() != len(DROP_KEYS):
+        raise RuntimeError(f"{path}: the post-pass / reading filter options differ from tools/tsdesk's")
+    cp, cd = CPost(), CDrop()
+    L.vocr_tsdp_defaults(C.byref(cp))
+    L.vocr_tsdd_defaults(C.byref(cd))
+    if [getattr(cp, k) for k in POST_KEYS] != [T.POST_DEFAULTS[k] for k in POST_KEYS] or \
+            [getattr(cd, k) for k in DROP_KEYS] != [T.DROP_DEFAULTS[k] for k in DROP_KEYS]:
+        raise RuntimeError(f"{path}: the C post-pass / reading-filter defaults differ from tools/tsdesk's")
     L.runner = C.cast(L.vocr_tsd_pool_run, vp)
     _LIBS[path] = L
     return L
@@ -284,6 +353,42 @@ def refine_opts(refine, lib):
     return (C.c_int * len(TR.KEYS))(*[o[k] for k in TR.KEYS])
 
 
+def post_struct(post):
+    """A CPost of tools/tsdesk.POST_DEFAULTS options (a dict), or None for None; gap_pct (the along split) has no C
+    twin and is refused."""
+    if post in (None, False):
+        return None
+    o = T.post_options(post)
+    if o["gap_pct"]:
+        raise ValueError("post gap_pct: the along split has no C twin")
+    return CPost(*[o[k] for k in POST_KEYS])
+
+
+def drop_struct(drop):
+    """A CDrop of tools/tsdesk.DROP_DEFAULTS options (a dict), or None."""
+    if drop in (None, False):
+        return None
+    o = T.drop_options(drop)
+    return CDrop(*[o[k] for k in DROP_KEYS])
+
+
+def decode_struct(decode, base, hs, tags):
+    """A COpts of the blob's decode options `base` (min_cells, conf_min_logit, ...) updated with `decode` (a dict of
+    tools/tsdesk.DEFAULTS / DECODE_EXTRA options), or None for None. The extras without a C twin are refused."""
+    if decode in (None, False):
+        return None
+    bad = set(decode) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
+    if bad:
+        raise KeyError(f"unknown decode options {sorted(bad)}")
+    no = [k for k in NO_C_TWIN if decode.get(k)]
+    if no:
+        raise ValueError(f"decode {no}: no C twin")
+    o = dict(base)
+    o.update({k: v for k, v in decode.items() if k in T.DEFAULTS})
+    return COpts(hs, tags, int(o["min_cells"]), int(o["max_boxes"]), float(o["conf_min_logit"]),
+                 float(o["min_across"]), float(o["along_reach"]), int(decode.get("vote_pct", 0)))
+
+
 def _image(img):
     """(array, w, h, row stride, channels) of a grey or RGB(A) uint8 image for the C API (rows may be strided)."""
     a = np.asarray(img)
@@ -370,15 +475,15 @@ class CModel:
 
     def decode(self, maps, iw, ih, **opts):
         """vocr_tsd_decode on [6 + T, mh, mw] float32 maps: [Box] in input px (tsdesk.decode's); opts override the
-        blob's decode constants (min_cells, conf_min_logit, min_across, along_reach, max_boxes)."""
+        blob's decode constants (min_cells, conf_min_logit, min_across, along_reach, max_boxes) and set vote_pct."""
         o = dict(self.decode_opts)
         o.update(opts)
         hwc = np.ascontiguousarray(np.asarray(maps, np.float32).transpose(1, 2, 0))
         mh, mw, ch = hwc.shape
         tags = ch - 6
         co = COpts(self.hs, tags, int(o["min_cells"]), int(o["max_boxes"]), float(o["conf_min_logit"]),
-                   float(o["min_across"]), float(o["along_reach"]))
-        scratch = np.zeros(self.L.vocr_tsd_decode_bytes(mw, mh, tags) + 64, np.uint8)
+                   float(o["min_across"]), float(o["along_reach"]), int(o.get("vote_pct", 0)))
+        scratch = np.zeros(self.L.vocr_tsd_decode_bytes_ex(mw, mh, tags, C.byref(co)) + 64, np.uint8)
         st = CSet()
         rc = self.L.vocr_tsd_decode_ex(C.byref(co), hwc.ctypes.data, mw, mh, int(iw), int(ih), scratch.ctypes.data,
                                        scratch.size, C.byref(st))
@@ -387,10 +492,14 @@ class CModel:
         self.truncated = int(st.truncated)
         return _boxes(st)
 
-    def detect(self, img, size=None, refine=None):
+    def detect(self, img, size=None, refine=None, decode=None, post=None):
         """vocr_tsd_detect_ex on a grey or RGB(A) frame in memory: [Box] in frame px (tsdesk.Detector.detect's), at
         the input policy `size` (None: the blob's); refine: None (off), True or a dict of tools/tsdesk_refine's options
-        (tsdesk.Detector's refine: every horizontal box snapped to its line's ink on the full-resolution luma)."""
+        (tsdesk.Detector's refine: every horizontal box snapped to its line's ink on the full-resolution luma);
+        decode, post: tools/tsdesk's decode options (vote_pct) and post-pass options (dicts; None: off), through
+        vocr_tsd_detect_opt (tsdesk.Detector(decode_opts=..., post=...)'s boxes)."""
+        if decode or post:
+            return self._detect_opt(img, size, refine, decode, post)
         a, w, h, stride, ch = _image(img)
         kind, n = policy_of(size, self.default_policy)
         run, pool, nt = self._run()
@@ -409,6 +518,33 @@ class CModel:
         self.truncated = int(st.truncated)
         return _boxes(st)
 
+    def det_opts(self, refine=None, decode=None, post=None):
+        """(CDetOpts, the structs it points to) of the round-2 options (kept alive with it)."""
+        co = decode_struct(decode, self.decode_opts, self.hs, self.tags)
+        cp = post_struct(post)
+        ro = self._refine_opts(refine)
+        opt = CDetOpts(C.pointer(co) if co is not None else None, C.cast(ro, C.c_void_p) if ro is not None else None,
+                       C.pointer(cp) if cp is not None else None)
+        return opt, (co, cp, ro)
+
+    def _detect_opt(self, img, size, refine, decode, post):
+        a, w, h, stride, ch = _image(img)
+        kind, n = policy_of(size, self.default_policy)
+        run, pool, nt = self._run()
+        opt, keep = self.det_opts(refine, decode, post)
+        need = self.L.vocr_tsd_arena_bytes_opt(self.m.ctypes.data, kind, n, w, h, ch, nt, C.byref(opt))
+        if not need:
+            raise ValueError(f"a {w} x {h} frame under the policy {size or 'default'}: refused")
+        arena = self.arena(need)
+        st = self._set
+        rc = self.L.vocr_tsd_detect_opt(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n, C.byref(opt),
+                                        arena.ctypes.data, arena.size, C.byref(st), run, pool, nt)
+        del keep
+        if rc:
+            raise ValueError(f"vocr_tsd_detect_opt: {rc}")
+        self.truncated = int(st.truncated)
+        return _boxes(st)
+
     def _refine_opts(self, refine):
         """refine_opts(refine), kept per setting (the options are parsed once)."""
         if refine in (None, False):
@@ -419,10 +555,54 @@ class CModel:
             cache[key] = refine_opts(refine, self.L)
         return cache[key]
 
-    def boxes(self, rgb, size=None, refine=None):
+    def boxes(self, rgb, size=None, refine=None, decode=None, post=None):
         """eval/desktop.py's detector interface: [[x0, y0, x1, y1, vertical, logit, tag]] in frame px."""
         return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag]
-                for b in self.detect(rgb, size, refine)]
+                for b in self.detect(rgb, size, refine, decode, post)]
+
+    def post_pre(self, grey, boxes, post):
+        """vocr_tsdp_pre on [tsdesk.Box] in frame px of a grey frame: tools/tsdesk.post_pre's boxes (tests)."""
+        return self._post(grey, boxes, post, True)
+
+    def post_post(self, grey, boxes, post):
+        """vocr_tsdp_post: tools/tsdesk.post_post's boxes (tests)."""
+        return self._post(grey, boxes, post, False)
+
+    def _post(self, grey, boxes, post, pre):
+        g = np.ascontiguousarray(grey, np.uint8)
+        H, W = g.shape
+        cap = MAX_BOXES
+        arr = (CPBox * cap)()
+        if len(boxes) > cap:
+            raise ValueError(f"{len(boxes)} boxes: at most {cap}")
+        for i, b in enumerate(boxes):
+            arr[i] = CPBox(b.x, b.y, b.w, b.h, b.logit, b.tconf, int(b.vertical), int(b.tag), int(b.cells))
+        n = C.c_uint(len(boxes))
+        cp = post_struct(post)
+        scratch = np.zeros(self.L.vocr_tsdp_scratch_bytes(W, H, cap) + 64, np.uint8)
+        if pre:
+            rc = self.L.vocr_tsdp_pre(g.ctypes.data, W, H, W, arr, C.byref(n), cap, C.byref(cp), scratch.ctypes.data,
+                                      scratch.size)
+        else:
+            rc = self.L.vocr_tsdp_post(g.ctypes.data, W, H, W, arr, C.byref(n), C.byref(cp), scratch.ctypes.data,
+                                       scratch.size)
+        if rc:
+            raise ValueError(f"vocr_tsdp_{'pre' if pre else 'post'}: {rc}")
+        return [T.Box(b.x, b.y, b.w, b.h, int(b.vertical), b.logit, int(b.tag), b.tconf, int(b.cells))
+                for b in arr[:n.value]]
+
+    def drop_set(self, items, drop):
+        """vocr_tsdd_drop on [(box (x, y, w, h), text, conf_mean)]: tools/tsdesk.drop_set's indices (tests)."""
+        n = len(items)
+        xy = (C.c_double * max(1, 4 * n))(*[float(v) for b, _, _ in items for v in b])
+        txt = (C.c_char_p * max(1, n))(*[t.encode("utf-8") for _, t, _ in items])
+        cf = (C.c_float * max(1, n))(*[float(c) for _, _, c in items])
+        out = (C.c_ubyte * max(1, n))()
+        cd = drop_struct(drop)
+        rc = self.L.vocr_tsdd_drop(xy, txt, cf, n, C.byref(cd), out)
+        if rc < 0:
+            raise ValueError(f"vocr_tsdd_drop: {rc}")
+        return {i for i in range(n) if out[i]}
 
     def input_size(self, w, h, size=None):
         """(iw, ih, pw, ph): the network input's image part and its padded size for a w x h frame."""
@@ -457,11 +637,12 @@ class CModel:
 class CPage:
     """The C page pipeline: the VTSD detector and a VOCR6 recognizer blob (.vocr, runtime/vocr.c W8I with its head
     sections), every horizontal box (refined when refine is set, as CModel.detect refines) grown by the reading rule
-    `pad` (rule_of: auto, kN, kAvB, kAvBfC, hXvY or N px) and read on `threads` threads in C. The defaults (pad
+    `pad` (rule_of: auto, kN, kAvB, kAvBfC, hXvY, cXvY or N px) and read on `threads` threads in C. The defaults (pad
     "auto", no refinement) are the page's plain setting; round 1's measured one is pad="k6v4", refine=True
     (docs/textspot-desktop.md)."""
 
-    def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, lib=None):
+    def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, decode=None, post=None,
+                 drop=None, lib=None):
         self.L = c_library(lib)
         self.det = aligned(_blob_bytes(det))
         self.rec = aligned(_blob_bytes(rec))
@@ -480,6 +661,22 @@ class CPage:
         self._ropts = refine_opts(refine, self.L)       # the page copies the options
         if self._ropts is not None:
             self.L.vocr_tsd_page_set_refine(self.p, C.cast(self._ropts, C.c_void_p))
+        if decode:      # the decode's options on the blob's (read from its header, as CModel does)
+            hdr = bytes(self.det[:HEADER])
+            hs = struct.unpack_from("<I", hdr, 20)[0]
+            tags_n = struct.unpack_from("<II", hdr, 68)[0]
+            mc, mb = struct.unpack_from("<2I", hdr, 80)
+            conf, across, reach = struct.unpack_from("<3d", hdr, 128)
+            base = {"min_cells": mc, "conf_min_logit": conf, "min_across": across, "along_reach": reach,
+                    "max_boxes": mb}
+            self._dopts = decode_struct(decode, base, hs, tags_n)
+            self.L.vocr_tsd_page_set_decode(self.p, C.byref(self._dopts))
+        if post:
+            self._popts = post_struct(post)
+            self.L.vocr_tsd_page_set_post(self.p, C.byref(self._popts))
+        if drop:
+            self._xopts = drop_struct(drop)
+            self.L.vocr_tsd_page_set_drop(self.p, C.byref(self._xopts))
 
     def __del__(self):
         if getattr(self, "p", None):

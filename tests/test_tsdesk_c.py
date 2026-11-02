@@ -891,3 +891,250 @@ def test_c_page_reading_rules(nets, libs, tmp_path):
         with pytest.raises(ValueError):
             TC.CPage(blob, rp, pad="h0.4", lib=lib)
     assert n_clipped > 0                                   # the clip rule cut some side
+
+
+# ----------------------------------------------------------------------------- the round-2 options (C6) in C
+
+C6_DECODE = {"vote_pct": 70}
+C6_POST = {"merge_pct": 70, "rows_pct": 65, "valley_pct": 0, "ext_pct": 1200}
+C6_DROP = {"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "rep_pct": 50}
+
+
+def _touching_lines(s, rows_a, rows_b, cols, ya, yb, tags=4):
+    """Maps of one kernel component made of two lines' cells (rows_a voting for edges ya, rows_b for yb)."""
+    hm, wm = max(rows_b) + 3, max(cols) + 3
+    m = np.zeros((6 + tags, hm, wm), np.float32)
+    m[0] = -6.0
+    m[1] = -4.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for rows, (y0, y1) in ((rows_a, ya), (rows_b, yb)):
+        for r in rows:
+            for q in cols:
+                m[0, r, q] = 3.0 + 0.01 * q
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y1 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - s * cols[0], s * (cols[-1] + 1) - cs[q]
+    return m, wm * s, hm * s
+
+
+def test_c_decode_vote_equals_python(nets, libs):
+    """vote_pct in the C decode (desktop/vocr_tsd.c vote_split) gives tools/tsdesk.decode's boxes bit for bit: the
+    decode's own cases, two touching lines split and not split, random fields at three thresholds; vote_pct 0 is the
+    plain decode."""
+    rng = np.random.default_rng(21)
+    cases = [(mp, iw, ih, s, o) for mp, iw, ih, s, o in _decode_cases(rng)]
+    for s in (8, 4):
+        cases.append((*_touching_lines(s, range(3, 5), range(5, 8), range(4, 30), (20.0, 44.0), (46.0, 70.0)), s, {}))
+        cases.append((*_touching_lines(s, range(3, 6), range(6, 8), range(2, 9), (18.0, 52.0), (50.0, 66.0)), s, {}))
+    for k in range(40):                                                   # random fields with many split points
+        mh, mw = int(rng.integers(3, 50)), int(rng.integers(3, 80))
+        mp = rng.normal(0, 1.5, (10, mh, mw)).astype(np.float32)
+        mp[0] += 1.0
+        mp[2:6] = np.abs(mp[2:6]) * rng.uniform(1, 30)
+        if k % 3 == 0:
+            mp[1] = np.abs(mp[1]) + 0.05
+        cases.append((mp, mw * 8, mh * 8, 8, {}))
+    n_split = 0
+    for lib in libs.values():
+        models = {8: TC.CModel(nets["p8a"][1], lib=lib), 4: TC.CModel(nets["p4a"][1], lib=lib)}
+        for mp, iw, ih, s, opts in cases:
+            d = dict(T.DEFAULTS, **opts)
+            base = T.decode(mp, iw, ih, s, d["min_cells"], d["conf_min_logit"], d["min_across"], d["along_reach"],
+                            mp.shape[0] - 6, d["max_boxes"])
+            assert models[s].decode(mp, iw, ih, vote_pct=0, **opts) == base
+            for vp in (50, 70, 85):
+                ref = T.decode(mp, iw, ih, s, d["min_cells"], d["conf_min_logit"], d["min_across"], d["along_reach"],
+                               mp.shape[0] - 6, d["max_boxes"], 0, vp)
+                got = models[s].decode(mp, iw, ih, vote_pct=vp, **opts)
+                assert got == ref, (s, iw, ih, opts, vp, len(got), len(ref))
+                n_split += len(ref) > len(base)
+    assert n_split > 10
+
+
+def _glyph_frame(rng, H, W):
+    """A grey frame with glyph-like lines (2 px strokes), some in tight row pairs, dash runs after some, and boxes
+    for them as a detector gives them: loose, tight, over two rows, with overlapping fragments."""
+    import cv2
+    g = rng.integers(10, 60, (H, W), dtype=np.uint8)
+    boxes = []
+    for _ in range(int(rng.integers(1, 8))):
+        sz = int(rng.integers(8, 26))
+        y, x = int(rng.integers(0, max(1, H - 2 * sz - 4))), int(rng.integers(0, max(1, W - 200)))
+        n, gap = int(rng.integers(2, 12)), int(rng.integers(1, 6))
+        for k in range(n):
+            gx = x + k * (sz + gap)
+            cv2.rectangle(g, (gx, y), (gx + sz - 1, y + sz - 1), 230, 2)
+            cv2.line(g, (gx + sz // 2, y), (gx + sz // 2, y + sz - 1), 230, 2)
+        e = x + n * (sz + gap) - gap
+        if rng.random() < 0.5:                                            # a second row tight under the first
+            y2 = y + sz + int(rng.integers(1, 4))
+            for k in range(int(rng.integers(3, 12))):
+                gx = x + k * (sz + 3)
+                cv2.rectangle(g, (gx, y2), (gx + sz - 1, y2 + sz - 1), 230, 2)
+            boxes.append(T.Box(x - rng.uniform(0, 3), y - rng.uniform(0, 3), e - x + rng.uniform(0, 6),
+                               2 * sz + 4 + rng.uniform(-2, 2), 0, 1.0, 0, 0.0, 5))
+        else:
+            boxes.append(T.Box(x - rng.uniform(0, 3), y - rng.uniform(0, 3), e - x + rng.uniform(-10, 6),
+                               sz + rng.uniform(-2, 4), 0, 1.0, 0, 0.0, 5))
+        if rng.random() < 0.4:                                            # a dash run after the line
+            cv2.line(g, (e + 3, y + sz // 2), (min(W - 1, e + int(rng.integers(10, 80))), y + sz // 2), 230, 2)
+        if rng.random() < 0.3:                                            # an overlapping fragment
+            b = boxes[-1]
+            boxes.append(T.Box(b.x + b.w * 0.6, b.y + 1, b.w * 0.5, b.h - 1, 0, 0.5, 1, 0.1, 2))
+        if rng.random() < 0.15:
+            boxes.append(T.Box(x, y, sz, 3 * sz, 1, 0.7, 2, 0.0, 3))           # a vertical box
+    return g, boxes
+
+
+def test_c_post_pass_equals_python(nets, libs):
+    """vocr_tsdp_pre / vocr_tsdp_post (desktop/vocr_tsd_post.c) give tools/tsdesk.post_pre / post_post's boxes bit
+    for bit on generated frames: merge, the row split (two valley rules), C6's set, the end extension with and without
+    the join; all options 0 leave the boxes as they are; the along split (no C twin) is refused."""
+    rng = np.random.default_rng(22)
+    n_changed = 0
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for _ in range(60):
+            g, boxes = _glyph_frame(rng, int(rng.integers(60, 300)), int(rng.integers(200, 700)))
+            for opts in ({"merge_pct": 70}, {"rows_pct": 65, "valley_pct": 0}, {"rows_pct": 65}, C6_POST,
+                         {"merge_pct": 30, "rows_pct": 50, "rows_len": 100}):
+                ref = T.post_pre(g, boxes, opts)
+                assert cm.post_pre(g, boxes, opts) == ref, opts
+                n_changed += ref != boxes
+            for opts in ({"ext_pct": 1200}, {"ext_pct": 1200, "ext_join": 0}, {"ext_pct": 600, "ext_run_pct": 30},
+                         C6_POST):
+                ref = T.post_post(g, boxes, opts)
+                assert cm.post_post(g, boxes, opts) == ref, opts
+                n_changed += ref != boxes
+            assert cm.post_pre(g, boxes, {}) == boxes and cm.post_post(g, boxes, {}) == boxes
+        with pytest.raises(ValueError, match="gap_pct"):
+            cm.post_pre(g, boxes, {"gap_pct": 150})
+    assert n_changed > 50
+
+
+def test_c_detect_with_c6_is_its_pieces(nets, libs):
+    """detect(refine, decode, post) == tools/tsdesk's steps on the C maps: the decode with vote_pct, frame px,
+    post_pre, the refinement (tools/tsdesk_refine.refine_det), post_post (tools/tsdesk.Detector.detect's order), on
+    RGB, RGBA and grey frames, resized or not, at any thread count; with every option 0 the plain detector's bits."""
+    import tsdesk_refine as TR
+    _, blob, _ = nets["p8a"]
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        n_diff = 0
+        for (h, w), size in (((544, 960), None), ((272, 480), "long:960"), ((720, 1280), None), ((300, 517), None)):
+            rgb = _text_frame(w, h, w + 3 * h)
+            g = T.grey_of(rgb)
+            x, (fx, fy, iw, ih) = cm.preprocess(rgb, size)
+            mp = cm.maps(x[0, 0])
+            d = cm.decode_opts
+            dec = T.decode(mp, iw, ih, cm.hs, d["min_cells"], d["conf_min_logit"], d["min_across"], d["along_reach"],
+                           cm.tags, d["max_boxes"], 0, 70)
+            fb = []
+            for b in dec:
+                x0, y0 = max(0.0, b.x / fx), max(0.0, b.y / fy)
+                x1, y1 = min(float(w), (b.x + b.w) / fx), min(float(h), (b.y + b.h) / fy)
+                if x1 > x0 and y1 > y0:
+                    fb.append(T.Box(x0, y0, x1 - x0, y1 - y0, b.vertical, b.logit, b.tag, b.tconf, b.cells))
+            ref = T.post_post(g, TR.refine_det(g, T.post_pre(g, fb, C6_POST), {}), C6_POST)
+            got = cm.detect(rgb, size, refine=True, decode=C6_DECODE, post=C6_POST)
+            assert got == ref, ((h, w), size)
+            n_diff += got != cm.detect(rgb, size, refine=True)
+            assert cm.detect(g, size, refine=True, decode=C6_DECODE, post=C6_POST) == got
+            rgba = np.concatenate([rgb, np.full((h, w, 1), 255, np.uint8)], 2)
+            assert cm.detect(rgba, size, refine=True, decode=C6_DECODE, post=C6_POST) == got
+            assert TC.CModel(blob, threads=3, lib=lib).detect(rgb, size, True, C6_DECODE, C6_POST) == got
+            # the options off, through vocr_tsd_detect_opt: the plain boxes bit for bit
+            plain = cm.detect(rgb, size, refine=True)
+            assert cm.detect(rgb, size, refine=True, decode={"vote_pct": 0}, post=dict(T.POST_DEFAULTS)) == plain
+            assert cm.detect(rgb, size, decode={"vote_pct": 0}) == cm.detect(rgb, size)
+        assert n_diff > 0
+        with pytest.raises(ValueError, match="no C twin"):
+            cm.detect(rgb, decode={"saddle_pct": 20})
+
+
+def test_c_reading_filter_equals_python(nets, libs):
+    """vocr_tsdd_drop gives tools/tsdesk.drop_set's lines for every rule (nojp 1 / 2 with its gap and anchor,
+    rep_pct, conf_milli) on random pages of readings; the Japanese test and share match has_japanese and
+    japanese_share."""
+    rng = np.random.default_rng(24)
+    texts = ["0000O00", "", "あいう", "A", "Max", "「000OO0000", "イf0u000u00000000000c", "【AccessingtheWorld】",
+             "……", "14日目", "ＡＢＣ", "所持金100000円", "れして0O", "イU", "ok", "—", "ー", "♪", "漢字", "a・b"]
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for t in texts:
+            assert cm.L.vocr_tsdd_has_japanese(t.encode()) == int(T.has_japanese(t)), t
+            assert cm.L.vocr_tsdd_japanese_share(t.encode()) == T.japanese_share(t), t
+        for _ in range(300):
+            n = int(rng.integers(0, 14))
+            items = [((float(rng.uniform(0, 400)), float(rng.uniform(0, 100)), float(rng.uniform(5, 200)),
+                       float(rng.uniform(8, 30))), str(rng.choice(texts)), float(rng.uniform(0.3, 1.0)))
+                     for _ in range(n)]
+            for o in ({"nojp": 1}, {"nojp": 2}, C6_DROP, {"rep_pct": 50}, {"conf_milli": 600},
+                      {"nojp": 2, "nojp_gap_pct": 50, "rep_pct": 80}, {}):
+                assert cm.drop_set(items, o) == T.drop_set(items, T.drop_options(o)), o
+
+
+def _mixed_recognizer(tmp_path):
+    """A random recognizer whose classes are Latin letters and digits (favoured) and kana: lines read as Latin, as
+    kana or mixed, so the reading filter has readings to drop."""
+    torch = pytest.importorskip("torch")
+    from torch import nn
+
+    import export
+    from model import TinyVNOCR
+    torch.manual_seed(9)
+    rec = TinyVNOCR(60, width=0.25).eval()
+    with torch.no_grad():
+        for mod in rec.modules():
+            if isinstance(mod, nn.BatchNorm2d):
+                mod.running_var.uniform_(0.5, 2.0)
+        rec.head.bias[0] -= 4.0
+        rec.head.bias[1:31] += 2.0                                       # the Latin classes
+    vocab = list("0O1lIAoBCDEFGHJKLMNPQRSTUVWXY") + [chr(0x3042 + i) for i in range(30)]
+    blob, _ = export.build_blob(export.model_ops(rec, 32), vocab, 32, True, 1024, b"")
+    rp = tmp_path / "rec_mixed.vocr"
+    rp.write_bytes(blob)
+    return blob, rp
+
+
+def test_c_page_with_c6(nets, libs, tmp_path):
+    """The C page with C6's options: its boxes are CModel.detect's with them, and its lines the page's lines without
+    the reading filter less the ones tools/tsdesk.drop_set rejects (read_frame's drop), in the same order."""
+    pytest.importorskip("torch")
+    _, rp = _mixed_recognizer(tmp_path)
+    _, blob, _ = nets["p8a"]
+    frames = [_text_frame(960, 544, 31), _text_frame(480, 272, 32)]
+    for lib in libs.values():
+        cm = TC.CModel(blob, lib=lib)
+        full = TC.CPage(blob, rp, threads=2, pad="k6v4", refine=True, decode=C6_DECODE, post=C6_POST, lib=lib)
+        kept = TC.CPage(blob, rp, threads=2, pad="k6v4", refine=True, decode=C6_DECODE, post=C6_POST, drop=C6_DROP,
+                        lib=lib)
+        some = 0
+        for fr in frames:
+            assert full.detect(fr) == cm.detect(fr, refine=True, decode=C6_DECODE, post=C6_POST)
+            lines = full.page(fr)
+            hz = [i for i, ln in enumerate(lines) if not ln.vertical]
+            gone = {hz[i] for i in T.drop_set([(lines[k].box, lines[k].text, 1.0) for k in hz],
+                                              T.drop_options(C6_DROP))}
+            want = [ln for k, ln in enumerate(lines) if k not in gone]
+            assert kept.page(fr) == want
+            some += len(gone)
+            assert TC.CPage(blob, rp, threads=1, pad="k6v4", refine=True, decode=C6_DECODE, post=C6_POST,
+                            drop=C6_DROP, lib=lib).page(fr) == want
+        assert some > 0                                                   # random readings: some have no kana
+
+
+def test_ctsd_spec_with_options(nets, libs, tmp_path):
+    """eval/tsdesk_eval.py's ctsd: spec carries +dec: and +post: to the C path (tools/tsdesk_c.CModel.detect)."""
+    pytest.importorskip("cv2")
+    E = _tsdesk_eval()
+    p = tmp_path / "p8a.vtsd"
+    p.write_bytes(nets["p8a"][1])
+    os.environ["VOCR_DESK_LIB"] = str(next(iter(libs.values())))
+    try:
+        spec = f"ctsd:{p}+refine+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200"
+        d = E.detector_from_spec(spec)
+        rgb = _text_frame(960, 544, 33)
+        want = TC.CModel(nets["p8a"][1], lib=os.environ["VOCR_DESK_LIB"]).detect(rgb, None, True, C6_DECODE, C6_POST)
+        assert d.boxes(rgb) == [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in want]
+    finally:
+        del os.environ["VOCR_DESK_LIB"]

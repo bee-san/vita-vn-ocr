@@ -47,17 +47,19 @@ SCHEMA = "textspot-desktop/1"
 # ----------------------------------------------------------------------------- the harness hooks
 
 class CTsdDet:
-    """The C path's detector (desktop/, tools/tsdesk_c.py) on a VTSD blob."""
+    """The C path's detector (desktop/, tools/tsdesk_c.py) on a VTSD blob, with the round-2 decode and post-pass
+    options (tools/tsdesk's dicts; None: off)."""
 
     name = "ctsd"
 
-    def __init__(self, blob, size=None, threads=1, refine=None):
+    def __init__(self, blob, size=None, threads=1, refine=None, decode=None, post=None):
         import tsdesk_c as TC
         self.m, self.size, self.refine = TC.CModel(blob, threads=threads), size, refine
+        self.decode, self.post = decode or None, post or None
 
     def boxes(self, rgb):
         return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in
-                self.m.detect(rgb, self.size, self.refine)]
+                self.m.detect(rgb, self.size, self.refine, self.decode, self.post)]
 
 
 def parse_kv(s):
@@ -109,10 +111,9 @@ def detector_from_spec(spec, threads=1, so=None):
         return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
                           refine=True if refine else None, post=post or None, decode_opts=dec or None)
     if base.startswith("ctsd:"):
-        if post or dec:
-            raise ValueError(f"{spec}: the post-pass and decode options have no C path here")
         path, _, size = base[5:].partition("@")
-        return CTsdDet(path, size or None, threads, refine=True if refine else None)
+        return CTsdDet(path, size or None, threads, refine=True if refine else None, decode=dec or None,
+                       post=post or None)
     if refine or post or drop:
         raise ValueError(f"{spec}: the suffixes are for tsd: and ctsd: specs")
     raise ValueError(spec)

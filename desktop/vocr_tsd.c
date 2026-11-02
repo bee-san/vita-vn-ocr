@@ -1120,7 +1120,8 @@ typedef struct {
     size_t X[4][2];            /* each stage's maps (floats from the aligned arena start) */
     size_t P[4];               /* the pyramid's levels (those that are kept) */
     size_t Q;                  /* the smoothing blocks' second map (smooth >= 2) */
-    size_t ring, ring_floats;  /* TSD_FUSE: the tasks' rings of three lateral rows (ring_floats each) */
+    size_t ring, ring_floats;  /* the fused step's rings of three lateral rows, one per task (ring_floats each) */
+    int fuse;                  /* the finest lateral and smoothing block 0 run as one ST_LATSEP step */
     size_t maps, end;
 } tsd_plan;
 
@@ -1130,11 +1131,16 @@ typedef struct {
 #ifndef TSD_FUSE
 #define TSD_FUSE 1    /* the finest lateral and the first smoothing block in one step (ST_LATSEP) */
 #endif
+#ifndef TSD_FUSE_ROWS
+#define TSD_FUSE_ROWS 24   /* ... when every task's band has this many rows (each band recomputes 2 lateral rows) */
+#endif
 
-/* whether the network runs its finest lateral and first smoothing block as one ST_LATSEP step */
-static int fuse_latsep(const vocr_tsd_model *m)
+/* whether the network runs its finest lateral and first smoothing block as one ST_LATSEP step on an hh-row map with
+ * ntasks tasks */
+static int fuse_latsep(const vocr_tsd_model *m, unsigned hh, unsigned ntasks)
 {
-    return TSD_FUSE && m->smooth > 0 && m->sdw[0].stride == 1 && m->sdw[0].dil == 1;
+    return TSD_FUSE && m->smooth > 0 && m->sdw[0].stride == 1 && m->sdw[0].dil == 1 &&
+           (ntasks <= 1 || hh / ntasks >= TSD_FUSE_ROWS);
 }
 
 /* the network's buffers, in build()'s order of steps: B_X + 2 s + k is stage s's map k, B_P + s the pyramid's level
@@ -1152,8 +1158,8 @@ static void buf_use(tsd_buf *b, int step)
     b->last = step;
 }
 
-/* the steps of build() (the stem, the stages, gc, the laterals, the smoothing) as buffer uses */
-static void plan_uses(const vocr_tsd_model *m, tsd_buf *B)
+/* the steps of build() (the stem, the stages, gc, the laterals, the smoothing) as buffer uses; fuse: ST_LATSEP */
+static void plan_uses(const vocr_tsd_model *m, int fuse, tsd_buf *B)
 {
     const unsigned h = m->hs == 4 ? 0u : 1u;
     unsigned s, i, fin[4], cur;
@@ -1179,7 +1185,7 @@ static void plan_uses(const vocr_tsd_model *m, tsd_buf *B)
         step++;
         buf_use(&B[fin[s]], step);
         if (coarse >= 0) buf_use(&B[coarse], step);
-        if (s == h && fuse_latsep(m)) {            /* ST_LATSEP: the ring, then smoothing block 0's output */
+        if (s == h && fuse) {                      /* ST_LATSEP: the ring, then smoothing block 0's output */
             buf_use(&B[B_RING], step);
             buf_use(&B[m->smooth == 1 ? B_MAPS : B_Q], step);
         } else if (s == h && !m->smooth) {
@@ -1190,7 +1196,7 @@ static void plan_uses(const vocr_tsd_model *m, tsd_buf *B)
         }
         if (s == 0) break;
     }
-    for (i = fuse_latsep(m) ? 1u : 0u; i < m->smooth; i++) {   /* smoothing: P[h] -> Q -> P[h] ..., the last to maps */
+    for (i = fuse ? 1u : 0u; i < m->smooth; i++) {   /* smoothing: P[h] -> Q -> P[h] ..., the last to maps */
         step++;
         buf_use(&B[i % 2 == 0 ? B_P + h : B_Q], step);
         buf_use(&B[i + 1 == m->smooth ? B_MAPS : (i % 2 == 0 ? B_Q : B_P + h)], step);
@@ -1216,7 +1222,8 @@ static void plan(const vocr_tsd_model *m, unsigned pw, unsigned ph, unsigned nta
     B[B_Q].size = B[B_MAPS].size = 0;
     B[B_Q].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->F, A);
     B[B_MAPS].size = ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out, A);
-    plan_uses(m, B);
+    P->fuse = fuse_latsep(m, P->H[h], ntasks);
+    plan_uses(m, P->fuse, B);
     B[B_RING].first = B[B_RING].last = -1;       /* the rings go after the maps (below): the maps' layout does not
                                                     depend on the task count */
     if (!TSD_ALIAS || ntasks > 1) {
@@ -1277,7 +1284,7 @@ static void plan(const vocr_tsd_model *m, unsigned pw, unsigned ph, unsigned nta
     for (s = h; s < 4; s++) P->P[s] = B[B_P + s].off;
     P->Q = B[B_Q].off;
     P->maps = B[B_MAPS].off;
-    P->ring_floats = fuse_latsep(m) ? ALIGN_UP(3u * (size_t)P->W[h] * m->F, A) : 0;
+    P->ring_floats = P->fuse ? ALIGN_UP(3u * (size_t)P->W[h] * m->F, A) : 0;
     P->ring = off;
     off += P->ring_floats * (ntasks < 1 ? 1u : ntasks);
     P->end = off;
@@ -1620,7 +1627,7 @@ static void build(tsd_net *N, const vocr_tsd_model *m, float *A, const tsd_plan 
     N->ring = A + P->ring;
     N->ring_floats = P->ring_floats;
     for (s = 3; s + 1 > h; s--) {
-        const int fused = s == h && fuse_latsep(m);
+        const int fused = s == h && P->fuse;
         t = add_step(N, fused ? ST_LATSEP : ST_LAT, fused ? LATSEP_NAMES[s] : LAT_NAMES[s]);
         t->a = &m->lat[s];
         t->in = fin[s];
@@ -1643,7 +1650,7 @@ static void build(tsd_net *N, const vocr_tsd_model *m, float *A, const tsd_plan 
         }
         if (s == 0) break;
     }
-    for (i = fuse_latsep(m) ? 1u : 0u; i < m->smooth; i++) {
+    for (i = P->fuse ? 1u : 0u; i < m->smooth; i++) {
         const float *src = (i % 2 == 0) ? A + P->P[h] : A + P->Q;
         t = add_step(N, ST_SEP, SMOOTH_NAMES[i]);
         t->a = &m->sdw[i];

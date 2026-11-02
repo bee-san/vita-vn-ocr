@@ -587,7 +587,7 @@ POST_DEFAULTS = {"merge_pct": 0, "rows_pct": 0, "valley_pct": 10, "rows_len": 30
                  "ext_pct": 0, "ext_gap_pct": 70, "ext_run_pct": 15, "ext_dash_pct": 80, "ext_join": 1,
                  "ext_band_pct": 0, "touch_pct": 0, "vflip_pct": 0, "vflip_join_pct": 100,
                  "vflip_min": 3, "vflip_h_pct": 50, "ksplit_pct": 0, "ksplit_k": -2, "ksplit_min_pct": 50,
-                 "join_pct": 0, "join_h_pct": 70}
+                 "join_pct": 0, "join_h_pct": 70, "join_ov_pct": 80}
 POST_PRE = ("vflip_pct", "merge_pct", "touch_pct", "join_pct", "rows_pct", "gap_pct")   # before the refinement
 POST_POST = ("ext_pct",)                              # the options that run after it
 
@@ -718,9 +718,10 @@ def merge_touching(boxes, pct):
     return out
 
 
-def join_row(boxes, pct, h_pct=70):
+def join_row(boxes, pct, h_pct=70, ov_pct=80):
     """join_pct: two horizontal boxes the detector tags as dialogue (tag 0) on one row (vertical overlap at least
-    half the smaller height), the smaller height at least h_pct % of the larger, whose gap along is at most pct % of
+    ov_pct % of the smaller height: pieces of one line, not a piece between two lines), the smaller height at least
+    h_pct % of the larger, whose gap along is at most pct % of
     the larger height (an overlap is a gap below 0) become their union (the larger box's fields, cells summed, the
     place of the earlier), pairs in order until none qualifies: a dialogue line the decode broke into pieces along
     its row (a stride-4 head's kernel gaps). Boxes with another tag stay apart (the reading stage's cut's items)."""
@@ -738,7 +739,7 @@ def join_row(boxes, pct, h_pct=70):
                 if b.vertical or b.tag != 0:
                     continue
                 lo, hi = min(a.h, b.h), max(a.h, b.h)
-                if min(a.y + a.h, b.y + b.h) - max(a.y, b.y) < 0.5 * lo or lo * 100 < h_pct * hi:
+                if (min(a.y + a.h, b.y + b.h) - max(a.y, b.y)) * 100 < ov_pct * lo or lo * 100 < h_pct * hi:
                     continue
                 if max(b.x - (a.x + a.w), a.x - (b.x + b.w)) * 100 > pct * hi:
                     continue
@@ -1138,7 +1139,7 @@ def post_pre(g, boxes, opts):
     if o["touch_pct"]:
         out = merge_touching(out, o["touch_pct"])
     if o["join_pct"]:
-        out = join_row(out, o["join_pct"], o["join_h_pct"])
+        out = join_row(out, o["join_pct"], o["join_h_pct"], o["join_ov_pct"])
     if o["rows_pct"]:
         out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:

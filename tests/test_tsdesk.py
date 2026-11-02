@@ -796,6 +796,9 @@ def test_join_row_joins_dialogue_pieces_only():
     assert T.post_pre(g, mixed, {"join_pct": 50}) == mixed
     rows = [bx(10, 20, 60, 40), bx(66, 44, 120, 64)]                              # another row
     assert T.post_pre(g, rows, {"join_pct": 50}) == rows
+    between = [bx(10, 20, 60, 40), bx(40, 27, 90, 48)]                            # a piece between two lines
+    assert T.post_pre(g, between, {"join_pct": 50}) == between
+    assert len(T.post_pre(g, between, {"join_pct": 50, "join_ov_pct": 50})) == 1
     sizes = [bx(10, 20, 60, 40), bx(66, 16, 120, 50)]                             # heights 20 and 34: not alike
     assert T.post_pre(g, sizes, {"join_pct": 50}) == sizes
     assert len(T.post_pre(g, sizes, {"join_pct": 50, "join_h_pct": 50})) == 1

@@ -83,7 +83,7 @@ class COpts(C.Structure):
 
 
 NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct", "join_pct",
-             "join_h_pct")                                                # post options, no C twin yet
+             "join_h_pct", "join_ov_pct")                                 # post options, no C twin yet
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
 DROP_KEYS = tuple(T.DROP_DEFAULTS)          # vocr_tsdd_opts' (the cut's three: the C page runs it)
 

@@ -311,6 +311,137 @@ def add_ornaments(img, pos, ign, rng):
     return box
 
 
+MARKS = {"max": 2, "before_p": 0.7, "size": [0.45, 0.9], "gap": [0.15, 0.9], "between_gap": 1.5, "jitter": 0.08,
+         "icon_p": 0.25, "blur_p": 0.5, "blur": [0.3, 0.8], "min_line": 6, "flat": 0.35, "flat_floor": 24.0,
+         "glyphs": ("nakaguro", "bullet", "diamond", "square", "triangle", "kome")}
+
+
+def _mark_extent(kind, s):
+    """(left, up, right, down): a mark's ink around its centre, px, for a mark of size s (_draw_mark)."""
+    e = {"nakaguro": max(1.0, 0.11 * s), "bullet": 0.36 * s, "diamond": 0.42 * s, "square": 0.34 * s,
+         "kome": 0.45 * s}.get(kind)
+    if kind == "triangle":
+        return 0.3 * s, 0.36 * s, 0.36 * s, 0.36 * s
+    if e is None:                                   # a T8 icon (textspot8_train.draw_icon): within half its size
+        e = 0.5 * s
+    return e, e, e, e
+
+
+def _draw_mark(img, kind, cx, cy, s, value, rng):
+    """One single mark on the uint8 window img (in place): a glyph mark (・ ● ◆ ■ ▶ ※) or a T8 icon."""
+    import cv2
+
+    import textspot8_train as T8M
+    v = int(value)
+    c = (int(round(cx)), int(round(cy)))
+
+    def poly(pts):
+        cv2.fillPoly(img, [np.round(np.asarray(pts)).astype(np.int32)], v, lineType=cv2.LINE_AA)
+    if kind in ("nakaguro", "bullet"):
+        cv2.circle(img, c, max(1, int(round(_mark_extent(kind, s)[0]))), v, -1, lineType=cv2.LINE_AA)
+    elif kind == "diamond":
+        e = 0.42 * s
+        poly([[cx, cy - e], [cx + e, cy], [cx, cy + e], [cx - e, cy]])
+    elif kind == "square":
+        e = 0.34 * s
+        poly([[cx - e, cy - e], [cx + e, cy - e], [cx + e, cy + e], [cx - e, cy + e]])
+    elif kind == "triangle":
+        poly([[cx - 0.3 * s, cy - 0.36 * s], [cx + 0.36 * s, cy], [cx - 0.3 * s, cy + 0.36 * s]])
+    elif kind == "kome":
+        e, t = 0.3 * s, max(1, int(round(s / 10)))
+        cv2.line(img, (int(cx - e), int(cy - e)), (int(cx + e), int(cy + e)), v, t, lineType=cv2.LINE_AA)
+        cv2.line(img, (int(cx - e), int(cy + e)), (int(cx + e), int(cy - e)), v, t, lineType=cv2.LINE_AA)
+        for dx, dy in ((0.38, 0), (-0.38, 0), (0, 0.38), (0, -0.38)):
+            cv2.circle(img, (int(round(cx + dx * s)), int(round(cy + dy * s))), max(1, int(round(0.07 * s))), v, -1,
+                       lineType=cv2.LINE_AA)
+    else:
+        T8M.draw_icon(img, kind, cx, cy, s, value, rng)
+
+
+def add_marks(img, pos, ign, rng, taken=()):
+    """1..MARKS["max"] single marks drawn as background on the window (in place): a glyph mark (・ ● ◆ ■ ▶ ※) or
+    (p icon_p) a T8 icon, either before a horizontal positive's start (its right edge gap x the line's height before
+    the start, on the line's row) or (p 1 - before_p, when the window has two positives side by side on one row at
+    least between_gap line heights apart) in the middle of the gap between them; never over a positive, an ignore area
+    or a box of `taken`. A bullet before a choice or a list line, or a mark between two buttons, is not text: round
+    1's dense-page boxes took them in. A mark goes only on flat background: the 5-95% grey range under its box at most
+    max(flat_floor, flat x the line's own range), so it never covers ink no label holds (a glyph a source's box missed,
+    a texture). Returns the boxes drawn [x0, y0, x1, y1]."""
+    import cv2
+
+    import textspot8_train as T8M
+    h, w = img.shape
+    M = MARKS
+    hz = [b for b in pos if not b[4] and b[3] - b[1] >= M["min_line"]]
+    if not hz:
+        return []
+    pairs = []
+    for i, a in enumerate(hz):
+        for j, b in enumerate(hz):
+            if i == j or b[0] <= a[2]:
+                continue
+            lh = min(a[3] - a[1], b[3] - b[1])
+            if min(a[3], b[3]) - max(a[1], b[1]) >= 0.5 * lh and b[0] - a[2] >= M["between_gap"] * lh:
+                pairs.append((a, b))
+    occupied = [b[:4] for b in pos] + [b[:4] for b in ign] + [list(t[:4]) for t in taken]
+    drawn = []
+    for _ in range(int(rng.integers(1, int(M["max"]) + 1))):
+        icon = rng.random() < M["icon_p"]
+        kinds = T8M.ICON_KINDS if icon else M["glyphs"]
+        kind = kinds[int(rng.integers(len(kinds)))]
+        if pairs and rng.random() >= M["before_p"]:
+            a, b = pairs[int(rng.integers(len(pairs)))]
+            p_row = a
+            lh = min(a[3] - a[1], b[3] - b[1])
+            s = min(lh * rng.uniform(*M["size"]), 0.5 * (b[0] - a[2]))
+            cx = (a[2] + b[0]) / 2.0
+            cy = (max(a[1], b[1]) + min(a[3], b[3])) / 2.0 + lh * rng.uniform(-M["jitter"], M["jitter"])
+        else:
+            p = p_row = hz[int(rng.integers(len(hz)))]
+            lh = p[3] - p[1]
+            s = lh * rng.uniform(*M["size"])
+            cx = p[0] - lh * rng.uniform(*M["gap"]) - _mark_extent(kind, s)[2]
+            cy = (p[1] + p[3]) / 2.0 + lh * rng.uniform(-M["jitter"], M["jitter"])
+        el, eu, er, ed = _mark_extent(kind, s)
+        box = [int(math.floor(cx - el)) - 1, int(math.floor(cy - eu)) - 1, int(math.ceil(cx + er)) + 2,
+               int(math.ceil(cy + ed)) + 2]
+        if box[0] < 0 or box[1] < 0 or box[2] > w or box[3] > h or not T8M._free(box, occupied + drawn):
+            continue
+        patch = img[box[1]:box[3], box[0]:box[2]]
+        ref = img[max(0, int(p_row[1])):int(p_row[3]), max(0, int(p_row[0])):int(p_row[2])]
+        contrast = float(np.percentile(ref, 95) - np.percentile(ref, 5)) if ref.size else 0.0
+        if patch.size == 0 or float(np.percentile(patch, 95) - np.percentile(patch, 5)) > max(
+                M["flat_floor"], M["flat"] * contrast):
+            continue                                # never over ink, a glyph the source's box missed or a texture
+        bg = float(np.median(patch))
+        value = (235 if bg < 128 else 20) if rng.random() < 0.7 else int(rng.integers(0, 256))
+        _draw_mark(img, kind, cx, cy, s, value, rng)
+        if rng.random() < M["blur_p"]:
+            q = np.ascontiguousarray(img[box[1]:box[3], box[0]:box[2]])
+            img[box[1]:box[3], box[0]:box[2]] = cv2.GaussianBlur(q, (0, 0), rng.uniform(*M["blur"]))
+        drawn.append(box)
+    return drawn
+
+
+def trim_bands(bands, marks):
+    """The end bands (end_bands) without the columns of the marks drawn in them: a band a mark lies in keeps the parts
+    beside the mark (between the mark and the line's end too: a thin end glyph the source's box missed stays an
+    ignore area), so the mark's own cells are background."""
+    out = []
+    for g in bands:
+        parts = [list(g)]
+        for m in marks:
+            nxt = []
+            for p in parts:
+                if m[0] < p[2] and p[0] < m[2] and m[1] < p[3] and p[1] < m[3]:
+                    nxt += [q for q in ([p[0], p[1], m[0], p[3]], [m[2], p[1], p[2], p[3]]) if q[2] > q[0]]
+                else:
+                    nxt.append(p)
+            parts = nxt
+        out += parts
+    return out
+
+
 def end_bands(pos, f):
     """Ignore areas just beyond both ends of every positive (window px): f x the line's size across past each end,
     the line's own extent across (a source whose ends come from teacher/geometry.refine may stop before a thin end
@@ -370,6 +501,7 @@ def make_batch(sources, rng, cfg):
     e_src = cfg.get("e_sources")
     end_ig = float(cfg.get("end_ignore") or 0.0)
     orn_p = float(cfg.get("ornaments") or 0.0)
+    marks_p = float(cfg.get("marks") or 0.0)
     for b in range(bsz):
         src, canvas, smp = sources.pick(rng)
         if cfg.get("recipe") == "junk":
@@ -377,12 +509,23 @@ def make_batch(sources, rng, cfg):
         img, pos, ign = DD.make_window_ms(canvas, smp, src, rng, sources, cfg["scale"], cfg.get("aug", True))
         h, w = img.shape
         x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
+        ign0, bands = ign, []
         if end_ig > 0 and src not in EXACT_SOURCES:
-            ign = list(ign) + end_bands(pos, end_ig)
+            bands = end_bands(pos, end_ig)
+            ign = list(ign) + bands
+        orn = None
         if orn_p > 0 and cfg.get("aug", True) and rng.random() < orn_p:
             img = np.array(img, copy=True)
-            if add_ornaments(img, pos, ign, rng) is not None:
+            orn = add_ornaments(img, pos, ign, rng)
+            if orn is not None:
                 x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
+        if marks_p > 0 and cfg.get("aug", True) and rng.random() < marks_p:
+            img = np.array(img, copy=True)
+            drawn = add_marks(img, pos, ign0, rng, [orn] if orn is not None else [])
+            if drawn:
+                x[b, 0] = np.pad(img, ((0, WH - h), (0, WW - w)), mode="edge")
+                if bands:
+                    ign = list(ign0) + trim_bands(bands, drawn)
         K, O, A1, A2, E1, E2, v, k, m1, m2, Wt, M = targets(pos, ign, w, h, s)  # noqa: E741
         if e_src is not None and src not in e_src:
             m1[:] = False
@@ -495,6 +638,10 @@ def parse(argv=None):
     ap.add_argument("--ornaments", type=float, default=0.0,
                     help="the share of windows that get one row of repeated small ornaments as background "
                          "(add_ornaments)")
+    ap.add_argument("--marks", type=float, default=0.0,
+                    help="the share of windows that get 1-2 single marks (a bullet glyph or a T8 icon) drawn as "
+                         "background before a positive's start or between two side-by-side positives (add_marks); "
+                         "the end bands of --end-ignore lose the marks' columns (trim_bands)")
     ap.add_argument("--end-ignore", type=float, default=0.0,
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
@@ -546,7 +693,7 @@ def main(argv=None):
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,
            "extra": DD.parse_extra(a.extra), "recipe": a.recipe, "stride": int(shape["hs"]),
            "targets": a.targets, "e_sources": list(EXACT_SOURCES) if a.e_exact else None,
-           "end_ignore": a.end_ignore, "ornaments": a.ornaments}
+           "end_ignore": a.end_ignore, "ornaments": a.ornaments, "marks": a.marks}
     sources, hook, frames, extra_rec = make_sources(cfg)
     pool_rec = {"sources": dict(zip(sources.names, (round(float(q), 6) for q in sources.p))),
                 "extra": {k: {"manifest": v[0], "root": v[1], "splits": v[2], "manifest_sha256": sha256_file(v[0]),
@@ -574,7 +721,8 @@ def main(argv=None):
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
                        "e_win_cells": E_WIN_CELLS, "e_win_across": E_WIN_ACROSS, "e_weight": E_WEIGHT,
                        "ink_cache": a.targets, "e_sources": cfg["e_sources"], "end_ignore": a.end_ignore,
-                       "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None},
+                       "ornaments": {"p": a.ornaments, **ORN} if a.ornaments else None,
+                       "marks": {"p": a.marks, **MARKS, "icons": list(T8M.ICON_KINDS)} if a.marks else None},
            "aug": B.AUG if not a.no_aug else None, "t8": {k: T8M.T8[k] for k in ("icon_p", "tight_p", "tight_margin")},
            "class_mask": B.CLASS_MASK, "pool": pool_rec, "skip": skip_rec,
            "manifests_sha256": {m: sha256_file(m) for m in [*a.manifest, *([a.hook_manifest] if a.hook_manifest

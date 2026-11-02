@@ -547,25 +547,34 @@ def patch_pools(sources, hook, targets_dir):
     return rec
 
 
+PC_EDIT_SOURCES = ("desk_realplus", "desk_dense", "desk_hard")    # the extra sources made of 1b's frames
+
+
+def pc_source(name):
+    """Whether an extra source is made of 1b's frames (a PC label-edit cache applies to it): desk_realplus,
+    desk_dense, desk_hard or one of them with a suffix (desk_hard_v2)."""
+    return any(name == p or name.startswith(p + "_") for p in PC_EDIT_SOURCES)
+
+
 def edit_pools(sources, hook, edits_dirs):
     """--label-edits: label-edit caches (train/tsdesk_coverage.py), applied after the target patch; the samples' other
     lines and ignore areas are untouched. A hooked cache (edits) appends its notdlg positives (MeikiOCR's 'apart' text
     boxes, native px) to the hook and desk_hook (desk_hook_*) samples, desk_hook's mapped through each capture; a PC
-    cache (pcedits, scope "pc") appends its positives to the samples of every other extra source by screenshot
-    (desk_realplus, desk_dense, desk_hard: 1b's frames at their own size), when the sample's size is the cache's."""
+    cache (pcedits, scope "pc") appends its positives to the samples of the extra sources made of 1b's frames
+    (pc_source: desk_realplus, desk_dense, desk_hard) by screenshot, when the sample's size is the cache's."""
     import tsdesk_coverage as TC
     if isinstance(edits_dirs, (str, Path)):
         edits_dirs = [edits_dirs]
     recs = []
     for edits_dir in edits_dirs:
         doc = json.loads((Path(edits_dir) / "edits.json").read_text(encoding="utf-8"))
-        rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json"),
-               "scope": doc.get("scope", "hooked")}
+        rec = {"label_edits": str(edits_dir), "edits_sha256": sha256_file(Path(edits_dir) / "edits.json")}
         extra = sorted(getattr(sources, "extra_pools", {}).items())
         if doc.get("scope") == "pc":
+            rec["scope"] = "pc"
             edits, _ = TC.load_pc_edits(edits_dir)
             for name, pool in extra:
-                if hooked_as(name) is not None:
+                if not pc_source(name):
                     continue
                 n_s = n_l = 0
                 for i, (d, smp) in enumerate(pool.items):

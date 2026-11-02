@@ -31,6 +31,13 @@ A desktop line detector to go with them is research pre-release
 MeikiOCR's detector with VOCR6 Large, and it reads the hooked test games better. But it reads unseen VNDB screenshots
 and PC screenshots worse, so it missed its pre-registered rule.
 
+A faster one, with boxes tight to the ink, is research pre-release
+[v0.5.3-textspot-desktop.1](https://github.com/bee-san/vita-vn-ocr/releases/tag/v0.5.3-textspot-desktop.1), not adopted
+([`docs/textspot-desktop.md`](docs/textspot-desktop.md), #173). Its detector takes 2.4 ms per 960×544 frame on one
+thread in C (2.9 ms at 1920×1080). With VOCR6 Large it reads real PC screenshots at 2.94%, against textspot8's 3.88% and
+MeikiOCR's detector's 0.70%. It also missed its pre-registered rule, on unseen console screenshots, dense PC pages and
+box tightness.
+
 ## VOCR6 against other OCRs
 
 Every reader read the same lines, cut from the same boxes. Every number is dialogue CER: the character error rate on

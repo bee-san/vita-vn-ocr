@@ -21,6 +21,16 @@ spotter has run on a console.
 
 ### Added
 
+- **textspot-desktop, a fast desktop line detector with tight boxes, research pre-release v0.5.3-textspot-desktop.1,
+  not adopted** (#173, [`docs/textspot-desktop.md`](docs/textspot-desktop.md); thanks to MeikiOCR's author). A 51 k
+  parameter float32 network (95 M multiply-adds at 960×544) that returns each line's ink box, with a refinement that
+  snaps the edges to the ink. In C (AVX2, plain-C fallback; `desktop/vocr_tsd.c`) the detector takes 2.4 ms per
+  960×544 frame and 2.9 ms per 1920×1080 frame on one thread. With VOCR6.2-L it reads #171's PC test set at 2.94%
+  (textspot8 3.88%, MeikiOCR's detector 0.70%), dev-v2 at 1.82% (1.35%, 0.77%) and dense PC pages at 2.39% (7.53%,
+  0.35%). It fails its pre-registered rule: dev-v2's PSP frames, dense pages, the edges' p90 and an ornament strip.
+  The hooked pages' training targets now hold every end glyph (`train/tsdesk_targets.py`): the repository's ink
+  refinement had cut thin end punctuation on some titles.
+
 - **A desktop line detector, research pre-release v0.5.2-desktop.1, not adopted** (#169,
   [`docs/desktop.md`](docs/desktop.md); thanks to MeikiOCR's author, who suggested it). A float32 detector with 210 k
   parameters, trained at many text sizes. It runs on ONNX Runtime, or in C with AVX2 kernels (`desktop/`), and reads

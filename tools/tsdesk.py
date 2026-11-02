@@ -51,7 +51,8 @@ ALIGN = 32
 CLASSES = ("dialogue", "name", "choice", "ui", "scene")
 MAX_BOXES = 256
 DEFAULTS = {"min_cells": 2, "conf_min_logit": 0.0, "min_across": 4.0, "along_reach": 3.0, "max_boxes": MAX_BOXES}
-DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0}    # decode options, no C twin yet
+DECODE_EXTRA = {"saddle_pct": 0, "vote_pct": 0, "rescue_milli": 0, "clamp_ends": 0,
+                "vote_depth": 2}                                                 # decode options (vote_pct: C too)
 #                                                                       (helper textspot-desktop-boxes), 0 = off
 
 
@@ -347,19 +348,19 @@ def rescue_components(k, lab, n, stats, t_low):
 
 
 def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, along_reach=3.0, tags=4,
-           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0):
+           max_boxes=MAX_BOXES, saddle_pct=0, vote_pct=0, rescue_milli=0, clamp_ends=0, vote_depth=2):
     """[Box] in network-input px (the image's w x h part) from float maps [6 + T, H / s, W / s] (module docstring).
     The C decode (desktop/vocr_tsd.c) is the same rule with the same sums in the same order (in double, over the
     cells in raster order), so given the same maps the two give the same boxes bit for bit. Components are labelled
     in the order of each one's first cell; boxes are sorted by mean logit (descending), then y, then x, stable, and
-    the first max_boxes kept. Off by default, no C twin yet: vote_pct > 0, each component split across where its
-    cells' edge votes are bimodal (vote_split()); saddle_pct > 0, each component split along at the K saddles
-    saddle_split() finds, the parts' ends at a split at their outermost cells' edges (no E1 / E2 there);
-    rescue_milli > 0, the components of K > -rescue_milli / 1000 with no K > 0 cell decoded too (rescue_components();
-    their mean logit is negative, so conf_min_logit does not apply to them); clamp_ends, an end regressed past the
-    kernel never reaches into another component of the same orientation in its row (across overlap at least half the
-    smaller size across): it stops at that component's outermost cell edge (a label's end run on over the number
-    beside it)."""
+    the first max_boxes kept. Off by default: vote_pct > 0, each component split across where its cells' edge votes
+    are bimodal (vote_split(), vote_depth levels: 2, the C twin's; deeper, no C twin yet). No C twin yet:
+    saddle_pct > 0, each component split along at the K saddles saddle_split() finds, the parts' ends at a split at
+    their outermost cells' edges (no E1 / E2 there); rescue_milli > 0, the components of K > -rescue_milli / 1000
+    with no K > 0 cell decoded too (rescue_components(); their mean logit is negative, so conf_min_logit does not
+    apply to them); clamp_ends, an end regressed past the kernel never reaches into another component of the same
+    orientation in its row (across overlap at least half the smaller size across): it stops at that component's
+    outermost cell edge (a label's end run on over the number beside it)."""
     import cv2
     s = int(stride)
     hm, wm = -(-h // s), -(-w // s)
@@ -371,7 +372,8 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if rescue_milli:
         n, lab, stats, _ = rescue_components(k, lab, n, stats, rescue_milli / 1000.0)
     if vote_pct:
-        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
+        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, depth=int(vote_depth),
+                                   cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
     if saddle_pct:
         n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
@@ -1164,7 +1166,7 @@ class Detector:
         maps = self.maps(x)
         boxes = decode(maps, iw, ih, self.stride, o["min_cells"], o["conf_min_logit"], o["min_across"],
                        o["along_reach"], self.tags, o["max_boxes"], int(o["saddle_pct"]), int(o["vote_pct"]),
-                       int(o["rescue_milli"]), int(o["clamp_ends"]))
+                       int(o["rescue_milli"]), int(o["clamp_ends"]), int(o["vote_depth"]))
         H, W = g.shape
         out = []
         for b in boxes:

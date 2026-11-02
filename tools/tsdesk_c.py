@@ -351,7 +351,7 @@ def decode_struct(decode, base, hs, tags):
     bad = set(decode) - set(T.DEFAULTS) - set(T.DECODE_EXTRA)
     if bad:
         raise KeyError(f"unknown decode options {sorted(bad)}")
-    no = [k for k in NO_C_TWIN if decode.get(k)]
+    no = [k for k in NO_C_TWIN if decode.get(k)] + (["vote_depth"] if int(decode.get("vote_depth", 2)) != 2 else [])
     if no:
         raise ValueError(f"decode {no}: no C twin")
     o = dict(base)

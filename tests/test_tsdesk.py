@@ -516,7 +516,8 @@ def test_decode_saddle_split():
     assert two[0].x == pytest.approx(40.0) and two[0].x + two[0].w == pytest.approx(8 * (col + 1))
     assert two[1].x == pytest.approx(8 * (col + 1)) and two[1].x + two[1].w == pytest.approx(360.0)
     assert all(abs(b.y - 20.0) < 1e-9 and abs(b.h - 24.0) < 1e-9 for b in two)
-    assert all(v == 0 for v in T.DECODE_EXTRA.values()) and "saddle_pct" not in T.DEFAULTS     # off; C constants kept
+    assert all(v == (2 if k == "vote_depth" else 0) for k, v in T.DECODE_EXTRA.items())          # off ...
+    assert "saddle_pct" not in T.DEFAULTS                                                       # C constants kept
 
 
 def test_decode_vote_split_two_touching_lines():
@@ -541,6 +542,27 @@ def test_decode_vote_split_two_touching_lines():
     assert all(b.x == pytest.approx(40.0) and b.x + b.w == pytest.approx(248.0) for b in two)
     m1 = _maps(160, 320, 8, [[37.0, 50.0, 301.0, 74.0]])                   # one line: its votes agree, no split
     assert len(T.decode(m1, 320, 160, 8, vote_pct=70)) == 1
+
+
+def test_decode_vote_depth_splits_a_five_line_kernel():
+    s, hm, wm = 8, 20, 40
+    m = np.zeros((N.OUT, hm, wm), np.float32)
+    m[0] = -5.0
+    m[1] = -5.0
+    cs = np.arange(max(hm, wm)) * s + (s - 1) / 2
+    for k in range(5):                                                   # 5 lines of 3 kernel rows, touching
+        y0 = 16.0 + 24.0 * k
+        for r in range(2 + 3 * k, 5 + 3 * k):
+            for q in range(5, 31):
+                m[0, r, q] = 4.0
+                m[2, r, q], m[3, r, q] = cs[r] - y0, y0 + 22.0 - cs[r]
+                m[4, r, q], m[5, r, q] = cs[q] - 40.0, 248.0 - cs[q]
+    two = T.decode(m, wm * s, hm * s, s, vote_pct=70)
+    deep = sorted(T.decode(m, wm * s, hm * s, s, vote_pct=70, vote_depth=4), key=lambda b: b.y)
+    assert len(two) < 5 and len(deep) == 5
+    for k, b in enumerate(deep):
+        assert b.y == pytest.approx(16.0 + 24.0 * k) and b.h == pytest.approx(22.0)
+    assert T.DECODE_EXTRA["vote_depth"] == 2
 
 
 def test_decode_rescue_weak_lines():

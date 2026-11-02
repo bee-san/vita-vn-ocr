@@ -28,6 +28,18 @@ centre + E2 over its last, each kept within the component's cells' reach (`along
 them, and never inside the first or last cell's far edge). The recognizer reads a box grown by `pad` (default
 READ_PAD = "k6v4", the protocol's: max(2, round(6 H / 544)) frame px left and right and max(2, round(4 H / 544)) top
 and bottom for an H px tall frame; "auto" is k4, the pad VOCR's eval crops and MeikiOCR's reference pipeline use).
+
+Options (#173 round 2, helper textspot-desktop-boxes), every one off by default, so that with none set the boxes are
+the decode's and the refinement's bit for bit; none has a C twin yet:
+  - the decode's DECODE_EXTRA: vote_pct (split a component across where its cells' edge votes are bimodal: two
+    tightly spaced rows), saddle_pct (split along at K saddles), rescue_milli (decode weak isolated components too);
+  - the post-pass on frame-px boxes, POST_DEFAULTS: merge_pct, rows_pct and gap_pct before the refinement, ext_pct
+    after it (the section "the post-pass" below);
+  - the reading filter, DROP_DEFAULTS, in read_frame(drop=...): nojp and rep_pct (readings that are not Japanese or
+    are an ornament), conf_milli (drop_set()).
+    det = Detector(path, decode_opts={"vote_pct": 70}, refine=True,
+                   post={"merge_pct": 70, "rows_pct": 65, "valley_pct": 0, "ext_pct": 1200})
+    lines = read_frame(frame, det, rec, drop={"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "rep_pct": 50})
 """
 import json
 import math
@@ -1053,15 +1065,21 @@ def main(argv=None):
     ap.add_argument("--size", help="the detector's input policy: fit:N, long:N or native (default: the file's)")
     ap.add_argument("--pad", default="k6v4", help="the reading pad: k6v4 (the default), kN, auto or N frame px")
     ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--refine", action="store_true", help="tools/tsdesk_refine.py on the boxes")
+    ap.add_argument("--decode", help="JSON: decode options (DEFAULTS, DECODE_EXTRA), e.g. '{\"vote_pct\": 70}'")
+    ap.add_argument("--post", help="JSON: post-pass options (POST_DEFAULTS)")
+    ap.add_argument("--drop", help="JSON: reading-filter options (DROP_DEFAULTS)")
     ap.add_argument("images", nargs="+")
     a = ap.parse_args(argv)
-    det = Detector(a.det, threads=1, size=a.size)
+    det = Detector(a.det, threads=1, size=a.size, refine=True if a.refine else None,
+                   decode_opts=json.loads(a.decode) if a.decode else None, post=json.loads(a.post) if a.post else None)
+    drop = json.loads(a.drop) if a.drop else None
     rec = V.Recognizer(a.rec, threads=1)
     lm = V.CharLM(a.lm, tier=rec.name[-1:] if rec.name else None) if a.lm else None
     for p in a.images:
         img = _load_image(p)
         t0 = time.perf_counter()
-        lines = read_frame(img, det, rec, pad=a.pad, lm=lm, workers=a.threads)
+        lines = read_frame(img, det, rec, pad=a.pad, lm=lm, workers=a.threads, drop=drop)
         ms = (time.perf_counter() - t0) * 1e3
         print(json.dumps({"image": p, "ms": round(ms, 1), "lines": [
             {"text": ln.text, "box": [round(v, 1) for v in ln.box], "crop": list(ln.crop), "tag": CLASSES[ln.tag],

@@ -549,3 +549,23 @@ def test_decode_rescue_weak_lines():
     assert abs(two[1].y - 100.0) < 1e-9 and abs(two[1].x + two[1].w - 221.0) < 1e-9
     assert len(T.decode(m, 320, 160, 8, rescue_milli=500)) == 1          # -1 is under -0.5
     assert T.decode(m, 320, 160, 8, rescue_milli=1500)[0] == T.decode(m, 320, 160, 8)[0]   # the strong line as before
+
+
+def test_read_frame_reading_filter():
+    import vocr_onnx as V
+
+    class Det:
+        def detect(self, g):
+            return [_box(10, 10, 90, 30), _box(110, 10, 200, 30), _box(204, 10, 220, 30), _box(10, 60, 30, 90, 1)]
+
+    class Rec:
+        def read(self, img, invert=False, lm=None):
+            t = {84: "0000000", 94: "あいう", 20: "A"}.get(img.shape[1], "?")       # crop widths (pad 2 px)
+            return V.Line(t, t, conf_mean=0.99)
+
+    g = np.full((100, 300), 30, np.uint8)
+    texts = lambda drop: [ln.text for ln in T.read_frame(g, Det(), Rec(), drop=drop)]    # noqa: E731
+    assert texts(None) == ["0000000", "あいう", "A", ""]
+    assert texts({"nojp": 1}) == ["あいう", ""]                           # a vertical box is never read or dropped
+    assert texts({"nojp": 2}) == ["あいう", "A", ""]
+    assert texts({"rep_pct": 50}) == ["あいう", "A", ""]

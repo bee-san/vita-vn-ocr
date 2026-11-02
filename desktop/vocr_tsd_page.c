@@ -233,6 +233,10 @@ struct vocr_tsd_page {
     unsigned rule;             /* the reading rule (VOCR_TSD_RULE_*) and its values a, b, c */
     double ra, rb, rc;
     vocr_tsdr_opts refine;     /* the box refinement's options (refine_on) */
+    unsigned decode_on, post_on, drop_on;
+    vocr_tsd_decode_opts decode;   /* the decode's options (decode_on; else the blob's) */
+    vocr_tsdp_opts post;       /* the post-pass's (post_on) */
+    vocr_tsdd_opts drop;       /* the reading filter's (drop_on) */
     rec_worker work[MAX_THREADS];
     void *arena;               /* the detector's arena (grown as frames need) */
     size_t arena_bytes;
@@ -332,6 +336,27 @@ void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts)
     if (opts) p->refine = *opts;
 }
 
+void vocr_tsd_page_set_decode(vocr_tsd_page *p, const vocr_tsd_decode_opts *opts)
+{
+    if (!p) return;
+    p->decode_on = opts != NULL;
+    if (opts) p->decode = *opts;
+}
+
+void vocr_tsd_page_set_post(vocr_tsd_page *p, const vocr_tsdp_opts *opts)
+{
+    if (!p) return;
+    p->post_on = opts != NULL;
+    if (opts) p->post = *opts;
+}
+
+void vocr_tsd_page_set_drop(vocr_tsd_page *p, const vocr_tsdd_opts *opts)
+{
+    if (!p) return;
+    p->drop_on = opts != NULL;
+    if (opts) p->drop = *opts;
+}
+
 void vocr_tsd_page_free(vocr_tsd_page *p)
 {
     unsigned i;
@@ -371,12 +396,16 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
 {
     size_t need;
     int rc;
+    vocr_tsd_opts opt;
     if (!p || !img || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE ||
         (channels != 1 && channels != 3 && channels != 4) || stride < (size_t)w * channels)
         return VOCR_TSD_E_ARG;
     rc = grey_of(p, img, w, h, stride, channels);
     if (rc) return rc;
-    need = vocr_tsd_arena_bytes_ex(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), (int)p->refine_on);
+    opt.decode = p->decode_on ? &p->decode : NULL;
+    opt.refine = p->refine_on ? &p->refine : NULL;
+    opt.post = p->post_on ? &p->post : NULL;
+    need = vocr_tsd_arena_bytes_opt(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), &opt);
     if (!need) return VOCR_TSD_E_ARG;
     if (need > p->arena_bytes) {
         free(p->arena);
@@ -385,8 +414,8 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
         if (!p->arena) return VOCR_TSD_E_MEM;
     }
     p->count = 0;
-    return vocr_tsd_detect_ex(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, p->refine_on ? &p->refine : NULL,
-                              p->arena, p->arena_bytes, &p->set, vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
+    return vocr_tsd_detect_opt(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, &opt, p->arena, p->arena_bytes,
+                               &p->set, vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
 }
 
 int vocr_tsd_page_detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
@@ -484,6 +513,7 @@ static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
     unsigned cap;
     ln->text[0] = '\0';
     ln->conf_min = 1.0f;
+    ln->conf_mean = 1.0f;
     ln->dark = 0;
     if (ln->vertical) return 0;
     im.pixels = p->g;
@@ -508,8 +538,46 @@ static int read_line(vocr_tsd_page *p, rec_worker *wk, unsigned i)
     }
     rc = vocr_run(&wk->ctx, &vi, ln->text, sizeof ln->text, &ex);
     if (rc && rc != VOCR_E_TEXT) return VOCR_TSD_E_REC;
-    if (ex.topk) ln->conf_min = ex.conf_min;
+    if (ex.topk) {
+        ln->conf_min = ex.conf_min;
+        ln->conf_mean = ex.conf_mean;
+    }
     return 0;
+}
+
+/* the reading filter (vocr_tsd_page_set_drop: tools/tsdesk.drop_set on the read horizontal lines, read_frame's
+ * drop): the lines it rejects leave the page, the others keep their order */
+static int drop_lines(vocr_tsd_page *p)
+{
+    double xywh[4 * VOCR_TSD_MAX_BOXES];
+    const char *text[VOCR_TSD_MAX_BOXES];
+    float conf[VOCR_TSD_MAX_BOXES];
+    unsigned char gone[VOCR_TSD_MAX_BOXES];
+    unsigned at[VOCR_TSD_MAX_BOXES], i, nh = 0, k = 0;
+    int rc;
+    for (i = 0; i < p->count; i++) {
+        const vocr_tsd_line *ln = &p->lines[i];
+        if (ln->vertical) continue;
+        xywh[4 * nh] = ln->bx;
+        xywh[4 * nh + 1] = ln->by;
+        xywh[4 * nh + 2] = ln->bw;
+        xywh[4 * nh + 3] = ln->bh;
+        text[nh] = ln->text;
+        conf[nh] = ln->conf_mean;
+        at[nh++] = i;
+    }
+    rc = vocr_tsdd_drop(xywh, text, conf, nh, &p->drop, gone);
+    if (rc < 0) return VOCR_TSD_E_ARG;
+    if (!rc) return VOCR_TSD_OK;
+    for (i = 0; i < nh; i++)
+        if (gone[i]) p->lines[at[i]].h = -1;   /* marked */
+    for (i = 0; i < p->count; i++)
+        if (p->lines[i].h >= 0) {
+            if (k != i) p->lines[k] = p->lines[i];
+            k++;
+        }
+    p->count = k;
+    return VOCR_TSD_OK;
 }
 
 static void line_task(void *arg, unsigned task, unsigned worker)
@@ -573,6 +641,7 @@ int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, un
     pool_run_w(p->pool, line_task, p, k, 0);
     for (i = 0; i < p->threads; i++)
         if (p->work[i].rc) return p->work[i].rc;
+    if (p->drop_on && (rc = drop_lines(p)) != 0) return rc;
     p->total_us = now_us() - t0;
     return VOCR_TSD_OK;
 }

@@ -249,41 +249,60 @@ def saddle_split(K, Om, lab, n, stats, pct):
     return out_n, lab, np.array(st, dtype=stats.dtype).reshape(out_n, stats.shape[1]), cut
 
 
-def vote_split(maps, lab, n, stats, pct, s, depth=2):
+def _seq(a):
+    """The sum of a float64 array added in order, one term at a time (the C twin's loop; np.sum adds pairwise)."""
+    return float(np.add.accumulate(a)[-1]) if len(a) else 0.0
+
+
+def vote_split(maps, lab, n, stats, pct, s, depth=2, cap=None):
     """The decode's vote option: a component whose cells span two or more indices across its line (the orientation
-    of its mean O) is split across where its cells' edge votes are bimodal, two tightly spaced lines whose kernels
+    of its summed O) is split across where its cells' edge votes are bimodal, two tightly spaced lines whose kernels
     touched: over the split points between consecutive across indices, the one that best separates the mean near
     votes (centre - A1) of the cells before it from those after it, kept when both that separation and the far votes'
-    (centre + A2) are at least pct % of the component's mean size across (A1 + A2); recursively, `depth` levels.
-    (n, lab, stats) with stats in cv2's layout."""
+    (centre + A2) are at least pct % of the component's mean size across (A1 + A2); recursively, `depth` levels, while
+    the labels stay under `cap` (the C decode's label capacity). Every sum is the C twin's (desktop/vocr_tsd.c): the
+    cells in raster order, one term at a time; a mean over cells before or after a split point adds the per-index sums
+    in index order. (n, lab, stats) with stats in cv2's layout."""
     hm, wm = lab.shape
-    K, Om, A1, A2 = (np.ascontiguousarray(maps[i, :hm, :wm]) for i in range(4))
+    Om, A1, A2 = (np.ascontiguousarray(maps[i, :hm, :wm]).astype(np.float64) for i in (1, 2, 3))
     lab = lab.copy()
     st = [list(stats[c]) for c in range(n)]
     half = (s - 1) / 2.0
     todo = [(c, depth) for c in range(1, n)]
     while todo:
         c, dep = todo.pop()
+        if cap is not None and n >= cap:
+            break
         x, y, cw, ch = (int(v) for v in st[c][:4])
         sub = lab[y:y + ch, x:x + cw] == c
         rr, qq = np.nonzero(sub)
-        if len(rr) < 4:
+        m = len(rr)
+        if m < 4:
             continue
-        vert = float(Om[y:y + ch, x:x + cw][sub].mean()) > 0
+        vert = _seq(Om[rr + y, qq + x]) / m > 0.0
         ai = (qq + x) if vert else (rr + y)
         cc = s * ai.astype(np.float64) + half
-        near = cc - A1[y:y + ch, x:x + cw][sub].astype(np.float64)
-        far = cc + A2[y:y + ch, x:x + cw][sub].astype(np.float64)
-        size = float(np.mean(far - near))
+        near = cc - A1[rr + y, qq + x]
+        far = cc + A2[rr + y, qq + x]
+        size = _seq(far - near) / m
         idx = np.unique(ai)
         if len(idx) < 2 or size <= 0:
             continue
+        pos = np.searchsorted(idx, ai)
+        k_n = np.bincount(pos, minlength=len(idx)).astype(np.float64)
+        s_n = np.bincount(pos, near, minlength=len(idx))
+        s_f = np.bincount(pos, far, minlength=len(idx))
         best = None
         for k in range(len(idx) - 1):
-            lo = ai <= idx[k]
-            dn = float(near[~lo].mean() - near[lo].mean())
-            df = float(far[~lo].mean() - far[lo].mean())
-            sep = min(dn, df)
+            ln = lf = lc = hn = hf = hc = 0.0
+            for q in range(len(idx)):
+                if q <= k:
+                    ln, lf, lc = ln + s_n[q], lf + s_f[q], lc + k_n[q]
+                else:
+                    hn, hf, hc = hn + s_n[q], hf + s_f[q], hc + k_n[q]
+            dn = hn / hc - ln / lc
+            df = hf / hc - lf / lc
+            sep = dn if dn <= df else df
             if best is None or sep > best[0]:
                 best = (sep, k)
         if best is None or best[0] * 100.0 < pct * size:
@@ -352,7 +371,7 @@ def decode(maps, w, h, stride, min_cells=2, conf_min_logit=0.0, min_across=4.0, 
     if rescue_milli:
         n, lab, stats, _ = rescue_components(k, lab, n, stats, rescue_milli / 1000.0)
     if vote_pct:
-        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s)
+        n, lab, stats = vote_split(maps, lab, n, stats, vote_pct, s, cap=(maps.shape[1] * maps.shape[2]) // 2 + 2)
     if saddle_pct:
         n, lab, stats, cut = saddle_split(k, np.ascontiguousarray(maps[1, :hm, :wm]), lab, n, stats, saddle_pct)
     flat = lab.ravel()
@@ -831,7 +850,7 @@ def post_pre(g, boxes, opts):
         out = [p for b in out for p in split_rows(g, b, o["rows_pct"], o["valley_pct"], o["rows_len"])]
     if o["gap_pct"]:
         out = [p for b in out for p in split_along(g, b, o["gap_pct"], o["gap_weak"])]
-    return out
+    return out[:MAX_BOXES]
 
 
 # ----------------------------------------------------------------------------- the recognizer as a junk filter

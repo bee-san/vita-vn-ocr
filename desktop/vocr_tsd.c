@@ -237,6 +237,7 @@ void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o)
     o->conf_min_logit = m->conf_min_logit;
     o->min_across = m->min_across;
     o->along_reach = m->along_reach;
+    o->vote_pct = 0;
 }
 
 size_t vocr_tsd_model_bytes(void)
@@ -1723,6 +1724,19 @@ size_t vocr_tsd_decode_bytes(unsigned mw, unsigned mh, unsigned tags)
            sizeof(unsigned char) * nl + sizeof(vocr_tsd_box) * nl + 64;
 }
 
+/* the vote split's scratch (tools/tsdesk.vote_split): 5 ints per label (its cells' box and count), the stack of
+ * (label, depth) pairs (at most 2 per label), and per across index 3 doubles and an int */
+static size_t vote_bytes(unsigned mw, unsigned mh)
+{
+    size_t nl = (size_t)mw * mh / 2 + 2, side = (mw > mh ? mw : mh) + 1u;
+    return sizeof(int) * nl * 9 + (3 * sizeof(double) + sizeof(int)) * side + 64;
+}
+
+size_t vocr_tsd_decode_bytes_ex(unsigned mw, unsigned mh, unsigned tags, const vocr_tsd_decode_opts *o)
+{
+    return vocr_tsd_decode_bytes(mw, mh, tags) + (o && o->vote_pct ? vote_bytes(mw, mh) : 0);
+}
+
 static int uf_find(int *par, int a)
 {
     while (par[a] != a) {
@@ -1762,6 +1776,131 @@ static void sort_boxes(const vocr_tsd_box *c, int *idx, int *tmp, unsigned n)
     if (a != idx) memcpy(idx, a, n * sizeof(int));
 }
 
+/* tools/tsdesk.vote_split on the final labels lab[0 .. hm x wm) (1 .. *n - 1, raster order): each component of >= 4
+ * cells is split across at the point between two consecutive across indices that best separates its cells' mean near
+ * votes (centre - A1) and far votes (centre + A2) before and after it, when both separations are at least pct % of its
+ * mean size across; the cells after the point get the next label; a part is split again once (depth 2); no label
+ * at or past cap. Every sum adds the cells in raster order, one term at a time (the Python's np.add.accumulate and
+ * np.bincount), a mean before or after a split point the per-index sums in index order. */
+static void vote_split(const float *maps, unsigned mw, unsigned ch, unsigned hm, unsigned wm, unsigned s, int pct,
+                       int *lab, int *n_, int cap, int *bb, int *stack, double *sn, double *sf, double *kn,
+                       int *present)
+{
+    const double half = (double)(s - 1) / 2.0;
+    int n = *n_, top = 0, k;
+    unsigned r, q;
+    for (k = 0; k < n; k++) {
+        bb[5 * k] = bb[5 * k + 1] = 1 << 30;
+        bb[5 * k + 2] = bb[5 * k + 3] = -1;
+        bb[5 * k + 4] = 0;
+    }
+    for (r = 0; r < hm; r++)
+        for (q = 0; q < wm; q++) {
+            const int L = lab[(size_t)r * wm + q];
+            if (!L) continue;
+            if ((int)q < bb[5 * L]) bb[5 * L] = (int)q;
+            if ((int)r < bb[5 * L + 1]) bb[5 * L + 1] = (int)r;
+            if ((int)q > bb[5 * L + 2]) bb[5 * L + 2] = (int)q;
+            if ((int)r > bb[5 * L + 3]) bb[5 * L + 3] = (int)r;
+            bb[5 * L + 4]++;
+        }
+    for (k = 1; k < n; k++) {      /* popped from the top: label n - 1 first, as tools/tsdesk's list.pop() */
+        stack[2 * top] = k;
+        stack[2 * top + 1] = 2;
+        top++;
+    }
+    while (top > 0) {
+        const int c = stack[2 * (top - 1)], dep = stack[2 * (top - 1) + 1];
+        const int x0 = bb[5 * c], y0 = bb[5 * c + 1], x1 = bb[5 * c + 2], y1 = bb[5 * c + 3];
+        int m = 0, vert, amin, amax, len, np_ = 0, i, best_k = -1, split;
+        double osum = 0.0, ssum = 0.0, size, best = 0.0;
+        top--;
+        if (n >= cap) break;
+        for (r = (unsigned)y0; (int)r <= y1; r++)
+            for (q = (unsigned)x0; (int)q <= x1; q++)
+                if (lab[(size_t)r * wm + q] == c) {
+                    m++;
+                    osum += (double)maps[((size_t)r * mw + q) * ch + 1];
+                }
+        if (m < 4) continue;
+        vert = osum / (double)m > 0.0;
+        amin = vert ? x0 : y0;
+        amax = vert ? x1 : y1;
+        len = amax - amin + 1;
+        for (i = 0; i < len; i++) sn[i] = sf[i] = kn[i] = 0.0;
+        for (r = (unsigned)y0; (int)r <= y1; r++)
+            for (q = (unsigned)x0; (int)q <= x1; q++) {
+                const float *v = maps + ((size_t)r * mw + q) * ch;
+                double cc, near, far;
+                int ai;
+                if (lab[(size_t)r * wm + q] != c) continue;
+                ai = vert ? (int)q : (int)r;
+                cc = (double)s * (double)ai + half;
+                near = cc - (double)v[2];
+                far = cc + (double)v[3];
+                ssum += far - near;
+                sn[ai - amin] += near;
+                sf[ai - amin] += far;
+                kn[ai - amin] += 1.0;
+            }
+        size = ssum / (double)m;
+        for (i = 0; i < len; i++)
+            if (kn[i] > 0.0) present[np_++] = i;
+        if (np_ < 2 || size <= 0) continue;
+        for (k = 0; k < np_ - 1; k++) {
+            double ln = 0.0, lf = 0.0, lc = 0.0, hn = 0.0, hf = 0.0, hc = 0.0, dn, df, sep;
+            int t;
+            for (t = 0; t < np_; t++) {
+                const int a = present[t];
+                if (t <= k) {
+                    ln = ln + sn[a];
+                    lf = lf + sf[a];
+                    lc = lc + kn[a];
+                } else {
+                    hn = hn + sn[a];
+                    hf = hf + sf[a];
+                    hc = hc + kn[a];
+                }
+            }
+            dn = hn / hc - ln / lc;
+            df = hf / hc - lf / lc;
+            sep = dn <= df ? dn : df;
+            if (best_k < 0 || sep > best) {
+                best = sep;
+                best_k = k;
+            }
+        }
+        if (best_k < 0 || best * 100.0 < (double)pct * size) continue;
+        split = amin + present[best_k];
+        /* the cells after the split point: the next label; both parts' boxes */
+        bb[5 * c] = bb[5 * c + 1] = bb[5 * n] = bb[5 * n + 1] = 1 << 30;
+        bb[5 * c + 2] = bb[5 * c + 3] = bb[5 * n + 2] = bb[5 * n + 3] = -1;
+        bb[5 * c + 4] = bb[5 * n + 4] = 0;
+        for (r = (unsigned)y0; (int)r <= y1; r++)
+            for (q = (unsigned)x0; (int)q <= x1; q++) {
+                int *L = &lab[(size_t)r * wm + q], T;
+                if (*L != c) continue;
+                if ((vert ? (int)q : (int)r) > split) *L = n;
+                T = *L;
+                if ((int)q < bb[5 * T]) bb[5 * T] = (int)q;
+                if ((int)r < bb[5 * T + 1]) bb[5 * T + 1] = (int)r;
+                if ((int)q > bb[5 * T + 2]) bb[5 * T + 2] = (int)q;
+                if ((int)r > bb[5 * T + 3]) bb[5 * T + 3] = (int)r;
+                bb[5 * T + 4]++;
+            }
+        n++;
+        if (dep > 1) {
+            stack[2 * top] = c;
+            stack[2 * top + 1] = dep - 1;
+            top++;
+            stack[2 * top] = n - 1;
+            stack[2 * top + 1] = dep - 1;
+            top++;
+        }
+    }
+    *n_ = n;
+}
+
 int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigned mw, unsigned mh, unsigned iw,
                        unsigned ih, void *scratch, size_t bytes, vocr_tsd_set *out)
 {
@@ -1780,7 +1919,8 @@ int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigne
     hm = (ih + s - 1) / s;
     wm = (iw + s - 1) / s;
     if (hm > mh || wm > mw) return VOCR_TSD_E_ARG;
-    if (bytes < vocr_tsd_decode_bytes(mw, mh, T)) return VOCR_TSD_E_ARENA;
+    if (o->vote_pct < 0) return VOCR_TSD_E_ARG;
+    if (bytes < vocr_tsd_decode_bytes_ex(mw, mh, T, o)) return VOCR_TSD_E_ARENA;
     out->count = out->truncated = 0;
     out->in_w = iw;
     out->in_h = ih;
@@ -1837,14 +1977,22 @@ int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigne
     fin[0] = 0;
     for (k = 1; k < (unsigned)next; k++) fin[k] = uf_find(par, (int)k) == (int)k ? n++ : 0;
     for (k = 1; k < (unsigned)next; k++) fin[k] = fin[uf_find(par, (int)k)];
+    for (r = 0; r < cells; r++)
+        if (lab[r]) lab[r] = fin[lab[r]];
+    if (o->vote_pct) {
+        /* the vote option's split across (tools/tsdesk.vote_split), its scratch after the decode's */
+        unsigned char *vb = (unsigned char *)(((uintptr_t)(vert + nl) + 7u) & ~(uintptr_t)7u);
+        const size_t side = (mw > mh ? mw : mh) + 1u;
+        double *vsn = (double *)(void *)vb, *vsf = vsn + side, *vkn = vsf + side;
+        int *bb = (int *)(void *)(vkn + side), *stack = bb + 5 * nl, *present = stack + 4 * nl;
+        vote_split(maps, mw, ch, hm, wm, s, o->vote_pct, lab, &n, (int)nl, bb, stack, vsn, vsf, vkn, present);
+    }
     for (k = 0; k < (unsigned)n; k++) {
         cnt[k] = sk[k] = so[k] = sn[k] = sf[k] = ss[k] = se[k] = n1[k] = n2[k] = 0.0;
         for (t = 0; t < T; t++) st[(size_t)k * T + t] = 0.0;
         imin[k] = jmin[k] = 1 << 30;
         imax[k] = jmax[k] = -1;
     }
-    for (r = 0; r < cells; r++)
-        if (lab[r]) lab[r] = fin[lab[r]];
     /* pass 2: per-component sums over the cells in raster order (tools/tsdesk.decode's bincounts) */
     for (r = 0; r < hm; r++)
         for (c = 0; c < wm; c++) {
@@ -1962,19 +2110,22 @@ int vocr_tsd_decode(const vocr_tsd_model *m, const float *maps, unsigned mw, uns
 /* ----------------------------------------------------------------------------- the detector */
 
 typedef struct {
-    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, refine, refine_bytes, rboxes, end;
+    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, refine, refine_bytes, rboxes, post,
+        post_bytes, pboxes, end;
     unsigned iw, ih, pw, ph, resize, ntasks, grey_frame;
 } detect_plan;
 
 static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h, unsigned channels,
-                  unsigned ntasks, int refine, detect_plan *D)
+                  unsigned ntasks, const vocr_tsd_opts *opt, detect_plan *D)
 {
     size_t off = 0;
+    const int refine = opt && opt->refine;
+    const int post = opt && (vocr_tsdp_pre_on(opt->post) || vocr_tsdp_post_on(opt->post));
     vocr_tsd_input_size(kind, n, w, h, &D->iw, &D->ih, &D->pw, &D->ph);
     D->resize = D->iw != w || D->ih != h;
-    /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it)
-     * and for the refinement */
-    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine);
+    /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it),
+     * the refinement and the post-pass */
+    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine || post);
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
     D->grey = off;
@@ -1993,24 +2144,42 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     D->rwork_bytes = D->resize && D->ntasks > 1 ? ALIGN_UP(vocr_tsd_resize_band_bytes(w, h, D->iw, D->ih), 64) : 0;
     off += D->rwork_bytes * D->ntasks;
     D->decode = off;
-    off += ALIGN_UP(vocr_tsd_decode_bytes(D->pw / m->hs, D->ph / m->hs, m->tags), 64);
+    off += ALIGN_UP(vocr_tsd_decode_bytes_ex(D->pw / m->hs, D->ph / m->hs, m->tags, opt ? opt->decode : NULL), 64);
     /* the refinement: its scratch, then the boxes as [x0, y0, x1, y1] doubles, their vertical flags and status */
     D->refine = off;
     D->refine_bytes = refine ? ALIGN_UP(vocr_tsdr_scratch_bytes(w, h, VOCR_TSD_MAX_BOXES), 64) : 0;
     off += D->refine_bytes;
     D->rboxes = off;
     off += refine ? ALIGN_UP(VOCR_TSD_MAX_BOXES * (4 * sizeof(double) + 1 + sizeof(unsigned)), 64) : 0;
+    /* the post-pass: its scratch and the boxes as vocr_tsdp_box */
+    D->post = off;
+    D->post_bytes = post ? ALIGN_UP(vocr_tsdp_scratch_bytes(w, h, VOCR_TSD_MAX_BOXES), 64) : 0;
+    off += D->post_bytes;
+    D->pboxes = off;
+    off += post ? ALIGN_UP(VOCR_TSD_MAX_BOXES * sizeof(vocr_tsdp_box), 64) : 0;
     D->end = off + 64;
+}
+
+size_t vocr_tsd_arena_bytes_opt(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
+                                unsigned channels, unsigned ntasks, const vocr_tsd_opts *opt)
+{
+    detect_plan D;
+    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE || !vocr_tsd_policy_ok(kind, n))
+        return 0;
+    dplan(m, kind, n, w, h, channels, ntasks, opt, &D);
+    return D.end;
 }
 
 size_t vocr_tsd_arena_bytes_ex(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
                                unsigned channels, unsigned ntasks, int refine)
 {
-    detect_plan D;
-    if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE || !vocr_tsd_policy_ok(kind, n))
-        return 0;
-    dplan(m, kind, n, w, h, channels, ntasks, refine, &D);
-    return D.end;
+    vocr_tsdr_opts def;
+    vocr_tsd_opts opt;
+    vocr_tsdr_defaults(&def);
+    opt.decode = NULL;
+    opt.refine = refine ? &def : NULL;
+    opt.post = NULL;
+    return vocr_tsd_arena_bytes_opt(m, kind, n, w, h, channels, ntasks, &opt);
 }
 
 size_t vocr_tsd_arena_bytes(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
@@ -2065,6 +2234,56 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
                        unsigned channels, unsigned kind, unsigned n, const vocr_tsdr_opts *refine, void *arena,
                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks)
 {
+    vocr_tsd_opts opt;
+    opt.decode = NULL;
+    opt.refine = refine;
+    opt.post = NULL;
+    return vocr_tsd_detect_opt(m, img, w, h, stride, channels, kind, n, &opt, arena, bytes, out, run, ctx, ntasks);
+}
+
+/* the boxes of a set to the post-pass's array and back (the same fields) */
+static void to_post(const vocr_tsd_set *st, vocr_tsdp_box *pb)
+{
+    unsigned k;
+    for (k = 0; k < st->count; k++) {
+        const vocr_tsd_box *b = &st->boxes[k];
+        pb[k].x = b->x;
+        pb[k].y = b->y;
+        pb[k].w = b->w;
+        pb[k].h = b->h;
+        pb[k].logit = b->logit;
+        pb[k].tconf = b->tconf;
+        pb[k].vertical = b->vertical;
+        pb[k].tag = b->tag;
+        pb[k].cells = b->cells;
+    }
+}
+
+static void from_post(const vocr_tsdp_box *pb, unsigned n, vocr_tsd_set *st)
+{
+    unsigned k;
+    for (k = 0; k < n; k++) {
+        vocr_tsd_box *b = &st->boxes[k];
+        b->x = pb[k].x;
+        b->y = pb[k].y;
+        b->w = pb[k].w;
+        b->h = pb[k].h;
+        b->logit = pb[k].logit;
+        b->tconf = pb[k].tconf;
+        b->vertical = pb[k].vertical;
+        b->tag = pb[k].tag;
+        b->cells = pb[k].cells;
+    }
+    st->count = n;
+}
+
+int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
+                        unsigned channels, unsigned kind, unsigned n, const vocr_tsd_opts *opt, void *arena,
+                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks)
+{
+    const vocr_tsdr_opts *refine = opt ? opt->refine : NULL;
+    const vocr_tsdp_opts *post = opt ? opt->post : NULL;
+    vocr_tsd_decode_opts dopt;
     detect_plan D;
     tsd_plan P;
     tsd_net N;
@@ -2080,7 +2299,8 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
         !vocr_tsd_policy_ok(kind, n))
         return VOCR_TSD_E_ARG;
     if (!run || ntasks < 1) ntasks = 1;
-    dplan(m, kind, n, w, h, channels, ntasks, refine != NULL, &D);
+    if (post && post->gap_pct) return VOCR_TSD_E_ARG;        /* the along split has no C twin */
+    dplan(m, kind, n, w, h, channels, ntasks, opt, &D);
     if (bytes < D.end) return VOCR_TSD_E_ARENA;
     base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
     PROF_START();
@@ -2142,8 +2362,13 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
     build(&N, m, A, &P);
     net_run(&N, run, ctx, ntasks);
     PROF_START();
-    rc = vocr_tsd_decode(m, N.maps, D.pw / m->hs, D.ph / m->hs, D.iw, D.ih, base + D.decode, D.end - 64 - D.decode,
-                         out);
+    if (opt && opt->decode) {
+        dopt = *opt->decode;
+    } else {
+        vocr_tsd_decode_opts_of(m, &dopt);
+    }
+    rc = vocr_tsd_decode_ex(&dopt, N.maps, D.pw / m->hs, D.ph / m->hs, D.iw, D.ih, base + D.decode,
+                            D.end - 64 - D.decode, out);
     PROF_MARK(2u, "decode");
     if (rc) return rc;
     /* to frame px (tools/tsdesk.Detector.detect): max(0, x / fx), min(W, (x + w) / fx) */
@@ -2165,6 +2390,15 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
     }
     out->count = keep;
     PROF_MARK(3u, "boxes");
+    if (vocr_tsdp_pre_on(post) && keep) {
+        /* the post-pass before the refinement (tools/tsdesk.post_pre: merge, rows) on the frame-px boxes */
+        vocr_tsdp_box *pb = (vocr_tsdp_box *)(void *)(base + D.pboxes);
+        to_post(out, pb);
+        rc = vocr_tsdp_pre(gsrc, w, h, gstride, pb, &keep, VOCR_TSD_MAX_BOXES, post, base + D.post, D.post_bytes);
+        if (rc) return VOCR_TSD_E_ARG;
+        from_post(pb, keep, out);
+        PROF_MARK(5u, "post_pre");
+    }
     if (refine && keep) {
         /* the refinement (tools/tsdesk.Detector's refine: tools/tsdesk_refine.refine_det on the boxes in frame px, in
          * the decode's order) on the full-resolution luma; the boxes as [x, y, x + w, y + h] */
@@ -2189,6 +2423,15 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
             b->h = xyxy[4 * k + 3] - xyxy[4 * k + 1];
         }
         PROF_MARK(4u, "refine");
+    }
+    if (vocr_tsdp_post_on(post) && keep) {
+        /* the post-pass after the refinement (tools/tsdesk.post_post: ext) */
+        vocr_tsdp_box *pb = (vocr_tsdp_box *)(void *)(base + D.pboxes);
+        to_post(out, pb);
+        rc = vocr_tsdp_post(gsrc, w, h, gstride, pb, &keep, post, base + D.post, D.post_bytes);
+        if (rc) return VOCR_TSD_E_ARG;
+        from_post(pb, keep, out);
+        PROF_MARK(6u, "post_post");
     }
 #ifdef VOCR_TSD_PROF
     vocr_tsd_prof_runs++;

@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 
+#include "vocr_tsd_post.h"
 #include "vocr_tsd_refine.h"
 
 #ifdef __cplusplus
@@ -94,6 +95,8 @@ typedef struct {
 typedef struct {               /* the decode's constants (the blob's: vocr_tsd_decode_opts_of) */
     unsigned stride, tags, min_cells, max_boxes;
     double conf_min_logit, min_across, along_reach;
+    int vote_pct;              /* tools/tsdesk.DECODE_EXTRA's vote_pct (0: off, the blob's default): each component
+                                  split across where its cells' A1 / A2 edge votes are bimodal (vote_split) */
 } vocr_tsd_decode_opts;
 
 /* Parse and check a blob (magic, version, sizes, CRC-32); the blob must be 4-byte aligned. */
@@ -126,6 +129,8 @@ int vocr_tsd_maps_mt(const vocr_tsd_model *m, const unsigned char *in, unsigned 
 /* The decode (tools/tsdesk.decode) on maps as vocr_tsd_maps gives them (mw x mh cells of `out` = 6 + tags channels,
  * channel-innermost): the boxes of the iw x ih image part, in input px. scratch: vocr_tsd_decode_bytes(mw, mh, tags). */
 size_t vocr_tsd_decode_bytes(unsigned mw, unsigned mh, unsigned tags);
+/* The scratch for options o (vote_pct needs more; o NULL: vocr_tsd_decode_bytes). */
+size_t vocr_tsd_decode_bytes_ex(unsigned mw, unsigned mh, unsigned tags, const vocr_tsd_decode_opts *o);
 int vocr_tsd_decode(const vocr_tsd_model *m, const float *maps, unsigned mw, unsigned mh, unsigned iw, unsigned ih,
                     void *scratch, size_t bytes, vocr_tsd_set *out);
 int vocr_tsd_decode_ex(const vocr_tsd_decode_opts *o, const float *maps, unsigned mw, unsigned mh, unsigned iw,
@@ -154,6 +159,22 @@ int vocr_tsd_detect_ex(const vocr_tsd_model *m, const unsigned char *img, unsign
                        unsigned channels, unsigned kind, unsigned n, const vocr_tsdr_opts *refine, void *arena,
                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks);
 
+/* The detector with the round-2 options (protocol v2 amendment 4's C6; tools/tsdesk.Detector's decode_opts, refine and
+ * post): decode NULL, the blob's decode options (vote_pct 0); refine NULL, no refinement; post NULL, no post-pass
+ * (vocr_tsd_post.h: merge and rows on the frame-px boxes before the refinement, ext after it). With every pointer NULL
+ * this is vocr_tsd_detect_mt bit for bit, and with only refine set vocr_tsd_detect_ex. The arena:
+ * vocr_tsd_arena_bytes_opt with the same options. */
+typedef struct {
+    const vocr_tsd_decode_opts *decode;
+    const vocr_tsdr_opts *refine;
+    const vocr_tsdp_opts *post;
+} vocr_tsd_opts;
+size_t vocr_tsd_arena_bytes_opt(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h,
+                                unsigned channels, unsigned ntasks, const vocr_tsd_opts *opt);
+int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
+                        unsigned channels, unsigned kind, unsigned n, const vocr_tsd_opts *opt, void *arena,
+                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks);
+
 /* sizeof(vocr_tsd_model), sizeof(vocr_tsd_set), sizeof(vocr_tsd_box), for callers that allocate them (ctypes). */
 size_t vocr_tsd_model_bytes(void);
 size_t vocr_tsd_set_bytes(void);
@@ -180,6 +201,7 @@ typedef struct {
     double logit;
     unsigned tag, dark, vertical;
     float conf_min;             /* the recognizer's lowest character confidence (0..1) */
+    float conf_mean;            /* the mean character confidence (runtime/vocr.c's conf_mean; 1 with no character) */
     char text[VOCR_TSD_TEXT];   /* greedy UTF-8; empty for a vertical box (not read) */
 } vocr_tsd_line;
 
@@ -203,6 +225,12 @@ int vocr_tsd_page_set_rule(vocr_tsd_page *p, unsigned kind, double a, double b, 
 void vocr_tsd_page_set_tags(vocr_tsd_page *p, unsigned mask);
 /* The box refinement on the detector's boxes before they are grown and read (opts copied; NULL: off, the default). */
 void vocr_tsd_page_set_refine(vocr_tsd_page *p, const vocr_tsdr_opts *opts);
+/* The round-2 options (copied; NULL: off, the default): the decode's (vote_pct; the other fields are the blob's when
+ * opts is the value vocr_tsd_decode_opts_of gave), the post-pass (vocr_tsd_post.h), and the reading filter (after every
+ * line is read, the lines tools/tsdesk.drop_set rejects are left out of the page: vocr_tsdd_drop). */
+void vocr_tsd_page_set_decode(vocr_tsd_page *p, const vocr_tsd_decode_opts *opts);
+void vocr_tsd_page_set_post(vocr_tsd_page *p, const vocr_tsdp_opts *opts);
+void vocr_tsd_page_set_drop(vocr_tsd_page *p, const vocr_tsdd_opts *opts);
 /* Read a frame (`channels` 1, 3 or 4; RGB(A) is taken to its integer luma first, timed as the page): lines in reading
  * order (rows top to bottom by vertical overlap, left to right in a row; tools/tsdesk.reading_order). */
 int vocr_tsd_page_run(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsigned h, unsigned stride,

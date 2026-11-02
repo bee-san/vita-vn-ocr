@@ -374,7 +374,7 @@ def test_onnx_page_reading_filter(TT):
             class R:
                 pass
             r = R()
-            r.text, r.conf_mean = ("こんにちは" if crop.shape[1] > 150 else "ABC"), 0.9
+            r.text, r.conf_mean, r.chars = ("こんにちは" if crop.shape[1] > 150 else "ABC"), 0.9, []
             return r
 
     pp = TT.Pipeline.__new__(TT.Pipeline)
@@ -386,3 +386,57 @@ def test_onnx_page_reading_filter(TT):
     assert pp._opage(frame) == ["こんにちは", "ABC", "ABC"]                    # the vertical box is not read
     pp.dropo = T.drop_options({"nojp": 1})
     assert pp._opage(frame) == ["こんにちは"]
+
+
+def test_strip_keys(TT):
+    assert TT.strip_keys(C6 + ",cut_pct=25,cut_dlg=0", ("cut_pct", "cut_dlg")) == C6
+    assert TT.strip_keys("+drop:cut_pct=25+dec:vote_pct=70", ("cut_pct",)) == "+dec:vote_pct=70"
+    assert TT.strip_keys("", ("cut_pct",)) == ""
+    c = TT.parse_cand("q=/b/q.vtsd,/b/q.onnx", "long:960", "k6v4")
+    c["opts"] = C6 + ",cut_pct=25,cut_dlg=0"
+    d = {k: spec for k, spec, *_ in TT.goal_pipelines([c], c_page_without=("cut_pct", "cut_dlg"))}
+    assert "cut_pct" not in d["page4:c:q"] and "nojp=2" in d["page4:c:q"]
+    assert "cut_pct=25" in d["page4:onnx:q#d1"] and "cut_pct=25" in d["page4:hybrid:q"]
+
+
+def test_reader_cut(TT):
+    """The ONNX / hybrid pages' reading-stage cut (eval/tsdesk_eval._cut_read_job's): a line with a wide ink gap
+    between two characters is cut into items, and the reading filter sees the items (nojp drops the Latin one);
+    cut_dlg 0 keeps a dialogue-tagged line whole."""
+    import tsdesk as T
+    import tsdesk_c as TC
+
+    g = np.full((60, 400), 20, np.uint8)
+    for x0, x1 in ((20, 60), (150, 250)):                  # two inked items with a 90 px gap
+        for x in range(x0, x1, 4):
+            g[14:34, x:x + 2] = 230
+    tag = {"v": 1}
+
+    class Det:
+        def detect(self, gg):
+            return [T.Box(18.0, 12.0, 236.0, 24.0, 0, 3.0, tag["v"], 1.0, 9)]
+
+    class Rec:
+        def read(self, crop, invert=False):
+            class R:
+                pass
+            r = R()
+            chars = []
+            for t, x in (("A", 22.0), ("B", 34.0), ("こ", 152.0), ("ん", 182.0), ("に", 212.0)):
+                ch = R()
+                ch.text, ch.x = t, x - 4.0                     # crop px: the crop starts at 18 - 14 = 4
+                chars.append(ch)
+            r.text, r.conf_mean, r.chars = "ABこんに", 0.9, chars
+            return r
+
+    pp = TT.Pipeline.__new__(TT.Pipeline)
+    pp.kind, pp.T, pp.TC, pp.det, pp.rec, pp.pool = "opage", T, TC, Det(), Rec(), None
+    pp.V = type("V", (), {"line_dark": staticmethod(lambda g, cb: 0)})
+    pp.rule = TC.rule_of(14)
+    pp.dropo = T.drop_options({"nojp": 1})
+    assert pp._read(g, Det().detect(g)) == ["ABこんに"]      # no cut: the whole reading has Japanese
+    pp.dropo = T.drop_options({"nojp": 1, "cut_pct": 25})
+    assert pp._read(g, Det().detect(g)) == ["こんに"]         # cut at the gap; the Latin item dropped
+    tag["v"] = 0
+    pp.dropo = T.drop_options({"nojp": 1, "cut_pct": 25, "cut_dlg": 0})
+    assert pp._read(g, Det().detect(g)) == ["ABこんに"]      # a dialogue-tagged line stays whole

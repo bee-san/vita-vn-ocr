@@ -397,7 +397,7 @@ class Pipeline:
         g, cb = job[:2]
         x, y, w, h = cb
         r = self.rec.read(g[y:y + h, x:x + w], invert=bool(self.V.line_dark(g, cb)))
-        return r.text, r.conf_mean
+        return r.text, r.conf_mean, r.chars
 
     def _opage(self, rgb):
         """tools/tsdesk.read_frame's steps with every reading rule (rule_sides) and the reading filter: the
@@ -439,10 +439,23 @@ class Pipeline:
         else:
             read = [self._line(j) for j in jobs]
         if self.dropo is None:
-            return [t for t, _ in read]
-        gone = set(self.T.drop_set([((j[2].x, j[2].y, j[2].w, j[2].h), t, c) for j, (t, c) in zip(jobs, read)],
-                                   self.dropo))
-        return [t for k, (t, _) in enumerate(read) if k not in gone]
+            return [t for t, _, _ in read]
+        o = self.dropo
+        pieces = []                                   # ((x, y, w, h), text, conf_mean)
+        for (_, cb, b), (t, c, chars) in zip(jobs, read):
+            cut = None
+            if o["cut_pct"]:                          # eval/tsdesk_eval._cut_read_job's reading-stage cut
+                cut = self.T.cut_reading(g, [b.x, b.y, b.x + b.w, b.y + b.h], [(ch.text, cb[0] + ch.x) for ch in chars],
+                                         o["cut_pct"], o["cut_rel_pct"])
+                if cut is not None and b.tag == 0 and o["cut_dlg"] != 1:
+                    if o["cut_dlg"] == 0 or max(len(tt) for _, _, tt in cut) > o["cut_dlg"]:
+                        cut = None                    # a dialogue-tagged line stays whole
+            if cut is None:
+                pieces.append(((b.x, b.y, b.w, b.h), t, c))
+            else:
+                pieces += [((x0, b.y, x1 - x0, b.h), tt, c) for x0, x1, tt in cut]
+        gone = set(self.T.drop_set(pieces, o))
+        return [t for k, (_, t, _) in enumerate(pieces) if k not in gone]
 
     def __call__(self, rgb, i=None):
         """Run on one frame (i: its index, for the networks' prepared inputs): the items it gives (module
@@ -754,7 +767,19 @@ def opts_parts(opts, filter_too=False):
     return out + ("".join("+" + t for t in toks if t.startswith("drop:")),) if filter_too else out
 
 
-def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4, c_opts=True):
+def strip_keys(suffix, keys):
+    """An option suffix (+dec:...+post:...+drop:...) without the K=V entries of the given keys (a token left empty
+    is dropped)."""
+    out = []
+    for t in [t for t in (suffix or "").split("+") if t]:
+        head, _, kvs = t.partition(":")
+        kept = [kv for kv in kvs.split(",") if kv and kv.partition("=")[0] not in keys]
+        if kept:
+            out.append(f"{head}:{','.join(kept)}")
+    return "".join("+" + t for t in out)
+
+
+def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4, c_opts=True, c_page_without=()):
     """[(key, spec, threads, pad)] of one goal run: MeikiOCR's detector at 1 thread and R's page at each budget
     variant (shared), and per candidate its C detector + refinement at 1 thread, its C page and its ONNX page at
     `threads` (the ONNX page's detector at each budget variant), each with the candidate's options (c["opts"]; the C
@@ -766,7 +791,8 @@ def goal_pipelines(cands, budget=BUDGET, onnx_resize="exact", threads=4, c_opts=
         dopt, aopt, fopt = opts_parts(c.get("opts"), filter_too=True)
         cd, ca = (dopt, aopt) if c_opts else ("", "")
         out.append((f"det1:cand:{n}", f"cbox:{c['blob']}@{pol}+refine{cd}", 1, rule))
-        out.append((f"page4:c:{n}", f"cpage:{c['blob']}@{pol}+refine{ca}+c:L", threads, rule))
+        out.append((f"page4:c:{n}", f"cpage:{c['blob']}@{pol}+refine{strip_keys(ca, c_page_without)}+c:L", threads,
+                    rule))
         out += [(f"page4:onnx:{n}#d{k}", f"opage:{c['onnx']}@{pol}@{onnx_resize}+refine{aopt}+L#d{k}", threads, rule)
                 for k in budget]
         hopt = cd + fopt                       # the hybrid: the C detector's options (twins), the Python filter
@@ -887,12 +913,14 @@ def cmd_goal(a):
     rgbs = [load_rgb(p) for p in pages]
     views = [p["view"] for p in pages]
     start, head = host(), D.git_head()            # the code that runs: read before the passes
-    jobs = goal_pipelines(cands, budget, a.onnx_resize, c_opts=not a.c_without_options)
+    c_page_without = tuple(k for k in (a.c_page_without or "").split(",") if k)
+    jobs = goal_pipelines(cands, budget, a.onnx_resize, c_opts=not a.c_without_options, c_page_without=c_page_without)
     try:
         pipes = {k: Pipeline(spec, th, pad, a.lib, a.onnx_dir) for k, spec, th, pad in jobs}
     except ValueError as e:
-        if "C twins" in str(e):
-            raise SystemExit(f"{e} (--c-without-options times the C path without the options, recorded as such)")
+        if "C twin" in str(e):
+            raise SystemExit(f"{e} (--c-page-without KEY,... times the C page without those options, "
+                             "--c-without-options the whole C path without the options; both recorded)")
         raise
     t0 = time.time()
     n_all = a.warmup + a.passes
@@ -922,6 +950,7 @@ def cmd_goal(a):
     for c in cands:
         blk = goal_block(stats, c["name"], budget)
         blk.update(candidate=c["name"], policy=c["policy"], rule=c["rule"], options=c["opts"] or None,
+                   c_page_without=(list(c_page_without) or None) if c["opts"] and not a.c_without_options else None,
                    c_options=(None if not c["opts"] else "off (--c-without-options: no C twin; the C path ran without"
                               " the options)" if a.c_without_options else "on"),
                    blob=c["blob"], blob_sha256=D.sha256_file(c["blob"]),
@@ -1076,6 +1105,9 @@ def main(argv=None):
     p.add_argument("--cand-opts", action="append", help="NAME=OPTS: one candidate's options instead of --opts")
     p.add_argument("--c-without-options", action="store_true",
                    help="time the C path without the options when tools/tsdesk_c has no C twin of them (recorded)")
+    p.add_argument("--c-page-without", default="",
+                   help="KEY,...: option keys the C page runs without (no C twin yet, e.g. cut_pct,cut_dlg; recorded "
+                        "as c_page_without; every other path keeps them)")
     p.add_argument("--lib", required=True, help="the C library (tsdesk_time.py build: AVX2 + FMA, -O3)")
     p.add_argument("--budget", default=",".join(map(str, BUDGET)),
                    help="the detectors' intra-op thread counts in the 4-thread budget (R's and the ONNX page's)")

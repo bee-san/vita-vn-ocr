@@ -1153,7 +1153,7 @@ def post_pre(g, boxes, opts):
 # a Japanese character: kana, kanji, CJK symbols and punctuation, full-width forms, …, ― and —
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
 DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
-                 "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1}
+                 "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1, "nojp_num_pct": 0}
 # cut_reading's marks: no cut on either side of a punctuation mark (a phrase's end, a bracket, a dash, a dot: the
 # gap beside it is the sentence's own, and the mark belongs to the text it closes or opens)
 CUT_MARKS = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・「『（(【〈《〔［[｛{")
@@ -1256,6 +1256,13 @@ def japanese_share(text):
     return len(_jp_re().findall(text)) / len(text) if text else 0.0
 
 
+def is_numeric(text):
+    """A value: at least one digit (ASCII or full-width), and digits at least half of the characters."""
+    t = "".join(text.split())
+    n = sum(1 for c in t if "0" <= c <= "9" or "０" <= c <= "９")
+    return n > 0 and 2 * n >= len(t)
+
+
 def drop_set(items, o):
     """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
     items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
@@ -1265,6 +1272,9 @@ def drop_set(items, o):
               within a gap of nojp_gap_pct % of the larger height along it (a line's own Latin or digit part: "A"
               before スポーツ), and at least nojp_anchor_pct % of that reading's characters are Japanese (an
               ornament misread as 「000OO0 does not anchor its neighbours);
+              with nojp_num_pct, a numeric reading (digits at least half its characters: a value such as 33 or
+              100/100) is kept by a reading with one in its row within nojp_num_pct % instead (a stats table's
+              right-aligned values);
       rep_pct: a reading of at least rep_len characters (4) whose most frequent character is not Japanese and makes
               up at least rep_pct % of it (an ornament strip read as イf0u000u0000000c; no reference line of hval, the
               dense sets or dev-v2 is one, at rep_len 3 either; at 2, 6億 and 7章 are);
@@ -1287,6 +1297,9 @@ def drop_set(items, o):
         if o["nojp"] >= 2 and t:
             x, y, w, h = b
             keep = False
+            allow = o["nojp_gap_pct"]
+            if o["nojp_num_pct"] and is_numeric(t):
+                allow = max(allow, o["nojp_num_pct"])
             for j, (b2, _, _) in enumerate(items):
                 if j == i or not anchor[j]:
                     continue
@@ -1294,7 +1307,7 @@ def drop_set(items, o):
                 if min(y + h, y2 + h2) - max(y, y2) < 0.5 * min(h, h2):
                     continue
                 gap = max(x2 - (x + w), x - (x2 + w2))
-                if gap * 100 <= o["nojp_gap_pct"] * max(h, h2):
+                if gap * 100 <= allow * max(h, h2):
                     keep = True
                     break
             if keep:

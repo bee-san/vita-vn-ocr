@@ -154,7 +154,7 @@ def test_sample_coverage_counts_and_the_junk_recipe():
     meiki = [{"raw": [10, 10, 50, 30], "score": 0.95, "box": [10, 10, 50, 30]},          # the dialogue line
              {"raw": [60, 10, 90, 30], "score": 0.8, "box": [61, 11, 89, 29]},           # strong, unlabelled
              {"raw": [60, 40, 90, 50], "score": 0.3, "box": [60, 40, 90, 50]}]           # weak: the ignore area
-    c, rows = C.sample_coverage(smp, meiki, "hook")
+    c, rows = C.sample_coverage(smp, meiki, "hook", measure="box")
     assert c["strong"] == 2 and c["strong_uncovered"] == 1 and c["strong_uncovered_whole"] == 1
     assert c["weak_areas_junk"] == 1 and c["weak_0.3+"] == 1 and c["samples_uncovered"] == 1
     kinds = sorted(r["kind"] for r in rows)
@@ -162,7 +162,7 @@ def test_sample_coverage_counts_and_the_junk_recipe():
     weak = [r for r in rows if r["kind"] == "weak"][0]
     assert weak["box"] == [60, 40, 90, 50] and weak["score"] == 0.3
     # another source: no junk recipe, the ignore areas stay
-    c2, _ = C.sample_coverage(dict(smp), meiki, "desk_synth")
+    c2, _ = C.sample_coverage(dict(smp), meiki, "desk_synth", measure="box")
     assert c2["weak_areas_junk"] == 0 and c2["strong_uncovered"] == 1
 
 
@@ -171,3 +171,42 @@ def test_element_key_counts_a_repeated_label_once():
     b = {"native": [97, 17, 137, 33]}                                       # 1 px off: the same 8 px cells
     assert C.element_key(a, "T") == C.element_key(b, "T") != C.element_key(a, "U")
     assert C.element_key({"native": None}, "T") is None
+
+
+def _grey_line():
+    """A grey frame: a dialogue line's ink (rows 20-33, x 20-140, strokes every 4 px) and an unlabelled word
+    (rows 60-73, x 20-70)."""
+    g = np.full((100, 200), 30, np.uint8)
+    xs = np.arange(200)
+    for y0, x0, x1 in ((20, 20, 140), (60, 20, 70)):
+        st = (xs % 4 == 0) & (xs >= x0) & (xs < x1)
+        g[y0:y0 + 14][:, st] = 220
+        g[y0 + 6, x0:x1] = 220
+    return g
+
+
+def test_ink_measure_ignores_an_offset_box_over_a_labelled_line():
+    g = _grey_line()
+    pos = [[20, 20, 140, 34, 0, "dialogue", 1.0]]
+    smp = {"w": 200, "h": 100, "lines": pos, "ignore": []}
+    offset = {"raw": [20, 16, 140, 28], "score": 0.9, "box": [20, 16, 140, 28]}        # 4 px above its line
+    c_box, _ = C.sample_coverage(dict(smp), [offset], "desk_synth", grey=g, measure="box")
+    c_ink, _ = C.sample_coverage(dict(smp), [offset], "desk_synth", grey=g, measure="ink")
+    assert c_box["strong_uncovered"] == 1 and c_ink["strong_uncovered"] == 0
+    word = {"raw": [18, 58, 72, 76], "score": 0.8, "box": [20, 60, 70, 74]}             # unlabelled ink
+    c, rows = C.sample_coverage(dict(smp), [offset, word], "desk_synth", grey=g, measure="ink")
+    assert c["strong_uncovered"] == 1 and c["strong_uncovered_whole"] == 1
+    (r,) = rows
+    assert r["spans"] == [[20, 60, 70, 74]] and r["frac"] == 1.0
+    # an ignore area over the word covers it
+    c2, _ = C.sample_coverage(dict(smp, ignore=[[18, 58, 72, 76]]), [word], "desk_synth", grey=g, measure="ink")
+    assert c2["strong_uncovered"] == 0
+
+
+def test_ink_measure_needs_half_a_glyph():
+    g = _grey_line()
+    pos = [[20, 20, 136, 34, 0, "dialogue", 1.0]]                                      # misses the last 4 px
+    smp = {"w": 200, "h": 100, "lines": pos, "ignore": []}
+    m = {"raw": [20, 20, 140, 34], "score": 0.9, "box": [20, 20, 140, 34]}
+    c, _ = C.sample_coverage(dict(smp), [m], "desk_synth", grey=g, measure="ink")
+    assert c["strong_uncovered"] == 0                                    # one stroke past the label: no glyph

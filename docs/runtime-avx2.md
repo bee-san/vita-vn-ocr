@@ -1,11 +1,14 @@
-# desktop-avx2: AVX2 kernels for desktop x86 builds, bit for bit
+# runtime-avx2: AVX2 kernels for x86 builds of the recognizer and textspot8, bit for bit
 
-The runtime has hand-written NEON for the Vita and nothing for x86, so a desktop build ran plain C: gcc `-O2` leaves
+This is not part of `desktop/` (#175, #176), whose detectors have their own AVX2 + FMA kernels. It is the layer under
+it: `runtime/vocr.c`, the recognizer that `desktop/`'s page pipeline and every other x86 build read lines with, and
+`runtime/vocr_textspot6.c` (textspot8, Rubi's line finder). No model and no output changes.
+
+The runtime has hand-written NEON for the Vita and nothing for x86, so an x86 build ran plain C: gcc `-O2` leaves
 its loops unvectorised, and `-O3 -march=native` vectorises only part of them (`docs/c-speed.md`, "Host speed"). This
-change adds AVX2 paths to the hot kernels of `runtime/vocr.c` (the recognizer, which every desktop pipeline reads its
-lines with, `desktop/` included) and `runtime/vocr_textspot6.c` (textspot8, Rubi's line finder). Every output stays
-the same bit for bit, the arenas and the API do not change, and every build without AVX2 (the Vita's, the PSP's,
-plain x86 `-O2`) compiles to `main`'s exact machine code.
+change adds AVX2 paths to the hot kernels of those two files. Every output stays the same bit for bit, the arenas and
+the API do not change, and every build without AVX2 (the Vita's, the PSP's, plain x86 `-O2`) compiles to `main`'s
+exact machine code.
 
 **Measured effect** (one thread, a Ryzen 7 5800X3D, a whole screenshot read the way Rubi reads it; details in "Host
 speed" below): about 3-4x faster than the best plain-C build (gcc `-O3 -march=native`) and about 4.5x faster than

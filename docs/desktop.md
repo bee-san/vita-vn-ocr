@@ -519,9 +519,9 @@ Build with `make -C desktop` (AVX2 + FMA, x86-64-v3), `make -C desktop ARCH=` (p
   blob's head sections as Rubi runs them). Its threads split the detector's steps into row bands, then share the
   lines. The output is the same bits at any thread count.
 - **Not console code.** It allocates its own memory, and none of it is in Rubi.
-- **The recognizer's kernels.** Since desktop-avx2, `runtime/vocr.c` built with AVX2 (this Makefile's default) runs
-  AVX2 kernels with the same bits as its plain C (`docs/desktop-avx2.md`). The C timings in this doc were taken
-  before that change.
+- **The recognizer's kernels.** `runtime/vocr.c` built with AVX2 (`desktop/Makefile`'s default) now runs AVX2
+  kernels with the same bits as its plain C (`docs/runtime-avx2.md`). The C timings in this doc were taken before
+  that change.
 - **Parity on dev-v2** (the release model at long:640; `c_crop_differences` and `c_checks` in the report record):
   - **Texts.** The C detector's boxes read by `runtime/vocr.c` (W8I, through the harness's crops) give the ONNX path's
     texts on all 339 units: 1.262% CER both ways. The ONNX path is the ONNX detector with VOCR6.2-L fast.

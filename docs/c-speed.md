@@ -185,7 +185,7 @@ From astra's report and vocr-research's (§4-5 of `reports/vocr-research.md`):
 ## Host speed (x86)
 
 The changes are NEON-only, so host builds ran `main`'s code (their objects are byte-identical, above). Since
-`docs/desktop-avx2.md`, an x86 build with AVX2 (`-mavx2`, or `-march=native` on an AVX2 CPU) runs AVX2 kernels instead,
+`docs/runtime-avx2.md`, an x86 build with AVX2 (`-mavx2`, or `-march=native` on an AVX2 CPU) runs AVX2 kernels instead,
 so this section's `-O3 -march=native` column is the plain C as it was then; a build without AVX2 (the `-O2` column)
 still compiles to the same code. One pinned
 core of the EPYC host, a shared box with other jobs running, gcc 11.5, median of 5 runs (`eval/c_speed_host_ms.py`;
@@ -207,7 +207,7 @@ the spotter 2.4x, with the same logits, top 8, texts, maps and boxes (checked on
 records). So most of the gap astra saw is the desktop compiler's: `vocr.c` and `vocr_textspot6.c` have hand-written
 NEON for the Vita and none for x86. For desktop builds, `-O3` with the target's SIMD (keeping `-ffp-contract=off`) is
 the cheap win (the research's §6), and on x86 it now also turns on the AVX2 kernels, a further 3-4x per screenshot
-(`docs/desktop-avx2.md`); the Vita's own build stays `-O2` (above).
+(`docs/runtime-avx2.md`); the Vita's own build stays `-O2` (above).
 
 ## Reproduce
 

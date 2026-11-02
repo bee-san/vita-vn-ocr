@@ -61,7 +61,7 @@ ifeq ($(origin LDFLAGS),undefined)
 LDFLAGS = $(SAN)
 endif
 LDLIBS = -lm
-# -mavx2 when the host CPU has AVX2: check-vocr and check-textspot6 then also test the desktop AVX2 kernels
+# -mavx2 when the host CPU has AVX2: check-vocr and check-textspot6 then also test the x86 AVX2 kernels
 ifeq ($(origin AVX2),undefined)
 AVX2 := $(if $(shell grep -qsw avx2 /proc/cpuinfo && echo y),-mavx2)
 endif

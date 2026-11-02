@@ -30,7 +30,7 @@ sys.path[:0] = [str(ROOT / "vita")]
 import ts_speed_parity as TS  # noqa: E402
 
 FLAGS = {"O2": ["-O2"], "O3n": ["-O3", "-march=native"]}
-if platform.machine() in ("x86_64", "AMD64"):   # the AVX2 kernels (docs/desktop-avx2.md); -O3n's plain C without them
+if platform.machine() in ("x86_64", "AMD64"):   # the AVX2 kernels (docs/runtime-avx2.md); -O3n's plain C without them
     FLAGS.update({"O2avx2": ["-O2", "-mavx2"], "O3n_noavx2": ["-O3", "-march=native", "-DVOCR_NO_AVX2"]})
 WARN = ["-std=c99", "-ffp-contract=off", "-Wall", "-Wextra", "-Werror"]
 MODELS = {"S": ("VOCR6.2_S_w8.vocr", []), "N": ("VOCR6.2_N_w8g2.vocr", ["--head-gate", "on", "--two-level"]),

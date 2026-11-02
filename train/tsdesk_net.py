@@ -44,6 +44,12 @@ SHAPES = {
     "p8t": {"patch": 4, "c": [8, 24, 48, 64], "n": [0, 1, 1, 1], "F": 24, "hs": 8, "smooth": 0, "gc": 0},
     "p8g": {"patch": 4, "c": [16, 32, 64, 96], "n": [0, 2, 2, 1], "F": 32, "hs": 8, "smooth": 1, "gc": 1},
     "p4a": {"patch": 4, "c": [16, 32, 64, 96], "n": [0, 2, 2, 1], "F": 16, "hs": 4, "smooth": 0, "gc": 0},
+    # round 2 (protocol v2, amendment 1): more capacity within the speed goal (C AVX2, 1 thread, 960x544, random
+    # weights: q8b 9.7 ms, q8c 16.7, q4b 11.3, q4c 16.2; MeikiOCR's detector takes ~100-110 ms, so the bar is ~20-22)
+    "q8b": {"patch": 4, "c": [32, 64, 128, 192], "n": [0, 3, 3, 2], "F": 64, "hs": 8, "smooth": 2, "gc": 1},
+    "q8c": {"patch": 4, "c": [32, 96, 160, 224], "n": [1, 4, 3, 2], "F": 64, "hs": 8, "smooth": 2, "gc": 1},
+    "q4b": {"patch": 4, "c": [32, 64, 128, 160], "n": [1, 3, 3, 2], "F": 48, "hs": 4, "smooth": 1, "gc": 1},
+    "q4c": {"patch": 4, "c": [32, 80, 128, 160], "n": [1, 4, 3, 2], "F": 64, "hs": 4, "smooth": 1, "gc": 1},
 }
 
 

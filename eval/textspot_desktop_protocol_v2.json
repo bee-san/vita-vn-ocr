@@ -1,7 +1,7 @@
 {
  "kind": "textspot-desktop-protocol-v2",
  "issue": 173,
- "registered": "2026-11-02T06:30Z",
+ "registered": "2026-11-02T06:09:53Z",
  "before": "any round-2 read: no round-2 study, arm or baseline has been read on any set; round 1 (protocol v1, eval/textspot_desktop_protocol.json, sha256 bb446c4c...) is finished and merged (#176, main d408fe3)",
  "owner_goal": {
   "time": "2026-11-02T05:37Z",
@@ -17,15 +17,51 @@
   "exact": "every reference line's exact box (eval/tsdesk_eval.exact_ref) at the candidate's reading rule: report only"
  },
  "sets": {
-  "dev": {"what": "dev-v2: 84 unseen VNs, 339 units, VNDB console screenshots at their own size (vocr-desktop frames/dev.pkl, sha256 8613d244...)", "views": ["vita", "psp"], "role": "goal set (dev data: may be iterated on)"},
-  "dev_l544": {"what": "dev-v2 with every frame fit into 960x544 first (desktop.py resample --fit 960x544; frames/dev_l544.pkl, sha256 ef1b3264...)", "role": "goal set, like for like"},
-  "dense_dev": {"what": "round 1's frozen dense PC dev split: 1b v3 frames with >= 8 labelled lines from 100 VNs held out of every round-1 and round-2 training run by VN (data/manifests/tsdesk_dense_v1.json; frames/dense_dev.pkl, sha256 aa4d5a85...); 120 frames, 1,203 units", "role": "goal set (dev data)", "note": "the owner's 'R ~0.68%' is mida-ocr-eval's figure on the 709 training-side dense pages; on this held-out split R reads 0.353% (round 1), and that is the bar"},
-  "dense_dev_l544": {"what": "dense_dev fit into 960x544 first (desktop.py resample --fit 960x544, built at the first round-2 baseline read; its sha256 is recorded with it)", "role": "goal set, like for like"},
-  "hval": {"what": "the hooked training titles' held-out pages (frames/hval.pkl, sha256 c79dbbb9...); PCSG00854 carries the ornament-strip guard", "role": "screening, guard"},
-  "dense_screen": {"what": "round 1's dense PC screening split (100 other held-out VNs)", "role": "screening"},
+  "dev": {
+   "what": "dev-v2: 84 unseen VNs, 339 units, VNDB console screenshots at their own size (vocr-desktop frames/dev.pkl, sha256 8613d244...)",
+   "views": [
+    "vita",
+    "psp"
+   ],
+   "role": "goal set (dev data: may be iterated on)"
+  },
+  "dev_l544": {
+   "what": "dev-v2 with every frame fit into 960x544 first (desktop.py resample --fit 960x544; frames/dev_l544.pkl, sha256 ef1b3264...)",
+   "role": "goal set, like for like"
+  },
+  "dense_dev": {
+   "what": "round 1's frozen dense PC dev split: 1b v3 frames with >= 8 labelled lines from 100 VNs held out of every round-1 and round-2 training run by VN (data/manifests/tsdesk_dense_v1.json; frames/dense_dev.pkl, sha256 aa4d5a85...); 120 frames, 1,203 units",
+   "role": "goal set (dev data)",
+   "note": "the owner's 'R ~0.68%' is mida-ocr-eval's figure on the 709 training-side dense pages; on this held-out split R reads 0.353% (round 1), and that is the bar"
+  },
+  "dense_dev_l544": {
+   "what": "dense_dev fit into 960x544 first (desktop.py resample --fit 960x544, built at the first round-2 baseline read; its sha256 is recorded with it)",
+   "role": "goal set, like for like"
+  },
+  "hval": {
+   "what": "the hooked training titles' held-out pages (frames/hval.pkl, sha256 c79dbbb9...); PCSG00854 carries the ornament-strip guard",
+   "role": "screening, guard"
+  },
+  "dense_screen": {
+   "what": "round 1's dense PC screening split (100 other held-out VNs)",
+   "role": "screening"
+  },
   "confirmation": {
-   "pc_test": {"what": "#171's PC test set (frames_pctest_v1.pkl, sha256 aa3785d2...; and its l544 frames, sha256 66287a12...)", "reads_so_far": ["vocr-desktop's final read (#169, eval/desktop_final_20261101.json)", "textspot-desktop round 1, once (2026-11-02T02:16:22Z, attempt record $PV/textspot-desktop/pctest/ATTEMPT.json)"]},
-   "confirm_v2": {"what": "the fresh confirmation set of 41 unseen VNs (vocr-desktop frames/confirm.pkl, sha256 96ab5e4b...; confirm_l544.pkl a9fabc1b...)", "reads_so_far": ["textspot7's confirmation (vocr6-spotter3, eval/textspot7_confirm_20261027.json)", "textspot8's confirmation (#149)", "vocr-desktop's final read (#169)"]},
+   "pc_test": {
+    "what": "#171's PC test set (frames_pctest_v1.pkl, sha256 aa3785d2...; and its l544 frames, sha256 66287a12...)",
+    "reads_so_far": [
+     "vocr-desktop's final read (#169, eval/desktop_final_20261101.json)",
+     "textspot-desktop round 1, once (2026-11-02T02:16:22Z, attempt record $PV/textspot-desktop/pctest/ATTEMPT.json)"
+    ]
+   },
+   "confirm_v2": {
+    "what": "the fresh confirmation set of 41 unseen VNs (vocr-desktop frames/confirm.pkl, sha256 96ab5e4b...; confirm_l544.pkl a9fabc1b...)",
+    "reads_so_far": [
+     "textspot7's confirmation (vocr6-spotter3, eval/textspot7_confirm_20261027.json)",
+     "textspot8's confirmation (#149)",
+     "vocr-desktop's final read (#169)"
+    ]
+   },
    "rule": "read once each, for one candidate only, after it passes G1-G4 on dev; each read is counted in an attempt record and disclosed with the earlier reads above"
   },
   "never": "vita-test, psp-test, CLANNAD, the hooked test titles (PCSG00807, NPJH50882) are not read; no training run reads dev-v2, dense_dev, dense_screen, the PC test set, confirm-v2 or their VNs (the dense VNs through skip_vns.txt, sha256 67d431b8...)"
@@ -46,5 +82,54 @@
   "seeds": "a candidate for confirmation is one trained model; before its confirmation reads, its recipe is trained with at least 3 seeds and all seeds' dev reads are reported (the candidate may be any of them; the choice is disclosed)",
   "data": "training on hooked pools v2.1 (train split; guard + hval only for retrains whose screening is done), desktop-data's 1a / 1b v3 / 1c pages, the real half and the synthetic frames, with the dense VNs, the dev-v2 / PC test / confirm-v2 VNs, the test titles and CLANNAD excluded as in round 1; MeikiOCR's outputs may be used as training targets (its licence is checked and stated before the first such run)"
  },
- "amendments": []
+ "amendments": [
+  {
+   "n": 1,
+   "time": "2026-11-02T06:40Z",
+   "before": "any round-2 read: no round-2 study, baseline or arm has read any set",
+   "corrects": "the 'registered' field: the commit time 2026-11-02T06:09:53Z (it said 06:30Z, a placeholder)",
+   "found_before": "from round 1's stored reads (no new read): on dev-v2 R's errors are recognizer errors on well-found lines (1 cut line), and on those lines R's crops read better than the exact boxes + k6v4 (54 against 65 errors); round 1's research candidate loses most on cut and missed lines (dev-v2 27 units, 89 errors; dense_dev 81 units, 229 errors) and, on dense pages, on lines it boxes across two tightly spaced rows or together with bullets, brackets and neighbouring buttons (a contact sheet of dense_dev, private). Capacity measured before any read: the C AVX2 build at 1 thread on 960x544 (random weights) takes 9.7 / 16.7 ms for q8b / q8c (0.47 / 0.85 G MACs, stride-8 head) and 11.3 / 16.2 ms for q4b / q4c (0.55 / 0.79 G, stride-4 head), against round 1's 2.0 ms",
+   "round": "2a",
+   "studies": {
+    "A_crop_geometry": "detector-free: every reference line's exact box read by VOCR6.2-L at round 1's frame rules (k3-k8, k4v6, k6v4) and at line-height rules hXvY (X x the box height left and right, Y x it top and bottom; X in 0.1, 0.2, 0.3, 0.45, Y in 0.05, 0.1, 0.2) on hval, dense_screen, dev, dense_dev and their l544 frames; report only in 2a (a ceiling: whether exact boxes at some margin read at or below R); a reading rule for candidates is chosen only by a later amendment, on hval + dense_screen",
+    "B_baselines": "R and T8 on dense_dev_l544 and dense_screen_l544 (built with desktop.py resample --fit 960x544; sha256 recorded), MeikiOCR itself on dense_dev(_l544); the existing R / T8 reads of hval, dense_screen, dev, dev_l544 and dense_dev are reused (same harness and frames)"
+   },
+   "arms": {
+    "B1_q8b": {
+     "shape": "q8b",
+     "steps": 80000,
+     "question": "5x round 1's MACs at the same stride-8 head"
+    },
+    "B2_q8c": {
+     "shape": "q8c",
+     "steps": 80000,
+     "question": "9x the MACs at a stride-8 head (near the speed bar)"
+    },
+    "B3_q4b": {
+     "shape": "q4b",
+     "steps": 80000,
+     "question": "a stride-4 head: small and tightly spaced lines"
+    },
+    "B4_q4c": {
+     "shape": "q4c",
+     "steps": 80000,
+     "question": "the largest stride-4 shape under the bar"
+    },
+    "B5_q4b_pc": {
+     "shape": "q4b",
+     "steps": 80000,
+     "mix": "hook=0.25,synth=0.1,real=0.2,desk_hook=0.15,desk_realplus=0.25,desk_synth=0.05",
+     "question": "more native PC pages (1b) for dense PC text"
+    },
+    "B6_q4b_160k": {
+     "shape": "q4b",
+     "steps": 160000,
+     "question": "twice the steps (round 1: the loss still fell at 80k)"
+    }
+   },
+   "recipe": "round 1's chosen recipe plus its ornament rows: train/tsdesk_det.py --recipe junk --end-ignore 1.0 --ornaments 0.25 --targets targets_v1 --e-exact, the round-1 mix (hook 0.3375, synth 0.15, real 0.2625, desk_hook 0.1, desk_realplus 0.1, desk_synth 0.05), scale 0.42-1.9, batch 16 windows of 256x512, AdamW 3e-3, EMA, the dense VNs skipped (skip_vns.txt), the train split, seed 1",
+   "reads": "each finished arm's EMA model exported (ONNX), its boxes at long:960 with the refinement on hval, dense_screen, dev, dense_dev, and at fit:960 on the l544 frames, read with k6v4 (round 1's rule), scored by eval/tsdesk_goal.py with R / T8 on the same frames; C timing of the exported blob at 1 / 4 threads on the timing pages",
+   "next": "the arms are ranked by the goal's gap (max over the four G1 sets of CER - R) with G4's junk count reported; round 2b (an amendment before its reads) takes the closest arms on: more steps, seeds, the reading rule from study A, and fixes for the failure modes the reads show"
+  }
+ ]
 }

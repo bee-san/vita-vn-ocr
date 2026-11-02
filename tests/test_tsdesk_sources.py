@@ -210,3 +210,110 @@ def test_ink_measure_needs_half_a_glyph():
     m = {"raw": [20, 20, 140, 34], "score": 0.9, "box": [20, 20, 140, 34]}
     c, _ = C.sample_coverage(dict(smp), [m], "desk_synth", grey=g, measure="ink")
     assert c["strong_uncovered"] == 0                                    # one stroke past the label: no glyph
+
+
+# ----------------------------------------------------------------------------- label edits (apart -> notdlg)
+
+def _edit_sample():
+    return {"title": "T", "page": "000001", "w": 960, "h": 544,
+            "lines": [[100, 200, 400, 224, 0, "dialogue", 1.0], [700, 30, 800, 50, 0, "notdlg", 0.9]],
+            "ignore": [[0, 500, 10, 510]], "meta": {"counts": {"meiki_ignore": 1}}}
+
+
+def _row(raw, score):
+    return {"kind": "uncovered", "where": "apart", "source": "hook", "raw": raw, "score": score}
+
+
+def test_edit_candidates_keep_scene_text_only():
+    smp = _edit_sample()
+    meiki = [{"raw": [50, 40, 150, 56], "score": 0.8, "box": [52, 42, 148, 55], "vertical": False},       # kept
+             {"raw": [51, 41, 149, 57], "score": 0.6, "box": [53, 43, 147, 56], "vertical": False},       # duplicate
+             {"raw": [600, 204, 620, 222], "score": 0.9, "box": [601, 205, 619, 221], "vertical": False}, # row
+             {"raw": [120, 188, 200, 198], "score": 0.9, "box": [121, 189, 199, 198], "vertical": False}, # ruby
+             {"raw": [690, 35, 760, 60], "score": 0.7, "box": [692, 36, 758, 58], "vertical": False},     # overlap
+             {"raw": [300, 60, 320, 160], "score": 0.75, "box": [302, 62, 318, 158], "vertical": True}]   # kept
+    rows = [_row(m["raw"], m["score"]) for m in meiki] + [_row([1, 1, 5, 5], 0.9)]                     # no box
+    adds, why = C.edit_candidates(smp, rows, meiki)
+    assert adds == [[52, 42, 148, 55, 0, "notdlg", 1.0], [302, 62, 318, 158, 1, "notdlg", 0.9167]]
+    assert dict(why) == {"duplicate": 1, "row": 1, "ruby": 1, "overlap": 1, "no_meiki_box": 1}
+
+
+def test_apply_edits_appends_and_maps(monkeypatch):
+    import tsdesk_targets as TT
+    smp = _edit_sample()
+    edits = {"T": {"000001": [[52, 42, 148, 55, 0, "notdlg", 1.0]]}}
+    out = C.apply_edits(smp, edits, "hook")
+    assert out["lines"] == smp["lines"] + [[52, 42, 148, 55, 0, "notdlg", 1.0]] and out["ignore"] is smp["ignore"]
+    assert C.apply_edits(dict(smp, page="000002"), edits, "hook") is None
+
+    class Cap:
+        def box(self, b):
+            return [2 * b[0], 2 * b[1] + 56, 2 * b[2], 2 * b[3] + 56]
+    monkeypatch.setattr(TT, "capture_of", lambda s: Cap())
+    d = C.apply_edits(smp, edits, "desk_hook")
+    assert d["lines"][-1] == [104, 140, 296, 166, 0, "notdlg", 1.0]
+    monkeypatch.setattr(TT, "capture_of", lambda s: None)
+    assert C.apply_edits(smp, edits, "desk_hook") is None
+
+
+def _edit_tree(tmp_path):
+    """A hook shard, its pool MeikiOCR cache, the page pool and coverage rows for cmd_edits."""
+    smp = dict(_edit_sample(), off=0, src="hook", kind="vita", split="train")
+    sh = tmp_path / "shards" / "train"
+    sh.mkdir(parents=True)
+    (sh / "T_000.json").write_text(json.dumps({"samples": [smp]}))
+    meiki = [{"raw": [50, 40, 150, 56], "score": 0.8, "box": [52, 42, 148, 55], "vertical": False},
+             {"raw": [600, 204, 620, 222], "score": 0.9, "box": [601, 205, 619, 221], "vertical": False}]
+    (tmp_path / "meiki").mkdir()
+    (tmp_path / "meiki" / "T.jsonl").write_text(json.dumps({"title": "T", "page": "000001", "meiki": meiki}) + "\n")
+    (tmp_path / "pool").mkdir()
+    (tmp_path / "pool" / "T.jsonl").write_text(json.dumps({"page": "000001", "split": "train"}) + "\n")
+    rows = [dict(_row(m["raw"], m["score"]), title="T", page="000001", dir="train", shard="T_000", i=0) for m in meiki]
+    (tmp_path / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return smp
+
+
+def test_cmd_edits_builds_a_checked_cache(tmp_path):
+    import argparse
+    _edit_tree(tmp_path)
+    C.cmd_edits(argparse.Namespace(rows=[str(tmp_path / "rows.jsonl")], shards=str(tmp_path / "shards"),
+                                   meiki=str(tmp_path / "meiki"), targets=None, pool=str(tmp_path / "pool"),
+                                   out=str(tmp_path / "edits"), workers=1))
+    edits, doc = C.load_edits(tmp_path / "edits")
+    assert edits == {"T": {"000001": [[52, 42, 148, 55, 0, "notdlg", 1.0]]}}
+    assert doc["added"] == 1 and doc["left_out"] == {"row": 1} and doc["by_split"] == {"train": 1}
+    (tmp_path / "edits" / "T.json").write_text("{}\n")
+    with pytest.raises(SystemExit):                                     # a changed file is refused
+        C.load_edits(tmp_path / "edits")
+
+
+def test_trainer_edit_pools(tmp_path, monkeypatch):
+    import argparse
+    pytest.importorskip("torch")
+    import tsdesk_det as TD
+    import tsdesk_targets as TT
+    smp = _edit_tree(tmp_path)
+    C.cmd_edits(argparse.Namespace(rows=[str(tmp_path / "rows.jsonl")], shards=str(tmp_path / "shards"),
+                                   meiki=str(tmp_path / "meiki"), targets=None, pool=str(tmp_path / "pool"),
+                                   out=str(tmp_path / "edits"), workers=1))
+
+    class Hook:
+        by_title = {"T": [(0, smp), (0, dict(smp, page="000002"))]}
+
+    class Pool:
+        items = [(0, dict(smp))]
+
+    class Sources:
+        extra_pools = {"desk_hook": Pool()}
+
+    class Cap:
+        def box(self, b):
+            return [2 * b[0], 2 * b[1], 2 * b[2], 2 * b[3]]
+    monkeypatch.setattr(TT, "capture_of", lambda s: Cap())
+    hook, src = Hook(), Sources()
+    rec = TD.edit_pools(src, hook, tmp_path / "edits")
+    assert rec["hook"] == {"samples_edited": 1, "lines_added": 1} and rec["desk_hook"] == rec["hook"]
+    assert hook.by_title["T"][0][1]["lines"][-1] == [52, 42, 148, 55, 0, "notdlg", 1.0]
+    assert hook.by_title["T"][1][1] is not smp and len(hook.by_title["T"][1][1]["lines"]) == 2
+    assert src.extra_pools["desk_hook"].items[0][1]["lines"][-1] == [104, 84, 296, 110, 0, "notdlg", 1.0]
+    assert smp["lines"][-1][5] == "notdlg" and len(smp["lines"]) == 2                 # the input sample untouched

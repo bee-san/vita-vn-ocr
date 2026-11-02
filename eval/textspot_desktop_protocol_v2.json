@@ -151,6 +151,36 @@
     "A3": "the neighbour-clipped rules cXvY (hXvY's margins, each side cut to half the gap to the nearest other box of the frame on that side: in the same row for left / right, overlapping along it for top / bottom; in the harness the other boxes are every box the pipeline returned for the frame) at c0.45v0.1, c0.6v0.1, c0.6v0.15, c0.8v0.15: per line and through the harness, on the same six sets as A2"
    },
    "reading_rule_choice": "replaces amendment 2's: among A2's and A3's rules read through the harness, the rule with the lowest mean CER over the four goal sets among those whose hval + dense_screen mean is within 0.05 points of the best there; if a rule has every goal set at or below R with exact boxes, the lowest-mean such rule is preferred"
+  },
+  {
+   "n": 4,
+   "time": "2026-11-02T08:00Z",
+   "before": "any read of arm C1 and of any round-2a arm (B1-B6 are training, none read)",
+   "after": [
+    "study A3 (amendment 3): no rule has every goal set at or below R with exact boxes; by amendment 3's choice the reading rule is h0.6v0.15 (goal-set mean 0.503%; c0.45v0.1 0.514, h0.45v0.1 0.516)",
+    "textspot-desktop-boxes' decode and post-pass options (feat/textspot-desktop-boxes ee66fb0, merged at 8fd267d; all off by default, off = round 1's boxes bit for bit), chosen on hval + dense_screen with round 1's seeds 1-2 and checked once per family on the goal sets; on seed 3 (never used for a choice) C6 vs off: hval 2.850 -> 0.590%, dense_screen 1.970 -> 1.825, dev 2.444 -> 1.448, dense_dev 2.821 -> 1.780, dev_l544 2.204 -> 1.448, dense_dev_l544 3.559 -> 2.040, PCSG00854 junk 84 -> 1; the goal gap per seed off -> C6: 3.04 -> 2.11, 4.47 -> 1.69, 3.21 -> 1.69",
+    "textspot-desktop-targets: targets_v2 (#177's gap clip; 6,344 of 143,595 boxes change, positive-on-positive overlaps 6,618 -> 0), the dense training source desk_dense (data/manifests/desktop_data/tsdesk_dense_train_v1.json: 462 1b v3 frames with >= 8 lines of 352 VNs outside the dense sets, dev-v2, the PC test set and confirm-v2, checked by VN, sha256 and screenshot id), the label-coverage report (the junk recipe turns about 71,000 weak MeikiOCR areas to background, about 36% of them real text) and the MeikiOCR licence note (the meikiocr package Apache-2.0; its detector LGPL-3.0 by its model card; its boxes on our frames are not a covered work, so they may be training targets, credited; no MeikiOCR weights are shipped)"
+   ],
+   "pipeline": {
+    "options": "C6 = +refine +dec:vote_pct=70 +post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200 +drop:nojp=2,nojp_gap_pct=200,nojp_anchor_pct=50,rep_pct=50 for every round-2 candidate; the options-off read is reported beside it",
+    "reading_rule": "each candidate is read at k6v4, h0.6v0.15 (amendment 3's choice) and c0.45v0.1; its goal check is reported at all three, and the candidate is declared at the one with the smallest goal gap: a selection on dev data, disclosed with every rule's numbers (the confirmation reads guard it)",
+    "c_twins": "the adopted options get C twins bit for bit with the Python before any speed claim (G2 / G3 measure the C path with them)"
+   },
+   "stops": {
+    "B6_q4b_160k": "stopped unread to free its slot for C1 (the 160k question is taken up later on the chosen configuration)"
+   },
+   "arms": {
+    "C1_q4b_v2_base_dense": {
+     "shape": "q4b",
+     "steps": 80000,
+     "targets": "targets_v2",
+     "recipe": "base (the weak MeikiOCR areas stay ignore areas, not background)",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.3,synth=0.15,real=0.25,desk_hook=0.1,desk_realplus=0.1,desk_synth=0.05,desk_dense=0.05",
+     "question": "the data bundle (targets_v2 + no junk recipe + dense hard examples) against B3 (q4b, round 1's data); read with C6"
+    }
+   }
   }
  ]
 }

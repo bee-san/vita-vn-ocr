@@ -1,8 +1,8 @@
 {
  "kind": "vocr-desktop-report-record",
  "issue": 169,
- "created": "2026-11-02T01:21:06Z",
- "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+ "created": "2026-11-02T01:23:45Z",
+ "repo_head": "edaae62ab0f056a2105497e3071644efaf3e614e",
  "note": "derived figures of docs/desktop.md (audit-vocr-desktop's N1, N2, N7, N12, N13 and F3), counts and rates only, from the stored reads; no new read of a protected set",
  "pc_test_width_classes": {
   "frames": {
@@ -504,9 +504,9 @@
    "dev": {
     "kind": "vocr-desktop-record",
     "set": "dev",
-    "created": "2026-11-02T01:21:06Z",
+    "created": "2026-11-02T01:23:45Z",
     "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
-    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "repo_head": "edaae62ab0f056a2105497e3071644efaf3e614e",
     "frames_sha256": "8613d2441f529c55608f7f8dfecba19d8d711b244783e7ed6af9788f4c65c40f",
     "reference": "meiki4_L_fast",
     "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
@@ -813,9 +813,9 @@
    "hval": {
     "kind": "vocr-desktop-record",
     "set": "hval",
-    "created": "2026-11-02T01:21:06Z",
+    "created": "2026-11-02T01:23:45Z",
     "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
-    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "repo_head": "edaae62ab0f056a2105497e3071644efaf3e614e",
     "frames_sha256": "c79dbbb95c8ba736768abb9be8b5b0db2b8b700995a29fe590e7bc8dd286f937",
     "reference": "meiki4_L_fast",
     "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
@@ -1038,9 +1038,9 @@
    "dev960": {
     "kind": "vocr-desktop-record",
     "set": "dev960",
-    "created": "2026-11-02T01:21:06Z",
+    "created": "2026-11-02T01:23:45Z",
     "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
-    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "repo_head": "edaae62ab0f056a2105497e3071644efaf3e614e",
     "frames_sha256": "cc80443fdf7f7f9b0725ba6e17acf7afc602a80e58cd1cb4cd03971d51cdd3e0",
     "reference": "meiki4_L_fast",
     "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",
@@ -1371,9 +1371,9 @@
    "hval960": {
     "kind": "vocr-desktop-record",
     "set": "hval960",
-    "created": "2026-11-02T01:21:06Z",
+    "created": "2026-11-02T01:23:45Z",
     "protocol_sha256": "ed867f2bbe8b4fdf0cb0ac745767f14111bb232d216e5d963015eaca9fd1a653",
-    "repo_head": "603f830c9e72170e3dcfbf193febd69465e76ff0",
+    "repo_head": "edaae62ab0f056a2105497e3071644efaf3e614e",
     "frames_sha256": "984cf21476b0d8183f4fde6ce27919aade742c5b901507f5fe5b344bd72d1d72",
     "reference": "meiki4_L_fast",
     "note": "mida-ocr-eval's reads (eval/mida_det.py), measurement only",

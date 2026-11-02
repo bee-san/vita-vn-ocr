@@ -462,6 +462,25 @@ def test_c_resize_is_vocr_desktops(nets, libs):
                 assert np.array_equal(a, b), (ch, h, w)
 
 
+def test_numpy_resize_twin_is_the_c_resize(nets, libs):
+    """tools/tsdesk.resize (the reference pipeline's and the reads' resize) gives vocr_tsd_resize's and
+    vocr_desk_resize's bits, on every build: the C libraries are built by the `libs` fixture, so this runs wherever
+    a C compiler is (GitHub CI included)."""
+    import vocr_desktop as VD
+    rng = np.random.default_rng(0)
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        probe = VD.CModel.__new__(VD.CModel)
+        probe.L = VD.c_library(lib)
+        for w, h, dw, dh in ((1920, 1080, 960, 540), (640, 480, 960, 720), (480, 272, 960, 544),
+                             (961, 545, 960, 544), (2560, 1440, 960, 540), (1366, 768, 960, 537), (7, 5, 3, 2),
+                             (3, 2, 7, 5), (4000, 40, 30, 1), (1, 1, 5, 3)):
+            g = rng.integers(0, 256, (h, w), dtype=np.uint8)
+            ref = T.resize(g, dw, dh)
+            assert np.array_equal(ref, cm.resize(g, dw, dh)), (lib, w, h, dw, dh)
+            assert np.array_equal(ref, VD.CModel.resize(probe, g, dw, dh)), (lib, w, h, dw, dh)
+
+
 Q14 = 16384
 
 
@@ -645,6 +664,10 @@ def test_c_page_reads_like_the_python_pipeline(nets, libs, tmp_path):
         for size in ("long:9000", "fit:0"):   # a policy vocr_tsd_policy_ok refuses
             with pytest.raises(ValueError, match="vocr_tsd_page_new: -1"):
                 TC.CPage(blob, rp, size=size, lib=lib)
+        # the pad's rounding (nearbyint, as tools/tsdesk.pad_of): 6 x 500 / 544 = 5.51 -> 6, 4 x 500 / 544 = 3.68 -> 4
+        page = TC.CPage(blob, rp, pad="k6v4", lib=lib)
+        page.page(rng.integers(0, 256, (500, 300, 3), dtype=np.uint8))
+        assert page.pad() == (6, 4) == T.pad_of("k6v4", 500)
         for pad, (ph, pv) in (("auto", (2, 2)), ("k4v6", (2, 3)), (5, (5, 5))):
             page = TC.CPage(blob, rp, threads=2, pad=pad, lib=lib)
             lines = page.page(frame)

@@ -84,7 +84,9 @@ def test_targets_edges_and_ends():
     sel2 = np.nonzero(m2)
     assert all(300 - centres[c] <= 36 for c in sel2[1])
     # the end columns carry the edge-kernel weight
-    assert Wt[r0, cols.min()] == pytest.approx(TD.EDGE_WEIGHT) and Wt[r0, cols.max()] == pytest.approx(TD.EDGE_WEIGHT)
+    assert TD.EDGE_WEIGHT == 4.0                              # the registered recipe's
+    assert Wt[r0, cols.min()] == pytest.approx(4.0) and Wt[r0, cols.max()] == pytest.approx(4.0)
+    assert Wt[r0, (cols.min() + cols.max()) // 2] == pytest.approx(1.0)
 
 
 def test_targets_cut_end_has_no_e_target():
@@ -122,6 +124,62 @@ def test_ink_box_ignores_dither_and_gradients():
     g[12:28, 100:180] = 250
     box, _ = TT.ink_box(g, [40, 8, 240, 32])
     assert abs(box[0] - 100) <= 1 and abs(box[2] - 180) <= 1
+
+
+def test_ink_box_threshold_is_0_4_of_the_body_contrast():
+    """k = 0.4 (the registered reference): an end mark at 45% of the line body's contrast is ink, one at 35% is not."""
+    for frac, end in ((0.45, 216), (0.35, 200)):
+        img = _page(bg=20)
+        img[12:28, 60:200] = 230
+        img[22:28, 210:216] = int(round(20 + frac * 210))
+        box, how = TT.ink_box(img, [50, 8, 230, 32])
+        assert how == "ink" and box == [60, 12, end, 28], (frac, box)
+
+
+def test_ink_box_noise_margin_keeps_the_box_noise_out():
+    """The threshold's noise term is the ring's 90th percentile + 12: on a dithered box (ring median 120, every
+    background pixel 20 from it) a mark 30 from it is under 20 + 12, so it is not ink; with no margin it would be."""
+    yy, xx = np.mgrid[0:40, 0:320]
+    img = np.where((yy + xx) % 2 == 0, 100, 140).astype(np.uint8)[:, :, None].repeat(3, 2)
+    img[12:28, 60:200] = 160
+    img[20:28, 206:214] = 150
+    box, _ = TT.ink_box(img, [50, 8, 230, 32])
+    assert box == [60, 12, 200, 28]
+    assert TT.ink_box(img, [50, 8, 230, 32], noise_margin=0)[0] == [60, 12, 214, 28]
+
+
+def test_ink_box_needs_a_stroke_edge():
+    """A smooth bright bump past the line's end (above the threshold, but no 3x3 contrast above tc) is not ink."""
+    img = _page(bg=20)
+    img[12:28, 60:200] = 120
+    yy, xx = np.mgrid[0:40, 0:320]
+    bump = 80.0 * np.exp(-((xx - 236) ** 2 + (yy - 20) ** 2) / (2 * 6.0 ** 2))
+    img = np.clip(img + bump[:, :, None], 0, 255).round().astype(np.uint8)
+    box, how = TT.ink_box(img, [50, 8, 260, 32])
+    assert how == "ink" and box == [60, 12, 200, 28]
+
+
+def test_strip_weak_drops_the_trailing_meiki_ignores():
+    """The junk recipe drops a hooked page's weak MeikiOCR ignore areas, which build_labels appends last."""
+    import tsdesk_det as TD
+    ign = [[0, 0, 5, 5], [10, 10, 15, 15], [20, 20, 25, 25], [30, 30, 35, 35], [40, 40, 45, 45]]
+    meta = {"counts": {"ruby_ignore": 1, "drop_ignore": 1, "uncovered_ignore": 1, "meiki_ignore": 2}}
+    smp = {"ignore": list(ign), "meta": meta}
+    assert TD.strip_weak(smp, "hook")["ignore"] == ign[:3] and smp["ignore"] == ign
+    desk = {"ignore": list(ign), "meta": {"counts": {"meiki_ignore": 2}, "src_ignore": 5}}
+    assert TD.strip_weak(desk, "desk_hook")["ignore"] == ign[:3]
+    # counts that do not add up, another source, no weak areas: unchanged
+    for smp2, src in (({"ignore": ign[:4], "meta": meta}, "hook"), ({"ignore": ign[:4], "meta": desk["meta"]},
+                      "desk_hook"), (smp, "realplus"), ({"ignore": ign, "meta": {"counts": {"meiki_ignore": 0}}},
+                                                        "hook")):
+        assert TD.strip_weak(smp2, src) is smp2
+
+
+def test_reading_pad_rule():
+    """The reference pipeline's pad: max(2, round(k H / 544)) a side (k6v4: 6 across, 4 along the height)."""
+    assert T.READ_PAD == "k6v4"
+    assert T.pad_of("k6v4", 544) == (6, 4) and T.pad_of("k6v4", 1080) == (12, 8) and T.pad_of("k6v4", 500) == (6, 4)
+    assert T.pad_of("k6v4", 100) == 2 and T.pad_of("k6v4", 272) == (3, 2) and T.pad_of("auto", 1080) == 8
 
 
 def test_cells_union_prefers_cells():
@@ -218,22 +276,6 @@ def test_protocol_is_valid_json():
     assert doc["kind"] == "textspot-desktop-protocol"
     assert [a["n"] for a in doc["amendments"]] == list(range(1, len(doc["amendments"]) + 1))
     assert math.isclose(sum(v for k, v in doc["recipe"]["mix"].items() if k != "why"), 1.0)
-
-
-def test_resize_twin_matches_the_c_resize():
-    lib = ROOT / "desktop" / "build" / "libvocrdesk.so"
-    if not lib.exists():
-        pytest.skip("desktop/build/libvocrdesk.so is not built")
-    import vocr_desktop as VD
-    L = VD.c_library(lib)
-    rng = np.random.default_rng(0)
-    for w, h, dw, dh in ((1920, 1080, 960, 540), (640, 480, 960, 720), (480, 272, 960, 544), (961, 545, 960, 544),
-                         (7, 5, 3, 2), (3, 2, 7, 5)):
-        g = rng.integers(0, 256, (h, w), dtype=np.uint8)
-        out = np.zeros((dh, dw), np.uint8)
-        scr = np.zeros(L.vocr_desk_resize_scratch(w, h, dw, dh) + 64, np.uint8)
-        L.vocr_desk_resize(g.ctypes.data, w, h, w, out.ctypes.data, dw, dh, scr.ctypes.data)
-        assert (T.resize(g, dw, dh) == out).all()
 
 
 def test_resize_identity_and_constant():

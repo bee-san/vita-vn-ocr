@@ -272,3 +272,9 @@ def test_ornament_rows_stay_off_the_labels():
         assert (img[120:144, 100:400] == 40).all()                                       # the line untouched
         assert (img != before).any()
     assert drawn >= 10
+
+
+def test_reference_pipeline_pad_rules():
+    assert T.pad_of(None, 544) == (6, 4) and T.pad_of("k6v4", 1080) == (12, 8) and T.pad_of("k6v4", 272) == (3, 2)
+    assert T.pad_of("k5", 544) == 5 and T.pad_of(3, 544) == 3
+    assert T.crop_of((10.0, 10.0, 40.0, 10.0), (6, 4), 100, 100) == (4, 6, 52, 18)

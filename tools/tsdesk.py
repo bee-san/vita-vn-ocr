@@ -329,17 +329,31 @@ class Detector:
         return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in self.detect(rgb)]
 
 
+READ_PAD = "k6v4"          # the reading pad the protocol chose on exact boxes (#173 amendment 1)
+
+
 def pad_of(pad, H):
-    """The reading pad in frame px: "auto" = max(2, round(4 H / 544)), or an integer."""
-    if pad in (None, "auto"):
-        return max(2, int(round(4 * H / 544)))
+    """The reading pad in frame px for an H px tall frame: "kN" = max(2, round(N H / 544)) on every side, "kAvB" = A
+    horizontally and B vertically (a (horizontal, vertical) tuple; "k6v4", the default, is textspot-desktop's), "auto"
+    = k4 (eval/desktop.py's), or an integer."""
+    if pad is None:
+        pad = READ_PAD
+    if pad == "auto":
+        pad = "k4"
+    s = str(pad)
+    if s.startswith("k"):
+        a, _, b = s[1:].partition("v")
+        ph, pv = max(2, int(round(float(a) * H / 544))), max(2, int(round(float(b or a) * H / 544)))
+        return ph if ph == pv else (ph, pv)
     return int(pad)
 
 
 def crop_of(b, p, W, H):
-    """A float box (x, y, w, h) grown by p px, rounded outward and clipped: integer (x, y, w, h), or None."""
-    x0, y0 = max(0, int(math.floor(b[0] - p))), max(0, int(math.floor(b[1] - p)))
-    x1, y1 = min(W, int(math.ceil(b[0] + b[2] + p))), min(H, int(math.ceil(b[1] + b[3] + p)))
+    """A float box (x, y, w, h) grown by p px (or a (horizontal, vertical) pair), rounded outward and clipped: integer
+    (x, y, w, h), or None."""
+    ph, pv = p if isinstance(p, tuple) else (p, p)
+    x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
+    x1, y1 = min(W, int(math.ceil(b[0] + b[2] + ph))), min(H, int(math.ceil(b[1] + b[3] + pv)))
     return (x0, y0, x1 - x0, y1 - y0) if x1 > x0 and y1 > y0 else None
 
 
@@ -359,7 +373,7 @@ def reading_order(boxes):
     return [i for r in rows for i in sorted(r, key=lambda j: boxes[j][0])]
 
 
-def read_frame(frame, det, rec, pad="auto", lm=None, tags=None, workers=1, executor=None):
+def read_frame(frame, det, rec, pad=READ_PAD, lm=None, tags=None, workers=1, executor=None):
     """Every line of a frame, top to bottom: [Line] in frame px. det: a Detector; rec: a vocr_onnx.Recognizer;
     lm: a vocr_onnx.CharLM; tags: the tag classes to read (None: all); workers: lines read on that many threads."""
     import vocr_onnx as V
@@ -412,7 +426,7 @@ def main(argv=None):
     ap.add_argument("--rec", required=True, help="a VOCR6 recognizer's ONNX file (VOCR6.2_L_fast.onnx)")
     ap.add_argument("--lm", help="a VOCR character LM (.vlm): beam 8 + the LM at Rubi's settings")
     ap.add_argument("--size", help="the detector's input policy: fit:N, long:N or native (default: the file's)")
-    ap.add_argument("--pad", default="auto", help="the reading pad: auto or N frame px")
+    ap.add_argument("--pad", default="k6v4", help="the reading pad: k6v4 (the default), kN, auto or N frame px")
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("images", nargs="+")
     a = ap.parse_args(argv)

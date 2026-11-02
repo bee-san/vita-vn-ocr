@@ -93,6 +93,9 @@ def install(Dm=D):
 
     Dm.detector, Dm._tsdesk_installed = detector, True
     tsdesk_dense.install_ignore(Dm)
+    if os.environ.get("MIDA_MODEL"):          # MeikiOCR's author's detector, a report-only arm (eval/mida_det.py)
+        import mida_det
+        mida_det.install(Dm, os.environ["MIDA_MODEL"])
     base_pad, base_crop = Dm.pad_of, Dm.crop_box
 
     def pad_of(spec, H):

@@ -102,8 +102,12 @@ def install(Dm=D):
 
     def pad_of(spec, H):
         """eval/desktop.py's pad specs plus the protocol's rules: 'kN' = max(2, round(N H / 544)) px on every side,
-        'kAvB' = A horizontally and B vertically (a tuple)."""
+        'kAvB' = A horizontally and B vertically (a tuple); 'hXvY' = X and Y times each box's own size across it
+        (protocol v2 amendment 1)."""
         s = str(spec)
+        rel = rel_rule(s)
+        if rel:
+            return rel
         if s.startswith("k"):
             kh, _, kv = s[1:].partition("v")
             ph, pv = pad_px(float(kh), H), pad_px(float(kv or kh), H)
@@ -111,6 +115,8 @@ def install(Dm=D):
         return base_pad(spec, H)
 
     def crop_box(b, pad, W, H):
+        if isinstance(pad, tuple) and pad and pad[0] == "rel":
+            return crop_hv(b, rel_hv(pad, b), W, H)
         if isinstance(pad, tuple):
             return crop_hv(b, pad, W, H)
         return base_crop(b, pad, W, H)
@@ -300,6 +306,41 @@ def pad_px(k, H):
     return max(2, int(round(k * H / 544)))
 
 
+def margin_hv(rule, b, H):
+    """(horizontal, vertical) frame px of a reading rule for the box b = [x0, y0, x1, y1] in an H px tall frame:
+    a PAD_RULES name (the frame's height: max(2, round(k H / 544))), or "hXvY" (protocol v2 amendment 1: X and Y
+    times the box's height, at least 1 px)."""
+    if rule in PAD_RULES:
+        kh, kv = PAD_RULES[rule]
+        return pad_px(kh, H), pad_px(kv, H)
+    rel = rel_rule(rule)
+    if rel:
+        return rel_hv(rel, b)
+    raise ValueError(f"reading rule {rule!r}")
+
+
+def rel_rule(spec):
+    """("rel", X, Y) of a line-height reading rule "hXvY", else None."""
+    s = str(spec)
+    if s.startswith("h") and "v" in s:
+        x, _, y = s[1:].partition("v")
+        try:
+            return ("rel", float(x), float(y))
+        except ValueError:
+            return None
+    return None
+
+
+def rel_hv(rel, b):
+    """(horizontal, vertical) px of ("rel", X, Y) for b = [x0, y0, x1, y1]: X times the line's size across it along
+    the line and Y times it across (a horizontal line's height; a vertical line's width), at least 1 px."""
+    _, x, y = rel
+    w, h = max(1.0, float(b[2]) - float(b[0])), max(1.0, float(b[3]) - float(b[1]))
+    if w >= h:
+        return max(1.0, x * h), max(1.0, y * h)
+    return max(1.0, y * w), max(1.0, x * w)
+
+
 def exact_boxes(fr, rgb):
     """[(unit index, line index, [x0, y0, x1, y1], how)] of a frame's reference lines (exact_ref)."""
     out = []
@@ -310,11 +351,12 @@ def exact_boxes(fr, rgb):
     return out
 
 
-def _pad_job(fr):
+def _pad_job(job):
     import math
 
     import metrics
     import pagepath as PP
+    fr, rules = job if isinstance(job, tuple) else (job, list(PAD_RULES))
     V = _E["V"]
     rgb = D.load_rgb(fr)
     g = V.grey_of(rgb)
@@ -324,8 +366,8 @@ def _pad_job(fr):
         u = fr["units"][ui]
         ref = metrics.norm(u["lines"][li]["text"])
         r = {"uid": f"{u['uid']}|{li}", "cluster": u["cluster"], "view": fr["view"], "chars": len(ref), "how": how}
-        for name, (kh, kv) in PAD_RULES.items():
-            ph, pv = pad_px(kh, H), pad_px(kv, H)
+        for name in rules:
+            ph, pv = margin_hv(name, b, H)
             x0, y0 = max(0, int(math.floor(b[0] - ph))), max(0, int(math.floor(b[1] - pv)))
             x1, y1 = min(W, int(math.ceil(b[2] + ph))), min(H, int(math.ceil(b[3] + pv)))
             cb = (x0, y0, x1 - x0, y1 - y0)
@@ -339,14 +381,17 @@ def _pad_job(fr):
 def cmd_pads(a):
     """The protocol's 'exact' reading, detector-free: every reference line's exact box read at each pad rule."""
     import pagepath as PP
-    out = {"schema": SCHEMA, "kind": "textspot-desktop-pads", "rules": PAD_RULES, "rec": Path(a.rec).name,
+    rules = a.rules.split(",") if a.rules else list(PAD_RULES)
+    if "k4" not in rules:
+        rules = ["k4"] + rules
+    out = {"schema": SCHEMA, "kind": "textspot-desktop-pads", "rules": rules, "rec": Path(a.rec).name,
            "rec_sha256": D.sha256_file(a.rec), "sets": {},
            "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     for fpath in a.frames:
         frames, _ = D.load_frames(fpath)
         rows = []
         with D._pool(a.workers, _init_edges, (a.rec,)) as pool:
-            for rs in pool.imap(_pad_job, frames, chunksize=4):
+            for rs in pool.imap(_pad_job, [(f, rules) for f in frames], chunksize=4):
                 rows.extend(rs)
         st = {"frames_sha256": D.sha256_file(fpath), "lines": len(rows),
               "how": {k: sum(1 for r in rows if r["how"] == k) for k in sorted({r["how"] for r in rows})}}
@@ -359,15 +404,15 @@ def cmd_pads(a):
             else:
                 rr = [r for r in rows if r["view"] == key]
             c = sum(r["chars"] for r in rr)
-            st[sub] = {name: round(100.0 * sum(r[name] for r in rr) / max(1, c), 4) for name in PAD_RULES}
+            st[sub] = {name: round(100.0 * sum(r[name] for r in rr) / max(1, c), 4) for name in rules}
         base = [{"uid": r["uid"], "cluster": r["cluster"], "errors": r["k4"], "chars": r["chars"]} for r in rows]
         st["vs_k4"] = {name: PP.cluster_bootstrap([{"uid": r["uid"], "cluster": r["cluster"], "errors": r[name],
                                                     "chars": r["chars"]} for r in rows], base)
-                       for name in PAD_RULES if name != "k4"}
+                       for name in rules if name != "k4"}
         by = {}
         for r in rows:
-            b = by.setdefault(r["cluster"], {n: 0 for n in PAD_RULES})
-            for n in PAD_RULES:
+            b = by.setdefault(r["cluster"], {n: 0 for n in rules})
+            for n in rules:
                 b[n] += r[n]
         st["worst_clusters_k4"] = sorted(([k, v] for k, v in by.items()), key=lambda kv: -kv[1]["k4"])[:8]
         out["sets"][Path(fpath).stem] = st
@@ -622,6 +667,7 @@ def main(argv=None):
     p = sub.add_parser("pads")
     p.add_argument("--frames", required=True, nargs="+")
     p.add_argument("--out", required=True)
+    p.add_argument("--rules", help="comma-separated reading rules (PAD_RULES names and hXvY); default PAD_RULES")
     p.add_argument("--rows")
     p.add_argument("--rec", default=str(D.ONNX_DIR / "VOCR6.2_L_fast.onnx"))
     p.add_argument("--workers", type=int, default=5)

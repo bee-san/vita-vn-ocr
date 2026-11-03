@@ -599,6 +599,142 @@
     }
    },
    "note_k2": "K2 added to amendment 15 at 09:20Z, before any read of K1 or K2"
+  },
+  {
+   "n": 16,
+   "time": "2026-11-03T17:45Z",
+   "round": 3,
+   "before": "any read of the round-3 arms",
+   "after": [
+    "the seeds of the full recipe (240k steps from scratch, q8b) with C9 at long:1120: S1 gap 0.226, S2 0.211 (dev 0.876, dense_dev 0.477, dev_l544 0.863, dense_dev_l544 0.558; junk 0), S3 0.360; at long:960 0.291 / 0.316 / 0.428. K1 (q8c from B2, full data): long:1120 gap 0.226 with dense_dev 0.434 and dense_dev_l544 0.459 (the best dense reads) but dev 0.996; q8c at long:1120 is over G2's bar in fp32. K2 (q4b from H2, full data): 0.254",
+    "round 2's summary is on #173 (issuecomment-6610942165)"
+   ],
+   "plan": {
+    "int8": "textspot-desktop-speed builds an int8 C path (per-channel int8 weights, static activation scales calibrated on training-side frames only, VNNI / AVX2); a quantized model is read for accuracy through the C path itself (ctsd:), and G2 / G3 are timed on it; amended before its first read",
+    "ui_v2": "textspot-desktop-ui2 builds desk_ui v2 (about 30,000 frames aimed at icons and marks beside labels, label + value runs, ui tags); it enters training by a later amendment"
+   },
+   "arms": {
+    "L1_q8c_from_K1": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8c",
+     "init": "runs/r2k_K1_q8c_from_B2_full",
+     "steps": 80000,
+     "lr": 0.0008,
+     "question": "K1 + 80k (for an int8 q8c at long:1120)"
+    },
+    "L2_q8b_from_S1": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "init": "runs/r2j_S1_q8b_full_240k",
+     "steps": 80000,
+     "lr": 0.0008,
+     "question": "seed 1 + 80k"
+    },
+    "L3_q8b_from_S2": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "init": "runs/r2j_S2_q8b_full_240k",
+     "steps": 80000,
+     "lr": 0.0008,
+     "question": "seed 2 + 80k"
+    },
+    "L4_q8b_from_S3": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "init": "runs/r2j_S3_q8b_full_240k",
+     "steps": 80000,
+     "lr": 0.0008,
+     "question": "seed 3 + 80k"
+    },
+    "L5_q8c_full_160k_seed1": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8c",
+     "steps": 160000,
+     "lr": 0.003,
+     "seed": 1,
+     "question": "q8c from scratch, the full recipe (seeds for an int8 q8c candidate)"
+    },
+    "L6_q8c_full_160k_seed2": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8c",
+     "steps": 160000,
+     "lr": 0.003,
+     "seed": 2,
+     "question": "seed 2"
+    }
+   }
   }
  ]
 }

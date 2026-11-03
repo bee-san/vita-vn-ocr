@@ -537,6 +537,15 @@
     }
    },
    "seeds_note": "a candidate for confirmation must come with three seeds of its recipe (protocol v2 rounds.seeds); the warm-start chain B1 -> E2 -> F1 -> I1 -> J1 is one seed, so S1-S3 give a recipe that can be seeded"
+  },
+  {
+   "n": 14,
+   "time": "2026-11-03T08:35Z",
+   "before": "any C9 read of J1 (I1's C9 read is the boxes helper's family read, below)",
+   "after": "textspot-desktop-boxes' garb_drop (8c0dcaa, C twin b760cdf): a reading of >= 5 characters (spaces aside), >= 60% digits or Latin letters, with at least one kana, no kanji and no two kana side by side, is dropped whatever its tag; chosen on hval + dense_screen with I1 (hval 667 -> 626 errors, 6 units better, 0 worse; PCSG00854 junk 3 -> 0; dense_screen unchanged); it matches 0 of the 7,650 reference lines of hval, dense_screen, dev and dense_dev (a false-positive check on reference texts only); its one goal read (I1, long:1120) leaves the four goal sets identical and junk 3 -> 0",
+   "pipeline": {
+    "options": "C9 = C8 + drop garb_drop=1 (garb_len 5, garb_pct 60) replaces C8 for new reads"
+   }
   }
  ]
 }

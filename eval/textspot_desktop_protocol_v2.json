@@ -445,6 +445,98 @@
      "question": "F1 + 80k with the PC label edits and desk_ui"
     }
    }
+  },
+  {
+   "n": 13,
+   "time": "2026-11-03T04:10Z",
+   "before": "any read of J1, S1-S3",
+   "after": [
+    "I1 (F1 + 80k with the PC label edits and desk_ui) read, C8 k6v4: long:1120 gap 0.217 (dev 0.823, dense_dev 0.552, dev_l544 0.770, dense_dev_l544 0.564; PCSG00854 junk 3: readings like エ100い9 on the ornament strip, so G4 fails), long:960 gap 0.319 (junk 0); the dense sets move most since round 2 began (0.645 -> 0.552). H1 (the PC edits alone, on D2) and H2 (on E1) do not beat their parents; G1 (E1 + 80k) neither",
+    "hard_v2 (textspot-desktop-targets, 4a49dc2): mined with G2 at long:1120 + C8 on the same training-side frames: desk_hard_v2 3,000 1b frames (missed short labels first; 13,992 of its 14,267 missed lines are PC-edit labels) and desk_hook_hard_v2 882 1a pages"
+   ],
+   "arms": {
+    "J1_q8b_from_I1": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "init": "runs/r2i_I1_q8b_from_F1_pc_ui",
+     "steps": 80000,
+     "lr": 0.0008,
+     "question": "I1 + 80k with hard_v2 and a larger UI share"
+    },
+    "S1_q8b_full_240k_seed1": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "steps": 240000,
+     "lr": 0.003,
+     "seed": 1,
+     "question": "the full recipe from scratch, one schedule (for seeds)"
+    },
+    "S2_q8b_full_240k_seed2": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "steps": 240000,
+     "lr": 0.003,
+     "seed": 2,
+     "question": "seed 2"
+    },
+    "S3_q8b_full_240k_seed3": {
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "shape": "q8b",
+     "steps": 240000,
+     "lr": 0.003,
+     "seed": 3,
+     "question": "seed 3"
+    }
+   },
+   "seeds_note": "a candidate for confirmation must come with three seeds of its recipe (protocol v2 rounds.seeds); the warm-start chain B1 -> E2 -> F1 -> I1 -> J1 is one seed, so S1-S3 give a recipe that can be seeded"
   }
  ]
 }

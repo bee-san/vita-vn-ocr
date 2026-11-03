@@ -9,6 +9,8 @@
 #   make ARCH=           the same without SIMD flags (portable C; the plain-C kernels)
 #   make ARCH=-march=x86-64-v4    textspot-desktop's AVX-512 kernels (AVX-512 F/BW/CD/DQ/VL CPUs; the maps are the
 #                        AVX2 build's bit for bit; -DVOCR_TSD_NO_AVX512 keeps the AVX2 kernels in such a build)
+#   make ARCH="-march=x86-64-v4 -mavx512vnni"    the same plus the int8 network's VNNI kernels (VTSD version 2,
+#                        vocr_tsd_q8.c: Ice Lake, Zen 4 and later; every build gives the int8 maps bit for bit)
 #   make ARCH=-march=native
 #   make OUT=build-o2 OPT=-O2 ARCH=    a plain -O2 build in another directory
 #   make OUT=build-scalar EXTRA=-DVOCR_TSD_SCALAR    textspot-desktop's plain-C kernels in an AVX2 build
@@ -23,9 +25,9 @@ OPT ?= -O3
 ARCH ?= -march=x86-64-v3
 WARN = -std=c99 -Wall -Wextra -Werror -Wpedantic -Wshadow -Wstrict-prototypes -Wmissing-prototypes
 RT = ../runtime
-SRC = vocr_desk.c vocr_desk_page.c vocr_tsd.c vocr_tsd_page.c vocr_tsd_resize.c vocr_tsd_refine.c vocr_tsd_post.c \
-      $(RT)/vocr.c $(RT)/vocr_lines.c $(RT)/vocr_charbox.c
-HDR = vocr_desk.h vocr_tsd.h vocr_tsd_resize.h vocr_tsd_refine.h vocr_tsd_post.h
+SRC = vocr_desk.c vocr_desk_page.c vocr_tsd.c vocr_tsd_q8.c vocr_tsd_page.c vocr_tsd_resize.c vocr_tsd_refine.c \
+      vocr_tsd_post.c $(RT)/vocr.c $(RT)/vocr_lines.c $(RT)/vocr_charbox.c
+HDR = vocr_desk.h vocr_tsd.h vocr_tsd_q8.h vocr_tsd_resize.h vocr_tsd_refine.h vocr_tsd_post.h
 CFLAGS_ALL = $(WARN) -ffp-contract=off $(OPT) $(ARCH) -I$(RT) -I. $(EXTRA)
 
 all: $(OUT)/libvocrdesk.so $(OUT)/vocr_desk_cli $(OUT)/vocr_tsd_bench $(OUT)/libvocrtsdr.so

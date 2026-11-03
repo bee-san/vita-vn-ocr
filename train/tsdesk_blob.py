@@ -32,6 +32,26 @@ array followed by its bias):
     head        [F][outp] (columns past out are 0), with A1, A2, E1 and E2 (maps 2..5) times hs folded in: exact,
                 hs being a power of 2, so the C head gives the ONNX graph's `hs * y` without a multiply.
 The C network normalises the grey input itself ((g - 128) / 128, as the graph does).
+
+Version 2 is the int8 network (train/tsdesk_quant.py writes it from a version-1 blob and a calibration; blob_bytes_q8
+here): the same header with version 2 and u32 1 at 156 (the scheme: int8 weights per output channel, uint8
+activations per tensor with zero point 0, every map after a ReLU or a sum of them being >= 0), then per layer, in
+version 1's order:
+    stem, pointwise, laterals, head   int8 weights [Cin / 4][Cout][4] (input channel ci at [ci / 4][co][ci % 4]: four
+                input channels of one output side by side, the VNNI order; the stem's input channels are its 16 taps
+                ci = 4 ky + kx), int32 bq[Cout], float32 m[Cout], float32 r
+    depthwise   int8 weights [9][C] (tap 3 ky + kx), int32 bq[C], float32 m[C]
+    gc          float32 [c3][c3] and its float32 bias (version 1's), float32 sx, float32 so
+The integer sum acc of a layer's products (exact in int32) gives its output (tsdesk_quant.q8_maps,
+desktop/vocr_tsd_q8.c):
+    a map       q = rint(clip(y, 0, 255)) with y = f32(acc + bq) * m, then + f32(res) * r for a residual block (the
+                block's input map), or max(y, 0) + f32(up) * r for a lateral below the top (up: the coarser level's
+                cell, nearest 2x), each operation rounded to float32 (round half to even)
+    the head    maps = f32(acc + bq) * m (float32; A1, A2, E1, E2 already in input px)
+    the stem    acc of the raw grey bytes g (bq holds -128 sum(w), the graph's (g - 128) / 128)
+    gc          sum the stride-32 map's channels over every position (an integer), mean = sum * sx / P, a = b + sum_ci
+                mean[ci] w[ci][co] (sequential, float64), G = f32(max(a, 0) / so), A = f32(sx / so), then
+                q = rint(clip(f32(x) * A + G, 0, 255)) in float32
 """
 import struct
 import zlib
@@ -40,6 +60,9 @@ import numpy as np
 
 MAGIC = b"VTSD"
 VERSION = 1
+VERSION_Q8 = 2
+Q8_SCHEME = 1                # header u32 at 156 of a version-2 blob: int8 weights per channel, uint8 maps per tensor
+Q8_BIAS_MAX = 1 << 30        # |bq|: acc + bq stays inside int32 (|acc| < 2^23 with at most 256 input channels)
 HEADER = 160
 ALIGN = 32
 MAX_BLOCKS = 8
@@ -178,15 +201,18 @@ def blob_bytes(model, size="fit:960", decode=None):
 
 
 def read_header(blob):
-    """The header of a VTSD blob as a dict (checks the magic, version, size and CRC-32)."""
+    """The header of a VTSD blob (version 1, or 2: int8) as a dict (checks the magic, version, size and CRC-32)."""
     b = bytes(blob)
     if len(b) < HEADER + 4 or b[:4] != MAGIC:
         raise ValueError("not a VTSD blob")
     version, header, total = struct.unpack_from("<III", b, 4)
-    if version != VERSION or header != HEADER or total != len(b):
+    if version not in (VERSION, VERSION_Q8) or header != HEADER or total != len(b):
         raise ValueError(f"VTSD version {version}, header {header}, {total} bytes (file {len(b)})")
     if zlib.crc32(b[:-4]) & 0xFFFFFFFF != struct.unpack_from("<I", b, len(b) - 4)[0]:
         raise ValueError("VTSD CRC-32 mismatch")
+    scheme = struct.unpack_from("<I", b, 156)[0]
+    if scheme != (Q8_SCHEME if version == VERSION_Q8 else 0):
+        raise ValueError(f"VTSD version {version} with scheme {scheme}")
     patch, hs = struct.unpack_from("<II", b, 16)
     c = list(struct.unpack_from("<4I", b, 24))
     n = list(struct.unpack_from("<4I", b, 40))
@@ -194,8 +220,147 @@ def read_header(blob):
     dil = np.frombuffer(b, np.uint8, 4 * MAX_BLOCKS, 96).reshape(4, MAX_BLOCKS)
     conf, min_across, reach = struct.unpack_from("<3d", b, 128)
     size = "native" if kind == 0 else f"{('fit', 'long')[kind - 1]}:{nsz}"
-    return {"patch": patch, "hs": hs, "c": c, "n": n, "F": fc, "smooth": smooth, "gc": gc, "tags": tags, "out": out,
-            "outp": outp, "size": size, "size_kind": kind, "size_n": nsz,
+    return {"version": version, "patch": patch, "hs": hs, "c": c, "n": n, "F": fc, "smooth": smooth, "gc": gc,
+            "tags": tags, "out": out, "outp": outp, "size": size, "size_kind": kind, "size_n": nsz,
             "dil": [[int(v) for v in dil[s, :n[s]]] for s in range(4)],
             "decode": {"min_cells": min_cells, "conf_min_logit": conf, "min_across": min_across,
                        "along_reach": reach, "max_boxes": max_boxes}, "bytes": len(b)}
+
+
+def layer_list(h):
+    """The network's layers in the blob's order (both versions), from a read_header dict: dicts of name, kind (stem,
+    dw, pw, gc, lat, head), cin, cout, stride, dil. A separable block NAME is NAME.dw then NAME.pw; the names are the
+    C profile's (s4.b0, s8.down, s8.b0, ..., gc, lat8, ..., smooth0, head)."""
+    c, n, fc, hs = h["c"], h["n"], h["F"], h["hs"]
+    out = [{"name": "stem", "kind": "stem", "cin": 16, "cout": c[0], "stride": 4, "dil": 1}]
+
+    def sep(name, cin, cout, stride, dil):
+        out.append({"name": f"{name}.dw", "kind": "dw", "cin": cin, "cout": cin, "stride": stride, "dil": dil})
+        out.append({"name": f"{name}.pw", "kind": "pw", "cin": cin, "cout": cout, "stride": 1, "dil": 1})
+    for s in range(4):
+        st = 4 << s
+        if s > 0:
+            sep(f"s{st}.down", c[s - 1], c[s], 2, 1)
+        for i in range(n[s]):
+            sep(f"s{st}.b{i}", c[s], c[s], 1, h["dil"][s][i])
+    if h["gc"]:
+        out.append({"name": "gc", "kind": "gc", "cin": c[3], "cout": c[3], "stride": 1, "dil": 1})
+    for s in range(0 if hs == 4 else 1, 4):
+        out.append({"name": f"lat{4 << s}", "kind": "lat", "cin": c[s], "cout": fc, "stride": 1, "dil": 1})
+    for i in range(h["smooth"]):
+        sep(f"smooth{i}", fc, fc, 1, 1)
+    out.append({"name": "head", "kind": "head", "cin": fc, "cout": h["outp"], "stride": 1, "dil": 1})
+    return out
+
+
+def _wsize(L):
+    return 9 * L["cin"] if L["kind"] == "dw" else L["cin"] * L["cout"]
+
+
+def read_weights(blob):
+    """(header, {layer name: {"w", "b"}}) of a version-1 blob: float32 weights as the kernels hold them (stem [16][c0]
+    with tap ci = 4 ky + kx, depthwise [9][C], every 1x1 [Cin][Cout]) and biases."""
+    b = bytes(blob)
+    h = read_header(b)
+    if h["version"] != VERSION:
+        raise ValueError("read_weights reads version-1 blobs")
+    off, out = HEADER, {}
+    for L in layer_list(h):
+        nw, nb = _wsize(L), L["cout"]
+        w = np.frombuffer(b, "<f4", nw, off).astype(np.float32)
+        off += 4 * nw
+        bias = np.frombuffer(b, "<f4", nb, off).astype(np.float32)
+        off += 4 * nb
+        out[L["name"]] = {"w": w.reshape(9, L["cin"]) if L["kind"] == "dw" else w.reshape(L["cin"], L["cout"]),
+                          "b": bias}
+    if off + 4 != len(b):
+        raise ValueError("VTSD body size")
+    return h, out
+
+
+def _vnni(w):
+    """[Cin][Cout] -> the [Cin / 4][Cout][4] order of version 2."""
+    cin, cout = w.shape
+    return np.ascontiguousarray(w.reshape(cin // 4, 4, cout).transpose(0, 2, 1))
+
+
+def blob_bytes_q8(v1_blob, q):
+    """The version-2 (int8) blob of a version-1 blob's network: q maps each layer name (layer_list) to its quantized
+    form, {"w": int8 ([9][C] depthwise, [Cin][Cout] otherwise), "bq": int32 [Cout], "m": float32 [Cout], "r": float}
+    and gc to {"w", "b" (float32), "sx", "so"} (module docstring)."""
+    v1 = bytes(v1_blob)
+    h = read_header(v1)
+    if h["version"] != VERSION:
+        raise ValueError("blob_bytes_q8 takes a version-1 blob")
+    parts = []
+    for L in layer_list(h):
+        e = q[L["name"]]
+        if L["kind"] == "gc":
+            parts += [np.asarray(e["w"], "<f4").reshape(L["cin"], L["cout"]).tobytes(),
+                      np.asarray(e["b"], "<f4").reshape(L["cout"]).tobytes(),
+                      np.asarray([e["sx"], e["so"]], "<f4").tobytes()]
+            continue
+        w = np.asarray(e["w"])
+        if w.dtype != np.int8:
+            raise ValueError(f"{L['name']}: int8 weights")
+        if L["kind"] == "dw":
+            if w.shape != (9, L["cin"]):
+                raise ValueError(f"{L['name']}: depthwise weights {w.shape}")
+            wb = np.ascontiguousarray(w).tobytes()
+        else:
+            if w.shape != (L["cin"], L["cout"]):
+                raise ValueError(f"{L['name']}: weights {w.shape}")
+            wb = _vnni(w).tobytes()
+        bq = np.asarray(e["bq"], np.int64).reshape(L["cout"])
+        if np.abs(bq).max(initial=0) > Q8_BIAS_MAX:
+            raise ValueError(f"{L['name']}: |bq| above {Q8_BIAS_MAX}")
+        m = np.asarray(e["m"], np.float32).reshape(L["cout"])
+        if not np.all(np.isfinite(m)) or (m < 0).any():
+            raise ValueError(f"{L['name']}: multipliers must be finite and >= 0")
+        parts += [wb, bq.astype("<i4").tobytes(), m.astype("<f4").tobytes()]
+        if L["kind"] != "dw":
+            r = np.float32(e.get("r", 0.0))
+            if not np.isfinite(r) or r < 0:
+                raise ValueError(f"{L['name']}: r must be finite and >= 0")
+            parts.append(np.asarray([r], "<f4").tobytes())
+    body = b"".join(parts)
+    hdr = bytearray(v1[:HEADER])
+    struct.pack_into("<III", hdr, 4, VERSION_Q8, HEADER, HEADER + len(body) + 4)
+    struct.pack_into("<I", hdr, 156, Q8_SCHEME)
+    blob = bytes(hdr) + body
+    return blob + struct.pack("<I", zlib.crc32(blob) & 0xFFFFFFFF)
+
+
+def read_q8(blob):
+    """(header, {layer name: quantized form}) of a version-2 blob: blob_bytes_q8's q back (weights in the canonical
+    shapes: depthwise [9][C] int8, the others [Cin][Cout] int8; "r" a numpy float32)."""
+    b = bytes(blob)
+    h = read_header(b)
+    if h["version"] != VERSION_Q8:
+        raise ValueError("read_q8 reads version-2 blobs")
+    off, out = HEADER, {}
+
+    def take(dtype, count):
+        nonlocal off
+        a = np.frombuffer(b, dtype, count, off)
+        off += a.nbytes
+        return a
+    for L in layer_list(h):
+        cin, cout = L["cin"], L["cout"]
+        if L["kind"] == "gc":
+            w = take("<f4", cin * cout).astype(np.float32).reshape(cin, cout)
+            bias = take("<f4", cout).astype(np.float32)
+            sx, so = take("<f4", 2).astype(np.float32)
+            out[L["name"]] = {"w": w, "b": bias, "sx": sx, "so": so}
+            continue
+        if L["kind"] == "dw":
+            w = take("i1", 9 * cin).reshape(9, cin).copy()
+        else:
+            w = take("i1", cin * cout).reshape(cin // 4, cout, 4).transpose(0, 2, 1).reshape(cin, cout).copy()
+        e = {"w": w, "bq": take("<i4", cout).astype(np.int32), "m": take("<f4", cout).astype(np.float32)}
+        if L["kind"] != "dw":
+            e["r"] = np.float32(take("<f4", 1)[0])
+        out[L["name"]] = e
+    if off + 4 != len(b):
+        raise ValueError("VTSD version-2 body size")
+    return h, out

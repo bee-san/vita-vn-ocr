@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "vocr_tsd_q8.h"
 #include "vocr_tsd_resize.h"
 
 #if defined(__AVX2__) && defined(__FMA__) && !defined(VOCR_TSD_SCALAR)
@@ -79,6 +80,25 @@ void vocr_tsd_prof_reset(void)
         }                                      \
         prof_t0 = t_;                          \
     } while (0)
+void vocr_tsd_prof_start_(void)
+{
+    PROF_START();
+}
+void vocr_tsd_prof_mark_(unsigned i, const char *name)
+{
+    PROF_MARK(i, name);
+}
+void vocr_tsd_prof_add_(unsigned i, const char *name, double us)
+{
+    if (i < MAX_STEPS) {
+        vocr_tsd_prof_us[i] += us;
+        prof_names[i] = name;
+    }
+}
+double vocr_tsd_prof_now_(void)
+{
+    return prof_now();
+}
 #else
 #define PROF_START() ((void)0)
 #define PROF_MARK(i, name) ((void)0)
@@ -157,13 +177,18 @@ int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes)
 {
     const unsigned char *b = (const unsigned char *)blob;
     size_t off = VOCR_TSD_HEADER;
-    unsigned s, i;
+    unsigned s, i, version;
     if (!m || !b) return VOCR_TSD_E_ARG;
     memset(m, 0, sizeof *m);
     if (!little_endian() || ((uintptr_t)b & 3u) || bytes < VOCR_TSD_HEADER + 4 || memcmp(b, "VTSD", 4) ||
-        rd32(b + 4) != VOCR_TSD_VERSION || rd32(b + 8) != VOCR_TSD_HEADER || rd32(b + 12) != bytes)
+        rd32(b + 8) != VOCR_TSD_HEADER || rd32(b + 12) != bytes)
+        return VOCR_TSD_E_BLOB;
+    version = rd32(b + 4);
+    /* version 2 (int8) carries its scheme at 156: 1, int8 weights per channel and uint8 maps per tensor */
+    if (!(version == VOCR_TSD_VERSION || (version == VOCR_TSD_VERSION_Q8 && rd32(b + 156) == 1u)))
         return VOCR_TSD_E_BLOB;
     if (crc32_of(b, bytes - 4) != rd32(b + bytes - 4)) return VOCR_TSD_E_CRC;
+    m->version = version;
     m->patch = rd32(b + 16);
     m->hs = rd32(b + 20);
     for (i = 0; i < 4; i++) {
@@ -196,6 +221,11 @@ int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes)
             if (i < m->n[s] ? (d < 1 || d > 16) : d != 0) return VOCR_TSD_E_BLOB;
             m->dil[s][i] = d;
         }
+    }
+    if (version == VOCR_TSD_VERSION_Q8) {
+        const int rc = vocr_tsdq_load(m, b, bytes);
+        if (rc) memset(m, 0, sizeof *m);
+        return rc;
     }
     if (set_layer(&m->stem, b, bytes, &off, 16u * m->c[0], m->c[0], 16, m->c[0], 4, 1, &m->params))
         return VOCR_TSD_E_BLOB;
@@ -1296,6 +1326,7 @@ size_t vocr_tsd_maps_bytes(const vocr_tsd_model *m, unsigned pw, unsigned ph, un
 {
     tsd_plan P;
     if (!m || !pw || !ph) return 0;
+    if (m->version == VOCR_TSD_VERSION_Q8) return vocr_tsdq_maps_bytes(m, pw, ph, ntasks);
     plan(m, pw, ph, ntasks, &P);
     return P.end * sizeof(float) + 64;
 }
@@ -1696,6 +1727,8 @@ int vocr_tsd_maps_mt(const vocr_tsd_model *m, const unsigned char *in, unsigned 
         return VOCR_TSD_E_ARG;
     if (!run || ntasks < 1) ntasks = 1;
     if (bytes < vocr_tsd_maps_bytes(m, pw, ph, ntasks)) return VOCR_TSD_E_ARENA;
+    if (m->version == VOCR_TSD_VERSION_Q8)
+        return vocr_tsdq_run(m, in, pw, ph, pw, pw, ph, arena, bytes, maps, run, ctx, ntasks);
     plan(m, pw, ph, ntasks, &P);
     A = aligned_floats(arena);
     N.src.px = in;
@@ -2126,8 +2159,9 @@ static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w
     vocr_tsd_input_size(kind, n, w, h, &D->iw, &D->ih, &D->pw, &D->ph);
     D->resize = D->iw != w || D->ih != h;
     /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it),
-     * the refinement and the post-pass */
-    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine || post);
+     * the refinement, the post-pass and the int8 network (its stem reads grey) */
+    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine || post ||
+                                      m->version == VOCR_TSD_VERSION_Q8);
     D->net = off;
     off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
     D->grey = off;
@@ -2293,6 +2327,7 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
     const unsigned char *gsrc = img;
     unsigned gstride = stride, gch = channels;
     float *A;
+    const float *maps = NULL;
     double fx, fy;
     unsigned k, keep = 0;
     int rc;
@@ -2358,18 +2393,25 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
         N.src.stride = D.iw;
         N.src.ch = 1;
     }
-    plan(m, D.pw, D.ph, ntasks, &P);
-    A = aligned_floats(base + D.net);
-    N.lazy = 1;   /* the maps the decode reads: K, and the rest on kernel cells */
-    build(&N, m, A, &P);
-    net_run(&N, run, ctx, ntasks);
+    if (m->version == VOCR_TSD_VERSION_Q8) {
+        rc = vocr_tsdq_run(m, N.src.px, N.src.w, N.src.h, N.src.stride, D.pw, D.ph, base + D.net, D.grey - D.net,
+                           &maps, run, ctx, ntasks);
+        if (rc) return rc;
+    } else {
+        plan(m, D.pw, D.ph, ntasks, &P);
+        A = aligned_floats(base + D.net);
+        N.lazy = 1;   /* the maps the decode reads: K, and the rest on kernel cells */
+        build(&N, m, A, &P);
+        net_run(&N, run, ctx, ntasks);
+        maps = N.maps;
+    }
     PROF_START();
     if (opt && opt->decode) {
         dopt = *opt->decode;
     } else {
         vocr_tsd_decode_opts_of(m, &dopt);
     }
-    rc = vocr_tsd_decode_ex(&dopt, N.maps, D.pw / m->hs, D.ph / m->hs, D.iw, D.ih, base + D.decode,
+    rc = vocr_tsd_decode_ex(&dopt, maps, D.pw / m->hs, D.ph / m->hs, D.iw, D.ih, base + D.decode,
                             D.end - 64 - D.decode, out);
     PROF_MARK(2u, "decode");
     if (rc) return rc;

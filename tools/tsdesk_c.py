@@ -128,6 +128,8 @@ def c_library(path=None):
         getattr(L, name).restype = sz
         getattr(L, name).argtypes = []
     L.vocr_tsd_simd.restype = i
+    if hasattr(L, "vocr_tsd_q8_simd"):        # builds with the int8 network (VTSD version 2)
+        L.vocr_tsd_q8_simd.restype = i
     L.vocr_tsd_load.argtypes = [vp, vp, sz]
     L.vocr_tsd_policy_ok.argtypes = [u, u]
     L.vocr_tsd_policy_ok.restype = i

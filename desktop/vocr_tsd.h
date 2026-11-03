@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 #define VOCR_TSD_VERSION 1u
+#define VOCR_TSD_VERSION_Q8 2u          /* an int8 blob (vocr_tsd_qlayer; desktop/vocr_tsd_q8.c) */
 #define VOCR_TSD_HEADER 160u            /* header bytes of a VTSD blob */
 #define VOCR_TSD_ALIGN 32u              /* the network's input sides are multiples of this */
 #define VOCR_TSD_MAX_TAGS 8u
@@ -46,7 +47,7 @@ enum {
     VOCR_TSD_OK = 0,
     VOCR_TSD_E_ARG = -1,      /* a bad argument: a NULL pointer, a frame of 0 or more than 8192 px a side, a policy
                                  vocr_tsd_policy_ok refuses */
-    VOCR_TSD_E_BLOB = -2,     /* not a VTSD version-1 blob, or one this build cannot read */
+    VOCR_TSD_E_BLOB = -2,     /* not a VTSD blob of version 1 (float32) or 2 (int8), or one this build cannot read */
     VOCR_TSD_E_CRC = -3,      /* the blob's CRC-32 does not match */
     VOCR_TSD_E_ARENA = -4,    /* the arena is too small */
     VOCR_TSD_E_MEM = -5,      /* an allocation failed (the pool, the page pipeline) */
@@ -63,7 +64,18 @@ typedef struct {
     unsigned stride, dil;
 } vocr_tsd_layer;
 
+/* A layer of an int8 blob (VTSD version 2, train/tsdesk_blob.py): out = q(f32(acc + bq) * m [+ the second input x r]),
+ * acc the exact int32 sum of uint8 inputs times int8 weights (desktop/vocr_tsd_q8.c). */
+typedef struct {
+    const int8_t *w;          /* [cin / 4][cout][4] (1x1 layers and the stem: tap ci = 4 ky + kx), [9][cin] (depthwise) */
+    const int32_t *bq;        /* the bias in the sum's scale (cout) */
+    const float *m;           /* the requantization multipliers (cout) */
+    float r;                  /* a residual block's (its input) or a lower lateral's (the coarser level) multiplier */
+    unsigned cin, cout, stride, dil;
+} vocr_tsd_qlayer;
+
 typedef struct {               /* a parsed blob: points into it, so keep the blob alive */
+    unsigned version;                      /* 1: float32 weights; 2: int8 weights and uint8 maps (the q layers) */
     unsigned patch, hs;                    /* 4; the head's stride, 4 or 8 */
     unsigned c[4], n[4], F, smooth, gc, tags, out, outp;   /* out = 6 + tags maps; outp: out rounded up to 8 */
     unsigned min_cells, max_boxes;         /* the decode's constants (tools/tsdesk.DEFAULTS) */
@@ -73,10 +85,14 @@ typedef struct {               /* a parsed blob: points into it, so keep the blo
     vocr_tsd_layer stem;                   /* 4x4 at stride 4, 1 -> c0 (w: [16][c0]) */
     /* [s][0]: stage s's down block (s >= 1); [s][1 + i]: its residual block i */
     vocr_tsd_layer dw[4][1 + VOCR_TSD_MAX_BLOCKS], pw[4][1 + VOCR_TSD_MAX_BLOCKS];
-    vocr_tsd_layer gcl;                    /* gc: c3 -> c3 */
+    vocr_tsd_layer gcl;                    /* gc: c3 -> c3 (float32 in both versions) */
     vocr_tsd_layer lat[4];                 /* by stride: [0] stride 4 (hs == 4 only), [1] 8, [2] 16, [3] 32 */
     vocr_tsd_layer sdw[VOCR_TSD_MAX_SMOOTH], spw[VOCR_TSD_MAX_SMOOTH];
     vocr_tsd_layer head;                   /* 1x1 F -> outp (A1, A2, E1, E2 already in input px) */
+    /* version 2: the same layers in int8 (the float layers above are empty but gcl), and gc's input and output scales */
+    vocr_tsd_qlayer qstem, qdw[4][1 + VOCR_TSD_MAX_BLOCKS], qpw[4][1 + VOCR_TSD_MAX_BLOCKS], qlat[4];
+    vocr_tsd_qlayer qsdw[VOCR_TSD_MAX_SMOOTH], qspw[VOCR_TSD_MAX_SMOOTH], qhead;
+    float gc_sx, gc_so;
     size_t params;
 } vocr_tsd_model;
 
@@ -101,7 +117,10 @@ typedef struct {               /* the decode's constants (the blob's: vocr_tsd_d
     int vote_depth;            /* tools/tsdesk.DECODE_EXTRA's vote_depth: the split's levels (0: 2, the default) */
 } vocr_tsd_decode_opts;
 
-/* Parse and check a blob (magic, version, sizes, CRC-32); the blob must be 4-byte aligned. */
+/* Parse and check a blob (magic, version, sizes, CRC-32); the blob must be 4-byte aligned. Version 1 holds float32
+ * weights; version 2 (train/tsdesk_quant.py) int8 weights, and every entry point below then runs the int8 network
+ * (desktop/vocr_tsd_q8.c: uint8 maps, exact int32 sums, the same maps bit for bit in every build and at every thread
+ * count, train/tsdesk_quant.q8_maps's). */
 int vocr_tsd_load(vocr_tsd_model *m, const void *blob, size_t bytes);
 void vocr_tsd_decode_opts_of(const vocr_tsd_model *m, vocr_tsd_decode_opts *o);
 
@@ -183,6 +202,8 @@ size_t vocr_tsd_set_bytes(void);
 size_t vocr_tsd_box_bytes(void);
 /* 1 if this build runs the AVX2 + FMA kernels, 2 the AVX-512 ones, 0 the plain-C ones. */
 int vocr_tsd_simd(void);
+/* The int8 network's kernels in this build: 0 plain C, 1 AVX2 (exact int16 products), 2 AVX-512 VNNI. */
+int vocr_tsd_q8_simd(void);
 
 /* ---- a thread pool (POSIX threads; one thread with -DVOCR_DESK_NO_THREADS) and its vocr_tsd_runner ---- */
 

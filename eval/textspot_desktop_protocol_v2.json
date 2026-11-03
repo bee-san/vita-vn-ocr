@@ -735,6 +735,15 @@
      "question": "seed 2"
     }
    }
+  },
+  {
+   "n": 17,
+   "time": "2026-11-03T23:30Z",
+   "round": 3,
+   "before": "any read of the int8 blobs and of L2-L4",
+   "int8": "textspot-desktop-speed's int8 C path (70ff1d3, merged): VTSD version 2 (per-output-channel int8 weights, per-tensor uint8 activations with static scales from 208 training-side frames of 1a / 1b / 1c at long:1120, method mse_hb; the head's maps in float), desktop/vocr_tsd_q8.c (VNNI, an exact AVX2 / plain fallback; every build gives the same bits as the numpy twin train/tsdesk_quant.py). Against fp32 on 104 held-out training-side frames: boxes recall 97.8% / precision 97.2% (K1 q8c), 97.3 / 96.8% (S2 q8b). 1 thread at long:1120, timing pages: K1 31.7 -> 10.9 ms, S2 18.0 -> 6.2 ms (VNNI build)",
+   "reads": "an int8 candidate is read through the C path itself (eval/tsdesk_eval.py desktop detect --det ctsd:BLOB@POLICY+C9 options, the VNNI build: scripts/r2/read_policy_c.sh), never through its fp32 ONNX twin; its G2 / G3 are timed on the same blob and build",
+   "now": "L2-L4 (S1-S3 + 80k) through the ONNX path with C9 at long:960 and long:1120; the int8 K1 and S2 blobs, and S2's fp32 blob as a control, through the C path with C9 at long:1120"
   }
  ]
 }

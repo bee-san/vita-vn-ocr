@@ -35,7 +35,8 @@
  * out, from their tight boxes and UTF-8 readings: nojp (no Japanese character; 2: unless a mostly Japanese reading
  * sits in the row within nojp_gap_pct % of the larger height, nojp_anchor_pct), rep_pct (a reading dominated by one
  * non-Japanese character, rep_len characters or more), conf_milli (the mean character confidence under
- * conf_milli / 1000).
+ * conf_milli / 1000), garb_drop (a reading of at least garb_len code points, spaces aside, at least garb_pct % of them
+ * digits or Latin letters, with a kana, no kanji and no two kana side by side: tools/tsdesk.is_garbage, any tag).
  */
 #ifndef VOCR_TSD_POST_H
 #define VOCR_TSD_POST_H
@@ -60,9 +61,10 @@ typedef struct {
 typedef struct {
     int nojp, nojp_gap_pct, nojp_anchor_pct, rep_pct, conf_milli, rep_len;
     int cut_pct, cut_rel_pct, cut_dlg;      /* the reading stage's cut (vocr_tsdc_cut; the page runs it) */
+    int garb_drop, garb_len, garb_pct;      /* a garbage reading dropped (tools/tsdesk.is_garbage) */
 } vocr_tsdd_opts;
 
-#define VOCR_TSDD_NOPTS 9
+#define VOCR_TSDD_NOPTS 12
 
 enum { VOCR_TSDP_OK = 0, VOCR_TSDP_E_ARG = -1, VOCR_TSDP_E_SCRATCH = -2 };
 
@@ -117,6 +119,8 @@ double vocr_tsdd_japanese_share(const char *text);
 int vocr_tsdc_cut(const unsigned char *grey, unsigned w, unsigned h, unsigned stride, const double *box,
                   const double *cx, const unsigned char *mark, unsigned n, int pct, int rel_pct, void *scratch,
                   size_t bytes, double *x0, double *x1, unsigned *first, unsigned *end, unsigned *np);
+/* tools/tsdesk.is_garbage on a NUL-terminated UTF-8 reading (garb_drop's test). */
+int vocr_tsdd_is_garbage(const char *text, int min_len, int pct);
 /* 1 when the UTF-8 text of len bytes is exactly one code point of tools/tsdesk.CUT_MARKS. */
 int vocr_tsdc_is_mark(const char *text, unsigned len);
 

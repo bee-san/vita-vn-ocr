@@ -1203,6 +1203,24 @@ def _items_frame(rng, H, W):
     return g, rows
 
 
+def test_c_garbage_equals_python(nets, libs):
+    """vocr_tsdd_is_garbage and vocr_tsdd_drop's garb_drop give tools/tsdesk.is_garbage / drop_set's answers on the
+    examples and on random readings mixing digits, Latin, kana, kanji, marks and spaces."""
+    rng = np.random.default_rng(81)
+    pool = list("0123456789０５９abcXYZＡｚあいうアイヴヶー日々〆。、…「 　\t") + ["\u3000"]
+    texts = ["エ100い9", "しL1O00", "そ00UI", "いnいnmnw", "1000円", "Tシャツ", "PS2のゲーム", "", " ", "あ1b2c"]
+    texts += ["".join(rng.choice(pool, int(rng.integers(0, 12)))) for _ in range(3000)]
+    for lib in libs.values():
+        cm = TC.CModel(nets["p8a"][1], lib=lib)
+        for t in texts:
+            b = t.encode("utf-8")
+            for ml, pct in ((5, 60), (1, 0), (8, 90)):
+                assert cm.L.vocr_tsdd_is_garbage(b, ml, pct) == int(T.is_garbage(t, ml, pct)), (t, ml, pct)
+        items = [((float(k * 30), 0.0, 25.0, 20.0), t, 0.9) for k, t in enumerate(texts[:400])]
+        for o in ({"garb_drop": 1}, dict(C6_DROP, garb_drop=1), {"garb_drop": 1, "garb_len": 3, "garb_pct": 40}):
+            assert cm.drop_set(items, o) == T.drop_set(items, T.drop_options(o)), o
+
+
 def test_c_join_equals_python(nets, libs):
     """vocr_tsdp_pre's join (desktop/vocr_tsd_post.c) gives tools/tsdesk.post_pre's boxes bit for bit: generated rows
     of pieces (gaps from overlaps to wide, heights alike or not, tags mixed, a piece between two lines), alone, at

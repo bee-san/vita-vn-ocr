@@ -39,6 +39,8 @@ void vocr_tsdd_defaults(vocr_tsdd_opts *o)
     o->rep_len = 4;
     o->cut_rel_pct = 200;
     o->cut_dlg = 1;
+    o->garb_len = 5;
+    o->garb_pct = 60;
 }
 
 int vocr_tsdp_nopts(void) { return VOCR_TSDP_NOPTS; }
@@ -1108,6 +1110,54 @@ static int stats_of(const char *text, reading_stats *r)
     return 0;
 }
 
+/* Python's str.isspace code points (what "".join(text.split()) removes) */
+static int py_space(long c)
+{
+    return (c >= 0x09 && c <= 0x0D) || (c >= 0x1C && c <= 0x20) || c == 0x85 || c == 0xA0 || c == 0x1680 ||
+           (c >= 0x2000 && c <= 0x200A) || c == 0x2028 || c == 0x2029 || c == 0x202F || c == 0x205F || c == 0x3000;
+}
+
+/* tools/tsdesk._char_kind: 1 digit or Latin letter (ASCII or full-width), 2 kana, 3 kanji, 0 other */
+static int char_kind(long c)
+{
+    if ((c >= '0' && c <= '9') || (c >= 0xFF10 && c <= 0xFF19) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+        (c >= 0xFF21 && c <= 0xFF3A) || (c >= 0xFF41 && c <= 0xFF5A))
+        return 1;
+    if ((c >= 0x3041 && c <= 0x3096) || (c >= 0x30A1 && c <= 0x30FA)) return 2;
+    if ((c >= 0x4E00 && c <= 0x9FFF) || (c >= 0x3400 && c <= 0x4DBF) || c == 0x3005 || c == 0x3006 || c == 0x30F6)
+        return 3;
+    return 0;
+}
+
+/* tools/tsdesk.is_garbage */
+static int is_garbage(const char *text, int min_len, int pct)
+{
+    const unsigned char *p = (const unsigned char *)text;
+    long n = 0, al = 0, kana = 0;
+    int prev = -1, adjacent = 0, kanji = 0;
+    for (;;) {
+        const long c = utf8_next(&p);
+        int k;
+        if (c == 0) break;
+        if (c < 0) return 0;
+        if (py_space(c)) continue;
+        k = char_kind(c);
+        n++;
+        al += k == 1;
+        kana += k == 2;
+        kanji |= k == 3;
+        adjacent |= k == 2 && prev == 2;
+        prev = k;
+    }
+    if (n < (min_len > 1 ? min_len : 1)) return 0;
+    return al * 100 >= (long)pct * n && !kanji && kana && !adjacent;
+}
+
+int vocr_tsdd_is_garbage(const char *text, int min_len, int pct)
+{
+    return text ? is_garbage(text, min_len, pct) : 0;
+}
+
 int vocr_tsdd_has_japanese(const char *text)
 {
     reading_stats r;
@@ -1137,6 +1187,10 @@ int vocr_tsdd_drop(const double *xywh, const char *const *text, const float *con
         reading_stats r;
         const double x = xywh[4 * i], y = xywh[4 * i + 1], w = xywh[4 * i + 2], h = xywh[4 * i + 3];
         stats_of(text[i], &r);
+        if (o->garb_drop && is_garbage(text[i], o->garb_len, o->garb_pct)) {
+            drop[i] = 1;
+            continue;
+        }
         if (o->conf_milli && (double)conf_mean[i] * 1000.0 < (double)o->conf_milli) {
             drop[i] = 1;
             continue;

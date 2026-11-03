@@ -1154,7 +1154,7 @@ def post_pre(g, boxes, opts):
 JAPANESE = "\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff01-\uff60\u2025\u2026\u2015\u2014"
 DROP_DEFAULTS = {"nojp": 0, "nojp_gap_pct": 100, "nojp_anchor_pct": 0, "rep_pct": 0, "conf_milli": 0, "rep_len": 4,
                  "cut_pct": 0, "cut_rel_pct": 200, "cut_dlg": 1, "nojp_num_pct": 0,
-                 "trim_milli": 0, "trim_len": 2, "trim_gap_pct": 25}
+                 "trim_milli": 0, "trim_len": 2, "trim_gap_pct": 25, "lead_drop": 0}
 # cut_reading's marks: no cut on either side of a punctuation mark (a phrase's end, a bracket, a dash, a dot: the
 # gap beside it is the sentence's own, and the mark belongs to the text it closes or opens)
 CUT_MARKS = set("、。，．,.！？!?…‥」』）)】〉》〕］]｝}ー―～〜：:；;・「『（(【〈《〔［[｛{")
@@ -1316,6 +1316,16 @@ def japanese_share(text):
     return len(_jp_re().findall(text)) / len(text) if text else 0.0
 
 
+# lead_drop's leader marks: dots, rules and dashes a table draws between a label and its value
+LEADER_MARKS = set("…‥・･ーｰ―─━－-‐‑–—_＿.．·•~〜～=＝")
+
+
+def is_leader(text):
+    """A reading made only of leader marks (LEADER_MARKS), spaces aside."""
+    t = "".join(text.split())
+    return bool(t) and all(c in LEADER_MARKS for c in t)
+
+
 def is_numeric(text):
     """A value: at least one digit (ASCII or full-width), and digits at least half of the characters."""
     t = "".join(text.split())
@@ -1325,7 +1335,11 @@ def is_numeric(text):
 
 def drop_set(items, o):
     """The indices of the readings the filter drops, for options o (drop_options(); every rule off by default).
-    items: [(box (x, y, w, h), text, conf_mean)] of a frame's horizontal boxes, read.
+    items: [(box (x, y, w, h), text, conf_mean[, tag])] of a frame's horizontal boxes, read (the detector's tag: 0
+    dialogue; a 3-tuple counts as dialogue).
+      lead_drop 1: a reading made only of leader marks (is_leader: ……, ・・・, ――) whose box is not tagged as dialogue
+              (a table's leader dots or rule read alone; hval's …… lines are dialogue); it still anchors for nojp
+              2 (the value after a leader stays);
       nojp 1: a reading with no Japanese character (JAPANESE; the empty reading too);
       nojp 2: the same, unless the reading is not empty and a reading with one sits in the same row (vertical
               overlap >= half the smaller height)
@@ -1341,9 +1355,15 @@ def drop_set(items, o):
       conf_milli: a reading whose mean character confidence (runtime/vocr.c's conf_mean) is under conf_milli / 1000."""
     from collections import Counter
     out = set()
+    tags = [it[3] if len(it) > 3 else 0 for it in items]
+    items = [it[:3] for it in items]
+    lead = [bool(o["lead_drop"]) and tg != 0 and is_leader(t) for (_, t, _), tg in zip(items, tags)]
     jp = [has_japanese(t) for _, t, _ in items]
     anchor = [j and japanese_share(t) * 100.0 >= o["nojp_anchor_pct"] for j, (_, t, _) in zip(jp, items)]
     for i, (b, t, c) in enumerate(items):
+        if lead[i]:
+            out.add(i)
+            continue
         if o["conf_milli"] and c * 1000.0 < o["conf_milli"]:
             out.add(i)
             continue
@@ -1588,7 +1608,7 @@ def cut_and_filter(g, res, drop, crop_fn):
     o = drop_options(drop)
     res = cut_read_lines(g, res, o, crop_fn)
     hz = [k for k, r in enumerate(res) if not isinstance(r, Line)]
-    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1]) for k in hz], o)}
+    gone = {hz[i] for i in drop_set([(res[k][0].box, res[k][0].text, res[k][1], res[k][0].tag) for k in hz], o)}
     return [r if isinstance(r, Line) else r[0] for k, r in enumerate(res) if k not in gone]
 
 

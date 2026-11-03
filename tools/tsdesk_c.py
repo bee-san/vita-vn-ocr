@@ -84,7 +84,7 @@ class COpts(C.Structure):
 
 NO_C_POST = ("ext_band_pct", "touch_pct", "ksplit_pct", "ksplit_k", "ksplit_min_pct")   # post options, no C twin
 POST_KEYS = tuple(k for k in T.POST_DEFAULTS if k not in NO_C_POST)          # vocr_tsdp_opts' fields
-NO_C_DROP = ("nojp_num_pct", "trim_milli", "trim_len", "trim_gap_pct")   # reading-filter options, no C twin yet
+NO_C_DROP = ("nojp_num_pct", "trim_milli", "trim_len", "trim_gap_pct", "lead_drop")   # no C twin yet
 DROP_KEYS = tuple(k for k in T.DROP_DEFAULTS if k not in NO_C_DROP)   # vocr_tsdd_opts' (the cut's: the C page)
 
 
@@ -382,7 +382,7 @@ def drop_struct(drop):
     if drop in (None, False):
         return None
     o = T.drop_options(drop)
-    no = [k for k in ("nojp_num_pct", "trim_milli") if o[k]]
+    no = [k for k in ("nojp_num_pct", "trim_milli", "lead_drop") if o[k]]
     if no:
         raise ValueError(f"reading-filter options with no C twin yet: {no}")
     return CDrop(*[o[k] for k in DROP_KEYS])

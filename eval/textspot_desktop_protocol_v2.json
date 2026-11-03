@@ -546,6 +546,38 @@
    "pipeline": {
     "options": "C9 = C8 + drop garb_drop=1 (garb_len 5, garb_pct 60) replaces C8 for new reads"
    }
+  },
+  {
+   "n": 15,
+   "time": "2026-11-03T09:30Z",
+   "before": "any read of K1",
+   "after": [
+    "I1 with C9 at long:1120: gap 0.217, PCSG00854 junk 0, G4 passes, the vita and psp views not resolved worse than R; G1 fails on every set's point (dev 0.823, dense_dev 0.552, dev_l544 0.770, dense_dev_l544 0.564)",
+    "J1 (I1 + 80k with hard_v2 and desk_ui 0.08) with C9: long:1120 gap 0.236 (junk 2), long:960 0.279 (dense_dev 0.508): not better than I1",
+    "I1's excess dense errors over R: characters read into whole lines from icons, marks and neighbouring boxes (13 units, +17 / +21 on dense_dev / dense_dev_l544), missed units (+14 / +8), cut lines that lose characters (+4 / +11); substitutions are net better than R"
+   ],
+   "arms": {
+    "K1_q8c_from_B2_full": {
+     "shape": "q8c",
+     "init": "runs/r2a_B2_q8c",
+     "steps": 80000,
+     "lr": 0.001,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "question": "capacity with the full data: q8c (0.85 G MACs; 19.5 ms at 1 thread at long:960, so it can be declared only at long:960) warm from B2"
+    }
+   }
   }
  ]
 }

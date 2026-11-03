@@ -29,6 +29,16 @@ frames: the frames where it misses, cuts or merges labelled lines, for the lead 
       and failure counts, the selection rule and the exclusion check (the sets reloaded, every written frame against
       them by VN, sha256 and screenshot id, its pixels against its source frame; no manifest unless every count is 0)
 
+v2 (protocol v2's hard_v2; mine --v2, build --rank v2 --version 2): mined with a newer model and C8 (scripts/r2/
+read_policy.sh's variant; --suffix C8), 1b's positives with the PC label edits too (--pc-edits: what the trainer's
+arms with them see), 1a's labelled lines with their notdlg label edits too (MAIN_V2). Each frame's row adds: the
+labelled lines missed split by length (short: at most SHORT glyph cells, the dense gap's 1-6 character labels), and
+the extra-character reads: a labelled line one box holds whole (not a merge) whose box reaches EXT_MIN x its height
+past either end is read twice (its box and its own label box, the recognizer at the reading pad); the box reads extra
+characters when the line's reading is a shorter subsequence of the box's (an icon, leader dots or a bullet read into
+it). build --rank v2 orders the frames by missed short labels, then other missed lines, extra-character reads, cuts
+and merges (in that order), a salted hash last.
+
 Line status (eval/pagepath.line_stats' rule on even cells): a positive [x0, y0, x1, y1] is cut into round(length /
 size across) even cells, one per glyph; a box holds a cell when it holds the cell's centre; a line is whole when one
 box holds all its cells, cut when the best box holds some, missed when none does; a box that holds more than half the
@@ -61,7 +71,16 @@ REC = ART / "vocr-onnx" / "release" / "VOCR6.2_L_fast.onnx"
 # scripts/r2/read_arm.sh's C6 (protocol v2 amendment 4: the decode vote, the post-pass, the refinement, the filter)
 C6 = ("+refine+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200"
       "+drop:nojp=2,nojp_gap_pct=200,nojp_anchor_pct=50,rep_pct=50")
+# scripts/r2/read_policy.sh's C8 (protocol v2 amendment 9: C7 plus the narrow join; the reading stage's cut and its
+# filter); the miner applies the filter (+drop: drop_set), not the cut (the score is the detector's, before both)
+C8 = ("+refine+dec:vote_pct=70+post:merge_pct=70,rows_pct=65,valley_pct=0,ext_pct=1200,vflip_pct=30,join_pct=10"
+      "+drop:nojp=2,nojp_gap_pct=200,nojp_anchor_pct=50,rep_pct=50,cut_pct=25,cut_dlg=0")
+SUFFIXES = {"C6": C6, "C8": C8}
 MAIN = {"1b": ("text", "name"), "1a": ("dialogue", "name")}
+MAIN_V2 = {"1b": ("text", "name"), "1a": ("dialogue", "name", "notdlg")}
+SHORT = 6           # glyph cells: a short label
+EXT_MIN = 0.5       # x the line's height: a whole line's box reaching this far past an end is read for extra characters
+SALT_V2 = "textspot-desktop-hard-v2:"
 MIN_ACROSS = 6.0
 NAMES = {"1b": ("desk_hard", "desk_hard_v1"), "1a": ("desk_hook_hard", "desk_hook_hard_v1")}
 SALT = "textspot-desktop-hard-v1:"
@@ -145,21 +164,95 @@ def frame_eval(boxes, lines, ignore, main, f):
     return dict(c), ["w" if s == "whole" else s[0] for s, m in zip(st, is_main) if m]
 
 
+def line_best(boxes, lines):
+    """Per line the index of the box holding most of its cells (ties: the smaller box), or None when none holds one."""
+    pts = [line_points(ln[:4], int(ln[4])) for ln in lines]
+    out = []
+    for pl in pts:
+        best, key = None, None
+        for bi, b in enumerate(boxes):
+            n = sum(1 for p in pl if _inside(b, p))
+            if not n:
+                continue
+            k = (-n, (b[2] - b[0]) * (b[3] - b[1]))
+            if key is None or k < key:
+                best, key = bi, k
+        out.append(best)
+    return out
+
+
+def is_subseq(a, b):
+    """True when the characters of a appear in b in order."""
+    it = iter(b)
+    return all(ch in it for ch in a)
+
+
+def frame_eval_v2(boxes, lines, ignore, main, f, read=None):
+    """frame_eval's counts and failure string plus v2's (module docstring): main_missed_short / main_missed_long, and
+    with read (a function: box [x0, y0, x1, y1] -> its reading, or None) extra_lines, extra_chars, extra_read (the
+    lines read); details: [(line index among the scored, which end reached, box reading length, line reading length)].
+    score_v2: the missed lines, the extra-character reads, the cuts and the merges."""
+    c, fail = frame_eval(boxes, lines, ignore, main, f)
+    scored = [ln for ln in lines if ((ln[2] - ln[0]) if int(ln[4]) else (ln[3] - ln[1])) * f >= MIN_ACROSS]
+    bx = [b[:4] for b in boxes]
+    st, merged = line_status(bx, scored)
+    for k in ("main_missed_short", "main_missed_long", "extra_lines", "extra_chars", "extra_read"):
+        c[k] = 0
+    for ln, s_ in zip(scored, st):
+        if ln[5] in main and s_ == "missed":
+            n = len(line_points(ln[:4], int(ln[4])))
+            c["main_missed_short" if n <= SHORT else "main_missed_long"] += 1
+    details = []
+    if read is not None:
+        merge_boxes = {bi for bi, _ in merged}
+        best = line_best(bx, scored)
+        for li, (ln, s_) in enumerate(zip(scored, st)):
+            if ln[5] not in main or s_ != "whole" or int(ln[4]) or best[li] is None or best[li] in merge_boxes:
+                continue
+            b, h = bx[best[li]], max(1e-6, ln[3] - ln[1])
+            left, right = ln[0] - b[0] >= EXT_MIN * h, b[2] - ln[2] >= EXT_MIN * h
+            if not (left or right):
+                continue
+            rb, rl = read(b), read(ln[:4])
+            c["extra_read"] += 1
+            if rb is not None and rl is not None and len(rb) > len(rl) and is_subseq(rl, rb):
+                c["extra_lines"] += 1
+                c["extra_chars"] += len(rb) - len(rl)
+                details.append((li, "both" if left and right else "left" if left else "right", len(rb), len(rl)))
+    c["score_v2"] = (c["main_missed_short"] + c["main_missed_long"] + c["extra_lines"] + c.get("main_cut", 0) +
+                     c.get("merged_rows", 0) + c.get("merged_side", 0))
+    return c, fail, details
+
+
 # ----------------------------------------------------------------------------- mining
 
-_SH = {"ex": None, "cache": None, "edits": None}
+_SH = {"ex": None, "cache": None, "edits": None, "pc": None}
 _W = {}
 
 
-def _init(spec, rec, pad):
+def _init(spec, rec, pad, v2=False):
     import tsdesk_eval as TE
     import vocr_onnx as V
 
     import desktop as D
     _W["det"] = TE.detector_from_spec(TE.strip_drop(spec), 1, D.session_options(1))
     _W["drop"] = TE.drop_of_det(spec)
-    _W["rec"] = V.Recognizer(str(rec), session_options=D.session_options(1)) if _W["drop"] else None
+    _W["rec"] = V.Recognizer(str(rec), session_options=D.session_options(1)) if _W["drop"] or v2 else None
     _W["pad"] = pad
+    _W["v2"] = v2
+
+
+def read_box(g, b):
+    """The recognizer's reading of box [x0, y0, x1, y1] of a grey frame at the reading pad (detect_read's crop and
+    polarity), or None when the box has no crop."""
+    import tsdesk as T
+    import vocr_onnx as V
+    H, W = g.shape
+    cb = T.crop_of((b[0], b[1], b[2] - b[0], b[3] - b[1]), T.pad_of(_W["pad"], H), W, H)
+    if cb is None:
+        return None
+    cx, cy, cw, ch = cb
+    return _W["rec"].read(g[cy:cy + ch, cx:cx + cw], invert=bool(V.line_dark(g, cb))).text
 
 
 def detect_read(g):
@@ -217,7 +310,11 @@ def _mine_shard(job):
             for x in hits:
                 skipped[x] += 1
             continue
-        patched = edited = False
+        patched = edited = pc_edited = False
+        if src == "1b" and _SH["pc"] is not None:
+            es = TC.apply_pc_edits(smp, _SH["pc"])
+            if es is not None:
+                smp, pc_edited = es, True
         if src == "1a":
             if _SH["cache"] is not None:
                 ps = TT.patch_sample(smp, _SH["cache"], "desk_hook")
@@ -231,12 +328,19 @@ def _mine_shard(job):
         H, W = g.shape
         boxes, gone = detect_read(g)
         f = T.scale_for(policy, W, H)
-        pre, fail = frame_eval(boxes, smp["lines"], smp["ignore"], MAIN[src], f)
         kept = [b for k, b in enumerate(boxes) if k not in set(gone)]
-        post, _ = frame_eval(kept, smp["lines"], smp["ignore"], MAIN[src], f)
+        extra = {}
+        if _W.get("v2"):
+            pre, fail, details = frame_eval_v2(boxes, smp["lines"], smp["ignore"], MAIN_V2[src], f,
+                                               lambda b: read_box(g, b))
+            post, _, _ = frame_eval_v2(kept, smp["lines"], smp["ignore"], MAIN_V2[src], f)
+            extra = {"pc_edited": pc_edited, "extra": details}
+        else:
+            pre, fail = frame_eval(boxes, smp["lines"], smp["ignore"], MAIN[src], f)
+            post, _ = frame_eval(kept, smp["lines"], smp["ignore"], MAIN[src], f)
         rows.append({"src": src, "dir": s.get("dir", ""), "shard": s["name"], "i": i, **_frame_ids(smp),
                      "title": smp.get("title"), "page": smp.get("page"), "w": W, "h": H, "pre": pre, "post": post,
-                     "fail": "".join(fail), "patched": patched, "edited": edited,
+                     "fail": "".join(fail), "patched": patched, "edited": edited, **extra,
                      "boxes": [[round(v, 1) for v in b[:4]] + [b[4]] for b in boxes], "gone": gone})
     tmp = path.with_suffix(".tmp")
     tmp.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
@@ -250,8 +354,10 @@ def cmd_mine(a):
     import tsdesk_targets as TT
     out = Path(a.out)
     (out / "rows").mkdir(parents=True, exist_ok=True)
+    a.suffix = SUFFIXES.get(a.suffix, a.suffix)
     spec = f"tsd:{a.model}@{a.policy}{a.suffix}"
     _SH["ex"] = DS.exclusion_sets()
+    _SH["pc"] = TC.load_pc_edits(a.pc_edits)[0] if a.pc_edits else None
     srcs = a.sources.split(",")
     if "1a" in srcs:
         _SH["cache"] = TT.load_cache(a.targets)[0] if a.targets else None
@@ -268,7 +374,7 @@ def cmd_mine(a):
     t0 = time.time()
     done = Counter()
     skipped = defaultdict(Counter)
-    with mp.get_context("fork").Pool(a.workers, initializer=_init, initargs=(spec, a.rec, a.pad)) as p:
+    with mp.get_context("fork").Pool(a.workers, initializer=_init, initargs=(spec, a.rec, a.pad, a.v2)) as p:
         for src, name, n, sk, sec in p.imap_unordered(_mine_shard, jobs):
             done[src] += n
             skipped[src].update(sk)
@@ -276,7 +382,7 @@ def cmd_mine(a):
                               "elapsed": round(time.time() - t0, 1)}), flush=True)
     rec = {"kind": "tsdesk-hard-mine", "issue": 173, "model": str(a.model), "model_sha256": sha256_file(a.model),
            "spec": spec, "policy": a.policy, "pad": a.pad, "rec": str(a.rec),
-           "rec_sha256": sha256_file(a.rec) if "+drop:" in a.suffix else None,
+           "rec_sha256": sha256_file(a.rec) if "+drop:" in a.suffix or a.v2 else None,
            "targets": a.targets, "targets_sha256": sha256_file(Path(a.targets) / "targets.json") if a.targets else None,
            "label_edits": a.label_edits,
            "edits_sha256": sha256_file(Path(a.label_edits) / "edits.json") if a.label_edits else None,
@@ -284,6 +390,12 @@ def cmd_mine(a):
                            sha256_file(SOURCES[s][0]), "frames": done[s], "skipped": dict(skipped[s])} for s in srcs},
            "code_sha256": sha256_file(Path(__file__)), "seconds": round(time.time() - t0, 1),
            "rule": {"main": MAIN, "min_across_px": MIN_ACROSS, "status": "eval/pagepath.line_stats on even cells"}}
+    if a.v2:
+        rec["v2"] = {"main": MAIN_V2, "short_cells": SHORT, "ext_min": EXT_MIN, "pc_edits": a.pc_edits,
+                     "pc_edits_sha256": sha256_file(Path(a.pc_edits) / "edits.json") if a.pc_edits else None,
+                     "extra": "a whole labelled line's box reaching ext_min x its height past an end: the box and the "
+                              "line read at the pad; extra when the line's reading is a shorter subsequence of the "
+                              "box's"}
     (out / "mine.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: rec[k] for k in ("sources", "seconds")}), flush=True)
 
@@ -322,6 +434,30 @@ def select(rows, per_vn, cap, min_score=1):
     return out, len(cand)
 
 
+def select_v2(rows, per_vn, cap, min_score=1):
+    """v2's hard frames: score_v2 >= min_score, ordered by missed short labels, other missed lines, extra-character
+    reads, cuts, merges (most first), then a salted hash (SALT_V2); at most per_vn a VN and cap in all."""
+    def k(r):
+        c = r["pre"]
+        return (-c.get("main_missed_short", 0), -c.get("main_missed_long", 0), -c.get("extra_lines", 0),
+                -c.get("main_cut", 0), -(c.get("merged_rows", 0) + c.get("merged_side", 0)),
+                hashlib.sha256((SALT_V2 + str(r["shot"])).encode()).hexdigest())
+    cand = sorted((r for r in rows if r["pre"].get("score_v2", 0) >= min_score), key=k)
+    out, per = [], Counter()
+    for r in cand:
+        if per[vn_key(r)] >= per_vn:
+            continue
+        per[vn_key(r)] += 1
+        out.append(r)
+        if len(out) >= cap:
+            break
+    return out, len(cand)
+
+
+KINDS_V1 = ("main_missed", "main_cut", "merged_rows", "merged_side", "junk")
+KINDS_V2 = KINDS_V1 + ("main_missed_short", "main_missed_long", "extra_lines", "extra_chars")
+
+
 def _kinds(rows, key="pre"):
     c = Counter()
     for r in rows:
@@ -331,13 +467,13 @@ def _kinds(rows, key="pre"):
     return dict(sorted(c.items()))
 
 
-def build_source(src, picked, out, shard_frames=200):
+def build_source(src, picked, out, shard_frames=200, names=None, kinds=KINDS_V1, score="score"):
     """Write one source's shards (the source frames' samples unchanged but for off, h, w) and run its check;
     returns (shard records, frame records, check)."""
     import tsdesk_dense_source as DS
     from desktopdata import shards as SH
     man, root = SOURCES[src]
-    name, dname = NAMES[src]
+    name, dname = (names or NAMES)[src]
     picked = sorted(picked, key=lambda r: (r["vn"] or "", str(r["shot"])))
     cache, frames, shards = {}, [], []
 
@@ -359,10 +495,9 @@ def build_source(src, picked, out, shard_frames=200):
             samples.append(smp)
             greys.append(g)
             frames.append({"shot": r["shot"], "vn": r["vn"], "sha256": r["sha256"], "title": r.get("title"),
-                           "size": [int(g.shape[1]), int(g.shape[0])], "score": r["pre"]["score"],
+                           "size": [int(g.shape[1]), int(g.shape[0])], "score": r["pre"][score],
                            "main": r["pre"].get("main", 0), "fail": r["fail"],
-                           "kinds": {x: r["pre"].get(x, 0) for x in ("main_missed", "main_cut", "merged_rows",
-                                                                      "merged_side", "junk")},
+                           "kinds": {x: r["pre"].get(x, 0) for x in kinds},
                            "pixels_sha256": hashlib.sha256(g.tobytes()).hexdigest(),
                            "from": f"{r['dir']}/{r['shard']}:{r['i']}"})
         sname = f"hard_{k // shard_frames:03d}"
@@ -409,11 +544,14 @@ def cmd_build(a):
     if dm.exists():
         dense = {f["shot"] for f in json.loads(dm.read_text(encoding="utf-8"))["frames"]}
     res = {}
+    v2 = getattr(a, "rank", "v1") == "v2"
+    names = {k: (v[0], f"{v[0]}_v{getattr(a, 'version', 1)}") for k, v in NAMES.items()}
     for src in sorted(rows):
         per_vn, cap = caps[src]
-        picked, n_cand = select(rows[src], per_vn, cap, a.min_score)
-        shards, frames, check = build_source(src, picked, out)
-        name, dname = NAMES[src]
+        picked, n_cand = (select_v2 if v2 else select)(rows[src], per_vn, cap, a.min_score)
+        shards, frames, check = build_source(src, picked, out, names=names, kinds=KINDS_V2 if v2 else KINDS_V1,
+                                             score="score_v2" if v2 else "score")
+        name, dname = names[src]
         if not check["passed"]:
             print(json.dumps({"src": src, "check": check}, indent=1))
             raise SystemExit(f"{src}: the exclusion check failed: no manifest written")
@@ -422,15 +560,22 @@ def cmd_build(a):
                "created": SH.utc(), "load": f"--extra {name}=MANIFEST:{out} (add {name}=W to --mix)",
                "format": "#97's frames" if src == "1b" else "textspot6-pages samples of 1a (src hook, kind desktop): "
                          "train/tsdesk_det.py treats an extra source named desk_hook_* as desk_hook",
-               "mined_with": {k: mine[k] for k in ("model", "model_sha256", "spec", "policy", "pad", "rec_sha256",
-                                                    "targets", "targets_sha256", "label_edits", "edits_sha256",
-                                                    "code_sha256")},
+               "mined_with": {**{k: mine[k] for k in ("model", "model_sha256", "spec", "policy", "pad", "rec_sha256",
+                                                       "targets", "targets_sha256", "label_edits", "edits_sha256",
+                                                       "code_sha256")}, **({"v2": mine.get("v2")} if v2 else {})},
                "source": mine["sources"][src],
-               "rule": {"score": "main lines missed or cut plus boxes merging two or more lines, by the detector "
-                                 "before the reading filter (line_status on even cells)", "main": MAIN[src],
-                        "per_vn_key": "the VNDB id, or the title for a hooked title without one",
-                        "min_score": a.min_score, "order": "score, the failed share of the main lines, a salted hash",
-                        "per_vn": per_vn, "cap": cap, "salt": SALT},
+               "rule": ({"score": "main lines missed or cut plus boxes merging two or more lines, by the detector "
+                                  "before the reading filter (line_status on even cells)", "main": MAIN[src],
+                         "per_vn_key": "the VNDB id, or the title for a hooked title without one",
+                         "min_score": a.min_score, "order": "score, the failed share of the main lines, a salted hash",
+                         "per_vn": per_vn, "cap": cap, "salt": SALT} if not v2 else
+                        {"score": "score_v2: labelled lines missed (short: <= SHORT cells), extra-character reads, "
+                                  "cuts, merges, by the detector before the reading filter", "main": MAIN_V2[src],
+                         "short_cells": SHORT, "ext_min": EXT_MIN, "min_score": a.min_score,
+                         "order": "missed short labels, missed other lines, extra-character reads, cuts, merges, "
+                                  "a salted hash", "per_vn_key": "the VNDB id, or the title for a hooked title "
+                                                                "without one", "per_vn": per_vn, "cap": cap,
+                         "salt": SALT_V2}),
                "candidates": {"frames_mined": len(rows[src]), "frames_with_score": n_cand,
                               "rates_all_frames_pre": _kinds(rows[src], "pre"),
                               "rates_all_frames_post": _kinds(rows[src], "post")},
@@ -463,12 +608,15 @@ def main(argv=None):
     p.add_argument("--model", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--policy", default="long:960")
-    p.add_argument("--suffix", default=C6)
+    p.add_argument("--suffix", default=C6, help="the decode options, post-pass, refinement and filter: a suffix, or "
+                                               "C6 / C8 (SUFFIXES)")
     p.add_argument("--pad", default="k6v4")
     p.add_argument("--rec", default=str(REC))
     p.add_argument("--sources", default="1b,1a")
     p.add_argument("--targets")
     p.add_argument("--label-edits")
+    p.add_argument("--pc-edits", help="a PC label-edit cache (train/tsdesk_coverage.py pcedits) for 1b's positives")
+    p.add_argument("--v2", action="store_true", help="v2's rows: MAIN_V2, short / long misses, extra-character reads")
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--limit", type=int, default=0, help="frames a shard (smoke runs)")
     p.add_argument("--shards", type=int, default=0, help="shards a source (smoke runs)")
@@ -480,6 +628,8 @@ def main(argv=None):
     p.add_argument("--max-1b", type=int, default=2000)
     p.add_argument("--max-1a", type=int, default=1000)
     p.add_argument("--min-score", type=int, default=1)
+    p.add_argument("--rank", default="v1", choices=("v1", "v2"), help="v2: select_v2's order on v2 rows")
+    p.add_argument("--version", type=int, default=1, help="the sources' directories: desk_hard_vN, desk_hook_hard_vN")
     p.add_argument("--manifest-out-1b")
     p.add_argument("--manifest-out-1a")
     a = ap.parse_args(argv)

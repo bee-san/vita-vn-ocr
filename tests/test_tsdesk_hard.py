@@ -217,3 +217,59 @@ def test_desk_hook_named_sources_read_as_desk_hook(monkeypatch):
     assert rec["desk_hook_hard"] == {"patched": 1, "kept": 0} and "desk_hard" not in rec
     assert src.extra_pools["desk_hook_hard"].items[0][1]["lines"][0][:4] == [22, 20, 98, 40]
     assert src.extra_pools["desk_hard"].items[0][1]["lines"][0][:4] == [20, 20, 100, 40]
+
+
+# ----------------------------------------------------------------------------- v2 (hard_v2)
+
+def test_suffixes_name_c6_and_c8():
+    assert HS.SUFFIXES["C6"] == HS.C6
+    assert "join_pct=10" in HS.C8 and "cut_pct=25,cut_dlg=0" in HS.C8 and "vflip_pct=30" in HS.C8
+    assert HS.C8.startswith("+refine+dec:vote_pct=70+post:merge_pct=70")
+
+
+def test_line_best_and_subsequence():
+    lines = [[0, 0, 100, 20, 0, "text"]]
+    assert HS.line_best([[0, 0, 50, 20], [0, 0, 120, 20], [0, 0, 400, 40]], lines) == [1]   # all cells, smaller
+    assert HS.line_best([[500, 0, 600, 20]], lines) == [None]
+    assert HS.is_subseq("セーブ", "●セーブ") and HS.is_subseq("", "a") and not HS.is_subseq("ブセ", "セーブ")
+
+
+def test_frame_eval_v2_short_misses_and_extra_reads():
+    lines = [[0, 0, 60, 20, 0, "text"],          # 3 cells: a short label, missed
+             [0, 40, 200, 60, 0, "text"],        # 10 cells, missed
+             [100, 100, 160, 120, 0, "text"],    # whole, its box reaches 1 h to the left: read
+             [300, 100, 360, 120, 0, "text"],    # whole, its box tight: not read
+             [0, 200, 100, 220, 0, "text"], [140, 200, 240, 220, 0, "text"]]   # merged side by side: not read
+    boxes = [[80, 100, 160, 120, 0], [300, 100, 360, 120, 0], [0, 200, 240, 220, 0]]
+    reads = {(80, 100, 160, 120): "●セーブ", (100, 100, 160, 120): "セーブ"}
+    seen = []
+
+    def read(b):
+        seen.append(tuple(b))
+        return reads.get(tuple(b))
+    c, fail, details = HS.frame_eval_v2(boxes, lines, [], ("text", "name"), 1.0, read)
+    assert c["main_missed_short"] == 1 and c["main_missed_long"] == 1 and c["main_missed"] == 2
+    assert c["extra_read"] == 1 and c["extra_lines"] == 1 and c["extra_chars"] == 1
+    assert details == [(2, "left", 4, 3)] and set(seen) == {(80, 100, 160, 120), (100, 100, 160, 120)}
+    assert c["merged_side"] == 1 and c["score_v2"] == 2 + 1 + c.get("main_cut", 0) + 1
+    c0, fail0 = HS.frame_eval(boxes, lines, [], ("text", "name"), 1.0)          # v1's counts unchanged
+    assert fail0 == fail and all(c[k] == v for k, v in c0.items())
+    reads[(100, 100, 160, 120)] = "セーフ"                                     # not a subsequence: no extra read
+    c2, _, _ = HS.frame_eval_v2(boxes, lines, [], ("text", "name"), 1.0, read)
+    assert c2["extra_read"] == 1 and c2["extra_lines"] == 0
+    c3, _, d3 = HS.frame_eval_v2(boxes, lines, [], ("text", "name"), 1.0)      # no reader: no reads
+    assert c3["extra_read"] == 0 and d3 == []
+
+
+def test_select_v2_orders_by_short_misses_first():
+    def row(shot, vn, short=0, long_=0, extra=0, cut=0, merged=0):
+        pre = {"main_missed_short": short, "main_missed_long": long_, "extra_lines": extra, "main_cut": cut,
+               "merged_side": merged, "merged_rows": 0}
+        pre["score_v2"] = short + long_ + extra + cut + merged
+        return {"shot": shot, "vn": vn, "pre": pre}
+    rows = [row("a", "v1", long_=5), row("b", "v2", short=1), row("c", "v3", extra=3, cut=4),
+            row("d", "v4", short=1, long_=1), row("e", "v4", short=2), row("f", "v5", cut=1), row("g", "v6")]
+    out, n = HS.select_v2(rows, per_vn=1, cap=10)
+    assert n == 6 and [r["shot"] for r in out] == ["e", "b", "a", "c", "f"]       # d: v4's second frame
+    out2, _ = HS.select_v2(rows, per_vn=2, cap=3)
+    assert [r["shot"] for r in out2] == ["e", "d", "b"]

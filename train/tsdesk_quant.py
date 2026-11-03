@@ -425,15 +425,45 @@ def build_frames(per_source, seed=0, check_share=0.5, sources=("1a", "1b", "1c")
 
 def _inputs(frames, policies, lib=None, blob=None):
     """The padded network inputs of frames under each policy (the C detector's preprocessing: integer resize, edge
-    padding), as (key, policy, x [H, W])."""
+    padding), as (key, policy, x [H, W], iw, ih) (iw x ih: the image part)."""
     import tsdesk_c as TC
     cm = TC.CModel(blob, lib=lib)
     out = []
     for f in frames:
         for pol in policies:
-            x, _ = cm.preprocess(f["grey"], pol)
-            out.append((f["key"], pol, x[0, 0]))
+            x, (_, _, iw, ih) = cm.preprocess(f["grey"], pol)
+            out.append((f["key"], pol, x[0, 0], iw, ih))
     return out
+
+
+def head_bias(blob, q, inputs, lib=None, k_band=4.0):
+    """The head's bias correction: q's head bq shifted (in whole units of its sum) so that over the inputs' image parts
+    the int8 K map's mean error is 0 on the cells near the decision (|K| < k_band in the float maps) and every other
+    map's on the float's kernel cells (K > 0); returns (q, the mean errors before)."""
+    import tsdesk_c as TC
+    h = TB.read_header(blob)
+    f32 = TC.CModel(blob, lib=lib)
+    q8 = TC.CModel(TB.blob_bytes_q8(blob, q), lib=lib)
+    hs, out = h["hs"], h["out"]
+    num, den = np.zeros(out), np.zeros(out)
+    for _, _, x, iw, ih in inputs:
+        mh, mw = -(-ih // hs), -(-iw // hs)
+        fm, qm = f32.maps(x)[:, :mh, :mw], q8.maps(x)[:, :mh, :mw]
+        d = (fm - qm).astype(np.float64)
+        near, kern = np.abs(fm[0]) < k_band, fm[0] > 0
+        num[0] += d[0][near].sum()
+        den[0] += near.sum()
+        num[1:] += d[1:][:, kern].sum(axis=1)
+        den[1:] += kern.sum()
+    delta = np.where(den > 0, num / np.maximum(den, 1), 0.0)
+    e = dict(q["head"])
+    shift = np.zeros(len(e["bq"]), np.int64)
+    m = np.asarray(e["m"], np.float64)[:out]
+    shift[:out] = np.where(m > 0, np.rint(delta / np.where(m > 0, m, 1.0)), 0).astype(np.int64)
+    e["bq"] = np.clip(np.asarray(e["bq"], np.int64) + shift, -TB.Q8_BIAS_MAX, TB.Q8_BIAS_MAX)
+    q = dict(q)
+    q["head"] = e
+    return q, [float(v) for v in delta]
 
 
 # ----------------------------------------------------------------------------- the maps' error
@@ -459,7 +489,8 @@ def maps_error(fm, qm, iw=None, ih=None, hs=8):
 
 
 def box_agreement(fb, qb, thr=0.5):
-    """Greedy one-to-one matches of two box lists (tools/tsdesk.Box) at IoU >= thr: (matched, |fb|, |qb|, mean IoU)."""
+    """Greedy one-to-one matches of two box lists (tools/tsdesk.Box) at IoU >= thr: (matched, |fb|, |qb|, mean IoU,
+    matched with the same tag, matched with the same orientation)."""
     def iou(a, b):
         x0, y0 = max(a.x, b.x), max(a.y, b.y)
         x1, y1 = min(a.x + a.w, b.x + b.w), min(a.y + a.h, b.y + b.h)
@@ -467,7 +498,7 @@ def box_agreement(fb, qb, thr=0.5):
         u = a.w * a.h + b.w * b.h - inter
         return inter / u if u > 0 else 0.0
     pairs = sorted(((iou(a, b), i, j) for i, a in enumerate(fb) for j, b in enumerate(qb)), reverse=True)
-    used_f, used_q, ious = set(), set(), []
+    used_f, used_q, ious, same_tag, same_vert = set(), set(), [], 0, 0
     for v, i, j in pairs:
         if v < thr:
             break
@@ -476,7 +507,9 @@ def box_agreement(fb, qb, thr=0.5):
         used_f.add(i)
         used_q.add(j)
         ious.append(v)
-    return len(ious), len(fb), len(qb), float(np.mean(ious)) if ious else 1.0
+        same_tag += int(fb[i].tag == qb[j].tag)
+        same_vert += int(fb[i].vertical == qb[j].vertical)
+    return len(ious), len(fb), len(qb), float(np.mean(ious)) if ious else 1.0, same_tag, same_vert
 
 
 # ----------------------------------------------------------------------------- CLI
@@ -505,7 +538,8 @@ def cmd_quant(a):
     frames = _load_frames(a.frames, "calib")
     if a.limit:
         frames = frames[:a.limit]
-    xs = [x for _, _, x in _inputs(frames, a.policy.split(","), a.lib, blob)]
+    inputs = _inputs(frames, a.policy.split(","), a.lib, blob)
+    xs = [x for _, _, x, _, _ in inputs]
     net = FloatNet(blob, a.threads)
     cal = Calib(net)
     cal.pass_max(xs)
@@ -513,11 +547,18 @@ def cmd_quant(a):
     methods = a.method.split(",")
     rec = {"blob": a.blob, "frames": a.frames, "calib_frames": len(frames), "inputs": len(xs), "policy": a.policy,
            "stats": cal.summary(), "scales": {}}
-    for i, meth in enumerate(methods):
-        sa = cal.scales(meth)
-        out = a.out if len(methods) == 1 else str(Path(a.out).with_suffix("")) + f".{meth}.vtsd"
-        Path(out).write_bytes(q8_blob(blob, sa))
-        rec["scales"][meth] = {"file": out, "sa": sa}
+    for meth in methods:
+        base, _, extra = meth.partition("+")             # METHOD+hb: with the head's bias correction (head_bias)
+        if extra not in ("", "hb"):
+            raise SystemExit(f"--method {meth!r}: METHOD or METHOD+hb")
+        sa = cal.scales(base)
+        q = quantize(blob, sa)
+        r = {"sa": sa}
+        if extra == "hb":
+            q, r["head_bias_delta"] = head_bias(blob, q, inputs, a.lib)
+        out = a.out if len(methods) == 1 else str(Path(a.out).with_suffix("")) + f".{meth.replace('+', '_')}.vtsd"
+        Path(out).write_bytes(TB.blob_bytes_q8(blob, q))
+        rec["scales"][meth] = {"file": out, **r}
     rec["s"] = round(time.time() - t0, 1)
     Path(a.record or (str(Path(a.out).with_suffix("")) + ".quant.json")).write_text(json.dumps(rec, indent=1) + "\n")
     print(json.dumps({k: v for k, v in rec.items() if k not in ("stats", "scales")} |
@@ -535,7 +576,7 @@ def cmd_err(a):
     res = {}
     for qpath in a.q8:
         q8 = TC.CModel(Path(qpath).read_bytes(), lib=a.lib)
-        tot, boxes = {}, [0, 0, 0, []]
+        tot, boxes = {}, [0, 0, 0, [], 0, 0]
         for f in frames:
             for pol in a.policy.split(","):
                 x, (fx, fy, iw, ih) = f32.preprocess(f["grey"], pol)
@@ -544,16 +585,22 @@ def cmd_err(a):
                 for k, v in e.items():
                     tot.setdefault(k, []).append(v)
                 fb, qb = f32.decode(fm, iw, ih), q8.decode(qm, iw, ih)
-                m, nf, nq, mi = box_agreement(fb, qb)
+                m, nf, nq, mi, st, sv = box_agreement(fb, qb)
                 boxes[0] += m
                 boxes[1] += nf
                 boxes[2] += nq
                 boxes[3].append(mi)
+                boxes[4] += st
+                boxes[5] += sv
+                tot.setdefault("k_abs_mean", []).append(float(np.abs(fm[0]).mean()))
         summ = {"inputs": len(tot["cells"]), "k_flip_rate": sum(tot["k_flip"]) / sum(tot["cells"]),
                 "k_flip_of_kernel": sum(tot["k_flip"]) / max(1, sum(tot["kernel"])),
                 "dk_mean": float(np.mean(tot["dk_mean"])), "dk_p99": float(np.mean(tot["dk_p99"])),
                 "box_recall": boxes[0] / max(1, boxes[1]), "box_precision": boxes[0] / max(1, boxes[2]),
-                "box_iou_mean": float(np.mean(boxes[3])), "boxes_f32": boxes[1], "boxes_q8": boxes[2]}
+                "box_iou_mean": float(np.mean(boxes[3])), "boxes_f32": boxes[1], "boxes_q8": boxes[2],
+                "matched_same_tag": boxes[4] / max(1, boxes[0]),
+                "matched_same_orientation": boxes[5] / max(1, boxes[0]),
+                "k_abs_mean_f32": float(np.mean(tot["k_abs_mean"]))}
         for k in ("do_mean", "da_mean", "de_mean", "da_p99", "de_p99"):
             if k in tot:
                 summ[k] = float(np.mean(tot[k]))
@@ -582,7 +629,8 @@ def main(argv=None):
     p.add_argument("--frames", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--policy", default="long:1120", help="input policies of the calibration inputs (comma list)")
-    p.add_argument("--method", default="mse", help=f"comma list of {CALIB_METHODS} (one blob each)")
+    p.add_argument("--method", default="mse", help=f"comma list of {CALIB_METHODS}, each optionally +hb (the head's "
+                   "bias correction); one blob each")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--threads", type=int, default=5)
     p.add_argument("--lib", default=None)

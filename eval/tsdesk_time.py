@@ -893,7 +893,10 @@ GOAL_WHAT = {
 
 def _lib_record(lib):
     import tsdesk_c as TC
-    rec = {"lib": str(lib), "lib_sha256": D.sha256_file(lib), "simd": int(TC.c_library(lib).vocr_tsd_simd())}
+    L = TC.c_library(lib)
+    rec = {"lib": str(lib), "lib_sha256": D.sha256_file(lib), "simd": int(L.vocr_tsd_simd())}
+    if hasattr(L, "vocr_tsd_q8_simd"):         # the int8 network's kernels (VTSD version 2): 0 C, 1 AVX2, 2 VNNI
+        rec["q8_simd"] = int(L.vocr_tsd_q8_simd())
     bj = Path(lib).parent / "build.json"
     if bj.exists():
         rec["build"] = json.loads(bj.read_text())

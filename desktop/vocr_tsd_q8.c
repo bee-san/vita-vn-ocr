@@ -336,18 +336,18 @@ static void qa_1(const int16_t *x16, unsigned Cin, const vocr_tsd_qlayer *L, uns
  * instruction is the same */
 #define Q_DP(acc, a, w) __asm__("vpdpbusd %2, %1, %0" : "+v"(acc) : "v"(a), "v"(w))
 
-/* 16 outputs from their exact sums acc + bq (AVX-512; the VNNI sums start at bq: the same int32) */
-Q_INLINE void qz_store(__m512i acc, const vocr_tsd_qlayer *L, const q_epi *e, unsigned p, unsigned co, uint8_t *out)
+/* The epilogue's value y of 16 outputs from their exact sums acc + bq (AVX-512; the VNNI sums start at bq: the same
+ * int32); Q_FLOAT stores the maps here and returns 1 */
+Q_INLINE int qz_y(__m512i acc, const vocr_tsd_qlayer *L, const q_epi *e, unsigned p, unsigned co, __m512 *yo)
 {
     const unsigned C = L->cout;
     __m512 y = _mm512_mul_ps(_mm512_cvtepi32_ps(acc), _mm512_loadu_ps(L->m + co));
-    __m512i q;
     if (e->kind == Q_FLOAT) {
         if (co < e->fstride) {
             const unsigned n = e->fstride - co >= 16 ? 16u : e->fstride - co;
             _mm512_mask_storeu_ps(e->f + (size_t)p * e->fstride + co, (__mmask16)((1u << n) - 1u), y);
         }
-        return;
+        return 1;
     }
     if (e->kind == Q_RES) {
         const __m512 r = _mm512_cvtepi32_ps(_mm512_cvtepu8_epi32(_mm_loadu_si128((const __m128i *)(const void *)(e->res + (size_t)p * C + co))));
@@ -357,8 +357,47 @@ Q_INLINE void qz_store(__m512i acc, const vocr_tsd_qlayer *L, const q_epi *e, un
         const __m512 r = _mm512_cvtepi32_ps(_mm512_cvtepu8_epi32(_mm_loadu_si128((const __m128i *)(const void *)u)));
         y = _mm512_add_ps(_mm512_max_ps(y, _mm512_setzero_ps()), _mm512_mul_ps(r, _mm512_set1_ps(L->r)));
     }
-    q = _mm512_max_epi32(_mm512_cvtps_epi32(_mm512_min_ps(y, _mm512_set1_ps(255.0f))), _mm512_setzero_si512());
-    _mm_storeu_si128((__m128i *)(void *)(out + (size_t)p * C + co), _mm512_cvtusepi32_epi8(q));
+    *yo = y;
+    return 0;
+}
+
+/* rint(min(y, 255)) as int32; the packs below clamp what is negative to 0 (rint(clip(y, 0, 255)): the bounds are
+ * integers) */
+#define QZ_I(y) _mm512_cvtps_epi32(_mm512_min_ps(y, _mm512_set1_ps(255.0f)))
+
+/* 16 outputs of cell p */
+Q_INLINE void qz_store(__m512i acc, const vocr_tsd_qlayer *L, const q_epi *e, unsigned p, unsigned co, uint8_t *out)
+{
+    __m512 y;
+    if (qz_y(acc, L, e, p, co, &y)) return;
+    _mm_storeu_si128((__m128i *)(void *)(out + (size_t)p * L->cout + co),
+                     _mm512_cvtusepi32_epi8(_mm512_max_epi32(QZ_I(y), _mm512_setzero_si512())));
+}
+
+/* 32, 48 or 64 outputs of cell p (n vectors, n >= 2; a3 unused below 4): two unsigned-saturating packs per pair
+ * leave the bytes of 128-bit lane l as [a0 4 l.., a1 4 l.., a2 4 l.., a3 4 l..]; one dword permute restores the
+ * channel order */
+Q_INLINE void qz_storen(__m512i a0, __m512i a1, __m512i a2, __m512i a3, unsigned n, const vocr_tsd_qlayer *L,
+                        const q_epi *e, unsigned p, unsigned co, uint8_t *out)
+{
+    __m512 y0, y1, y2 = _mm512_setzero_ps(), y3 = _mm512_setzero_ps();
+    __m512i b;
+    uint8_t *o = out + (size_t)p * L->cout + co;
+    if (qz_y(a0, L, e, p, co, &y0)) {
+        qz_y(a1, L, e, p, co + 16, &y1);
+        if (n > 2) qz_y(a2, L, e, p, co + 32, &y2);
+        if (n > 3) qz_y(a3, L, e, p, co + 48, &y3);
+        return;
+    }
+    qz_y(a1, L, e, p, co + 16, &y1);
+    if (n > 2) qz_y(a2, L, e, p, co + 32, &y2);
+    if (n > 3) qz_y(a3, L, e, p, co + 48, &y3);
+    b = _mm512_packus_epi16(_mm512_packus_epi32(QZ_I(y0), QZ_I(y1)), _mm512_packus_epi32(QZ_I(y2), QZ_I(y3)));
+    b = _mm512_permutexvar_epi32(_mm512_setr_epi32(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15), b);
+    if (n == 4)
+        _mm512_storeu_si512((void *)o, b);
+    else
+        _mm512_mask_storeu_epi8((void *)o, n == 3 ? (__mmask64)0xFFFFFFFFFFFFull : (__mmask64)0xFFFFFFFFull, b);
 }
 
 /* NJ x 16 outputs from co of one cell (VNNI; the tails): per four input channels, one broadcast of the cell's four
@@ -412,6 +451,9 @@ static void qz_1(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsig
     } while (0)
 #define QZ_W(k) const __m512i w##k = _mm512_loadu_si512((const void *)(wj + 64 * (k)))
 #define QZ_ST(A, r, k) qz_store(A, L, e, p + (r), co + 16 * (k), out)
+#define QZ_ST4(A, B, C_, D, r) qz_storen(A, B, C_, D, 4, L, e, p + (r), co, out)
+#define QZ_ST3(A, B, C_, r) qz_storen(A, B, C_, C_, 3, L, e, p + (r), co, out)
+#define QZ_ST2(A, B, r) qz_storen(A, B, B, B, 2, L, e, p + (r), co, out)
 #define QZ_BQ(k) _mm512_loadu_si512((const void *)(L->bq + co + 16 * (k)))
 
 /* 64 outputs x 6 cells */
@@ -437,12 +479,12 @@ static void qz_4x6(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, uns
         QZ_ROW4(4, a40, a41, a42, a43);
         QZ_ROW4(5, a50, a51, a52, a53);
     }
-    QZ_ST(a00, 0, 0); QZ_ST(a01, 0, 1); QZ_ST(a02, 0, 2); QZ_ST(a03, 0, 3);
-    QZ_ST(a10, 1, 0); QZ_ST(a11, 1, 1); QZ_ST(a12, 1, 2); QZ_ST(a13, 1, 3);
-    QZ_ST(a20, 2, 0); QZ_ST(a21, 2, 1); QZ_ST(a22, 2, 2); QZ_ST(a23, 2, 3);
-    QZ_ST(a30, 3, 0); QZ_ST(a31, 3, 1); QZ_ST(a32, 3, 2); QZ_ST(a33, 3, 3);
-    QZ_ST(a40, 4, 0); QZ_ST(a41, 4, 1); QZ_ST(a42, 4, 2); QZ_ST(a43, 4, 3);
-    QZ_ST(a50, 5, 0); QZ_ST(a51, 5, 1); QZ_ST(a52, 5, 2); QZ_ST(a53, 5, 3);
+    QZ_ST4(a00, a01, a02, a03, 0);
+    QZ_ST4(a10, a11, a12, a13, 1);
+    QZ_ST4(a20, a21, a22, a23, 2);
+    QZ_ST4(a30, a31, a32, a33, 3);
+    QZ_ST4(a40, a41, a42, a43, 4);
+    QZ_ST4(a50, a51, a52, a53, 5);
 }
 
 /* 48 outputs x 8 cells */
@@ -469,14 +511,14 @@ static void qz_3x8(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, uns
         QZ_ROW3(6, a60, a61, a62);
         QZ_ROW3(7, a70, a71, a72);
     }
-    QZ_ST(a00, 0, 0); QZ_ST(a01, 0, 1); QZ_ST(a02, 0, 2);
-    QZ_ST(a10, 1, 0); QZ_ST(a11, 1, 1); QZ_ST(a12, 1, 2);
-    QZ_ST(a20, 2, 0); QZ_ST(a21, 2, 1); QZ_ST(a22, 2, 2);
-    QZ_ST(a30, 3, 0); QZ_ST(a31, 3, 1); QZ_ST(a32, 3, 2);
-    QZ_ST(a40, 4, 0); QZ_ST(a41, 4, 1); QZ_ST(a42, 4, 2);
-    QZ_ST(a50, 5, 0); QZ_ST(a51, 5, 1); QZ_ST(a52, 5, 2);
-    QZ_ST(a60, 6, 0); QZ_ST(a61, 6, 1); QZ_ST(a62, 6, 2);
-    QZ_ST(a70, 7, 0); QZ_ST(a71, 7, 1); QZ_ST(a72, 7, 2);
+    QZ_ST3(a00, a01, a02, 0);
+    QZ_ST3(a10, a11, a12, 1);
+    QZ_ST3(a20, a21, a22, 2);
+    QZ_ST3(a30, a31, a32, 3);
+    QZ_ST3(a40, a41, a42, 4);
+    QZ_ST3(a50, a51, a52, 5);
+    QZ_ST3(a60, a61, a62, 6);
+    QZ_ST3(a70, a71, a72, 7);
 }
 
 /* 32 outputs x 12 cells */
@@ -506,12 +548,18 @@ static void qz_2x12(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, un
         QZ_ROW2(10, aa0, aa1);
         QZ_ROW2(11, ab0, ab1);
     }
-    QZ_ST(a00, 0, 0); QZ_ST(a01, 0, 1); QZ_ST(a10, 1, 0); QZ_ST(a11, 1, 1);
-    QZ_ST(a20, 2, 0); QZ_ST(a21, 2, 1); QZ_ST(a30, 3, 0); QZ_ST(a31, 3, 1);
-    QZ_ST(a40, 4, 0); QZ_ST(a41, 4, 1); QZ_ST(a50, 5, 0); QZ_ST(a51, 5, 1);
-    QZ_ST(a60, 6, 0); QZ_ST(a61, 6, 1); QZ_ST(a70, 7, 0); QZ_ST(a71, 7, 1);
-    QZ_ST(a80, 8, 0); QZ_ST(a81, 8, 1); QZ_ST(a90, 9, 0); QZ_ST(a91, 9, 1);
-    QZ_ST(aa0, 10, 0); QZ_ST(aa1, 10, 1); QZ_ST(ab0, 11, 0); QZ_ST(ab1, 11, 1);
+    QZ_ST2(a00, a01, 0);
+    QZ_ST2(a10, a11, 1);
+    QZ_ST2(a20, a21, 2);
+    QZ_ST2(a30, a31, 3);
+    QZ_ST2(a40, a41, 4);
+    QZ_ST2(a50, a51, 5);
+    QZ_ST2(a60, a61, 6);
+    QZ_ST2(a70, a71, 7);
+    QZ_ST2(a80, a81, 8);
+    QZ_ST2(a90, a91, 9);
+    QZ_ST2(aa0, aa1, 10);
+    QZ_ST2(ab0, ab1, 11);
 }
 
 /* 16 outputs x 12 cells */
@@ -542,6 +590,9 @@ static void qz_1x12(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, un
     QZ_ST(a6, 6, 0); QZ_ST(a7, 7, 0); QZ_ST(a8, 8, 0); QZ_ST(a9, 9, 0); QZ_ST(aa, 10, 0); QZ_ST(ab, 11, 0);
 }
 #undef QZ_BQ
+#undef QZ_ST4
+#undef QZ_ST3
+#undef QZ_ST2
 #undef QZ_ST
 #undef QZ_W
 #undef QZ_ROW1
@@ -617,6 +668,7 @@ static void q_pw(const uint8_t *in, unsigned P, const vocr_tsd_qlayer *L, const 
 
 /* ----------------------------------------------------------------------------- depthwise layers */
 
+#if !(Q_AVX2 && !Q_VNNI)
 /* plain C: output columns [x0, x1) of one row into out ([x1 - x0][C]), channels [c0, c1): rows[t] is the input row of
  * tap row kys[t] (t < nk: the rows inside the map), zero padding at the sides */
 static void q_dw_c(const uint8_t *const *rows, const unsigned *kys, unsigned nk, unsigned W, const vocr_tsd_qlayer *L,
@@ -641,6 +693,7 @@ static void q_dw_c(const uint8_t *const *rows, const unsigned *kys, unsigned nk,
             out[(size_t)(ox - x0) * C + c] = q_round((float)(acc[c] + L->bq[c]) * L->m[c]);
     }
 }
+#endif
 
 #if Q_VNNI
 /* The VNNI depthwise works on expanded rows: for an input row r and output column ox, channel c's four bytes
@@ -856,6 +909,107 @@ static void dw_vnni(const uint8_t *const *E, const unsigned *kys, unsigned nk, c
 }
 #endif
 
+#if Q_AVX2 && !Q_VNNI
+/* The AVX2 depthwise (no VNNI): float fused multiply-adds of integer values are exact here (uint8 inputs times int8
+ * weights, every partial sum an integer of magnitude below 2^24), so the float sums are the int32 sums whatever the
+ * order; the strip's input rows are converted to float once per strip and row (a ring per task, like the VNNI path's
+ * expanded rows), the weights once per step. Then the module comment's requantization. */
+#define DWF_RING_ROWS 5u
+#define DWF_ROW_FLOATS ((2u * Q_CHUNK + 2u * 16u) * VOCR_TSD_MAX_CHANNELS)
+#define Q_FRING_BYTES (DWF_RING_ROWS * DWF_ROW_FLOATS * 4u)
+
+/* input columns [ia0, ia1) of a row (W x C uint8) as floats */
+static void dwf_row(const uint8_t *row, unsigned C, unsigned ia0, unsigned ia1, float *o)
+{
+    const uint8_t *r = row + (size_t)ia0 * C;
+    const size_t n = (size_t)(ia1 - ia0) * C;
+    size_t i = 0;
+    for (; i + 8 <= n; i += 8)
+        _mm256_storeu_ps(o + i, _mm256_cvtepi32_ps(_mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)(const void *)(r + i)))));
+    for (; i < n; i++) o[i] = (float)r[i];
+}
+
+/* 8 channels' exact sums (float) to bytes */
+static inline void dwf_store(__m256 acc, const int32_t *bq, const float *mm, uint8_t *o)
+{
+    const __m256i a = _mm256_add_epi32(_mm256_cvtps_epi32(acc), _mm256_loadu_si256((const __m256i *)(const void *)bq));
+    const __m256 y = _mm256_mul_ps(_mm256_cvtepi32_ps(a), _mm256_loadu_ps(mm));
+    const __m256i q = _mm256_max_epi32(_mm256_cvtps_epi32(_mm256_min_ps(y, _mm256_set1_ps(255.0f))),
+                                       _mm256_setzero_si256());
+    const __m128i q16 = _mm_packs_epi32(_mm256_castsi256_si128(q), _mm256_extracti128_si256(q, 1));
+    _mm_storel_epi64((__m128i *)(void *)o, _mm_packus_epi16(q16, q16));
+}
+
+/* depthwise output columns [x0, x1) of one row into out ([x1 - x0][C]) from float rows of input columns [ia0, .)
+ * (rows[t] for t < nk, tap row kys[t]) and float weights wf ([9][C]): the columns whose taps are all inside the map
+ * unchecked, the others checked (a tap outside adds nothing) */
+static void dwf_avx2(const float *const *rows, const unsigned *kys, unsigned nk, unsigned W, unsigned ia0,
+                     const vocr_tsd_qlayer *L, const float *wf, unsigned x0, unsigned x1, uint8_t *out)
+{
+    const unsigned C = L->cin, s = L->stride, d = L->dil;
+    unsigned lo, hi, ilo, ihi, ox, c, t;
+    ilo = (d + s - 1) / s;
+    ihi = W > d ? (W - 1 - d) / s + 1 : 0;
+    lo = ilo > x0 ? ilo : x0;
+    hi = ihi < x1 ? ihi : x1;
+    if (hi < lo) lo = hi = x0;
+    for (c = 0; c < C; c += 8) {
+        unsigned side;
+        for (side = 0; side < 2; side++) {
+            const unsigned a0 = side ? hi : x0, a1 = side ? x1 : lo;
+            for (ox = a0; ox < a1; ox++) {
+                __m256 a = _mm256_setzero_ps();
+                for (t = 0; t < nk; t++) {
+                    unsigned kx;
+                    for (kx = 0; kx < 3; kx++) {
+                        const int ix = (int)(ox * s + kx * d) - (int)d;
+                        if (ix < 0 || ix >= (int)W) continue;
+                        a = _mm256_fmadd_ps(_mm256_loadu_ps(rows[t] + (size_t)(ix - (int)ia0) * C + c),
+                                            _mm256_loadu_ps(wf + (size_t)(kys[t] * 3 + kx) * C + c), a);
+                    }
+                }
+                dwf_store(a, L->bq + c, L->m + c, out + (size_t)(ox - x0) * C + c);
+            }
+        }
+        if (nk == 3) {
+            const __m256 w00 = _mm256_loadu_ps(wf + c), w01 = _mm256_loadu_ps(wf + C + c);
+            const __m256 w02 = _mm256_loadu_ps(wf + 2 * C + c), w10 = _mm256_loadu_ps(wf + 3 * C + c);
+            const __m256 w11 = _mm256_loadu_ps(wf + 4 * C + c), w12 = _mm256_loadu_ps(wf + 5 * C + c);
+            const __m256 w20 = _mm256_loadu_ps(wf + 6 * C + c), w21 = _mm256_loadu_ps(wf + 7 * C + c);
+            const __m256 w22 = _mm256_loadu_ps(wf + 8 * C + c);
+            const size_t step = (size_t)d * C, xs = (size_t)s * C;
+            const size_t base = (size_t)(lo * s - d - ia0) * C + c;
+            const float *r0 = rows[0] + base, *r1 = rows[1] + base, *r2 = rows[2] + base;
+            for (ox = lo; ox < hi; ox++, r0 += xs, r1 += xs, r2 += xs) {
+                __m256 a = _mm256_mul_ps(_mm256_loadu_ps(r0), w00);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r0 + step), w01, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r0 + 2 * step), w02, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r1), w10, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r1 + step), w11, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r1 + 2 * step), w12, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r2), w20, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r2 + step), w21, a);
+                a = _mm256_fmadd_ps(_mm256_loadu_ps(r2 + 2 * step), w22, a);
+                dwf_store(a, L->bq + c, L->m + c, out + (size_t)(ox - x0) * C + c);
+            }
+        } else {
+            const size_t step = (size_t)d * C;
+            for (ox = lo; ox < hi; ox++) {
+                __m256 a = _mm256_setzero_ps();
+                for (t = 0; t < nk; t++) {
+                    const float *r = rows[t] + (size_t)(ox * s - d - ia0) * C + c;
+                    const float *wk = wf + (size_t)kys[t] * 3 * C + c;
+                    a = _mm256_fmadd_ps(_mm256_loadu_ps(r), _mm256_loadu_ps(wk), a);
+                    a = _mm256_fmadd_ps(_mm256_loadu_ps(r + step), _mm256_loadu_ps(wk + C), a);
+                    a = _mm256_fmadd_ps(_mm256_loadu_ps(r + 2 * step), _mm256_loadu_ps(wk + 2 * C), a);
+                }
+                dwf_store(a, L->bq + c, L->m + c, out + (size_t)(ox - x0) * C + c);
+            }
+        }
+    }
+}
+#endif
+
 /* ----------------------------------------------------------------------------- the network */
 
 enum { QS_STEM, QS_SEP, QS_LAT, QS_GC };
@@ -911,7 +1065,13 @@ static void q_plan_of(const vocr_tsd_model *m, unsigned pw, unsigned ph, unsigne
     P->maps = off;
     off += ALIGN_UP((size_t)P->H[h] * P->W[h] * m->out * sizeof(float), 64);
     P->rings = off;
-    off += Q_VNNI ? (size_t)Q_RING_BYTES * (ntasks < 1 ? 1u : ntasks) : 0;
+#if Q_VNNI
+    off += (size_t)Q_RING_BYTES * (ntasks < 1 ? 1u : ntasks);
+#elif Q_AVX2
+    off += (size_t)Q_FRING_BYTES * (ntasks < 1 ? 1u : ntasks);
+#else
+    (void)ntasks;
+#endif
     P->end = off;
 }
 
@@ -975,20 +1135,37 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
     }
     if (t->kind == QS_SEP) {
         const unsigned Ci = t->a->cin, Co = t->b->cout, s = t->a->stride, d = t->a->dil;
-#if Q_VNNI
-        /* the expanded rows of the strip in a ring: input row r in slot r % R when the rows are shared (stride 1 and
-         * dilation <= 2: 2 d + 1 slots; stride 2 and dilation 1: 3), else slot ky (computed for every output row) */
-        dw_prep D;
+        /* (SIMD builds) the strip's input rows, expanded (VNNI) or as floats (AVX2), in a ring: input row r in slot
+         * r % R when the rows are shared (stride 1 and dilation <= 2: 2 d + 1 slots; stride 2 and dilation 1: 3), else
+         * slot ky (computed for every output row) */
         const int shared = (s == 1 && d <= 2) || (s == 2 && d == 1);
         const unsigned R = s == 1 && d <= 2 ? 2 * d + 1 : 3;
+#if Q_VNNI
+        dw_prep D;
         uint8_t *ring = N->rings + (size_t)Q_RING_BYTES * task;
         dw_prepare(t->a, &D);
+#elif Q_AVX2
+        float wf[9 * VOCR_TSD_MAX_CHANNELS];
+        float *fring = (float *)(void *)(N->rings + (size_t)Q_FRING_BYTES * task);
+        unsigned i;
+        for (i = 0; i < 9 * Ci; i++) wf[i] = (float)t->a->w[i];
+#else
+        (void)shared;
+        (void)R;
 #endif
         for (x0 = 0; x0 < t->Wo; x0 += Q_CHUNK) {
             const unsigned x1 = x0 + Q_CHUNK < t->Wo ? x0 + Q_CHUNK : t->Wo, n = x1 - x0;
-#if Q_VNNI
+#if Q_VNNI || Q_AVX2
             int slot_row[Q_RING_ROWS];
             unsigned k;
+#endif
+#if Q_AVX2 && !Q_VNNI
+            /* the input columns the strip reads */
+            const unsigned ia0 = x0 * s >= d ? x0 * s - d : 0;
+            const unsigned ia1 = (x1 - 1) * s + d + 1 < t->W ? (x1 - 1) * s + d + 1 : t->W;
+            const float *F[3];
+#endif
+#if Q_VNNI || Q_AVX2
             for (k = 0; k < Q_RING_ROWS; k++) slot_row[k] = -1;
 #endif
             for (y = y0; y < y1; y++) {
@@ -1015,12 +1192,26 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
                         }
                         E[nk] = Er;
                     }
+#elif Q_AVX2
+                    {
+                        const unsigned sl = shared ? (unsigned)iy % R : ky;
+                        float *Fr = fring + (size_t)sl * DWF_ROW_FLOATS;
+                        if (!shared || slot_row[sl] != iy) {
+                            QPROF_T(t_ex);
+                            dwf_row(rows[nk], Ci, ia0, ia1, Fr);
+                            QPROF_ADD(qprof_expand, t_ex);
+                            slot_row[sl] = shared ? iy : -1;
+                        }
+                        F[nk] = Fr;
+                    }
 #endif
                     kys[nk++] = ky;
                 }
 #if Q_VNNI
                 if (D.simd_c) dw_vnni(E, kys, nk, t->a, &D, n, T);
                 if (D.simd_c < Ci) q_dw_c(rows, kys, nk, t->W, t->a, x0, x1, D.simd_c, Ci, T);
+#elif Q_AVX2
+                dwf_avx2(F, kys, nk, t->W, ia0, t->a, wf, x0, x1, T);
 #else
                 q_dw_c(rows, kys, nk, t->W, t->a, x0, x1, 0, Ci, T);
 #endif

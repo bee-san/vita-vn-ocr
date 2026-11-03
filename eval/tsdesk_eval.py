@@ -146,7 +146,7 @@ def _drop_read_job(job):
     o = _DROP["opts"]
     if not o:
         return _DROP["base"](job)
-    if o.get("cut_pct") or o.get("trim_milli"):
+    if o.get("cut_pct") or o.get("trim_milli") or o.get("lead_drop"):
         return _cut_read_job(job, o)
     import tsdesk as T
     fr, boxes, pad = job
@@ -233,7 +233,7 @@ def _cut_read_job(job, o):
     pieces = [pc for pc in pieces if TD._keep(pc[0])]
     seen = [k for k, pc in enumerate(pieces) if o["nojp"] >= 2 or in_unit(D.crop_box(pc[0], p, W, H))]
     items = [((pieces[k][0][0], pieces[k][0][1], pieces[k][0][2] - pieces[k][0][0], pieces[k][0][3] - pieces[k][0][1]),
-              pieces[k][1], pieces[k][2]) for k in seen]
+              pieces[k][1], pieces[k][2], pieces[k][0][6] if len(pieces[k][0]) > 6 else 0) for k in seen]
     gone = {seen[i] for i in T.drop_set(items, o)}
     crops, texts = [], []
     for k, pc in enumerate(pieces):

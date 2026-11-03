@@ -835,3 +835,26 @@ def test_trim_ends_drops_a_low_confidence_icon_across_a_gap():
     out = T.cut_pieces(g, b, 0, chars, o, [0.4, 1.0, 1.0, 0.95, 1.0])          # any tag, the cut off
     assert [t for _, _, t in out] == ["グレナダ"]
     assert T.cut_pieces(g, b, 0, chars, T.drop_options({}), [0.4, 1.0, 1.0, 0.95, 1.0]) is None
+
+
+def test_lead_drop_drops_non_dialogue_leader_readings_only():
+    label = ((10.0, 10.0, 40.0, 20.0), "苗字", 0.99, 3)
+    dots = ((52.0, 10.0, 80.0, 20.0), "…………", 0.99, 3)
+    value = ((140.0, 10.0, 20.0, 20.0), "33", 0.99, 3)
+    line = ((10.0, 60.0, 120.0, 20.0), "……………………", 0.99, 0)               # a dialogue line of dots
+    o = T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50, "lead_drop": 1})
+    assert T.drop_set([label, dots, value, line], o) == {1}                       # the value after it stays
+    off = T.drop_options({"nojp": 2, "nojp_gap_pct": 200, "nojp_anchor_pct": 50})
+    assert T.drop_set([label, dots, value, line], off) == set()
+    assert T.drop_set([it[:3] for it in (label, dots, value, line)], o) == set()   # 3-tuples count as dialogue
+    assert T.is_leader("・・・") and T.is_leader("― ―") and not T.is_leader("…そう") and not T.is_leader("")
+
+
+def test_garb_drop_drops_garbage_readings_only():
+    for t in ("エ100い9", "しL1O00", "そ00UI", "いnいnmnw", "Gamnkいud。"):
+        assert T.is_garbage(t), t
+    for t in ("1000円", "HP100/100", "Tシャツ", "PS2のゲーム", "3年B組", "あいう", "LV5の", "0000"):
+        assert not T.is_garbage(t), t
+    items = [((0.0, 0.0, 50.0, 20.0), "エ100い9", 0.9, 0), ((0.0, 30.0, 90.0, 20.0), "「ねぇ、ルドヴィク」", 0.9, 0)]
+    assert T.drop_set(items, T.drop_options({"garb_drop": 1})) == {0}
+    assert T.drop_set(items, T.drop_options({})) == set() and T.DROP_DEFAULTS["garb_drop"] == 0

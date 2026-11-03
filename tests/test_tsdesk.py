@@ -848,3 +848,13 @@ def test_lead_drop_drops_non_dialogue_leader_readings_only():
     assert T.drop_set([label, dots, value, line], off) == set()
     assert T.drop_set([it[:3] for it in (label, dots, value, line)], o) == set()   # 3-tuples count as dialogue
     assert T.is_leader("・・・") and T.is_leader("― ―") and not T.is_leader("…そう") and not T.is_leader("")
+
+
+def test_garb_drop_drops_garbage_readings_only():
+    for t in ("エ100い9", "しL1O00", "そ00UI", "いnいnmnw", "Gamnkいud。"):
+        assert T.is_garbage(t), t
+    for t in ("1000円", "HP100/100", "Tシャツ", "PS2のゲーム", "3年B組", "あいう", "LV5の", "0000"):
+        assert not T.is_garbage(t), t
+    items = [((0.0, 0.0, 50.0, 20.0), "エ100い9", 0.9, 0), ((0.0, 30.0, 90.0, 20.0), "「ねぇ、ルドヴィク」", 0.9, 0)]
+    assert T.drop_set(items, T.drop_options({"garb_drop": 1})) == {0}
+    assert T.drop_set(items, T.drop_options({})) == set() and T.DROP_DEFAULTS["garb_drop"] == 0

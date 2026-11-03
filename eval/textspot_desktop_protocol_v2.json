@@ -576,8 +576,29 @@
      "ornaments": 0.25,
      "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
      "question": "capacity with the full data: q8c (0.85 G MACs; 19.5 ms at 1 thread at long:960, so it can be declared only at long:960) warm from B2"
+    },
+    "K2_q4b_from_H2_full": {
+     "shape": "q4b",
+     "init": "runs/r2h_H2_q4b_from_E1_pc",
+     "steps": 80000,
+     "lr": 0.001,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.25,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "question": "the stride-4 lineage (H2: E1 + PC edits) with the full data incl. desk_ui; q4b runs 20 ms at long:1120 (6.1x)"
     }
-   }
+   },
+   "note_k2": "K2 added to amendment 15 at 09:20Z, before any read of K1 or K2"
   }
  ]
 }

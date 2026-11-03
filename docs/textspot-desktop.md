@@ -377,6 +377,55 @@ time, 1 thread; `res/timing/mem_release_e35bf00_*.json`), 960×544 / 1920×1080:
 - At 4 threads every figure is within 1.1 MiB of these, except the ONNX page, which peaks at 145.2 / 177.3 MiB.
 - **The numpy refinement** costs about 18 ms at 1080p in the ONNX path. Its C twin costs about 0.17 ms.
 
+### The int8 detector (round 3, VTSD version 2)
+
+The C detector also runs an int8 copy of a model (`desktop/vocr_tsd_q8.c`). `train/tsdesk_quant.py quant` writes it
+from a float32 blob and a calibration pass, as a VTSD version-2 blob (`train/tsdesk_blob.py` documents the format).
+`vocr_tsd_load` reads both versions, so every entry point (`ctsd:BLOB.vtsd`, `cbox:`, `cpage:`, `hpage:`, the page
+pipeline) runs a version-2 blob unchanged.
+
+- **The scheme.** The weights are int8 per output channel (max |w| → 127). The maps between layers are uint8 with one
+  scale per tensor and zero point 0, since every map is a ReLU or a sum of ReLUs. Each layer sums its products exactly
+  in int32, then requantizes in float32 per output channel. The head's maps stay float32, so the decode reads them as it
+  reads the float network's. gc keeps its float32 weights.
+- **One result everywhere.** The plain-C, AVX2 (exact int16 products) and AVX-512 VNNI kernels give the same maps bit for
+  bit at any thread count, and so does the numpy twin `tsdesk_quant.q8_maps`. `tests/test_tsdesk_q8.py` checks this for
+  every shape in `train/tsdesk_net.SHAPES` and the extra shapes.
+- **Builds.** The VNNI kernels need `make ARCH="-march=x86-64-v4 -mavx512vnni"` (Ice Lake, Zen 4 and later CPUs);
+  `-march=x86-64-v4` alone has no VNNI. On a CPU without VNNI the int8 detector runs about as fast as the float32 one,
+  so the float32 blob is the better choice there.
+- **Calibration** uses training-side frames only: desktop-data 1a (the hooked pools' train pages as desktop captures),
+  1b (realplus v3) and 1c (synthetic). The timing pages are left out by key and by VN.
+  `tsdesk_quant.py frames` takes the calibration frames and the check frames from disjoint shards. The scale methods are
+  max, mse, and the 99.9 / 99.99 / 99.999th percentiles. `+hb` adds the head's bias correction, which sets the K map's
+  mean error to 0 on cells near the decision and every other map's to 0 on kernel cells.
+
+**Error against float32** (`tsdesk_quant.py err`; 104 check frames at long:1120: 1a 32, 1b 48, 1c 24). The boxes are
+the decode's, before the refinement and the post-pass. A box matches at IoU ≥ 0.5.
+
+| blob (`mse+hb`) | int8 blob | K sign flips (share of kernel cells) | mean \|ΔA\| / \|ΔE\| px on kernel cells | box recall / precision | mean IoU of matches | same tag |
+|---|---:|---:|---:|---:|---:|---:|
+| K1 (q8c) | 559,068 B | 1.8% | 0.14 / 0.51 | 97.8% / 97.2% | 0.980 | 99.5% |
+| S2 (q8b) | 388,756 B | 2.2% | 0.27 / 0.90 | 97.3% / 96.8% | 0.973 | 99.3% |
+
+The other methods' recall and precision are within 1.5 points of these. max is 1-2.3 points worse
+(`res/q8err_*_v1.json` in the speed helper's artifacts).
+
+**Speed** (`res/q8time_v1_5feacf1.json`): p50 ms per frame of the C detector with the refinement and C8's detector
+options (amendment 9; the goal's det1 pipeline) on the timing pages. All pipelines ran interleaved per page in one heavy
+slot. The 1-minute load was 488 at the start (a burst of new processes on the host) and 55 at the end.
+
+| model, policy | 1 thread: float32 (AVX2) → int8 (VNNI), vita / pc1080 | 4 threads: float32 → int8, vita / pc1080 |
+|---|---|---|
+| S2 (q8b), long:960 | 11.1 → 4.1 / 11.9 → 5.0 | 3.9 → 1.7 / 4.6 → 2.2 |
+| S2 (q8b), long:1120 | 18.0 → 6.2 / 18.8 → 7.1 | 5.8 → 2.3 / 6.3 → 2.9 |
+| K1 (q8c), long:960 | 19.6 → 6.9 / 20.3 → 7.8 | 6.5 → 2.5 / 7.1 → 3.1 |
+| K1 (q8c), long:1120 | 31.7 → 10.9 / 32.5 → 11.7 | 9.5 → 3.7 / 10.2 → 4.2 |
+
+At 1 thread the int8 detector runs 2.4-3.0 times as fast as the float32 one. The int8 kernels of the AVX2 build run at
+0.85-1.03 times the float32 speed at 1 thread and 0.96-1.10 times at 4 threads. The accuracy of an int8 blob has to be read on its own (`ctsd:` on the version-2
+blob): its maps differ from the float32 network's by more than the float paths differ from each other.
+
 ## Does it help on the Vita?
 
 **Not as it stands.**

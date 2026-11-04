@@ -976,6 +976,71 @@
    "pipeline": {
     "options": "C11 = C10 with garb_len 2 and garb_pct 50 (garb_drop's rule at 2 characters and 50% digits or Latin; no reference line of hval, dense_screen, dev or dense_dev matches it, 12,650 lines checked on reference texts only; on M2 + L5's readings it drops 14 hval boxes, all junk: PCSG00854's strip and PCSG00916-00918's Latin logos, and none on dense_screen); C10 still reported"
    }
+  },
+  {
+   "n": 26,
+   "time": "2026-11-04T22:50Z",
+   "round": 3,
+   "before": "any read of P1, P2",
+   "after": "int8 C ensembles with C11 at long:1120 (G4 now passes: junk 0 for each at h0.45v0.1): M1 + L5 gap 0.043 at h0.45v0.1 (dev 0.717, dense_dev 0.378, dev_l544 0.717, dense_dev_l544 0.391; views not resolved worse), 0.062 at c0.45v0.1, 0.106 at h0.6v0.15, 0.146 at k6v4; M2 + L5 0.068 (dense_dev 0.360); L1 + L5 0.062; M1 + M2 0.106. G2 / G3 of an int8 q8c pair: 19.6 ms (6.8x), page 0.23 of R (amendment 23)",
+   "arms": {
+    "P1_q8c_from_M1_kd_M1L5": {
+     "shape": "q8c",
+     "steps": 80000,
+     "lr": 0.0006,
+     "teachers": [
+      "runs/r3_M1_q8c_from_L1_orn",
+      "runs/r3_L5_q8c_full_160k"
+     ],
+     "kd_weight": 1.0,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08,desk_ui_v2=0.0",
+     "remap_every": 300,
+     "ckpt_every": 5000,
+     "init": "runs/r3_M1_q8c_from_L1_orn",
+     "seed": 1,
+     "question": "M1 distilled towards the M1 + L5 ensemble (a stronger ensemble member)"
+    },
+    "P2_q8c_from_L5_kd_M1L5": {
+     "shape": "q8c",
+     "steps": 80000,
+     "lr": 0.0006,
+     "teachers": [
+      "runs/r3_M1_q8c_from_L1_orn",
+      "runs/r3_L5_q8c_full_160k"
+     ],
+     "kd_weight": 1.0,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08,desk_ui_v2=0.0",
+     "remap_every": 300,
+     "ckpt_every": 5000,
+     "init": "runs/r3_L5_q8c_full_160k",
+     "seed": 2,
+     "question": "L5 distilled towards the same ensemble"
+    }
+   }
   }
  ]
 }

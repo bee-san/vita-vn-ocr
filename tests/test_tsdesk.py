@@ -858,3 +858,26 @@ def test_garb_drop_drops_garbage_readings_only():
     items = [((0.0, 0.0, 50.0, 20.0), "エ100い9", 0.9, 0), ((0.0, 30.0, 90.0, 20.0), "「ねぇ、ルドヴィク」", 0.9, 0)]
     assert T.drop_set(items, T.drop_options({"garb_drop": 1})) == {0}
     assert T.drop_set(items, T.drop_options({})) == set() and T.DROP_DEFAULTS["garb_drop"] == 0
+
+
+def test_remap_memmaps_reopens_every_shard_and_keeps_its_data(tmp_path):
+    import tsdesk_det as TD
+
+    class Pool:
+        __module__ = "tsdesk_det"
+
+        def __init__(self, maps):
+            self.data, self.by = maps, {"a": [maps[0]]}
+    arrs = []
+    for i in range(3):
+        p = tmp_path / f"s{i}.npy"
+        np.save(p, np.arange(100, dtype=np.uint8) + i)
+        arrs.append(np.load(p, mmap_mode="r"))
+    pool = Pool(list(arrs))
+    src = {"pools": [pool, ("x", arrs[1])]}
+    out = TD.remap_memmaps(src)
+    assert out is src
+    assert all(isinstance(m, np.memmap) for m in pool.data)
+    assert all(m is not a and np.array_equal(m, a) for m, a in zip(pool.data, arrs))
+    assert pool.by["a"][0] is not arrs[0] and np.array_equal(pool.by["a"][0], arrs[0])
+    assert src["pools"][1][1] is not arrs[1] and np.array_equal(src["pools"][1][1], arrs[1])

@@ -662,6 +662,38 @@ def make_batch(sources, rng, cfg):
             torch.from_numpy(mk))
 
 
+_REMAP_MODULES = ("tsdesk", "desktop_det", "textspot", "desktopdata", "shards")
+
+
+def remap_memmaps(obj, _seen=None):
+    """Re-open every np.memmap that obj holds (in lists, tuples, dicts or the attributes of this project's objects), so
+    the pages a data worker has touched are unmapped and its resident set stays bounded (protocol v2 amendment 20: the
+    host's memory guard stops a process at about 48 GB; random draws over the memory-mapped shards would otherwise
+    make every page resident). The arrays' contents, and so every batch, are unchanged. Returns obj (or its new
+    memmap)."""
+    if _seen is None:
+        _seen = set()
+    if isinstance(obj, np.memmap):
+        return np.load(obj.filename, mmap_mode="r") if obj.filename else obj
+    if id(obj) in _seen:
+        return obj
+    _seen.add(id(obj))
+    if isinstance(obj, list):
+        for i, v in enumerate(obj):
+            obj[i] = remap_memmaps(v, _seen)
+    elif isinstance(obj, dict):
+        for k in list(obj):
+            obj[k] = remap_memmaps(obj[k], _seen)
+    elif isinstance(obj, tuple):
+        return tuple(remap_memmaps(v, _seen) for v in obj)
+    elif hasattr(obj, "__dict__") and type(obj).__module__.startswith(_REMAP_MODULES):
+        for k, v in list(vars(obj).items()):
+            nv = remap_memmaps(v, _seen)
+            if nv is not v:
+                setattr(obj, k, nv)
+    return obj
+
+
 class Batches(torch.utils.data.IterableDataset):
     def __init__(self, cfg, seed):
         super().__init__()
@@ -672,8 +704,12 @@ class Batches(torch.utils.data.IterableDataset):
         wid = info.id if info is not None else 0
         sources, _, _, _ = make_sources(self.cfg)
         rng = np.random.default_rng([self.seed, wid])
+        every, i = int(self.cfg.get("remap_every") or 0), 0
         while True:
+            if every and i and i % every == 0:
+                sources = remap_memmaps(sources)
             yield make_batch(sources, rng, self.cfg)
+            i += 1
 
 
 # ----------------------------------------------------------------------------- loss
@@ -793,6 +829,9 @@ def parse(argv=None):
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
+    ap.add_argument("--remap-every", type=int, default=0,
+                    help="amendment 20: re-open the data worker's memory-mapped shards every N batches (0: never), "
+                         "which keeps its resident set bounded; the batches are unchanged")
     ap.add_argument("--init", help="protocol v2 amendment 7: start from a finished run's final.pt (same shape); the "
                                    "schedule, optimiser and EMA start afresh")
     ap.add_argument("--lr", type=float, default=3e-3)
@@ -836,7 +875,7 @@ def main(argv=None):
     if a.skip_vns:
         skip_vns = frozenset(v.strip() for v in Path(a.skip_vns).read_text(encoding="utf-8").split() if v.strip())
     skip_shots, base_skip_vns, lists = T2.skip_lists(a.manifest) if a.manifest else (frozenset(), frozenset(), [])
-    cfg = {"mix": a.mix_d, "hook_manifest": a.hook_manifest, "hook_shards": a.hook_shards,
+    cfg = {"mix": a.mix_d, "remap_every": a.remap_every, "hook_manifest": a.hook_manifest, "hook_shards": a.hook_shards,
            "hook_splits": tuple(a.hook_splits.split(",")), "manifests": list(a.manifest), "shards": list(a.shards),
            "skip": (skip_shots, frozenset(base_skip_vns) | skip_vns), "skip_vns": sorted(skip_vns),
            "title_temp": B.TITLE_TEMP, "scale": a.scale_t, "batch": a.batch, "aug": not a.no_aug,

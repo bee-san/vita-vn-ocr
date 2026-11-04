@@ -45,7 +45,9 @@
 #endif
 
 #define ALIGN_UP(x, a) (((x) + (size_t)(a) - 1u) / (size_t)(a) * (size_t)(a))
-#define Q_CHUNK 48u            /* output columns a chunk (a multiple of every tile's pixel count) */
+#ifndef Q_CHUNK
+#define Q_CHUNK 48u            /* output columns a chunk (a multiple of 12: every tile's pixel count) */
+#endif
 #define Q_MAX_STEPS 64u
 #define Q_RING_ROWS 5u         /* a task's ring of expanded rows: 2 d + 1 rows for dilation d <= 2 */
 #define Q_RING_BYTES (Q_RING_ROWS * Q_CHUNK * VOCR_TSD_MAX_CHANNELS * 4u)
@@ -422,7 +424,7 @@ static void qz_1(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsig
 
 /* the tiles of NJ x 16 outputs and NR cells, the sums in named registers (no spills): QZ_ROWn(r, ...) adds cell r's
  * four input channels from 4 j to every sum of its row */
-#define QZ_B(r) _mm512_set1_epi32(rd_i32(x + (size_t)(r) * Cin + 4 * j))
+#define QZ_B(r) _mm512_set1_epi32(rd_i32(xr[r] + 4 * j))
 #define QZ_ROW4(r, A, B, C_, D)                    \
     do {                                           \
         const __m512i v_ = QZ_B(r);                \
@@ -450,17 +452,32 @@ static void qz_1(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsig
         Q_DP(A, v1_, w0);            \
     } while (0)
 #define QZ_W(k) const __m512i w##k = _mm512_loadu_si512((const void *)(wj + 64 * (k)))
-#define QZ_ST(A, r, k) qz_store(A, L, e, p + (r), co + 16 * (k), out)
-#define QZ_ST4(A, B, C_, D, r) qz_storen(A, B, C_, D, 4, L, e, p + (r), co, out)
-#define QZ_ST3(A, B, C_, r) qz_storen(A, B, C_, C_, 3, L, e, p + (r), co, out)
-#define QZ_ST2(A, B, r) qz_storen(A, B, B, B, 2, L, e, p + (r), co, out)
+#define QZ_ST(A, r, k)                                                  \
+    do {                                                                \
+        if ((r) < nr) qz_store(A, L, e, p + (r), co + 16 * (k), out);   \
+    } while (0)
+#define QZ_ST4(A, B, C_, D, r)                                          \
+    do {                                                                \
+        if ((r) < nr) qz_storen(A, B, C_, D, 4, L, e, p + (r), co, out); \
+    } while (0)
+#define QZ_ST3(A, B, C_, r)                                             \
+    do {                                                                \
+        if ((r) < nr) qz_storen(A, B, C_, C_, 3, L, e, p + (r), co, out); \
+    } while (0)
+#define QZ_ST2(A, B, r)                                                 \
+    do {                                                                \
+        if ((r) < nr) qz_storen(A, B, B, B, 2, L, e, p + (r), co, out); \
+    } while (0)
 #define QZ_BQ(k) _mm512_loadu_si512((const void *)(L->bq + co + 16 * (k)))
 
 /* 64 outputs x 6 cells */
 static void qz_4x6(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsigned co, const q_epi *e, unsigned p,
-                   uint8_t *out)
+                   uint8_t *out, unsigned nr)
 {
     const unsigned Cout = L->cout;
+    const uint8_t *xr[6];
+    unsigned r_;
+    for (r_ = 0; r_ < 6; r_++) xr[r_] = x + (size_t)(r_ < nr ? r_ : nr - 1) * Cin;
     const __m512i z0 = QZ_BQ(0), z1 = QZ_BQ(1), z2 = QZ_BQ(2), z3 = QZ_BQ(3);
     __m512i a00 = z0, a01 = z1, a02 = z2, a03 = z3, a10 = z0, a11 = z1, a12 = z2, a13 = z3;
     __m512i a20 = z0, a21 = z1, a22 = z2, a23 = z3, a30 = z0, a31 = z1, a32 = z2, a33 = z3;
@@ -489,9 +506,12 @@ static void qz_4x6(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, uns
 
 /* 48 outputs x 8 cells */
 static void qz_3x8(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsigned co, const q_epi *e, unsigned p,
-                   uint8_t *out)
+                   uint8_t *out, unsigned nr)
 {
     const unsigned Cout = L->cout;
+    const uint8_t *xr[8];
+    unsigned r_;
+    for (r_ = 0; r_ < 8; r_++) xr[r_] = x + (size_t)(r_ < nr ? r_ : nr - 1) * Cin;
     const __m512i z0 = QZ_BQ(0), z1 = QZ_BQ(1), z2 = QZ_BQ(2);
     __m512i a00 = z0, a01 = z1, a02 = z2, a10 = z0, a11 = z1, a12 = z2, a20 = z0, a21 = z1, a22 = z2;
     __m512i a30 = z0, a31 = z1, a32 = z2, a40 = z0, a41 = z1, a42 = z2, a50 = z0, a51 = z1, a52 = z2;
@@ -523,9 +543,12 @@ static void qz_3x8(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, uns
 
 /* 32 outputs x 12 cells */
 static void qz_2x12(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsigned co, const q_epi *e, unsigned p,
-                    uint8_t *out)
+                    uint8_t *out, unsigned nr)
 {
     const unsigned Cout = L->cout;
+    const uint8_t *xr[12];
+    unsigned r_;
+    for (r_ = 0; r_ < 12; r_++) xr[r_] = x + (size_t)(r_ < nr ? r_ : nr - 1) * Cin;
     const __m512i z0 = QZ_BQ(0), z1 = QZ_BQ(1);
     __m512i a00 = z0, a01 = z1, a10 = z0, a11 = z1, a20 = z0, a21 = z1, a30 = z0, a31 = z1, a40 = z0, a41 = z1;
     __m512i a50 = z0, a51 = z1, a60 = z0, a61 = z1, a70 = z0, a71 = z1, a80 = z0, a81 = z1, a90 = z0, a91 = z1;
@@ -564,9 +587,12 @@ static void qz_2x12(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, un
 
 /* 16 outputs x 12 cells */
 static void qz_1x12(const uint8_t *x, unsigned Cin, const vocr_tsd_qlayer *L, unsigned co, const q_epi *e, unsigned p,
-                    uint8_t *out)
+                    uint8_t *out, unsigned nr)
 {
     const unsigned Cout = L->cout;
+    const uint8_t *xr[12];
+    unsigned r_;
+    for (r_ = 0; r_ < 12; r_++) xr[r_] = x + (size_t)(r_ < nr ? r_ : nr - 1) * Cin;
     const __m512i z = QZ_BQ(0);
     __m512i a0 = z, a1 = z, a2 = z, a3 = z, a4 = z, a5 = z, a6 = z, a7 = z, a8 = z, a9 = z, aa = z, ab = z;
     unsigned j;
@@ -633,14 +659,16 @@ static void q_pw(const uint8_t *in, unsigned P, const vocr_tsd_qlayer *L, const 
     while (co + 16 <= Cout) {
         const unsigned nj = (Cout - co) / 16 >= 4 ? 4u : (Cout - co) / 16;
         p = 0;
+        /* the last tile of a chunk padded: its rows past the chunk read the last cell's input and are not stored
+         * (one cell alone: qz_1) */
         if (nj == 4)
-            for (; p + 6 <= P; p += 6) qz_4x6(in + (size_t)p * Cin, Cin, L, co, e, p, out);
+            for (; p + 1 < P; p += 6) qz_4x6(in + (size_t)p * Cin, Cin, L, co, e, p, out, P - p < 6 ? P - p : 6);
         else if (nj == 3)
-            for (; p + 8 <= P; p += 8) qz_3x8(in + (size_t)p * Cin, Cin, L, co, e, p, out);
+            for (; p + 1 < P; p += 8) qz_3x8(in + (size_t)p * Cin, Cin, L, co, e, p, out, P - p < 8 ? P - p : 8);
         else if (nj == 2)
-            for (; p + 12 <= P; p += 12) qz_2x12(in + (size_t)p * Cin, Cin, L, co, e, p, out);
+            for (; p + 1 < P; p += 12) qz_2x12(in + (size_t)p * Cin, Cin, L, co, e, p, out, P - p < 12 ? P - p : 12);
         else
-            for (; p + 12 <= P; p += 12) qz_1x12(in + (size_t)p * Cin, Cin, L, co, e, p, out);
+            for (; p + 1 < P; p += 12) qz_1x12(in + (size_t)p * Cin, Cin, L, co, e, p, out, P - p < 12 ? P - p : 12);
         for (; p < P; p++) qz_1(in + (size_t)p * Cin, Cin, L, co, nj, e, p, out);
         co += 16 * nj;
     }
@@ -831,9 +859,32 @@ static void dw_expand(const uint8_t *row, unsigned W, const vocr_tsd_qlayer *L, 
         const VF M0 = LDF(mm), M1 = LDF(mm + B / 4), M2 = LDF(mm + B / 2), M3 = LDF(mm + 3 * B / 4);              \
         const VF K255 = SET1F(255.0f);                                                                             \
         const VT Z = SETZ();                                                                                       \
-        unsigned p;                                                                                                \
-        for (p = 0; p < n; p++, e0 += rowb, e1 += rowb, e2 += rowb, o += C) {                                      \
-            VT a0 = B0, a1 = B1, a2 = B2, a3 = B3, t;                                                                  \
+        unsigned p = 0;                                                                                            \
+        /* two cells a step (8 independent sums); the requantization: rint(min(y, 255)) then the saturating packs, \
+         * which clamp a negative value to 0 (rint(clip(y, 0, 255))) */                                             \
+        for (; p + 2 <= n; p += 2, e0 += 2 * rowb, e1 += 2 * rowb, e2 += 2 * rowb, o += 2 * C) {                   \
+            VT a0 = B0, a1 = B1, a2 = B2, a3 = B3, c0 = B0, c1 = B1, c2 = B2, c3 = B3, t, u;                          \
+            t = LD(e0); u = LD(e0 + rowb); Q_DP(a0, t, W00); Q_DP(c0, u, W00);                                       \
+            t = LD(e0 + B); u = LD(e0 + rowb + B); Q_DP(a1, t, W01); Q_DP(c1, u, W01);                               \
+            t = LD(e0 + 2 * B); u = LD(e0 + rowb + 2 * B); Q_DP(a2, t, W02); Q_DP(c2, u, W02);                       \
+            t = LD(e0 + 3 * B); u = LD(e0 + rowb + 3 * B); Q_DP(a3, t, W03); Q_DP(c3, u, W03);                       \
+            t = LD(e1); u = LD(e1 + rowb); Q_DP(a0, t, W10); Q_DP(c0, u, W10);                                       \
+            t = LD(e1 + B); u = LD(e1 + rowb + B); Q_DP(a1, t, W11); Q_DP(c1, u, W11);                               \
+            t = LD(e1 + 2 * B); u = LD(e1 + rowb + 2 * B); Q_DP(a2, t, W12); Q_DP(c2, u, W12);                       \
+            t = LD(e1 + 3 * B); u = LD(e1 + rowb + 3 * B); Q_DP(a3, t, W13); Q_DP(c3, u, W13);                       \
+            t = LD(e2); u = LD(e2 + rowb); Q_DP(a0, t, W20); Q_DP(c0, u, W20);                                       \
+            t = LD(e2 + B); u = LD(e2 + rowb + B); Q_DP(a1, t, W21); Q_DP(c1, u, W21);                               \
+            t = LD(e2 + 2 * B); u = LD(e2 + rowb + 2 * B); Q_DP(a2, t, W22); Q_DP(c2, u, W22);                       \
+            t = LD(e2 + 3 * B); u = LD(e2 + rowb + 3 * B); Q_DP(a3, t, W23); Q_DP(c3, u, W23);                       \
+            a0 = CVTI(MIN(MUL(CVT(a0), M0), K255)); c0 = CVTI(MIN(MUL(CVT(c0), M0), K255));                         \
+            a1 = CVTI(MIN(MUL(CVT(a1), M1), K255)); c1 = CVTI(MIN(MUL(CVT(c1), M1), K255));                         \
+            a2 = CVTI(MIN(MUL(CVT(a2), M2), K255)); c2 = CVTI(MIN(MUL(CVT(c2), M2), K255));                         \
+            a3 = CVTI(MIN(MUL(CVT(a3), M3), K255)); c3 = CVTI(MIN(MUL(CVT(c3), M3), K255));                         \
+            ST(o, PACKUS(PACKS(a0, a1), PACKS(a2, a3)));                                                           \
+            ST(o + C, PACKUS(PACKS(c0, c1), PACKS(c2, c3)));                                                       \
+        }                                                                                                          \
+        for (; p < n; p++, e0 += rowb, e1 += rowb, e2 += rowb, o += C) {                                          \
+            VT a0 = B0, a1 = B1, a2 = B2, a3 = B3, t;                                                              \
             t = LD(e0); Q_DP(a0, t, W00);                                                                          \
             t = LD(e0 + B); Q_DP(a1, t, W01);                                                                      \
             t = LD(e0 + 2 * B); Q_DP(a2, t, W02);                                                                  \
@@ -846,12 +897,13 @@ static void dw_expand(const uint8_t *row, unsigned W, const vocr_tsd_qlayer *L, 
             t = LD(e2 + B); Q_DP(a1, t, W21);                                                                      \
             t = LD(e2 + 2 * B); Q_DP(a2, t, W22);                                                                  \
             t = LD(e2 + 3 * B); Q_DP(a3, t, W23);                                                                  \
-            a0 = MAXI(CVTI(MIN(MUL(CVT(a0), M0), K255)), Z);                                              \
-            a1 = MAXI(CVTI(MIN(MUL(CVT(a1), M1), K255)), Z);                                              \
-            a2 = MAXI(CVTI(MIN(MUL(CVT(a2), M2), K255)), Z);                                              \
-            a3 = MAXI(CVTI(MIN(MUL(CVT(a3), M3), K255)), Z);                                              \
+            a0 = CVTI(MIN(MUL(CVT(a0), M0), K255));                                                                \
+            a1 = CVTI(MIN(MUL(CVT(a1), M1), K255));                                                                \
+            a2 = CVTI(MIN(MUL(CVT(a2), M2), K255));                                                                \
+            a3 = CVTI(MIN(MUL(CVT(a3), M3), K255));                                                                \
             ST(o, PACKUS(PACKS(a0, a1), PACKS(a2, a3)));                                                           \
         }                                                                                                          \
+        (void)Z;                                                                                                   \
     }
 
 #define LD512(p) _mm512_loadu_si512((const void *)(p))

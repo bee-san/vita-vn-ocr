@@ -951,6 +951,17 @@
    "after": "textspot-desktop-speed (merged at 2ca3e41): a C ensemble (vocr_tsd_ens_detect: 1-8 blobs of one output format, luma / resize once, the maps averaged as EnsembleDetector does, one decode / refine / post; bit for bit the Python ensemble on the members' own maps), the C page with an ensemble, and bit-exact int8 speed-ups (one int8 q8c at long:1120 ~9.9 ms, from 10.9). The int8 L1 + L5 ensemble's goal timing (goal_ensL1L5q8_l1120_c10.json): G2 6.83x (19.58 ms against MeikiOCR's 133.68 at load 50), G3 hybrid 0.226",
    "candidates": "an int8 C ensemble is a candidate like a single network: read through the C path (ctsdens:A|B@POLICY+options, the VNNI build: scripts/r2/read_policy_cens.sh), timed as a whole; G2 counts every member",
    "now": "the int8 L1 + L5 ensemble, C10, long:1120"
+  },
+  {
+   "n": 24,
+   "time": "2026-11-04T21:40Z",
+   "round": 3,
+   "before": "any read at h0.45v0.1 of M1, M2, N1-N3 and of later candidates",
+   "after": [
+    "the int8 L1 + L5 ensemble through the C path, C10, long:1120, at the reading rules: k6v4 gap 0.159 (dev_l544 0.837: PSP frames doubled to 960x544 read 38 errors against R's 23), h0.45v0.1 0.056 (dev 0.744, dense_dev 0.391, dev_l544 0.704, dense_dev_l544 0.403; junk 3), c0.45v0.1 0.068; int8 L1 alone: k6v4 0.130, h0.45v0.1 0.118, c0.45v0.1 0.136",
+    "h0.45v0.1 was not among amendment 4's three rules (k6v4, h0.6v0.15, c0.45v0.1) although with exact boxes it read below k6v4 on all four goal sets (study A2: 0.691 / 0.322 / 0.704 / 0.347 against 0.863 / 0.347 / 0.797 / 0.353); the two reads above were made before this amendment and are disclosed as such"
+   ],
+   "reading_rule": "from this amendment the declared rule of a candidate is the one with the smallest goal gap among k6v4, h0.45v0.1, h0.6v0.15 and c0.45v0.1 (a selection on dev data among four rules, disclosed with every rule's numbers; the confirmation reads guard it)"
   }
  ]
 }

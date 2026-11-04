@@ -324,7 +324,10 @@ def test_v2_frames_follow_the_conventions(v2):
             for b in L[i + 1:]:
                 assert not _meets(a, b)
             for mk in m["marks"]:
-                assert not _meets(mk, a)
+                if m["capture"]:          # the capture model maps both boxes outward: a touching mark may share 1 px
+                    assert min(mk[2], a[2]) - max(mk[0], a[0]) <= 1 or min(mk[3], a[3]) - max(mk[1], a[1]) <= 1
+                else:
+                    assert not _meets(mk, a)
         kinds |= {k for _, k in m["items"]}
         if m["capture"]:
             continue

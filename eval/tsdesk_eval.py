@@ -48,7 +48,8 @@ SCHEMA = "textspot-desktop/1"
 
 class CTsdDet:
     """The C path's detector (desktop/, tools/tsdesk_c.py) on a VTSD blob, with the round-2 decode and post-pass
-    options (tools/tsdesk's dicts; None: off)."""
+    options (tools/tsdesk's dicts; None: off); blob "A.vtsd|B.vtsd" (the ctsdens: spec) is the C ensemble
+    (tools/tsdesk_c.CModel: the members' maps averaged as tools/tsdesk.EnsembleDetector averages them)."""
 
     name = "ctsd"
 
@@ -74,7 +75,8 @@ def parse_kv(s):
 
 
 def spec_parts(spec, with_decode=False):
-    """(base, refine, post, drop[, decode]) of a detector spec: tsd:MODEL.onnx[@SIZE[@MODE]] or ctsd:BLOB.vtsd[@SIZE],
+    """(base, refine, post, drop[, decode]) of a detector spec: tsd:MODEL.onnx[@SIZE[@MODE]], ctsd:BLOB.vtsd[@SIZE]
+    (ctsdens:A.vtsd|B.vtsd[@SIZE]: the C ensemble; tsdens:A.onnx|B.onnx: the ONNX one),
     then any of the suffixes +refine (tools/tsdesk_refine on the boxes), +post:K=V,... (tools/tsdesk.POST_DEFAULTS
     options), +drop:K=V,... (tools/tsdesk.DROP_DEFAULTS: the reading filter, applied when the boxes are read) and
     +dec:K=V,... (tools/tsdesk.DEFAULTS: the decode's options, numbers)."""
@@ -115,8 +117,8 @@ def detector_from_spec(spec, threads=1, so=None):
         size, _, mode = rest.partition("@")
         return T.EnsembleDetector(paths.split("|"), session_options=so, size=size or None, resize_mode=mode or "exact",
                                   refine=True if refine else None, post=post or None, decode_opts=dec or None)
-    if base.startswith("ctsd:"):
-        path, _, size = base[5:].partition("@")
+    if base.startswith(("ctsd:", "ctsdens:")):     # ctsdens:A.vtsd|B.vtsd: the C ensemble (amendment 21's rule)
+        path, _, size = base.partition(":")[2].partition("@")
         return CTsdDet(path, size or None, threads, refine=True if refine else None, decode=dec or None,
                        post=post or None)
     if refine or post or drop:
@@ -266,7 +268,7 @@ def install(Dm=D):
     base = Dm.detector
 
     def detector(spec, threads=1, opt="all", spinning=None):
-        if spec.startswith(("tsd:", "ctsd:", "tsdens:")):
+        if spec.startswith(("tsd:", "ctsd:", "tsdens:", "ctsdens:")):
             return detector_from_spec(spec, threads, Dm.session_options(threads, opt, spinning))
         return base(strip_drop(spec), threads, opt, spinning)
 
@@ -327,7 +329,7 @@ def install(Dm=D):
 
     def pipeline_init(self, spec, threads, mode, *a, **k):
         init(self, spec, threads, mode, *a, **k)
-        if spec.startswith(("tsd:", "ctsd:", "tsdens:")):
+        if spec.startswith(("tsd:", "ctsd:", "tsdens:", "ctsdens:")):
             self.pad = READ_PAD
     DT.Pipeline.__init__ = pipeline_init
 

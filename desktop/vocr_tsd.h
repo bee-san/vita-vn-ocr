@@ -42,6 +42,7 @@ extern "C" {
 #define VOCR_TSD_MAX_BOXES 256u         /* boxes kept per frame (the highest mean kernel logits) */
 #define VOCR_TSD_MAX_SIDE 8192u         /* a frame side the detector accepts */
 #define VOCR_TSD_TEXT 1024u             /* bytes of a line's text, NUL included */
+#define VOCR_TSD_MAX_ENS 8u             /* models of an ensemble (vocr_tsd_ens_detect) */
 
 enum {
     VOCR_TSD_OK = 0,
@@ -195,6 +196,26 @@ size_t vocr_tsd_arena_bytes_opt(const vocr_tsd_model *m, unsigned kind, unsigned
 int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
                         unsigned channels, unsigned kind, unsigned n, const vocr_tsd_opts *opt, void *arena,
                         size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks);
+
+/* The ensemble detector (tools/tsdesk.EnsembleDetector, protocol v2 amendment 21): nmod models (1 ..
+ * VOCR_TSD_MAX_ENS; float32 or int8 blobs, mixed) of one output format (the head's stride, the maps, the tags) on the
+ * same network input. The frame's luma, the policy's resize and the padding are done once; then every model's network
+ * runs, and their full maps are averaged element by element in the models' order, sum_k (double) maps_k[i] / nmod
+ * rounded to float32 (EnsembleDetector.maps' rule). Then one decode (models[0]'s constants unless opt->decode), the
+ * frame-px boxes, the refinement and the post-pass, as vocr_tsd_detect_opt. nmod = 1: vocr_tsd_detect_opt bit for bit.
+ * VOCR_TSD_E_ARG (0 bytes) when the formats differ or nmod is out of range. */
+size_t vocr_tsd_ens_arena_bytes(const vocr_tsd_model *const *models, unsigned nmod, unsigned kind, unsigned n,
+                                unsigned w, unsigned h, unsigned channels, unsigned ntasks, const vocr_tsd_opts *opt);
+int vocr_tsd_ens_detect(const vocr_tsd_model *const *models, unsigned nmod, const unsigned char *img, unsigned w,
+                        unsigned h, unsigned stride, unsigned channels, unsigned kind, unsigned n,
+                        const vocr_tsd_opts *opt, void *arena, size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run,
+                        void *ctx, unsigned ntasks);
+/* The ensemble's averaged maps on a padded grey input (vocr_tsd_maps_mt's input and layout; nmod = 1: its maps). */
+size_t vocr_tsd_ens_maps_bytes(const vocr_tsd_model *const *models, unsigned nmod, unsigned pw, unsigned ph,
+                               unsigned ntasks);
+int vocr_tsd_ens_maps(const vocr_tsd_model *const *models, unsigned nmod, const unsigned char *in, unsigned pw,
+                      unsigned ph, void *arena, size_t bytes, const float **maps, vocr_tsd_runner run, void *ctx,
+                      unsigned ntasks);
 
 /* sizeof(vocr_tsd_model), sizeof(vocr_tsd_set), sizeof(vocr_tsd_box), for callers that allocate them (ctypes). */
 size_t vocr_tsd_model_bytes(void);

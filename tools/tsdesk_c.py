@@ -130,6 +130,14 @@ def c_library(path=None):
     L.vocr_tsd_simd.restype = i
     if hasattr(L, "vocr_tsd_q8_simd"):        # builds with the int8 network (VTSD version 2)
         L.vocr_tsd_q8_simd.restype = i
+    if hasattr(L, "vocr_tsd_ens_detect"):     # builds with the ensemble detector (amendment 21)
+        L.vocr_tsd_ens_arena_bytes.argtypes = [vp, u, u, u, u, u, u, u, C.POINTER(CDetOpts)]
+        L.vocr_tsd_ens_arena_bytes.restype = sz
+        L.vocr_tsd_ens_detect.argtypes = [vp, u, vp, u, u, u, u, u, u, C.POINTER(CDetOpts), vp, sz, C.POINTER(CSet),
+                                          vp, vp, u]
+        L.vocr_tsd_ens_maps_bytes.argtypes = [vp, u, u, u, u]
+        L.vocr_tsd_ens_maps_bytes.restype = sz
+        L.vocr_tsd_ens_maps.argtypes = [vp, u, vp, u, u, vp, sz, C.POINTER(C.POINTER(C.c_float)), vp, vp, u]
     L.vocr_tsd_load.argtypes = [vp, vp, sz]
     L.vocr_tsd_policy_ok.argtypes = [u, u]
     L.vocr_tsd_policy_ok.restype = i
@@ -452,16 +460,44 @@ def _boxes(st):
             for b in st.boxes[:st.count]]
 
 
+def ens_members(blob):
+    """The members of a detector argument: a list or tuple of blobs (paths or bytes), or a path string with "|"
+    between the members' paths (the ensemble specs' PATH|PATH), else [blob]."""
+    if isinstance(blob, (list, tuple)):
+        return list(blob)
+    if isinstance(blob, (str, Path)) and "|" in str(blob):
+        return [p for p in str(blob).split("|") if p]
+    return [blob]
+
+
 class CModel:
-    """A VTSD blob loaded by the C library: the detector (detect), and its network, decode and resize alone."""
+    """A VTSD blob loaded by the C library: the detector (detect), and its network, decode and resize alone. Several
+    blobs of one output format (a list, or "A.vtsd|B.vtsd") are an ensemble (vocr_tsd_ens_detect: their maps averaged
+    as tools/tsdesk.EnsembleDetector averages them, then one decode, refinement and post-pass); the first blob sets
+    the input policy and the decode constants."""
 
     def __init__(self, blob, threads=1, lib=None):
         self.L = c_library(lib)
-        self.blob = aligned(_blob_bytes(blob))
-        self.m = np.zeros(self.L.vocr_tsd_model_bytes() + 64, np.uint8)
-        rc = self.L.vocr_tsd_load(self.m.ctypes.data, self.blob.ctypes.data, len(self.blob))
-        if rc:
-            raise ValueError(f"vocr_tsd_load: {rc}")
+        members = ens_members(blob)
+        if not 1 <= len(members) <= 8:
+            raise ValueError(f"an ensemble of 1 to 8 blobs, not {len(members)}")
+        if len(members) > 1 and not hasattr(self.L, "vocr_tsd_ens_detect"):
+            raise ValueError("this C library has no ensemble detector (vocr_tsd_ens_detect)")
+        self.blobs, self.ms = [], []
+        for mb in members:
+            b = aligned(_blob_bytes(mb))
+            m = np.zeros(self.L.vocr_tsd_model_bytes() + 64, np.uint8)
+            rc = self.L.vocr_tsd_load(m.ctypes.data, b.ctypes.data, len(b))
+            if rc:
+                raise ValueError(f"vocr_tsd_load: {rc}")
+            self.blobs.append(b)
+            self.ms.append(m)
+        self.blob, self.m, self.nmod = self.blobs[0], self.ms[0], len(self.ms)
+        self._mptrs = (C.c_void_p * self.nmod)(*[m.ctypes.data for m in self.ms])
+        fmt = {struct.unpack_from("<I", bytes(b[:HEADER]), 20)[0:1] + struct.unpack_from("<II", bytes(b[:HEADER]), 68)
+               for b in self.blobs}
+        if len(fmt) != 1:
+            raise ValueError(f"an ensemble's blobs share one output format (head stride, tags, maps): {sorted(fmt)}")
         hdr = bytes(self.blob[:HEADER])
         self.hs = struct.unpack_from("<I", hdr, 20)[0]
         self.tags, self.out = struct.unpack_from("<II", hdr, 68)
@@ -500,11 +536,16 @@ class CModel:
         [6 + T, H / hs, W / hs] float32 (the ONNX graph's output layout)."""
         x = np.ascontiguousarray(np.asarray(x, np.uint8).reshape(np.asarray(x).shape[-2:]))
         ph, pw = x.shape
-        arena = self.arena(self.L.vocr_tsd_maps_bytes(self.m.ctypes.data, pw, ph, self._run()[2]) + 64)
         out = C.POINTER(C.c_float)()
         run, pool, nt = self._run()
-        rc = self.L.vocr_tsd_maps_mt(self.m.ctypes.data, x.ctypes.data, pw, ph, arena.ctypes.data, arena.size,
-                                     C.byref(out), run, pool, nt)
+        if self.nmod > 1:                     # the members' maps averaged (vocr_tsd_ens_maps)
+            arena = self.arena(self.L.vocr_tsd_ens_maps_bytes(self._mptrs, self.nmod, pw, ph, nt) + 64)
+            rc = self.L.vocr_tsd_ens_maps(self._mptrs, self.nmod, x.ctypes.data, pw, ph, arena.ctypes.data,
+                                          arena.size, C.byref(out), run, pool, nt)
+        else:
+            arena = self.arena(self.L.vocr_tsd_maps_bytes(self.m.ctypes.data, pw, ph, nt) + 64)
+            rc = self.L.vocr_tsd_maps_mt(self.m.ctypes.data, x.ctypes.data, pw, ph, arena.ctypes.data, arena.size,
+                                         C.byref(out), run, pool, nt)
         if rc:
             raise ValueError(f"vocr_tsd_maps: {rc}")
         mh, mw = ph // self.hs, pw // self.hs
@@ -538,7 +579,7 @@ class CModel:
         (tsdesk.Detector's refine: every horizontal box snapped to its line's ink on the full-resolution luma);
         decode, post: tools/tsdesk's decode options (vote_pct) and post-pass options (dicts; None: off), through
         vocr_tsd_detect_opt (tsdesk.Detector(decode_opts=..., post=...)'s boxes)."""
-        if decode or post:
+        if decode or post or self.nmod > 1:
             return self._detect_opt(img, size, refine, decode, post)
         a, w, h, stride, ch = _image(img)
         kind, n = policy_of(size, self.default_policy)
@@ -572,13 +613,20 @@ class CModel:
         kind, n = policy_of(size, self.default_policy)
         run, pool, nt = self._run()
         opt, keep = self.det_opts(refine, decode, post)
-        need = self.L.vocr_tsd_arena_bytes_opt(self.m.ctypes.data, kind, n, w, h, ch, nt, C.byref(opt))
+        if self.nmod > 1:
+            need = self.L.vocr_tsd_ens_arena_bytes(self._mptrs, self.nmod, kind, n, w, h, ch, nt, C.byref(opt))
+        else:
+            need = self.L.vocr_tsd_arena_bytes_opt(self.m.ctypes.data, kind, n, w, h, ch, nt, C.byref(opt))
         if not need:
             raise ValueError(f"a {w} x {h} frame under the policy {size or 'default'}: refused")
         arena = self.arena(need)
         st = self._set
-        rc = self.L.vocr_tsd_detect_opt(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n, C.byref(opt),
-                                        arena.ctypes.data, arena.size, C.byref(st), run, pool, nt)
+        if self.nmod > 1:
+            rc = self.L.vocr_tsd_ens_detect(self._mptrs, self.nmod, a.ctypes.data, w, h, stride, ch, kind, n,
+                                            C.byref(opt), arena.ctypes.data, arena.size, C.byref(st), run, pool, nt)
+        else:
+            rc = self.L.vocr_tsd_detect_opt(self.m.ctypes.data, a.ctypes.data, w, h, stride, ch, kind, n,
+                                            C.byref(opt), arena.ctypes.data, arena.size, C.byref(st), run, pool, nt)
         del keep
         if rc:
             raise ValueError(f"vocr_tsd_detect_opt: {rc}")

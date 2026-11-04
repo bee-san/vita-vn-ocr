@@ -2145,25 +2145,39 @@ int vocr_tsd_decode(const vocr_tsd_model *m, const float *maps, unsigned mw, uns
 /* ----------------------------------------------------------------------------- the detector */
 
 typedef struct {
-    size_t net, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, refine, refine_bytes, rboxes, post,
-        post_bytes, pboxes, end;
+    size_t net, net_bytes, acc, avg, grey, resized, rscratch, rplan, rwork, rwork_bytes, decode, refine, refine_bytes,
+        rboxes, post, post_bytes, pboxes, end;
     unsigned iw, ih, pw, ph, resize, ntasks, grey_frame;
 } detect_plan;
 
-static void dplan(const vocr_tsd_model *m, unsigned kind, unsigned n, unsigned w, unsigned h, unsigned channels,
-                  unsigned ntasks, const vocr_tsd_opts *opt, detect_plan *D)
+/* the detector's arena for nm models (an ensemble when nm > 1: the network region holds the largest member's, then
+ * the maps' sums in double and their average; models[0] sets the maps' format) */
+static void dplan(const vocr_tsd_model *const *ms, unsigned nm, unsigned kind, unsigned n, unsigned w, unsigned h,
+                  unsigned channels, unsigned ntasks, const vocr_tsd_opts *opt, detect_plan *D)
 {
+    const vocr_tsd_model *m = ms[0];
     size_t off = 0;
     const int refine = opt && opt->refine;
     const int post = opt && (vocr_tsdp_pre_on(opt->post) || vocr_tsdp_post_on(opt->post));
+    unsigned k, q8 = 0;
     vocr_tsd_input_size(kind, n, w, h, &D->iw, &D->ih, &D->pw, &D->ph);
     D->resize = D->iw != w || D->ih != h;
+    for (k = 0; k < nm; k++) q8 |= ms[k]->version == VOCR_TSD_VERSION_Q8;
     /* an RGB(A) frame's full-resolution luma: for the resize (unless TSD_FUSED_LUMA takes it row by row inside it),
-     * the refinement, the post-pass and the int8 network (its stem reads grey) */
-    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine || post ||
-                                      m->version == VOCR_TSD_VERSION_Q8);
+     * the refinement, the post-pass, the int8 network (its stem reads grey) and an ensemble (one luma for all) */
+    D->grey_frame = channels != 1 && (TSD_GREY_FIRST || (D->resize && !TSD_FUSED_LUMA) || refine || post || q8 ||
+                                      nm > 1);
     D->net = off;
-    off += ALIGN_UP(vocr_tsd_maps_bytes(m, D->pw, D->ph, ntasks), 64);
+    D->net_bytes = 0;
+    for (k = 0; k < nm; k++) {
+        const size_t b = ALIGN_UP(vocr_tsd_maps_bytes(ms[k], D->pw, D->ph, ntasks), 64);
+        D->net_bytes = b > D->net_bytes ? b : D->net_bytes;
+    }
+    off += D->net_bytes;
+    D->acc = off;
+    off += nm > 1 ? ALIGN_UP((size_t)(D->pw / m->hs) * (D->ph / m->hs) * m->out * sizeof(double), 64) : 0;
+    D->avg = off;
+    off += nm > 1 ? ALIGN_UP((size_t)(D->pw / m->hs) * (D->ph / m->hs) * m->out * sizeof(float), 64) : 0;
     D->grey = off;
     off += D->grey_frame ? ALIGN_UP((size_t)w * h, 64) : 0;
     D->resized = off;
@@ -2202,7 +2216,7 @@ size_t vocr_tsd_arena_bytes_opt(const vocr_tsd_model *m, unsigned kind, unsigned
     detect_plan D;
     if (!m || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE || !vocr_tsd_policy_ok(kind, n))
         return 0;
-    dplan(m, kind, n, w, h, channels, ntasks, opt, &D);
+    dplan(&m, 1, kind, n, w, h, channels, ntasks, opt, &D);
     return D.end;
 }
 
@@ -2313,20 +2327,73 @@ static void from_post(const vocr_tsdp_box *pb, unsigned n, vocr_tsd_set *st)
     st->count = n;
 }
 
-int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
-                        unsigned channels, unsigned kind, unsigned n, const vocr_tsd_opts *opt, void *arena,
-                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks)
+/* one network on the detector's source into the network region: *maps [ph / hs][pw / hs][out] (lazy: the float32
+ * head's maps past K only where K > 0, what one model's decode reads) */
+static int net_maps(const vocr_tsd_model *m, const tsd_src *src, unsigned pw, unsigned ph, unsigned char *arena,
+                    size_t bytes, unsigned lazy, const float **maps, vocr_tsd_runner run, void *ctx, unsigned ntasks)
 {
+    tsd_plan P;
+    tsd_net N;
+    if (m->version == VOCR_TSD_VERSION_Q8)
+        return vocr_tsdq_run(m, src->px, src->w, src->h, src->stride, pw, ph, arena, bytes, maps, run, ctx, ntasks);
+    plan(m, pw, ph, ntasks, &P);
+    N.src = *src;
+    N.lazy = lazy;
+    build(&N, m, aligned_floats(arena), &P);
+    net_run(&N, run, ctx, ntasks);
+    *maps = N.maps;
+    return VOCR_TSD_OK;
+}
+
+/* every model's maps on the source, averaged when nm > 1: acc[i] = sum_k (double) maps_k[i] in the models' order,
+ * then (float) (acc[i] / nm) (tools/tsdesk.EnsembleDetector.maps' rule); nm = 1: the model's own maps (lazy) */
+static int ens_maps(const vocr_tsd_model *const *ms, unsigned nm, const tsd_src *src, unsigned pw, unsigned ph,
+                    unsigned char *net, size_t net_bytes, double *acc, float *avg, unsigned lazy, const float **maps,
+                    vocr_tsd_runner run, void *ctx, unsigned ntasks)
+{
+    const size_t cells = (size_t)(pw / ms[0]->hs) * (ph / ms[0]->hs), n = cells * ms[0]->out;
+    const float *mk;
+    unsigned k;
+    size_t i;
+    int rc;
+    if (nm == 1) return net_maps(ms[0], src, pw, ph, net, net_bytes, lazy, maps, run, ctx, ntasks);
+    for (k = 0; k < nm; k++) {
+        rc = net_maps(ms[k], src, pw, ph, net, net_bytes, 0, &mk, run, ctx, ntasks);
+        if (rc) return rc;
+        if (k == 0)
+            for (i = 0; i < n; i++) acc[i] = (double)mk[i];
+        else
+            for (i = 0; i < n; i++) acc[i] += (double)mk[i];
+    }
+    for (i = 0; i < n; i++) avg[i] = (float)(acc[i] / (double)nm);
+    *maps = avg;
+    return VOCR_TSD_OK;
+}
+
+/* 1 when nm models (1 .. VOCR_TSD_MAX_ENS) share the first's output format: the head's stride, the maps, the tags */
+static int ens_ok(const vocr_tsd_model *const *ms, unsigned nm)
+{
+    unsigned k;
+    if (!ms || nm < 1 || nm > VOCR_TSD_MAX_ENS) return 0;
+    for (k = 0; k < nm; k++)
+        if (!ms[k] || ms[k]->hs != ms[0]->hs || ms[k]->out != ms[0]->out || ms[k]->tags != ms[0]->tags) return 0;
+    return 1;
+}
+
+static int detect_core(const vocr_tsd_model *const *ms, unsigned nm, const unsigned char *img, unsigned w,
+                       unsigned h, unsigned stride, unsigned channels, unsigned kind, unsigned n,
+                       const vocr_tsd_opts *opt, void *arena, size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run,
+                       void *ctx, unsigned ntasks)
+{
+    const vocr_tsd_model *m = ens_ok(ms, nm) ? ms[0] : NULL;
     const vocr_tsdr_opts *refine = opt ? opt->refine : NULL;
     const vocr_tsdp_opts *post = opt ? opt->post : NULL;
     vocr_tsd_decode_opts dopt;
     detect_plan D;
-    tsd_plan P;
-    tsd_net N;
+    tsd_src src;
     unsigned char *base;
     const unsigned char *gsrc = img;
     unsigned gstride = stride, gch = channels;
-    float *A;
     const float *maps = NULL;
     double fx, fy;
     unsigned k, keep = 0;
@@ -2337,7 +2404,7 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
         return VOCR_TSD_E_ARG;
     if (!run || ntasks < 1) ntasks = 1;
     if (post && post->gap_pct) return VOCR_TSD_E_ARG;        /* the along split has no C twin */
-    dplan(m, kind, n, w, h, channels, ntasks, opt, &D);
+    dplan(ms, nm, kind, n, w, h, channels, ntasks, opt, &D);
     if (bytes < D.end) return VOCR_TSD_E_ARENA;
     base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
     PROF_START();
@@ -2361,11 +2428,11 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
         gch = 1;
         PROF_MARK(0u, "luma");
     }
-    N.src.px = gsrc;
-    N.src.w = w;
-    N.src.h = h;
-    N.src.stride = gstride;
-    N.src.ch = gch;
+    src.px = gsrc;
+    src.w = w;
+    src.h = h;
+    src.stride = gstride;
+    src.ch = gch;
     if (D.resize) {
         /* the policy's resize of the frame's luma: vocr_tsd_resize (in bands of output rows on the runner; every split
          * gives the same bits) */
@@ -2387,24 +2454,17 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
                                  (int *)(void *)(base + D.rscratch));
         }
         PROF_MARK(1u, "resize");
-        N.src.px = base + D.resized;
-        N.src.w = D.iw;
-        N.src.h = D.ih;
-        N.src.stride = D.iw;
-        N.src.ch = 1;
+        src.px = base + D.resized;
+        src.w = D.iw;
+        src.h = D.ih;
+        src.stride = D.iw;
+        src.ch = 1;
     }
-    if (m->version == VOCR_TSD_VERSION_Q8) {
-        rc = vocr_tsdq_run(m, N.src.px, N.src.w, N.src.h, N.src.stride, D.pw, D.ph, base + D.net, D.grey - D.net,
-                           &maps, run, ctx, ntasks);
-        if (rc) return rc;
-    } else {
-        plan(m, D.pw, D.ph, ntasks, &P);
-        A = aligned_floats(base + D.net);
-        N.lazy = 1;   /* the maps the decode reads: K, and the rest on kernel cells */
-        build(&N, m, A, &P);
-        net_run(&N, run, ctx, ntasks);
-        maps = N.maps;
-    }
+    /* the network(s): one model's maps with the lazy head (K, and the rest on kernel cells: what the decode reads),
+     * an ensemble's members' full maps averaged */
+    rc = ens_maps(ms, nm, &src, D.pw, D.ph, base + D.net, D.net_bytes, (double *)(void *)(base + D.acc),
+                  (float *)(void *)(base + D.avg), 1, &maps, run, ctx, ntasks);
+    if (rc) return rc;
     PROF_START();
     if (opt && opt->decode) {
         dopt = *opt->decode;
@@ -2481,4 +2541,84 @@ int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsig
     vocr_tsd_prof_runs++;
 #endif
     return VOCR_TSD_OK;
+}
+
+int vocr_tsd_detect_opt(const vocr_tsd_model *m, const unsigned char *img, unsigned w, unsigned h, unsigned stride,
+                        unsigned channels, unsigned kind, unsigned n, const vocr_tsd_opts *opt, void *arena,
+                        size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run, void *ctx, unsigned ntasks)
+{
+    if (!m) return VOCR_TSD_E_ARG;
+    return detect_core(&m, 1, img, w, h, stride, channels, kind, n, opt, arena, bytes, out, run, ctx, ntasks);
+}
+
+/* ----------------------------------------------------------------------------- the ensemble */
+
+size_t vocr_tsd_ens_arena_bytes(const vocr_tsd_model *const *models, unsigned nmod, unsigned kind, unsigned n,
+                                unsigned w, unsigned h, unsigned channels, unsigned ntasks, const vocr_tsd_opts *opt)
+{
+    detect_plan D;
+    if (!ens_ok(models, nmod) || !w || !h || w > VOCR_TSD_MAX_SIDE || h > VOCR_TSD_MAX_SIDE ||
+        !vocr_tsd_policy_ok(kind, n))
+        return 0;
+    dplan(models, nmod, kind, n, w, h, channels, ntasks, opt, &D);
+    return D.end;
+}
+
+int vocr_tsd_ens_detect(const vocr_tsd_model *const *models, unsigned nmod, const unsigned char *img, unsigned w,
+                        unsigned h, unsigned stride, unsigned channels, unsigned kind, unsigned n,
+                        const vocr_tsd_opts *opt, void *arena, size_t bytes, vocr_tsd_set *out, vocr_tsd_runner run,
+                        void *ctx, unsigned ntasks)
+{
+    if (!ens_ok(models, nmod)) return VOCR_TSD_E_ARG;
+    return detect_core(models, nmod, img, w, h, stride, channels, kind, n, opt, arena, bytes, out, run, ctx,
+                       ntasks);
+}
+
+/* the maps' region of vocr_tsd_ens_maps: the largest member's network arena, then the sums and the average */
+static void ens_maps_plan(const vocr_tsd_model *const *ms, unsigned nm, unsigned pw, unsigned ph, unsigned ntasks,
+                          size_t *net_bytes, size_t *acc, size_t *avg, size_t *end)
+{
+    const size_t n = (size_t)(pw / ms[0]->hs) * (ph / ms[0]->hs) * ms[0]->out;
+    unsigned k;
+    *net_bytes = 0;
+    for (k = 0; k < nm; k++) {
+        const size_t b = ALIGN_UP(vocr_tsd_maps_bytes(ms[k], pw, ph, ntasks), 64);
+        *net_bytes = b > *net_bytes ? b : *net_bytes;
+    }
+    *acc = *net_bytes;
+    *avg = *acc + (nm > 1 ? ALIGN_UP(n * sizeof(double), 64) : 0);
+    *end = *avg + (nm > 1 ? ALIGN_UP(n * sizeof(float), 64) : 0) + 64;
+}
+
+size_t vocr_tsd_ens_maps_bytes(const vocr_tsd_model *const *models, unsigned nmod, unsigned pw, unsigned ph,
+                               unsigned ntasks)
+{
+    size_t nb, acc, avg, end;
+    if (!ens_ok(models, nmod) || !pw || !ph) return 0;
+    ens_maps_plan(models, nmod, pw, ph, ntasks < 1 ? 1u : ntasks, &nb, &acc, &avg, &end);
+    return end;
+}
+
+int vocr_tsd_ens_maps(const vocr_tsd_model *const *models, unsigned nmod, const unsigned char *in, unsigned pw,
+                      unsigned ph, void *arena, size_t bytes, const float **maps, vocr_tsd_runner run, void *ctx,
+                      unsigned ntasks)
+{
+    size_t nb, acc, avg, end;
+    unsigned char *base;
+    tsd_src src;
+    if (!ens_ok(models, nmod) || !in || !arena || !maps || !pw || !ph || pw % VOCR_TSD_ALIGN || ph % VOCR_TSD_ALIGN ||
+        pw > VOCR_TSD_MAX_SIDE + VOCR_TSD_ALIGN || ph > VOCR_TSD_MAX_SIDE + VOCR_TSD_ALIGN)
+        return VOCR_TSD_E_ARG;
+    if (!run || ntasks < 1) ntasks = 1;
+    ens_maps_plan(models, nmod, pw, ph, ntasks, &nb, &acc, &avg, &end);
+    if (bytes < end) return VOCR_TSD_E_ARENA;
+    base = (unsigned char *)(((uintptr_t)arena + 63u) & ~(uintptr_t)63u);
+    src.px = in;
+    src.w = pw;
+    src.h = ph;
+    src.stride = pw;
+    src.ch = 1;
+    /* every map of every cell (vocr_tsd_maps_mt's) */
+    return ens_maps(models, nmod, &src, pw, ph, base, nb, (double *)(void *)(base + acc), (float *)(void *)(base + avg),
+                    0, maps, run, ctx, ntasks);
 }

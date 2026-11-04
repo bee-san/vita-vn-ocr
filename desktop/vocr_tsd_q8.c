@@ -1140,11 +1140,33 @@ size_t vocr_tsdq_maps_bytes(const vocr_tsd_model *m, unsigned pw, unsigned ph, u
  * (4 ox + kx, 4 oy + ky), the edge padding (columns past the source repeat its last, rows its last row) */
 static void q_patches(const q_net *N, unsigned oy, unsigned x0, unsigned x1, uint8_t *patch)
 {
-    unsigned ky, ox, kx;
+    unsigned ky, ox, kx, xs = x0;    /* xs: the first cell the plain loop below takes */
+#if Q_AVX2
+    {   /* four cells a step inside the source: a 4 x 4 transpose of the rows' dwords (cell ox: r0..r3 at 4 ox) */
+        const uint8_t *r[4];
+        unsigned xin = N->w / 4 > x0 ? N->w / 4 : x0;     /* the cells whose 4 columns are all inside the source */
+        for (ky = 0; ky < 4; ky++) r[ky] = N->px + (size_t)(4 * oy + ky < N->h ? 4 * oy + ky : N->h - 1) * N->stride;
+        xin = xin < x1 ? xin : x1;
+        for (ox = x0; ox + 4 <= xin; ox += 4) {
+            const __m128i a = _mm_loadu_si128((const __m128i *)(const void *)(r[0] + 4 * ox));
+            const __m128i b = _mm_loadu_si128((const __m128i *)(const void *)(r[1] + 4 * ox));
+            const __m128i c = _mm_loadu_si128((const __m128i *)(const void *)(r[2] + 4 * ox));
+            const __m128i d = _mm_loadu_si128((const __m128i *)(const void *)(r[3] + 4 * ox));
+            const __m128i t0 = _mm_unpacklo_epi32(a, b), t1 = _mm_unpacklo_epi32(c, d);
+            const __m128i t2 = _mm_unpackhi_epi32(a, b), t3 = _mm_unpackhi_epi32(c, d);
+            uint8_t *o = patch + (size_t)(ox - x0) * 16;
+            _mm_storeu_si128((__m128i *)(void *)o, _mm_unpacklo_epi64(t0, t1));
+            _mm_storeu_si128((__m128i *)(void *)(o + 16), _mm_unpackhi_epi64(t0, t1));
+            _mm_storeu_si128((__m128i *)(void *)(o + 32), _mm_unpacklo_epi64(t2, t3));
+            _mm_storeu_si128((__m128i *)(void *)(o + 48), _mm_unpackhi_epi64(t2, t3));
+        }
+        xs = ox;          /* the rest below, cell by cell */
+    }
+#endif
     for (ky = 0; ky < 4; ky++) {
         const unsigned sy = 4 * oy + ky < N->h ? 4 * oy + ky : N->h - 1;
         const uint8_t *r = N->px + (size_t)sy * N->stride;
-        for (ox = x0; ox < x1; ox++) {
+        for (ox = xs; ox < x1; ox++) {
             uint8_t *o = patch + (size_t)(ox - x0) * 16 + 4 * ky;
             if (4 * ox + 3 < N->w) {
                 memcpy(o, r + 4 * ox, 4);

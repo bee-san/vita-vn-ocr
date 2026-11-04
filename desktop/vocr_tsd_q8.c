@@ -941,6 +941,165 @@ DW_GROUP(dw_g16, __m128i, __m128, 16, LD128, LDF128, ST128, _mm_setzero_si128, _
          _mm_mul_ps, _mm_min_ps, _mm_set1_ps, _mm_cvtps_epi32, _mm_max_epi32, _mm_packs_epi32, _mm_packus_epi16)
 #undef DW_GROUP
 
+/* The window depthwise (VNNI; stride 1 at dilation 1 or 2, stride 2 at dilation 1): a group's output cells
+ * [x0, x0 + n) of one row from its three input rows directly. Each input column's bytes are interleaved in registers
+ * (the vertically expanded row's bytes, dw_vexpand's) once per pass, kept in a window of the columns the next cells
+ * read, two of the group's four vectors a pass; pass 0 keeps its half-packed outputs in tmp for pass 1. The same sums
+ * and the same requantization as dw_vnni. */
+#define WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, ix, W, C, va, vb)                         \
+    do {                                                                                              \
+        if ((ix) < 0 || (ix) >= (W)) {                                                                \
+            va = vb = z;                                                                              \
+        } else {                                                                                      \
+            const size_t o_ = (size_t)(ix) * (C);                                                     \
+            const T a_ = (top) ? LD((top) + o_) : z, b_ = LD((mid) + o_), c_ = (bot) ? LD((bot) + o_) : z; \
+            const T ab_ = U8(a_, b_), cz_ = U8(c_, z);                                                \
+            va = U16LO(ab_, cz_);                                                                     \
+            vb = U16HI(ab_, cz_);                                                                     \
+        }                                                                                             \
+    } while (0)
+
+#define WIN_OUT(T, F, CVT, MUL, MIN, CVTI, PACKS, PACKUS, ST, PASS, i, aa, ab, Ma, Mb, K, tmp, o, oc)  \
+    do {                                                                                              \
+        const T qa_ = CVTI(MIN(MUL(CVT(aa), Ma), K)), qb_ = CVTI(MIN(MUL(CVT(ab), Mb), K));           \
+        const T p_ = PACKS(qa_, qb_);                                                                 \
+        if ((PASS) == 0)                                                                              \
+            (tmp)[i] = p_;                                                                            \
+        else                                                                                          \
+            ST((o) + (size_t)(i) * (oc), PACKUS((tmp)[i], p_));                                       \
+    } while (0)
+
+/* one pass (vectors k = 2 PASS, 2 PASS + 1; U8 the pass's byte unpack) */
+#define WIN_PASS(T, F, B, LD, LDF, ST, U8, U16LO, U16HI, CVT, MUL, MIN, CVTI, PACKS, PACKUS, PASS)                \
+    do {                                                                                                         \
+        const unsigned k_ = 2u * (PASS);                                                                         \
+        const T W0a = LD(w0 + k_ * (B)), W0b = LD(w0 + (k_ + 1) * (B)), W1a = LD(w1 + k_ * (B));                \
+        const T W1b = LD(w1 + (k_ + 1) * (B)), W2a = LD(w2 + k_ * (B)), W2b = LD(w2 + (k_ + 1) * (B));           \
+        const T Ba = LD(bq + k_ * (B) / 4), Bb = LD(bq + (k_ + 1) * (B) / 4);                                    \
+        const F Ma = LDF(mm + k_ * (B) / 4), Mb = LDF(mm + (k_ + 1) * (B) / 4);                                  \
+        T am, bm, a0, b0, ap, bp, aa, ab;                                                                        \
+        unsigned i;                                                                                              \
+        if (s == 1 && d == 1) {                                                                                  \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 - 1, W, C, am, bm);                            \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0, W, C, a0, b0);                                \
+            for (i = 0; i < n; i++) {                                                                            \
+                WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 + (int)i + 1, W, C, ap, bp);               \
+                aa = Ba;                                                                                         \
+                ab = Bb;                                                                                         \
+                Q_DP(aa, am, W0a);                                                                               \
+                Q_DP(ab, bm, W0b);                                                                               \
+                Q_DP(aa, a0, W1a);                                                                               \
+                Q_DP(ab, b0, W1b);                                                                               \
+                Q_DP(aa, ap, W2a);                                                                               \
+                Q_DP(ab, bp, W2b);                                                                               \
+                WIN_OUT(T, F, CVT, MUL, MIN, CVTI, PACKS, PACKUS, ST, PASS, i, aa, ab, Ma, Mb, K, tmp, o, oc);   \
+                am = a0;                                                                                         \
+                bm = b0;                                                                                         \
+                a0 = ap;                                                                                         \
+                b0 = bp;                                                                                         \
+            }                                                                                                    \
+        } else if (s == 1) {   /* dilation 2: columns x - 2, x, x + 2 of a window of five */                     \
+            T am1, bm1, ap1, bp1;                                                                                \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 - 2, W, C, am, bm);                            \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 - 1, W, C, am1, bm1);                          \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0, W, C, a0, b0);                                \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 + 1, W, C, ap1, bp1);                          \
+            for (i = 0; i < n; i++) {                                                                            \
+                WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, x0 + (int)i + 2, W, C, ap, bp);               \
+                aa = Ba;                                                                                         \
+                ab = Bb;                                                                                         \
+                Q_DP(aa, am, W0a);                                                                               \
+                Q_DP(ab, bm, W0b);                                                                               \
+                Q_DP(aa, a0, W1a);                                                                               \
+                Q_DP(ab, b0, W1b);                                                                               \
+                Q_DP(aa, ap, W2a);                                                                               \
+                Q_DP(ab, bp, W2b);                                                                               \
+                WIN_OUT(T, F, CVT, MUL, MIN, CVTI, PACKS, PACKUS, ST, PASS, i, aa, ab, Ma, Mb, K, tmp, o, oc);   \
+                am = am1;                                                                                        \
+                bm = bm1;                                                                                        \
+                am1 = a0;                                                                                        \
+                bm1 = b0;                                                                                        \
+                a0 = ap1;                                                                                        \
+                b0 = bp1;                                                                                        \
+                ap1 = ap;                                                                                        \
+                bp1 = bp;                                                                                        \
+            }                                                                                                    \
+        } else {               /* stride 2, dilation 1: columns 2x - 1, 2x, 2x + 1 */                            \
+            WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, 2 * x0 - 1, W, C, am, bm);                        \
+            for (i = 0; i < n; i++) {                                                                            \
+                const int col_ = 2 * (x0 + (int)i);                                                              \
+                WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, col_, W, C, a0, b0);                          \
+                WIN_COL(T, LD, U8, U16LO, U16HI, z, top, mid, bot, col_ + 1, W, C, ap, bp);                      \
+                aa = Ba;                                                                                         \
+                ab = Bb;                                                                                         \
+                Q_DP(aa, am, W0a);                                                                               \
+                Q_DP(ab, bm, W0b);                                                                               \
+                Q_DP(aa, a0, W1a);                                                                               \
+                Q_DP(ab, b0, W1b);                                                                               \
+                Q_DP(aa, ap, W2a);                                                                               \
+                Q_DP(ab, bp, W2b);                                                                               \
+                WIN_OUT(T, F, CVT, MUL, MIN, CVTI, PACKS, PACKUS, ST, PASS, i, aa, ab, Ma, Mb, K, tmp, o, oc);   \
+                am = ap;                                                                                         \
+                bm = bp;                                                                                         \
+            }                                                                                                    \
+        }                                                                                                        \
+    } while (0)
+
+#define DW_WIN(NAME, T, F, B, LD, LDF, ST, SETZ, U8LO, U8HI, U16LO, U16HI, CVT, MUL, MIN, SET1F, CVTI, PACKS, PACKUS) \
+    static void NAME(const uint8_t *top, const uint8_t *mid, const uint8_t *bot, int W, size_t C, unsigned s,        \
+                     unsigned d, const int8_t *w0, const int8_t *w1, const int8_t *w2, const int32_t *bq,           \
+                     const float *mm, int x0, unsigned n, uint8_t *o, size_t oc)                                     \
+    {                                                                                                                \
+        const T z = SETZ();                                                                                          \
+        const F K = SET1F(255.0f);                                                                                   \
+        T tmp[Q_CHUNK];                                                                                              \
+        WIN_PASS(T, F, B, LD, LDF, ST, U8LO, U16LO, U16HI, CVT, MUL, MIN, CVTI, PACKS, PACKUS, 0);                  \
+        WIN_PASS(T, F, B, LD, LDF, ST, U8HI, U16LO, U16HI, CVT, MUL, MIN, CVTI, PACKS, PACKUS, 1);                  \
+    }
+
+DW_WIN(dw_win64, __m512i, __m512, 64, LD512, LDF512, ST512, _mm512_setzero_si512, _mm512_unpacklo_epi8,
+       _mm512_unpackhi_epi8, _mm512_unpacklo_epi16, _mm512_unpackhi_epi16, _mm512_cvtepi32_ps, _mm512_mul_ps,
+       _mm512_min_ps, _mm512_set1_ps, _mm512_cvtps_epi32, _mm512_packs_epi32, _mm512_packus_epi16)
+DW_WIN(dw_win32, __m256i, __m256, 32, LD256, LDF256, ST256, _mm256_setzero_si256, _mm256_unpacklo_epi8,
+       _mm256_unpackhi_epi8, _mm256_unpacklo_epi16, _mm256_unpackhi_epi16, _mm256_cvtepi32_ps, _mm256_mul_ps,
+       _mm256_min_ps, _mm256_set1_ps, _mm256_cvtps_epi32, _mm256_packs_epi32, _mm256_packus_epi16)
+DW_WIN(dw_win16, __m128i, __m128, 16, LD128, LDF128, ST128, _mm_setzero_si128, _mm_unpacklo_epi8, _mm_unpackhi_epi8,
+       _mm_unpacklo_epi16, _mm_unpackhi_epi16, _mm_cvtepi32_ps, _mm_mul_ps, _mm_min_ps, _mm_set1_ps, _mm_cvtps_epi32,
+       _mm_packs_epi32, _mm_packus_epi16)
+#undef DW_WIN
+#undef WIN_PASS
+#undef WIN_OUT
+#undef WIN_COL
+
+/* 1 when the window depthwise takes a layer */
+static int dw_win_ok(unsigned s, unsigned d)
+{
+    return (s == 1 && (d == 1 || d == 2)) || (s == 2 && d == 1);
+}
+
+/* the window depthwise of one row's strip [x0, x0 + n) into out ([n][C]): rows3[ky] the input row of tap row ky (NULL
+ * outside the map; rows3[1] is always inside) */
+static void dw_window(const uint8_t *const *rows3, unsigned W, const vocr_tsd_qlayer *L, const dw_prep *D, unsigned x0,
+                      unsigned n, uint8_t *out)
+{
+    const unsigned C = L->cin, s = L->stride, d = L->dil;
+    unsigned gi;
+    for (gi = 0; gi < D->ngroups; gi++) {
+        const unsigned c = D->g[gi].off, wd = D->g[gi].width;
+        const size_t b = 4 * (size_t)c;
+        const uint8_t *t0 = rows3[0] ? rows3[0] + c : NULL, *t1 = rows3[1] + c, *t2 = rows3[2] ? rows3[2] + c : NULL;
+        if (wd == 64)
+            dw_win64(t0, t1, t2, (int)W, C, s, d, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, (int)x0,
+                     n, out + c, C);
+        else if (wd == 32)
+            dw_win32(t0, t1, t2, (int)W, C, s, d, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, (int)x0,
+                     n, out + c, C);
+        else
+            dw_win16(t0, t1, t2, (int)W, C, s, d, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, (int)x0,
+                     n, out + c, C);
+    }
+}
+
 /* depthwise output columns of one row of a strip (n cells) into out ([n][C]) from its vertically expanded row V (the
  * strip's input columns from x0 s - d, V's cell 0) */
 static void dw_vnni(const uint8_t *V, const vocr_tsd_qlayer *L, const dw_prep *D, unsigned n, uint8_t *out)
@@ -1232,7 +1391,9 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
                 const unsigned x1 = x0 + Q_CHUNK < t->Wo ? x0 + Q_CHUNK : t->Wo, n = x1 - x0;
                 uint8_t *o = t->head ? U : t->out + ((size_t)y * t->Wo + x0) * Co;
                 QPROF_T(t_dw);
-                if (D.simd_c) {
+                if (D.simd_c && dw_win_ok(s, d)) {
+                    dw_window(rows3, t->W, t->a, &D, x0, n, T);
+                } else if (D.simd_c) {
                     QPROF_T(t_ex);
                     dw_vexpand(rows3, t->W, t->a, &D, (int)(x0 * s) - (int)d, (n - 1) * s + 2 * d + 1, V);
                     QPROF_ADD(qprof_expand, t_ex);

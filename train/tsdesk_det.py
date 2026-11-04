@@ -665,12 +665,16 @@ def make_batch(sources, rng, cfg):
 _REMAP_MODULES = ("tsdesk", "desktop_det", "textspot", "desktopdata", "shards")
 
 
+def _ours(x):
+    return hasattr(x, "__dict__") and type(x).__module__.startswith(_REMAP_MODULES)
+
+
 def remap_memmaps(obj, _seen=None):
-    """Re-open every np.memmap that obj holds (in lists, tuples, dicts or the attributes of this project's objects), so
+    """Re-open every np.memmap that obj holds (directly, in its lists, tuples and dicts, or in the pools it holds), so
     the pages a data worker has touched are unmapped and its resident set stays bounded (protocol v2 amendment 20: the
     host's memory guard stops a process at about 48 GB; random draws over the memory-mapped shards would otherwise
-    make every page resident). The arrays' contents, and so every batch, are unchanged. Returns obj (or its new
-    memmap)."""
+    make every page resident). Lists of samples are scanned, not walked into, so a remap takes milliseconds. The
+    arrays' contents, and so every batch, are unchanged. Returns obj (or its new memmap)."""
     if _seen is None:
         _seen = set()
     if isinstance(obj, np.memmap):
@@ -680,30 +684,50 @@ def remap_memmaps(obj, _seen=None):
     _seen.add(id(obj))
     if isinstance(obj, list):
         for i, v in enumerate(obj):
-            obj[i] = remap_memmaps(v, _seen)
+            if isinstance(v, np.memmap) or _ours(v) or isinstance(v, (list, tuple, dict)) and _holds(v):
+                obj[i] = remap_memmaps(v, _seen)
+    elif isinstance(obj, tuple):
+        if _holds(obj):
+            return tuple(remap_memmaps(v, _seen) if isinstance(v, np.memmap) or _ours(v) else v for v in obj)
     elif isinstance(obj, dict):
         for k in list(obj):
-            obj[k] = remap_memmaps(obj[k], _seen)
-    elif isinstance(obj, tuple):
-        return tuple(remap_memmaps(v, _seen) for v in obj)
-    elif hasattr(obj, "__dict__") and type(obj).__module__.startswith(_REMAP_MODULES):
+            v = obj[k]
+            if isinstance(v, np.memmap) or _ours(v) or isinstance(v, (list, tuple, dict)) and _holds(v):
+                obj[k] = remap_memmaps(v, _seen)
+    elif _ours(obj):
         for k, v in list(vars(obj).items()):
-            nv = remap_memmaps(v, _seen)
-            if nv is not v:
-                setattr(obj, k, nv)
+            if isinstance(v, np.memmap) or _ours(v) or isinstance(v, (list, tuple, dict)) and _holds(v):
+                nv = remap_memmaps(v, _seen)
+                if nv is not v:
+                    setattr(obj, k, nv)
     return obj
 
 
+def _holds(x, depth=1):
+    """Whether a list / tuple / dict holds a memmap or one of this project's objects among its first 64 entries, or
+    (depth 1) in a container among them (shard lists and pool lists are short or uniform; sample lists hold neither)."""
+    vals = x.values() if isinstance(x, dict) else x
+    for i, v in enumerate(vals):
+        if i >= 64:
+            break
+        if isinstance(v, np.memmap) or _ours(v):
+            return True
+        if depth and isinstance(v, (list, tuple, dict)) and _holds(v, depth - 1):
+            return True
+    return False
+
+
 class Batches(torch.utils.data.IterableDataset):
-    def __init__(self, cfg, seed):
+    def __init__(self, cfg, seed, resumed_at=0):
         super().__init__()
-        self.cfg, self.seed = cfg, seed
+        self.cfg, self.seed, self.resumed_at = cfg, seed, int(resumed_at)
 
     def __iter__(self):
         info = torch.utils.data.get_worker_info()
         wid = info.id if info is not None else 0
         sources, _, _, _ = make_sources(self.cfg)
-        rng = np.random.default_rng([self.seed, wid])
+        # a resumed run draws a fresh stream (seed, worker, step), not the start's batches again
+        rng = np.random.default_rng([self.seed, wid] + ([self.resumed_at] if self.resumed_at else []))
         every, i = int(self.cfg.get("remap_every") or 0), 0
         while True:
             if every and i and i % every == 0:
@@ -739,6 +763,14 @@ def loss_all(y, batch):
 
 
 # ----------------------------------------------------------------------------- export
+
+def save_ckpt(out, model, opt, ema, step, seconds):
+    """RUN/ckpt.pt (written whole, then renamed): the model, the optimiser, the EMA's average and steps, the step."""
+    tmp = Path(out) / "ckpt.pt.part"
+    torch.save({"kind": N.KIND, "step": int(step), "seconds": float(seconds), "model": model.state_dict(),
+                "opt": opt.state_dict(), "ema_avg": ema.avg, "ema_steps": ema.steps}, tmp)
+    tmp.replace(Path(out) / "ckpt.pt")
+
 
 def init_from(model, run_dir, shape):
     """Load a finished run's final.pt into model (the same shape): its record (path, sha256, steps)."""
@@ -829,6 +861,10 @@ def parse(argv=None):
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
+    ap.add_argument("--ckpt-every", type=int, default=0,
+                    help="amendment 20: save model, optimiser, EMA and step to RUN/ckpt.pt every N steps (0: never)")
+    ap.add_argument("--resume", action="store_true",
+                    help="amendment 20: continue RUN from its ckpt.pt (the data stream is reseeded with the step)")
     ap.add_argument("--remap-every", type=int, default=0,
                     help="amendment 20: re-open the data worker's memory-mapped shards every N batches (0: never), "
                          "which keeps its resident set bounded; the batches are unchanged")
@@ -867,7 +903,12 @@ def main(argv=None):
     import textdet_train as TT
     t_proc = time.time()
     out = Path(a.out)
-    if out.exists() and any(out.iterdir()) and not a.probe:
+    resume_ck = None
+    if a.resume:
+        if not (out / "ckpt.pt").exists():
+            raise SystemExit(f"{out}/ckpt.pt: nothing to resume")
+        resume_ck = torch.load(out / "ckpt.pt", map_location="cpu", weights_only=False)
+    elif out.exists() and any(out.iterdir()) and not a.probe:
         raise SystemExit(f"{out} is not empty: a run starts from scratch in a fresh directory")
     out.mkdir(parents=True, exist_ok=True)
     shape = N.SHAPES[a.shape]
@@ -900,7 +941,11 @@ def main(argv=None):
     model = N.TsdNet(shape)
     init_rec = init_from(model, a.init, shape) if a.init else None
     opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())), lr=a.lr)
-    loader = torch.utils.data.DataLoader(Batches(cfg, a.seed), batch_size=None, num_workers=a.workers,
+    start_step = int(resume_ck["step"]) if resume_ck else 0
+    if resume_ck:
+        model.load_state_dict(resume_ck["model"])
+        opt.load_state_dict(resume_ck["opt"])
+    loader = torch.utils.data.DataLoader(Batches(cfg, a.seed, start_step), batch_size=None, num_workers=a.workers,
                                          persistent_workers=a.workers > 0,
                                          prefetch_factor=4 if a.workers > 0 else None)
     it = iter(loader)
@@ -922,15 +967,22 @@ def main(argv=None):
                                                                            else [])]},
            "code_sha256": code_sha256(), "git": ST.git_state(), "torch": torch.__version__, "threads": a.threads,
            "workers": a.workers}
-    if not a.probe:
+    if not a.probe and not resume_ck:
         (out / "run.json").write_text(json.dumps(run, indent=1) + "\n", encoding="utf-8")
+    elif resume_ck:
+        rec = {"resumed": ST.utc(), "from_step": start_step, "code_sha256": run["code_sha256"], "git": run["git"]}
+        (out / f"resume_{start_step}.json").write_text(json.dumps(rec, indent=1) + "\n", encoding="utf-8")
     log = open(out / ("probe.jsonl" if a.probe else "log.jsonl"), "a", encoding="utf-8")
     ema = T2.EMA(0.999)
     n_steps = a.probe if a.probe else a.steps
     t0 = time.time()
+    if resume_ck:
+        ema.avg = [t.double().clone() for t in resume_ck["ema_avg"]] if resume_ck["ema_avg"] is not None else None
+        ema.steps = int(resume_ck["ema_steps"])
+        t0 -= float(resume_ck.get("seconds", 0.0))
     agg, n_agg, times = {}, 0, []
     model.train()
-    for step in range(n_steps):
+    for step in range(start_step, n_steps):
         ts = time.perf_counter()
         lr = T2.lr_at(step, a.steps, a.lr, a.warmup)
         for g in opt.param_groups:
@@ -958,6 +1010,8 @@ def main(argv=None):
             log.flush()
             print(json.dumps(rec), flush=True)
             agg, n_agg = {}, 0
+        if a.ckpt_every and not a.probe and (step + 1) % a.ckpt_every == 0 and step + 1 < n_steps:
+            save_ckpt(out, model, opt, ema, step + 1, time.time() - t0)
     if a.probe:
         ms = np.array([t for _, t in times[2:]]) * 1e3
         wait = np.array([t for t, _ in times[2:]]) * 1e3

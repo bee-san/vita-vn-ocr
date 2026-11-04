@@ -819,6 +819,25 @@
      "question": "L1 + 80k with desk_ui v2 and twice the ornament rows (M1 is the same without desk_ui v2)"
     }
    }
+  },
+  {
+   "n": 20,
+   "time": "2026-11-04T13:20Z",
+   "round": 3,
+   "before": "the relaunched runs' reads",
+   "after": [
+    "the host's memory guard stopped three runs at about 48 GB of a data worker's resident set (10:25-10:37Z): L7 (q8c seed 3) at step 121,000 of 160,000, M1 at 78,400 of 80,000, M2 at 7,200; none had a checkpoint. The worker's resident set grows with random draws over the memory-mapped shards (desk_ui v2 adds 58 GB of them): 12.0 -> 14.9 GB in 1,500 steps of a test run",
+    "the int8 L1 goal timing with C10 (textspot-desktop-speed, goal_L1q8_l1120_c10.json): G2 10.1x (10.46 against 105.46 ms), G3 hybrid 0.178"
+   ],
+   "trainer": {
+    "remap_every": "--remap-every N re-opens the data worker's memory-mapped shards every N batches; the batches are unchanged; a 1,500-step test: with N = 300 the same speed (322 s against 320) and a maximum resident set of 12.8 GB against 16.5 GB and growing",
+    "checkpoints": "--ckpt-every N saves model, optimiser, EMA and step to RUN/ckpt.pt; --resume continues from it with the data stream reseeded by the step (a resumed run is not bit for bit an uninterrupted one); tested by killing a run and resuming it"
+   },
+   "relaunched": {
+    "M1_q8c_from_L1_orn": "as amendment 18, --remap-every 300 --ckpt-every 5000",
+    "M2_q8c_from_L1_uiv2": "as amendment 19, the same",
+    "L7_q8c_full_160k_seed3": "as amendment 17, the same"
+   }
   }
  ]
 }

@@ -962,6 +962,20 @@
     "h0.45v0.1 was not among amendment 4's three rules (k6v4, h0.6v0.15, c0.45v0.1) although with exact boxes it read below k6v4 on all four goal sets (study A2: 0.691 / 0.322 / 0.704 / 0.347 against 0.863 / 0.347 / 0.797 / 0.353); the two reads above were made before this amendment and are disclosed as such"
    ],
    "reading_rule": "from this amendment the declared rule of a candidate is the one with the smallest goal gap among k6v4, h0.45v0.1, h0.6v0.15 and c0.45v0.1 (a selection on dev data among four rules, disclosed with every rule's numbers; the confirmation reads guard it)"
+  },
+  {
+   "n": 25,
+   "time": "2026-11-04T22:40Z",
+   "round": 3,
+   "before": "any C11 read",
+   "after": [
+    "M1 (L1 + 80k, ornaments 0.5) and M2 (L1 + 80k with desk_ui v2) fp32 with C10 at long:1120, h0.45v0.1: M1 gap 0.146, M2 0.292 (dense_dev 0.335, below R's 0.353, but dev 1.049); L1 0.146",
+    "fp32 ensembles at long:1120, C10, h0.45v0.1: M2 + L5 gap 0.050 (dev 0.730, dense_dev 0.341, dev_l544 0.677, dense_dev_l544 0.397; junk 5), M1 + L5 0.050 (dev 0.717, dense_dev 0.341, dev_l544 0.704, dense_dev_l544 0.397; junk 3), L1 + L5 0.068, M2 + L1 0.212",
+    "the junk left on PCSG00854 is short readings of the ornament strip (そ1o, そ0, そ10, そio; and one れしい100)"
+   ],
+   "pipeline": {
+    "options": "C11 = C10 with garb_len 2 and garb_pct 50 (garb_drop's rule at 2 characters and 50% digits or Latin; no reference line of hval, dense_screen, dev or dense_dev matches it, 12,650 lines checked on reference texts only; on M2 + L5's readings it drops 14 hval boxes, all junk: PCSG00854's strip and PCSG00916-00918's Latin logos, and none on dense_screen); C10 still reported"
+   }
   }
  ]
 }

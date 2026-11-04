@@ -193,8 +193,10 @@ def hooked_as(src):
 
 
 def exact_source(src, sources=EXACT_SOURCES_DEFAULT):
-    """True when a source's boxes are exact ink boxes (a name in sources, or a desk_hook_* source when desk_hook is)."""
-    return src in sources or hooked_as(src) in sources
+    """True when a source's boxes are exact ink boxes (a name in sources, a desk_hook_* source when desk_hook is, or a
+    desk_ui_* source when desk_ui is: a later desk_ui version, desktopdata/ui_synth.py --version N, such as
+    desk_ui_v2)."""
+    return src in sources or hooked_as(src) in sources or (str(src).startswith("desk_ui_") and "desk_ui" in sources)
 
 
 def strip_weak(smp, src):

@@ -848,6 +848,43 @@
    "study": {
     "ensemble": "tools/tsdesk.EnsembleDetector (the tsdens:PATH|PATH spec): networks of one output format on the same input, their maps averaged, then one decode, refinement and post-pass; read first in fp32 through ONNX with C10 at long:1120 for L1 + L5 (two q8c) and L1 + L3 (q8c + q8b); a C ensemble (int8) is built only if it pays, and its G2 timing counts both networks (two int8 q8c at long:1120: about 21 ms, at the bar; q8c + q8b about 17 ms)"
    }
+  },
+  {
+   "n": 22,
+   "time": "2026-11-04T15:10Z",
+   "round": 3,
+   "before": "any read of N1",
+   "after": "ensembles through ONNX (fp32), C10, long:1120: L1 + L5 (two q8c) gap 0.119 (dev 0.783, dense_dev 0.397, dev_l544 0.797, dense_dev_l544 0.409; junk 3); L1 + L5 + L6 0.146; L1 + L5 at long:1024 0.167; L1 + L3 0.186; L2 + L3 (two q8b) 0.239. Two int8 q8c at long:1120 take about 21 ms, at G2's bar, so the ensemble is distilled into one network instead",
+   "trainer": "--teachers RUN,RUN --kd-weight W: the student also learns the teachers' averaged maps (kd_loss: K and O as soft targets, A / E smooth L1, the tags' KL, weighted by the teachers' kernel probability, on the valid cells)",
+   "arms": {
+    "N1_q8c_kd_L1L5": {
+     "shape": "q8c",
+     "init": "runs/r3_L1_q8c_from_K1",
+     "teachers": [
+      "runs/r3_L1_q8c_from_K1",
+      "runs/r3_L5_q8c_full_160k"
+     ],
+     "kd_weight": 1.0,
+     "steps": 80000,
+     "lr": 0.0006,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.23,synth=0.09,real=0.17,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.02,desk_ui=0.04,desk_ui_v2=0.08",
+     "remap_every": 300,
+     "ckpt_every": 5000,
+     "question": "the L1 + L5 ensemble distilled into one q8c (warm from L1), with desk_ui v2"
+    }
+   }
   }
  ]
 }

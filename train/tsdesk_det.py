@@ -762,6 +762,44 @@ def loss_all(y, batch):
     return total, parts
 
 
+def kd_loss(y, ty, valid=None):
+    """Distillation from teachers' averaged maps ty (protocol v2 amendment 22): K and O as soft binary targets
+    (BCE with the teachers' probabilities), A1 / A2 / E1 / E2 as smooth L1 to the teachers' distances (/ 8, as e_loss)
+    weighted by the teachers' kernel probability, the tags as the KL divergence of their softmax weighted the same.
+    valid (N x H x W bool, optional): the cells counted (the targets' valid mask)."""
+    pk = torch.sigmoid(ty[:, 0])
+    w = torch.ones_like(pk) if valid is None else valid.float()
+    n = w.sum().clamp(min=1)
+    lk = (F.binary_cross_entropy_with_logits(y[:, 0], pk, reduction="none") * w).sum() / n
+    wk = pk * w
+    nk = wk.sum().clamp(min=1)
+    lo = (F.binary_cross_entropy_with_logits(y[:, 1], torch.sigmoid(ty[:, 1]), reduction="none") * wk).sum() / nk
+    la = (F.smooth_l1_loss((y[:, 2:6] - ty[:, 2:6]) / 8, torch.zeros_like(ty[:, 2:6]), reduction="none").sum(1)
+          * wk).sum() / nk
+    lt = (F.kl_div(F.log_softmax(y[:, 6:], 1), F.softmax(ty[:, 6:], 1), reduction="none").sum(1) * wk).sum() / nk
+    total = lk + lo + la + lt
+    return total, {"kd_k": float(lk), "kd_o": float(lo), "kd_a": float(la), "kd_t": float(lt), "kd": float(total)}
+
+
+def load_teachers(runs, shape):
+    """The teachers' models (eval mode, no gradient), each from a finished run's final.pt with the student's head
+    (the same stride, maps and tags); their records."""
+    import hashlib
+    nets, recs = [], []
+    for r in runs:
+        p = Path(r) / "final.pt"
+        ck = torch.load(p, map_location="cpu", weights_only=False)
+        if ck.get("kind") != N.KIND or int(ck["shape"]["hs"]) != int(shape["hs"]):
+            raise SystemExit(f"{p}: not a textspot-desktop checkpoint with the student's head stride")
+        m = N.TsdNet(ck["shape"], int(ck.get("tags", N.TAGS)))
+        m.load_state_dict(ck["state_dict"])
+        nets.append(m.eval())
+        for q in m.parameters():
+            q.requires_grad_(False)
+        recs.append({"run": str(r), "pt_sha256": hashlib.sha256(p.read_bytes()).hexdigest(), "shape": ck["shape"]})
+    return nets, recs
+
+
 # ----------------------------------------------------------------------------- export
 
 def save_ckpt(out, model, opt, ema, step, seconds):
@@ -861,6 +899,9 @@ def parse(argv=None):
                     help="the cells within F x a line's size across past each end of a positive of a source not in "
                          "EXACT_SOURCES are ignore areas (end_bands)")
     ap.add_argument("--steps", type=int, default=40000)
+    ap.add_argument("--teachers", help="amendment 22: comma-separated finished runs whose averaged maps the student "
+                                       "is distilled towards (kd_loss), beside its targets")
+    ap.add_argument("--kd-weight", type=float, default=1.0)
     ap.add_argument("--ckpt-every", type=int, default=0,
                     help="amendment 20: save model, optimiser, EMA and step to RUN/ckpt.pt every N steps (0: never)")
     ap.add_argument("--resume", action="store_true",
@@ -940,6 +981,7 @@ def main(argv=None):
     torch.manual_seed(a.seed)
     model = N.TsdNet(shape)
     init_rec = init_from(model, a.init, shape) if a.init else None
+    teachers, teacher_rec = load_teachers(a.teachers.split(","), shape) if a.teachers else ([], None)
     opt = torch.optim.AdamW(TT.param_groups(list(model.parameters())), lr=a.lr)
     start_step = int(resume_ck["step"]) if resume_ck else 0
     if resume_ck:
@@ -951,6 +993,7 @@ def main(argv=None):
     it = iter(loader)
     run = {"kind": "textspot-desktop-run", "name": a.name, "started": ST.utc(), "shape": shape,
            "params": N.n_params(model), "macs_960x544": N.macs(shape, 960, 544), "init": init_rec,
+           "teachers": teacher_rec, "kd_weight": a.kd_weight if teachers else None,
            "args": {k: v for k, v in vars(a).items() if k not in ("mix_d", "scale_t")}, "mix": a.mix_d,
            "scale": list(a.scale_t), "window": [B.WIN_H, B.WIN_W], "batch": a.batch, "recipe": a.recipe,
            "targets": {"stride": cfg["stride"], "edge_cells": EDGE_CELLS, "edge_weight": EDGE_WEIGHT,
@@ -991,6 +1034,13 @@ def main(argv=None):
         td = time.perf_counter()
         y = model(batch[0])
         loss, parts = loss_all(y, batch)
+        if teachers:
+            with torch.no_grad():
+                ty = sum(t(batch[0]) for t in teachers) / len(teachers)
+            lkd, kparts = kd_loss(y, ty, batch[8])
+            loss = loss + a.kd_weight * lkd
+            parts.update(kparts)
+            parts["loss"] = float(loss)
         if not math.isfinite(float(loss)):
             raise SystemExit(f"step {step + 1}: the loss is {float(loss)}")
         opt.zero_grad(set_to_none=True)

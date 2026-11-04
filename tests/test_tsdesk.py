@@ -901,3 +901,18 @@ def test_ensemble_detector_averages_the_maps(tmp_path):
     x, _ = a.preprocess(g)
     assert np.allclose(same.maps(x), a.maps(x), atol=1e-6)
     assert np.allclose(both.maps(x), (a.maps(x).astype(np.float64) + b.maps(x)) / 2, atol=1e-5)
+
+
+def test_kd_loss_is_zero_for_identical_maps_and_grows_with_distance():
+    import tsdesk_det as TD
+    torch.manual_seed(0)
+    y = torch.randn(2, N.OUT, 8, 12)
+    l0, parts = TD.kd_loss(y, y.clone())
+    # identical maps: only the entropy terms of the soft BCE remain for K and O; A / E and the tags give 0
+    assert parts["kd_a"] == pytest.approx(0.0, abs=1e-7) and parts["kd_t"] == pytest.approx(0.0, abs=1e-6)
+    l1, p1 = TD.kd_loss(y + 0.5, y)
+    assert p1["kd_a"] > 0 and p1["kd_t"] > -1e-6 and float(l1) > float(l0)   # a shift leaves the tag softmax as is
+    v = torch.zeros(2, 8, 12, dtype=torch.bool)
+    v[:, :4] = True
+    lv, _ = TD.kd_loss(y + 0.5, y, v)
+    assert torch.isfinite(lv)

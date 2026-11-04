@@ -255,6 +255,11 @@ typedef struct {
 vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *rec, size_t rec_bytes,
                                  unsigned threads, int kind, unsigned n, unsigned pad_h, unsigned pad_v,
                                  unsigned pad_px, int *err);
+/* The same with an ensemble detector (vocr_tsd_ens_detect: ndet blobs of one output format, 1 .. VOCR_TSD_MAX_ENS,
+ * their maps averaged; dets[0] sets the default policy and the decode constants); ndet = 1: vocr_tsd_page_new. */
+vocr_tsd_page *vocr_tsd_page_new_ens(const void *const *dets, const size_t *det_bytes, unsigned ndet,
+                                     const void *rec, size_t rec_bytes, unsigned threads, int kind, unsigned n,
+                                     unsigned pad_h, unsigned pad_v, unsigned pad_px, int *err);
 /* The reading rule in full (eval/tsdesk_eval.margin_hv: protocol v2 amendments 1 and 2), in place of the pad given to
  * vocr_tsd_page_new. Each horizontal box (x, y, w, h) is grown by (ph, pv) frame px and rounded outward:
  *   VOCR_TSD_RULE_FRAME  "kAvBfC": ph = max(c, nearbyint(a H / 544)), pv = max(2, nearbyint(b H / 544)) for an H px

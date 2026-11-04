@@ -138,6 +138,8 @@ def c_library(path=None):
         L.vocr_tsd_ens_maps_bytes.argtypes = [vp, u, u, u, u]
         L.vocr_tsd_ens_maps_bytes.restype = sz
         L.vocr_tsd_ens_maps.argtypes = [vp, u, vp, u, u, vp, sz, C.POINTER(C.POINTER(C.c_float)), vp, vp, u]
+        L.vocr_tsd_page_new_ens.argtypes = [vp, vp, u, vp, sz, u, i, u, u, u, u, C.POINTER(i)]
+        L.vocr_tsd_page_new_ens.restype = vp
     L.vocr_tsd_load.argtypes = [vp, vp, sz]
     L.vocr_tsd_policy_ok.argtypes = [u, u]
     L.vocr_tsd_policy_ok.restype = i
@@ -754,13 +756,23 @@ class CPage:
     def __init__(self, det, rec, threads=1, size=None, pad="auto", tags=None, refine=None, decode=None, post=None,
                  drop=None, lib=None, charbox_cal=None):
         self.L = c_library(lib)
-        self.det = aligned(_blob_bytes(det))
+        members = ens_members(det)              # several blobs (a list, or "A.vtsd|B.vtsd"): the ensemble detector
+        self.dets = [aligned(_blob_bytes(d)) for d in members]
+        self.det = self.dets[0]
         self.rec = aligned(_blob_bytes(rec))
         kind, n = policy_of(size, (-1, 0))
         self.rule = rule_of(pad)
         err = C.c_int(0)
-        self.p = self.L.vocr_tsd_page_new(self.det.ctypes.data, len(self.det), self.rec.ctypes.data, len(self.rec),
-                                          int(threads), kind, n, 4, 4, 0, C.byref(err))
+        if len(self.dets) > 1:
+            if not hasattr(self.L, "vocr_tsd_page_new_ens"):
+                raise ValueError("this C library has no ensemble page (vocr_tsd_page_new_ens)")
+            ptrs = (C.c_void_p * len(self.dets))(*[d.ctypes.data for d in self.dets])
+            sizes = (C.c_size_t * len(self.dets))(*[len(d) for d in self.dets])
+            self.p = self.L.vocr_tsd_page_new_ens(ptrs, sizes, len(self.dets), self.rec.ctypes.data, len(self.rec),
+                                                  int(threads), kind, n, 4, 4, 0, C.byref(err))
+        else:
+            self.p = self.L.vocr_tsd_page_new(self.det.ctypes.data, len(self.det), self.rec.ctypes.data,
+                                              len(self.rec), int(threads), kind, n, 4, 4, 0, C.byref(err))
         if not self.p:
             raise ValueError(f"vocr_tsd_page_new: {err.value}")
         rc = self.L.vocr_tsd_page_set_rule(self.p, *self.rule)

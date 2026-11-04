@@ -217,3 +217,29 @@ def test_ctsdens_spec_in_eval(members, elibs, tmp_path, monkeypatch):
     assert det.boxes(frame) == [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in want]
     single = E.detector_from_spec(f"ctsd:{pa}@long:960")
     assert single.m.nmod == 1 and det.m.nmod == 2
+
+
+def test_c_page_with_an_ensemble_detector(members, elibs, tmp_path):
+    """CPage on two blobs (vocr_tsd_page_new_ens): its detector's boxes are CModel([A, B]).detect's with the same
+    options (int8 and float32 members), its lines are read from them, the same at 1 and 3 threads; one blob is
+    vocr_tsd_page_new's page; mismatched formats are refused."""
+    from test_tsdesk_c import _random_recognizer
+    lib = elibs.get("avx2") or elibs["plain"]
+    _, rp = _random_recognizer(tmp_path)
+    frame = _text_frame(541, 300, 13)
+    for kind in ("q8", "f32"):
+        blobs = _blobs(members, ("a", "b"), kind)
+        want = TC.CModel(blobs, lib=lib).detect(frame, "long:960", True, C6_DECODE, C6_POST)
+        page = TC.CPage(blobs, rp, threads=1, size="long:960", pad="k6v4", refine=True, decode=C6_DECODE, post=C6_POST,
+                        lib=lib)
+        assert page.detect(frame) == want, kind
+        lines = page.page(frame)
+        assert lines and len(lines) <= len(want)
+        p3 = TC.CPage(blobs, rp, threads=3, size="long:960", pad="k6v4", refine=True, decode=C6_DECODE, post=C6_POST,
+                      lib=lib)
+        assert [(ln.text, ln.box, ln.crop) for ln in p3.page(frame)] == \
+            [(ln.text, ln.box, ln.crop) for ln in lines]
+    one = TC.CPage(members["a"][2], rp, size="long:960", pad="k6v4", refine=True, lib=lib)
+    assert one.detect(frame) == TC.CModel(members["a"][2], lib=lib).detect(frame, "long:960", True)
+    with pytest.raises(ValueError, match="vocr_tsd_page_new"):
+        TC.CPage([members["a"][1], members["s4"][1]], rp, lib=lib)

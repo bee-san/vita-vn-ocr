@@ -350,7 +350,9 @@ class Pipeline:
             osize, omode = size_mode(self.size)
             # the eval adapter's detector spec (tsdesk_eval.detector_from_spec: the decode and post-pass options as
             # the reads apply them), its sessions at det_threads intra-op threads
-            espec = E.strip_drop(f"tsd:{path}@{osize or ''}@{omode}" + ("+refine" if refine else "") +
+            # an "A.onnx|B.onnx" path: the ONNX ensemble (tsdens:, tools/tsdesk.EnsembleDetector; amendment 21)
+            espec = E.strip_drop(f"{'tsdens' if '|' in path else 'tsd'}:{path}@{osize or ''}@{omode}" +
+                                 ("+refine" if refine else "") +
                                  self.opts["suffix"])
             self.det = E.detector_from_spec(espec, det_threads, D.session_options(det_threads, spinning=spinning))
             if self.opts["drop"]:

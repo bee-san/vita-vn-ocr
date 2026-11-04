@@ -241,7 +241,10 @@ typedef struct {
 } rec_worker;
 
 struct vocr_tsd_page {
-    vocr_tsd_model det;
+    vocr_tsd_model det;        /* the detector (an ensemble's first member) */
+    vocr_tsd_model more[VOCR_TSD_MAX_ENS - 1];   /* an ensemble's other members (vocr_tsd_page_new_ens) */
+    const vocr_tsd_model *dets[VOCR_TSD_MAX_ENS];
+    unsigned ndet;
     vocr_model rec;
     vocr_opts opts;
     vocr_tsd_pool *pool;
@@ -278,22 +281,44 @@ vocr_tsd_page *vocr_tsd_page_new(const void *det, size_t det_bytes, const void *
                                  unsigned threads, int kind, unsigned n, unsigned pad_h, unsigned pad_v,
                                  unsigned pad_px, int *err)
 {
+    return vocr_tsd_page_new_ens(&det, &det_bytes, 1, rec, rec_bytes, threads, kind, n, pad_h, pad_v, pad_px, err);
+}
+
+vocr_tsd_page *vocr_tsd_page_new_ens(const void *const *dets, const size_t *det_bytes, unsigned ndet,
+                                     const void *rec, size_t rec_bytes, unsigned threads, int kind, unsigned n,
+                                     unsigned pad_h, unsigned pad_v, unsigned pad_px, int *err)
+{
     vocr_tsd_page *p;
     unsigned i;
     size_t need;
     int rc = VOCR_TSD_OK;
     if (err) *err = VOCR_TSD_OK;
-    if (!det || !rec || threads < 1 || threads > MAX_THREADS ||
+    if (!dets || !det_bytes || ndet < 1 || ndet > VOCR_TSD_MAX_ENS || !rec || threads < 1 || threads > MAX_THREADS ||
         (kind >= 0 && !vocr_tsd_policy_ok((unsigned)kind, n))) {
         if (err) *err = VOCR_TSD_E_ARG;
         return NULL;
     }
+    for (i = 0; i < ndet; i++)
+        if (!dets[i]) {
+            if (err) *err = VOCR_TSD_E_ARG;
+            return NULL;
+        }
     p = (vocr_tsd_page *)calloc(1, sizeof *p);
     if (!p) {
         if (err) *err = VOCR_TSD_E_MEM;
         return NULL;
     }
-    rc = vocr_tsd_load(&p->det, det, det_bytes);
+    rc = vocr_tsd_load(&p->det, dets[0], det_bytes[0]);
+    p->dets[0] = &p->det;
+    for (i = 1; i < ndet && !rc; i++) {
+        rc = vocr_tsd_load(&p->more[i - 1], dets[i], det_bytes[i]);
+        p->dets[i] = &p->more[i - 1];
+        /* an ensemble's members share the first's output format (vocr_tsd_ens_detect's rule) */
+        if (!rc && (p->more[i - 1].hs != p->det.hs || p->more[i - 1].out != p->det.out ||
+                    p->more[i - 1].tags != p->det.tags))
+            rc = VOCR_TSD_E_ARG;
+    }
+    p->ndet = ndet;
     if (!rc && vocr_load(&p->rec, rec, rec_bytes)) rc = VOCR_TSD_E_REC;
     if (rc) {
         free(p);
@@ -467,7 +492,8 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
     opt.decode = p->decode_on ? &p->decode : NULL;
     opt.refine = p->refine_on ? &p->refine : NULL;
     opt.post = p->post_on ? &p->post : NULL;
-    need = vocr_tsd_arena_bytes_opt(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), &opt);
+    need = p->ndet > 1 ? vocr_tsd_ens_arena_bytes(p->dets, p->ndet, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), &opt)
+                       : vocr_tsd_arena_bytes_opt(&p->det, p->kind, p->n, w, h, 1, TASKS_OF(p->threads), &opt);
     if (!need) return VOCR_TSD_E_ARG;
     if (need > p->arena_bytes) {
         free(p->arena);
@@ -476,6 +502,9 @@ static int detect(vocr_tsd_page *p, const unsigned char *img, unsigned w, unsign
         if (!p->arena) return VOCR_TSD_E_MEM;
     }
     p->count = 0;
+    if (p->ndet > 1)
+        return vocr_tsd_ens_detect(p->dets, p->ndet, p->g, w, h, p->stride, 1, p->kind, p->n, &opt, p->arena,
+                                   p->arena_bytes, &p->set, vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
     return vocr_tsd_detect_opt(&p->det, p->g, w, h, p->stride, 1, p->kind, p->n, &opt, p->arena, p->arena_bytes,
                                &p->set, vocr_tsd_pool_run, p->pool, TASKS_OF(p->threads));
 }

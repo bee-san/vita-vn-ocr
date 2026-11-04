@@ -893,6 +893,12 @@ GOAL_WHAT = {
 }
 
 
+def _sha_members(path):
+    """sha256 of a file, or the list of an ensemble's members' (an "A|B" path: amendment 21)."""
+    parts = [p for p in str(path).split("|") if p]
+    return D.sha256_file(parts[0]) if len(parts) == 1 else [D.sha256_file(p) for p in parts]
+
+
 def _lib_record(lib):
     import tsdesk_c as TC
     L = TC.c_library(lib)
@@ -967,8 +973,8 @@ def cmd_goal(a):
                    c_page_without=(list(c_page_without) or None) if c["opts"] and not a.c_without_options else None,
                    c_options=(None if not c["opts"] else "off (--c-without-options: no C twin; the C path ran without"
                               " the options)" if a.c_without_options else "on"),
-                   blob=c["blob"], blob_sha256=D.sha256_file(c["blob"]),
-                   onnx=c["onnx"], onnx_sha256=D.sha256_file(c["onnx"]))
+                   blob=c["blob"], blob_sha256=_sha_members(c["blob"]),
+                   onnx=c["onnx"], onnx_sha256=_sha_members(c["onnx"]))
         out["candidates"][c["name"]] = blk
     if a.mem_views:
         mem_views = a.mem_views.split(",")

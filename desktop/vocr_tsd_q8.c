@@ -49,8 +49,10 @@
 #define Q_CHUNK 48u            /* output columns a chunk (a multiple of 12: every tile's pixel count) */
 #endif
 #define Q_MAX_STEPS 64u
-#define Q_RING_ROWS 5u         /* a task's ring of expanded rows: 2 d + 1 rows for dilation d <= 2 */
-#define Q_RING_BYTES (Q_RING_ROWS * Q_CHUNK * VOCR_TSD_MAX_CHANNELS * 4u)
+#define Q_RING_ROWS 5u         /* the AVX2 path's ring of float rows: 2 d + 1 rows for dilation d <= 2 */
+/* the VNNI path's vertically expanded row: up to (Q_CHUNK - 1) s + 2 d + 1 input columns (stride <= 2,
+ * dilation <= 16) of 4 bytes per channel */
+#define Q_RING_BYTES ((2u * Q_CHUNK + 2u * 16u + 1u) * VOCR_TSD_MAX_CHANNELS * 4u)
 #define Q_BIAS_MAX (1 << 30)   /* |bq|: acc + bq stays in int32 (|acc| < 2^23: 256 channels of 255 x 128) */
 #define PROF_STEP0 8u
 
@@ -724,9 +726,9 @@ static void q_dw_c(const uint8_t *const *rows, const unsigned *kys, unsigned nk,
 #endif
 
 #if Q_VNNI
-/* The VNNI depthwise works on expanded rows: for an input row r and output column ox, channel c's four bytes
- * (r[ox s - d][c], r[ox s][c], r[ox s + d][c], 0) (0 outside the map), so tap row ky of a cell is one vpdpbusd
- * against (w[ky][0][c], w[ky][1][c], w[ky][2][c], 0). The bytes are interleaved by unpacks within 128-bit lanes, so a
+/* The VNNI depthwise works on a vertically expanded row: for output row y and input column ix, channel c's four
+ * bytes (in[y s - d][ix][c], in[y s][ix][c], in[y s + d][ix][c], 0) (0 outside the map), so tap column kx of a cell
+ * is one vpdpbusd against (w[0][kx][c], w[1][kx][c], w[2][kx][c], 0) at ix = ox s + (kx - 1) d. The bytes are interleaved by unpacks within 128-bit lanes, so a
  * group of 64 (32, 16) channels holds four vectors, vector k's lane i of 128-bit lane l being channel 16 l + 4 k + i;
  * the weights, bq and m of the group take the same order, and two packs bring the outputs back to channel order. */
 typedef struct {
@@ -736,8 +738,7 @@ typedef struct {
 typedef struct {
     unsigned ngroups, simd_c;         /* the channels [0, simd_c) in groups, [simd_c, C) plain C */
     dw_group g[VOCR_TSD_MAX_CHANNELS / 16];
-    int8_t w[3][VOCR_TSD_MAX_CHANNELS * 4];        /* per tap row: the expanded weights, group by group */
-    int8_t zw[VOCR_TSD_MAX_CHANNELS * 4];          /* zeros (a tap row outside the map) */
+    int8_t w[3][VOCR_TSD_MAX_CHANNELS * 4];        /* per tap column kx: (w[0][kx], w[1][kx], w[2][kx], 0) */
     int32_t bq[VOCR_TSD_MAX_CHANNELS];             /* in the groups' order */
     float m[VOCR_TSD_MAX_CHANNELS];
 } dw_prep;
@@ -765,7 +766,6 @@ static void dw_prepare(const vocr_tsd_qlayer *L, dw_prep *D)
     const unsigned C = L->cin;
     unsigned c = 0, ky, j;
     D->ngroups = 0;
-    memset(D->zw, 0, sizeof D->zw);
     while (c + 16 <= C) {
         const unsigned width = C - c >= 64 ? 64u : C - c >= 32 ? 32u : 16u;
         D->g[D->ngroups].off = c;
@@ -775,11 +775,11 @@ static void dw_prepare(const vocr_tsd_qlayer *L, dw_prep *D)
             const unsigned slot = dw_slot(j, width);
             D->bq[c + slot] = L->bq[c + j];
             D->m[c + slot] = L->m[c + j];
-            for (ky = 0; ky < 3; ky++) {
+            for (ky = 0; ky < 3; ky++) {      /* here ky runs over the tap columns kx */
                 int8_t *o = D->w[ky] + 4 * (size_t)(c + slot);
-                o[0] = L->w[(size_t)(3 * ky) * C + c + j];
-                o[1] = L->w[(size_t)(3 * ky + 1) * C + c + j];
-                o[2] = L->w[(size_t)(3 * ky + 2) * C + c + j];
+                o[0] = L->w[(size_t)ky * C + c + j];
+                o[1] = L->w[(size_t)(3 + ky) * C + c + j];
+                o[2] = L->w[(size_t)(6 + ky) * C + c + j];
                 o[3] = 0;
             }
         }
@@ -788,69 +788,85 @@ static void dw_prepare(const vocr_tsd_qlayer *L, dw_prep *D)
     D->simd_c = c;
 }
 
-/* the expanded row of input row `row` (W x C) for the output columns [x0, x1) into E ([x1 - x0][simd_c][4]) */
-static void dw_expand(const uint8_t *row, unsigned W, const vocr_tsd_qlayer *L, const dw_prep *D, unsigned x0,
-                      unsigned x1, uint8_t *E)
+/* a group's vertically expanded bytes for the input columns ia0 .. ia0 + ncols - 1 (V: a cell every rowb bytes, the
+ * group at its offset): top, mid, bot the three input rows at the group's channel (NULL: outside the map), the
+ * columns outside [0, W) zero */
+#define VEXP_GROUP(NAME, T, LD, ST, U8LO, U8HI, U16LO, U16HI, SETZ, B)                                             \
+    static void NAME(const uint8_t *top, const uint8_t *mid, const uint8_t *bot, unsigned W, unsigned C, int ia0,  \
+                     unsigned ncols, size_t rowb, uint8_t *V)                                                     \
+    {                                                                                                             \
+        const T z = SETZ();                                                                                       \
+        const int ia1 = ia0 + (int)ncols;                                                                         \
+        const int lo = ia0 > 0 ? ia0 : 0, hi = ia1 < (int)W ? ia1 : (int)W;                                        \
+        int ix;                                                                                                   \
+        uint8_t *o = V;                                                                                           \
+        for (ix = ia0; ix < (lo < ia1 ? lo : ia1); ix++, o += rowb) {                                              \
+            ST(o, z);                                                                                             \
+            ST(o + (B), z);                                                                                       \
+            ST(o + 2 * (B), z);                                                                                   \
+            ST(o + 3 * (B), z);                                                                                   \
+        }                                                                                                         \
+        for (ix = lo; ix < hi; ix++, o += rowb) {                                                                 \
+            const size_t off = (size_t)ix * C;                                                                    \
+            const T a_ = top ? LD(top + off) : z, b_ = LD(mid + off), c_ = bot ? LD(bot + off) : z;               \
+            T e_[4];                                                                                              \
+            DW_EXPAND(T, U8LO, U8HI, U16LO, U16HI, a_, b_, c_, z, e_);                                            \
+            ST(o, e_[0]);                                                                                         \
+            ST(o + (B), e_[1]);                                                                                   \
+            ST(o + 2 * (B), e_[2]);                                                                               \
+            ST(o + 3 * (B), e_[3]);                                                                               \
+        }                                                                                                         \
+        for (ix = hi > lo ? hi : (lo > ia0 ? lo : ia0); ix < ia1; ix++, o += rowb) {                               \
+            ST(o, z);                                                                                             \
+            ST(o + (B), z);                                                                                       \
+            ST(o + 2 * (B), z);                                                                                   \
+            ST(o + 3 * (B), z);                                                                                   \
+        }                                                                                                         \
+    }
+
+#define XLD512(p) _mm512_loadu_si512((const void *)(p))
+#define XST512(p, v) _mm512_storeu_si512((void *)(p), v)
+#define XLD256(p) _mm256_loadu_si256((const __m256i *)(const void *)(p))
+#define XST256(p, v) _mm256_storeu_si256((__m256i *)(void *)(p), v)
+#define XLD128(p) _mm_loadu_si128((const __m128i *)(const void *)(p))
+#define XST128(p, v) _mm_storeu_si128((__m128i *)(void *)(p), v)
+VEXP_GROUP(vexp_g64, __m512i, XLD512, XST512, _mm512_unpacklo_epi8, _mm512_unpackhi_epi8, _mm512_unpacklo_epi16,
+           _mm512_unpackhi_epi16, _mm512_setzero_si512, 64)
+VEXP_GROUP(vexp_g32, __m256i, XLD256, XST256, _mm256_unpacklo_epi8, _mm256_unpackhi_epi8, _mm256_unpacklo_epi16,
+           _mm256_unpackhi_epi16, _mm256_setzero_si256, 32)
+VEXP_GROUP(vexp_g16, __m128i, XLD128, XST128, _mm_unpacklo_epi8, _mm_unpackhi_epi8, _mm_unpacklo_epi16,
+           _mm_unpackhi_epi16, _mm_setzero_si128, 16)
+#undef VEXP_GROUP
+
+/* the vertically expanded row of output row y's three input rows (rows[ky]: in[y s + (ky - 1) d], NULL outside the
+ * map) for the input columns ia0 .. ia0 + ncols - 1 into V ([ncols][simd_c][4]) */
+static void dw_vexpand(const uint8_t *const *rows, unsigned W, const vocr_tsd_qlayer *L, const dw_prep *D, int ia0,
+                       unsigned ncols, uint8_t *V)
 {
-    const unsigned C = L->cin, s = L->stride, d = L->dil, rowb = D->simd_c * 4;
-    unsigned ox, gi;
-    for (ox = x0; ox < x1; ox++) {
-        const int ia = (int)(ox * s) - (int)d, ib = (int)(ox * s), ic = (int)(ox * s + d);
-        const uint8_t *pa = ia >= 0 ? row + (size_t)ia * C : NULL, *pb = row + (size_t)ib * C;
-        const uint8_t *pc = ic < (int)W ? row + (size_t)ic * C : NULL;
-        uint8_t *o = E + (size_t)(ox - x0) * rowb;
-        for (gi = 0; gi < D->ngroups; gi++) {
-            const unsigned c = D->g[gi].off, wd = D->g[gi].width;
-            if (wd == 64) {
-                const __m512i z = _mm512_setzero_si512();
-                const __m512i a = pa ? _mm512_loadu_si512((const void *)(pa + c)) : z;
-                const __m512i b = _mm512_loadu_si512((const void *)(pb + c));
-                const __m512i cc = pc ? _mm512_loadu_si512((const void *)(pc + c)) : z;
-                __m512i e[4];
-                DW_EXPAND(__m512i, _mm512_unpacklo_epi8, _mm512_unpackhi_epi8, _mm512_unpacklo_epi16,
-                          _mm512_unpackhi_epi16, a, b, cc, z, e);
-                _mm512_storeu_si512((void *)(o + 4 * c), e[0]);
-                _mm512_storeu_si512((void *)(o + 4 * c + 64), e[1]);
-                _mm512_storeu_si512((void *)(o + 4 * c + 128), e[2]);
-                _mm512_storeu_si512((void *)(o + 4 * c + 192), e[3]);
-            } else if (wd == 32) {
-                const __m256i z = _mm256_setzero_si256();
-                const __m256i a = pa ? _mm256_loadu_si256((const __m256i *)(const void *)(pa + c)) : z;
-                const __m256i b = _mm256_loadu_si256((const __m256i *)(const void *)(pb + c));
-                const __m256i cc = pc ? _mm256_loadu_si256((const __m256i *)(const void *)(pc + c)) : z;
-                __m256i e[4];
-                DW_EXPAND(__m256i, _mm256_unpacklo_epi8, _mm256_unpackhi_epi8, _mm256_unpacklo_epi16,
-                          _mm256_unpackhi_epi16, a, b, cc, z, e);
-                _mm256_storeu_si256((__m256i *)(void *)(o + 4 * c), e[0]);
-                _mm256_storeu_si256((__m256i *)(void *)(o + 4 * c + 32), e[1]);
-                _mm256_storeu_si256((__m256i *)(void *)(o + 4 * c + 64), e[2]);
-                _mm256_storeu_si256((__m256i *)(void *)(o + 4 * c + 96), e[3]);
-            } else {
-                const __m128i z = _mm_setzero_si128();
-                const __m128i a = pa ? _mm_loadu_si128((const __m128i *)(const void *)(pa + c)) : z;
-                const __m128i b = _mm_loadu_si128((const __m128i *)(const void *)(pb + c));
-                const __m128i cc = pc ? _mm_loadu_si128((const __m128i *)(const void *)(pc + c)) : z;
-                __m128i e[4];
-                DW_EXPAND(__m128i, _mm_unpacklo_epi8, _mm_unpackhi_epi8, _mm_unpacklo_epi16, _mm_unpackhi_epi16, a,
-                          b, cc, z, e);
-                _mm_storeu_si128((__m128i *)(void *)(o + 4 * c), e[0]);
-                _mm_storeu_si128((__m128i *)(void *)(o + 4 * c + 16), e[1]);
-                _mm_storeu_si128((__m128i *)(void *)(o + 4 * c + 32), e[2]);
-                _mm_storeu_si128((__m128i *)(void *)(o + 4 * c + 48), e[3]);
-            }
-        }
+    const unsigned C = L->cin;
+    const size_t rowb = (size_t)D->simd_c * 4;
+    unsigned gi;
+    for (gi = 0; gi < D->ngroups; gi++) {
+        const unsigned c = D->g[gi].off, wd = D->g[gi].width;
+        const uint8_t *t0 = rows[0] ? rows[0] + c : NULL, *t1 = rows[1] + c, *t2 = rows[2] ? rows[2] + c : NULL;
+        if (wd == 64)
+            vexp_g64(t0, t1, t2, W, C, ia0, ncols, rowb, V + 4 * (size_t)c);
+        else if (wd == 32)
+            vexp_g32(t0, t1, t2, W, C, ia0, ncols, rowb, V + 4 * (size_t)c);
+        else
+            vexp_g16(t0, t1, t2, W, C, ia0, ncols, rowb, V + 4 * (size_t)c);
     }
 }
 
-/* One group of channels over the n cells of a strip: the three tap rows' expanded rows e0, e1, e2 (rowb bytes a cell)
- * against the group's weights w0, w1, w2 (D->w[ky] at the group, or zeros for a tap row outside the map: its products
- * add nothing), the group's bq (the sums start there) and m in the expanded order; the weights, bq and m stay in
+/* One group of channels over the n cells of a strip: the vertically expanded row at the three tap columns e0, e1, e2
+ * (rowb bytes from one output cell to the next: s cells of V) against the group's weights w0, w1, w2 (D->w[kx] at the
+ * group), the group's bq (the sums start there) and m in the expanded order; the weights, bq and m stay in
  * registers across the cells.
  * VT / VF: the integer / float vector type, B its bytes; the outputs to o (C bytes a cell) in channel order. */
 #define DW_GROUP(NAME, VT, VF, B, LD, LDF, ST, SETZ, CVT, MUL, MIN, SET1F, CVTI, MAXI, PACKS, PACKUS)        \
     static void NAME(const uint8_t *e0, const uint8_t *e1, const uint8_t *e2, size_t rowb, const int8_t *w0,      \
                      const int8_t *w1, const int8_t *w2, const int32_t *bq, const float *mm, unsigned n,          \
-                     uint8_t *o, size_t C)                                                                         \
+                     uint8_t *o, size_t C)  /* rowb: the bytes from one output cell's taps to the next's */       \
     {                                                                                                              \
         const VT W00 = LD(w0), W01 = LD(w0 + B), W02 = LD(w0 + 2 * B), W03 = LD(w0 + 3 * B);                      \
         const VT W10 = LD(w1), W11 = LD(w1 + B), W12 = LD(w1 + 2 * B), W13 = LD(w1 + 3 * B);                      \
@@ -925,38 +941,23 @@ DW_GROUP(dw_g16, __m128i, __m128, 16, LD128, LDF128, ST128, _mm_setzero_si128, _
          _mm_mul_ps, _mm_min_ps, _mm_set1_ps, _mm_cvtps_epi32, _mm_max_epi32, _mm_packs_epi32, _mm_packus_epi16)
 #undef DW_GROUP
 
-/* depthwise output columns of one row of a strip (n cells) into out ([n][C]) from the expanded rows of its tap rows
- * (E[t] for t < nk, tap row kys[t]) */
-static void dw_vnni(const uint8_t *const *E, const unsigned *kys, unsigned nk, const vocr_tsd_qlayer *L,
-                    const dw_prep *D, unsigned n, uint8_t *out)
+/* depthwise output columns of one row of a strip (n cells) into out ([n][C]) from its vertically expanded row V (the
+ * strip's input columns from x0 s - d, V's cell 0) */
+static void dw_vnni(const uint8_t *V, const vocr_tsd_qlayer *L, const dw_prep *D, unsigned n, uint8_t *out)
 {
-    const unsigned C = L->cin;
-    const size_t rowb = (size_t)D->simd_c * 4;
-    const uint8_t *e[3];
-    const int8_t *w[3];
-    unsigned gi, ky, t = 0;
-    for (ky = 0; ky < 3; ky++) {           /* a tap row outside the map: any row's bytes against zero weights */
-        if (t < nk && kys[t] == ky) {
-            e[ky] = E[t];
-            w[ky] = D->w[ky];
-            t++;
-        } else {
-            e[ky] = E[0];
-            w[ky] = D->zw;
-        }
-    }
+    const unsigned C = L->cin, s = L->stride, d = L->dil;
+    const size_t rowb = (size_t)D->simd_c * 4, step = (size_t)s * rowb;
+    unsigned gi;
     for (gi = 0; gi < D->ngroups; gi++) {
         const unsigned c = D->g[gi].off, wd = D->g[gi].width;
         const size_t b = 4 * (size_t)c;
+        const uint8_t *e0 = V + b, *e1 = V + (size_t)d * rowb + b, *e2 = V + 2 * (size_t)d * rowb + b;
         if (wd == 64)
-            dw_g64(e[0] + b, e[1] + b, e[2] + b, rowb, w[0] + b, w[1] + b, w[2] + b, D->bq + c, D->m + c, n,
-                   out + c, C);
+            dw_g64(e0, e1, e2, step, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, n, out + c, C);
         else if (wd == 32)
-            dw_g32(e[0] + b, e[1] + b, e[2] + b, rowb, w[0] + b, w[1] + b, w[2] + b, D->bq + c, D->m + c, n,
-                   out + c, C);
+            dw_g32(e0, e1, e2, step, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, n, out + c, C);
         else
-            dw_g16(e[0] + b, e[1] + b, e[2] + b, rowb, w[0] + b, w[1] + b, w[2] + b, D->bq + c, D->m + c, n,
-                   out + c, C);
+            dw_g16(e0, e1, e2, step, D->w[0] + b, D->w[1] + b, D->w[2] + b, D->bq + c, D->m + c, n, out + c, C);
     }
 }
 #endif
@@ -1187,16 +1188,50 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
     }
     if (t->kind == QS_SEP) {
         const unsigned Ci = t->a->cin, Co = t->b->cout, s = t->a->stride, d = t->a->dil;
+#if Q_VNNI
+        /* the rows in order, each in strips: output row y's three input rows interleaved per channel over the strip's
+         * input columns (dw_vexpand: one vertically expanded row, zero outside the map), then the depthwise from it
+         * and the pointwise */
+        dw_prep D;
+        uint8_t *V = N->rings + (size_t)Q_RING_BYTES * task;
+        dw_prepare(t->a, &D);
+        for (y = y0; y < y1; y++) {
+            const uint8_t *rows3[3], *rows[3];
+            unsigned kys[3], nk = 0, ky;
+            for (ky = 0; ky < 3; ky++) {
+                const int iy = (int)(y * s + ky * d) - (int)d;
+                rows3[ky] = iy >= 0 && iy < (int)t->H ? t->in + (size_t)iy * t->W * Ci : NULL;
+                if (rows3[ky]) {
+                    rows[nk] = rows3[ky];
+                    kys[nk++] = ky;
+                }
+            }
+            for (x0 = 0; x0 < t->Wo; x0 += Q_CHUNK) {
+                const unsigned x1 = x0 + Q_CHUNK < t->Wo ? x0 + Q_CHUNK : t->Wo, n = x1 - x0;
+                uint8_t *o = t->head ? U : t->out + ((size_t)y * t->Wo + x0) * Co;
+                QPROF_T(t_dw);
+                if (D.simd_c) {
+                    QPROF_T(t_ex);
+                    dw_vexpand(rows3, t->W, t->a, &D, (int)(x0 * s) - (int)d, (n - 1) * s + 2 * d + 1, V);
+                    QPROF_ADD(qprof_expand, t_ex);
+                    dw_vnni(V, t->a, &D, n, T);
+                }
+                if (D.simd_c < Ci) q_dw_c(rows, kys, nk, t->W, t->a, x0, x1, D.simd_c, Ci, T);
+                QPROF_ADD(qprof_dw[N->cur], t_dw);
+                e.kind = t->res ? Q_RES : Q_RELU;
+                e.res = t->res ? t->in + ((size_t)y * t->W + x0) * Ci : NULL;
+                q_pw(T, n, t->b, &e, o);
+                if (t->head) q_head(N, U, n, N->maps + ((size_t)y * t->Wo + x0) * m->out);
+            }
+        }
+        return;
+#else
         /* (SIMD builds) the strip's input rows, expanded (VNNI) or as floats (AVX2), in a ring: input row r in slot
          * r % R when the rows are shared (stride 1 and dilation <= 2: 2 d + 1 slots; stride 2 and dilation 1: 3), else
          * slot ky (computed for every output row) */
         const int shared = (s == 1 && d <= 2) || (s == 2 && d == 1);
         const unsigned R = s == 1 && d <= 2 ? 2 * d + 1 : 3;
-#if Q_VNNI
-        dw_prep D;
-        uint8_t *ring = N->rings + (size_t)Q_RING_BYTES * task;
-        dw_prepare(t->a, &D);
-#elif Q_AVX2
+#if Q_AVX2
         float wf[9 * VOCR_TSD_MAX_CHANNELS];
         float *fring = (float *)(void *)(N->rings + (size_t)Q_FRING_BYTES * task);
         unsigned i;
@@ -1207,44 +1242,29 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
 #endif
         for (x0 = 0; x0 < t->Wo; x0 += Q_CHUNK) {
             const unsigned x1 = x0 + Q_CHUNK < t->Wo ? x0 + Q_CHUNK : t->Wo, n = x1 - x0;
-#if Q_VNNI || Q_AVX2
+#if Q_AVX2
             int slot_row[Q_RING_ROWS];
             unsigned k;
 #endif
-#if Q_AVX2 && !Q_VNNI
+#if Q_AVX2
             /* the input columns the strip reads */
             const unsigned ia0 = x0 * s >= d ? x0 * s - d : 0;
             const unsigned ia1 = (x1 - 1) * s + d + 1 < t->W ? (x1 - 1) * s + d + 1 : t->W;
             const float *F[3];
 #endif
-#if Q_VNNI || Q_AVX2
+#if Q_AVX2
             for (k = 0; k < Q_RING_ROWS; k++) slot_row[k] = -1;
 #endif
             for (y = y0; y < y1; y++) {
                 const uint8_t *rows[3];
                 unsigned kys[3], nk = 0, ky;
                 uint8_t *o = t->head ? U : t->out + ((size_t)y * t->Wo + x0) * Co;
-#if Q_VNNI
-                const uint8_t *E[3];
-#endif
                 QPROF_T(t_dw);
                 for (ky = 0; ky < 3; ky++) {
                     const int iy = (int)(y * s + ky * d) - (int)d;
                     if (iy < 0 || iy >= (int)t->H) continue;
                     rows[nk] = t->in + (size_t)iy * t->W * Ci;
-#if Q_VNNI
-                    if (D.simd_c) {
-                        const unsigned sl = shared ? (unsigned)iy % R : ky;
-                        uint8_t *Er = ring + (size_t)sl * Q_CHUNK * VOCR_TSD_MAX_CHANNELS * 4;
-                        if (!shared || slot_row[sl] != iy) {
-                            QPROF_T(t_ex);
-                            dw_expand(rows[nk], t->W, t->a, &D, x0, x1, Er);
-                            QPROF_ADD(qprof_expand, t_ex);
-                            slot_row[sl] = shared ? iy : -1;
-                        }
-                        E[nk] = Er;
-                    }
-#elif Q_AVX2
+#if Q_AVX2
                     {
                         const unsigned sl = shared ? (unsigned)iy % R : ky;
                         float *Fr = fring + (size_t)sl * DWF_ROW_FLOATS;
@@ -1259,10 +1279,7 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
 #endif
                     kys[nk++] = ky;
                 }
-#if Q_VNNI
-                if (D.simd_c) dw_vnni(E, kys, nk, t->a, &D, n, T);
-                if (D.simd_c < Ci) q_dw_c(rows, kys, nk, t->W, t->a, x0, x1, D.simd_c, Ci, T);
-#elif Q_AVX2
+#if Q_AVX2
                 dwf_avx2(F, kys, nk, t->W, ia0, t->a, wf, x0, x1, T);
 #else
                 q_dw_c(rows, kys, nk, t->W, t->a, x0, x1, 0, Ci, T);
@@ -1275,6 +1292,7 @@ static void q_rows(const q_net *N, const q_step *t, unsigned y0, unsigned y1, un
             }
         }
         return;
+#endif
     }
     if (t->kind == QS_LAT) {
         const unsigned Ci = t->a->cin, F = m->F;

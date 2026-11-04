@@ -883,8 +883,65 @@
      "remap_every": 300,
      "ckpt_every": 5000,
      "question": "the L1 + L5 ensemble distilled into one q8c (warm from L1), with desk_ui v2"
+    },
+    "N2_q8c_kd_from_L5": {
+     "shape": "q8c",
+     "init": "runs/r3_L5_q8c_full_160k",
+     "teachers": [
+      "runs/r3_L1_q8c_from_K1",
+      "runs/r3_L5_q8c_full_160k"
+     ],
+     "kd_weight": 1.0,
+     "steps": 80000,
+     "lr": 0.0006,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.23,synth=0.09,real=0.17,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.02,desk_ui=0.04,desk_ui_v2=0.08",
+     "remap_every": 300,
+     "ckpt_every": 5000,
+     "question": "the KD stage from another base model (seed 2 of the recipe 'a q8c base + the KD stage')",
+     "seed": 2
+    },
+    "N3_q8c_kd_from_L6": {
+     "shape": "q8c",
+     "init": "runs/r3_L6_q8c_full_160k_s2",
+     "teachers": [
+      "runs/r3_L1_q8c_from_K1",
+      "runs/r3_L5_q8c_full_160k"
+     ],
+     "kd_weight": 1.0,
+     "steps": 80000,
+     "lr": 0.0006,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.23,synth=0.09,real=0.17,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.02,desk_ui=0.04,desk_ui_v2=0.08",
+     "remap_every": 300,
+     "ckpt_every": 5000,
+     "question": "seed 3 of that recipe",
+     "seed": 3
     }
-   }
+   },
+   "seeds_note": "the recipe for a confirmation candidate is 'a q8c base model + this KD stage'; N1-N3 are its three seeds (bases L1, L5, L6); N2 and N3 added at 15:25Z before any read"
   }
  ]
 }

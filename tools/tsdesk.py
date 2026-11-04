@@ -1508,6 +1508,27 @@ class Detector:
         return [[b.x, b.y, b.x + b.w, b.y + b.h, b.vertical, round(b.logit, 4), b.tag] for b in self.detect(rgb)]
 
 
+class EnsembleDetector(Detector):
+    """Several networks of one output format (stride, maps, tags) on the same input: their maps averaged element by
+    element (K and O logits, A1 / A2 / E1 / E2 distances, tag logits), then the first network's decode, refinement
+    and post-pass (protocol v2 amendment 21). The first path sets the input policy and the decode constants."""
+
+    def __init__(self, paths, **kw):
+        super().__init__(paths[0], **kw)
+        self.others = [_session(p, kw.get("threads", 1), kw.get("providers"), kw.get("session_options"))
+                       for p in paths[1:]]
+        self.paths = list(paths)
+
+    def maps(self, x):
+        m = super().maps(x).astype(np.float64)
+        for sess in self.others:
+            o = sess.run(None, {sess.get_inputs()[0].name: x})[0][0]
+            if o.shape != m.shape:
+                raise ValueError(f"ensemble: maps {o.shape} against {m.shape}")
+            m += o
+        return (m / (1 + len(self.others))).astype(np.float32)
+
+
 READ_PAD = "k6v4"          # the reading pad the protocol chose on exact boxes (#173 amendment 1)
 
 

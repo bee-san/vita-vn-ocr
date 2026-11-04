@@ -838,6 +838,16 @@
     "M2_q8c_from_L1_uiv2": "as amendment 19, the same",
     "L7_q8c_full_160k_seed3": "as amendment 17, the same"
    }
+  },
+  {
+   "n": 21,
+   "time": "2026-11-04T14:00Z",
+   "round": 3,
+   "before": "any ensemble read",
+   "after": "the int8 q8c seeds through the C path, C10, long:1120: L5 gap 0.205 (dev 0.717, dense_dev 0.471, dev_l544 0.770, dense_dev_l544 0.552; junk 2), L6 0.285 (junk 11); the seeds differ by 0.08-0.15 points on the dense sets",
+   "study": {
+    "ensemble": "tools/tsdesk.EnsembleDetector (the tsdens:PATH|PATH spec): networks of one output format on the same input, their maps averaged, then one decode, refinement and post-pass; read first in fp32 through ONNX with C10 at long:1120 for L1 + L5 (two q8c) and L1 + L3 (q8c + q8b); a C ensemble (int8) is built only if it pays, and its G2 timing counts both networks (two int8 q8c at long:1120: about 21 ms, at the bar; q8c + q8b about 17 ms)"
+   }
   }
  ]
 }

@@ -881,3 +881,23 @@ def test_remap_memmaps_reopens_every_shard_and_keeps_its_data(tmp_path):
     assert all(m is not a and np.array_equal(m, a) for m, a in zip(pool.data, arrs))
     assert pool.by["a"][0] is not arrs[0] and np.array_equal(pool.by["a"][0], arrs[0])
     assert src["pools"][1][1] is not arrs[1] and np.array_equal(src["pools"][1][1], arrs[1])
+
+
+def test_ensemble_detector_averages_the_maps(tmp_path):
+    """tools/tsdesk.EnsembleDetector: one network twice reads like the network; two networks' maps are the mean."""
+    pytest.importorskip("onnxruntime")
+    sh = N.SHAPES["p8t"]
+    paths = []
+    for seed in (0, 1):
+        torch.manual_seed(seed)
+        m = N.TsdNet(sh).eval()
+        p = tmp_path / f"n{seed}.onnx"
+        N.export_onnx(m, p, N.onnx_meta(sh, f"n{seed}", "fit:960", T.DEFAULTS), check=False)
+        paths.append(str(p))
+    g = np.random.default_rng(0).integers(0, 256, (96, 160), dtype=np.uint8)
+    a, b = T.Detector(paths[0]), T.Detector(paths[1])
+    same = T.EnsembleDetector([paths[0], paths[0]])
+    both = T.EnsembleDetector(paths)
+    x, _ = a.preprocess(g)
+    assert np.allclose(same.maps(x), a.maps(x), atol=1e-6)
+    assert np.allclose(both.maps(x), (a.maps(x).astype(np.float64) + b.maps(x)) / 2, atol=1e-5)

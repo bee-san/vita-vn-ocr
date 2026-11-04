@@ -110,6 +110,11 @@ def detector_from_spec(spec, threads=1, so=None):
         size, _, mode = rest.partition("@")
         return T.Detector(path, session_options=so, size=size or None, resize_mode=mode or "exact",
                           refine=True if refine else None, post=post or None, decode_opts=dec or None)
+    if base.startswith("tsdens:"):              # amendment 21: networks' maps averaged (PATH|PATH|...)
+        paths, _, rest = base[7:].partition("@")
+        size, _, mode = rest.partition("@")
+        return T.EnsembleDetector(paths.split("|"), session_options=so, size=size or None, resize_mode=mode or "exact",
+                                  refine=True if refine else None, post=post or None, decode_opts=dec or None)
     if base.startswith("ctsd:"):
         path, _, size = base[5:].partition("@")
         return CTsdDet(path, size or None, threads, refine=True if refine else None, decode=dec or None,
@@ -261,7 +266,7 @@ def install(Dm=D):
     base = Dm.detector
 
     def detector(spec, threads=1, opt="all", spinning=None):
-        if spec.startswith(("tsd:", "ctsd:")):
+        if spec.startswith(("tsd:", "ctsd:", "tsdens:")):
             return detector_from_spec(spec, threads, Dm.session_options(threads, opt, spinning))
         return base(strip_drop(spec), threads, opt, spinning)
 
@@ -322,7 +327,7 @@ def install(Dm=D):
 
     def pipeline_init(self, spec, threads, mode, *a, **k):
         init(self, spec, threads, mode, *a, **k)
-        if spec.startswith(("tsd:", "ctsd:")):
+        if spec.startswith(("tsd:", "ctsd:", "tsdens:")):
             self.pad = READ_PAD
     DT.Pipeline.__init__ = pipeline_init
 

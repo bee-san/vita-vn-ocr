@@ -752,6 +752,39 @@
     }
    },
    "after_reads": "added at 23:30Z after the amendment-17 reads, before L7 starts: S2 int8 through the C path gap 0.205 (fp32 0.211; its fp32 C read equals the ONNX read exactly), K1 int8 (q8c) 0.186 (dev 0.943, dense_dev 0.447, dev_l544 0.863, dense_dev_l544 0.434; junk 2), L3 (S2 + 80k, fp32) 0.186 (junk 1), L2 0.236, L4 0.398"
+  },
+  {
+   "n": 18,
+   "time": "2026-11-04T03:35Z",
+   "round": 3,
+   "before": "any read of M1; L1 int8 at long:960 (C9) and long:1120 (C10) are being read",
+   "after": [
+    "L1 (q8c, K1 + 80k) int8 through the C path, C9, long:1120: gap 0.130 (dev 0.863, dense_dev 0.428, dev_l544 0.757, dense_dev_l544 0.477; PCSG00854 junk 2: readings イ and そ00), the best so far; its fp32 ONNX read: 0.212 (dense_dev 0.409); L3 int8 0.236 (fp32 0.186); int8 K1 timed: G2 10.6x, G3 hybrid 0.183 (textspot-desktop-speed, goal_K1q8_l1120_c9.json)",
+    "an incident: an L1 read crash-looped on a missing ONNX file (the export had failed silently) and filled /tmp's inodes host-wide (02:10-03:11Z); killed; its 80,903 empty /tmp/mat-debug-*.log files deleted; the read scripts now refuse a missing model",
+    "C10 = C9 + rep_len=3 (textspot-desktop-boxes' rep tweak, screened on round 1's seeds: hval -3 errors, dense_screen unchanged; at rep_len 3 no reference line of hval, dense_screen, dense_dev or dev-v2 matches) is read for L1 int8 at long:1120 (report)"
+   ],
+   "arms": {
+    "M1_q8c_from_L1_orn": {
+     "shape": "q8c",
+     "init": "runs/r3_L1_q8c_from_K1",
+     "steps": 80000,
+     "lr": 0.0006,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.24,synth=0.10,real=0.18,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.03,desk_ui=0.08",
+     "question": "L1 + 80k with twice the ornament rows (the junk guard)"
+    }
+   }
   }
  ]
 }

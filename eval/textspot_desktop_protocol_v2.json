@@ -785,6 +785,40 @@
      "question": "L1 + 80k with twice the ornament rows (the junk guard)"
     }
    }
+  },
+  {
+   "n": 19,
+   "time": "2026-11-04T10:15Z",
+   "round": 3,
+   "before": "any read of M2",
+   "after": [
+    "L1 int8 with C10 (C9 + rep_len=3): gap 0.130, the same CERs as C9, PCSG00854 junk 2 -> 1; at long:960 the int8 L1 (calibrated at long:1120) reads worse (gap 0.332)",
+    "the q8c seeds of the full recipe from scratch (160k, fp32 ONNX, C10, long:1120): L5 gap 0.223 (dev 0.770, dense_dev 0.453, dev_l544 0.770, dense_dev_l544 0.571; junk 1), L6 0.323 (junk 4); L7 is training",
+    "desk_ui v2 (textspot-desktop-ui2, 1c33b8a, merged at bd99d9c): 30,000 frames, 315,301 lines, aimed at icons and badges beside labels (115,380, 22,584 touching), leader dots (20,470), one-box label + value pairs at 0.5-1.75 h (1b's convention: one box below 1.8 h in 325 of 325 pairs), stat runs (27,339); an exact source",
+    "git over SSH to GitHub fails for this user since ~09:50Z (publickey); pushes go over HTTPS with gh's credential helper"
+   ],
+   "arms": {
+    "M2_q8c_from_L1_uiv2": {
+     "shape": "q8c",
+     "init": "runs/r3_L1_q8c_from_K1",
+     "steps": 80000,
+     "lr": 0.0006,
+     "targets": "targets_v3",
+     "label_edits": [
+      "label_edits_v1",
+      "label_edits_pc_v1_text"
+     ],
+     "ignore_clip": true,
+     "end_ignore_gap": 0.25,
+     "marks": 0.5,
+     "marks_glyphs": "v2",
+     "recipe": "base",
+     "end_ignore": 1.0,
+     "ornaments": 0.5,
+     "mix": "hook=0.23,synth=0.09,real=0.17,desk_hook=0.09,desk_realplus=0.10,desk_synth=0.03,desk_dense=0.05,desk_hard=0.03,desk_hard_v2=0.05,desk_hook_hard=0.02,desk_hook_hard_v2=0.02,desk_ui=0.04,desk_ui_v2=0.08",
+     "question": "L1 + 80k with desk_ui v2 and twice the ornament rows (M1 is the same without desk_ui v2)"
+    }
+   }
   }
  ]
 }

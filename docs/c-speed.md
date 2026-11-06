@@ -182,9 +182,12 @@ From astra's report and vocr-research's (§4-5 of `reports/vocr-research.md`):
   −0.10 s per box, −16%), but it changes the frames where the escape misses a rare class, so it needs a fit and #122's
   development rule, a model change outside this bit-exact one.
 
-## Host speed (x86, unchanged)
+## Host speed (x86)
 
-The changes are NEON-only, so host builds run `main`'s code (their objects are byte-identical, above). One pinned
+The changes are NEON-only, so host builds ran `main`'s code (their objects are byte-identical, above). Since
+`docs/runtime-avx2.md`, an x86 build with AVX2 (`-mavx2`, or `-march=native` on an AVX2 CPU) runs AVX2 kernels instead,
+so this section's `-O3 -march=native` column is the plain C as it was then; a build without AVX2 (the `-O2` column)
+still compiles to the same code. One pinned
 core of the EPYC host, a shared box with other jobs running, gcc 11.5, median of 5 runs (`eval/c_speed_host_ms.py`;
 the record's `host_ms`; `main`'s figures):
 
@@ -203,7 +206,8 @@ fast ones). Built with `-O3 -march=native`, the same unchanged C source runs 4.2
 the spotter 2.4x, with the same logits, top 8, texts, maps and boxes (checked on these 24 lines and 726 region
 records). So most of the gap astra saw is the desktop compiler's: `vocr.c` and `vocr_textspot6.c` have hand-written
 NEON for the Vita and none for x86. For desktop builds, `-O3` with the target's SIMD (keeping `-ffp-contract=off`) is
-the cheap win (the research's §6); the Vita's own build stays `-O2` (above).
+the cheap win (the research's §6), and on x86 it now also turns on the AVX2 kernels, a further 3-4x per screenshot
+(`docs/runtime-avx2.md`); the Vita's own build stays `-O2` (above).
 
 ## Reproduce
 

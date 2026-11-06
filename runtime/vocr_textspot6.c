@@ -207,6 +207,15 @@
 #define TS_NEON 0
 #endif
 
+/* x86 hosts built with -mavx2: the block kernels in AVX2, the same bits as the scalar ones (exact int32 sums);
+ * -DVOCR_NO_AVX2 forces the scalar code (as for vocr.c). */
+#if !TS_NEON && defined(__AVX2__) && !defined(VOCR_NO_AVX2)
+#include <immintrin.h>
+#define TS_AVX2 1
+#else
+#define TS_AVX2 0
+#endif
+
 /* The version-3 and version-4 stages stay functions of their own (the A9 table's cost split reads them by name). */
 #if defined(__GNUC__)
 #define NOINLINE __attribute__((noinline))
@@ -1446,6 +1455,225 @@ static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, 
         const int8_t *wc = w + (size_t)c * cin;
         for (q = 0; q < cin; q++) MACN(lo4, hi4, vmovl_s8(vld1_s8(in + q * BLK)), wc[q]);
         RQ_STORE(lo4, hi4, &ch[c], lo, out + c * ostride, n);
+    }
+}
+#elif TS_AVX2
+/* ---- AVX2 (x86 hosts): a block's 8 int32 sums in one register; taps or input channels two at a time through
+ * VPMADDWD (int8 codes widened to int16, every product and sum exact, so any order gives the scalar sums) */
+
+/* store_acc() on 8 lanes: for sh >= 32, bias * m + 2^(sh - 1) + sum * m in int64 (even lanes, then odd), its high
+ * word, an arithmetic shift by sh - 32 (floor), the clamp to [lo, 127]; otherwise requant() lane by lane */
+static __m256i rq8(__m256i a, const Chan *c, int32_t lo)
+{
+    const __m256i bq = _mm256_set1_epi64x(bq_of(c)), m = _mm256_set1_epi32(c->m);
+    __m256i pe = _mm256_add_epi64(bq, _mm256_mul_epi32(a, m));
+    __m256i po = _mm256_add_epi64(bq, _mm256_mul_epi32(_mm256_srli_epi64(a, 32), m));
+    __m256i q = _mm256_blend_epi32(_mm256_srli_epi64(pe, 32), po, 0xAA);
+    q = _mm256_sra_epi32(q, _mm_cvtsi32_si128(c->sh - 32));
+    return _mm256_min_epi32(_mm256_max_epi32(q, _mm256_set1_epi32(lo)), _mm256_set1_epi32(127));
+}
+
+static void store_acc8(__m256i a, const Chan *c, int32_t lo, int8_t *out, unsigned n)
+{
+    int8_t t[BLK];
+    unsigned p;
+    if (c->sh >= 32) {
+        __m256i q = rq8(a, c, lo);
+        __m128i h;
+        h = _mm_packs_epi32(_mm256_castsi256_si128(q), _mm256_extracti128_si256(q, 1));
+        h = _mm_packs_epi16(h, h);
+        if (n == BLK) {
+            _mm_storel_epi64((__m128i *)(void *)out, h);
+            return;
+        }
+        _mm_storel_epi64((__m128i *)(void *)t, h);
+    } else {
+        int32_t v[BLK];
+        _mm256_storeu_si256((__m256i *)(void *)v, a);
+        for (p = 0; p < BLK; p++) t[p] = requant(v[p], c, lo);
+    }
+    for (p = 0; p < n; p++) out[p] = t[p];
+}
+
+/* store_acc8 on four output channels c[0 .. 3] (out, out + ostride, ...): a full block of channels with sh >= 32
+ * packed together (two PACKSSDW, one PACKSSWB, one VPERMD to channel order), else one by one */
+static void store_acc8x4(__m256i a0, __m256i a1, __m256i a2, __m256i a3, const Chan *c, int32_t lo, int8_t *out,
+                         size_t ostride, unsigned n)
+{
+    if (n == BLK && c[0].sh >= 32 && c[1].sh >= 32 && c[2].sh >= 32 && c[3].sh >= 32) {
+        const __m256i p = _mm256_permutevar8x32_epi32(
+            _mm256_packs_epi16(_mm256_packs_epi32(rq8(a0, &c[0], lo), rq8(a1, &c[1], lo)),
+                               _mm256_packs_epi32(rq8(a2, &c[2], lo), rq8(a3, &c[3], lo))),
+            _mm256_setr_epi32(0, 4, 1, 5, 2, 6, 3, 7));
+        const __m128i l = _mm256_castsi256_si128(p), h = _mm256_extracti128_si256(p, 1);
+        _mm_storel_epi64((__m128i *)(void *)out, l);
+        _mm_storel_epi64((__m128i *)(void *)(out + ostride), _mm_unpackhi_epi64(l, l));
+        _mm_storel_epi64((__m128i *)(void *)(out + 2u * ostride), h);
+        _mm_storel_epi64((__m128i *)(void *)(out + 3u * ostride), _mm_unpackhi_epi64(h, h));
+        return;
+    }
+    store_acc8(a0, &c[0], lo, out, n);
+    store_acc8(a1, &c[1], lo, out + ostride, n);
+    store_acc8(a2, &c[2], lo, out + 2u * ostride, n);
+    store_acc8(a3, &c[3], lo, out + 3u * ostride, n);
+}
+
+/* the weight pair (k0, k1) as int16, in every 32-bit lane */
+static __m256i wpair(int k0, int k1)
+{
+    return _mm256_set1_epi32((int32_t)((uint32_t)(uint16_t)(int16_t)k0 | (uint32_t)(uint16_t)(int16_t)k1 << 16));
+}
+
+/* the low 8 codes of a and b interleaved and widened: (a[p], b[p]) int16 pairs, p < 8 */
+static __m256i xpair(__m128i a, __m128i b)
+{
+    return _mm256_cvtepi8_epi16(_mm_unpacklo_epi8(a, b));
+}
+
+/* 8 pixels of one input channel at stride S in the low 8 bytes (S = 2 reads 16 bytes: the plane's slack covers it,
+ * as for NEON's vld2) */
+#define LOAD8(x, S) ((S) == 1u ? _mm_loadl_epi64((const __m128i *)(const void *)(x)) \
+                               : _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(const void *)(x)), even))
+#define MADD(A, X, W) (A) = _mm256_add_epi32((A), _mm256_madd_epi16((X), (W)))
+
+/* the 9 taps of one input channel, widened in pairs (the last with zeros): p0 .. p4 */
+#define K3_PAIRS(S) \
+    p0 = xpair(LOAD8(x0, S), LOAD8(x0 + d, S)); \
+    p1 = xpair(LOAD8(x0 + 2u * d, S), LOAD8(x1, S)); \
+    p2 = xpair(LOAD8(x1 + d, S), LOAD8(x1 + 2u * d, S)); \
+    p3 = xpair(LOAD8(x2, S), LOAD8(x2 + d, S)); \
+    p4 = xpair(LOAD8(x2 + 2u * d, S), zero)
+/* A += the taps times the 9 weights at WQ, those of rows outside the input masked to 0: weights 0-7 masked and
+ * widened in one register, each pair broadcast from it; weight 8 alone */
+#define K3_TAPS(A, WQ) do { \
+        const __m128i w_ = _mm_cvtepi8_epi16(_mm_and_si128(_mm_loadl_epi64((const __m128i *)(const void *)(WQ)), \
+                                                           kmask)); \
+        MADD(A, p0, _mm256_broadcastd_epi32(w_)); \
+        MADD(A, p1, _mm256_broadcastd_epi32(_mm_srli_si128(w_, 4))); \
+        MADD(A, p2, _mm256_broadcastd_epi32(_mm_srli_si128(w_, 8))); \
+        MADD(A, p3, _mm256_broadcastd_epi32(_mm_srli_si128(w_, 12))); \
+        MADD(A, p4, wpair((WQ)[8] & keep[8], 0)); \
+    } while (0)
+
+/* A block of BLK output pixels from pixel j0 of a 3x3 layer with input stride S, output channel by output channel
+ * into out[c * ostride + p] (p < n). rows[ky] is the padded input row of kernel row ky (the centre row where
+ * valid[ky] is 0, its weights then masked to 0), plane bytes from one input channel to the next. Depthwise:
+ * output channel c reads input channel c; otherwise every input channel (cin of them), four output channels per
+ * pass sharing the widened inputs. */
+#define K3_BLOCK(name, S) \
+static void name(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, int depthwise, \
+                 const int8_t *const *rows, const int *valid, size_t plane, unsigned d, unsigned j0, int8_t *out, \
+                 size_t ostride, unsigned n) \
+{ \
+    const __m128i even = _mm_setr_epi8(0, 2, 4, 6, 8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1); \
+    const __m128i zero = _mm_setzero_si128(); \
+    __m256i p0, p1, p2, p3, p4; \
+    __m128i kmask; \
+    int keep[9]; \
+    unsigned c = 0, q, k, nq = depthwise ? 1u : cin; \
+    (void)even; \
+    for (k = 0; k < 9u; k++) keep[k] = valid[k / 3u] ? -1 : 0; \
+    kmask = _mm_setr_epi8((char)keep[0], (char)keep[1], (char)keep[2], (char)keep[3], (char)keep[4], \
+                          (char)keep[5], (char)keep[6], (char)keep[7], 0, 0, 0, 0, 0, 0, 0, 0); \
+    if (!depthwise) \
+        for (; c + 4u <= cout; c += 4u) { \
+            __m256i a0 = _mm256_setzero_si256(), a1 = a0, a2 = a0, a3 = a0; \
+            const int8_t *x0 = rows[0] + (size_t)j0 * (S), *x1 = rows[1] + (size_t)j0 * (S); \
+            const int8_t *x2 = rows[2] + (size_t)j0 * (S), *w0 = w + 9u * c * cin; \
+            for (q = 0; q < cin; q++, w0 += 9, x0 += plane, x1 += plane, x2 += plane) { \
+                K3_PAIRS(S); \
+                K3_TAPS(a0, w0); \
+                K3_TAPS(a1, w0 + 9u * cin); \
+                K3_TAPS(a2, w0 + 18u * cin); \
+                K3_TAPS(a3, w0 + 27u * cin); \
+            } \
+            store_acc8x4(a0, a1, a2, a3, &ch[c], lo, out + c * ostride, ostride, n); \
+        } \
+    for (; c < cout; c++) { \
+        __m256i a = _mm256_setzero_si256(); \
+        size_t base = (depthwise ? c : 0u) * plane + (size_t)j0 * (S); \
+        const int8_t *x0 = rows[0] + base, *x1 = rows[1] + base, *x2 = rows[2] + base; \
+        const int8_t *wq = w + 9u * (depthwise ? c : c * cin); \
+        for (q = 0; q < nq; q++, wq += 9, x0 += plane, x1 += plane, x2 += plane) { \
+            K3_PAIRS(S); \
+            K3_TAPS(a, wq); \
+        } \
+        store_acc8(a, &ch[c], lo, out + c * ostride, n); \
+    } \
+}
+K3_BLOCK(k3_block_s1, 1u)
+K3_BLOCK(k3_block_s2, 2u)
+
+/* 16 weights of row R from q, widened: pairs 0-3 in both 128-bit halves of l##R, pairs 4-7 in h##R */
+#define K1_W(R) do { \
+        __m256i v_ = _mm256_cvtepi8_epi16(_mm_loadu_si128((const __m128i *)(const void *)(w##R + q))); \
+        l##R = _mm256_permute2x128_si256(v_, v_, 0x00); \
+        h##R = _mm256_permute2x128_si256(v_, v_, 0x11); \
+    } while (0)
+/* input pair K from q times weight pair IMM of V, into the four sums */
+#define K1_PAIR(K, V, IMM) do { \
+        const __m256i x_ = x[q / 2u + (K)]; \
+        MADD(a0, x_, _mm256_shuffle_epi32(V##0, IMM)); \
+        MADD(a1, x_, _mm256_shuffle_epi32(V##1, IMM)); \
+        MADD(a2, x_, _mm256_shuffle_epi32(V##2, IMM)); \
+        MADD(a3, x_, _mm256_shuffle_epi32(V##3, IMM)); \
+    } while (0)
+
+/* A block of a 1x1 layer: in[q * BLK + p] -> out[c * ostride + p] (p < n). The input channels widened once, in
+ * pairs (an odd last one with zeros), then four output channels per pass, their weights 16 at a time (never read
+ * past a weight row), then two at a time. */
+static void k1_block(const int8_t *w, const Chan *ch, int32_t lo, unsigned cin, unsigned cout, const int8_t *in,
+                     int8_t *out, size_t ostride, unsigned n)
+{
+    __m256i x[MAXCH / 2u];
+    unsigned c = 0, q, np = cin / 2u;
+    for (q = 0; q < np; q++) {
+        __m128i v = _mm_loadu_si128((const __m128i *)(const void *)(in + 2u * q * BLK));
+        x[q] = xpair(v, _mm_unpackhi_epi64(v, v));
+    }
+    for (; c + 4u <= cout; c += 4u) {
+        const int8_t *w0 = w + (size_t)c * cin, *w1 = w0 + cin, *w2 = w1 + cin, *w3 = w2 + cin;
+        __m256i a0 = _mm256_setzero_si256(), a1 = a0, a2 = a0, a3 = a0;
+        __m256i l0, l1, l2, l3, h0, h1, h2, h3;
+        for (q = 0; q + 16u <= cin; q += 16u) {
+            K1_W(0);
+            K1_W(1);
+            K1_W(2);
+            K1_W(3);
+            K1_PAIR(0, l, 0x00);
+            K1_PAIR(1, l, 0x55);
+            K1_PAIR(2, l, 0xAA);
+            K1_PAIR(3, l, 0xFF);
+            K1_PAIR(4, h, 0x00);
+            K1_PAIR(5, h, 0x55);
+            K1_PAIR(6, h, 0xAA);
+            K1_PAIR(7, h, 0xFF);
+        }
+        for (; q + 2u <= cin; q += 2u) {
+            const __m256i x_ = x[q / 2u];
+            MADD(a0, x_, wpair(w0[q], w0[q + 1u]));
+            MADD(a1, x_, wpair(w1[q], w1[q + 1u]));
+            MADD(a2, x_, wpair(w2[q], w2[q + 1u]));
+            MADD(a3, x_, wpair(w3[q], w3[q + 1u]));
+        }
+        if (cin & 1u) {
+            __m256i xl = xpair(_mm_loadl_epi64((const __m128i *)(const void *)(in + (cin - 1u) * BLK)),
+                               _mm_setzero_si128());
+            MADD(a0, xl, wpair(w0[cin - 1u], 0));
+            MADD(a1, xl, wpair(w1[cin - 1u], 0));
+            MADD(a2, xl, wpair(w2[cin - 1u], 0));
+            MADD(a3, xl, wpair(w3[cin - 1u], 0));
+        }
+        store_acc8x4(a0, a1, a2, a3, &ch[c], lo, out + c * ostride, ostride, n);
+    }
+    for (; c < cout; c++) {
+        const int8_t *wc = w + (size_t)c * cin;
+        __m256i a = _mm256_setzero_si256();
+        for (q = 0; q < np; q++) MADD(a, x[q], wpair(wc[2u * q], wc[2u * q + 1u]));
+        if (cin & 1u)
+            MADD(a, xpair(_mm_loadl_epi64((const __m128i *)(const void *)(in + (cin - 1u) * BLK)),
+                          _mm_setzero_si128()), wpair(wc[cin - 1u], 0));
+        store_acc8(a, &ch[c], lo, out + c * ostride, n);
     }
 }
 #else

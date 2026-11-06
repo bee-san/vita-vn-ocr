@@ -8,6 +8,13 @@
 #include <arm_neon.h>
 #define VOCR_NEON 1
 #endif
+/* x86 hosts built with -mavx2: the W8I matrix kernel (mm_i16), k_conv1 and k_dw in AVX2, the same bits as the
+ * scalar ones.
+ * -DVOCR_NO_AVX2 forces the scalar code. */
+#if defined(__AVX2__) && !defined(VOCR_NO_AVX2) && !defined(VOCR_NEON)
+#include <immintrin.h>
+#define VOCR_AVX2 1
+#endif
 /* PSP: the float matrix products on the VFPU, opt-in with -DVOCR_PSP_VFPU (psp/Makefile
  * VFPU=1). It does the scalar code's multiplies and adds in the same order, 4 lanes at a time,
  * which gives the same bits in PPSSPP; the real VFPU flushes denormals to zero, so a console
@@ -1015,6 +1022,29 @@ static VOCR_NOINLINE void k_conv1(const vocr_op *op, const float *win, float *ou
                 vst1q_f32(o + c0 + 12, a3);
             }
 #endif
+#ifdef VOCR_AVX2
+            /* AVX2: the scalar code's taps in its order, 8 channels per register, 32 then 8 per pass; each
+             * product and sum rounded separately (MULPS then ADDPS, no FMA), so the bits are the scalar code's */
+            for (; c0 + 8 <= C; c0 += c0 + 32 <= C ? 32u : 8u) {
+                const unsigned nr = c0 + 32 <= C ? 4u : 1u;
+                const __m256 z = _mm256_setzero_ps();
+                __m256 a[4];
+                unsigned r;
+                for (r = 0; r < 4; r++) a[r] = r < nr && op->bias ? _mm256_loadu_ps(op->bias + c0 + 8 * r) : z;
+                for (dy = dy0; dy < dy1; dy++)
+                    for (dx = 0; dx < kw; dx++) {
+                        const __m256 x = _mm256_set1_ps(win[(size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)]);
+                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
+                        a[0] = _mm256_add_ps(a[0], _mm256_mul_ps(_mm256_loadu_ps(wt), x));
+                        if (nr == 4) {
+                            a[1] = _mm256_add_ps(a[1], _mm256_mul_ps(_mm256_loadu_ps(wt + 8), x));
+                            a[2] = _mm256_add_ps(a[2], _mm256_mul_ps(_mm256_loadu_ps(wt + 16), x));
+                            a[3] = _mm256_add_ps(a[3], _mm256_mul_ps(_mm256_loadu_ps(wt + 24), x));
+                        }
+                    }
+                for (r = 0; r < nr; r++) _mm256_storeu_ps(o + c0 + 8 * r, relu ? _mm256_max_ps(a[r], z) : a[r]);
+            }
+#endif
             /* Scalar: 8 channels per pass with the sums in registers (see mm_f32). */
             for (; c0 + 8 <= C; c0 += 8) {
                 float a0, a1, a2, a3, a4, a5, a6, a7, s[8];
@@ -1113,6 +1143,28 @@ static VOCR_NOINLINE void k_dw(const vocr_op *op, const float *win, float *out, 
                 vst1q_f32(o + c0 + 4, a1);
                 vst1q_f32(o + c0 + 8, a2);
                 vst1q_f32(o + c0 + 12, a3);
+            }
+#endif
+#ifdef VOCR_AVX2
+            /* AVX2: as k_conv1's, the input a vector of channels too */
+            for (; c0 + 8 <= C; c0 += c0 + 32 <= C ? 32u : 8u) {
+                const unsigned nr = c0 + 32 <= C ? 4u : 1u;
+                const __m256 z = _mm256_setzero_ps();
+                __m256 a[4];
+                unsigned r;
+                for (r = 0; r < 4; r++) a[r] = r < nr && op->bias ? _mm256_loadu_ps(op->bias + c0 + 8 * r) : z;
+                for (dy = dy0; dy < dy1; dy++)
+                    for (dx = 0; dx < kw; dx++) {
+                        const float *x = win + ((size_t)(t * op->sw + dx) * Hi + (unsigned)(r0 + (int)dy)) * C + c0;
+                        const float *wt = op->w + (size_t)(dy * kw + dx) * C + c0;
+                        a[0] = _mm256_add_ps(a[0], _mm256_mul_ps(_mm256_loadu_ps(wt), _mm256_loadu_ps(x)));
+                        if (nr == 4) {
+                            a[1] = _mm256_add_ps(a[1], _mm256_mul_ps(_mm256_loadu_ps(wt + 8), _mm256_loadu_ps(x + 8)));
+                            a[2] = _mm256_add_ps(a[2], _mm256_mul_ps(_mm256_loadu_ps(wt + 16), _mm256_loadu_ps(x + 16)));
+                            a[3] = _mm256_add_ps(a[3], _mm256_mul_ps(_mm256_loadu_ps(wt + 24), _mm256_loadu_ps(x + 24)));
+                        }
+                    }
+                for (r = 0; r < nr; r++) _mm256_storeu_ps(o + c0 + 8 * r, relu ? _mm256_max_ps(a[r], z) : a[r]);
             }
 #endif
             /* Scalar: 8 channels per pass with the sums in registers (see mm_f32). */
@@ -1708,6 +1760,56 @@ static void mm_i16(const int8_t *qw, const float *scale, const float *bias, cons
 #undef VOCR_ISUMS4_ASM
 #undef VOCR_IHALF
 #undef VOCR_IROW
+#endif
+#ifdef VOCR_AVX2
+    /* AVX2: up to 4 positions x 8 outputs per pass. Each k pair's two weight rows are interleaved
+     * (w[k][0], w[k+1][0], w[k][1], ...) and widened to int16 once per pass, then one VPMADDWD per
+     * position takes w[k][j] * x[k] + w[k+1][j] * x[k+1] into output j's int32 lane. The integer
+     * sums are exact in any order (the chunk bound holds for the pair sums too), and the float steps
+     * are the scalar code's, in its order, so the bits are the scalar code's. */
+    {
+        const __m128i ilv = _mm_setr_epi8(0, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13, 6, 14, 7, 15);
+        const __m256 zero = _mm256_setzero_ps();
+        while (p < P) {
+            const unsigned np = P - p >= 4 ? 4u : 1u;
+            const int16_t *x0 = qx + (size_t)p * K, *x1 = x0 + K, *x2 = x1 + K, *x3 = x2 + K;
+            __m256 f0 = zero, f1 = zero, f2 = zero, f3 = zero; /* S = 0 + float(c_0) + ... */
+            unsigned i;
+            for (k0 = 0; k0 < K; k0 += W8I_CHUNK) {
+                const unsigned k1 = umin(K, k0 + W8I_CHUNK);
+                __m256i a0 = _mm256_setzero_si256(), a1 = a0, a2 = a0, a3 = a0;
+                for (k = k0; k < k1; k += 2) {
+                    const int two = k + 1 < k1;
+                    const int8_t *wk = qw + (size_t)k * 8;
+                    const __m128i w8 = two ? _mm_loadu_si128((const __m128i *)(const void *)wk)
+                                           : _mm_loadl_epi64((const __m128i *)(const void *)wk);
+                    const __m256i w16 = _mm256_cvtepi8_epi16(_mm_shuffle_epi8(w8, ilv));
+#define VOCR_XPAIR(X) _mm256_set1_epi32((int)((uint32_t)(uint16_t)(X)[k] | (two ? (uint32_t)(uint16_t)(X)[k + 1] << 16 : 0u)))
+                    a0 = _mm256_add_epi32(a0, _mm256_madd_epi16(w16, VOCR_XPAIR(x0)));
+                    if (np == 4) {
+                        a1 = _mm256_add_epi32(a1, _mm256_madd_epi16(w16, VOCR_XPAIR(x1)));
+                        a2 = _mm256_add_epi32(a2, _mm256_madd_epi16(w16, VOCR_XPAIR(x2)));
+                        a3 = _mm256_add_epi32(a3, _mm256_madd_epi16(w16, VOCR_XPAIR(x3)));
+                    }
+#undef VOCR_XPAIR
+                }
+                f0 = _mm256_add_ps(f0, _mm256_cvtepi32_ps(a0));
+                f1 = _mm256_add_ps(f1, _mm256_cvtepi32_ps(a1));
+                f2 = _mm256_add_ps(f2, _mm256_cvtepi32_ps(a2));
+                f3 = _mm256_add_ps(f3, _mm256_cvtepi32_ps(a3));
+            }
+            for (i = 0; i < np; i++) {
+                const unsigned pi = p + i;
+                __m256 v = i == 0 ? f0 : i == 1 ? f1 : i == 2 ? f2 : f3;
+                v = _mm256_mul_ps(v, _mm256_mul_ps(_mm256_loadu_ps(scale), _mm256_set1_ps(sx[pi])));
+                if (bias) v = _mm256_add_ps(v, _mm256_loadu_ps(bias));
+                if (relu) v = _mm256_max_ps(v, zero); /* v > 0 ? v : 0, as relu_f */
+                if (res) v = _mm256_add_ps(v, _mm256_loadu_ps(res + pi * rs));
+                _mm256_storeu_ps(y + pi * ys, v);
+            }
+            p += np;
+        }
+    }
 #endif
     /* Scalar: one position x 8 outputs per pass, the 8 int32 sums in registers (see mm_f32;
      * two positions would need more integer registers than MIPS has). Integer sums are
